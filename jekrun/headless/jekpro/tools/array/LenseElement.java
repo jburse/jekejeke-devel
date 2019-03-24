@@ -141,7 +141,7 @@ final class LenseElement extends AbstractLense {
                             AbstractTerm.getSkel(res), d))
                 return false;
             if (ext)
-                BindUniv.remTab(d.bind, en);
+                d.remTab(en);
             return true;
         } catch (ClassCastException x) {
             throw new EngineMessage(

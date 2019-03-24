@@ -85,7 +85,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = integer(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -97,7 +97,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = truncate(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -109,7 +109,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = floor(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -121,7 +121,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = ceiling(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -133,7 +133,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = round(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -145,13 +145,13 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = slashSlash(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -163,13 +163,13 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = rem(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -181,13 +181,13 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = div(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -199,13 +199,13 @@ public final class EvaluableRound extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = mod(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;

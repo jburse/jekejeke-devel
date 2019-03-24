@@ -118,7 +118,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -133,7 +133,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_PREDICATE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -160,7 +160,7 @@ public final class SpecialPred extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;

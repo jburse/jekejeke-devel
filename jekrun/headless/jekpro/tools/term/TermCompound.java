@@ -370,7 +370,7 @@ public final class TermCompound extends AbstractTerm {
                 boolean ext = d.getAndReset();
                 d3.bind[sv.id].bindUniv(t, d, en);
                 if (ext)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 args[i] = sv;
             } else {
                 args[i] = t;

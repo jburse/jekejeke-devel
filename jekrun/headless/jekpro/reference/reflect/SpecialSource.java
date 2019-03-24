@@ -121,7 +121,7 @@ public final class SpecialSource extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_SOURCE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -138,7 +138,7 @@ public final class SpecialSource extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_CURRENT_RESOURCE:
                 temp = ((SkelCompound) en.skel).args;

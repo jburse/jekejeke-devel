@@ -137,7 +137,7 @@ final class ChoiceForeign extends AbstractChoice {
                 }
             } else {
                 if (ext)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
 
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     /* meta argument change */

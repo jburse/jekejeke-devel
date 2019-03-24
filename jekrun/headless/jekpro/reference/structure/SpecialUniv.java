@@ -131,7 +131,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (!en.unifyTerm(temp[3], ref, sc, d))
                             return false;
                         if (multi)
-                            BindUniv.remTab(d.bind, en);
+                            d.remTab(en);
                         return true;
                     } else if (en.skel instanceof SkelAtom) {
                         return false;
@@ -169,7 +169,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_TERM_TO_LIST:
                     temp = ((SkelCompound) en.skel).args;

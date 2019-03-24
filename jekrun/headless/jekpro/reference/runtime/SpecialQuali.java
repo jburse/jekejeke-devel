@@ -101,7 +101,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
@@ -127,7 +127,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
@@ -740,7 +740,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         }
         if (ext)
-            BindUniv.remTab(d2.bind, en);
+            d2.remTab(en);
         en.display = d4;
         if (multi) {
             return new SkelCompound(sa, args, vars);

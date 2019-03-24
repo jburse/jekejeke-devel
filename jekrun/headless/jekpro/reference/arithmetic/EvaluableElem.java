@@ -88,7 +88,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = neg(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -100,7 +100,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = alfa;
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -112,7 +112,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = abs(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -124,7 +124,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = sign(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -136,7 +136,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = (alfa instanceof Double ? alfa :
                             TermAtomic.makeDouble(alfa.doubleValue()));
                     en.display = Display.DISPLAY_CONST;
@@ -149,7 +149,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = decimal(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -161,7 +161,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = (alfa instanceof Float ? alfa :
                             TermAtomic.makeFloat(alfa.floatValue()));
                     en.display = Display.DISPLAY_CONST;
@@ -174,13 +174,13 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = add(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -192,13 +192,13 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = sub(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -210,13 +210,13 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = mul(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -228,13 +228,13 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = TermAtomic.makeDouble(slash(alfa, beta));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -246,13 +246,13 @@ public final class EvaluableElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     SpecialEval.checkNotLessThanZero(beta);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = intPow(alfa, x);

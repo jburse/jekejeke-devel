@@ -168,7 +168,7 @@ abstract class AbstractMember extends AbstractLense
                 boolean multi = d.getAndReset();
                 args[i] = Types.denormProlog(typ, en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 k++;
             }
         }

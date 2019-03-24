@@ -287,14 +287,14 @@ public final class CallIn {
             boolean ext = ref.getAndReset();
             boolean multi = en.wrapGoal();
             if (multi && ext)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi || ext)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref2.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref2;

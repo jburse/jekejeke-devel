@@ -98,7 +98,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_TERM_SINGELTONS:
                     temp = ((SkelCompound) en.skel).args;
@@ -113,7 +113,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_GOAL_KERNEL:
                     temp = ((SkelCompound) en.skel).args;
@@ -135,7 +135,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_NUMBERVARS:
                     temp = ((SkelCompound) en.skel).args;
@@ -157,7 +157,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
@@ -170,7 +170,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[0], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_ACYCLIC_TERM:
                     temp = ((SkelCompound) en.skel).args;
@@ -193,7 +193,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

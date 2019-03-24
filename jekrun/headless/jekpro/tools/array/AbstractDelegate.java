@@ -130,7 +130,7 @@ public abstract class AbstractDelegate {
         if (!en.unifyTerm(temp.args[temp.args.length - 1], ref, en.skel, d))
             return false;
         if (multi)
-            BindUniv.remTab(d.bind, en);
+            d.remTab(en);
         return true;
     }
 
@@ -258,7 +258,7 @@ public abstract class AbstractDelegate {
                 boolean ext = d.getAndReset();
                 ref.bind[sv.id].bindUniv(temp, d, en);
                 if (ext)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 args[i] = sv;
             } else {
                 args[i] = temp;
@@ -287,7 +287,7 @@ public abstract class AbstractDelegate {
         ref2.def = clause;
         ref2.bind[0].bindUniv(en.skel, ref, en);
         if (multi)
-            BindUniv.remTab(ref.bind, en);
+            ref.remTab(en);
         ref2.setEngine(en);
         en.contskel = clause;
         en.contdisplay = ref2;

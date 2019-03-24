@@ -171,7 +171,7 @@ final class MemberMethodNondet extends AbstractMember {
                 co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
                 if (ext)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
 
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
                     ChoiceForeign cp = new ChoiceForeign(en.choices);

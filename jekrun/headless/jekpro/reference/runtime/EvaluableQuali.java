@@ -85,7 +85,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 boolean ext = ref.getAndReset();
                 en.computeExpr(en.skel, ref);
                 if (ext)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 return;
             case EVALUABLE_COLONCOLON:
                 temp = (SkelCompound) en.skel;
@@ -105,7 +105,7 @@ public final class EvaluableQuali extends AbstractSpecial {
                 ext = ref.getAndReset();
                 en.computeExpr(en.skel, ref);
                 if (ext)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 return;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

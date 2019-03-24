@@ -131,7 +131,7 @@ public final class SpecialMember extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_TERM_TO_FUNCTOR:
                     temp = ((SkelCompound) en.skel).args;

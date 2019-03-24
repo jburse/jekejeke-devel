@@ -157,7 +157,7 @@ final class MemberMethodDet extends AbstractMember {
                         AbstractTerm.getSkel(res), d))
             return false;
         if (ext)
-            BindUniv.remTab(d.bind, en);
+            d.remTab(en);
         return true;
     }
 

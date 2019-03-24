@@ -93,13 +93,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 boolean multi = d.getAndReset();
                 Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (!SpecialCompare.testEq(alfa, beta))
                     return false;
                 return true;
@@ -111,13 +111,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (SpecialCompare.testEq(alfa, beta))
                     return false;
                 return true;
@@ -129,13 +129,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (SpecialCompare.computeCmp(alfa, beta) >= 0)
                     return false;
                 return true;
@@ -147,13 +147,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
                     return false;
                 return true;
@@ -165,13 +165,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return true;
@@ -183,13 +183,13 @@ public final class SpecialCompare extends AbstractSpecial {
                 multi = d.getAndReset();
                 alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 en.computeExpr(temp[1], ref);
                 d = en.display;
                 multi = d.getAndReset();
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 if (SpecialCompare.computeCmp(alfa, beta) < 0)
                     return false;
                 return true;

@@ -81,7 +81,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = not(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -93,13 +93,13 @@ public final class EvaluableBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = and(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -111,13 +111,13 @@ public final class EvaluableBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = or(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -129,13 +129,13 @@ public final class EvaluableBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = xor(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -147,13 +147,13 @@ public final class EvaluableBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = shiftLeft(alfa, x);
                     en.display = Display.DISPLAY_CONST;
@@ -166,13 +166,13 @@ public final class EvaluableBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     x = SpecialEval.castIntValue(beta);
                     en.skel = shiftRight(alfa, x);
                     en.display = Display.DISPLAY_CONST;
