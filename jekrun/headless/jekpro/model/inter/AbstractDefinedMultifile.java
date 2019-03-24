@@ -50,8 +50,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -84,13 +84,13 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             clause = list[at++];
             if (dc == null) {
                 dc = new DisplayClause(clause.dispsize);
-            } else {
-                dc.bind = BindUniv.resizeUniv(clause.dispsize, dc.bind);
+            } else if (dc.bind.length != clause.dispsize) {
+                dc.setSize(clause.dispsize);
             }
             dc.def = clause;
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.head).args, dc,
+                            ((SkelCompound) clause.term).args, dc,
                             clause.intargs, en))
                 break;
 
@@ -110,22 +110,20 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                 throw en.fault;
         }
         DisplayClause u = en.contdisplay;
-//        dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : dc);
         dc.contskel = en.contskel;
         dc.contdisplay = u;
 
-        int nextat = at;
-        while (nextat != list.length) {
-            if (multiVisible(list[nextat], en))
+        while (at != list.length) {
+            if (multiVisible(list[at], en))
                 break;
-            nextat++;
+            at++;
         }
 
-        if (nextat != list.length) {
+        if (at != list.length) {
             /* create choice point */
-            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark, nextat);
+            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark);
             en.number++;
             dc.flags |= DisplayClause.MASK_DPCL_MORE;
         }
@@ -138,8 +136,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * <p>Perform the search inside the delegate.</p></ü>
      *
      * @param flags   The flags.
-     * @param head    The head skeleton.
-     * @param refhead The head display.
+     * @param head    The term skeleton.
+     * @param refhead The term display.
      * @param temp    The arguments skeleton.
      * @param ref     The arguments display.
      * @param en      The engine.
@@ -173,12 +171,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             clause = list[at++];
             if (ref1 == null) {
                 ref1 = new Display(clause.size);
-            } else {
-                ref1.bind = BindUniv.resizeUniv(clause.size, ref1.bind);
+            } else if (ref1.bind.length != clause.size) {
+                ref1.setSize(clause.size);
             }
-            if (!(clause.head instanceof SkelCompound) ||
+            if (!(clause.term instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, ref1, en)) {
+                            ((SkelCompound) clause.term).args, ref1, en)) {
                 Object end = PreClause.intermediateToBody(clause.next, en.store);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
@@ -220,7 +218,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceInspectMultifile(en.choices, at, list,
-                    flags, (Goal) en.contskel, en.contdisplay,
+                    flags, en.contskel, en.contdisplay,
                     ref1, mark);
             en.number++;
         }
@@ -236,7 +234,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * @return True if the clause is multifile visible.
      */
     static boolean multiVisible(Clause clause, Engine en) {
-        SkelAtom sa = StackElement.callableToName(clause.head);
+        SkelAtom sa = StackElement.callableToName(clause.term);
         return Clause.ancestorSource(sa.scope, en);
     }
 

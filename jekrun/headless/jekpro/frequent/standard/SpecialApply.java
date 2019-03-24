@@ -63,8 +63,8 @@ public final class SpecialApply extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -113,7 +113,7 @@ public final class SpecialApply extends AbstractSpecial {
     }
 
     /**
-     * <p>Extend the given goal.</p>
+     * <p>Extend the given term.</p>
      * <p>The argument is passed in skel and display.</p>
      * <p>Result is returned in skel and display.</p>
      *
@@ -183,8 +183,8 @@ public final class SpecialApply extends AbstractSpecial {
      * <p>Count the needed variable place holders.</p>
      * <p>The reused or new display is returned in the engine copy display.</p>
      *
-     * @param t  The goal skel.
-     * @param d  The goal display.
+     * @param t  The term skel.
+     * @param d  The term display.
      * @param t2 The extend skel.
      * @param d2 The extend display.
      * @param en The engine.
@@ -225,8 +225,8 @@ public final class SpecialApply extends AbstractSpecial {
      * <p>The reused or new display is returned in the engine display.</p>
      *
      * @param sa    The symbol.
-     * @param t     The goal skel.
-     * @param d     The goal display.
+     * @param t     The term skel.
+     * @param d     The term display.
      * @param t2    The extend skel.
      * @param d2    The extend display.
      * @param multi The multi flag.
@@ -281,8 +281,8 @@ public final class SpecialApply extends AbstractSpecial {
      * <p>Count the needed variable place holders.</p>
      * <p>The reused or new display is returned in the engine display.</p>
      *
-     * @param t     The goal skel.
-     * @param d     The goal display.
+     * @param t     The term skel.
+     * @param d     The term display.
      * @param t2    The extend arguments.
      * @param d2    The extend display.
      * @param slice The slice length.
@@ -338,8 +338,8 @@ public final class SpecialApply extends AbstractSpecial {
      * <p>The reused or new display is returned in the engine display.</p>
      *
      * @param sa    The symbol.
-     * @param t     The goal skel.
-     * @param d     The goal display.
+     * @param t     The term skel.
+     * @param d     The term display.
      * @param t2    The extend arguments.
      * @param d2    The extend display.
      * @param slice The slice length.

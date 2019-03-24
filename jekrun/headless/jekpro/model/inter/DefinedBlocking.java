@@ -94,7 +94,7 @@ final class DefinedBlocking extends AbstractDefined {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
-            SkelAtom sa = StackElement.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.term);
             if (scope == sa.scope)
                 retractClause(clause, null);
         }
@@ -135,10 +135,10 @@ final class DefinedBlocking extends AbstractDefined {
     }
 
     /**
-     * <p>Retrieve a clause list for the given goal.</p>
+     * <p>Retrieve a clause list for the given term.</p>
      *
-     * @param m  The goal skel.
-     * @param d  The goal display.
+     * @param m  The term skel.
+     * @param d  The term display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */

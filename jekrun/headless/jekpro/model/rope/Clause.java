@@ -53,7 +53,6 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final static int MASK_CLAUSE_NHED = 0x00000400;
     public final static int MASK_CLAUSE_NOBR = 0x00000800;
 
-    public Object head;
     public int dispsize;
     public int[] intargs;
     public int size;
@@ -87,11 +86,12 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final boolean resolveNext(Engine en) {
         DisplayClause u = en.contdisplay;
         if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
-                u.number + 1 : u.number) >= en.number && (u.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
-            int n = ((flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : dispsize);
-            if (0 < n)
-                BindUniv.remTab(u.bind, en);
-            u.flags |= DisplayClause.MASK_DPCL_LTGC;
+                u.number + 1 : u.number) >= en.number) {
+            if ((u.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
+                if ((flags & Clause.MASK_CLAUSE_NBDY) == 0 && dispsize > 0)
+                    BindUniv.remTab(u.bind, en);
+                u.flags |= DisplayClause.MASK_DPCL_LTGC;
+            }
         }
 
         if ((flags & Clause.MASK_CLAUSE_STOP) != 0) {
@@ -112,7 +112,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      * <p>Convert a vector of goals to a list of goals.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param vec  The goal list.
+     * @param vec  The term list.
      * @param vars The helper.
      * @param en   The engine.
      */
@@ -175,7 +175,7 @@ public class Clause extends Intermediate implements InterfaceReference {
         ListArray<Object> body = PreClause.clauseToBody(molec);
         if (vars.length != 0) {
             /* analyze the variables */
-            OptimizationVar.setStructureAndMinArg(head, this, vars);
+            OptimizationVar.setStructureAndMinArg(term, this, vars);
             if (body != null) {
                 for (int i = 0; i < body.size(); i++)
                     OptimizationVar.setMaxGoal(body.get(i), i, vars);
@@ -187,7 +187,7 @@ public class Clause extends Intermediate implements InterfaceReference {
 
         /* build the clause */
         vectorToList(body, vars, en);
-        intargs = OptimizationArray.unifyArgs(head, vars);
+        intargs = OptimizationArray.unifyArgs(term, vars);
     }
 
     /**********************************************************/

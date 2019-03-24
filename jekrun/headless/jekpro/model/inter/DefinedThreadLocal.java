@@ -97,10 +97,10 @@ final class DefinedThreadLocal extends AbstractDefined {
     }
 
     /**
-     * <p>Retrieve a clause list for the given goal.</p>
+     * <p>Retrieve a clause list for the given term.</p>
      *
-     * @param m  The goal skel.
-     * @param d  The goal display.
+     * @param m  The term skel.
+     * @param d  The term display.
      * @param en The engine.
      */
     final Clause[] definedClauses(Object m, Display d, Engine en) {

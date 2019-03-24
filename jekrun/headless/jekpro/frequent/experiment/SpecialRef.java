@@ -77,8 +77,8 @@ public final class SpecialRef extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -201,10 +201,10 @@ public final class SpecialRef extends AbstractSpecial {
 
     /**
      * <p>Compile a new clause.</p>
-     * <p>The goal is passed via the engine skel and display.</p>
+     * <p>The term is passed via the engine skel and display.</p>
      * <p>The following flags are recognized:</p>
      * <ul>
-     * <li><b>OPT_ARGS_ASOP:</b> The goal has assert options.</li>
+     * <li><b>OPT_ARGS_ASOP:</b> The term has assert options.</li>
      * <li><b>MASK_OPER_DYNA:</b> Predicate should be dynamic.</li>
      * <li><b>MASK_OPER_THRE:</b> Predicate should be thread_local.</li>
      * </ul>

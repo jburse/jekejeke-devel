@@ -39,6 +39,7 @@ public abstract class Intermediate {
     public final static int MASK_INTER_NLST = 0x00000002;
 
     public Intermediate next;
+    public Object term;
     public int flags;
 
     /**********************************************************/
@@ -46,18 +47,18 @@ public abstract class Intermediate {
     /**********************************************************/
 
     /**
-     * <p>Retrieve the next goal depending on debug mode.</p>
+     * <p>Retrieve the next term depending on debug mode.</p>
      * <p>Should be implemented by subclasses.</p>
      *
      * @param en The engine.
-     * @return The next goal.
+     * @return The next term.
      */
     public Intermediate getNextRaw(Engine en) {
         return next;
     }
 
     /**
-     * <p>Resolve the current goal.</p>
+     * <p>Resolve the current term.</p>
      *
      * @param en The engine.
      * @return The delegate.

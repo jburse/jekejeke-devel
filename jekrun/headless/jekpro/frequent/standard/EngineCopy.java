@@ -124,15 +124,13 @@ public final class EngineCopy {
                 break;
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back!=null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
-        } while (back != null);
+        }
         return t;
     }
 
@@ -163,7 +161,7 @@ public final class EngineCopy {
     /**************************************************************************/
 
     /**
-     * <p>Copy the goal and wrap naked calls.</p>
+     * <p>Copy the term and wrap naked calls.</p>
      * <p>Implements the following rules:</p>
      * <pre>
      *      copyGoalAndWrap(V) --> call(V)
@@ -175,10 +173,10 @@ public final class EngineCopy {
      * </pre>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t  The goal skel.
-     * @param d  The goal display.
+     * @param t  The term skel.
+     * @param d  The term display.
      * @param en The engine.
-     * @return A copy of the goal with wrapped naked calls.
+     * @return A copy of the term with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
@@ -252,15 +250,13 @@ public final class EngineCopy {
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back!=null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
-        } while (back != null);
+        }
         return t;
     }
 
@@ -280,7 +276,7 @@ public final class EngineCopy {
      * @param t  The term skel.
      * @param d  The term display.
      * @param en The engine.
-     * @return A copy of the goal with wrapped naked calls.
+     * @return A copy of the term with wrapped naked calls.
      * @throws EngineMessage   Some non callable encountered.
      * @throws EngineException Some non callable encountered.
      */
@@ -340,15 +336,13 @@ public final class EngineCopy {
                 break;
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back!=null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
-        } while (back != null);
+        }
         return t;
     }
 
@@ -394,15 +388,13 @@ public final class EngineCopy {
                 break;
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back!=null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
-        } while (back != null);
+        }
         return t;
     }
 

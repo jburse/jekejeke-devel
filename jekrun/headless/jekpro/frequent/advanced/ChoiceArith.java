@@ -5,6 +5,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -44,7 +45,7 @@ import jekpro.tools.term.SkelVar;
  */
 final class ChoiceArith extends AbstractChoice {
     private Number cur;
-    private final Goal goalskel;
+    private final Intermediate goalskel;
     private final DisplayClause goaldisplay;
     private final AbstractUndo mark;
     private final int id;
@@ -57,7 +58,7 @@ final class ChoiceArith extends AbstractChoice {
      *          @param i The function code.
      */
     ChoiceArith(AbstractChoice n,
-                Number c, Goal r, DisplayClause u,
+                Number c, Intermediate r, DisplayClause u,
                 AbstractUndo m, int i) {
         super(n);
         goalskel = r;
@@ -68,7 +69,7 @@ final class ChoiceArith extends AbstractChoice {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for an additional time.</p>
+     * <p>Logically evaluate a term in a list of goals for an additional time.</p>
      * <p>The result is returned via the skel and display of the engine.</p>
      * <p>A new exception sliding window is returned via the engine display.</p>
      *
@@ -91,8 +92,8 @@ final class ChoiceArith extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        Goal ir = goalskel;
-        Object t = ir.goal;
+        Intermediate ir = goalskel;
+        Object t = ir.term;
         Display d = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
@@ -157,7 +158,7 @@ final class ChoiceArith extends AbstractChoice {
     }
 
     /**
-     * <p>Free data used to logically evaluate a goal an additional time.</p>
+     * <p>Free data used to logically evaluate a term an additional time.</p>
      * <p>The current exception and sliding window are passed via the engine skel and display.</p>
      * <p>The new current exception and sliding window are returned via the engine skel and display.</p>
      *

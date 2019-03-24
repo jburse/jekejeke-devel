@@ -74,6 +74,7 @@ public class BindUniv extends AbstractUndo {
             Object var = EngineCopy.getVar(t);
             if (var == null)
                 break;
+            BindUniv[] b = d.bind;
             SkelVar v;
             if (var instanceof SkelVar) {
                 v = (SkelVar) var;
@@ -82,7 +83,7 @@ public class BindUniv extends AbstractUndo {
                 int i = 0;
                 for (; i < temp.length - 1; i++) {
                     v = temp[i];
-                    bc = d.bind[v.id];
+                    bc = b[v.id];
                     int j = bc.refs;
                     if (j == 0) {
                         if (bc.display != null)
@@ -93,7 +94,7 @@ public class BindUniv extends AbstractUndo {
                 }
                 v = temp[i];
             }
-            bc = d.bind[v.id];
+            bc = b[v.id];
             int j = bc.refs;
             if (j == 0) {
                 if (bc.display != null)
@@ -140,16 +141,17 @@ public class BindUniv extends AbstractUndo {
         Object var = EngineCopy.getVar(t);
         if (var == null)
             return;
+        BindUniv[] b = d.bind;
         if (var instanceof SkelVar) {
             SkelVar v = (SkelVar) var;
-            BindUniv bc = d.bind[v.id];
+            BindUniv bc = b[v.id];
             bc.refs++;
         } else {
             SkelVar[] temp = (SkelVar[]) var;
             int n = temp.length;
             for (int j = 0; j < n; j++) {
                 SkelVar v = temp[j];
-                BindUniv bc = d.bind[v.id];
+                BindUniv bc = b[v.id];
                 bc.refs++;
             }
         }
@@ -162,9 +164,7 @@ public class BindUniv extends AbstractUndo {
      * @param en The engine.
      */
     public static void remTab(BindUniv[] b, Engine en) {
-        int n = b.length;
-        int k = 0;
-        do {
+        for (int k = 0; k < b.length; k++) {
             BindUniv bc = b[k];
             int j = bc.refs;
             if (j == 0) {
@@ -173,36 +173,7 @@ public class BindUniv extends AbstractUndo {
             } else {
                 bc.refs = j - 1;
             }
-            k++;
-        } while (k < n);
-    }
-
-    /**
-     * <p>Set the bind size.</p>
-     * <p>Refill the binds with bind lexical.</p>
-     *
-     * @param s The bind size.
-     * @param b The display
-     * @return The new display.
-     */
-    public static BindUniv[] resizeUniv(int s, BindUniv[] b) {
-        int n = (b != null ? b.length : 0);
-        if (n != s) {
-            if (s == 0) {
-                b = BIND_CONST;
-            } else {
-                BindUniv[] newbind = new BindUniv[s];
-                n = Math.min(n, s);
-                if (n != 0)
-                    System.arraycopy(b, 0, newbind, 0, n);
-                b = newbind;
-            }
         }
-        for (int i = 0; i < s; i++) {
-            if (b[i] == null)
-                b[i] = new BindUniv();
-        }
-        return b;
     }
 
 }

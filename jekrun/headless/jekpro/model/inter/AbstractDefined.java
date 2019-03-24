@@ -257,8 +257,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /*************************************************************/
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -286,13 +286,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
             clause = list[at++];
             if (dc == null) {
                 dc = new DisplayClause(clause.dispsize);
-            } else {
-                dc.bind = BindUniv.resizeUniv(clause.dispsize, dc.bind);
+            } else if (dc.bind.length != clause.dispsize) {
+                dc.setSize(clause.dispsize);
             }
             dc.def = clause;
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.head).args, dc,
+                            ((SkelCompound) clause.term).args, dc,
                             clause.intargs, en))
                 break;
 
@@ -324,12 +324,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /**
-     * <p>Unify the head of the clause with the given goal.</p>
+     * <p>Unify the term of the clause with the given term.</p>
      *
-     * @param t1   The goal skeleton arguments.
-     * @param ref  The goal display.
-     * @param t2   The cause head skeleton arguments.
-     * @param ref2 The cause head display.
+     * @param t1   The term skeleton arguments.
+     * @param ref  The term display.
+     * @param t2   The cause term skeleton arguments.
+     * @param ref2 The cause term display.
      * @param arr  The unify instructions.
      * @param en   The engine.
      * @return True if the unification was successful, otherwise false.
@@ -367,10 +367,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage;
 
     /**
-     * <p>Retrieve a clause list for the given goal.</p>
+     * <p>Retrieve a clause list for the given term.</p>
      *
-     * @param m  The goal skel.
-     * @param d  The goal display.
+     * @param m  The term skel.
+     * @param d  The term display.
      * @param en The engine.
      * @return The clauses, or null.
      */
@@ -424,10 +424,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     /**
      * <p>Enhance the knowledge base by a new clause.</p>
-     * <p>The goal is passed via the engine skel and display.</p>
+     * <p>The term is passed via the engine skel and display.</p>
      * <p>UInderstood flags:</p>
      * <ul>
-     * <li><b>OPT_ARGS_ASOP:</b> The goal has assert options.</li>
+     * <li><b>OPT_ARGS_ASOP:</b> The term has assert options.</li>
      * <li><b>MASK_OPER_DYNA:</b> Predicate should be dynamic.</li>
      * <li><b>MASK_OPER_THRE:</b> Predicate should be thread_local.</li>
      * <li><b>OPT_ACTI_BOTT:</b> The clause should be added at the end.</li>
@@ -465,7 +465,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     /**
      * <p>Search the knowledge base.</p>
-     * <p>The search goal is passed via the engine skel and display.</p>
+     * <p>The search term is passed via the engine skel and display.</p>
      * <p>The following flags are recognized:</p>
      * <ul>
      * <li><b>OPT_ACTI_RETR:</b> Retract found clauses and one term argument.</li>
@@ -485,7 +485,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        /* detect head and body */
+        /* detect term and body */
         SpecialQuali.colonToCallable(temp[0], ref, true, en);
         Object head = en.skel;
         Display refhead = en.display;
@@ -530,8 +530,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * <p>Perform the search inside the delegate.</p></ü>
      *
      * @param flags   The flags.
-     * @param head    The head skeleton.
-     * @param refhead The head display.
+     * @param head    The term skeleton.
+     * @param refhead The term display.
      * @param temp    The arguments skeleton.
      * @param ref     The arguments display.
      * @param en      The engine.
@@ -560,12 +560,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             clause = list[at++];
             if (ref1 == null) {
                 ref1 = new Display(clause.size);
-            } else {
-                ref1.bind = BindUniv.resizeUniv(clause.size, ref1.bind);
+            } else if (ref1.bind.length != clause.size) {
+                ref1.setSize(clause.size);
             }
-            if (!(clause.head instanceof SkelCompound) ||
+            if (!(clause.term instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, ref1, en)) {
+                            ((SkelCompound) clause.term).args, ref1, en)) {
                 Object end = PreClause.intermediateToBody(clause.next, en.store);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
@@ -596,7 +596,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceInspect(en.choices, at, list,
-                    flags, (Goal) en.contskel, en.contdisplay,
+                    flags, en.contskel, en.contdisplay,
                     ref1, mark);
             en.number++;
         }
@@ -605,11 +605,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /**
-     * <p>Unify the head args.</p>
+     * <p>Unify the term args.</p>
      *
-     * @param t1   The head skeleton arguments.
-     * @param ref  The head display.
-     * @param t2   The clause head skeleton arguments.
+     * @param t1   The term skeleton arguments.
+     * @param ref  The term display.
+     * @param t2   The clause term skeleton arguments.
      * @param ref2 The clause display.
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.

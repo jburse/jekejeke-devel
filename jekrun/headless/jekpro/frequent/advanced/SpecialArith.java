@@ -54,8 +54,8 @@ public final class SpecialArith extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -79,7 +79,7 @@ public final class SpecialArith extends AbstractSpecial {
                         if (res != 0) {
                             /* create choice point */
                             en.choices = new ChoiceArith(en.choices, num1,
-                                    (Goal) en.contskel, en.contdisplay, mark, id);
+                                    en.contskel, en.contdisplay, mark, id);
                             en.number++;
                         }
                         return true;
@@ -104,7 +104,7 @@ public final class SpecialArith extends AbstractSpecial {
                     if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {
                         /* create choice point */
                         en.choices = new ChoiceArith(en.choices, num1,
-                                (Goal) en.contskel, en.contdisplay, mark, id);
+                                en.contskel, en.contdisplay, mark, id);
                         en.number++;
                         return true;
                     }

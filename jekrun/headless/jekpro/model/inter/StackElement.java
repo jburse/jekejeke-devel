@@ -95,12 +95,12 @@ public class StackElement implements InterfaceStack {
     }
 
     /**
-     * <p>Check whether the goal is no trace.</p>
+     * <p>Check whether the term is no trace.</p>
      *
      * @param r  The continuation skeleton.
      * @param u  The continuation display.
      * @param en The engine.
-     * @return True if the goal is no trace, otherwise false.
+     * @return True if the term is no trace, otherwise false.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
@@ -124,7 +124,7 @@ public class StackElement implements InterfaceStack {
     }
 
     /**
-     * <p>Determine the goal of a frame.</p>
+     * <p>Determine the term of a frame.</p>
      * <p>The result is return in skel and display.</p>
      *
      * @param r  The frame skeleton.
@@ -133,15 +133,14 @@ public class StackElement implements InterfaceStack {
      */
     public static void callGoal(Intermediate r, DisplayClause u, Engine en) {
         if (r instanceof Goal) {
-            Goal cont = (Goal) r;
-            en.skel = cont.goal;
+            en.skel = r.term;
             en.display = u;
-            if ((cont.flags & Goal.MASK_GOAL_NAKE) != 0)
+            if ((r.flags & Goal.MASK_GOAL_NAKE) != 0)
                 en.deref();
         } else if (r instanceof Clause) {
             callGoal(u.contskel, u.contdisplay, en);
             Clause clause = (Clause) r;
-            SkelAtom sa = StackElement.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.term);
             en.skel = StackElement.callableFromName(en.skel, sa);
         } else {
             en.skel = null;
@@ -156,7 +155,7 @@ public class StackElement implements InterfaceStack {
     /**
      * <p>Retrieve the principal name.</p>
      *
-     * @param t The goal skeleton.
+     * @param t The term skeleton.
      * @return The name, or null.
      */
     public static SkelAtom callableToName(Object t) {
@@ -192,11 +191,11 @@ public class StackElement implements InterfaceStack {
     /******************************************************************/
 
     /**
-     * <p>Lookup the predicate of this goal.</p>
+     * <p>Lookup the predicate of this term.</p>
      * <p>This conversion must be preceded by dereferencing.</p>
      * <p>Will cache the found predicate.</p>
      *
-     * @param t  The goal skeleton.
+     * @param t  The term skeleton.
      * @param en The engine.
      * @return The predicate, or null.
      * @throws EngineMessage   Shit happens.
@@ -219,7 +218,7 @@ public class StackElement implements InterfaceStack {
     /**
      * <p>Retrieve the principal length.</p>
      *
-     * @param t The goal skeleton.
+     * @param t The term skeleton.
      * @return The length, or -1.
      */
     public static int callableToArity(Object t) {
@@ -235,7 +234,7 @@ public class StackElement implements InterfaceStack {
     /**
      * <p>Retrieve a store key.</p>
      *
-     * @param t The goal skeleton.
+     * @param t The term skeleton.
      * @return The store key, or null.
      */
     public static StoreKey callableToStoreKey(Object t) {

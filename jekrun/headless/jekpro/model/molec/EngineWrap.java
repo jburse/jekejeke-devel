@@ -50,7 +50,7 @@ public final class EngineWrap {
     /**************************************************************************/
 
     /**
-     * <p>Count the bridge variables of a goal.</p>
+     * <p>Count the bridge variables of a term.</p>
      * <p>The reused or new display is updated in the engine copy display.</p>
      * <p>Tail recursive implementation.</p>
      *
@@ -234,14 +234,14 @@ public final class EngineWrap {
     /**************************************************************************/
 
     /**
-     * <p>Replace the goal skeleton and wrap naked calls.</p>
+     * <p>Replace the term skeleton and wrap naked calls.</p>
      * <p>The reused or new display is kept via the engine copy display.</p>
      * <p>Tail recursive implementation.</p>
      *
-     * @param t  The goal skeleton.
-     * @param d  The goal display..
+     * @param t  The term skeleton.
+     * @param d  The term display..
      * @param en The engine.
-     * @return The new goal skeleton.
+     * @return The new term skeleton.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
@@ -316,15 +316,13 @@ public final class EngineWrap {
                 break;
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back != null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
-        } while (back != null);
+        }
         return t;
     }
 
@@ -400,15 +398,13 @@ public final class EngineWrap {
                 break;
             }
         }
-        if (back == null)
-            return t;
-        do {
+        while (back != null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = help;
-        } while (back != null);
+        }
         return t;
     }
 

@@ -7,6 +7,7 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
 
@@ -59,8 +60,8 @@ public final class SpecialControl extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -110,7 +111,7 @@ public final class SpecialControl extends AbstractSpecial {
     }
 
     /**
-     * <p>Invoke a goal and handle exceptions.</p>
+     * <p>Invoke a term and handle exceptions.</p>
      *
      * @param en The engine.
      * @return True fi the predicate succeeded, otherwise false.
@@ -119,7 +120,7 @@ public final class SpecialControl extends AbstractSpecial {
      */
     private boolean invokeTrap(Engine en)
             throws EngineException, EngineMessage {
-        Goal r = (Goal) en.contskel;
+        Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         AbstractUndo mark = en.bind;
         int snap = en.number;
@@ -171,7 +172,7 @@ public final class SpecialControl extends AbstractSpecial {
      */
     public static boolean handleException(Engine en)
             throws EngineException, EngineMessage {
-        Goal r = (Goal) en.contskel;
+        Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         EngineException y = en.fault;
         StackElement.callGoal(r, u, en);
