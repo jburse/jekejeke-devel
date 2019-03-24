@@ -98,9 +98,9 @@ public final class SpecialQuali extends AbstractSpecial {
                 boolean ext = ref.getAndReset();
                 Clause clause = en.store.foyer.CLAUSE_TRAN;
                 DisplayClause ref2 = new DisplayClause(
-                        DisplayClause.newClause(clause.dispsize));
+                        BindUniv.newUniv(clause.dispsize));
                 ref2.def = clause;
-                ref2.addArgument(en.skel, ref, en);
+                ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
@@ -125,9 +125,9 @@ public final class SpecialQuali extends AbstractSpecial {
                 ext = ref.getAndReset();
                 clause = en.store.foyer.CLAUSE_TRAN;
                 ref2 = new DisplayClause(
-                        DisplayClause.newClause(clause.dispsize));
+                        BindUniv.newUniv(clause.dispsize));
                 ref2.def = clause;
-                ref2.addArgument(en.skel, ref, en);
+                ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);

@@ -76,24 +76,22 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             at++;
         }
 
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         Clause clause;
         DisplayClause dc = null;
-        int lastalloc;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (dc == null) {
-                dc = new DisplayClause(DisplayClause.newClause(clause.dispsize));
+                dc = new DisplayClause(BindUniv.newUniv(clause.dispsize));
             } else {
-                dc.bind = DisplayClause.resizeClause(clause.dispsize, dc.bind);
+                dc.bind = BindUniv.resizeUniv(clause.dispsize, dc.bind);
             }
             dc.def = clause;
-            lastalloc = (clause.intargs != null ?
+            if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                             ((SkelCompound) clause.head).args, dc,
-                            clause.intargs, en) : 0);
-            if (lastalloc != -1)
+                            clause.intargs, en))
                 break;
 
             /* end of cursor */
@@ -112,7 +110,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                 throw en.fault;
         }
         DisplayClause u = en.contdisplay;
-        dc.lastalloc = lastalloc;
+//        dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : dc);
         dc.contskel = en.contskel;
@@ -166,7 +164,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             at++;
         }
 
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         Clause clause;
         Display ref1 = null;
         boolean ext = refhead.getAndReset();
@@ -174,9 +172,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         for (; ; ) {
             clause = list[at++];
             if (ref1 == null) {
-                ref1 = new Display(BindLexical.newLexical(clause.size));
+                ref1 = new Display(BindUniv.newUniv(clause.size));
             } else {
-                ref1.bind = BindLexical.resizeLexical(clause.size, ref1.bind);
+                ref1.bind = BindUniv.resizeUniv(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,

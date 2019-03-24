@@ -229,7 +229,7 @@ public abstract class AbstractDelegate {
             if (EngineCopy.getVar(temp) != null)
                 countvar++;
         }
-        return new Display(BindUniv.newUnivLexical(countvar, 1));
+        return new Display(BindUniv.newUniv(countvar + 1));
     }
 
     /**
@@ -283,9 +283,9 @@ public abstract class AbstractDelegate {
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
         DisplayClause ref2 = new DisplayClause(
-                DisplayClause.newClause(clause.dispsize));
+                BindUniv.newUniv(clause.dispsize));
         ref2.def = clause;
-        ref2.addArgument(en.skel, ref, en);
+        ref2.bind[0].bindUniv(en.skel, ref, en);
         if (multi)
             BindUniv.remTab(ref.bind, en);
         ref2.setEngine(en);

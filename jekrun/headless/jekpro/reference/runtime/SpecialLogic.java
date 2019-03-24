@@ -2,6 +2,7 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
@@ -97,9 +98,9 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause(
-                        DisplayClause.newClause(clause.dispsize));
+                        BindUniv.newUniv(clause.dispsize));
                 ref2.def = clause;
-                ref2.addArgument(en.skel, en.display, en);
+                ref2.bind[0].bindUniv(en.skel, en.display, en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;

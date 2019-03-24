@@ -278,24 +278,22 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at == list.length)
             return false;
 
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         Clause clause;
         DisplayClause dc = null;
-        int lastalloc;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (dc == null) {
-                dc = new DisplayClause(DisplayClause.newClause(clause.dispsize));
+                dc = new DisplayClause(BindUniv.newUniv(clause.dispsize));
             } else {
-                dc.bind = DisplayClause.resizeClause(clause.dispsize, dc.bind);
+                dc.bind = BindUniv.resizeUniv(clause.dispsize, dc.bind);
             }
             dc.def = clause;
-            lastalloc = (clause.intargs != null ?
+            if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
                             ((SkelCompound) clause.head).args, dc,
-                            clause.intargs, en) : 0);
-            if (lastalloc != -1)
+                            clause.intargs, en))
                 break;
 
             /* end of cursor */
@@ -309,7 +307,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 throw en.fault;
         }
         DisplayClause u = en.contdisplay;
-        dc.lastalloc = lastalloc;
         dc.number = en.number;
         dc.prune = ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : dc);
         dc.contskel = en.contskel;
@@ -338,28 +335,22 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static int unifyDefined(Object[] t1, Display ref,
-                            Object[] t2, Display ref2,
-                            int[] arr,
-                            Engine en)
+    static boolean unifyDefined(Object[] t1, Display ref,
+                                Object[] t2, Display ref2,
+                                int[] arr,
+                                Engine en)
             throws EngineException {
-        int k = 0;
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
-            if (n < 0) {
-                if (n != Integer.MIN_VALUE)
-                    if (!en.unifyTerm(t1[-n - 1], ref, t1[i], ref))
-                        return -1;
-            } else {
-                if (k < n) {
-                    Clause.newBind(k, n, ref2.bind);
-                    k = n;
-                }
+            if (n >= 0) {
+                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
+                    return false;
+            } else if (n != -2) {
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
-                    return -1;
+                    return false;
             }
         }
-        return k;
+        return true;
     }
 
     /*************************************************************/
@@ -560,7 +551,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at == list.length)
             return false;
 
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         Clause clause;
         Display ref1 = null;
         boolean ext = refhead.getAndReset();
@@ -568,9 +559,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (ref1 == null) {
-                ref1 = new Display(BindLexical.newLexical(clause.size));
+                ref1 = new Display(BindUniv.newUniv(clause.size));
             } else {
-                ref1.bind = BindLexical.resizeLexical(clause.size, ref1.bind);
+                ref1.bind = BindUniv.resizeUniv(clause.size, ref1.bind);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,

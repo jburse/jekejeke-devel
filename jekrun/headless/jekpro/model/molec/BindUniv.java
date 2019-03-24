@@ -35,29 +35,23 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class BindUniv {
+public class BindUniv extends AbstractUndo {
     public final static BindUniv[] BIND_CONST = new BindUniv[0];
 
     public Object skel;
     public Display display;
-    public int refs = 1;
+    public int refs;
+    public int serno = -1;
 
     /**
-     * <p>Remove this bind from the engine.</p>
+     * <p>Restore state as desired and remove bind from the engine.</p>
+     * <p>The current exception is passed via the engine skel.</p>
+     * <p>The new current exception is returned via the engine skel.</p>
      *
      * @param en The engine.
      */
-    void removeBind(Engine en) {
-        /* do nothing */
-    }
-
-    /**
-     * <p>Add this bind to the engine.</p>
-     *
-     * @param en The engine.
-     */
-    void addBind(Engine en) {
-        /* do nothing */
+    public void unbind(Engine en) {
+        BindUniv.unbind(this, en);
     }
 
     /**
@@ -74,6 +68,7 @@ public class BindUniv {
             Display d = bc.display;
             Object t = bc.skel;
             bc.removeBind(en);
+            bc.skel = null;
             bc.display = null;
 
             Object var = EngineCopy.getVar(t);
@@ -88,27 +83,30 @@ public class BindUniv {
                 for (; i < temp.length - 1; i++) {
                     v = temp[i];
                     bc = d.bind[v.id];
-                    if ((--bc.refs) == 0) {
-                        d.bind[v.id] = null;
+                    int j = bc.refs;
+                    if (j == 0) {
                         if (bc.display != null)
                             BindUniv.unbind(bc, en);
+                    } else {
+                        bc.refs = j - 1;
                     }
                 }
                 v = temp[i];
             }
             bc = d.bind[v.id];
-            if ((--bc.refs) == 0) {
-                d.bind[v.id] = null;
-                if (bc.display != null) {
+            int j = bc.refs;
+            if (j == 0) {
+                if (bc.display != null)
                     continue;
-                }
+            } else {
+                bc.refs = j - 1;
             }
             break;
         }
     }
 
     /**
-     * <p>BindVar this variable with a term.</p>
+     * <p>Bind this variable with a term.</p>
      * <p>No occurs check is performed.</p>
      * <p>Possibly an attribute variable hook is called.</p>
      *
@@ -126,7 +124,7 @@ public class BindUniv {
     }
 
     /**
-     * <p>BindVar this variable with a term.</p>
+     * <p>Bind this variable with a term.</p>
      * <p>No occurs check is performed.</p>
      *
      * @param t  The term to bind to.
@@ -168,10 +166,12 @@ public class BindUniv {
         int k = 0;
         do {
             BindUniv bc = b[k];
-            if ((--bc.refs) == 0) {
-                b[k] = null;
+            int j = bc.refs;
+            if (j == 0) {
                 if (bc.display != null)
                     BindUniv.unbind(bc, en);
+            } else {
+                bc.refs = j - 1;
             }
             k++;
         } while (k < n);
@@ -179,7 +179,7 @@ public class BindUniv {
 
     /**
      * <p>Create a new display.</p>
-     * <p>Fill the binds with bind univ.</p>
+     * <p>Fill the binds with bind lexical.</p>
      *
      * @param s The size.
      * @return The new display.
@@ -194,24 +194,29 @@ public class BindUniv {
     }
 
     /**
-     * <p>Create a new display.</p>
-     * <p>Fill the binds with bind univ and bind lexical.</p>
+     * <p>Set the bind size.</p>
+     * <p>Refill the binds with bind lexical.</p>
      *
-     * @param s The first size.
-     * @param t The second size.
+     * @param s The bind size.
+     * @param b The display
      * @return The new display.
      */
-    public static BindUniv[] newUnivLexical(int s, int t) {
-        t += s;
-        if (t == 0)
-            return BIND_CONST;
-        BindUniv[] b = new BindUniv[t];
-        for (int i = 0; i < t; i++) {
-            if (i < s) {
-                b[i] = new BindUniv();
+    public static BindUniv[] resizeUniv(int s, BindUniv[] b) {
+        int n = (b != null ? b.length : 0);
+        if (n != s) {
+            if (s == 0) {
+                b = BIND_CONST;
             } else {
-                b[i] = new BindLexical();
+                BindUniv[] newbind = new BindUniv[s];
+                n = Math.min(n, s);
+                if (n != 0)
+                    System.arraycopy(b, 0, newbind, 0, n);
+                b = newbind;
             }
+        }
+        for (int i = 0; i < s; i++) {
+            if (b[i] == null)
+                b[i] = new BindUniv();
         }
         return b;
     }

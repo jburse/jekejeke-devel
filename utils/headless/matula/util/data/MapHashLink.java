@@ -93,11 +93,9 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         if (g != null)
             g.prev = e;
         e.next = g;
-        e.prev = null;
         table[i] = e;
 
         e.before = last;
-        e.after = null;
         if (last != null) {
             last.after = e;
         } else {
@@ -137,7 +135,9 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         int i = index(e.key);
 
         MapHashLinkEntry<K, V> g = e.next;
+        e.next = null;
         MapHashLinkEntry<K, V> h = e.prev;
+        e.prev = null;
         if (g != null)
             g.prev = h;
         if (h != null) {
@@ -147,7 +147,9 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         }
 
         g = e.after;
+        e.after = null;
         h = e.before;
+        e.before = null;
         if (g != null) {
             g.before = h;
         } else {
@@ -190,11 +192,9 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
         if (g != null)
             g.prev = e;
         e.next = g;
-        e.prev = null;
         table[i] = e;
 
         e.after = first;
-        e.before = null;
         if (first != null) {
             first.before = e;
         } else {

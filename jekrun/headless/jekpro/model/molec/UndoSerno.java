@@ -33,14 +33,15 @@ import jekpro.model.inter.Engine;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class UndoSerno extends BindVar {
+public final class UndoSerno extends AbstractUndo {
+    private final BindUniv skel;
 
     /**
      * <p>Create a serno binder.</p>
      *
      * @param d The bind count.
      */
-    private UndoSerno(BindLexical d) {
+    private UndoSerno(BindUniv d) {
         skel = d;
     }
 
@@ -51,7 +52,7 @@ public final class UndoSerno extends BindVar {
      */
     public void unbind(Engine en) {
         /* reset serno */
-        BindLexical bc = (BindLexical) skel;
+        BindUniv bc = skel;
         int k = bc.serno;
         if (k == -1)
             throw new IllegalStateException("value missing");
@@ -68,7 +69,7 @@ public final class UndoSerno extends BindVar {
      * @param en The engine.
      * @return The new serno.
      */
-    public static int bindSerno(BindLexical d, Engine en) {
+    public static int bindSerno(BindUniv d, Engine en) {
         /* set serno */
         if (d.serno != -1)
             throw new IllegalStateException("cant override");

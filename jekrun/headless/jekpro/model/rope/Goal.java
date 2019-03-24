@@ -47,8 +47,6 @@ public class Goal extends Intermediate {
 
     public final Object goal;
     public final int[] uniargs;
-    public final int endalloc;
-    public int endgc;
 
     /**
      * <p>Create a goal.</p>
@@ -56,15 +54,12 @@ public class Goal extends Intermediate {
      * @param t  The goal.
      * @param u  The uniargs;
      * @param n  The next.
-     * @param f2 The endalloc.
      * @param f3 The flags.
      */
-    public Goal(Object t, int[] u, Intermediate n,
-                int f2, int f3) {
+    public Goal(Object t, int[] u, Intermediate n, int f3) {
         next = n;
         goal = t;
         uniargs = u;
-        endalloc = f2;
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
@@ -81,36 +76,18 @@ public class Goal extends Intermediate {
     public final boolean resolveNext(Engine en)
             throws EngineException, EngineMessage {
         DisplayClause u = en.contdisplay;
-        if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
-                u.number + 1 : u.number) >= en.number) {
-            int n = endgc;
-            int i = u.lastgc;
-            if (i < n) {
-                u.def.disposeBind(i, n, u.bind, en);
-                u.lastgc = n;
-            }
-        }
 
-        int n = endalloc;
-        int i = u.lastalloc;
-        if (i < n) {
-            Clause.newBind(i, n, u.bind);
-            u.lastalloc = n;
-        }
         if (uniargs != null)
             Goal.unifyBody(uniargs, u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
                 (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
             DisplayClause u1 = u.contdisplay;
-            if (u1 != null &&
-                    u1.number >= en.number) {
+            if (u1 != null && u1.number >= en.number && (u1.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
                 Clause clause = u1.def;
-                n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
-                i = u1.lastgc;
-                if (i < n) {
-                    clause.disposeBind(i, n, u1.bind, en);
-                    u1.lastgc = n;
-                }
+                int n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
+                if (0 < n)
+                    BindUniv.remTab(u1.bind, en);
+                u1.flags |= DisplayClause.MASK_DPCL_LTGC;
                 u.contskel = u1.contskel;
                 u.contdisplay = u1.contdisplay;
             }

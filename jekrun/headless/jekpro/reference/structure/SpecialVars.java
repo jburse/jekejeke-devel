@@ -14,7 +14,6 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.term.*;
 import matula.util.data.*;
-import matula.util.regex.CodeType;
 
 /**
  * <p>Provides built-in predicates for variable ops.</p>
@@ -164,9 +163,8 @@ public final class SpecialVars extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     DisplayClause ref2 = en.visor.query;
-                    Clause def = (ref2 != null ? ref2.def : null);
-                    MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
-                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
+                    Clause def = ref2.def;
+                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(def.vars, ref2, en);
                     multi = mapToAssoc(print, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[0], ref, en.skel, d))
@@ -346,35 +344,20 @@ public final class SpecialVars extends AbstractSpecial {
             return null;
         MapHashLink<Object, NamedDistance> print = null;
         for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry))
-            print = SpecialVars.addToMap(entry.value, d, entry.key, print, en);
-        return print;
-    }
-
-    /**
-     * <p>Add a variable to a print map.</p>
-     *
-     * @param name  The name.
-     * @param sv    The variable skeleton.
-     * @param d     The variable display.
-     * @param print The print map.
-     * @return The print map.
-     */
-    private static MapHashLink<Object, NamedDistance> addToMap(SkelVar sv, Display d,
-                                                               String name,
-                                                               MapHashLink<Object, NamedDistance> print,
-                                                               Engine en) {
-        if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
-            return print;
-        en.skel = sv;
-        en.display = d;
-        int distance = NamedDistance.derefCount(en);
-        if (!(en.skel instanceof SkelVar))
-            return print;
-        Object key = AbstractTerm.createMolec(en.skel, en.display);
-        if (print == null)
-            print = new MapHashLink<Object, NamedDistance>();
-        NamedDistance.addPriorized(print, key, name, distance);
+             entry != null; entry = vars.successor(entry)) {
+            SkelVar sv = entry.value;
+            if (sv.id >= d.bind.length)
+                continue;
+            en.skel = sv;
+            en.display = d;
+            int distance = NamedDistance.derefCount(en);
+            if (!(en.skel instanceof SkelVar))
+                continue;
+            Object key = AbstractTerm.createMolec(en.skel, en.display);
+            if (print == null)
+                print = new MapHashLink<Object, NamedDistance>();
+            NamedDistance.addPriorized(print, key, entry.key, distance);
+        }
         return print;
     }
 

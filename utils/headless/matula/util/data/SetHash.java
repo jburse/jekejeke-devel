@@ -88,7 +88,6 @@ public final class SetHash<E> extends AbstractSet<E> {
 
         int i = index(e.value);
 
-        e.prev = null;
         SetHashEntry<E> g = table[i];
         if (g != null)
             g.prev = e;
@@ -135,7 +134,9 @@ public final class SetHash<E> extends AbstractSet<E> {
         int i = index(e.value);
 
         SetHashEntry<E> h = e.prev;
+        e.prev = null;
         SetHashEntry<E> g = e.next;
+        e.next = null;
         if (h != null) {
             h.next = g;
         } else {

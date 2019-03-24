@@ -3,10 +3,7 @@ package jekpro.tools.term;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindLexical;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.structure.SpecialLexical;
@@ -118,7 +115,7 @@ public abstract class AbstractSkel {
      */
     public static Display createDisplay(Object t) {
         int size = EngineCopy.displaySize(t);
-        return (size != 0 ? new Display(BindLexical.newLexical(size)) :
+        return (size != 0 ? new Display(BindUniv.newUniv(size)) :
                 Display.DISPLAY_CONST);
     }
 
@@ -131,7 +128,7 @@ public abstract class AbstractSkel {
      */
     public static Display createMarker(Object val) {
         int size = EngineCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(BindLexical.newLexical(size)) :
+        Display ref = (size != 0 ? new Display(BindUniv.newUniv(size)) :
                 Display.DISPLAY_CONST);
         if (size != 0)
             ref.flags |= Display.MASK_DPTM_MLTI;

@@ -3,7 +3,10 @@ package jekpro.model.rope;
 import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
@@ -53,10 +56,8 @@ public class Clause extends Intermediate implements InterfaceReference {
     public Object head;
     public int dispsize;
     public int[] intargs;
-    public int[] remtab;
     public int size;
     public AbstractDefined del;
-    public int endgc;
     public MapHashLink<String, SkelVar> vars;
 
     /**
@@ -86,13 +87,11 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final boolean resolveNext(Engine en) {
         DisplayClause u = en.contdisplay;
         if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
-                u.number + 1 : u.number) >= en.number) {
-            int n = endgc;
-            int i = u.lastgc;
-            if (i < n) {
-                disposeBind(i, n, u.bind, en);
-                u.lastgc = n;
-            }
+                u.number + 1 : u.number) >= en.number && (u.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
+            int n = ((flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : dispsize);
+            if (0 < n)
+                BindUniv.remTab(u.bind, en);
+            u.flags |= DisplayClause.MASK_DPCL_LTGC;
         }
 
         if ((flags & Clause.MASK_CLAUSE_STOP) != 0) {
@@ -106,46 +105,6 @@ public class Clause extends Intermediate implements InterfaceReference {
     }
 
     /***********************************************************/
-    /* Dispose Helper                                          */
-    /***********************************************************/
-
-    /**
-     * <p>Dispose bind.</p>
-     *
-     * @param i  The current last gc.
-     * @param n  The max last gc.
-     * @param b  The display clause.
-     * @param en The engine.
-     */
-    public final void disposeBind(int i, int n,
-                                  BindUniv[] b, Engine en) {
-        do {
-            int k = remtab[i];
-            BindUniv bc = b[k];
-            if ((--bc.refs) == 0) {
-                b[k] = null;
-                if (bc.display != null)
-                    BindUniv.unbind(bc, en);
-            }
-            i++;
-        } while (i < n);
-    }
-
-    /**
-     * <p>New bind.</p>
-     *
-     * @param i The current last alloc.
-     * @param n The max last alloc.
-     */
-    public static void newBind(int i, int n, BindUniv[] u) {
-        do {
-            if (u[i] == null)
-                u[i] = new BindLexical();
-            i++;
-        } while (i < n);
-    }
-
-    /***********************************************************/
     /* Convert To Intermediate                                 */
     /***********************************************************/
 
@@ -153,21 +112,17 @@ public class Clause extends Intermediate implements InterfaceReference {
      * <p>Convert a vector of goals to a list of goals.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param vec    The goal list.
-     * @param vars   The helper.
-     * @param remtab The removal tab.
-     * @param en     The engine.
-     * @return The remaining display size.
+     * @param vec  The goal list.
+     * @param vars The helper.
+     * @param en   The engine.
      */
-    protected int vectorToList(ListArray<Object> vec,
-                               OptimizationVar[] vars, int[] remtab,
-                               Engine en) {
+    protected void vectorToList(ListArray<Object> vec,
+                                OptimizationVar[] vars,
+                                Engine en) {
         Intermediate end = this;
-        if ((flags & Clause.MASK_CLAUSE_NBDY) == 0)
-            ((Clause) end).endgc = dispsize;
         if (vec == null) {
             next = end;
-            return dispsize;
+            return;
         }
         int f2 = 0;
         if ((flags & MASK_INTER_NLST) != 0)
@@ -176,25 +131,18 @@ public class Clause extends Intermediate implements InterfaceReference {
         if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
             f3 |= Goal.MASK_GOAL_CEND;
         int i = vec.size() - 1;
-        int size = dispsize;
-        int size2 = dispsize;
         for (; i >= 0; i--) {
-            size = OptimizationArray.sweepMaxGoal(i, false, size, vars, remtab);
             Object t = vec.get(i);
             int[] args = OptimizationArray.tempBind(t, i, vars);
 
             /* normal code */
-            end = new Goal(t, args, end, size2, f2 | f3);
-            if ((flags & Clause.MASK_CLAUSE_NBDY) == 0)
-                ((Goal) end).endgc = size;
+            end = new Goal(t, args, end, f2 | f3);
 
-            size2 = OptimizationArray.sweepMinGoal(i, -1, size2, vars);
             if (args != null)
                 f2 |= MASK_INTER_NLST;
             f3 &= ~Goal.MASK_GOAL_CEND;
         }
         next = end;
-        return size2;
     }
 
     /**
@@ -234,22 +182,12 @@ public class Clause extends Intermediate implements InterfaceReference {
                 for (int i = body.size() - 1; i >= 0; i--)
                     OptimizationVar.setMinBody(body.get(i), i, vars);
             }
-
-            if (vars.length != 1) {
-                /* shuffle the variables */
-                OptimizationArray.sortAndDisplaceMinGoal(vars);
-                remtab = OptimizationArray.sortMaxGoal(vars);
-            } else {
-                remtab = OptimizationArray.zeroInt(1);
-            }
-        } else {
-            remtab = OptimizationArray.zeroInt(0);
         }
-        dispsize = OptimizationArray.sweepMaxGoal(-1, true, size, vars, remtab);
+        dispsize = OptimizationArray.sortAndDisplaceMinGoal(vars);
 
         /* build the clause */
-        int k = vectorToList(body, vars, remtab, en);
-        intargs = OptimizationArray.unifyArgs(head, k, vars);
+        vectorToList(body, vars, en);
+        intargs = OptimizationArray.unifyArgs(head, vars);
     }
 
     /**********************************************************/

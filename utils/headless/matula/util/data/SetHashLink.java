@@ -95,11 +95,9 @@ public class SetHashLink<E> extends AbstractSet<E> {
         if (g != null)
             g.prev = e;
         e.next = g;
-        e.prev = null;
         table[i] = e;
 
         e.before = last;
-        e.after = null;
         if (last != null) {
             last.after = e;
         } else {
@@ -125,38 +123,6 @@ public class SetHashLink<E> extends AbstractSet<E> {
     }
 
     /**
-     * <p>Add key to the set at beginning.</p>
-     * <p>Assumption is that key is not yet present.</p>
-     *
-     * @param key The key.
-     */
-    public void addFirst(E key) {
-        SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) newEntry(key);
-
-        int i = index(key);
-
-        SetHashLinkEntry<E> g = table[i];
-        if (g != null)
-            g.prev = e;
-        e.next = g;
-        e.prev = null;
-        table[i] = e;
-
-        e.after = first;
-        e.before = null;
-        if (first != null) {
-            first.before = e;
-        } else {
-            last = e;
-        }
-        first = e;
-
-        size++;
-        if (size > table.length * 3 / 4)
-            resize(table.length * 2);
-    }
-
-    /**
      * <p>Remove the entry from the set.</p>
      *
      * @param f The entry.
@@ -169,7 +135,9 @@ public class SetHashLink<E> extends AbstractSet<E> {
         int i = index(e.value);
 
         SetHashLinkEntry<E> g = e.next;
+        e.next = null;
         SetHashLinkEntry<E> h = e.prev;
+        e.prev = null;
         if (g != null)
             g.prev = h;
         if (h != null) {
@@ -179,7 +147,9 @@ public class SetHashLink<E> extends AbstractSet<E> {
         }
 
         g = e.after;
+        e.after = null;
         h = e.before;
+        e.before = null;
         if (g != null) {
             g.before = h;
         } else {
@@ -203,6 +173,37 @@ public class SetHashLink<E> extends AbstractSet<E> {
             len = len / 2;
         if (len != table.length)
             resize(len);
+    }
+
+
+    /**
+     * <p>Add key to the set at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key The key.
+     */
+    public void addFirst(E key) {
+        SetHashLinkEntry<E> e = (SetHashLinkEntry<E>) newEntry(key);
+
+        int i = index(key);
+
+        SetHashLinkEntry<E> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
+        table[i] = e;
+
+        e.after = first;
+        if (first != null) {
+            first.before = e;
+        } else {
+            last = e;
+        }
+        first = e;
+
+        size++;
+        if (size > table.length * 3 / 4)
+            resize(table.length * 2);
     }
 
     /**

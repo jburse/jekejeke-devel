@@ -1,7 +1,9 @@
 package jekpro.model.molec;
 
+import jekpro.model.inter.Engine;
+
 /**
- * <p>This class provides a serial number variable binder.</p>
+ * <p>This class provides a trailed variable binder.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,54 +33,49 @@ package jekpro.model.molec;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class BindLexical extends BindVar {
-    public int serno = -1;
-
-    /********************************************************/
-    /* Lexical Allocation & Reallocation                    */
-    /********************************************************/
+public abstract class AbstractUndo {
+    private AbstractUndo next;
+    private AbstractUndo prev;
 
     /**
-     * <p>Create a new display.</p>
-     * <p>Fill the binds with bind lexical.</p>
+     * <p>Restore state as desired and remove bind from the engine.</p>
+     * <p>The current exception is passed via the engine skel.</p>
+     * <p>The new current exception is returned via the engine skel.</p>
      *
-     * @param s The size.
-     * @return The new display.
+     * @param en The engine.
      */
-    public static BindUniv[] newLexical(int s) {
-        if (s == 0)
-            return BIND_CONST;
-        BindUniv[] b = new BindUniv[s];
-        for (int i = 0; i < s; i++)
-            b[i] = new BindLexical();
-        return b;
+    public abstract void unbind(Engine en);
+
+    /**
+     * <p>Remove this bind from the engine.</p>
+     *
+     * @param en The engine.
+     */
+    void removeBind(Engine en) {
+        AbstractUndo f = prev;
+        prev = null;
+        AbstractUndo g = next;
+        next = null;
+        if (f != null) {
+            f.next = g;
+        } else {
+            en.bind = g;
+        }
+        if (g != null)
+            g.prev = f;
     }
 
     /**
-     * <p>Set the bind size.</p>
-     * <p>Refill the binds with bind lexical.</p>
+     * <p>Add this bind to the engine.</p>
      *
-     * @param s The bind size.
-     * @param b The display
-     * @return The new display.
+     * @param en The engine.
      */
-    public static BindUniv[] resizeLexical(int s, BindUniv[] b) {
-        int n = (b != null ? b.length : 0);
-        if (n != s) {
-            if (s == 0) {
-                b = BIND_CONST;
-            } else {
-                BindUniv[] newbind = new BindUniv[s];
-                n = Math.min(n, s);
-                if (n != 0)
-                    System.arraycopy(b, 0, newbind, 0, n);
-                b = newbind;
-            }
-        }
-        for (int i = 0; i < s; i++) {
-            if (b[i] == null)
-                b[i] = new BindLexical();
-        }
-        return b;
+    void addBind(Engine en) {
+        AbstractUndo f = en.bind;
+        if (f != null)
+            f.prev = this;
+        next = f;
+        en.bind = this;
     }
+
 }

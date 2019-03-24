@@ -1,7 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
-import jekpro.model.molec.BindVar;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -51,7 +51,7 @@ import matula.util.wire.LivestockEventMemory;
 public class Supervisor extends AbstractLivestock {
     public final static int MASK_VISOR_NOCNT = 0x00000002;
 
-    public ListArray<BindVar> cont;
+    public ListArray<BindUniv> cont;
     public Object curinput;
     public Object curoutput;
     public Object curerror;

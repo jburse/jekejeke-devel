@@ -54,7 +54,7 @@ final class ChoiceForeign extends AbstractChoice {
     MemberMethodNondet del;
     Object obj;
     Object[] args;
-    BindVar mark;
+    AbstractUndo mark;
     Intermediate goalskel;
     DisplayClause goaldisplay;
 

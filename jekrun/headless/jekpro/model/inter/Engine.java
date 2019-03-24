@@ -52,7 +52,7 @@ public class Engine implements InterfaceStack {
     public DisplayClause contdisplay;
     public Store store;
     public final Supervisor visor;
-    public BindVar bind;
+    public AbstractUndo bind;
     public AbstractChoice choices;
     public int serno;
     public int number;
@@ -185,7 +185,7 @@ public class Engine implements InterfaceStack {
      *
      * @param mark The marker.
      */
-    public final void releaseBind(BindVar mark) {
+    public final void releaseBind(AbstractUndo mark) {
         while (bind != mark)
             bind.unbind(this);
     }
@@ -277,7 +277,7 @@ public class Engine implements InterfaceStack {
      */
     public final void retireCont()
             throws EngineMessage, EngineException {
-        ListArray<BindVar> list = UndoCont.bindCont(this);
+        ListArray<BindUniv> list = UndoCont.bindCont(this);
         createComma(list, this);
         Display d2 = display;
         boolean ext = d2.getAndReset();
@@ -287,9 +287,9 @@ public class Engine implements InterfaceStack {
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
         DisplayClause ref2 = new DisplayClause(
-                DisplayClause.newClause(clause.dispsize));
+                BindUniv.newUniv(clause.dispsize));
         ref2.def = clause;
-        ref2.addArgument(skel, ref, this);
+        ref2.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
             BindUniv.remTab(ref.bind, this);
         ref2.setEngine(this);
@@ -304,8 +304,8 @@ public class Engine implements InterfaceStack {
      * @param temp The list of solutions or null.
      * @param en   The engine.
      */
-    private static void createComma(ListArray<BindVar> temp, Engine en) {
-        BindVar val = temp.get(temp.size() - 1);
+    private static void createComma(ListArray<BindUniv> temp, Engine en) {
+        BindUniv val = temp.get(temp.size() - 1);
         en.skel = val.skel;
         en.display = val.display;
         for (int i = temp.size() - 2; i >= 0; i--) {
@@ -394,16 +394,16 @@ public class Engine implements InterfaceStack {
         DisplayClause u = contdisplay;
         boolean backignore = visor.setIgnore(false);
         boolean backverify = visor.setVerify(false);
-        BindVar mark = bind;
+        AbstractUndo mark = bind;
         int snap = number;
         try {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+                    BindUniv.newUniv(clause.dispsize));
             ref2.def = clause;
-            ref2.addArgument(skel, ref, this);
+            ref2.bind[0].bindUniv(skel, ref, this);
             if (multi)
                 BindUniv.remTab(ref.bind, this);
             ref2.setEngine(this);

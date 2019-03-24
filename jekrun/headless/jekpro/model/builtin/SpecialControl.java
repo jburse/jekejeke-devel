@@ -121,16 +121,16 @@ public final class SpecialControl extends AbstractSpecial {
             throws EngineException, EngineMessage {
         Goal r = (Goal) en.contskel;
         DisplayClause u = en.contdisplay;
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+                    BindUniv.newUniv(clause.dispsize));
             ref2.def = clause;
-            ref2.addArgument(en.skel, ref, en);
+            ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);

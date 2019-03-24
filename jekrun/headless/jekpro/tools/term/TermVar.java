@@ -1,7 +1,6 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindLexical;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.tools.call.Interpreter;
@@ -72,7 +71,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = new Display(BindLexical.newLexical(1));
+        display = new Display(BindUniv.newUniv(1));
         display.flags |= Display.MASK_DPTM_MLTI;
     }
 

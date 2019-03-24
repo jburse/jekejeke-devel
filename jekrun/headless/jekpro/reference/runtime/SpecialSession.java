@@ -120,9 +120,8 @@ public final class SpecialSession extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 DisplayClause ref2 = en.visor.query;
-                Clause def = (ref2 != null ? ref2.def : null);
-                MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
-                en.skel = SpecialSession.hashToRawAssoc(vars, ref2, en);
+                Clause def = ref2.def;
+                en.skel = SpecialSession.hashToRawAssoc(def.vars, ref2, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
                     return false;
                 return true;
@@ -323,12 +322,12 @@ public final class SpecialSession extends AbstractSpecial {
 
                 Intermediate r = en.contskel;
                 DisplayClause u = en.contdisplay;
-                BindVar mark = en.bind;
+                AbstractUndo mark = en.bind;
                 int snap = en.number;
                 DisplayClause backref = en.visor.query;
                 try {
                     DisplayClause ref = new DisplayClause(
-                            DisplayClause.newClause(clause.dispsize));
+                            BindUniv.newUniv(clause.dispsize));
                     ref.def = clause;
                     en.visor.query = ref;
                     ref.setEngine(en);
@@ -436,7 +435,7 @@ public final class SpecialSession extends AbstractSpecial {
         }
 
         /* expand goal */
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         Display d;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             d = AbstractSkel.createDisplay(t);
@@ -458,7 +457,7 @@ public final class SpecialSession extends AbstractSpecial {
             DisplayClause ref;
             try {
                 ref = new DisplayClause(
-                        DisplayClause.newClause(clause.dispsize));
+                        BindUniv.newUniv(clause.dispsize));
                 ref.def = clause;
                 en.visor.query = ref;
                 ref.setEngine(en);
@@ -546,8 +545,8 @@ public final class SpecialSession extends AbstractSpecial {
         } else {
             t = ec.copyGoalAndWrap(t, d, en);
         }
-        MapHashLink<Object, NamedDistance> printmap = SpecialVars.hashToMap(assoc, d, en);
-        pre.vars = FileText.copyVars(ec.vars, printmap);
+        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(assoc, d, en);
+        pre.vars = FileText.copyVars(ec.vars, print);
         pre.molec = new SkelCompound(new SkelAtom(
                 PreClause.OP_TURNSTILE), t);
         ec.vars = null;
@@ -707,28 +706,15 @@ public final class SpecialSession extends AbstractSpecial {
         if (vars == null)
             return end;
         for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
-             entry != null; entry = vars.predecessor(entry))
-            end = addToRawAssoc(entry.value, d, entry.key, end, en);
+             entry != null; entry = vars.predecessor(entry)) {
+            SkelVar sv = entry.value;
+            if (sv.id >= d.bind.length)
+                continue;
+            Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
+                    new SkelAtom(entry.key), sv);
+            end = new SkelCompound(en.store.foyer.ATOM_CONS, val, end);
+        }
         return end;
-    }
-
-    /**
-     * <p>Add a raw variable to a Prolog list.</p>
-     *
-     * @param sv   The variable skeleton.
-     * @param d    The variable display.
-     * @param name The name,
-     * @param end  The Prolog list.
-     * @return The Prolog list.
-     */
-    private static Object addToRawAssoc(SkelVar sv, Display d,
-                                       String name, Object end,
-                                       Engine en) {
-        if (d == null || sv.id >= d.bind.length || d.bind[sv.id] == null)
-            return end;
-        Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
-                new SkelAtom(name), sv);
-        return new SkelCompound(en.store.foyer.ATOM_CONS, val, end);
     }
 
 }

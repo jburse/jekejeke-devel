@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.model.molec.BindVar;
+import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
@@ -224,7 +224,7 @@ public final class ForeignAtom {
         while (ac.hasMoreElements()) {
             Integer val1 = ac.getCFrom();
             Integer val2 = ac.nextElement();
-            BindVar mark = AbstractTerm.markBind(inter);
+            AbstractUndo mark = AbstractTerm.markBind(inter);
             if (AbstractTerm.unifyTerm(inter, cout, val1)) {
                 co.setRetry(true);
                 return val2;

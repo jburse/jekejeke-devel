@@ -87,7 +87,6 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
 
         int i = index(e.key);
 
-        e.prev = null;
         MapHashEntry<K, V> g = table[i];
         if (g != null)
             g.prev = e;
@@ -126,7 +125,9 @@ public class MapHash<K, V> extends AbstractMap<K, V> {
         int i = index(e.key);
 
         MapHashEntry<K, V> h = e.prev;
+        e.prev = null;
         MapHashEntry<K, V> g = e.next;
+        e.next = null;
         if (h != null) {
             h.next = g;
         } else {

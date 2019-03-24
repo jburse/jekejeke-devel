@@ -833,7 +833,7 @@ public final class SpecialLoad extends AbstractSpecial {
             SpecialLoad.flushWriter(pw.getWriter());
             return ref;
         }
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         int snap = en.number;
         int size = EngineCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
@@ -846,9 +846,9 @@ public final class SpecialLoad extends AbstractSpecial {
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+                    BindUniv.newUniv(clause.dispsize));
             ref.def = clause;
-            ref.addArgument(t, dc, en);
+            ref.bind[0].bindUniv(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref;

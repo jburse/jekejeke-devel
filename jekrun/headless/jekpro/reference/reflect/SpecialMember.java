@@ -112,7 +112,7 @@ public final class SpecialMember extends AbstractSpecial {
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
                         en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
-                        d = new Display(BindLexical.newLexical(arity));
+                        d = new Display(BindUniv.newUniv(arity));
                         multi = true;
                     } else {
                         en.skel = temp[0];

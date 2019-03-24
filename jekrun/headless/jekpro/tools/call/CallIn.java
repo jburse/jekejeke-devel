@@ -51,7 +51,7 @@ import jekpro.tools.term.AbstractTerm;
  * @version Jekejeke Prolog 0.9.1 (a fast and small prolog interpreter)
  */
 public final class CallIn {
-    private BindVar mark;
+    private AbstractUndo mark;
     private int snap;
     private int state;
     private Object goal;
@@ -291,9 +291,9 @@ public final class CallIn {
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
             DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+                    BindUniv.newUniv(clause.dispsize));
             ref2.def = clause;
-            ref2.addArgument(en.skel, ref, en);
+            ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi || ext)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);

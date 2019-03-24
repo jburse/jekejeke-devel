@@ -167,8 +167,9 @@ public final class ForeignEngine {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag<Engine>> pfs = branch.getPrologFlags();
-            if (pfs != null)
-                listFlags(pfs, res);
+            if (pfs == null)
+                continue;
+            listFlags(pfs, res);
         }
         return res;
     }
@@ -254,7 +255,9 @@ public final class ForeignEngine {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag<Engine>> pfs = branch.getPrologFlags();
-            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (pfs==null)
+                continue;
+            AbstractFlag af = pfs.get(flag);
             if (af != null)
                 return af;
         }

@@ -39,11 +39,10 @@ import jekpro.model.rope.Intermediate;
 public final class DisplayClause extends Display implements InterfaceStack {
     public final static int MASK_DPCL_MORE = 0x00000010;
     public final static int MASK_DPCL_SOFT = 0x00000020;
+    public final static int MASK_DPCL_LTGC = 0x00000040;
 
     public Intermediate contskel;
     public DisplayClause contdisplay;
-    public int lastalloc;
-    public int lastgc;
     public int number;
     public DisplayClause prune;
     public Clause def;
@@ -73,63 +72,6 @@ public final class DisplayClause extends Display implements InterfaceStack {
      */
     public DisplayClause getContDisplay() {
         return contdisplay;
-    }
-
-    /********************************************************/
-    /* Allocation & Reallocation                            */
-    /********************************************************/
-
-    /**
-     * <p>Create a new display.</p>
-     * <p>Don't fill the binds with bind lexical.</p>
-     *
-     * @param s The size.
-     * @return The new display.
-     */
-    public static BindUniv[] newClause(int s) {
-        return (s != 0 ? new BindUniv[s] : BindUniv.BIND_CONST);
-    }
-
-    /**
-     * <p>Set the bind size.</p>
-     * <p>Don't refill the binds with bind lexical.</p>
-     *
-     * @param s The bind size.
-     * @param b The display
-     * @return The new display.
-     */
-    public static BindUniv[] resizeClause(int s, BindUniv[] b) {
-        int n = (b != null ? b.length : 0);
-        if (n == s)
-            return b;
-        if (s == 0) {
-            b = BindUniv.BIND_CONST;
-        } else {
-            BindUniv[] newbind = new BindUniv[s];
-            n = Math.min(n, s);
-            if (n != 0)
-                System.arraycopy(b, 0, newbind, 0, n);
-            b = newbind;
-        }
-        return b;
-    }
-
-    /********************************************************/
-    /* Goal Preparation                                     */
-    /********************************************************/
-
-    /**
-     * <p>Add a variable value to the prepared call.</p>
-     *
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
-     */
-    public final void addArgument(Object m, Display d, Engine en) {
-        BindUniv b = new BindUniv();
-        bind[lastalloc] = b;
-        bind[lastalloc].bindUniv(m, d, en);
-        lastalloc++;
     }
 
     /**

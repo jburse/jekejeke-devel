@@ -150,7 +150,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 case SPECIAL_NOT_UNIFY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    BindVar mark = en.bind;
+                    AbstractUndo mark = en.bind;
                     if (en.unifyTerm(temp[1], ref, temp[0], ref))
                         return false;
                     en.fault = null;
