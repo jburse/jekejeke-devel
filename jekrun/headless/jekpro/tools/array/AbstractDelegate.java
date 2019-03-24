@@ -8,6 +8,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -108,12 +109,12 @@ public abstract class AbstractDelegate {
 
     /**
      * <p>Delegate a predicate.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
      * <p>The new continuation is returned via the contskel and contdisplay of the engine.</p>
      *
      * @param en The interpreter.
-     * @return True if the goal succeeded, otherwise false.
+     * @return True if the term succeeded, otherwise false.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
@@ -136,7 +137,7 @@ public abstract class AbstractDelegate {
     /**
      * <p>Check and shrink the arguments.</p>
      *
-     * @param temp The goal skeleton.
+     * @param temp The term skeleton.
      * @return The arguments.
      */
     private static Object tunnelArgs(SkelCompound temp) {
@@ -185,7 +186,7 @@ public abstract class AbstractDelegate {
 
     /**
      * <p>Build the arguments array. The arguments of the
-     * goal are computed if necessary and packed.</p>
+     * term are computed if necessary and packed.</p>
      *
      * @param temp The skeleton.
      * @param ref  The display.
@@ -276,7 +277,7 @@ public abstract class AbstractDelegate {
      */
     private static void invokeOther(Engine en)
             throws EngineException, EngineMessage {
-        Goal r = (Goal) en.contskel;
+        Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         int snap = en.number;
         boolean multi = en.wrapGoal();

@@ -116,13 +116,13 @@ final class MemberMethodDet extends AbstractMember {
     /******************************************************************/
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
      * @param en The interpreter.
-     * @return True if the goal succeeded, otherwise false.
+     * @return True if the term succeeded, otherwise false.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */

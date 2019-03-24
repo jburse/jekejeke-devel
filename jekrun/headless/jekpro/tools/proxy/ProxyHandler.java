@@ -76,7 +76,7 @@ public final class ProxyHandler implements InvocationHandler {
     /**************************************************************/
 
     /**
-     * <p>Invoke by executing a Prolog goal.</p>
+     * <p>Invoke by executing a Prolog term.</p>
      * <p>See also java.beans.EventHandler for more ideas.</p>
      *
      * @param method The method.

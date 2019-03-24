@@ -83,8 +83,8 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -342,7 +342,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.term);
             if (src != sa.scope)
                 continue;
             if (modifiers != null) {
@@ -668,7 +668,7 @@ public final class SpecialLoad extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) fun).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.term);
             if (source != sa.scope)
                 continue;
             return true;

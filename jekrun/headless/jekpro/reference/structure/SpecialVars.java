@@ -70,8 +70,8 @@ public final class SpecialVars extends AbstractSpecial {
 
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -209,11 +209,11 @@ public final class SpecialVars extends AbstractSpecial {
     /*******************************************************************/
 
     /**
-     * <p>Strip the goal from its quantifiers.</p>
+     * <p>Strip the term from its quantifiers.</p>
      * <p>Result is return in skel and display of the engine.</p>
      *
-     * @param t  The goal skeleton.
-     * @param d  The goal display.
+     * @param t  The term skeleton.
+     * @param d  The term display.
      * @param en The engine.
      */
     private static void goalKernel(Object t, Display d, Engine en) {
@@ -242,11 +242,11 @@ public final class SpecialVars extends AbstractSpecial {
     }
 
     /**
-     * <p>Compute the free variables of a goal.</p>
+     * <p>Compute the free variables of a term.</p>
      * <p>The result is returned in the engine copy vars.</p>
      *
-     * @param t The goal skeleton.
-     * @param d The goal display.
+     * @param t The term skeleton.
+     * @param d The term display.
      */
     private static void goalGlobals(Object t, Display d, EngineVars ev) {
         while (t instanceof SkelVar) {
@@ -369,8 +369,8 @@ public final class SpecialVars extends AbstractSpecial {
      * <p>Complement the variable names.</p>
      * <p>Result is returned in engine skel and display.</p>
      *
-     * @param temp The goal skeleton.
-     * @param ref  The goal display.
+     * @param temp The term skeleton.
+     * @param ref  The term display.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */

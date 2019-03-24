@@ -73,8 +73,8 @@ public final class SpecialSession extends AbstractSpecial {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
-     * <p>The goal is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a term in a list of goals for the first time.</p>
+     * <p>The term is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
@@ -411,14 +411,14 @@ public final class SpecialSession extends AbstractSpecial {
     }
 
     /**
-     * <p>Expand and wrap the given goal.</p>
+     * <p>Expand and wrap the given term.</p>
      * <p>The variables are passed via the Prolog reader.</p>
      * <p>The variables are returned via the Prolog reader.</p>
      *
      * @param rd The prolog reader.
      * @param t  The directive skel.
      * @param en The engine.
-     * @return The expanded goal.
+     * @return The expanded term.
      * @throws EngineException Shit happens.
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
@@ -433,7 +433,7 @@ public final class SpecialSession extends AbstractSpecial {
             return pre;
         }
 
-        /* expand goal */
+        /* expand term */
         AbstractUndo mark = en.bind;
         Display d;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
@@ -516,7 +516,7 @@ public final class SpecialSession extends AbstractSpecial {
     }
 
     /**
-     * <p>Copy and wrap a goal from a term.</p>
+     * <p>Copy and wrap a term from a term.</p>
      *
      * @param assoc The vars skeleton.
      * @param t     The term skeleton.

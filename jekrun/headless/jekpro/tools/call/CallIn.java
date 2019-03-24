@@ -8,7 +8,7 @@ import jekpro.tools.term.AbstractTerm;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing
- * optionally a goal and op-tionally a result by the iterator() methods.
+ * optionally a term and op-tionally a result by the iterator() methods.
  * A call-in object is needed to interact with choice points and variable
  * bindings. Thus call-in objects are needed when Prolog goals are called.
  * The application programmer cannot subclass the call-in class.
@@ -43,7 +43,7 @@ import jekpro.tools.term.AbstractTerm;
  * the method hasNextClose() returns null when the interactor failed.
  * These methods will copy the result term and always close the interactor.
  * The later behaviour might be not appropriate if a variable binding
- * side effect of the goal is desired. The method run() acts similar to
+ * side effect of the term is desired. The method run() acts similar to
  * nextClose() but swallows failure and exceptions.
  * </p>
  *
@@ -65,12 +65,12 @@ public final class CallIn {
     /**
      * <p>Create a call-in.</p>
      *
-     * @param g The goal, non-null.
+     * @param g The term, non-null.
      * @param i The call-in.
      */
     CallIn(Object g, Interpreter i) {
         if (g == null)
-            throw new NullPointerException("goal missing");
+            throw new NullPointerException("term missing");
         goal = g;
         inter = i;
     }
@@ -151,8 +151,8 @@ public final class CallIn {
     }
 
     /**
-     * <p>Close an interactor. Amounts to doing "&lt;goal&gt;, !, fail", in
-     * case "&lt;goal&gt;" has been already successful. The method need
+     * <p>Close an interactor. Amounts to doing "&lt;term&gt;, !, fail", in
+     * case "&lt;term&gt;" has been already successful. The method need
      * not be called when there was no solution.</p>
      *
      * @throws InterpreterException Shit happens.
@@ -204,7 +204,7 @@ public final class CallIn {
 
     /**
      * <p>Remove the choice points but leave bindings intact. Amounts
-     * to doing "&lt;goal&gt;, !", in case "&lt;goal&gt;" has been already
+     * to doing "&lt;term&gt;, !", in case "&lt;term&gt;" has been already
      * successful. As a result the method getNondet() will return false.</p>
      *
      * @throws InterpreterException Shit happens.
@@ -234,7 +234,7 @@ public final class CallIn {
 
     /**
      * <p>Close an interactor with an initial exception. Amounts
-     * to doing "&lt;goal&gt;, throw(error)", in case "&lt;goal&gt;" has
+     * to doing "&lt;term&gt;, throw(error)", in case "&lt;term&gt;" has
      * been already successful.</p>
      *
      * @param x The input exception.
@@ -263,10 +263,10 @@ public final class CallIn {
     /************************************************************/
 
     /**
-     * <p>Start searching solutions for the given goal for the first time.</p>
+     * <p>Start searching solutions for the given term for the first time.</p>
      * <p>If failed or exception bindings are undone and exceptions are aggregated.</p>
      *
-     * @return True if the goal succeeded, otherwise false.
+     * @return True if the term succeeded, otherwise false.
      * @throws InterpreterException Shit happens.
      */
     private boolean unfoldFirst()
@@ -334,10 +334,10 @@ public final class CallIn {
     }
 
     /**
-     * <p>Continue searching solutions for the last goal.</p>
+     * <p>Continue searching solutions for the last term.</p>
      * <p>If failed or exception bindings are undone and exceptions are aggregated.</p>
      *
-     * @return True if the goal succeeded again, otherwise false.
+     * @return True if the term succeeded again, otherwise false.
      * @throws InterpreterException Shit happens.
      */
     private boolean unfoldNext() throws InterpreterException {
@@ -375,7 +375,7 @@ public final class CallIn {
     }
 
     /**
-     * <p>Stop searching solutions for the last goal.</p>
+     * <p>Stop searching solutions for the last term.</p>
      * <p>Bindings are undone and exceptions are aggregated.</p>
      *
      * @throws InterpreterException Shit happens.
@@ -399,7 +399,7 @@ public final class CallIn {
     /************************************************************/
 
     /**
-     * <p>Stop searching solutions for the last goal.</p>
+     * <p>Stop searching solutions for the last term.</p>
      * <p>Bindings are left intact.</p>
      * <p>If exception bindings are undone and exceptions are aggregated.</p>
      *
@@ -423,7 +423,7 @@ public final class CallIn {
     }
 
     /**
-     * <p>Stop searching solutions for the last goal.</p>
+     * <p>Stop searching solutions for the last term.</p>
      * <p>Bindings are undone and exceptions are aggregated.</p>
      *
      * @param e The current interpreter exception, or null.

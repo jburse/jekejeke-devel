@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * predicate compare/3.
  * <p>
  * The interpreter further carries choice points and tail recursion
- * barriers. They are used when solving a goal. An interactor for a
+ * barriers. They are used when solving a term. An interactor for a
  * solution set can be obtained via the method callin(). The interactor
  * can be controlled via the different methods of the interactor itself.
  * For more details see the CallIn class.
@@ -160,7 +160,7 @@ public final class Interpreter {
     /**
      * <p>Create a call-in.</p>
      *
-     * @param goal The goal, non-null.
+     * @param goal The term, non-null.
      * @return The call-in.
      */
     public CallIn iterator(Object goal) {

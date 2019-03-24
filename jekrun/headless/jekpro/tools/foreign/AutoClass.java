@@ -332,9 +332,9 @@ public final class AutoClass extends AbstractAuto {
     }
 
     /**
-     * <p>Create a branching goal.</p>
+     * <p>Create a branching term.</p>
      *
-     * @return The branching goal.
+     * @return The branching term.
      */
     private SkelCompound makeGoal(AbstractMember del, Predicate over,
                                   Object[] args, int i) {

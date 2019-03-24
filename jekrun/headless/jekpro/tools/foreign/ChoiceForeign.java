@@ -68,7 +68,7 @@ final class ChoiceForeign extends AbstractChoice {
     }
 
     /**
-     * <p>Logically evaluate a goal in a list of goals for an additional time.</p>
+     * <p>Logically evaluate a term in a list of goals for an additional time.</p>
      * <p>The result is returned via the skel and display of the engine.</p>
      * <p>A new exception sliding window is returned via the engine display.</p>
      *
@@ -92,8 +92,8 @@ final class ChoiceForeign extends AbstractChoice {
                 throw en.fault;
         }
 
-        Goal ir = (Goal) goalskel;
-        Object term = ir.goal;
+        Intermediate ir = goalskel;
+        Object term = ir.term;
         Display ref = goaldisplay;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
@@ -153,7 +153,7 @@ final class ChoiceForeign extends AbstractChoice {
     }
 
     /**
-     * <p>Free data used to logically evaluate a goal an additional time.</p>
+     * <p>Free data used to logically evaluate a term an additional time.</p>
      * <p>The sliding window is passed via the engine display.</p>
      * <p>The new sliding window is passed via the engine display.</p>
      *

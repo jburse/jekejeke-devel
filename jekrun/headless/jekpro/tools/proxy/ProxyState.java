@@ -88,7 +88,7 @@ public final class ProxyState implements InvocationHandler {
     }
 
     /**
-     * <p>Invoke by executing a Prolog goal.</p>
+     * <p>Invoke by executing a Prolog term.</p>
      *
      * @param proxy  The proxy object.
      * @param method The method.

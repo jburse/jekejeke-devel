@@ -139,7 +139,7 @@ abstract class AbstractMember extends AbstractLense
     /***********************************************************/
 
     /**
-     * <p>Build the arguments array. The arguments of the goal
+     * <p>Build the arguments array. The arguments of the term
      * are computed, checked and converted if necessary.</p>
      *
      * @param temp The skeleton.
@@ -193,7 +193,7 @@ abstract class AbstractMember extends AbstractLense
     }
 
     /**
-     * <p>Build the arguments array. The arguments of the goal
+     * <p>Build the arguments array. The arguments of the term
      * are checked and converted if necessary.</p>
      *
      * @param temp The arguments skeleton.
