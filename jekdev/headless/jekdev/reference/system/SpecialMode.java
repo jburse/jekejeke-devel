@@ -281,7 +281,7 @@ public final class SpecialMode extends AbstractSpecial {
      */
     private static boolean invokeBoth(Engine en)
             throws EngineException, EngineMessage {
-        Goal r = (Goal) en.contskel;
+        Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
         boolean backverify = en.visor.setVerify(false);
@@ -339,7 +339,7 @@ public final class SpecialMode extends AbstractSpecial {
      */
     private static boolean invokeIgnore(Engine en)
             throws EngineException, EngineMessage {
-        Goal r = (Goal) en.contskel;
+        Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
         int snap = en.number;

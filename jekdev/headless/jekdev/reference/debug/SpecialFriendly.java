@@ -164,7 +164,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
+            SkelAtom sa = StackElement.callableToName(clause.term);
             if (source != sa.scope)
                 continue;
             Object t = PreClause.intermediateToClause(clause, en);
@@ -246,7 +246,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
-                        pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
+                        pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
                         wr.write('\n');
                         wr.flush();
                     }
@@ -265,7 +265,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write(" _");
                         wr.write(Integer.toString(k));
                         wr.write(", ");
-                        pw.unparseStatement(((SkelCompound) clause.head).args[k], ref);
+                        pw.unparseStatement(((SkelCompound) clause.term).args[k], ref);
                         wr.write('\n');
                         wr.flush();
                     }
@@ -309,7 +309,7 @@ public final class SpecialFriendly extends AbstractSpecial {
             }
         }
         wr.write(' ');
-        pw.unparseStatement(goal.goal, ref);
+        pw.unparseStatement(goal.term, ref);
         wr.write('\n');
         wr.flush();
         return count;
