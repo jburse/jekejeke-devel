@@ -1,71 +1,50 @@
 /**
- * Predicates are brought into intermediate form before execution.
- * The intermediate form de-termines how the head of a clause is
- * unified and how the goals of the body of a clause are invoked.
- * The intermediate form is not necessarily a linear sequence of
- * instructions. Never-theless a thread working on a clause will
- * only be able to execute one block of code at a time. We identify
- * these blocks as instructions and show them in linear form. Some
- * optimization techniques might alter the execution order at runtime.
- *
- * When the intermediate form of a clause is listed, first the Prolog
- * text representation of the clause is given. Then the instructions
- * of the clause are listed in their default linear order. An instruction
- * is listed by showing its name and its operands. Our instruction set
- * only demands two forms of operands, goal arguments and clause
- * skeletons. The clause skeleton operands will be displayed by
- * respecting the operator definitions, list notation and set notation.
- * For better readability the instructions are numbered:
+ * PPredicates are brought into intermediate form before execution. The
+ * intermediate form deter-mines how the head of a clause is unified
+ * and how the goals of the body of a clause are in-voked. The
+ * intermediate form can be listed by the directives friendly/[0,1]
+ * and instrumented/[0,1]. The intermediate form consists of instructions
+ * of the following form:
  *
  * instruction	--> integer name [ operand { "," operand } ]
  * operand		--> "_" integer
- * 		            | term.
+ *  		      | term.
  *
- * We do not find any branching instructions in our instruction set.
- * Therefore instructions need not be prefix by a label and labels
- * cannot appear in the operands of an instruction. Labels are also
- * not needed to invoke a goal. The called predicate is simply
- * identified by the functor and arity of the goal. Further we do
- * not find any arithmetic or bit operation. These are handled by
- * invoking the corresponding built-ins. Most instructions are executed
- * multiple times since choice points might succeed again and thus
- * continuations might be re-executed.
+ * An operand that is an argument of the currently invoked goal is
+ * denoted by an underscore ('_') followed by an integer, indicating
+ * the argument index starting from zero (0). Other operands are simply
+ * Prolog terms from within the Prolog clause. The predicate
+ * instrumented/[0,1] will also list the debugger instrumentation
+ * of the clause:
  *
- * Here is a simple example of a clause and its intermediate form:
+ * Here is a simple example of a clause and its intermediate forms:
  *
  * ?- friendly(hello/1).
  * hello(X) :-
- *     write('Hello '),
- *     write(X),
- *     nl.
- *    0 init_display
- *    1 call_goal write('Hello ')
- *    2 new_bind X
- *    3 unify_var _0, X
- *    4 last_goal write(X)
- *    5 dispose_bind X
- *    6 last_goal nl
- *    7 last_cont
+ *    format('Hello %s\n', [X]).
+ * 0  unify_var _0, X
+ * 1  last_goal format('Hello %s\n', [X])
+ *
+ * ?- instrumented(hello/1).
+ * hello(X) :-
+ *    format('Hello %s\n', [X]).
+ * 0  call_goal sys_at
+ * 1  unify_var _0, X
+ * 2  call_goal sys_in
+ * 3  call_goal format('Hello %s\n', [X])
+ * 4  last_goal sys_out
  *
  * Our instruction set is not derived from the WAM architecture [5]
- * since terms are represented by a display and a skeleton. Therefore
+ * since terms are represented by a display and a skeleton. Therefore,
  * during unification in write mode we do not need to allocate
- * compounds or lists. Instead our space effort is bound by the
- * number of variable place holders that need to be created.
+ * compounds or lists. Instead, the space effort is bound by the number
+ * of variable placeholders that are created.
  *
- * The optimization we implemented therefore tend to reduce the
- * number of place holder allo-cations or to provide the Java
- * virtual machine an opportunity to reuse place holders. The local
- * optimizations are not based on n-grams [6]. Instead we do a variable
- * range analysis with far reaching code movements.
- *
- * The same intermediate code is used for a clause independent of the
- * mode, type or multiplicity of the called goal. We do not take
- * into account the ground-ness, data-type or determinacy of predicate
- * arguments. Subsequently there is no global or local optimization that
- * tries to infer this information [7]. The single independent code
- * idea is also epitomized in that we do not pursue global or local
- * code specialization [8] [9].
+ * The optimization we implemented therefore tend to reduce the number
+ * of placeholder allocations or to provide the Java virtual machine an
+ * opportunity to reuse placeholders. The local optimizations are not
+ * based on n-grams [6]. Instead, we do a variable range analysis with
+ * far reaching code movements for some forms of argument unification.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -110,6 +110,8 @@ public final class SpecialFriendly extends AbstractSpecial {
                 PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
+                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
+                pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, 0, en);
                 SpecialLoad.newLineFlush(wr);
@@ -134,6 +136,8 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
+                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
+                pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setWriter(wr);
                 SpecialFriendly.intermediatePredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
                 SpecialLoad.newLineFlush(wr);
@@ -169,14 +173,12 @@ public final class SpecialFriendly extends AbstractSpecial {
                 continue;
             Object t = PreClause.intermediateToClause(clause, en);
             pw.setSource(source);
-            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
-            pw.setSpez(PrologWriter.SPEZ_META);
+            pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
             pw.setOffset(-1);
             Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
                     SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
             pw.setSource(en.visor.peekStack());
-            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL & ~PrologWriter.FLAG_MKDT);
-            pw.setSpez(PrologWriter.SPEZ_META);
+            pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
             pw.setOffset(0);
             intermediateClause(pw, t, clause, ref, flags);
         }

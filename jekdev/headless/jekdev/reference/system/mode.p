@@ -68,7 +68,6 @@
 :- public sys_in/0.
 :- static sys_in/0.
 :- set_predicate_property(sys_in/0, sys_noinstrument).
-:- set_predicate_property(sys_in/0, sys_nowakeup).
 :- set_predicate_property(sys_in/0, sys_nostack).
 sys_in :-
    sys_notrace_chk(0), !.
@@ -78,7 +77,6 @@ sys_in :-
 :- private sys_in2/0.
 :- static sys_in2/0.
 :- set_predicate_property(sys_in2/0, sys_noinstrument).
-:- set_predicate_property(sys_in2/0, sys_nowakeup).
 :- set_predicate_property(sys_in2/0, sys_nostack).
 sys_in2.
 sys_in2 :-
@@ -98,7 +96,6 @@ sys_in2 :-
 :- public sys_out/0.
 :- static sys_out/0.
 :- set_predicate_property(sys_out/0, sys_noinstrument).
-:- set_predicate_property(sys_out/0, sys_nowakeup).
 :- set_predicate_property(sys_out/0, sys_nostack).
 sys_out :-
    sys_notrace_chk(2), !.
@@ -108,7 +105,6 @@ sys_out :-
 :- private sys_out2/0.
 :- static sys_out2/0.
 :- set_predicate_property(sys_out2/0, sys_noinstrument).
-:- set_predicate_property(sys_out2/0, sys_nowakeup).
 :- set_predicate_property(sys_out2/0, sys_nostack).
 sys_out2 :-
    sys_cut_chk(3), !.
@@ -133,7 +129,6 @@ sys_out2 :-
 :- public sys_at/0.
 :- static sys_at/0.
 :- set_predicate_property(sys_at/0, sys_noinstrument).
-:- set_predicate_property(sys_at/0, sys_nowakeup).
 :- set_predicate_property(sys_at/0, sys_nostack).
 sys_at :-
    sys_notrace_chk(4), !.
@@ -143,7 +138,6 @@ sys_at :-
 :- private sys_at2/0.
 :- static sys_at2/0.
 :- set_predicate_property(sys_at2/0, sys_noinstrument).
-:- set_predicate_property(sys_at2/0, sys_nowakeup).
 :- set_predicate_property(sys_at2/0, sys_nostack).
 sys_at2 :-
    sys_clause_chk(5), !.

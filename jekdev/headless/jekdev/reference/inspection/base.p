@@ -1,7 +1,13 @@
 /**
  * This module provides additional access to sources. The predicate
  * sys_first_location/2 and sys_location/2 allow quick lookup of indicators
- * from positions. The predicates also work for local modules.
+ * from positions. The predicates also work for local modules and
+ * are suitable for source code indexing.
+ *
+ * The second set of predicates sys_provable_hash/3 and sys_syntax_hash/3
+ * complement the module "notation". These predicates automatically
+ * remove respectively add the qualified part from a provable
+ * respectively syntax indicator depending on context.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
