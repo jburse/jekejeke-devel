@@ -65,7 +65,7 @@ public final class SpecialStruc extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean moniFirst2(Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SYS_TERM_KERNEL:
@@ -109,7 +109,7 @@ public final class SpecialStruc extends AbstractSpecial {
      */
     private static void termKernel(Object t, Display d, Engine en) {
         while (t instanceof SkelVar) {
-            BindVar b;
+            BindUniv b;
             if ((b = d.bind[((SkelVar) t).id]).display == null)
                 break;
             t = b.skel;
@@ -121,7 +121,7 @@ public final class SpecialStruc extends AbstractSpecial {
             SkelCompound sc = (SkelCompound) t;
             t = sc.args[1];
             while (t instanceof SkelVar) {
-                BindVar b;
+                BindUniv b;
                 if ((b = d.bind[((SkelVar) t).id]).display == null)
                     break;
                 t = b.skel;
@@ -141,7 +141,7 @@ public final class SpecialStruc extends AbstractSpecial {
      */
     private static void termGlobals(Object t, Display d, EngineVars ev) {
         while (t instanceof SkelVar) {
-            BindVar b;
+            BindUniv b;
             if ((b = d.bind[((SkelVar) t).id]).display == null)
                 return;
             t = b.skel;

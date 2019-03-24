@@ -285,7 +285,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (dc == null) {
-                dc = new DisplayClause(BindUniv.newUniv(clause.dispsize));
+                dc = new DisplayClause(clause.dispsize);
             } else {
                 dc.bind = BindUniv.resizeUniv(clause.dispsize, dc.bind);
             }
@@ -559,7 +559,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (ref1 == null) {
-                ref1 = new Display(BindUniv.newUniv(clause.size));
+                ref1 = new Display(clause.size);
             } else {
                 ref1.bind = BindUniv.resizeUniv(clause.size, ref1.bind);
             }

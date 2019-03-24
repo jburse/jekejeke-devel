@@ -127,8 +127,7 @@ public final class SpecialControl extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(
-                    BindUniv.newUniv(clause.dispsize));
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)

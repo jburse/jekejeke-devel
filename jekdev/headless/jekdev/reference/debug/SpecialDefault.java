@@ -328,7 +328,7 @@ public final class SpecialDefault extends AbstractSpecial {
             pw.unparseStatement(t, d);
             return;
         }
-        Display dc = new Display(BindLexical.newLexical(2));
+        Display dc = new Display(2);
         SkelVar var1 = SkelVar.valueOf(0);
         SkelVar var3 = SkelVar.valueOf(1);
         dc.bind[0].bindUniv(t, d, en);
@@ -340,10 +340,9 @@ public final class SpecialDefault extends AbstractSpecial {
         DisplayClause u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+            DisplayClause ref = new DisplayClause(clause.dispsize);
             ref.def = clause;
-            ref.addArgument(t, dc, en);
+            ref.bind[0].bindUniv(t, dc, en);
             ref.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref;

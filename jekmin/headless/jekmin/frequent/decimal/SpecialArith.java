@@ -87,7 +87,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, mpDecimal(alfa, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_MP_ADD:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -97,7 +97,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, mpAdd(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_MP_SUB:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -107,7 +107,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, mpSub(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_MP_MUL:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -117,7 +117,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, mpMul(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_MP_SLASH:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -127,7 +127,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, mpSlash(alfa, beta, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 case SPECIAL_MP_INT_POW:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -138,7 +138,7 @@ public class SpecialArith extends AbstractSpecial {
                     if (!en.unifyTerm(temp[3], ref, mpIntPow(alfa, x, mc),
                             Display.DISPLAY_CONST))
                         return false;
-                    return en.getNext();
+                    return true;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }

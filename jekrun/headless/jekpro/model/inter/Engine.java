@@ -286,8 +286,7 @@ public class Engine implements InterfaceStack {
             BindUniv.remTab(d2.bind, this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        DisplayClause ref2 = new DisplayClause(
-                BindUniv.newUniv(clause.dispsize));
+        DisplayClause ref2 = new DisplayClause(clause.dispsize);
         ref2.def = clause;
         ref2.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
@@ -400,8 +399,7 @@ public class Engine implements InterfaceStack {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(
-                    BindUniv.newUniv(clause.dispsize));
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
             ref2.bind[0].bindUniv(skel, ref, this);
             if (multi)
@@ -470,7 +468,7 @@ public class Engine implements InterfaceStack {
             return false;
         }
         if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = new Display(BindUniv.newUniv(ew.countvar));
+            ew.last = new Display(ew.countvar);
         ew.countvar = 0;
         skel = ew.replaceGoalAndWrap(t, d, this);
         display = ew.last;

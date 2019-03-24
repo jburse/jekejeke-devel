@@ -290,10 +290,9 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
-            ref2.addArgument(en.skel, ref, en);
+            ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
@@ -348,10 +347,9 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
-            ref2.addArgument(en.skel, ref, en);
+            ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);

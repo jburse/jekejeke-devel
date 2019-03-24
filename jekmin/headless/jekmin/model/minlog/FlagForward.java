@@ -39,7 +39,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FlagForward extends AbstractFlag {
+public final class FlagForward extends AbstractFlag<Engine> {
     final static String OP_FLAG_SYS_VERIFY = "sys_verify";
 
     private static final int FLAG_SYS_VERIFY = 0;
@@ -58,8 +58,8 @@ public final class FlagForward extends AbstractFlag {
      *
      * @return The prolog flags.
      */
-    static MapHash<String, AbstractFlag> defineFlags() {
-        MapHash<String, AbstractFlag> prologflags = new MapHash<String, AbstractFlag>();
+    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
+        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
         prologflags.add(OP_FLAG_SYS_VERIFY, new FlagForward(FLAG_SYS_VERIFY));
         return prologflags;
     }
@@ -70,7 +70,7 @@ public final class FlagForward extends AbstractFlag {
      * @param en The engine.
      * @return The value.
      */
-    public Object getFlag(Engine en) {
+    public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
             case FLAG_SYS_VERIFY:
                 return AbstractFlag.switchToAtom((en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0);
@@ -88,7 +88,7 @@ public final class FlagForward extends AbstractFlag {
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setFlag(Object m, Display d, Engine en)
+    public boolean setObjFlag(Engine obj, Object m, Display d, Engine en)
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_VERIFY:

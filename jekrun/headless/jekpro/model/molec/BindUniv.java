@@ -178,22 +178,6 @@ public class BindUniv extends AbstractUndo {
     }
 
     /**
-     * <p>Create a new display.</p>
-     * <p>Fill the binds with bind lexical.</p>
-     *
-     * @param s The size.
-     * @return The new display.
-     */
-    public static BindUniv[] newUniv(int s) {
-        if (s == 0)
-            return BIND_CONST;
-        BindUniv[] b = new BindUniv[s];
-        for (int i = 0; i < s; i++)
-            b[i] = new BindUniv();
-        return b;
-    }
-
-    /**
      * <p>Set the bind size.</p>
      * <p>Refill the binds with bind lexical.</p>
      *

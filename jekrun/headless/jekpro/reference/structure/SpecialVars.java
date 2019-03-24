@@ -530,7 +530,7 @@ public final class SpecialVars extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<Object, NamedDistance> entry =

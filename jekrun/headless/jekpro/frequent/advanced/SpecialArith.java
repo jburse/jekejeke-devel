@@ -72,7 +72,7 @@ public final class SpecialArith extends AbstractSpecial {
                 Display ref = en.display;
                 Number num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 Number num2 = SpecialEval.derefAndCastNumber(temp[1], ref);
-                BindVar mark = en.bind;
+                AbstractUndo mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
                     if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {

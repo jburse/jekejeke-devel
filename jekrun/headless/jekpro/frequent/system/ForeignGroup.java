@@ -226,7 +226,7 @@ public final class ForeignGroup {
             return (val != null ? val : AbstractFlag.OP_NULL);
         } else if (OP_SYS_GROUP_STORE.equals(name)) {
             Object val = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
-            return (val != null ? ((Store)val).proxy : AbstractFlag.OP_NULL);
+            return (val != null ? ((Store) val).proxy : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

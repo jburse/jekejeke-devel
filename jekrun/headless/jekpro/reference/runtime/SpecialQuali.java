@@ -97,8 +97,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 boolean ext = ref.getAndReset();
                 Clause clause = en.store.foyer.CLAUSE_TRAN;
-                DisplayClause ref2 = new DisplayClause(
-                        BindUniv.newUniv(clause.dispsize));
+                DisplayClause ref2 = new DisplayClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
@@ -124,8 +123,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 ext = ref.getAndReset();
                 clause = en.store.foyer.CLAUSE_TRAN;
-                ref2 = new DisplayClause(
-                        BindUniv.newUniv(clause.dispsize));
+                ref2 = new DisplayClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
@@ -688,7 +686,7 @@ public final class SpecialQuali extends AbstractSpecial {
             }
         }
         if (multi) {
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
             last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.display = last;

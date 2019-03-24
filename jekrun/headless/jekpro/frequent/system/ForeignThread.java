@@ -396,7 +396,7 @@ public final class ForeignThread {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag<Thread>> pfs = branch.getThreadFlags();
-            if (pfs==null)
+            if (pfs == null)
                 continue;
             for (MapEntry<String, AbstractFlag<Thread>> entry2 = pfs.getFirstEntry();
                  entry2 != null; entry2 = pfs.successor(entry2)) {
@@ -448,7 +448,7 @@ public final class ForeignThread {
      * <p>Find a thread flag.</p>
      *
      * @param flag The flag name.
-     * @param en The engine.
+     * @param en   The engine.
      * @return The thread flag.
      * @throws EngineMessage Shit happens.
      */
@@ -463,7 +463,9 @@ public final class ForeignThread {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag<Thread>> pfs = branch.getThreadFlags();
-            AbstractFlag af = (pfs != null ? pfs.get(flag) : null);
+            if (pfs == null)
+                continue;
+            AbstractFlag af = pfs.get(flag);
             if (af != null)
                 return af;
         }

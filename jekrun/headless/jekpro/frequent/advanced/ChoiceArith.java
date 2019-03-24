@@ -46,7 +46,7 @@ final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Goal goalskel;
     private final DisplayClause goaldisplay;
-    private final BindVar mark;
+    private final AbstractUndo mark;
     private final int id;
 
     /**
@@ -58,7 +58,7 @@ final class ChoiceArith extends AbstractChoice {
      */
     ChoiceArith(AbstractChoice n,
                 Number c, Goal r, DisplayClause u,
-                BindVar m, int i) {
+                AbstractUndo m, int i) {
         super(n);
         goalskel = r;
         goaldisplay = u;

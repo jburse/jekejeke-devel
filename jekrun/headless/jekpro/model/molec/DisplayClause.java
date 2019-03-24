@@ -50,10 +50,10 @@ public final class DisplayClause extends Display implements InterfaceStack {
     /**
      * <p>Create a new display.</p>
      *
-     * @param b The bind count.
+     * @param size The requested size.
      */
-    public DisplayClause(BindUniv[] b) {
-        super(b);
+    public DisplayClause(int size) {
+        super(size);
     }
 
     /**

@@ -97,8 +97,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause(
-                        BindUniv.newUniv(clause.dispsize));
+                DisplayClause ref2 = new DisplayClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, en.display, en);
                 ref2.setEngine(en);

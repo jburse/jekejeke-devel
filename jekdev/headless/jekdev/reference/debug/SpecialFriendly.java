@@ -58,9 +58,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static int SPECIAL_SYS_FRIENDLY = 0;
     private final static int SPECIAL_SYS_INSTRUMENTED = 1;
 
-    private final static String CODE_NEW_BIND = " new_bind";
-    private final static String CODE_DISPOSE_BIND = " dispose_bind";
-
     private final static String CODE_UNIFY_TERM = " unify_term";
     private final static String CODE_UNIFY_VAR = " unify_var";
 
@@ -68,8 +65,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_CALL_META = " call_meta";
     private final static String CODE_LAST_META = " last_meta";
-
-    private final static int ALGN_NMBR = 5;
 
     /**
      * <p>Create a index dump special.</p>
@@ -214,79 +209,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     }
 
     /**
-     * <p>Write out a new bind instruction.</p>
-     *
-     * @param t         The clause term.
-     * @param lastalloc The last alloc.
-     * @param endalloc  The end alloc.
-     * @param pw        The prolog writer.
-     * @param ref       The display.
-     * @param count     The statement counter.
-     * @return The statement counter.
-     * @throws IOException IO error.
-     */
-    private static int intermediateNewBind(Object t, int lastalloc, int endalloc,
-                                           PrologWriter pw, Display ref,
-                                           int count)
-            throws IOException, EngineException, EngineMessage {
-        Writer wr = pw.getWriter();
-        for (int j = lastalloc; j < endalloc; j++) {
-            if (j == lastalloc) {
-                count = intermediateCount(wr, count);
-                wr.write(SpecialFriendly.CODE_NEW_BIND);
-                wr.write(" ");
-            } else {
-                wr.write(", ");
-            }
-            pw.unparseStatement(getVar(t, j), ref);
-            if (j == endalloc - 1) {
-                wr.write('\n');
-                wr.flush();
-            }
-        }
-        return count;
-    }
-
-    /**
-     * <p>Write out a dispose bind instruction.</p>
-     *
-     * @param t      The clause term.
-     * @param lastgc The last alloc.
-     * @param endgc  The end alloc.
-     * @param clause The clause.
-     * @param pw     The prolog writer.
-     * @param ref    The display.
-     * @param count  The statement counter.
-     * @return The statement counter.
-     * @throws IOException IO error.
-     */
-    private static int intermediateDisposeBind(Object t, int lastgc, int endgc,
-                                               Clause clause,
-                                               PrologWriter pw, Display ref,
-                                               int count)
-            throws IOException, EngineException, EngineMessage {
-        Writer wr = pw.getWriter();
-        for (int j = lastgc; j < endgc; j++) {
-            if (j == lastgc) {
-                count = intermediateCount(wr, count);
-                wr.write(SpecialFriendly.CODE_DISPOSE_BIND);
-                wr.write(" ");
-            } else {
-                wr.write(", ");
-            }
-            int k = clause.remtab[j];
-            pw.unparseStatement(getVar(t, k), ref);
-            if (j == endgc - 1) {
-                wr.write('\n');
-                wr.flush();
-            }
-        }
-        return count;
-    }
-
-
-
-    /**
      * <p>Disassemble a clause.</p>
      *
      * @param pw     The prolog writer.
@@ -304,24 +226,21 @@ public final class SpecialFriendly extends AbstractSpecial {
             Writer wr = pw.getWriter();
             /* dissassemble the head */
             int count = 0;
-            int lastalloc = 0;
             if (clause.intargs != null) {
                 for (int l = 0; l < clause.intargs.length; l++) {
                     int n = clause.intargs[l];
-                    if (n < 0) {
+                    if (n >= 0) {
                         if (n != Integer.MIN_VALUE) {
                             count = intermediateCount(wr, count);
                             wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                             wr.write(" _");
-                            wr.write(Integer.toString(-n - 1));
+                            wr.write(Integer.toString(n));
                             wr.write(", _");
                             wr.write(Integer.toString(l));
                             wr.write('\n');
                             wr.flush();
                         }
-                    } else {
-                        count = intermediateNewBind(t, lastalloc, n, pw, ref, count);
-                        lastalloc = n;
+                    } else if (n != -2) {
                         count = intermediateCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
@@ -334,15 +253,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                 }
             }
             Intermediate end = nextClause(clause, flags);
-            int lastgc = 0;
             while (!(end instanceof Clause)) {
                 Goal goal = (Goal) end;
-                /* dissassemble a dispose */
-                count = intermediateDisposeBind(t, lastgc, goal.endgc, clause, pw, ref, count);
-                lastgc = goal.endgc;
-                /* dissassemble a new */
-                count = intermediateNewBind(t, lastalloc, goal.endalloc, pw, ref, count);
-                lastalloc = goal.endalloc;
+                /* dissassemble a variable unify */
                 if (goal.uniargs != null) {
                     int[] uniargs = goal.uniargs;
                     for (int l = 0; l < uniargs.length; l++) {
@@ -361,9 +274,6 @@ public final class SpecialFriendly extends AbstractSpecial {
                 count = intermediateCallGoal(goal, pw, ref, count);
                 end = nextGoal(end, flags);
             }
-            /* dissassemble a dispose */
-            int n = ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0 ? 0 : clause.dispsize);
-            intermediateDisposeBind(t, lastgc, n, clause, pw, ref, count);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }

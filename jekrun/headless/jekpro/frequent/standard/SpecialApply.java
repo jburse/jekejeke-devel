@@ -98,10 +98,9 @@ public final class SpecialApply extends AbstractSpecial {
                     BindUniv.remTab(d.bind, en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause(
-                        DisplayClause.newClause(clause.dispsize));
+                DisplayClause ref2 = new DisplayClause(clause.dispsize);
                 ref2.def = clause;
-                ref2.addArgument(en.skel, ref, en);
+                ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi || ext)
                     BindUniv.remTab(ref.bind, en);
                 ref2.setEngine(en);
@@ -213,7 +212,7 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         if (multi) {
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
             last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.display = last;
@@ -326,7 +325,7 @@ public final class SpecialApply extends AbstractSpecial {
             }
         }
         if (multi) {
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
             last.flags |= Display.MASK_DPTM_MLTI;
         }
         en.display = last;

@@ -326,8 +326,7 @@ public final class SpecialSession extends AbstractSpecial {
                 int snap = en.number;
                 DisplayClause backref = en.visor.query;
                 try {
-                    DisplayClause ref = new DisplayClause(
-                            BindUniv.newUniv(clause.dispsize));
+                    DisplayClause ref = new DisplayClause(clause.dispsize);
                     ref.def = clause;
                     en.visor.query = ref;
                     ref.setEngine(en);
@@ -456,8 +455,7 @@ public final class SpecialSession extends AbstractSpecial {
             DisplayClause backref = en.visor.query;
             DisplayClause ref;
             try {
-                ref = new DisplayClause(
-                        BindUniv.newUniv(clause.dispsize));
+                ref = new DisplayClause(clause.dispsize);
                 ref.def = clause;
                 en.visor.query = ref;
                 ref.setEngine(en);

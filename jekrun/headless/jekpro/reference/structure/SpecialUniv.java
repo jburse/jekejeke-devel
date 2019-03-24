@@ -231,7 +231,7 @@ public final class SpecialUniv extends AbstractSpecial {
             }
         }
         if (multi)
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
         en.display = last;
         return multi;
     }
@@ -422,7 +422,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         if (multi)
-            last = new Display(BindUniv.newUniv(countvar));
+            last = new Display(countvar);
         en.display = last;
         return (multi ? -length - 1 : length);
     }

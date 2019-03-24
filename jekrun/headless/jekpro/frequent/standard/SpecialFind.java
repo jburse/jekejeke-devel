@@ -144,16 +144,15 @@ public final class SpecialFind extends AbstractSpecial {
         Intermediate r = en.contskel;
         DisplayClause u = en.contdisplay;
         ListArray<Object> temp = null;
-        BindVar mark = en.bind;
+        AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(
-                    DisplayClause.newClause(clause.dispsize));
+            DisplayClause ref2 = new DisplayClause(clause.dispsize);
             ref2.def = clause;
-            ref2.addArgument(en.skel, en.display, en);
+            ref2.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
                 BindUniv.remTab(ref.bind, en);
             ref2.setEngine(en);
@@ -234,7 +233,7 @@ public final class SpecialFind extends AbstractSpecial {
             en.skel = new SkelCompound(sc.sym, args, v2);
             en.display = d2;
         } else {
-            Display d3 = new Display(BindUniv.newUniv(2));
+            Display d3 = new Display(2);
             d3.flags |= Display.MASK_DPTM_MLTI;
             boolean ext = d2.getAndReset();
             d3.bind[0].bindUniv(t2, d2, en);

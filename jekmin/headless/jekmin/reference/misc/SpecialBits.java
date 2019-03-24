@@ -62,7 +62,7 @@ public final class SpecialBits extends AbstractSpecial {
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean moniFirst2(Engine en)
+    public final boolean moniFirst(Engine en)
             throws EngineMessage {
         try {
             switch (id) {

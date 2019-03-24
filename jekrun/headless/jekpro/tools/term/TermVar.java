@@ -71,7 +71,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = new Display(BindUniv.newUniv(1));
+        display = new Display(1);
         display.flags |= Display.MASK_DPTM_MLTI;
     }
 
