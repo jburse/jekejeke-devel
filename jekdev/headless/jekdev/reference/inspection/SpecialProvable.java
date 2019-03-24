@@ -114,7 +114,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -151,7 +151,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -167,7 +167,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;

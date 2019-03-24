@@ -85,7 +85,7 @@ public final class SpecialFind extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_FINDALL_END:
                 temp = ((SkelCompound) en.skel).args;
@@ -106,7 +106,7 @@ public final class SpecialFind extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_COPY_TERM:
                 temp = ((SkelCompound) en.skel).args;
@@ -117,7 +117,7 @@ public final class SpecialFind extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -154,7 +154,7 @@ public final class SpecialFind extends AbstractSpecial {
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref2.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref2;
@@ -238,11 +238,11 @@ public final class SpecialFind extends AbstractSpecial {
             boolean ext = d2.getAndReset();
             d3.bind[0].bindUniv(t2, d2, en);
             if (ext)
-                BindUniv.remTab(d2.bind, en);
+                d2.remTab(en);
             ext = d.getAndReset();
             d3.bind[1].bindUniv(t, d, en);
             if (ext)
-                BindUniv.remTab(d.bind, en);
+                d.remTab(en);
             en.skel = sc;
             en.display = d3;
         }

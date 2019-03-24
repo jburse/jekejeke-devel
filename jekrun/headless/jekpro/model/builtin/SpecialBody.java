@@ -2,7 +2,10 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelCompound;
 
@@ -78,7 +81,7 @@ public final class SpecialBody extends AbstractSpecial {
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;

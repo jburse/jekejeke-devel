@@ -85,7 +85,7 @@ public final class SpecialApply extends AbstractSpecial {
                 if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_CALL_ANY:
                 temp = ((SkelCompound) en.skel).args;
@@ -95,14 +95,14 @@ public final class SpecialApply extends AbstractSpecial {
                 boolean ext = d.getAndReset();
                 multi = en.wrapGoal();
                 if (multi && ext)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
                 DisplayClause ref2 = new DisplayClause(clause.dispsize);
                 ref2.def = clause;
                 ref2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi || ext)
-                    BindUniv.remTab(ref.bind, en);
+                    ref.remTab(en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
@@ -260,7 +260,7 @@ public final class SpecialApply extends AbstractSpecial {
             boolean ext = d2.getAndReset();
             d3.bind[sv.id].bindUniv(t2, d2, en);
             if (ext)
-                BindUniv.remTab(d2.bind, en);
+                d2.remTab(en);
             args[1] = sv;
         } else {
             args[1] = t2;

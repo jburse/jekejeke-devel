@@ -45,11 +45,9 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Engine implements InterfaceStack {
+public class Engine extends StackElement {
     public Object skel;
     public Display display;
-    public Intermediate contskel;
-    public DisplayClause contdisplay;
     public Store store;
     public final Supervisor visor;
     public AbstractUndo bind;
@@ -73,24 +71,6 @@ public class Engine implements InterfaceStack {
             throw new IllegalArgumentException("store mismatch");
         store = s;
         visor = v;
-    }
-
-    /**
-     * <p>Retrieve the cont skel.</p>
-     *
-     * @return The cont skel.
-     */
-    public Intermediate getContSkel() {
-        return contskel;
-    }
-
-    /**
-     * <p>Retrieve the cont display.</p>
-     *
-     * @return The cont display.
-     */
-    public DisplayClause getContDisplay() {
-        return contdisplay;
     }
 
     /**
@@ -283,14 +263,14 @@ public class Engine implements InterfaceStack {
         boolean ext = d2.getAndReset();
         boolean multi = wrapGoal();
         if (multi && ext)
-            BindUniv.remTab(d2.bind, this);
+            d2.remTab(this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
         DisplayClause ref2 = new DisplayClause(clause.dispsize);
         ref2.def = clause;
         ref2.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
-            BindUniv.remTab(ref.bind, this);
+            ref.remTab(this);
         ref2.setEngine(this);
         contskel = clause;
         contdisplay = ref2;
@@ -403,7 +383,7 @@ public class Engine implements InterfaceStack {
             ref2.def = clause;
             ref2.bind[0].bindUniv(skel, ref, this);
             if (multi)
-                BindUniv.remTab(ref.bind, this);
+                ref.remTab(this);
             ref2.setEngine(this);
             contskel = clause;
             contdisplay = ref2;

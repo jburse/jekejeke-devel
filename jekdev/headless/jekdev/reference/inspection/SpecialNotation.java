@@ -103,7 +103,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_CALLABLE_TO_COLON:
                 temp = ((SkelCompound) en.skel).args;

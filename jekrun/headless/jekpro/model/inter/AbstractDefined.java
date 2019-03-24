@@ -286,7 +286,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             clause = list[at++];
             if (dc == null) {
                 dc = new DisplayClause(clause.dispsize);
-            } else if (dc.bind.length != clause.dispsize) {
+            } else {
                 dc.setSize(clause.dispsize);
             }
             dc.def = clause;
@@ -308,7 +308,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         }
         DisplayClause u = en.contdisplay;
         dc.number = en.number;
-        dc.prune = ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : dc);
+        if ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0)
+            dc.flags |= DisplayClause.MASK_DPCL_NOBR;
         dc.contskel = en.contskel;
         dc.contdisplay = u;
 
@@ -560,7 +561,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             clause = list[at++];
             if (ref1 == null) {
                 ref1 = new Display(clause.size);
-            } else if (ref1.bind.length != clause.size) {
+            } else {
                 ref1.setSize(clause.size);
             }
             if (!(clause.term instanceof SkelCompound) ||
@@ -589,9 +590,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 throw en.fault;
         }
         if (ext)
-            BindUniv.remTab(refhead.bind, en);
+            refhead.remTab(en);
         if (clause.size != 0)
-            BindUniv.remTab(ref1.bind, en);
+            ref1.remTab(en);
 
         if (at != list.length) {
             /* create choice point */

@@ -85,9 +85,11 @@ public class Goal extends Intermediate {
                 if ((u1.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
                     Clause clause = u1.def;
                     if ((clause.flags & Clause.MASK_CLAUSE_NBDY) == 0 && clause.dispsize > 0)
-                        BindUniv.remTab(u1.bind, en);
+                        u1.remTab(en);
                     u1.flags |= DisplayClause.MASK_DPCL_LTGC;
                 }
+                if ((u1.flags & DisplayClause.MASK_DPCL_NOBR) == 0)
+                    u.flags &= ~DisplayClause.MASK_DPCL_NOBR;
                 u.contskel = u1.contskel;
                 u.contdisplay = u1.contdisplay;
             }

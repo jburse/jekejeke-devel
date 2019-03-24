@@ -89,7 +89,7 @@ public class Clause extends Intermediate implements InterfaceReference {
                 u.number + 1 : u.number) >= en.number) {
             if ((u.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
                 if ((flags & Clause.MASK_CLAUSE_NBDY) == 0 && dispsize > 0)
-                    BindUniv.remTab(u.bind, en);
+                    u.remTab(en);
                 u.flags |= DisplayClause.MASK_DPCL_LTGC;
             }
         }

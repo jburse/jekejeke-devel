@@ -6,7 +6,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -81,7 +80,9 @@ public final class SpecialControl extends AbstractSpecial {
                 DisplayClause ref2 = en.contdisplay;
                 en.window = ref2;
                 en.fault = null;
-                en.cutChoices(ref2.prune.number);
+                while ((ref2.flags & DisplayClause.MASK_DPCL_NOBR) != 0)
+                    ref2 = ref2.contdisplay;
+                en.cutChoices(ref2.number);
                 en.window = null;
                 if (en.fault != null)
                     throw en.fault;
@@ -132,7 +133,7 @@ public final class SpecialControl extends AbstractSpecial {
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref2.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref2;
@@ -185,7 +186,7 @@ public final class SpecialControl extends AbstractSpecial {
             if (!en.unifyTerm(temp[1], ref, temp2, ref2))
                 throw y;
             if (multi)
-                BindUniv.remTab(ref2.bind, en);
+                ref2.remTab(en);
         } catch (EngineException z) {
             throw new EngineException(y, z);
         }

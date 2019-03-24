@@ -79,7 +79,7 @@ public final class SupplementElem extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = ulp(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -91,13 +91,13 @@ public final class SupplementElem extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = gcd(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;

@@ -40,11 +40,11 @@ public final class DisplayClause extends Display implements InterfaceStack {
     public final static int MASK_DPCL_MORE = 0x00000010;
     public final static int MASK_DPCL_SOFT = 0x00000020;
     public final static int MASK_DPCL_LTGC = 0x00000040;
+    public final static int MASK_DPCL_NOBR = 0x00000040;
 
     public Intermediate contskel;
     public DisplayClause contdisplay;
     public int number;
-    public DisplayClause prune;
     public Clause def;
 
     /**
@@ -82,7 +82,8 @@ public final class DisplayClause extends Display implements InterfaceStack {
     public final void setEngine(Engine en) {
         DisplayClause u = en.contdisplay;
         number = en.number;
-        prune = ((def.flags & Clause.MASK_CLAUSE_NOBR) != 0 ? u.prune : this);
+        if ((def.flags & Clause.MASK_CLAUSE_NOBR) != 0)
+            u.flags |= MASK_DPCL_NOBR;
         contskel = en.contskel;
         contdisplay = u;
     }

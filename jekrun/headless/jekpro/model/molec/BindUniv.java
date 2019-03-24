@@ -86,6 +86,7 @@ public class BindUniv extends AbstractUndo {
                     bc = b[v.id];
                     int j = bc.refs;
                     if (j == 0) {
+                        b[v.id] = null;
                         if (bc.display != null)
                             BindUniv.unbind(bc, en);
                     } else {
@@ -97,6 +98,7 @@ public class BindUniv extends AbstractUndo {
             bc = b[v.id];
             int j = bc.refs;
             if (j == 0) {
+                b[v.id] = null;
                 if (bc.display != null)
                     continue;
             } else {
@@ -153,25 +155,6 @@ public class BindUniv extends AbstractUndo {
                 SkelVar v = temp[j];
                 BindUniv bc = b[v.id];
                 bc.refs++;
-            }
-        }
-    }
-
-    /**
-     * <p>Same as engine remtab for univ builtins.</p>
-     *
-     * @param b  The display
-     * @param en The engine.
-     */
-    public static void remTab(BindUniv[] b, Engine en) {
-        for (int k = 0; k < b.length; k++) {
-            BindUniv bc = b[k];
-            int j = bc.refs;
-            if (j == 0) {
-                if (bc.display != null)
-                    BindUniv.unbind(bc, en);
-            } else {
-                bc.refs = j - 1;
             }
         }
     }

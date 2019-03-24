@@ -94,7 +94,7 @@ public final class SpecialSequence extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, val, d))
                     return false;
                 if (multi)
-                    BindUniv.remTab(d.bind, en);
+                    d.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

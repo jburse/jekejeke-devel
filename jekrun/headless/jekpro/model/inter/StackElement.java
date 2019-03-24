@@ -48,17 +48,6 @@ public class StackElement implements InterfaceStack {
     public DisplayClause contdisplay;
 
     /**
-     * <p>Create a new stack element.</p>
-     *
-     * @param r The continuation skeleton.
-     * @param u The continuation display.
-     */
-    public StackElement(Intermediate r, DisplayClause u) {
-        contskel = r;
-        contdisplay = u;
-    }
-
-    /**
      * <p>Retrieve the cont skel.</p>
      *
      * @return The cont skel.

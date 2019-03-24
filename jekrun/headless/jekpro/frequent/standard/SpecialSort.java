@@ -90,7 +90,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_DISTINCT:
                     temp = ((SkelCompound) en.skel).args;
@@ -101,7 +101,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
@@ -112,7 +112,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_SYS_KEYGROUP:
                     temp = ((SkelCompound) en.skel).args;
@@ -123,7 +123,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_HASH_CODE:
                     temp = ((SkelCompound) en.skel).args;
@@ -158,7 +158,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, d))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 case SPECIAL_LOCALE_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
@@ -170,7 +170,7 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
                         return false;
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

@@ -81,7 +81,7 @@ public final class SupplementBits extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(bitCount(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -93,7 +93,7 @@ public final class SupplementBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(bitLength(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -105,7 +105,7 @@ public final class SupplementBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(lowestSetBit(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -117,13 +117,13 @@ public final class SupplementBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     int x = SpecialEval.castIntValue(alfa);
                     en.skel = setBit(x, beta);
@@ -137,13 +137,13 @@ public final class SupplementBits extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     x = SpecialEval.castIntValue(alfa);
                     en.skel = clearBit(x, beta);

@@ -9,7 +9,6 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -169,7 +168,9 @@ public final class SpecialMode extends AbstractSpecial {
                     default:
                         throw new IllegalArgumentException("illegal mode");
                 }
-                Object val = new StackElement(r2, u2);
+                StackElement val = new StackElement();
+                val.contskel = r2;
+                val.contdisplay = u2;
                 en.skel = new SkelCompound(((FoyerTrace)
                         en.store.foyer).ATOM_TRACE_GOAL, portToAtom(port, en), val);
                 en.display = Display.DISPLAY_CONST;
@@ -230,7 +231,9 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if there are previous choice points, otherwise false.
      */
     private static boolean isCutChoice(int num, DisplayClause u2) {
-        if (u2.prune.number >= num)
+        while ((u2.flags & DisplayClause.MASK_DPCL_NOBR) != 0)
+            u2 = u2.contdisplay;
+        if (u2.number >= num)
             return false;
         return true;
     }
@@ -294,7 +297,7 @@ public final class SpecialMode extends AbstractSpecial {
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref2.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref2;
@@ -351,7 +354,7 @@ public final class SpecialMode extends AbstractSpecial {
             ref2.def = clause;
             ref2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
-                BindUniv.remTab(ref.bind, en);
+                ref.remTab(en);
             ref2.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref2;

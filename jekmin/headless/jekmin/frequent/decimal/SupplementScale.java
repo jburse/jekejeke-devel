@@ -85,7 +85,7 @@ public class SupplementScale extends AbstractSpecial {
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(TermAtomic.scale(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -97,7 +97,7 @@ public class SupplementScale extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -109,13 +109,13 @@ public class SupplementScale extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     int x = SpecialEval.castIntValue(beta);
                     en.skel = newDecimal(alfa, x);
                     en.display = Display.DISPLAY_CONST;
@@ -128,7 +128,7 @@ public class SupplementScale extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(precision(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -140,7 +140,7 @@ public class SupplementScale extends AbstractSpecial {
                     multi = d.getAndReset();
                     MathContext mc = SpecialArith.derefAndCastContext(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     en.skel = Integer.valueOf(mc.getPrecision());
                     en.display = Display.DISPLAY_CONST;
                     return;
@@ -152,7 +152,7 @@ public class SupplementScale extends AbstractSpecial {
                     multi = d.getAndReset();
                     alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
-                        BindUniv.remTab(d.bind, en);
+                        d.remTab(en);
                     SpecialEval.checkNotLessThanZero(alfa);
                     x = SpecialEval.castIntValue(alfa);
                     en.skel = newContext(x);
