@@ -2,9 +2,8 @@ package jekpro.reference.runtime;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelCompound;
@@ -68,7 +67,7 @@ public final class SpecialLogic extends AbstractSpecial {
             throws EngineException {
         switch (id) {
             case SPECIAL_SYS_LOCAL_CUT:
-                DisplayClause u = en.contdisplay;
+                CallFrame u = en.contdisplay;
                 en.window = u;
                 en.fault = null;
                 en.cutChoices(u.number);
@@ -78,7 +77,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
                 u = en.contdisplay;
-                if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
+                if ((((u.disp.flags & CallFrame.MASK_DPCL_MORE) != 0) ?
                         u.number + 1 : u.number) >= en.number) {
                     en.window = u;
                     en.fault = null;
@@ -87,7 +86,7 @@ public final class SpecialLogic extends AbstractSpecial {
                     if (en.fault != null)
                         throw en.fault;
                 } else {
-                    u.flags |= DisplayClause.MASK_DPCL_SOFT;
+                    u.disp.flags |= CallFrame.MASK_DPCL_SOFT;
                 }
                 return true;
             case SPECIAL_SYS_SAFE:
@@ -97,9 +96,9 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause(clause.dispsize);
-                ref2.def = clause;
-                ref2.bind[0].bindUniv(en.skel, en.display, en);
+                CallFrame ref2 = new CallFrame(clause.dispsize);
+                ref2.setClause(clause);
+                ref2.setArg(0, en.skel, en.display, en);
                 ref2.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref2;

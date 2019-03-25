@@ -145,7 +145,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
-                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -174,7 +174,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
-                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -198,7 +198,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
-                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_MKDT);
+                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
@@ -356,10 +356,8 @@ public final class SpecialLoad extends AbstractSpecial {
             }
             Object t = PreClause.intermediateToClause(clause, en);
             pw.setSource(src);
-            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setSource(en.visor.peekStack());
-            pw.setFlags(pw.getFlags() & ~PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT);
         }
     }
 
@@ -842,12 +840,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 new SkelAtom("experiment/simp"), t);
         Display dc = AbstractSkel.createDisplay(t);
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause(clause.dispsize);
-            ref.def = clause;
-            ref.bind[0].bindUniv(t, dc, en);
+            CallFrame ref = new CallFrame(clause.dispsize);
+            ref.setClause(clause);
+            ref.setArg(0, t, dc, en);
             ref.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref;

@@ -142,7 +142,7 @@ public final class SpecialFind extends AbstractSpecial {
                                                  Engine en)
             throws EngineException {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         ListArray<Object> temp = null;
         AbstractUndo mark = en.bind;
         int snap = en.number;
@@ -150,9 +150,9 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(en.skel, en.display, en);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, en.skel, en.display, en);
             if (multi)
                 ref.remTab(en);
             ref2.setEngine(en);

@@ -1,7 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.DisplayClause;
+import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -43,27 +43,9 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class StackElement implements InterfaceStack {
+public class StackElement {
     public Intermediate contskel;
-    public DisplayClause contdisplay;
-
-    /**
-     * <p>Retrieve the cont skel.</p>
-     *
-     * @return The cont skel.
-     */
-    public Intermediate getContSkel() {
-        return contskel;
-    }
-
-    /**
-     * <p>Retrieve the cont display.</p>
-     *
-     * @return The cont display.
-     */
-    public DisplayClause getContDisplay() {
-        return contdisplay;
-    }
+    public CallFrame contdisplay;
 
     /******************************************************************/
     /* Some Stack Navigation                                          */
@@ -76,10 +58,10 @@ public class StackElement implements InterfaceStack {
      * @param en The engine.
      * @return The new stack element.
      */
-    public static InterfaceStack skipNoTrace(InterfaceStack u, Engine en)
+    public static StackElement skipNoTrace(StackElement u, Engine en)
             throws EngineException, EngineMessage {
-        while (u != null && isNoTrace(u.getContSkel(), u.getContDisplay(), en))
-            u = u.getContDisplay();
+        while (u != null && isNoTrace(u.contskel, u.contdisplay, en))
+            u = u.contdisplay;
         return u;
     }
 
@@ -93,7 +75,7 @@ public class StackElement implements InterfaceStack {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static boolean isNoTrace(Intermediate r, DisplayClause u,
+    private static boolean isNoTrace(Intermediate r, CallFrame u,
                                      Engine en)
             throws EngineException, EngineMessage {
         if (u == null)
@@ -120,10 +102,10 @@ public class StackElement implements InterfaceStack {
      * @param u  The continuation display.
      * @param en The engine.
      */
-    public static void callGoal(Intermediate r, DisplayClause u, Engine en) {
+    public static void callGoal(Intermediate r, CallFrame u, Engine en) {
         if (r instanceof Goal) {
             en.skel = r.term;
-            en.display = u;
+            en.display = u.disp;
             if ((r.flags & Goal.MASK_GOAL_NAKE) != 0)
                 en.deref();
         } else if (r instanceof Clause) {

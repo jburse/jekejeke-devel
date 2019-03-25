@@ -3,9 +3,8 @@ package jekpro.model.rope;
 import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
+import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.AbstractDelegate;
@@ -84,13 +83,14 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @return Always true.
      */
     public final boolean resolveNext(Engine en) {
-        DisplayClause u = en.contdisplay;
-        if ((((u.flags & DisplayClause.MASK_DPCL_MORE) != 0) ?
+        CallFrame u = en.contdisplay;
+        Display d = u.disp;
+        if ((((d.flags & CallFrame.MASK_DPCL_MORE) != 0) ?
                 u.number + 1 : u.number) >= en.number) {
-            if ((u.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
-                if ((flags & Clause.MASK_CLAUSE_NBDY) == 0 && dispsize > 0)
-                    u.remTab(en);
-                u.flags |= DisplayClause.MASK_DPCL_LTGC;
+            if ((d.flags & CallFrame.MASK_DPCL_LTGC) == 0) {
+                if (d.bind.length > 0)
+                    d.remTab(en);
+                d.flags |= CallFrame.MASK_DPCL_LTGC;
             }
         }
 
@@ -136,7 +136,7 @@ public class Clause extends Intermediate implements InterfaceReference {
             int[] args = OptimizationArray.tempBind(t, i, vars);
 
             /* normal code */
-            end = new Goal(t, args, end, f2 | f3);
+            end = new Goal(t, args, end, f2 | f3, this);
 
             if (args != null)
                 f2 |= MASK_INTER_NLST;
@@ -177,8 +177,6 @@ public class Clause extends Intermediate implements InterfaceReference {
             /* analyze the variables */
             OptimizationVar.setStructureAndMinArg(term, this, vars);
             if (body != null) {
-                for (int i = 0; i < body.size(); i++)
-                    OptimizationVar.setMaxGoal(body.get(i), i, vars);
                 for (int i = body.size() - 1; i >= 0; i--)
                     OptimizationVar.setMinBody(body.get(i), i, vars);
             }

@@ -58,7 +58,7 @@ public class Engine extends StackElement {
     public EngineWrap enginewrap;
     public Object proxy;
     public EngineException fault;
-    public DisplayClause window;
+    public CallFrame window;
 
     /**
      * <p>Create a new engine.</p>
@@ -266,9 +266,9 @@ public class Engine extends StackElement {
             d2.remTab(this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        DisplayClause ref2 = new DisplayClause(clause.dispsize);
-        ref2.def = clause;
-        ref2.bind[0].bindUniv(skel, ref, this);
+        CallFrame ref2 = new CallFrame(clause.dispsize);
+        ref2.setClause(clause);
+        ref2.setArg(0, skel, ref, this);
         if (multi || ext)
             ref.remTab(this);
         ref2.setEngine(this);
@@ -370,7 +370,7 @@ public class Engine extends StackElement {
     public final void invokeChecked()
             throws EngineException {
         Intermediate r = contskel;
-        DisplayClause u = contdisplay;
+        CallFrame u = contdisplay;
         boolean backignore = visor.setIgnore(false);
         boolean backverify = visor.setVerify(false);
         AbstractUndo mark = bind;
@@ -379,9 +379,9 @@ public class Engine extends StackElement {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(skel, ref, this);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, skel, ref, this);
             if (multi)
                 ref.remTab(this);
             ref2.setEngine(this);

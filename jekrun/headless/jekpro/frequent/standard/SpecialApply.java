@@ -98,9 +98,9 @@ public final class SpecialApply extends AbstractSpecial {
                     d.remTab(en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                DisplayClause ref2 = new DisplayClause(clause.dispsize);
-                ref2.def = clause;
-                ref2.bind[0].bindUniv(en.skel, ref, en);
+                CallFrame ref2 = new CallFrame(clause.dispsize);
+                ref2.setClause(clause);
+                ref2.setArg(0, en.skel, ref, en);
                 if (multi || ext)
                     ref.remTab(en);
                 ref2.setEngine(en);

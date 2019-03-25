@@ -46,6 +46,7 @@ public class Goal extends Intermediate {
     public final static int MASK_GOAL_CEND = 0x00000020;
 
     public final int[] uniargs;
+    public final Clause def;
 
     /**
      * <p>Create a term.</p>
@@ -54,14 +55,16 @@ public class Goal extends Intermediate {
      * @param u  The uniargs;
      * @param n  The next.
      * @param f3 The flags.
+     * @param d  The clause.
      */
-    public Goal(Object t, int[] u, Intermediate n, int f3) {
+    public Goal(Object t, int[] u, Intermediate n, int f3, Clause d) {
         next = n;
         term = t;
         uniargs = u;
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
+        def = d;
     }
 
     /**
@@ -74,22 +77,22 @@ public class Goal extends Intermediate {
      */
     public final boolean resolveNext(Engine en)
             throws EngineException, EngineMessage {
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
 
         if (uniargs != null)
-            Goal.unifyBody(uniargs, u, en);
+            unifyBody(u, en);
         if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
                 (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
-            DisplayClause u1 = u.contdisplay;
+            CallFrame u1 = u.contdisplay;
+            Display d1 = u1.disp;
             if (u1 != null && u1.number >= en.number) {
-                if ((u1.flags & DisplayClause.MASK_DPCL_LTGC) == 0) {
-                    Clause clause = u1.def;
-                    if ((clause.flags & Clause.MASK_CLAUSE_NBDY) == 0 && clause.dispsize > 0)
-                        u1.remTab(en);
-                    u1.flags |= DisplayClause.MASK_DPCL_LTGC;
+                if ((d1.flags & CallFrame.MASK_DPCL_LTGC) == 0) {
+                    if (d1.bind.length > 0)
+                        d1.remTab(en);
+                    d1.flags |= CallFrame.MASK_DPCL_LTGC;
                 }
-                if ((u1.flags & DisplayClause.MASK_DPCL_NOBR) == 0)
-                    u.flags &= ~DisplayClause.MASK_DPCL_NOBR;
+                if ((d1.flags & CallFrame.MASK_DPCL_NOBR) == 0)
+                    u.disp.flags &= ~CallFrame.MASK_DPCL_NOBR;
                 u.contskel = u1.contskel;
                 u.contdisplay = u1.contdisplay;
             }
@@ -99,7 +102,7 @@ public class Goal extends Intermediate {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         /* current term */
         Object alfa = term;
-        Display d1 = u;
+        Display d1 = u.disp;
         if ((flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b;
@@ -152,10 +155,10 @@ public class Goal extends Intermediate {
      * @param u  The continuation display.
      * @param en The engine.
      */
-    private static void unifyBody(int[] arr, DisplayClause u, Engine en) {
+    private void unifyBody(CallFrame u, Engine en) {
         Intermediate ir = u.contskel;
         Object alfa = ir.term;
-        Display ref = u.contdisplay;
+        Display ref = u.contdisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv bc;
@@ -166,10 +169,10 @@ public class Goal extends Intermediate {
             }
         }
         Object[] t1 = ((SkelCompound) alfa).args;
-        Object[] t2 = ((SkelCompound) u.def.term).args;
-        BindUniv[] b = u.bind;
-        for (int i = 0; i < arr.length; i++) {
-            int k = arr[i];
+        Object[] t2 = ((SkelCompound) def.term).args;
+        BindUniv[] b = u.disp.bind;
+        for (int i = 0; i < uniargs.length; i++) {
+            int k = uniargs[i];
             alfa = t1[k];
             Display d1 = ref;
             BindUniv bc;

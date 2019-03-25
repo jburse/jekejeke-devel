@@ -273,7 +273,7 @@ public final class CallIn {
             throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         en.skel = AbstractTerm.getSkel(goal);
@@ -290,9 +290,9 @@ public final class CallIn {
                 ref.remTab(en);
             ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(en.skel, ref, en);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, en.skel, ref, en);
             if (multi || ext)
                 ref.remTab(en);
             ref2.setEngine(en);
@@ -343,7 +343,7 @@ public final class CallIn {
     private boolean unfoldNext() throws InterpreterException {
         Engine en = (Engine) inter.getEngine();
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {

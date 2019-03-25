@@ -7,7 +7,6 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -278,14 +277,14 @@ public abstract class AbstractDelegate {
     private static void invokeOther(Engine en)
             throws EngineException, EngineMessage {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         int snap = en.number;
         boolean multi = en.wrapGoal();
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        DisplayClause ref2 = new DisplayClause(clause.dispsize);
-        ref2.def = clause;
-        ref2.bind[0].bindUniv(en.skel, ref, en);
+        CallFrame ref2 = new CallFrame(clause.dispsize);
+        ref2.setClause(clause);
+        ref2.setArg(0, en.skel, ref, en);
         if (multi)
             ref.remTab(en);
         ref2.setEngine(en);

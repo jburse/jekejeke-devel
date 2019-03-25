@@ -2,7 +2,6 @@ package jekpro.model.inter;
 
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.PreClause;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -78,19 +77,18 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        DisplayClause dc = null;
+        Display d2 = null;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (dc == null) {
-                dc = new DisplayClause(clause.dispsize);
+            if (d2 == null) {
+                d2 = new Display(clause.dispsize);
             } else {
-                dc.setSize(clause.dispsize);
+                d2.setSize(clause.dispsize);
             }
-            dc.def = clause;
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, dc,
+                            ((SkelCompound) clause.term).args, d2,
                             clause.intargs, en))
                 break;
 
@@ -109,12 +107,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        DisplayClause u = en.contdisplay;
-        dc.number = en.number;
-        if ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0)
-            dc.flags |= DisplayClause.MASK_DPCL_NOBR;
-        dc.contskel = en.contskel;
-        dc.contdisplay = u;
+        CallFrame dc = new CallFrame(d2);
+        dc.setClause(clause);
+        dc.setEngine(en);
 
         while (at != list.length) {
             if (multiVisible(list[at], en))
@@ -126,7 +121,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             /* create choice point */
             en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark);
             en.number++;
-            dc.flags |= DisplayClause.MASK_DPCL_MORE;
+            d2.flags |= CallFrame.MASK_DPCL_MORE;
         }
         en.contskel = clause;
         en.contdisplay = dc;

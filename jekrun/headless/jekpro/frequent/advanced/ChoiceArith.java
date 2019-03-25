@@ -46,7 +46,7 @@ import jekpro.tools.term.SkelVar;
 final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Intermediate goalskel;
-    private final DisplayClause goaldisplay;
+    private final CallFrame goaldisplay;
     private final AbstractUndo mark;
     private final int id;
 
@@ -58,7 +58,7 @@ final class ChoiceArith extends AbstractChoice {
      *          @param i The function code.
      */
     ChoiceArith(AbstractChoice n,
-                Number c, Intermediate r, DisplayClause u,
+                Number c, Intermediate r, CallFrame u,
                 AbstractUndo m, int i) {
         super(n);
         goalskel = r;
@@ -94,7 +94,7 @@ final class ChoiceArith extends AbstractChoice {
 
         Intermediate ir = goalskel;
         Object t = ir.term;
-        Display d = goaldisplay;
+        Display d = goaldisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b1;

@@ -2,7 +2,6 @@ package jekpro.model.molec;
 
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
 import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
@@ -189,12 +188,12 @@ public final class EngineException extends Exception {
      */
     public static Object fetchStack(Engine en) {
         try {
-            InterfaceStack stack = StackElement.skipNoTrace(en, en);
+            StackElement stack = StackElement.skipNoTrace(en, en);
             int k = 0;
             SkelCompound back = null;
             /* iterator and fetch pred_file_line, pred and pred_error */
             while (stack != null && k < en.store.getMaxStack()) {
-                StackElement.callGoal(stack.getContSkel(), stack.getContDisplay(), en);
+                StackElement.callGoal(stack.contskel, stack.contdisplay, en);
                 SkelAtom sa = StackElement.callableToName(en.skel);
                 Object val;
                 if (sa != null) {
@@ -213,13 +212,13 @@ public final class EngineException extends Exception {
                 }
                 back = new SkelCompound(en.store.foyer.ATOM_CONS, val, back);
                 k++;
-                stack = StackElement.skipNoTrace(stack.getContDisplay(), en);
+                stack = StackElement.skipNoTrace(stack.contdisplay, en);
             }
             k = 0;
             /* count and fetch pred_more */
             while (stack != null) {
                 k++;
-                stack = StackElement.skipNoTrace(stack.getContDisplay(), en);
+                stack = StackElement.skipNoTrace(stack.contdisplay, en);
             }
             if (k != 0) {
                 Object val = new SkelCompound(new SkelAtom(OP_PRED_MORE), Integer.valueOf(k));

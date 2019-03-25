@@ -119,10 +119,9 @@ public final class SpecialSession extends AbstractSpecial {
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                DisplayClause ref2 = en.visor.query;
-                Clause def = ref2.def;
-                en.skel = SpecialSession.hashToRawAssoc(def.vars, ref2, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, ref2))
+                Display d = en.visor.query;
+                en.skel = SpecialSession.hashToRawAssoc(d.vars, d, en);
+                if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
                 return true;
             default:
@@ -201,7 +200,7 @@ public final class SpecialSession extends AbstractSpecial {
     }
 
     /**
-     * <p>DisplayClause the help text.</p>
+     * <p>CallFrame the help text.</p>
      *
      * @param lr The reader.
      * @param en The engine trace.
@@ -321,14 +320,14 @@ public final class SpecialSession extends AbstractSpecial {
                 clause.vars = pre.vars;
 
                 Intermediate r = en.contskel;
-                DisplayClause u = en.contdisplay;
+                CallFrame u = en.contdisplay;
                 AbstractUndo mark = en.bind;
                 int snap = en.number;
-                DisplayClause backref = en.visor.query;
+                Display backref = en.visor.query;
                 try {
-                    DisplayClause ref = new DisplayClause(clause.dispsize);
-                    ref.def = clause;
-                    en.visor.query = ref;
+                    CallFrame ref = new CallFrame(clause.dispsize);
+                    ref.setClause(clause);
+                    en.visor.query = ref.disp;
                     ref.setEngine(en);
                     en.contskel = clause;
                     en.contdisplay = ref;
@@ -441,7 +440,7 @@ public final class SpecialSession extends AbstractSpecial {
             en.fault = null;
         } else {
             Intermediate r = en.contskel;
-            DisplayClause u = en.contdisplay;
+            CallFrame u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
             SkelAtom sa = new SkelAtom("expand_goal", en.store.getRootSystem());
             Object molec = new SkelCompound(new SkelAtom(
@@ -452,12 +451,12 @@ public final class SpecialSession extends AbstractSpecial {
             clause.analyzeBody(molec, en);
 
             int snap = en.number;
-            DisplayClause backref = en.visor.query;
-            DisplayClause ref;
+            Display backref = en.visor.query;
+            CallFrame ref;
             try {
-                ref = new DisplayClause(clause.dispsize);
-                ref.def = clause;
-                en.visor.query = ref;
+                ref = new CallFrame(clause.dispsize);
+                ref.setClause(clause);
+                en.visor.query = ref.disp;
                 ref.setEngine(en);
                 en.contskel = clause;
                 en.contdisplay = ref;
@@ -489,7 +488,7 @@ public final class SpecialSession extends AbstractSpecial {
             en.cutChoices(snap);
             en.visor.query = backref;
             t = var;
-            d = ref;
+            d = ref.disp;
         }
         PreClause pre;
         try {
@@ -706,7 +705,7 @@ public final class SpecialSession extends AbstractSpecial {
         for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
              entry != null; entry = vars.predecessor(entry)) {
             SkelVar sv = entry.value;
-            if (sv.id >= d.bind.length)
+            if (sv.id >= d.bind.length || d.bind[sv.id] == null)
                 continue;
             Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
                     new SkelAtom(entry.key), sv);

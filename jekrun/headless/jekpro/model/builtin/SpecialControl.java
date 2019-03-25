@@ -77,10 +77,10 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_TRUE:
                 return true;
             case SPECIAL_CUT:
-                DisplayClause ref2 = en.contdisplay;
+                CallFrame ref2 = en.contdisplay;
                 en.window = ref2;
                 en.fault = null;
-                while ((ref2.flags & DisplayClause.MASK_DPCL_NOBR) != 0)
+                while ((ref2.disp.flags & CallFrame.MASK_DPCL_NOBR) != 0)
                     ref2 = ref2.contdisplay;
                 en.cutChoices(ref2.number);
                 en.window = null;
@@ -122,16 +122,16 @@ public final class SpecialControl extends AbstractSpecial {
     private boolean invokeTrap(Engine en)
             throws EngineException, EngineMessage {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(en.skel, ref, en);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
             ref2.setEngine(en);
@@ -174,7 +174,7 @@ public final class SpecialControl extends AbstractSpecial {
     public static boolean handleException(Engine en)
             throws EngineException, EngineMessage {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         EngineException y = en.fault;
         StackElement.callGoal(r, u, en);
         Object[] temp = ((SkelCompound) en.skel).args;

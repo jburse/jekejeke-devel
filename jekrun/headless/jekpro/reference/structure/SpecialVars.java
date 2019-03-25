@@ -162,9 +162,8 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    DisplayClause ref2 = en.visor.query;
-                    Clause def = ref2.def;
-                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(def.vars, ref2, en);
+                    d = en.visor.query;
+                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d.vars, d, en);
                     multi = mapToAssoc(print, en);
                     d = en.display;
                     if (!en.unifyTerm(temp[0], ref, en.skel, d))
@@ -346,7 +345,7 @@ public final class SpecialVars extends AbstractSpecial {
         for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
             SkelVar sv = entry.value;
-            if (sv.id >= d.bind.length)
+            if (sv.id >= d.bind.length || d.bind[sv.id] == null)
                 continue;
             en.skel = sv;
             en.display = d;

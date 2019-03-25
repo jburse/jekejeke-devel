@@ -1,9 +1,8 @@
 package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Intermediate;
 
 /**
  * <p>The class provides a clause display.</p>
@@ -36,56 +35,68 @@ import jekpro.model.rope.Intermediate;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DisplayClause extends Display implements InterfaceStack {
+public final class CallFrame extends StackElement {
     public final static int MASK_DPCL_MORE = 0x00000010;
     public final static int MASK_DPCL_SOFT = 0x00000020;
     public final static int MASK_DPCL_LTGC = 0x00000040;
     public final static int MASK_DPCL_NOBR = 0x00000040;
 
-    public Intermediate contskel;
-    public DisplayClause contdisplay;
+    public final Display disp;
     public int number;
-    public Clause def;
 
     /**
-     * <p>Create a new display.</p>
+     * <p>Create a new call frame.</p>
+     *
+     * @param d The display.
+     */
+    public CallFrame(Display d) {
+        disp = d;
+    }
+
+    /**
+     * <p>Create a new call frame.</p>
      *
      * @param size The requested size.
      */
-    public DisplayClause(int size) {
-        super(size);
+    public CallFrame(int size) {
+        this(new Display(size));
     }
 
     /**
-     * <p>Retrieve the cont skel.</p>
+     * <p>Set the clause data.</p>
      *
-     * @return The cont skel.
+     * @param clause The clause.
      */
-    public Intermediate getContSkel() {
-        return contskel;
+    public void setClause(Clause clause) {
+        Display d = disp;
+        d.vars = clause.vars;
+        if ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0)
+            d.flags |= MASK_DPCL_NOBR;
+        if ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0)
+            d.flags |= MASK_DPCL_LTGC;
     }
 
     /**
-     * <p>Retrieve the cont display.</p>
+     * <p>Set an argument.</p>
      *
-     * @return The cont display.
+     * @param k  The argument index.
+     * @param m  The value skeleton.
+     * @param d  The value display.
+     * @param en The engine.
      */
-    public DisplayClause getContDisplay() {
-        return contdisplay;
+    public void setArg(int k, Object m, Display d, Engine en) {
+        disp.bind[k].bindUniv(m, d, en);
     }
 
     /**
-     * <p>Prepare the call.</p>
+     * <p>Set the engine data.</p>
      *
      * @param en The engine.
      */
     public final void setEngine(Engine en) {
-        DisplayClause u = en.contdisplay;
-        number = en.number;
-        if ((def.flags & Clause.MASK_CLAUSE_NOBR) != 0)
-            u.flags |= MASK_DPCL_NOBR;
         contskel = en.contskel;
-        contdisplay = u;
+        contdisplay = en.contdisplay;
+        number = en.number;
     }
 
 }

@@ -56,7 +56,7 @@ final class ChoiceForeign extends AbstractChoice {
     Object[] args;
     AbstractUndo mark;
     Intermediate goalskel;
-    DisplayClause goaldisplay;
+    CallFrame goaldisplay;
 
     /**
      * <p>Creata choice foreign.</p>
@@ -94,7 +94,7 @@ final class ChoiceForeign extends AbstractChoice {
 
         Intermediate ir = goalskel;
         Object term = ir.term;
-        Display ref = goaldisplay;
+        Display ref = goaldisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b1;
@@ -169,10 +169,10 @@ final class ChoiceForeign extends AbstractChoice {
             return;
 
         /* backup sliding window */
-        DisplayClause back = en.window;
+        CallFrame back = en.window;
 
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         if (en.skel != null) {
