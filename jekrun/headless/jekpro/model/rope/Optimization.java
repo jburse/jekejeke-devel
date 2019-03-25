@@ -254,7 +254,7 @@ public final class Optimization {
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                intargs[i] = -1;
+                intargs[i] = UNIFY_TERM;
                 continue;
             }
             Optimization ov = vars[((SkelVar) a).id];
