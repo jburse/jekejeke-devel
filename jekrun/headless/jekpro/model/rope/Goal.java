@@ -45,22 +45,19 @@ public class Goal extends Intermediate {
     public final static int MASK_GOAL_NAKE = 0x00000010;
     public final static int MASK_GOAL_CEND = 0x00000020;
 
-    public final int[] uniargs;
     public final Clause def;
 
     /**
      * <p>Create a term.</p>
      *
      * @param t  The term.
-     * @param u  The uniargs;
      * @param n  The next.
      * @param f3 The flags.
      * @param d  The clause.
      */
-    public Goal(Object t, int[] u, Intermediate n, int f3, Clause d) {
+    public Goal(Object t, Intermediate n, int f3, Clause d) {
         next = n;
         term = t;
-        uniargs = u;
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
@@ -79,13 +76,11 @@ public class Goal extends Intermediate {
             throws EngineException, EngineMessage {
         CallFrame u = en.contdisplay;
 
-        if (uniargs != null)
-            unifyBody(u, en);
-        if ((flags & Intermediate.MASK_INTER_NLST) == 0 &&
-                (u.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
-            CallFrame u1 = u.contdisplay;
-            Display d1 = u1.disp;
-            if (u1 != null && u1.number >= en.number) {
+        if ((flags & Intermediate.MASK_INTER_NLST) == 0) {
+            CallFrame u1;
+            if ((u.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
+                    (u1 = u.contdisplay) != null && u1.number >= en.number) {
+                Display d1 = u1.disp;
                 if ((d1.flags & CallFrame.MASK_DPCL_LTGC) == 0) {
                     if (d1.bind.length > 0)
                         d1.remTab(en);
@@ -142,48 +137,6 @@ public class Goal extends Intermediate {
         en.skel = alfa;
         en.display = d1;
         return fun.moniFirst(en);
-    }
-
-    /***********************************************************/
-    /* Unify Helper                                            */
-    /***********************************************************/
-
-    /**
-     * <p>Unify the term of the clause with the given term.</p>
-     * <p>Only the deferred variables are instantiated.</p>
-     *
-     * @param u  The continuation display.
-     * @param en The engine.
-     */
-    private void unifyBody(CallFrame u, Engine en) {
-        Intermediate ir = u.contskel;
-        Object alfa = ir.term;
-        Display ref = u.contdisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv bc;
-            while (alfa instanceof SkelVar &&
-                    (bc = ref.bind[((SkelVar) alfa).id]).display != null) {
-                alfa = bc.skel;
-                ref = bc.display;
-            }
-        }
-        Object[] t1 = ((SkelCompound) alfa).args;
-        Object[] t2 = ((SkelCompound) def.term).args;
-        BindUniv[] b = u.disp.bind;
-        for (int i = 0; i < uniargs.length; i++) {
-            int k = uniargs[i];
-            alfa = t1[k];
-            Display d1 = ref;
-            BindUniv bc;
-            while (alfa instanceof SkelVar &&
-                    (bc = d1.bind[((SkelVar) alfa).id]).display != null) {
-                alfa = bc.skel;
-                d1 = bc.display;
-            }
-            bc = b[((SkelVar) t2[k]).id];
-            bc.bindUniv(alfa, d1, en);
-        }
     }
 
 }

@@ -117,7 +117,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param en   The engine.
      */
     protected void vectorToList(ListArray<Object> vec,
-                                OptimizationVar[] vars,
+                                Optimization[] vars,
                                 Engine en) {
         Intermediate end = this;
         if (vec == null) {
@@ -133,13 +133,11 @@ public class Clause extends Intermediate implements InterfaceReference {
         int i = vec.size() - 1;
         for (; i >= 0; i--) {
             Object t = vec.get(i);
-            int[] args = OptimizationArray.tempBind(t, i, vars);
 
             /* normal code */
-            end = new Goal(t, args, end, f2 | f3, this);
+            end = new Goal(t, end, f2 | f3, this);
 
-            if (args != null)
-                f2 |= MASK_INTER_NLST;
+            f2 |= MASK_INTER_NLST;
             f3 &= ~Goal.MASK_GOAL_CEND;
         }
         next = end;
@@ -168,24 +166,24 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public void analyzeBody(Object molec, Engine en) {
         /* create the helper */
-        OptimizationVar[] vars = OptimizationVar.createHelper(molec);
+        Optimization[] vars = Optimization.createHelper(molec);
         size = vars.length;
 
         /* mark the helper */
         ListArray<Object> body = PreClause.clauseToBody(molec);
         if (vars.length != 0) {
             /* analyze the variables */
-            OptimizationVar.setStructureAndMinArg(term, this, vars);
+            Optimization.setStructureAndMinArg(term, this, vars);
             if (body != null) {
                 for (int i = body.size() - 1; i >= 0; i--)
-                    OptimizationVar.setMinBody(body.get(i), i, vars);
+                    Optimization.setMinBody(body.get(i), i, vars);
             }
         }
-        dispsize = OptimizationArray.sortAndDisplaceMinGoal(vars);
+        dispsize = Optimization.sortAndDisplaceMinGoal(vars);
 
         /* build the clause */
         vectorToList(body, vars, en);
-        intargs = OptimizationArray.unifyArgs(term, vars);
+        intargs = Optimization.unifyArgs(term, vars);
     }
 
     /**********************************************************/
