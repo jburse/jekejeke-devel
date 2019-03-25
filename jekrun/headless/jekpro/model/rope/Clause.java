@@ -173,13 +173,13 @@ public class Clause extends Intermediate implements InterfaceReference {
         ListArray<Object> body = PreClause.clauseToBody(molec);
         if (vars.length != 0) {
             /* analyze the variables */
-            Optimization.setStructureAndMinArg(term, this, vars);
+            Optimization.setHead(term, this, vars);
             if (body != null) {
                 for (int i = body.size() - 1; i >= 0; i--)
-                    Optimization.setMinBody(body.get(i), i, vars);
+                    Optimization.setBody(body.get(i), i, vars);
             }
         }
-        dispsize = Optimization.sortAndDisplaceMinGoal(vars);
+        dispsize = Optimization.sortExtra(vars);
 
         /* build the clause */
         vectorToList(body, vars, en);

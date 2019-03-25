@@ -5,6 +5,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Optimization;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -341,9 +342,20 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (n >= 0) {
                 if (!en.unifyTerm(t1[n], ref, t1[i], ref))
                     return false;
-            } else if (n != -2) {
+            } else if (n == Optimization.UNIFY_TERM) {
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
                     return false;
+            } else if (n == Optimization.UNIFY_VAR) {
+                Object alfa = t1[i];
+                Display d1 = ref;
+                BindUniv bc;
+                while (alfa instanceof SkelVar &&
+                        (bc = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = bc.skel;
+                    d1 = bc.display;
+                }
+                bc = ref2.bind[((SkelVar) t2[i]).id];
+                bc.bindUniv(alfa, d1, en);
             }
         }
         return true;

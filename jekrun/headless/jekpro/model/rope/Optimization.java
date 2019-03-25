@@ -38,12 +38,16 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] OPTIMIZATION_VAR_VOID = new Optimization[0];
 
-    final static int MASK_VAR_HSTR = 0x00000001;
+    public static final int UNIFY_TERM = -1;
+    public static final int UNIFY_VAR = -2;
+    public static final int UNIFY_SKIP = -3;
 
-    final static int[][] minusOneInt = new int[8][];
+    final static int MASK_VAR_HSTR = 0x00000001;
+    final static int MASK_VAR_BODY = 0x00000002;
+
+    final static int[][] unifyTermInt = new int[8][];
 
     int flags;
-    int minbody = -1;
     int minarg = -1;
     final SkelVar sort;
 
@@ -54,8 +58,8 @@ public final class Optimization {
         for (int i = 0; i < 8; i++) {
             int[] array = new int[i];
             for (int j = 0; j < i; j++)
-                array[j] = -1;
-            Optimization.minusOneInt[i] = array;
+                array[j] = UNIFY_TERM;
+            Optimization.unifyTermInt[i] = array;
         }
     }
 
@@ -74,12 +78,12 @@ public final class Optimization {
      * @param n The length.
      * @return The immutable zero int array.
      */
-    private static int[] minusOneInt(int n) {
+    private static int[] unifyTermInt(int n) {
         if (n < 8)
-            return minusOneInt[n];
+            return unifyTermInt[n];
         int[] array = new int[n];
         for (int j = 0; j < n; j++)
-            array[j] = -1;
+            array[j] = UNIFY_TERM;
         return array;
     }
 
@@ -89,7 +93,7 @@ public final class Optimization {
      * @return True if the variable is extra, otherwise false.
      */
     private boolean extraVar() {
-        return minbody == -1 && (flags & MASK_VAR_HSTR) == 0;
+        return (flags & MASK_VAR_BODY) == 0 && (flags & MASK_VAR_HSTR) == 0;
     }
 
     /**
@@ -124,8 +128,8 @@ public final class Optimization {
      * @param clause The clause option flags.
      * @param helper The helper.
      */
-    static void setStructureAndMinArg(Object m, Clause clause,
-                                      Optimization[] helper) {
+    static void setHead(Object m, Clause clause,
+                        Optimization[] helper) {
         if (!(m instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) m;
@@ -164,18 +168,18 @@ public final class Optimization {
      * @param k      The min term value.
      * @param helper The helper.
      */
-    static void setMinBody(Object m, int k, Optimization[] helper) {
+    static void setBody(Object m, int k, Optimization[] helper) {
         Object var = EngineCopy.getVar(m);
         if (var == null)
             return;
         if (var instanceof SkelVar) {
             Optimization ov = helper[((SkelVar) var).id];
-            ov.minbody = k;
+            ov.flags |= MASK_VAR_BODY;
         } else {
             SkelVar[] temp = (SkelVar[]) var;
             for (int i = 0; i < temp.length; i++) {
                 Optimization ov = helper[temp[i].id];
-                ov.minbody = k;
+                ov.flags |= MASK_VAR_BODY;
             }
         }
     }
@@ -187,7 +191,7 @@ public final class Optimization {
      * @param vars The helper, length > 1.
      * @return The number of non-extra variables.
      */
-    static int sortAndDisplaceMinGoal(Optimization[] vars) {
+    static int sortExtra(Optimization[] vars) {
         int j = vars.length;
         int k = 0;
         while (k < j && vars[j - 1].extraVar())
@@ -225,7 +229,7 @@ public final class Optimization {
             return null;
         SkelCompound mc = (SkelCompound) m;
         if (vars == null)
-            return minusOneInt(mc.args.length);
+            return unifyTermInt(mc.args.length);
         int i = mc.args.length - 1;
         for (; i >= 0; i--) {
             Object a = mc.args[i];
@@ -235,7 +239,7 @@ public final class Optimization {
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
                 if (ov.minarg != i) {
                     break;
-                } else if (ov.minbody != -1) {
+                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
                     break;
                 } else {
                     /* */
@@ -257,13 +261,13 @@ public final class Optimization {
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
                 if (ov.minarg != i) {
                     intargs[i] = ov.minarg;
-                } else if (ov.minbody != -1) {
-                    intargs[i] = -1;
+                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
+                    intargs[i] = UNIFY_VAR;
                 } else {
-                    intargs[i] = -2;
+                    intargs[i] = UNIFY_SKIP;
                 }
             } else {
-                intargs[i] = -1;
+                intargs[i] = UNIFY_TERM;
             }
         }
         return intargs;
