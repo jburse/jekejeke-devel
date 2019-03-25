@@ -9,6 +9,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -104,7 +105,7 @@ public final class SpecialMode extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 int port = ((Integer) temp[0]).intValue();
 
-                DisplayClause u2 = getPortDisplay(port, en);
+                CallFrame u2 = getPortDisplay(port, en);
                 Intermediate r2 = getGoalSkel(port, u2);
                 u2 = u2.contdisplay;
 
@@ -139,9 +140,9 @@ public final class SpecialMode extends AbstractSpecial {
                     case SpecialDefault.MASK_DEBG_STVR:
                     case SpecialDefault.MASK_DEBG_STOT:
                         SupervisorTrace visortrace = (SupervisorTrace) en.visor;
-                        InterfaceStack frame = visortrace.getSkipFrame();
-                        if (frame != null && frame.getContSkel() == r2 &&
-                                frame.getContDisplay() == u2) {
+                        StackElement frame = visortrace.getSkipFrame();
+                        if (frame != null && frame.contskel == r2 &&
+                                frame.contdisplay == u2) {
                             visortrace.setSkipFrame(null);
                             break;
                         }
@@ -230,8 +231,8 @@ public final class SpecialMode extends AbstractSpecial {
      * @param u2 The current clause display,
      * @return True if there are previous choice points, otherwise false.
      */
-    private static boolean isCutChoice(int num, DisplayClause u2) {
-        while ((u2.flags & DisplayClause.MASK_DPCL_NOBR) != 0)
+    private static boolean isCutChoice(int num, CallFrame u2) {
+        while ((u2.disp.flags & CallFrame.MASK_DPCL_NOBR) != 0)
             u2 = u2.contdisplay;
         if (u2.number >= num)
             return false;
@@ -246,10 +247,10 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if the choice point is current clause, otherwise false.
      */
     private static boolean isGoalChoice(AbstractChoice choice,
-                                        Intermediate r2, DisplayClause u2) {
+                                        Intermediate r2, CallFrame u2) {
         if (!(choice instanceof ChoiceDefined))
             return false;
-        DisplayClause u3 = ((ChoiceDefined) choice).newdisp.contdisplay;
+        CallFrame u3 = ((ChoiceDefined) choice).newdisp.contdisplay;
         if (u3 == null ||
                 u3.contdisplay != u2 ||
                 u3.contskel.next != r2)
@@ -265,7 +266,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if the choice point is current clause, otherwise false.
      */
     private static boolean isClauseChoice(AbstractChoice choice,
-                                          DisplayClause u2) {
+                                          CallFrame u2) {
         if (!(choice instanceof ChoiceDefined))
             return false;
         if (((ChoiceDefined) choice).newdisp != u2)
@@ -285,7 +286,7 @@ public final class SpecialMode extends AbstractSpecial {
     private static boolean invokeBoth(Engine en)
             throws EngineException, EngineMessage {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
         boolean backverify = en.visor.setVerify(false);
         int snap = en.number;
@@ -293,9 +294,9 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(en.skel, ref, en);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
             ref2.setEngine(en);
@@ -343,16 +344,16 @@ public final class SpecialMode extends AbstractSpecial {
     private static boolean invokeIgnore(Engine en)
             throws EngineException, EngineMessage {
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
         int snap = en.number;
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref2 = new DisplayClause(clause.dispsize);
-            ref2.def = clause;
-            ref2.bind[0].bindUniv(en.skel, ref, en);
+            CallFrame ref2 = new CallFrame(clause.dispsize);
+            ref2.setClause(clause);
+            ref2.setArg(0, en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
             ref2.setEngine(en);
@@ -420,7 +421,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @param port The port.
      * @param en   The engine-
      */
-    private static DisplayClause getPortDisplay(int port, Engine en) {
+    private static CallFrame getPortDisplay(int port, Engine en) {
         switch (port) {
             case CODE_CALL:
             case CODE_EXIT:
@@ -441,7 +442,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @param port The port.
      * @param u    The display clause-
      */
-    private static Intermediate getGoalSkel(int port, DisplayClause u) {
+    private static Intermediate getGoalSkel(int port, CallFrame u) {
         switch (port) {
             case CODE_CALL:
             case CODE_FAIL:
@@ -451,7 +452,7 @@ public final class SpecialMode extends AbstractSpecial {
                 return ((GoalTrace) u.contskel).back;
             case CODE_HEAD:
             case CODE_CHOP:
-                return u.contdisplay.def;
+                return ((Goal)u.contskel).def;
             default:
                 throw new IllegalArgumentException("illegal port");
         }

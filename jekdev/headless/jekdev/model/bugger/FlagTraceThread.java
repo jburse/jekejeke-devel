@@ -3,7 +3,7 @@ package jekdev.model.bugger;
 import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
 import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
@@ -107,7 +107,7 @@ public final class FlagTraceThread extends AbstractFlag<Thread> {
                 if (inter == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
                 Engine en2 = (Engine) inter.getEngine();
-                InterfaceStack stack = StackElement.skipNoTrace(en2, en);
+                StackElement stack = StackElement.skipNoTrace(en2, en);
                 return (stack != null ? stack : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_THREAD_STORE:
                 contr = Controller.currentController(t);

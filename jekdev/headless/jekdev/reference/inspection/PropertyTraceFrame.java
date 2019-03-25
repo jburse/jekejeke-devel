@@ -3,7 +3,7 @@ package jekdev.reference.inspection;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -45,7 +45,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
+public final class PropertyTraceFrame extends AbstractProperty<StackElement> {
     public final static String OP_SYS_PARENT_FRAME = "sys_parent_frame";
     public final static String OP_SYS_CALL_GOAL = "sys_call_goal";
 
@@ -66,8 +66,8 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
      *
      * @return The frame properties.
      */
-    public static MapHash<StoreKey, AbstractProperty<InterfaceStack>> defineFrameProps() {
-        MapHash<StoreKey, AbstractProperty<InterfaceStack>> frameprops = new MapHash<StoreKey, AbstractProperty<InterfaceStack>>();
+    public static MapHash<StoreKey, AbstractProperty<StackElement>> defineFrameProps() {
+        MapHash<StoreKey, AbstractProperty<StackElement>> frameprops = new MapHash<StoreKey, AbstractProperty<StackElement>>();
         frameprops.add(new StoreKey(OP_SYS_PARENT_FRAME, 1), new PropertyTraceFrame(PROP_SYS_PARENT_FRAME));
         frameprops.add(new StoreKey(OP_SYS_CALL_GOAL, 1), new PropertyTraceFrame(PROP_SYS_CALL_GOAL));
         return frameprops;
@@ -82,16 +82,16 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object[] getObjProps(InterfaceStack frame, Engine en)
+    public Object[] getObjProps(StackElement frame, Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
             case PROP_SYS_PARENT_FRAME:
-                frame = StackElement.skipNoTrace(frame.getContDisplay(), en);
+                frame = StackElement.skipNoTrace(frame.contdisplay, en);
                 Object val = (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
                 val = new SkelCompound(new SkelAtom(OP_SYS_PARENT_FRAME), val);
                 return new Object[]{AbstractTerm.createMolec(val, Display.DISPLAY_CONST)};
             case PROP_SYS_CALL_GOAL:
-                StackElement.callGoal(frame.getContSkel(), frame.getContDisplay(), en);
+                StackElement.callGoal(frame.contskel, frame.contdisplay, en);
                 val = new SkelCompound(new SkelAtom(OP_SYS_CALL_GOAL), en.skel);
                 return new Object[]{AbstractTerm.createMolec(val, en.display)};
             default:
@@ -109,7 +109,7 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setObjProp(InterfaceStack obj, Object m, Display d, Engine en)
+    public boolean setObjProp(StackElement obj, Object m, Display d, Engine en)
             throws EngineMessage {
         if (id < PROP_SYS_PARENT_FRAME || PROP_SYS_CALL_GOAL < id)
             throw new IllegalArgumentException("illegal prop");
@@ -126,7 +126,7 @@ public final class PropertyTraceFrame extends AbstractProperty<InterfaceStack> {
      * @return True if property could be set, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean resetObjProp(InterfaceStack obj, Object m, Display d, Engine en)
+    public boolean resetObjProp(StackElement obj, Object m, Display d, Engine en)
             throws EngineMessage {
         if (id < PROP_SYS_PARENT_FRAME || PROP_SYS_CALL_GOAL < id)
             throw new IllegalArgumentException("illegal prop");

@@ -5,7 +5,7 @@ import jekdev.reference.debug.SpecialDefault;
 import jekdev.reference.inspection.SpecialFrame;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -120,7 +120,7 @@ public final class FlagTrace extends AbstractFlag<Engine> {
             case FLAG_SYS_CLAUSE_INSTRUMENT:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & Foyer.MASK_FOYER_NIST) == 0);
             case FLAG_SYS_SKIP_FRAME:
-                InterfaceStack frame = ((SupervisorTrace) en.visor).getSkipFrame();
+                StackElement frame = ((SupervisorTrace) en.visor).getSkipFrame();
                 return (frame != null ? frame : new SkelAtom(AbstractFlag.OP_NULL));
             case FLAG_SYS_CLOAK:
                 return AbstractFlag.switchToAtom((en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0);
@@ -170,7 +170,7 @@ public final class FlagTrace extends AbstractFlag<Engine> {
                     }
                     return true;
                 case FLAG_SYS_SKIP_FRAME:
-                    InterfaceStack frame = SpecialFrame.derefAndCastStackElement(m, d);
+                    StackElement frame = SpecialFrame.derefAndCastStackElement(m, d);
                     ((SupervisorTrace) en.visor).setSkipFrame(frame);
                     return true;
                 case FLAG_SYS_CLOAK:

@@ -6,7 +6,7 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.InterfaceStack;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -88,7 +88,7 @@ public final class SpecialFrame extends AbstractSpecial {
             case SPECIAL_SYS_FRAME_PROPERTY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                InterfaceStack frame = derefAndCastStackElement(temp[0], ref);
+                StackElement frame = derefAndCastStackElement(temp[0], ref);
                 checkNotNull(frame);
                 SpecialFrame.frameToProperties(frame, en);
                 Display d = en.display;
@@ -130,7 +130,7 @@ public final class SpecialFrame extends AbstractSpecial {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void frameToProperties(InterfaceStack frame,
+    private static void frameToProperties(StackElement frame,
                                           Engine en)
             throws EngineMessage, EngineException {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
@@ -143,8 +143,8 @@ public final class SpecialFrame extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceStack>> props = branch.getFrameProps();
-            for (MapEntry<StoreKey, AbstractProperty<InterfaceStack>> entry2 =
+            MapHash<StoreKey, AbstractProperty<StackElement>> props = branch.getFrameProps();
+            for (MapEntry<StoreKey, AbstractProperty<StackElement>> entry2 =
                  (props != null ? props.getLastEntry() : null);
                  entry2 != null; entry2 = props.predecessor(entry2)) {
                 AbstractProperty prop = entry2.value;
@@ -167,10 +167,10 @@ public final class SpecialFrame extends AbstractSpecial {
      * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void frameToProperty(InterfaceStack frame, StoreKey sk,
+    private static void frameToProperty(StackElement frame, StoreKey sk,
                                         Engine en)
             throws EngineMessage, EngineException {
-        AbstractProperty<InterfaceStack> prop = findFrameProperty(sk, en);
+        AbstractProperty<StackElement> prop = findFrameProperty(sk, en);
         Object[] vals = prop.getObjProps(frame, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
@@ -187,7 +187,7 @@ public final class SpecialFrame extends AbstractSpecial {
      * @return The frame property.
      * @throws EngineMessage Shit happens.
      */
-    private static AbstractProperty<InterfaceStack> findFrameProperty(StoreKey sk,
+    private static AbstractProperty<StackElement> findFrameProperty(StoreKey sk,
                                                                       Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
@@ -198,7 +198,7 @@ public final class SpecialFrame extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceStack>> props = branch.getFrameProps();
+            MapHash<StoreKey, AbstractProperty<StackElement>> props = branch.getFrameProps();
             AbstractProperty prop = (props != null ? props.get(sk) : null);
             if (prop != null)
                 return prop;
@@ -236,11 +236,11 @@ public final class SpecialFrame extends AbstractSpecial {
      * @return The frame.
      * @throws EngineMessage Shit happens.
      */
-    public static InterfaceStack derefAndCastStackElement(Object m, Display d)
+    public static StackElement derefAndCastStackElement(Object m, Display d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRefOrNull(m, d);
-        if (m == null || m instanceof InterfaceStack) {
-            return (InterfaceStack) m;
+        if (m == null || m instanceof StackElement) {
+            return (StackElement) m;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     OP_DOMAIN_STACK, m), d);

@@ -144,7 +144,7 @@ public final class SpecialDefault extends AbstractSpecial {
                 case SPECIAL_SYS_NOTRACE_FRAME:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    InterfaceStack frame = SpecialFrame.derefAndCastStackElement(temp[0], ref);
+                    StackElement frame = SpecialFrame.derefAndCastStackElement(temp[0], ref);
                     if (!sysNotraceFrame(frame, en))
                         return false;
                     return true;
@@ -216,14 +216,14 @@ public final class SpecialDefault extends AbstractSpecial {
      * @param en    The engine.
      * @return The depth.
      */
-    private static int calcDepth(InterfaceStack frame,
+    private static int calcDepth(StackElement frame,
                                  Engine en)
             throws EngineMessage, EngineException {
         int depth = 0;
-        InterfaceStack dc = StackElement.skipNoTrace(frame.getContDisplay(), en);
+        StackElement dc = StackElement.skipNoTrace(frame.contdisplay, en);
         while (dc != null) {
             depth++;
-            dc = StackElement.skipNoTrace(dc.getContDisplay(), en);
+            dc = StackElement.skipNoTrace(dc.contdisplay, en);
         }
         return depth;
     }
@@ -238,7 +238,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void traceGoal(int port, InterfaceStack frame,
+    private static void traceGoal(int port, StackElement frame,
                                   int depth, Engine en)
             throws EngineMessage, EngineException {
         Object obj = en.visor.curoutput;
@@ -273,7 +273,7 @@ public final class SpecialDefault extends AbstractSpecial {
             pw.setEngineRaw(en);
             pw.setSpez(PrologWriter.SPEZ_META);
             pw.setWriter(wr);
-            StackElement.callGoal(frame.getContSkel(), frame.getContDisplay(), en);
+            StackElement.callGoal(frame.contskel, frame.contdisplay, en);
             en.skel = SpecialDynamic.callableToColonSkel(en.skel, en);
             showGoal(pw, port, en.skel, en.display, en);
         } catch (IOException x) {
@@ -320,10 +320,8 @@ public final class SpecialDefault extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write port and goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            DisplayClause ref2 = en.visor.query;
-            Clause def = (ref2 != null ? ref2.def : null);
-            MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
+            Display d2 = en.visor.query;
+            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
             pw.setPrintMap(print);
             pw.unparseStatement(t, d);
             return;
@@ -337,12 +335,12 @@ public final class SpecialDefault extends AbstractSpecial {
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
                 new SkelAtom("experiment/simp"), t);
         Intermediate r = en.contskel;
-        DisplayClause u = en.contdisplay;
+        CallFrame u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            DisplayClause ref = new DisplayClause(clause.dispsize);
-            ref.def = clause;
-            ref.bind[0].bindUniv(t, dc, en);
+            CallFrame ref = new CallFrame(clause.dispsize);
+            ref.setClause(clause);
+            ref.setArg(0, t, dc, en);
             ref.setEngine(en);
             en.contskel = clause;
             en.contdisplay = ref;
@@ -375,10 +373,8 @@ public final class SpecialDefault extends AbstractSpecial {
 
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        DisplayClause ref2 = en.visor.query;
-        Clause def = (ref2 != null ? ref2.def : null);
-        MapHashLink<String, SkelVar> vars = (def != null ? def.vars : null);
-        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref2, en);
+        Display d2 = en.visor.query;
+        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
         pw.setPrintMap(print);
         pw.unparseStatement(t, d);
     }
@@ -458,7 +454,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @param en    The engine.
      * @param frame The frame.
      */
-    private static void doContinue(int port, InterfaceStack frame,
+    private static void doContinue(int port, StackElement frame,
                                    Engine en)
             throws EngineMessage, EngineException {
         int tflags = en.visor.flags & MASK_MODE_DEBG;
@@ -472,7 +468,7 @@ public final class SpecialDefault extends AbstractSpecial {
                     ((SupervisorTrace) en.visor).setSkipFrame(frame);
                 break;
             case MASK_DEBG_STOT:
-                InterfaceStack dc = StackElement.skipNoTrace(frame.getContDisplay(), en);
+                StackElement dc = StackElement.skipNoTrace(frame.contdisplay, en);
                 if (dc != null)
                     ((SupervisorTrace) en.visor).setSkipFrame(dc);
                 break;
@@ -492,9 +488,9 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static boolean sysNotraceFrame(InterfaceStack frame, Engine en)
+    private static boolean sysNotraceFrame(StackElement frame, Engine en)
             throws EngineException, EngineMessage {
-        StackElement.callGoal(frame.getContSkel(), frame.getContDisplay(), en);
+        StackElement.callGoal(frame.contskel, frame.contdisplay, en);
         CachePredicate cp = StackElement.callableToPredicate(en.skel, en);
         if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0 &&
                 (cp.pick.getBits() & Predicate.MASK_PRED_NOTR) != 0)
@@ -524,7 +520,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void sysTrace(int port, InterfaceStack frame,
+    private static void sysTrace(int port, StackElement frame,
                                  Engine en)
             throws EngineMessage, EngineException {
         int depth = calcDepth(frame, en);
@@ -542,7 +538,7 @@ public final class SpecialDefault extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void sysTracePrompt(int port, InterfaceStack frame,
+    private static void sysTracePrompt(int port, StackElement frame,
                                        Engine en)
             throws EngineMessage, EngineException {
         int depth = calcDepth(frame, en);
