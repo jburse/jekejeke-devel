@@ -6,6 +6,7 @@ import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -68,23 +69,31 @@ public final class SpecialLogic extends AbstractSpecial {
         switch (id) {
             case SPECIAL_SYS_LOCAL_CUT:
                 CallFrame u = en.contdisplay;
-                en.window = u;
-                en.fault = null;
-                en.cutChoices(u.number);
-                en.window = null;
-                if (en.fault != null)
-                    throw en.fault;
-                return true;
-            case SPECIAL_SYS_SOFT_LOCAL_CUT:
-                u = en.contdisplay;
-                if ((((u.disp.flags & Display.MASK_DISP_MORE) != 0) ?
-                        u.number + 1 : u.number) >= en.number) {
+                if (u.number < en.number) {
                     en.window = u;
                     en.fault = null;
                     en.cutChoices(u.number);
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
+                    Goal r = (Goal) en.contskel;
+                    en.contdisplay = u.getFrame(r.def, en);
+                }
+                return true;
+            case SPECIAL_SYS_SOFT_LOCAL_CUT:
+                u = en.contdisplay;
+                if ((((u.disp.flags & Display.MASK_DISP_MORE) != 0) ?
+                        u.number + 1 : u.number) >= en.number) {
+                    if (u.number < en.number) {
+                        en.window = u;
+                        en.fault = null;
+                        en.cutChoices(u.number);
+                        en.window = null;
+                        if (en.fault != null)
+                            throw en.fault;
+                        Goal r = (Goal) en.contskel;
+                        en.contdisplay = u.getFrame(r.def, en);
+                    }
                 } else {
                     u.disp.flags |= Display.MASK_DISP_SOFT;
                 }

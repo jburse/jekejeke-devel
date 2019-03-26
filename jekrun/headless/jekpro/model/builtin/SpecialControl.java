@@ -6,6 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -77,15 +78,20 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_TRUE:
                 return true;
             case SPECIAL_CUT:
-                CallFrame ref2 = en.contdisplay;
-                en.window = ref2;
-                en.fault = null;
-                while ((ref2.disp.flags & Display.MASK_DISP_NOBR) != 0)
-                    ref2 = ref2.contdisplay;
-                en.cutChoices(ref2.number);
-                en.window = null;
-                if (en.fault != null)
-                    throw en.fault;
+                CallFrame u = en.contdisplay;
+                CallFrame u2 = u;
+                while ((u2.disp.flags & Display.MASK_DISP_NOBR) != 0)
+                    u2 = u2.contdisplay;
+                if (u2.number < en.number) {
+                    en.window = u;
+                    en.fault = null;
+                    en.cutChoices(u2.number);
+                    en.window = null;
+                    if (en.fault != null)
+                        throw en.fault;
+                    Goal r = (Goal) en.contskel;
+                    en.contdisplay = u.getFrame(r.def, en);
+                }
                 return true;
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;

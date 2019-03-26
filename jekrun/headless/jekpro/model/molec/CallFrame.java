@@ -62,15 +62,16 @@ public final class CallFrame extends StackElement {
      */
     public final CallFrame getFrame(Clause clause, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
-            CallFrame u1;
-            if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
-                    (u1 = en.contdisplay) != null && u1.number >= en.number) {
-                Display d1 = u1.disp;
-                d1.lastCollect(en);
-                if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
-                    disp.flags &= ~Display.MASK_DISP_NOBR;
-                u1.disp = disp;
-                return u1;
+            if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
+                CallFrame u1 = contdisplay;
+                if (u1.number >= number) {
+                    Display d1 = u1.disp;
+                    d1.lastCollect(en);
+                    if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
+                        disp.flags &= ~Display.MASK_DISP_NOBR;
+                    u1.disp = disp;
+                    return u1;
+                }
             }
         }
         return this;
@@ -86,15 +87,16 @@ public final class CallFrame extends StackElement {
      */
     public static CallFrame getFrame(Display d, Clause clause, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
-            CallFrame u1;
-            if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
-                    (u1 = en.contdisplay) != null && u1.number >= en.number) {
-                Display d1 = u1.disp;
-                d1.lastCollect(en);
-                if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
-                    d.flags &= ~Display.MASK_DISP_NOBR;
-                u1.disp = d;
-                return u1;
+            if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
+                CallFrame u1 = en.contdisplay;
+                if (u1.number >= en.number) {
+                    Display d1 = u1.disp;
+                    d1.lastCollect(en);
+                    if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
+                        d.flags &= ~Display.MASK_DISP_NOBR;
+                    u1.disp = d;
+                    return u1;
+                }
             }
         }
         return new CallFrame(d, en);
