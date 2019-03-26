@@ -150,12 +150,12 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            CallFrame ref2 = new CallFrame(clause.dispsize);
-            ref2.setClause(clause);
-            ref2.setArg(0, en.skel, en.display, en);
+            Display d3 = new Display(clause.dispsize);
+            d3.setClause(clause);
+            d3.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
                 ref.remTab(en);
-            ref2.setEngine(en);
+            CallFrame ref2 = CallFrame.getFrame(d3, clause, en);
             en.contskel = clause;
             en.contdisplay = ref2;
             boolean found = en.runLoop(snap, true);
@@ -234,7 +234,7 @@ public final class SpecialFind extends AbstractSpecial {
             en.display = d2;
         } else {
             Display d3 = new Display(2);
-            d3.flags |= Display.MASK_DPTM_MLTI;
+            d3.flags |= Display.MASK_DISP_MLTI;
             boolean ext = d2.getAndReset();
             d3.bind[0].bindUniv(t2, d2, en);
             if (ext)

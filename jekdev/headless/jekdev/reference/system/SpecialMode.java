@@ -232,7 +232,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if there are previous choice points, otherwise false.
      */
     private static boolean isCutChoice(int num, CallFrame u2) {
-        while ((u2.disp.flags & CallFrame.MASK_DPCL_NOBR) != 0)
+        while ((u2.disp.flags & Display.MASK_DISP_NOBR) != 0)
             u2 = u2.contdisplay;
         if (u2.number >= num)
             return false;
@@ -294,12 +294,12 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            CallFrame ref2 = new CallFrame(clause.dispsize);
-            ref2.setClause(clause);
-            ref2.setArg(0, en.skel, ref, en);
+            Display d2 = new Display(clause.dispsize);
+            d2.setClause(clause);
+            d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
-            ref2.setEngine(en);
+            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
             en.contskel = clause;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
@@ -351,12 +351,12 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            CallFrame ref2 = new CallFrame(clause.dispsize);
-            ref2.setClause(clause);
-            ref2.setArg(0, en.skel, ref, en);
+            Display d2 = new Display(clause.dispsize);
+            d2.setClause(clause);
+            d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
-            ref2.setEngine(en);
+            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
             en.contskel = clause;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
@@ -452,7 +452,7 @@ public final class SpecialMode extends AbstractSpecial {
                 return ((GoalTrace) u.contskel).back;
             case CODE_HEAD:
             case CODE_CHOP:
-                return ((Goal)u.contskel).def;
+                return ((Goal) u.contskel).def;
             default:
                 throw new IllegalArgumentException("illegal port");
         }

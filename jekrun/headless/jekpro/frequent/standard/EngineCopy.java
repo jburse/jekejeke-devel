@@ -4,7 +4,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -124,7 +123,7 @@ public final class EngineCopy {
                 break;
             }
         }
-        while (back!=null) {
+        while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
@@ -203,7 +202,7 @@ public final class EngineCopy {
 //                            en.store.getRootSystem()), args, null);
 //                    back.args[1] = help;
 //                } else {
-                    t = new SkelCompound(new SkelAtom(Branch.OP_CALL, en.store.getRootSystem()), t);
+                t = new SkelCompound(new SkelAtom(Branch.OP_CALL, en.store.getRootSystem()), t);
 //                }
                 break;
             } else if (t instanceof SkelCompound) {
@@ -250,7 +249,7 @@ public final class EngineCopy {
                         EngineMessage.OP_TYPE_CALLABLE, t), d);
             }
         }
-        while (back!=null) {
+        while (back != null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
@@ -336,7 +335,7 @@ public final class EngineCopy {
                 break;
             }
         }
-        while (back!=null) {
+        while (back != null) {
             SkelCompound help = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);
@@ -388,7 +387,7 @@ public final class EngineCopy {
                 break;
             }
         }
-        while (back!=null) {
+        while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
             back.var = SkelCompound.makeExtra(back.args);

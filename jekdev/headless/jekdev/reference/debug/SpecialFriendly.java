@@ -2,7 +2,6 @@ package jekdev.reference.debug;
 
 import jekdev.model.bugger.ClauseTrace;
 import jekdev.model.bugger.GoalTrace;
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.*;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -16,7 +15,6 @@ import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -62,9 +60,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_UNIFY_VAR = " unify_var";
 
     private final static String CODE_CALL_GOAL = " call_goal";
-    private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_CALL_META = " call_meta";
-    private final static String CODE_LAST_META = " last_meta";
 
     /**
      * <p>Create a index dump special.</p>
@@ -185,32 +181,6 @@ public final class SpecialFriendly extends AbstractSpecial {
     }
 
     /**
-     * <p>Retrieve a variable from a clause term.</p>
-     *
-     * @param t The clause term.
-     * @param i The variable index.
-     * @return The variable, or null.
-     */
-    private static SkelVar getVar(Object t, int i) {
-        Object var = EngineCopy.getVar(t);
-        if (var == null)
-            return null;
-        if (var instanceof SkelVar) {
-            SkelVar sv = (SkelVar) var;
-            if (sv.id == i)
-                return sv;
-        } else {
-            SkelVar[] temp = (SkelVar[]) var;
-            for (int j = 0; j < temp.length; j++) {
-                SkelVar sv = temp[j];
-                if (sv.id == i)
-                    return sv;
-            }
-        }
-        return null;
-    }
-
-    /**
      * <p>Disassemble a clause.</p>
      *
      * @param pw     The prolog writer.
@@ -242,9 +212,18 @@ public final class SpecialFriendly extends AbstractSpecial {
                             wr.write('\n');
                             wr.flush();
                         }
-                    } else if (n != -2) {
+                    } else if (n == Optimization.UNIFY_TERM) {
                         count = intermediateCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
+                        wr.write(" _");
+                        wr.write(Integer.toString(l));
+                        wr.write(", ");
+                        pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
+                        wr.write('\n');
+                        wr.flush();
+                    } else if (n == Optimization.UNIFY_VAR) {
+                        count = intermediateCount(wr, count);
+                        wr.write(SpecialFriendly.CODE_UNIFY_VAR);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
@@ -257,21 +236,6 @@ public final class SpecialFriendly extends AbstractSpecial {
             Intermediate end = nextClause(clause, flags);
             while (!(end instanceof Clause)) {
                 Goal goal = (Goal) end;
-                /* dissassemble a variable unify */
-                if (goal.uniargs != null) {
-                    int[] uniargs = goal.uniargs;
-                    for (int l = 0; l < uniargs.length; l++) {
-                        int k = uniargs[l];
-                        count = intermediateCount(wr, count);
-                        wr.write(SpecialFriendly.CODE_UNIFY_VAR);
-                        wr.write(" _");
-                        wr.write(Integer.toString(k));
-                        wr.write(", ");
-                        pw.unparseStatement(((SkelCompound) clause.term).args[k], ref);
-                        wr.write('\n');
-                        wr.flush();
-                    }
-                }
                 /* dissassemble a goal */
                 count = intermediateCallGoal(goal, pw, ref, count);
                 end = nextGoal(end, flags);
@@ -297,18 +261,10 @@ public final class SpecialFriendly extends AbstractSpecial {
             throws IOException, EngineException, EngineMessage {
         Writer wr = pw.getWriter();
         count = intermediateCount(wr, count);
-        if ((goal.flags & Intermediate.MASK_INTER_NLST) == 0) {
-            if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                wr.write(SpecialFriendly.CODE_LAST_GOAL);
-            } else {
-                wr.write(SpecialFriendly.CODE_LAST_META);
-            }
+        if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
+            wr.write(SpecialFriendly.CODE_CALL_GOAL);
         } else {
-            if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                wr.write(SpecialFriendly.CODE_CALL_GOAL);
-            } else {
-                wr.write(SpecialFriendly.CODE_CALL_META);
-            }
+            wr.write(SpecialFriendly.CODE_CALL_META);
         }
         wr.write(' ');
         pw.unparseStatement(goal.term, ref);

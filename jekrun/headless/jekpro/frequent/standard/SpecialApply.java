@@ -2,7 +2,10 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Clause;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
@@ -98,12 +101,12 @@ public final class SpecialApply extends AbstractSpecial {
                     d.remTab(en);
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                CallFrame ref2 = new CallFrame(clause.dispsize);
-                ref2.setClause(clause);
-                ref2.setArg(0, en.skel, ref, en);
+                Display d2 = new Display(clause.dispsize);
+                d2.setClause(clause);
+                d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi || ext)
                     ref.remTab(en);
-                ref2.setEngine(en);
+                CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
@@ -213,7 +216,7 @@ public final class SpecialApply extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DPTM_MLTI;
+            last.flags |= Display.MASK_DISP_MLTI;
         }
         en.display = last;
         return multi;
@@ -326,7 +329,7 @@ public final class SpecialApply extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DPTM_MLTI;
+            last.flags |= Display.MASK_DISP_MLTI;
         }
         en.display = last;
         return multi;
