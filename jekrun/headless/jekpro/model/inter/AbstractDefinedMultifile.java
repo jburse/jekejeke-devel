@@ -116,8 +116,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         }
 
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2);
-            dc.setEngine(en);
+            CallFrame dc = new CallFrame(d2, en);
             /* create choice point */
             en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark);
             en.number++;

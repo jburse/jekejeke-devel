@@ -308,8 +308,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         d2.setClause(clause);
 
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2);
-            dc.setEngine(en);
+            CallFrame dc = new CallFrame(d2, en);
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
             en.number++;

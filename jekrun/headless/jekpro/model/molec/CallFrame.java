@@ -43,42 +43,37 @@ public final class CallFrame extends StackElement {
     /**
      * <p>Create a new call frame.</p>
      *
-     * @param d The display.
-     */
-    public CallFrame(Display d) {
-        disp = d;
-    }
-
-    /**
-     * <p>Set the engine data.</p>
-     *
+     * @param d  The display.
      * @param en The engine.
      */
-    public final void setEngine(Engine en) {
+    public CallFrame(Display d, Engine en) {
+        disp = d;
         contskel = en.contskel;
         contdisplay = en.contdisplay;
         number = en.number;
     }
 
     /**
-     * <p>Perform last call optimization.</p>
+     * <p>Retrieve a new or old frame.</p>
      *
      * @param clause The clause.
      * @param en     The engine.
+     * @return The new or old frame.
      */
-    public final void lastCall(Clause clause, Engine en) {
+    public final CallFrame getFrame(Clause clause, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
             CallFrame u1;
-            if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
-                    (u1 = contdisplay) != null && u1.number >= number) {
+            if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
+                    (u1 = en.contdisplay) != null && u1.number >= en.number) {
                 Display d1 = u1.disp;
                 d1.lastCollect(en);
                 if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
                     disp.flags &= ~Display.MASK_DISP_NOBR;
-                contskel = u1.contskel;
-                contdisplay = u1.contdisplay;
+                u1.disp = disp;
+                return u1;
             }
         }
+        return this;
     }
 
     /**
@@ -102,9 +97,7 @@ public final class CallFrame extends StackElement {
                 return u1;
             }
         }
-        CallFrame ref = new CallFrame(d);
-        ref.setEngine(en);
-        return ref;
+        return new CallFrame(d, en);
     }
 
 }
