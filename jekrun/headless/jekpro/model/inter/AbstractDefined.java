@@ -305,19 +305,27 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (en.fault != null)
                 throw en.fault;
         }
-        CallFrame dc = new CallFrame(d2);
-        dc.setClause(clause);
-        dc.setEngine(en);
+        d2.setClause(clause);
 
         if (at != list.length) {
+            CallFrame dc = new CallFrame(d2);
+            dc.setEngine(en);
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
             en.number++;
-            d2.flags |= CallFrame.MASK_DPCL_MORE;
+            d2.flags |= Display.MASK_DISP_MORE;
+            en.contskel = clause;
+            en.contdisplay = dc;
+            return true;
+        } else if (clause.getNextRaw(en) != clause) {
+            CallFrame dc = CallFrame.getFrame(d2, clause, en);
+            en.contskel = clause;
+            en.contdisplay = dc;
+            return true;
+        } else {
+            d2.lastCollect(en);
+            return true;
         }
-        en.contskel = clause;
-        en.contdisplay = dc;
-        return true;
     }
 
     /**

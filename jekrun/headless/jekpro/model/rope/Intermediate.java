@@ -36,8 +36,6 @@ import jekpro.model.molec.EngineMessage;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class Intermediate {
-    public final static int MASK_INTER_NLST = 0x00000002;
-
     public Intermediate next;
     public Object term;
     public int flags;

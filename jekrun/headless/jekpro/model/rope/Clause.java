@@ -45,7 +45,8 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Clause extends Intermediate implements InterfaceReference {
-    public final static int MASK_CLAUSE_ASSE = 0x00000010;
+    public final static int MASK_CLAUSE_NLST = 0x00000001;
+    public final static int MASK_CLAUSE_ASSE = 0x00000002;
 
     public final static int MASK_CLAUSE_STOP = 0x00000100;
     public final static int MASK_CLAUSE_NBDY = 0x00000200;
@@ -65,7 +66,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public Clause(int copt) {
         if ((copt & AbstractDefined.MASK_DEFI_NLST) != 0)
-            flags |= Intermediate.MASK_INTER_NLST;
+            flags |= Clause.MASK_CLAUSE_NLST;
         if ((copt & AbstractDefined.MASK_DEFI_STOP) != 0)
             flags |= Clause.MASK_CLAUSE_STOP;
         if ((copt & AbstractDefined.MASK_DEFI_NBDY) != 0)
@@ -85,14 +86,9 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final boolean resolveNext(Engine en) {
         CallFrame u = en.contdisplay;
         Display d = u.disp;
-        if ((((d.flags & CallFrame.MASK_DPCL_MORE) != 0) ?
-                u.number + 1 : u.number) >= en.number) {
-            if ((d.flags & CallFrame.MASK_DPCL_LTGC) == 0) {
-                if (d.bind.length > 0)
-                    d.remTab(en);
-                d.flags |= CallFrame.MASK_DPCL_LTGC;
-            }
-        }
+        if ((((d.flags & Display.MASK_DISP_MORE) != 0) ?
+                u.number + 1 : u.number) >= en.number)
+            d.lastCollect(en);
 
         if ((flags & Clause.MASK_CLAUSE_STOP) != 0) {
             en.contskel = null;
@@ -112,32 +108,25 @@ public class Clause extends Intermediate implements InterfaceReference {
      * <p>Convert a vector of goals to a list of goals.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param vec  The term list.
-     * @param vars The helper.
-     * @param en   The engine.
+     * @param vec The term list.
+     * @param en  The engine.
      */
     protected void vectorToList(ListArray<Object> vec,
-                                Optimization[] vars,
                                 Engine en) {
         Intermediate end = this;
         if (vec == null) {
             next = end;
             return;
         }
-        int f2 = 0;
-        if ((flags & MASK_INTER_NLST) != 0)
-            f2 |= MASK_INTER_NLST;
         int f3 = 0;
         if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
             f3 |= Goal.MASK_GOAL_CEND;
-        int i = vec.size() - 1;
-        for (; i >= 0; i--) {
+        for (int i = vec.size() - 1; i >= 0; i--) {
             Object t = vec.get(i);
 
             /* normal code */
-            end = new Goal(t, end, f2 | f3, this);
+            end = new Goal(t, end, f3, this);
 
-            f2 |= MASK_INTER_NLST;
             f3 &= ~Goal.MASK_GOAL_CEND;
         }
         next = end;
@@ -182,7 +171,7 @@ public class Clause extends Intermediate implements InterfaceReference {
         dispsize = Optimization.sortExtra(vars);
 
         /* build the clause */
-        vectorToList(body, vars, en);
+        vectorToList(body, en);
         intargs = Optimization.unifyArgs(term, vars);
     }
 

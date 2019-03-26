@@ -4,7 +4,10 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Intermediate;
@@ -178,7 +181,7 @@ public abstract class AbstractDelegate {
 
         AbstractDelegate.invokeOther(en);
 
-        ref.flags |= Display.MASK_DPTM_MLTI;
+        ref.flags |= Display.MASK_DISP_MLTI;
         en.display = ref;
         en.skel = temp;
     }
@@ -282,12 +285,12 @@ public abstract class AbstractDelegate {
         boolean multi = en.wrapGoal();
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        CallFrame ref2 = new CallFrame(clause.dispsize);
-        ref2.setClause(clause);
-        ref2.setArg(0, en.skel, ref, en);
+        Display d2 = new Display(clause.dispsize);
+        d2.setClause(clause);
+        d2.bind[0].bindUniv(en.skel, ref, en);
         if (multi)
             ref.remTab(en);
-        ref2.setEngine(en);
+        CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
         en.contskel = clause;
         en.contdisplay = ref2;
         if (!en.runLoop(snap, true))

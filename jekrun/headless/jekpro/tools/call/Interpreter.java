@@ -4,7 +4,9 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.*;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.term.AbstractSkel;
@@ -185,7 +187,7 @@ public final class Interpreter {
      *
      * @param flag The flag name.
      * @return The flag value.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public Object getProperty(String flag)
@@ -402,7 +404,7 @@ public final class Interpreter {
             throw new InterpreterException(x);
         }
         if (EngineCopy.displaySize(val) != 0)
-            ref.flags |= Display.MASK_DPTM_MLTI;
+            ref.flags |= Display.MASK_DISP_MLTI;
         return AbstractTerm.createTermWrapped(val, ref);
     }
 

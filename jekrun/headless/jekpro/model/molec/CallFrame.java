@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
 
 /**
  * <p>The class provides a clause display.</p>
@@ -36,12 +37,7 @@ import jekpro.model.rope.Clause;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CallFrame extends StackElement {
-    public final static int MASK_DPCL_MORE = 0x00000010;
-    public final static int MASK_DPCL_SOFT = 0x00000020;
-    public final static int MASK_DPCL_LTGC = 0x00000040;
-    public final static int MASK_DPCL_NOBR = 0x00000040;
-
-    public final Display disp;
+    public Display disp;
     public int number;
 
     /**
@@ -54,41 +50,6 @@ public final class CallFrame extends StackElement {
     }
 
     /**
-     * <p>Create a new call frame.</p>
-     *
-     * @param size The requested size.
-     */
-    public CallFrame(int size) {
-        this(new Display(size));
-    }
-
-    /**
-     * <p>Set the clause data.</p>
-     *
-     * @param clause The clause.
-     */
-    public void setClause(Clause clause) {
-        Display d = disp;
-        d.vars = clause.vars;
-        if ((clause.flags & Clause.MASK_CLAUSE_NOBR) != 0)
-            d.flags |= MASK_DPCL_NOBR;
-        if ((clause.flags & Clause.MASK_CLAUSE_NBDY) != 0)
-            d.flags |= MASK_DPCL_LTGC;
-    }
-
-    /**
-     * <p>Set an argument.</p>
-     *
-     * @param k  The argument index.
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
-     */
-    public void setArg(int k, Object m, Display d, Engine en) {
-        disp.bind[k].bindUniv(m, d, en);
-    }
-
-    /**
      * <p>Set the engine data.</p>
      *
      * @param en The engine.
@@ -97,6 +58,53 @@ public final class CallFrame extends StackElement {
         contskel = en.contskel;
         contdisplay = en.contdisplay;
         number = en.number;
+    }
+
+    /**
+     * <p>Perform last call optimization.</p>
+     *
+     * @param clause The clause.
+     * @param en     The engine.
+     */
+    public final void lastCall(Clause clause, Engine en) {
+        if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
+            CallFrame u1;
+            if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
+                    (u1 = contdisplay) != null && u1.number >= number) {
+                Display d1 = u1.disp;
+                d1.lastCollect(en);
+                if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
+                    disp.flags &= ~Display.MASK_DISP_NOBR;
+                contskel = u1.contskel;
+                contdisplay = u1.contdisplay;
+            }
+        }
+    }
+
+    /**
+     * <p>Retrieve a new or old frame.</p>
+     *
+     * @param d      The display.
+     * @param clause The clause.
+     * @param en     The engine.
+     * @return The new or old frame.
+     */
+    public static CallFrame getFrame(Display d, Clause clause, Engine en) {
+        if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
+            CallFrame u1;
+            if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
+                    (u1 = en.contdisplay) != null && u1.number >= en.number) {
+                Display d1 = u1.disp;
+                d1.lastCollect(en);
+                if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
+                    d.flags &= ~Display.MASK_DISP_NOBR;
+                u1.disp = d;
+                return u1;
+            }
+        }
+        CallFrame ref = new CallFrame(d);
+        ref.setEngine(en);
+        return ref;
     }
 
 }

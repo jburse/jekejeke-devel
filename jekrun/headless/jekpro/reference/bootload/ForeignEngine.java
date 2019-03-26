@@ -91,7 +91,7 @@ public final class ForeignEngine {
      * @param inter The interpreter.
      * @param flag  The Prolog flag.
      * @return The value.
-     * @throws InterpreterMessage Flag undefined.
+     * @throws InterpreterMessage   Flag undefined.
      * @throws InterpreterException Flag undefined.
      */
     public static Object sysGetFlag(Interpreter inter, String flag)
@@ -195,7 +195,7 @@ public final class ForeignEngine {
      * @param flag The flag.
      * @param en   The engine.
      * @return The value or null.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static Object getFlag(String flag, Engine en)
@@ -255,7 +255,7 @@ public final class ForeignEngine {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             MapHash<String, AbstractFlag<Engine>> pfs = branch.getPrologFlags();
-            if (pfs==null)
+            if (pfs == null)
                 continue;
             AbstractFlag af = pfs.get(flag);
             if (af != null)

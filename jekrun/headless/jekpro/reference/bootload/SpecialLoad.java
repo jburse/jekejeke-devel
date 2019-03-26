@@ -843,10 +843,10 @@ public final class SpecialLoad extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            CallFrame ref = new CallFrame(clause.dispsize);
-            ref.setClause(clause);
-            ref.setArg(0, t, dc, en);
-            ref.setEngine(en);
+            Display d2 = new Display(clause.dispsize);
+            d2.setClause(clause);
+            d2.bind[0].bindUniv(t, dc, en);
+            CallFrame ref = CallFrame.getFrame(d2, clause, en);
             en.contskel = clause;
             en.contdisplay = ref;
             if (!en.runLoop(snap, true))

@@ -77,7 +77,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
                 u = en.contdisplay;
-                if ((((u.disp.flags & CallFrame.MASK_DPCL_MORE) != 0) ?
+                if ((((u.disp.flags & Display.MASK_DISP_MORE) != 0) ?
                         u.number + 1 : u.number) >= en.number) {
                     en.window = u;
                     en.fault = null;
@@ -86,7 +86,7 @@ public final class SpecialLogic extends AbstractSpecial {
                     if (en.fault != null)
                         throw en.fault;
                 } else {
-                    u.disp.flags |= CallFrame.MASK_DPCL_SOFT;
+                    u.disp.flags |= Display.MASK_DISP_SOFT;
                 }
                 return true;
             case SPECIAL_SYS_SAFE:
@@ -96,10 +96,10 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                CallFrame ref2 = new CallFrame(clause.dispsize);
-                ref2.setClause(clause);
-                ref2.setArg(0, en.skel, en.display, en);
-                ref2.setEngine(en);
+                Display d2 = new Display(clause.dispsize);
+                d2.setClause(clause);
+                d2.bind[0].bindUniv(en.skel, en.display, en);
+                CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;

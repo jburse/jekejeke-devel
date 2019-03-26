@@ -74,28 +74,11 @@ public class Goal extends Intermediate {
      */
     public final boolean resolveNext(Engine en)
             throws EngineException, EngineMessage {
-        CallFrame u = en.contdisplay;
-
-        if ((flags & Intermediate.MASK_INTER_NLST) == 0) {
-            CallFrame u1;
-            if ((u.contskel.flags & Goal.MASK_GOAL_CEND) != 0 &&
-                    (u1 = u.contdisplay) != null && u1.number >= en.number) {
-                Display d1 = u1.disp;
-                if ((d1.flags & CallFrame.MASK_DPCL_LTGC) == 0) {
-                    if (d1.bind.length > 0)
-                        d1.remTab(en);
-                    d1.flags |= CallFrame.MASK_DPCL_LTGC;
-                }
-                if ((d1.flags & CallFrame.MASK_DPCL_NOBR) == 0)
-                    u.disp.flags &= ~CallFrame.MASK_DPCL_NOBR;
-                u.contskel = u1.contskel;
-                u.contdisplay = u1.contdisplay;
-            }
-        }
         if (en.visor.signal != null &&
                 (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0)
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         /* current term */
+        CallFrame u = en.contdisplay;
         Object alfa = term;
         Display d1 = u.disp;
         if ((flags & Goal.MASK_GOAL_NAKE) != 0) {

@@ -333,7 +333,7 @@ public final class TermCompound extends AbstractTerm {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DPTM_MLTI;
+            last.flags |= Display.MASK_DISP_MLTI;
         }
         en.skel = Boolean.valueOf(multi);
         return last;

@@ -131,7 +131,7 @@ public abstract class AbstractSkel {
         Display ref = (size != 0 ? new Display(size) :
                 Display.DISPLAY_CONST);
         if (size != 0)
-            ref.flags |= Display.MASK_DPTM_MLTI;
+            ref.flags |= Display.MASK_DISP_MLTI;
         return ref;
     }
 

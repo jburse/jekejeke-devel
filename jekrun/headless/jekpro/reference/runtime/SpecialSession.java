@@ -325,10 +325,10 @@ public final class SpecialSession extends AbstractSpecial {
                 int snap = en.number;
                 Display backref = en.visor.query;
                 try {
-                    CallFrame ref = new CallFrame(clause.dispsize);
-                    ref.setClause(clause);
-                    en.visor.query = ref.disp;
-                    ref.setEngine(en);
+                    Display d2 = new Display(clause.dispsize);
+                    d2.setClause(clause);
+                    en.visor.query = d2;
+                    CallFrame ref = CallFrame.getFrame(d2, clause, en);
                     en.contskel = clause;
                     en.contdisplay = ref;
                     boolean found = en.runLoop(snap, true);
@@ -454,10 +454,10 @@ public final class SpecialSession extends AbstractSpecial {
             Display backref = en.visor.query;
             CallFrame ref;
             try {
-                ref = new CallFrame(clause.dispsize);
-                ref.setClause(clause);
-                en.visor.query = ref.disp;
-                ref.setEngine(en);
+                Display d2 = new Display(clause.dispsize);
+                d2.setClause(clause);
+                en.visor.query = d2;
+                ref = CallFrame.getFrame(d2, clause, en);
                 en.contskel = clause;
                 en.contdisplay = ref;
                 if (!en.runLoop(snap, true))

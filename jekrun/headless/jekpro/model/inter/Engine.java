@@ -266,12 +266,12 @@ public class Engine extends StackElement {
             d2.remTab(this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        CallFrame ref2 = new CallFrame(clause.dispsize);
-        ref2.setClause(clause);
-        ref2.setArg(0, skel, ref, this);
+        Display d3 = new Display(clause.dispsize);
+        d3.setClause(clause);
+        d3.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
             ref.remTab(this);
-        ref2.setEngine(this);
+        CallFrame ref2 = CallFrame.getFrame(d3, clause, this);
         contskel = clause;
         contdisplay = ref2;
     }
@@ -379,12 +379,12 @@ public class Engine extends StackElement {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            CallFrame ref2 = new CallFrame(clause.dispsize);
-            ref2.setClause(clause);
-            ref2.setArg(0, skel, ref, this);
+            Display d2 = new Display(clause.dispsize);
+            d2.setClause(clause);
+            d2.bind[0].bindUniv(skel, ref, this);
             if (multi)
                 ref.remTab(this);
-            ref2.setEngine(this);
+            CallFrame ref2 = CallFrame.getFrame(d2, clause, this);
             contskel = clause;
             contdisplay = ref2;
             if (!runLoop(snap, true))

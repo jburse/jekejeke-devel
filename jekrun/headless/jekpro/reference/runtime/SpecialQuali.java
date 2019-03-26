@@ -97,12 +97,12 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 boolean ext = ref.getAndReset();
                 Clause clause = en.store.foyer.CLAUSE_TRAN;
-                CallFrame ref2 = new CallFrame(clause.dispsize);
-                ref2.setClause(clause);
-                ref2.setArg(0, en.skel, ref, en);
+                Display d3 = new Display(clause.dispsize);
+                d3.setClause(clause);
+                d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     ref.remTab(en);
-                ref2.setEngine(en);
+                CallFrame ref2 = CallFrame.getFrame(d3, clause, en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
@@ -123,12 +123,12 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 ext = ref.getAndReset();
                 clause = en.store.foyer.CLAUSE_TRAN;
-                ref2 = new CallFrame(clause.dispsize);
-                ref2.setClause(clause);
-                ref2.setArg(0, en.skel, ref, en);
+                d3 = new Display(clause.dispsize);
+                d3.setClause(clause);
+                d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     ref.remTab(en);
-                ref2.setEngine(en);
+                ref2 = CallFrame.getFrame(d3, clause, en);
                 en.contskel = clause;
                 en.contdisplay = ref2;
                 return true;
@@ -687,7 +687,7 @@ public final class SpecialQuali extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DPTM_MLTI;
+            last.flags |= Display.MASK_DISP_MLTI;
         }
         en.display = last;
         return multi;
