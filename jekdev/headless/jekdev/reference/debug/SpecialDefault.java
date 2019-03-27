@@ -341,7 +341,7 @@ public final class SpecialDefault extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, clause, en);

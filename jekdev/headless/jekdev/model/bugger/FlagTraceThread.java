@@ -4,7 +4,6 @@ import jekdev.reference.debug.SpecialDefault;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.inter.StackElement;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;

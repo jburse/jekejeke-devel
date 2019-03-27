@@ -294,7 +294,7 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
@@ -351,7 +351,7 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
@@ -449,10 +449,9 @@ public final class SpecialMode extends AbstractSpecial {
                 return u.contskel.next;
             case CODE_EXIT:
             case CODE_REDO:
-                return ((GoalTrace) u.contskel).back;
             case CODE_HEAD:
             case CODE_CHOP:
-                return ((Goal) u.contskel).def;
+                return ((GoalTrace) u.contskel).back;
             default:
                 throw new IllegalArgumentException("illegal port");
         }
