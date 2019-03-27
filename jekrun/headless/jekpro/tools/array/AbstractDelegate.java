@@ -285,7 +285,7 @@ public abstract class AbstractDelegate {
         boolean multi = en.wrapGoal();
         Display ref = en.display;
         Clause clause = en.store.foyer.CLAUSE_CALL;
-        Display d2 = new Display(clause.dispsize);
+        Display d2 = new Display(clause.size);
         d2.setClause(clause);
         d2.bind[0].bindUniv(en.skel, ref, en);
         if (multi)

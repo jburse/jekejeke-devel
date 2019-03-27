@@ -45,23 +45,17 @@ public class Goal extends Intermediate {
     public final static int MASK_GOAL_NAKE = 0x00000010;
     public final static int MASK_GOAL_CEND = 0x00000020;
 
-    public final Clause def;
-
     /**
      * <p>Create a term.</p>
      *
      * @param t  The term.
-     * @param n  The next.
      * @param f3 The flags.
-     * @param d  The clause.
      */
-    public Goal(Object t, Intermediate n, int f3, Clause d) {
-        next = n;
+    public Goal(Object t, int f3) {
         term = t;
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
-        def = d;
     }
 
     /**

@@ -150,7 +150,7 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d3 = new Display(clause.dispsize);
+            Display d3 = new Display(clause.size);
             d3.setClause(clause);
             d3.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)

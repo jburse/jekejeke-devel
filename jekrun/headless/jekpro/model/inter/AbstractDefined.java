@@ -5,6 +5,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.Optimization;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.runtime.SpecialQuali;
@@ -285,9 +286,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (; ; ) {
             clause = list[at++];
             if (d2 == null) {
-                d2 = new Display(clause.dispsize);
+                d2 = new Display(clause.sizerule);
             } else {
-                d2.setSize(clause.dispsize);
+                d2.setSize(clause.sizerule);
             }
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
@@ -322,7 +323,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             en.contdisplay = dc;
             return true;
         } else {
-            d2.lastCollect(en);
+            if ((clause.flags & Intermediate.MASK_INTER_NBDY) == 0)
+                d2.lastCollect(en);
             return true;
         }
     }
@@ -581,7 +583,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (!(clause.term instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.term).args, ref1, en)) {
-                Object end = PreClause.intermediateToBody(clause.next, en.store);
+                Object end = PreClause.interToBody(clause.next, en.store);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,

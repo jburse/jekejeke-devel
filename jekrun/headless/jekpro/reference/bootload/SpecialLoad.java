@@ -354,7 +354,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.unparseStatement(decl, Display.DISPLAY_CONST);
                 SpecialLoad.flushWriter(pw.getWriter());
             }
-            Object t = PreClause.intermediateToClause(clause, en);
+            Object t = PreClause.interToClause(clause, en);
             pw.setSource(src);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setSource(en.visor.peekStack());
@@ -843,7 +843,7 @@ public final class SpecialLoad extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, clause, en);

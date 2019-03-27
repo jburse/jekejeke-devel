@@ -97,7 +97,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 boolean ext = ref.getAndReset();
                 Clause clause = en.store.foyer.CLAUSE_TRAN;
-                Display d3 = new Display(clause.dispsize);
+                Display d3 = new Display(clause.size);
                 d3.setClause(clause);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
@@ -123,7 +123,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 ext = ref.getAndReset();
                 clause = en.store.foyer.CLAUSE_TRAN;
-                d3 = new Display(clause.dispsize);
+                d3 = new Display(clause.size);
                 d3.setClause(clause);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)

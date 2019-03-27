@@ -77,7 +77,7 @@ public final class SpecialBody extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(clause.dispsize);
+                Display d2 = new Display(clause.size);
                 d2.setClause(clause);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)

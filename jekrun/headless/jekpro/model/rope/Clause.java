@@ -10,7 +10,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.ListArray;
 import matula.util.data.MapHashLink;
 
 /**
@@ -45,17 +44,14 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Clause extends Intermediate implements InterfaceReference {
-    public final static int MASK_CLAUSE_NLST = 0x00000001;
-    public final static int MASK_CLAUSE_ASSE = 0x00000002;
+    public final static int MASK_CLAUSE_ASSE = 0x00000010;
+    public final static int MASK_CLAUSE_STOP = 0x00000020;
+    public final static int MASK_CLAUSE_NHED = 0x00000040;
+    public final static int MASK_CLAUSE_NOBR = 0x00000040;
 
-    public final static int MASK_CLAUSE_STOP = 0x00000100;
-    public final static int MASK_CLAUSE_NBDY = 0x00000200;
-    public final static int MASK_CLAUSE_NHED = 0x00000400;
-    public final static int MASK_CLAUSE_NOBR = 0x00000800;
-
-    public int dispsize;
-    public int[] intargs;
     public int size;
+    public int sizerule;
+    public int[] intargs;
     public AbstractDefined del;
     public MapHashLink<String, SkelVar> vars;
 
@@ -66,11 +62,11 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public Clause(int copt) {
         if ((copt & AbstractDefined.MASK_DEFI_NLST) != 0)
-            flags |= Clause.MASK_CLAUSE_NLST;
+            flags |= Intermediate.MASK_INTER_NLST;
         if ((copt & AbstractDefined.MASK_DEFI_STOP) != 0)
             flags |= Clause.MASK_CLAUSE_STOP;
         if ((copt & AbstractDefined.MASK_DEFI_NBDY) != 0)
-            flags |= Clause.MASK_CLAUSE_NBDY;
+            flags |= Intermediate.MASK_INTER_NBDY;
         if ((copt & AbstractDefined.MASK_DEFI_NHED) != 0)
             flags |= Clause.MASK_CLAUSE_NHED;
         if ((copt & AbstractDelegate.MASK_DELE_NOBR) != 0)
@@ -86,7 +82,8 @@ public class Clause extends Intermediate implements InterfaceReference {
     public final boolean resolveNext(Engine en) {
         CallFrame u = en.contdisplay;
         Display d = u.disp;
-        if ((((d.flags & Display.MASK_DISP_MORE) != 0) ?
+        if ((flags & MASK_INTER_NBDY) == 0 &&
+                (((d.flags & Display.MASK_DISP_MORE) != 0) ?
                 u.number + 1 : u.number) >= en.number)
             d.lastCollect(en);
 
@@ -105,31 +102,42 @@ public class Clause extends Intermediate implements InterfaceReference {
     /***********************************************************/
 
     /**
-     * <p>Convert a vector of goals to a list of goals.</p>
+     * <p>Convert a body to intermediate form.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param vec The term list.
-     * @param en  The engine.
+     * @param body The term list, or null.
+     * @param en   The engine.
      */
-    protected void vectorToList(ListArray<Object> vec,
-                                Engine en) {
-        Intermediate end = this;
-        if (vec == null) {
-            next = end;
-            return;
-        }
+    public void bodyToInter(Object body, Engine en) {
         int f3 = 0;
-        if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
-            f3 |= Goal.MASK_GOAL_CEND;
-        for (int i = vec.size() - 1; i >= 0; i--) {
-            Object t = vec.get(i);
+        if ((flags & Intermediate.MASK_INTER_NLST) != 0)
+            f3 |= Intermediate.MASK_INTER_NLST;
+        if ((flags & Intermediate.MASK_INTER_NBDY) != 0)
+            f3 |= Intermediate.MASK_INTER_NBDY;
+        Goal back = null;
+        while (body != null) {
+            Object term = PreClause.bodyToGoal(body);
+            if (term != null) {
 
-            /* normal code */
-            end = new Goal(t, end, f3, this);
+                Goal goal = new Goal(term, f3);
+                if (back == null) {
+                    next = goal;
+                } else {
+                    back.next = goal;
+                }
+                back = goal;
 
-            f3 &= ~Goal.MASK_GOAL_CEND;
+            }
+            body = PreClause.bodyToRest(body);
         }
-        next = end;
+
+        if (back == null) {
+            next = this;
+        } else {
+            back.next = this;
+            if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
+                back.flags |= Goal.MASK_GOAL_CEND;
+        }
     }
 
     /**
@@ -148,30 +156,21 @@ public class Clause extends Intermediate implements InterfaceReference {
     }
 
     /**
-     * <p>Analyze the clause.</p>
+     * <p>Analyze a clause.</p>
      *
-     * @param molec The term.
-     * @param en    The engine or null.
+     * @param rule The rule.
+     * @param body The body.
      */
-    public void analyzeBody(Object molec, Engine en) {
-        /* create the helper */
-        Optimization[] vars = Optimization.createHelper(molec);
-        size = vars.length;
+    public void analyzeClause(Object rule, Object body) {
+        Optimization[] vars = Optimization.createHelper(rule);
 
-        /* mark the helper */
-        ListArray<Object> body = PreClause.clauseToBody(molec);
         if (vars.length != 0) {
-            /* analyze the variables */
             Optimization.setHead(term, this, vars);
-            if (body != null) {
-                for (int i = body.size() - 1; i >= 0; i--)
-                    Optimization.setBody(body.get(i), i, vars);
-            }
+            if (body != null)
+                Optimization.setBody(body, vars);
+            sizerule = Optimization.sortExtra(vars);
         }
-        dispsize = Optimization.sortExtra(vars);
 
-        /* build the clause */
-        vectorToList(body, en);
         intargs = Optimization.unifyArgs(term, vars);
     }
 
@@ -188,11 +187,6 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public boolean assertRef(int flags, Engine en)
             throws EngineMessage {
-        if (del == null)
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_DIRECTIVE,
-                    this), Display.DISPLAY_CONST);
         return del.assertClause(this, flags, en);
     }
 
@@ -205,14 +199,8 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public boolean retractRef(Engine en)
             throws EngineMessage {
-        if (del == null)
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_DIRECTIVE,
-                    this), Display.DISPLAY_CONST);
         return del.retractClause(this, en);
     }
-
 
     /**
      * <p>Clause this reference.</p>
@@ -223,7 +211,7 @@ public class Clause extends Intermediate implements InterfaceReference {
      */
     public void clauseRef(Engine en)
             throws EngineMessage {
-        Object val = PreClause.intermediateToClause(this, en);
+        Object val = PreClause.interToClause(this, en);
         en.skel = val;
         en.display = AbstractSkel.createMarker(val);
     }

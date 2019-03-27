@@ -404,6 +404,8 @@ public abstract class AbstractSource {
                     if (val instanceof SkelCompound &&
                             ((SkelCompound) val).args.length == 1 &&
                             ((SkelCompound) val).sym.fun.equals(PreClause.OP_TURNSTILE)) {
+                        SkelCompound sc =(SkelCompound)val;
+                        pre.molec=sc.args[0];
                         FileText.executeDirective(lr, pre, en);
                     } else {
                         if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) == 0)

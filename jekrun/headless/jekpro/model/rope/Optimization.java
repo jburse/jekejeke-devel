@@ -36,7 +36,7 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Optimization {
-    private final static Optimization[] OPTIMIZATION_VAR_VOID = new Optimization[0];
+    private final static Optimization[] VAR_VOID = new Optimization[0];
 
     public static final int UNIFY_TERM = -1;
     public static final int UNIFY_VAR = -2;
@@ -99,13 +99,13 @@ public final class Optimization {
     /**
      * <p>Create the helper for the given rule.</p>
      *
-     * @param m The rule skel, non var.
+     * @param molec The rule skel.
      * @return The helper.
      */
-    static Optimization[] createHelper(Object m) {
-        Object var = EngineCopy.getVar(m);
+    static Optimization[] createHelper(Object molec) {
+        Object var = EngineCopy.getVar(molec);
         if (var == null)
-            return OPTIMIZATION_VAR_VOID;
+            return VAR_VOID;
         Optimization[] helper;
         if (var instanceof SkelVar) {
             helper = new Optimization[1];
@@ -165,10 +165,9 @@ public final class Optimization {
      * <p>Set also the min body if we are not in term position.</p>
      *
      * @param m      The term or term, can be null.
-     * @param k      The min term value.
      * @param helper The helper.
      */
-    static void setBody(Object m, int k, Optimization[] helper) {
+    static void setBody(Object m, Optimization[] helper) {
         Object var = EngineCopy.getVar(m);
         if (var == null)
             return;
@@ -228,7 +227,7 @@ public final class Optimization {
         if (!(m instanceof SkelCompound))
             return null;
         SkelCompound mc = (SkelCompound) m;
-        if (vars == null)
+        if (vars.length == 0)
             return unifyTermInt(mc.args.length);
         int i = mc.args.length - 1;
         for (; i >= 0; i--) {

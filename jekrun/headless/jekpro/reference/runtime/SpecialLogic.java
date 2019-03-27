@@ -76,8 +76,7 @@ public final class SpecialLogic extends AbstractSpecial {
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    Goal r = (Goal) en.contskel;
-                    en.contdisplay = u.getFrame(r.def, en);
+                    en.contdisplay = u.getFrame(en.contskel, en);
                 }
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
@@ -91,8 +90,7 @@ public final class SpecialLogic extends AbstractSpecial {
                         en.window = null;
                         if (en.fault != null)
                             throw en.fault;
-                        Goal r = (Goal) en.contskel;
-                        en.contdisplay = u.getFrame(r.def, en);
+                        en.contdisplay = u.getFrame(en.contskel, en);
                     }
                 } else {
                     u.disp.flags |= Display.MASK_DISP_SOFT;
@@ -105,7 +103,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(clause.dispsize);
+                Display d2 = new Display(clause.size);
                 d2.setClause(clause);
                 d2.bind[0].bindUniv(en.skel, en.display, en);
                 CallFrame ref2 = CallFrame.getFrame(d2, clause, en);

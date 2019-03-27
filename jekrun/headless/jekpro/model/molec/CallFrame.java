@@ -2,8 +2,8 @@ package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
 
 /**
  * <p>The class provides a clause display.</p>
@@ -56,17 +56,18 @@ public final class CallFrame extends StackElement {
     /**
      * <p>Retrieve a new or old frame.</p>
      *
-     * @param clause The clause.
-     * @param en     The engine.
+     * @param inter The intermediate.
+     * @param en    The engine.
      * @return The new or old frame.
      */
-    public final CallFrame getFrame(Clause clause, Engine en) {
-        if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
+    public final CallFrame getFrame(Intermediate inter, Engine en) {
+        if ((inter.flags & Intermediate.MASK_INTER_NLST) == 0) {
             if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = contdisplay;
                 if (u1.number >= number) {
                     Display d1 = u1.disp;
-                    d1.lastCollect(en);
+                    if ((inter.flags & Intermediate.MASK_INTER_NBDY) == 0)
+                        d1.lastCollect(en);
                     if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
                         disp.flags &= ~Display.MASK_DISP_NOBR;
                     u1.disp = disp;
@@ -80,18 +81,19 @@ public final class CallFrame extends StackElement {
     /**
      * <p>Retrieve a new or old frame.</p>
      *
-     * @param d      The display.
-     * @param clause The clause.
-     * @param en     The engine.
+     * @param d     The display.
+     * @param inter The clause.
+     * @param en    The engine.
      * @return The new or old frame.
      */
-    public static CallFrame getFrame(Display d, Clause clause, Engine en) {
-        if ((clause.flags & Clause.MASK_CLAUSE_NLST) == 0) {
+    public static CallFrame getFrame(Display d, Intermediate inter, Engine en) {
+        if ((inter.flags & Intermediate.MASK_INTER_NLST) == 0) {
             if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = en.contdisplay;
                 if (u1.number >= en.number) {
                     Display d1 = u1.disp;
-                    d1.lastCollect(en);
+                    if ((inter.flags & Intermediate.MASK_INTER_NBDY) == 0)
+                        d1.lastCollect(en);
                     if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
                         d.flags &= ~Display.MASK_DISP_NOBR;
                     u1.disp = d;

@@ -266,7 +266,7 @@ public class Engine extends StackElement {
             d2.remTab(this);
         Display ref = display;
         Clause clause = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(clause.dispsize);
+        Display d3 = new Display(clause.size);
         d3.setClause(clause);
         d3.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
@@ -379,7 +379,7 @@ public class Engine extends StackElement {
             boolean multi = wrapGoal();
             Display ref = display;
             Clause clause = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(skel, ref, this);
             if (multi)

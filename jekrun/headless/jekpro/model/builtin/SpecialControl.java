@@ -89,8 +89,7 @@ public final class SpecialControl extends AbstractSpecial {
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    Goal r = (Goal) en.contskel;
-                    en.contdisplay = u.getFrame(r.def, en);
+                    en.contdisplay = u.getFrame(en.contskel, en);
                 }
                 return true;
             case SPECIAL_SYS_FETCH_STACK:
@@ -135,7 +134,7 @@ public final class SpecialControl extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.dispsize);
+            Display d2 = new Display(clause.size);
             d2.setClause(clause);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)

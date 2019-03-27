@@ -316,7 +316,8 @@ public final class SpecialSession extends AbstractSpecial {
                 Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP, en);
-                clause.analyzeBody(pre.molec, en);
+                clause.size = EngineCopy.displaySize(pre.molec);
+                clause.bodyToInter(pre.molec, en);
                 clause.vars = pre.vars;
 
                 Intermediate r = en.contskel;
@@ -325,7 +326,7 @@ public final class SpecialSession extends AbstractSpecial {
                 int snap = en.number;
                 Display backref = en.visor.query;
                 try {
-                    Display d2 = new Display(clause.dispsize);
+                    Display d2 = new Display(clause.size);
                     d2.setClause(clause);
                     en.visor.query = d2;
                     CallFrame ref = CallFrame.getFrame(d2, clause, en);
@@ -426,8 +427,7 @@ public final class SpecialSession extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
                 (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
             PreClause pre = new PreClause();
-            pre.molec = new SkelCompound(new SkelAtom(
-                    PreClause.OP_TURNSTILE), t);
+            pre.molec = t;
             pre.vars = rd.getVars();
             return pre;
         }
@@ -442,19 +442,19 @@ public final class SpecialSession extends AbstractSpecial {
             Intermediate r = en.contskel;
             CallFrame u = en.contdisplay;
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
-            SkelAtom sa = new SkelAtom("expand_goal", en.store.getRootSystem());
-            Object molec = new SkelCompound(new SkelAtom(
-                    PreClause.OP_TURNSTILE), new SkelCompound(sa, t, var));
+            Object body = new SkelCompound(new SkelAtom("expand_goal",
+                    en.store.getRootSystem()), t, var);
             Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
                     AbstractDefined.MASK_DEFI_NLST |
                     AbstractDefined.MASK_DEFI_STOP, en);
-            clause.analyzeBody(molec, en);
+            clause.size = EngineCopy.displaySize(body);
+            clause.bodyToInter(body, en);
 
             int snap = en.number;
             Display backref = en.visor.query;
             CallFrame ref;
             try {
-                Display d2 = new Display(clause.dispsize);
+                Display d2 = new Display(clause.size);
                 d2.setClause(clause);
                 en.visor.query = d2;
                 ref = CallFrame.getFrame(d2, clause, en);
@@ -544,8 +544,7 @@ public final class SpecialSession extends AbstractSpecial {
         }
         MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(assoc, d, en);
         pre.vars = FileText.copyVars(ec.vars, print);
-        pre.molec = new SkelCompound(new SkelAtom(
-                PreClause.OP_TURNSTILE), t);
+        pre.molec = t;
         ec.vars = null;
         return pre;
     }
