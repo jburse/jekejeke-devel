@@ -317,7 +317,7 @@ public final class SpecialSession extends AbstractSpecial {
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP, en);
                 dire.size = EngineCopy.displaySize(pre.molec);
-                dire.bodyToInter(pre.molec, en);
+                dire.bodyToInter(pre.molec, en, true);
 
                 Intermediate r = en.contskel;
                 CallFrame u = en.contdisplay;
@@ -447,7 +447,7 @@ public final class SpecialSession extends AbstractSpecial {
                     AbstractDefined.MASK_DEFI_NLST |
                     AbstractDefined.MASK_DEFI_STOP, en);
             dire.size = EngineCopy.displaySize(body);
-            dire.bodyToInter(body, en);
+            dire.bodyToInter(body, en, true);
 
             int snap = en.number;
             Display backref = en.visor.query;

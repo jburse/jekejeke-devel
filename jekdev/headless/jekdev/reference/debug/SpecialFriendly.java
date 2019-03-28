@@ -1,8 +1,5 @@
 package jekdev.reference.debug;
 
-import jekdev.model.bugger.ClauseTrace;
-import jekdev.model.bugger.DirectiveTrace;
-import jekdev.model.bugger.GoalTrace;
 import jekpro.model.inter.*;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -16,6 +13,7 @@ import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.data.ListArray;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -52,7 +50,7 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialFriendly extends AbstractSpecial {
-    private final static int MASK_FRIEND_DEBUG = 0x00000001;
+    final static int MASK_FRIEND_DEBUG = 0x00000001;
 
     private final static int SPECIAL_SYS_FRIENDLY = 0;
     private final static int SPECIAL_SYS_INSTRUMENTED = 1;
@@ -62,8 +60,11 @@ public final class SpecialFriendly extends AbstractSpecial {
 
     private final static String CODE_CALL_GOAL = " call_goal";
     private final static String CODE_CALL_META = " call_meta";
+    private final static String CODE_LAST_GOAL = " last_goal";
+    private final static String CODE_LAST_META = " last_meta";
 
-    private final static String CODE_ALTER_FLOW = " alter_flow";
+    private final static String CODE_BEGIN_ALTER = " begin_alter";
+    private final static String CODE_END_ALTER = " end_alter";
 
     /**
      * <p>Create a index dump special.</p>
@@ -163,6 +164,9 @@ public final class SpecialFriendly extends AbstractSpecial {
             throws EngineMessage, EngineException {
         if (!(pick.del instanceof AbstractDefined))
             return;
+        FriendlyPrinter fp = new FriendlyPrinter();
+        fp.flags = flags;
+        fp.pw = pw;
         /* flesh out clauses */
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
@@ -179,33 +183,28 @@ public final class SpecialFriendly extends AbstractSpecial {
             pw.setSource(en.visor.peekStack());
             pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
             pw.setOffset(0);
-            friendlyClause(pw, clause, ref, flags);
+            friendlyClause(clause, ref, fp);
         }
     }
 
     /**
      * <p>Disassemble a clause.</p>
      *
-     * @param pw     The prolog writer.
      * @param clause The clause.
      * @param ref    The display.
-     * @param flags  The flags.
      * @throws EngineMessage IO error.
      */
-    private static void friendlyClause(PrologWriter pw,
-                                       Clause clause, Display ref,
-                                       int flags)
+    private static void friendlyClause(Clause clause, Display ref, FriendlyPrinter fp)
             throws EngineMessage, EngineException {
         try {
-            Writer wr = pw.getWriter();
-            /* dissassemble the head */
-            int count = 0;
+            fp.count = 0;
+            Writer wr = fp.pw.getWriter();
             if (clause.intargs != null) {
                 for (int l = 0; l < clause.intargs.length; l++) {
                     int n = clause.intargs[l];
                     if (n >= 0) {
                         if (n != Integer.MIN_VALUE) {
-                            count = friendlyCount(wr, count);
+                            fp.friendlyCount();
                             wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                             wr.write(" _");
                             wr.write(Integer.toString(n));
@@ -215,28 +214,27 @@ public final class SpecialFriendly extends AbstractSpecial {
                             wr.flush();
                         }
                     } else if (n == Optimization.UNIFY_TERM) {
-                        count = friendlyCount(wr, count);
+                        fp.friendlyCount();
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
-                        pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
                         wr.write('\n');
                         wr.flush();
                     } else if (n == Optimization.UNIFY_VAR) {
-                        count = friendlyCount(wr, count);
+                        fp.friendlyCount();
                         wr.write(SpecialFriendly.CODE_UNIFY_VAR);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
-                        pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
                         wr.write('\n');
                         wr.flush();
                     }
                 }
             }
-            Intermediate end = nextClause(clause, flags);
-            friendlyBody(end, pw, ref, count, flags);
+            friendlyBodyAndAlter(clause, ref, fp);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
@@ -245,125 +243,89 @@ public final class SpecialFriendly extends AbstractSpecial {
     /**
      * <p>Write out a goal list.</p>
      *
-     * @param end  The intermediate.
-     * @param pw    The prolog writer.
-     * @param ref   The display.
-     * @param count The statement counter.
-     * @return The statement counter.
+     * @param dire The directive.
+     * @param ref  The display.
+     * @param fp   The firendly printer.
      * @throws IOException IO error.
      */
-    private static int friendlyBody(Intermediate end,
-                                    PrologWriter pw, Display ref,
-                                    int count, int flags)
+    private static void friendlyBodyAndAlter(Directive dire,
+                                             Display ref,
+                                             FriendlyPrinter fp)
+            throws IOException, EngineMessage, EngineException {
+        fp.alter = new ListArray<AlternateFlow>();
+        friendlyBody(dire, ref, fp);
+        ListArray<AlternateFlow> alter = fp.alter;
+        fp.alter = null;
+        for (int i = 0; i < alter.size(); i++) {
+            AlternateFlow af = alter.get(i);
+            fp.friendlyCount();
+            Writer wr = fp.pw.getWriter();
+            wr.write(SpecialFriendly.CODE_BEGIN_ALTER);
+            wr.write(' ');
+            wr.write(Integer.toString(af.begin));
+            wr.write('\n');
+            wr.flush();
+            fp.level++;
+            friendlyBodyAndAlter(af.dire, ref, fp);
+            fp.level--;
+            fp.friendlyCount();
+            wr.write(SpecialFriendly.CODE_END_ALTER);
+            wr.write(' ');
+            wr.write(Integer.toString(af.end));
+            wr.write('\n');
+            wr.flush();
+        }
+    }
+
+    /**
+     * <p>Write out a goal list.</p>
+     *
+     * @param dire The directive.
+     * @param ref  The display.
+     * @param fp   The firendly printer.
+     * @throws IOException IO error.
+     */
+    private static void friendlyBody(Directive dire,
+                                     Display ref,
+                                     FriendlyPrinter fp)
             throws IOException, EngineException, EngineMessage {
-        while (end  != Success.DEFAULT) {
-            Goal goal = (Goal) end;
-            end = nextGoal(end, flags);
-            if (end == Success.DEFAULT && Goal.isAlternative(goal.term)) {
-                friendlyAlternative(goal.term, pw, ref, count, flags);
+        if (fp.lastDirective(dire) == null)
+            return;
+        Intermediate temp = fp.nextDirective(dire);
+        for (; ; ) {
+            if (Goal.isAlternative(temp.term)) {
+                SkelCompound sc = (SkelCompound) temp.term;
+                AlternateFlow af = new AlternateFlow();
+                af.begin = fp.count;
+                af.dire = (Directive) sc.args[1];
+                friendlyBody((Directive) sc.args[0], ref, fp);
+                af.end = fp.count;
+                fp.alter.add(af);
             } else {
-                Writer wr = pw.getWriter();
-                count = friendlyCount(wr, count);
-                if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                    wr.write(SpecialFriendly.CODE_CALL_GOAL);
+                Writer wr = fp.pw.getWriter();
+                fp.friendlyCount();
+                if ((temp.flags & Goal.MASK_GOAL_CEND)==0) {
+                    if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                        wr.write(SpecialFriendly.CODE_CALL_GOAL);
+                    } else {
+                        wr.write(SpecialFriendly.CODE_CALL_META);
+                    }
                 } else {
-                    wr.write(SpecialFriendly.CODE_CALL_META);
+                    if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                        wr.write(SpecialFriendly.CODE_LAST_GOAL);
+                    } else {
+                        wr.write(SpecialFriendly.CODE_LAST_META);
+                    }
                 }
                 wr.write(' ');
-                pw.unparseStatement(goal.term, ref);
+                fp.pw.unparseStatement(temp.term, ref);
                 wr.write('\n');
                 wr.flush();
             }
+            if (fp.lastDirective(dire) == temp)
+                break;
+            temp = fp.nextGoal(temp);
         }
-        return count;
-    }
-
-    /**
-     * <p>Write out an alternative.</p>
-     *
-     * @param term  The alternative.
-     * @param pw    The prolog writer.
-     * @param ref   The display.
-     * @param count The statement counter.
-     * @return The statement counter.
-     * @throws IOException IO error.
-     */
-    private static int friendlyAlternative(Object term,
-                                           PrologWriter pw, Display ref,
-                                           int count, int flags)
-            throws EngineException, IOException, EngineMessage {
-        int back=count;
-        SkelCompound sc=(SkelCompound)term;
-        count = friendlyBody(nextDirective((Directive)sc.args[0], flags), pw, ref, count, flags);
-        Writer wr = pw.getWriter();
-        count = friendlyCount(wr, count);
-        wr.write(SpecialFriendly.CODE_ALTER_FLOW);
-        wr.write(' ');
-        wr.write(Integer.toString(back));
-        wr.write('\n');
-        wr.flush();
-        count = friendlyBody(nextDirective((Directive)sc.args[1], flags), pw, ref, count, flags);
-        return count;
-    }
-
-    /**
-     * <p>Write a line number.</p>
-     *
-     * @param wr    The writer.
-     * @param count The line number count.
-     * @return The incremented line number count.
-     */
-    private static int friendlyCount(Writer wr, int count)
-            throws IOException {
-        wr.write(Integer.toString(count));
-        wr.write(" ");
-        return count + 1;
-    }
-
-    /*******************************************************/
-    /* Navigation Helper                                   */
-    /*******************************************************/
-
-    /**
-     * <p>Get the first literal of a clause.</p>
-     *
-     * @param clause The clause.
-     * @param flags  The flags.
-     * @return The first literal.
-     */
-    private static Intermediate nextClause(Clause clause, int flags) {
-        if ((flags & MASK_FRIEND_DEBUG) != 0 &&
-                clause instanceof ClauseTrace)
-            return ((ClauseTrace) clause).nexttrace;
-        return clause.next;
-    }
-
-    /**
-     * <p>Get the first literal of a directive.</p>
-     *
-     * @param dire The directive.
-     * @param flags  The flags.
-     * @return The first literal.
-     */
-    private static Intermediate nextDirective(Directive dire, int flags) {
-        if ((flags & MASK_FRIEND_DEBUG) != 0 &&
-                dire instanceof DirectiveTrace)
-            return ((DirectiveTrace) dire).nexttrace;
-        return dire.next;
-    }
-
-    /**
-     * <p>Get the next literal of a goal.</p>
-     *
-     * @param goal  The goal.
-     * @param flags The flags.
-     * @return The next literal.
-     */
-    private static Intermediate nextGoal(Intermediate goal, int flags) {
-        if ((flags & MASK_FRIEND_DEBUG) != 0 &&
-                goal instanceof GoalTrace)
-            return ((GoalTrace) goal).nexttrace;
-        return goal.next;
     }
 
 }

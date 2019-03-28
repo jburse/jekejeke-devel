@@ -1,11 +1,9 @@
-package jekpro.model.rope;
+package jekdev.reference.debug;
 
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.rope.Directive;
 
 /**
- * <p>The class provides the base class for intermediate code.</p>
+ * <p>This class provides a not yet printed alternate flow.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,31 +33,8 @@ import jekpro.model.molec.EngineMessage;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Intermediate {
-    public Intermediate next;
-    public Object term;
-    public int flags;
-
-    /**
-     * <p>Retrieve the next term depending on debug mode.</p>
-     * <p>Should be implemented by subclasses.</p>
-     *
-     * @param en The engine.
-     * @return The next term.
-     */
-    public Intermediate getNextRaw(Engine en) {
-        return next;
-    }
-
-    /**
-     * <p>Resolve the current term.</p>
-     *
-     * @param en The engine.
-     * @return True if success, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public abstract boolean resolveNext(Engine en)
-            throws EngineException, EngineMessage;
-
+final class AlternateFlow {
+    int begin;
+    int end;
+    Directive dire;
 }

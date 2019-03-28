@@ -52,11 +52,7 @@ public class Goal extends Intermediate {
     public final static int MASK_GOAL_NAKE = 0x00000100;
     public final static int MASK_GOAL_CEND = 0x00000200;
 
-    /**
-     * <p>Create a goal.</p>
-     */
-    public Goal() {
-    }
+    public Intermediate back;
 
     /**
      * <p>Create a goal.</p>
@@ -141,26 +137,16 @@ public class Goal extends Intermediate {
      * @param body The term list, or null.
      * @param en   The engine.
      */
-    public static void bodyToInter(Directive dire, Object body, Engine en) {
-        Intermediate back = dire;
+    static void bodyToInter(Directive dire, Object body, Engine en) {
         while (body != null) {
             Object term = bodyToGoal(body);
-            body = bodyToRest(body);
             if (term != null) {
-                if (body == null && isDisjunction(term))
+                if (isDisjunction(term))
                     term = disjunctionToAlternative(dire, term, en);
                 Goal goal = new Goal(term);
-
-                back.next = goal;
-
-                back = goal;
+                dire.addInter(goal, true);
             }
-        }
-        back.next = Success.DEFAULT;
-
-        if ((dire.flags & Directive.MASK_DIRE_STOP) == 0) {
-            if (back instanceof Goal)
-                back.flags |= Goal.MASK_GOAL_CEND;
+            body = bodyToRest(body);
         }
     }
 
@@ -176,11 +162,41 @@ public class Goal extends Intermediate {
                                                   Object term, Engine en) {
         SkelCompound sc = (SkelCompound) term;
         Directive left = makeDirective(dire, en);
-        left.bodyToInter(sc.args[0], en);
+        left.bodyToInter(sc.args[0], en, false);
         Directive right = makeDirective(dire, en);
-        right.bodyToInter(sc.args[1], en);
+        right.bodyToInter(sc.args[1], en, false);
         SkelAtom sa = SpecialQuali.makeAtom(OP_ALTERNATIVE, en, sc.sym);
         return new SkelCompound(sa, left, right);
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isDisjunction(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(OP_DISJUNCTION)) {
+            SkelCompound sc = (SkelCompound) term;
+            term = sc.args[0];
+            if (term instanceof SkelCompound &&
+                    ((SkelCompound) term).args.length == 2 &&
+                    ((SkelCompound) term).sym.fun.equals(OP_CONDITION)) {
+                return false;
+            } else if (term instanceof SkelCompound &&
+                    ((SkelCompound) term).args.length == 2 &&
+                    ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
+                return false;
+            } else if (term instanceof SkelVar) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     /**************************************************************/
@@ -228,36 +244,6 @@ public class Goal extends Intermediate {
     }
 
     /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isDisjunction(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(OP_DISJUNCTION)) {
-            SkelCompound sc = (SkelCompound) term;
-            term = sc.args[0];
-            if (term instanceof SkelCompound &&
-                    ((SkelCompound) term).args.length == 2 &&
-                    ((SkelCompound) term).sym.fun.equals(OP_CONDITION)) {
-                return false;
-            } else if (term instanceof SkelCompound &&
-                    ((SkelCompound) term).args.length == 2 &&
-                    ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
-                return false;
-            } else if (term instanceof SkelVar) {
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * <p>Create a new directive with same flags.</p>
      *
      * @param dire The directive.
@@ -289,23 +275,23 @@ public class Goal extends Intermediate {
      * @param en The store.
      * @return The vector.
      */
-    public static Object interToBody(Intermediate temp,
+    public static Object interToBody(Directive dire,
                                      Engine en) {
         Foyer foyer = en.store.foyer;
         SkelCompound back = null;
         Object t;
-        for (; ; ) {
-            if (temp == Success.DEFAULT) {
-                t = foyer.ATOM_TRUE;
-                break;
-            } else if (temp.next == Success.DEFAULT) {
+        if (dire.last == null) {
+            t = foyer.ATOM_TRUE;
+        } else {
+            Intermediate temp = dire.next;
+            for (; ; ) {
                 t = temp.term;
                 if (isAlternative(t))
                     t = alternativeToDisjunction(t, en);
-                break;
-            } else {
+                if (dire.last == temp)
+                    break;
                 Object[] args = new Object[2];
-                args[0] = temp.term;
+                args[0] = t;
                 args[1] = back;
                 back = new SkelCompound(foyer.ATOM_COMMA, args, null);
                 temp = temp.next;
@@ -328,17 +314,13 @@ public class Goal extends Intermediate {
      * @param en The engine.
      * @return The disjunction.
      */
-    public static Object alternativeToDisjunction(Object t, Engine en) {
+    private static Object alternativeToDisjunction(Object t, Engine en) {
         SkelCompound sc = (SkelCompound) t;
-        Object left = interToBody(((Directive) sc.args[0]).next, en);
-        Object right = interToBody(((Directive) sc.args[1]).next, en);
+        Object left = interToBody((Directive) sc.args[0], en);
+        Object right = interToBody((Directive) sc.args[1], en);
         SkelAtom sa = SpecialQuali.makeAtom(OP_DISJUNCTION, en, sc.sym);
         return new SkelCompound(sa, left, right);
     }
-
-    /**************************************************************/
-    /* Conversion Utilities                                       */
-    /**************************************************************/
 
     /**
      * <p>Check whether the given term is an alternative.</p>

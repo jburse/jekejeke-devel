@@ -10,6 +10,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -449,7 +450,7 @@ public final class SpecialMode extends AbstractSpecial {
             case CODE_REDO:
             case CODE_HEAD:
             case CODE_CHOP:
-                return ((GoalTrace) u.contskel).back;
+                return ((Goal)u.contskel).back;
             default:
                 throw new IllegalArgumentException("illegal port");
         }

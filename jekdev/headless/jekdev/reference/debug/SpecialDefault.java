@@ -12,7 +12,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.LoadOpts;

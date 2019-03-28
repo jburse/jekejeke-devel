@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>The class provides a directive node.</p>
@@ -49,6 +50,7 @@ public class Directive extends Intermediate {
             MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST;
 
     public int size;
+    public Goal last;
 
     /**
      * <p>Create a directive.</p>
@@ -100,12 +102,57 @@ public class Directive extends Intermediate {
      * <p>Convert a body to intermediate form.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param body The term list, or null.
-     * @param en   The engine.
+     * @param body  The term list, or null.
+     * @param en    The engine.
+     * @param close The close flag.
      */
-    public void bodyToInter(Object body, Engine en) {
+    public void bodyToInter(Object body, Engine en, boolean close) {
         Goal.bodyToInter(this, body, en);
+        if (close)
+            markEnd();
     }
 
+    /******************************************************/
+    /* Builder Utilities                                  */
+    /******************************************************/
+
+    /**
+     * <p>Add a goal to the directive.</p>
+     *
+     * @param goal The goal.
+     * @param main The main flag.
+     */
+    public void addInter(Goal goal, boolean main) {
+        if (last == null) {
+            next = goal;
+        } else {
+            if (Goal.isAlternative(last.term)) {
+                SkelCompound sc = (SkelCompound) last.term;
+                ((Directive) sc.args[0]).addInter(goal, false);
+                ((Directive) sc.args[1]).addInter(goal, false);
+            }
+            last.next = goal;
+        }
+        if (main)
+            last = goal;
+    }
+
+    /**
+     * <p>Mark the end.</p>
+     */
+    public void markEnd() {
+        if (last == null) {
+            next = Success.DEFAULT;
+        } else {
+            if (Goal.isAlternative(last.term)) {
+                SkelCompound sc = (SkelCompound) last.term;
+                ((Directive) sc.args[0]).markEnd();
+                ((Directive) sc.args[1]).markEnd();
+            }
+            last.next = Success.DEFAULT;
+            if ((flags & Directive.MASK_DIRE_STOP) == 0)
+                last.flags |= Goal.MASK_GOAL_CEND;
+        }
+    }
 
 }
