@@ -4,7 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialFind;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
-import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -265,14 +265,13 @@ public class Engine extends StackElement {
         if (multi && ext)
             d2.remTab(this);
         Display ref = display;
-        Clause clause = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(clause.size);
-        d3.setClause(clause);
+        Directive dire = store.foyer.CLAUSE_CONT;
+        Display d3 = new Display(dire.size);
         d3.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
             ref.remTab(this);
-        CallFrame ref2 = CallFrame.getFrame(d3, clause, this);
-        contskel = clause;
+        CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
+        contskel = dire;
         contdisplay = ref2;
     }
 
@@ -378,14 +377,13 @@ public class Engine extends StackElement {
         try {
             boolean multi = wrapGoal();
             Display ref = display;
-            Clause clause = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(skel, ref, this);
             if (multi)
                 ref.remTab(this);
-            CallFrame ref2 = CallFrame.getFrame(d2, clause, this);
-            contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
+            contskel = dire;
             contdisplay = ref2;
             if (!runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(

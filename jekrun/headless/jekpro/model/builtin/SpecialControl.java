@@ -5,8 +5,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -80,7 +79,7 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_CUT:
                 CallFrame u = en.contdisplay;
                 CallFrame u2 = u;
-                while ((u2.disp.flags & Display.MASK_DISP_NOBR) != 0)
+                while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0)
                     u2 = u2.contdisplay;
                 if (u2.number < en.number) {
                     en.window = u;
@@ -89,7 +88,7 @@ public final class SpecialControl extends AbstractSpecial {
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    en.contdisplay = u.getFrame(en.contskel, en);
+                    en.contdisplay = u.getFrame(en);
                 }
                 return true;
             case SPECIAL_SYS_FETCH_STACK:
@@ -133,14 +132,13 @@ public final class SpecialControl extends AbstractSpecial {
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true))
                 return false;

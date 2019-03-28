@@ -313,12 +313,11 @@ public final class SpecialSession extends AbstractSpecial {
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
                 PreClause pre = expandGoalAndWrap(rd, val, en);
-                Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
+                Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_NBDY |
                         AbstractDefined.MASK_DEFI_NLST |
                         AbstractDefined.MASK_DEFI_STOP, en);
-                clause.size = EngineCopy.displaySize(pre.molec);
-                clause.bodyToInter(pre.molec, en);
-                clause.vars = pre.vars;
+                dire.size = EngineCopy.displaySize(pre.molec);
+                dire.bodyToInter(pre.molec, en);
 
                 Intermediate r = en.contskel;
                 CallFrame u = en.contdisplay;
@@ -326,11 +325,11 @@ public final class SpecialSession extends AbstractSpecial {
                 int snap = en.number;
                 Display backref = en.visor.query;
                 try {
-                    Display d2 = new Display(clause.size);
-                    d2.setClause(clause);
+                    Display d2 = new Display(dire.size);
+                    d2.vars = pre.vars;
                     en.visor.query = d2;
-                    CallFrame ref = CallFrame.getFrame(d2, clause, en);
-                    en.contskel = clause;
+                    CallFrame ref = CallFrame.getFrame(d2, dire, en);
+                    en.contskel = dire;
                     en.contdisplay = ref;
                     boolean found = en.runLoop(snap, true);
                     if (!found)
@@ -444,21 +443,21 @@ public final class SpecialSession extends AbstractSpecial {
             SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
             Object body = new SkelCompound(new SkelAtom("expand_goal",
                     en.store.getRootSystem()), t, var);
-            Clause clause = Clause.createClause(AbstractDefined.MASK_DEFI_NBDY |
+            Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_NBDY |
                     AbstractDefined.MASK_DEFI_NLST |
                     AbstractDefined.MASK_DEFI_STOP, en);
-            clause.size = EngineCopy.displaySize(body);
-            clause.bodyToInter(body, en);
+            dire.size = EngineCopy.displaySize(body);
+            dire.bodyToInter(body, en);
 
             int snap = en.number;
             Display backref = en.visor.query;
             CallFrame ref;
             try {
-                Display d2 = new Display(clause.size);
-                d2.setClause(clause);
+                Display d2 = new Display(dire.size);
+                d2.vars = rd.getVars();
                 en.visor.query = d2;
-                ref = CallFrame.getFrame(d2, clause, en);
-                en.contskel = clause;
+                ref = CallFrame.getFrame(d2, dire, en);
+                en.contskel = dire;
                 en.contdisplay = ref;
                 if (!en.runLoop(snap, true))
                     throw new EngineMessage(EngineMessage.syntaxError(

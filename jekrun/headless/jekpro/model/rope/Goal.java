@@ -1,8 +1,10 @@
 package jekpro.model.rope;
 
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.Foyer;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
@@ -42,17 +44,28 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public final static int MASK_GOAL_NAKE = 0x00000010;
-    public final static int MASK_GOAL_CEND = 0x00000020;
+    public static final String OP_DISJUNCTION = ";";
+    public static final String OP_CONDITION = "->";
+    public static final String OP_SOFT_CONDITION = "*->";
+    public static final String OP_ALTERNATIVE = "sys_alter";
+
+    public final static int MASK_GOAL_NAKE = 0x00000100;
+    public final static int MASK_GOAL_CEND = 0x00000200;
 
     /**
-     * <p>Create a term.</p>
-     *
-     * @param t  The term.
-     * @param f3 The flags.
+     * <p>Create a goal.</p>
      */
-    public Goal(Object t, int f3) {
+    public Goal() {
+    }
+
+    /**
+     * <p>Create a goal.</p>
+     *
+     * @param t The term.
+     */
+    public Goal(Object t) {
         term = t;
+        int f3 = 0;
         if (t instanceof SkelVar)
             f3 |= Goal.MASK_GOAL_NAKE;
         flags = f3;
@@ -62,7 +75,7 @@ public class Goal extends Intermediate {
      * <p>Resolve the current term.</p>
      *
      * @param en The engine.
-     * @return The delegate.
+     * @return True if success, otherwise false.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
@@ -114,6 +127,237 @@ public class Goal extends Intermediate {
         en.skel = alfa;
         en.display = d1;
         return fun.moniFirst(en);
+    }
+
+    /**************************************************************/
+    /* Convert to Intermediate Form                               */
+    /**************************************************************/
+
+    /**
+     * <p>Convert a body to intermediate form.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param dire The directive.
+     * @param body The term list, or null.
+     * @param en   The engine.
+     */
+    public static void bodyToInter(Directive dire, Object body, Engine en) {
+        Goal back = null;
+        while (body != null) {
+            Object term = bodyToGoal(body);
+            body = bodyToRest(body);
+            if (term != null) {
+                if (body == null && isDisjunction(term))
+                    term = disjunctionToAlternative(dire, term, en);
+                Goal goal = new Goal(term);
+                if (back == null) {
+                    dire.next = goal;
+                } else {
+                    back.next = goal;
+                }
+                back = goal;
+            }
+        }
+
+        if (back == null) {
+            dire.next = Success.DEFAULT;
+        } else {
+            back.next = Success.DEFAULT;
+            if ((dire.flags & Directive.MASK_DIRE_STOP) == 0)
+                back.flags |= Goal.MASK_GOAL_CEND;
+        }
+    }
+
+    /**
+     * <p>Convert a disjunction to an alternative.</p>
+     *
+     * @param dire The directive.
+     * @param term The disjunction.
+     * @param en   The engine.
+     * @return The alternative.
+     */
+    public static Object disjunctionToAlternative(Directive dire,
+                                                  Object term, Engine en) {
+        SkelCompound sc = (SkelCompound) term;
+        Directive left = makeDirective(dire, en);
+        left.bodyToInter(sc.args[0], en);
+        Directive right = makeDirective(dire, en);
+        right.bodyToInter(sc.args[1], en);
+        SkelAtom sa = SpecialQuali.makeAtom(OP_ALTERNATIVE, en, sc.sym);
+        return new SkelCompound(sa, left, right);
+    }
+
+    /**************************************************************/
+    /* Conversion Utilities                                       */
+    /**************************************************************/
+
+    /**
+     * <p>Convert a body to a goal.</p>
+     *
+     * @param term The body.
+     * @return The goal.
+     */
+    public static Object bodyToGoal(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) term;
+            return sc.args[0];
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_TRUE)) {
+            return null;
+        } else {
+            return term;
+        }
+    }
+
+    /**
+     * <p>Convert a body to a rest.</p>
+     *
+     * @param term The body.
+     * @return The rest.
+     */
+    public static Object bodyToRest(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) term;
+            return sc.args[1];
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_TRUE)) {
+            return null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isDisjunction(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(OP_DISJUNCTION)) {
+            SkelCompound sc = (SkelCompound) term;
+            term = sc.args[0];
+            if (term instanceof SkelCompound &&
+                    ((SkelCompound) term).args.length == 2 &&
+                    ((SkelCompound) term).sym.fun.equals(OP_CONDITION)) {
+                return false;
+            } else if (term instanceof SkelCompound &&
+                    ((SkelCompound) term).args.length == 2 &&
+                    ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
+                return false;
+            } else if (term instanceof SkelVar) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Create a new directive with same flags.</p>
+     *
+     * @param dire The directive.
+     * @param en   The engine.
+     * @return The new directive.
+     */
+    public static Directive makeDirective(Directive dire, Engine en) {
+        int copt = 0;
+        if ((dire.flags & Directive.MASK_DIRE_NLST) != 0)
+            copt |= AbstractDefined.MASK_DEFI_NLST;
+        if ((dire.flags & Directive.MASK_DIRE_STOP) != 0)
+            copt |= AbstractDefined.MASK_DEFI_STOP;
+        if ((dire.flags & Directive.MASK_DIRE_NBDY) != 0)
+            copt |= AbstractDefined.MASK_DEFI_NBDY;
+        if ((dire.flags & Directive.MASK_DIRE_NOBR) != 0)
+            copt |= AbstractDelegate.MASK_DELE_NOBR;
+        if ((dire.flags & Directive.MASK_DIRE_NIST) != 0)
+            copt |= AbstractDefined.MASK_DEFI_NIST;
+        return Directive.createDirective(copt, en);
+    }
+
+    /**************************************************************/
+    /* Convert from Intermediate Form                             */
+    /**************************************************************/
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     *
+     * @param en The store.
+     * @return The vector.
+     */
+    public static Object interToBody(Intermediate temp,
+                                     Engine en) {
+        Foyer foyer = en.store.foyer;
+        SkelCompound back = null;
+        Object t;
+        for (; ; ) {
+            if (temp == Success.DEFAULT) {
+                t = foyer.ATOM_TRUE;
+                break;
+            } else if (temp.next == Success.DEFAULT) {
+                t = temp.term;
+                if (isAlternative(t))
+                    t = alternativeToDisjunction(t, en);
+                break;
+            } else {
+                Object[] args = new Object[2];
+                args[0] = temp.term;
+                args[1] = back;
+                back = new SkelCompound(foyer.ATOM_COMMA, args, null);
+                temp = temp.next;
+            }
+        }
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
+    }
+
+    /**
+     * <p>Convert an alternative to a disjunction.</p>
+     *
+     * @param t  The alternative.
+     * @param en The engine.
+     * @return The disjunction.
+     */
+    public static Object alternativeToDisjunction(Object t, Engine en) {
+        SkelCompound sc = (SkelCompound) t;
+        Object left = interToBody(((Directive) sc.args[0]).next, en);
+        Object right = interToBody(((Directive) sc.args[1]).next, en);
+        SkelAtom sa = SpecialQuali.makeAtom(OP_DISJUNCTION, en, sc.sym);
+        return new SkelCompound(sa, left, right);
+    }
+
+    /**************************************************************/
+    /* Conversion Utilities                                       */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isAlternative(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(OP_ALTERNATIVE)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -149,14 +150,13 @@ public final class SpecialFind extends AbstractSpecial {
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d3 = new Display(clause.size);
-            d3.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d3 = new Display(dire.size);
             d3.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
                 ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d3, clause, en);
-            en.contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref2;
             boolean found = en.runLoop(snap, true);
             while (found) {

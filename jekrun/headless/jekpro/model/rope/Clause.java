@@ -3,11 +3,8 @@ package jekpro.model.rope;
 import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHashLink;
@@ -43,13 +40,10 @@ import matula.util.data.MapHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Clause extends Intermediate implements InterfaceReference {
-    public final static int MASK_CLAUSE_ASSE = 0x00000010;
-    public final static int MASK_CLAUSE_STOP = 0x00000020;
-    public final static int MASK_CLAUSE_NHED = 0x00000040;
-    public final static int MASK_CLAUSE_NOBR = 0x00000040;
+public class Clause extends Directive implements InterfaceReference {
+    public final static int MASK_CLAUSE_ASSE = 0x00000100;
+    public final static int MASK_CLAUSE_NHED = 0x00000200;
 
-    public int size;
     public int sizerule;
     public int[] intargs;
     public AbstractDefined del;
@@ -61,83 +55,9 @@ public class Clause extends Intermediate implements InterfaceReference {
      * @param copt The clause option flags.
      */
     public Clause(int copt) {
-        if ((copt & AbstractDefined.MASK_DEFI_NLST) != 0)
-            flags |= Intermediate.MASK_INTER_NLST;
-        if ((copt & AbstractDefined.MASK_DEFI_STOP) != 0)
-            flags |= Clause.MASK_CLAUSE_STOP;
-        if ((copt & AbstractDefined.MASK_DEFI_NBDY) != 0)
-            flags |= Intermediate.MASK_INTER_NBDY;
+        super(copt);
         if ((copt & AbstractDefined.MASK_DEFI_NHED) != 0)
             flags |= Clause.MASK_CLAUSE_NHED;
-        if ((copt & AbstractDelegate.MASK_DELE_NOBR) != 0)
-            flags |= Clause.MASK_CLAUSE_NOBR;
-    }
-
-    /**
-     * <p>Move to continuation.</p>
-     *
-     * @param en The engine.
-     * @return Always true.
-     */
-    public final boolean resolveNext(Engine en) {
-        CallFrame u = en.contdisplay;
-        Display d = u.disp;
-        if ((flags & MASK_INTER_NBDY) == 0 &&
-                (((d.flags & Display.MASK_DISP_MORE) != 0) ?
-                u.number + 1 : u.number) >= en.number)
-            d.lastCollect(en);
-
-        if ((flags & Clause.MASK_CLAUSE_STOP) != 0) {
-            en.contskel = null;
-            en.contdisplay = null;
-        } else {
-            en.contskel = u.contskel;
-            en.contdisplay = u.contdisplay;
-        }
-        return true;
-    }
-
-    /***********************************************************/
-    /* Convert To Intermediate                                 */
-    /***********************************************************/
-
-    /**
-     * <p>Convert a body to intermediate form.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param body The term list, or null.
-     * @param en   The engine.
-     */
-    public void bodyToInter(Object body, Engine en) {
-        int f3 = 0;
-        if ((flags & Intermediate.MASK_INTER_NLST) != 0)
-            f3 |= Intermediate.MASK_INTER_NLST;
-        if ((flags & Intermediate.MASK_INTER_NBDY) != 0)
-            f3 |= Intermediate.MASK_INTER_NBDY;
-        Goal back = null;
-        while (body != null) {
-            Object term = PreClause.bodyToGoal(body);
-            if (term != null) {
-
-                Goal goal = new Goal(term, f3);
-                if (back == null) {
-                    next = goal;
-                } else {
-                    back.next = goal;
-                }
-                back = goal;
-
-            }
-            body = PreClause.bodyToRest(body);
-        }
-
-        if (back == null) {
-            next = this;
-        } else {
-            back.next = this;
-            if ((flags & Clause.MASK_CLAUSE_STOP) == 0)
-                back.flags |= Goal.MASK_GOAL_CEND;
-        }
     }
 
     /**
@@ -154,6 +74,10 @@ public class Clause extends Intermediate implements InterfaceReference {
             return new Clause(copt);
         }
     }
+
+    /***********************************************************/
+    /* Convert To Intermediate                                 */
+    /***********************************************************/
 
     /**
      * <p>Analyze a clause.</p>

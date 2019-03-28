@@ -5,8 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
+import jekpro.model.rope.Directive;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -76,7 +75,7 @@ public final class SpecialLogic extends AbstractSpecial {
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    en.contdisplay = u.getFrame(en.contskel, en);
+                    en.contdisplay = u.getFrame(en);
                 }
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
@@ -90,7 +89,7 @@ public final class SpecialLogic extends AbstractSpecial {
                         en.window = null;
                         if (en.fault != null)
                             throw en.fault;
-                        en.contdisplay = u.getFrame(en.contskel, en);
+                        en.contdisplay = u.getFrame(en);
                     }
                 } else {
                     u.disp.flags |= Display.MASK_DISP_SOFT;
@@ -102,12 +101,11 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(clause.size);
-                d2.setClause(clause);
+                Directive dire = en.store.foyer.CLAUSE_CONT;
+                Display d2 = new Display(dire.size);
                 d2.bind[0].bindUniv(en.skel, en.display, en);
-                CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-                en.contskel = clause;
+                CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+                en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
             default:

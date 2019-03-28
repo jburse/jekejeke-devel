@@ -2,8 +2,8 @@ package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 
 /**
  * <p>The class provides a clause display.</p>
@@ -38,39 +38,42 @@ import jekpro.model.rope.Intermediate;
  */
 public final class CallFrame extends StackElement {
     public Display disp;
+    public int flags;
     public int number;
 
     /**
      * <p>Create a new call frame.</p>
      *
-     * @param d  The display.
-     * @param en The engine.
+     * @param d         The display.
+     * @param directive The directive.
+     * @param en        The engine.
      */
-    public CallFrame(Display d, Engine en) {
+    public CallFrame(Display d, Directive directive, Engine en) {
         disp = d;
         contskel = en.contskel;
         contdisplay = en.contdisplay;
         number = en.number;
+        flags = directive.flags & Directive.MASK_DIRE_CALL;
     }
 
     /**
      * <p>Retrieve a new or old frame.</p>
      *
-     * @param inter The intermediate.
-     * @param en    The engine.
+     * @param en The engine.
      * @return The new or old frame.
      */
-    public final CallFrame getFrame(Intermediate inter, Engine en) {
-        if ((inter.flags & Intermediate.MASK_INTER_NLST) == 0) {
+    public final CallFrame getFrame(Engine en) {
+        if ((flags & Directive.MASK_DIRE_NLST) == 0) {
             if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = contdisplay;
                 if (u1.number >= number) {
                     Display d1 = u1.disp;
-                    if ((inter.flags & Intermediate.MASK_INTER_NBDY) == 0)
+                    if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0)
                         d1.lastCollect(en);
-                    if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
-                        disp.flags &= ~Display.MASK_DISP_NOBR;
+                    if ((u1.flags & Directive.MASK_DIRE_NOBR) == 0)
+                        flags &= ~Directive.MASK_DIRE_NOBR;
                     u1.disp = disp;
+                    u1.flags = flags;
                     return u1;
                 }
             }
@@ -81,27 +84,29 @@ public final class CallFrame extends StackElement {
     /**
      * <p>Retrieve a new or old frame.</p>
      *
-     * @param d     The display.
-     * @param inter The clause.
-     * @param en    The engine.
+     * @param d         The display.
+     * @param directive The clause.
+     * @param en        The engine.
      * @return The new or old frame.
      */
-    public static CallFrame getFrame(Display d, Intermediate inter, Engine en) {
-        if ((inter.flags & Intermediate.MASK_INTER_NLST) == 0) {
+    public static CallFrame getFrame(Display d, Directive directive, Engine en) {
+        if ((directive.flags & Directive.MASK_DIRE_NLST) == 0) {
             if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = en.contdisplay;
                 if (u1.number >= en.number) {
                     Display d1 = u1.disp;
-                    if ((inter.flags & Intermediate.MASK_INTER_NBDY) == 0)
+                    if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0)
                         d1.lastCollect(en);
-                    if ((d1.flags & Display.MASK_DISP_NOBR) == 0)
-                        d.flags &= ~Display.MASK_DISP_NOBR;
+                    int f2 = directive.flags & Directive.MASK_DIRE_CALL;
+                    if ((u1.flags & Directive.MASK_DIRE_NOBR) == 0)
+                        f2 &= ~Directive.MASK_DIRE_NOBR;
                     u1.disp = d;
+                    u1.flags = f2;
                     return u1;
                 }
             }
         }
-        return new CallFrame(d, en);
+        return new CallFrame(d, directive, en);
     }
 
 }

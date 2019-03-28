@@ -6,7 +6,7 @@ import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -42,8 +42,7 @@ import jekpro.tools.term.SkelCompound;
  */
 public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_CALL = 0;
-
-//    private final static int SPECIAL_WRAP_GOAL = 4;
+    private final static int SPECIAL_SYS_ALTER = 1;
 
     /**
      * <p>Create a body special.</p>
@@ -76,40 +75,25 @@ public final class SpecialBody extends AbstractSpecial {
                 en.deref();
                 boolean multi = en.wrapGoal();
                 ref = en.display;
-                Clause clause = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(clause.size);
-                d2.setClause(clause);
+                Directive dire = en.store.foyer.CLAUSE_CONT;
+                Display d2 = new Display(dire.size);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
-                CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-                en.contskel = clause;
+                CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+                en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
-            /*
-            case SPECIAL_WRAP_GOAL:
+            case SPECIAL_SYS_ALTER:
                 temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                en.wrapGoalSite();
-                if (en.unifyTerm(en.skel,en.display,temp[1],ref,r,u)) {
-                    en.skel = r.getNext(en);
-                    en.display = u;
-                    return true;
-                }
-                return false;
-            */
+                en.choices = new ChoiceAlter(en.choices, en.contskel, en.contdisplay, en.bind);
+                en.number++;
+                en.contskel = (Directive) temp[0];
+                return true;
             default:
                 throw new IllegalArgumentException(
                         AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
-
-    /*************************************************************/
-    /* Replace Context & Site                                    */
-    /*************************************************************/
-
 
 }

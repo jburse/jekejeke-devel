@@ -3,6 +3,7 @@ package jekpro.tools.call;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
 
@@ -289,14 +290,13 @@ public final class CallIn {
             if (multi && ext)
                 ref.remTab(en);
             ref = en.display;
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi || ext)
                 ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref2;
             if (en.runLoop(snap, true)) {
                 en.contskel = r;

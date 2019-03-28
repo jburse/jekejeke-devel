@@ -9,6 +9,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.*;
@@ -96,14 +97,13 @@ public final class SpecialQuali extends AbstractSpecial {
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
                 ref = en.display;
                 boolean ext = ref.getAndReset();
-                Clause clause = en.store.foyer.CLAUSE_TRAN;
-                Display d3 = new Display(clause.size);
-                d3.setClause(clause);
+                Directive dire = en.store.foyer.CLAUSE_TRAN;
+                Display d3 = new Display(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     ref.remTab(en);
-                CallFrame ref2 = CallFrame.getFrame(d3, clause, en);
-                en.contskel = clause;
+                CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
+                en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
             case SPECIAL_CALL_COLONCOLON:
@@ -122,14 +122,13 @@ public final class SpecialQuali extends AbstractSpecial {
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
                 ref = en.display;
                 ext = ref.getAndReset();
-                clause = en.store.foyer.CLAUSE_TRAN;
-                d3 = new Display(clause.size);
-                d3.setClause(clause);
+                dire = en.store.foyer.CLAUSE_TRAN;
+                d3 = new Display(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (ext)
                     ref.remTab(en);
-                ref2 = CallFrame.getFrame(d3, clause, en);
-                en.contskel = clause;
+                ref2 = CallFrame.getFrame(d3, dire, en);
+                en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
             case SPECIAL_SYS_GET_CLASS:
@@ -757,7 +756,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * @param sa2 The call-site, or null.
      * @return The new atom.
      */
-    private static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
+    public static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
         AbstractSource scope = (sa2 != null ? sa2.scope : null);
         PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
 

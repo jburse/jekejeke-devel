@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.SkelAtomQuali;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.array.AbstractFactory;
@@ -128,10 +129,10 @@ public abstract class Foyer extends Enforced {
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
 
-    public Clause CLAUSE_CONT;
-    public Clause CLAUSE_CALL;
-    public Clause CLAUSE_HOOK;
-    public Clause CLAUSE_TRAN;
+    public Directive CLAUSE_CONT;
+    public Directive CLAUSE_CALL;
+    public Directive CLAUSE_HOOK;
+    public Directive CLAUSE_TRAN;
 
     /**
      * <p>Retrieve the factory.</p>
@@ -383,6 +384,16 @@ public abstract class Foyer extends Enforced {
         if ((m & SkelAtom.MASK_ATOM_QALI) != 0)
             return new SkelAtomQuali(f, s);
         return new SkelAtom(f, s);
+    }
+
+    /**
+     * <p>Factory for directives.</p>
+     *
+     * @param copt The directives option flags.
+     * @return The directives.
+     */
+    public Directive createDirective(int copt) {
+        return new Directive(copt);
     }
 
     /**

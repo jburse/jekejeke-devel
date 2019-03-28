@@ -143,6 +143,7 @@ public class BindUniv extends AbstractUndo {
         Object var = EngineCopy.getVar(t);
         if (var == null)
             return;
+
         BindUniv[] b = d.bind;
         if (var instanceof SkelVar) {
             SkelVar v = (SkelVar) var;

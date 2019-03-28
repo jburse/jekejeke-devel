@@ -52,7 +52,7 @@ public final class Optimization {
     final SkelVar sort;
 
     /**
-     * <p>Initialize the immutable zero int cache.</p>
+     * <p>Initialize the immutable unify term int cache.</p>
      */
     static {
         for (int i = 0; i < 8; i++) {

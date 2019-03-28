@@ -1,9 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.PreClause;
+import jekpro.model.rope.*;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -108,9 +106,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.setClause(clause);
+        d2.vars = clause.vars;
 
-        int lastat = at;
         while (at != list.length) {
             if (multiVisible(list[at], en))
                 break;
@@ -118,22 +115,24 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         }
 
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2, en);
-            /* create choice point */
-            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark, lastat);
-            en.number++;
             d2.flags |= Display.MASK_DISP_MORE;
+            CallFrame dc = new CallFrame(d2, clause, en);
+            /* create choice point */
+            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark);
+            en.number++;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
-        } else if (clause.getNextRaw(en) != clause) {
+        } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Intermediate.MASK_INTER_NBDY) == 0)
-                d2.lastCollect(en);
+            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                if (d2.bind.length > 0)
+                    d2.remTab(en);
+            }
             return true;
         }
     }
@@ -183,7 +182,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (!(clause.term instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.term).args, ref1, en)) {
-                Object end = PreClause.interToBody(clause.next, en.store);
+                Object end = Goal.interToBody(clause.next, en);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,

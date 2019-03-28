@@ -36,16 +36,9 @@ import jekpro.model.molec.EngineMessage;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class Intermediate {
-    public final static int MASK_INTER_NLST = 0x00000001;
-    public final static int MASK_INTER_NBDY = 0x00000002;
-
     public Intermediate next;
     public Object term;
     public int flags;
-
-    /**********************************************************/
-    /* Variation Points                                       */
-    /**********************************************************/
 
     /**
      * <p>Retrieve the next term depending on debug mode.</p>
@@ -62,7 +55,7 @@ public abstract class Intermediate {
      * <p>Resolve the current term.</p>
      *
      * @param en The engine.
-     * @return The delegate.
+     * @return True if success, otherwise false.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
