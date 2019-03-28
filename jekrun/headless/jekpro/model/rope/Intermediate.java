@@ -62,4 +62,13 @@ public abstract class Intermediate {
     public abstract boolean resolveNext(Engine en)
             throws EngineException, EngineMessage;
 
+    /**
+     * <p>Set the next trace.</p>
+     *
+     * @param inter The next trace.
+     */
+    public void setNextTrace(Intermediate inter) {
+        /* do nothing */
+    }
+
 }

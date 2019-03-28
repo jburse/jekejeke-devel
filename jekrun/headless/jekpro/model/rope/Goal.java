@@ -142,7 +142,7 @@ public class Goal extends Intermediate {
      * @param en   The engine.
      */
     public static void bodyToInter(Directive dire, Object body, Engine en) {
-        Goal back = null;
+        Intermediate back = dire;
         while (body != null) {
             Object term = bodyToGoal(body);
             body = bodyToRest(body);
@@ -150,20 +150,16 @@ public class Goal extends Intermediate {
                 if (body == null && isDisjunction(term))
                     term = disjunctionToAlternative(dire, term, en);
                 Goal goal = new Goal(term);
-                if (back == null) {
-                    dire.next = goal;
-                } else {
-                    back.next = goal;
-                }
+
+                back.next = goal;
+
                 back = goal;
             }
         }
+        back.next = Success.DEFAULT;
 
-        if (back == null) {
-            dire.next = Success.DEFAULT;
-        } else {
-            back.next = Success.DEFAULT;
-            if ((dire.flags & Directive.MASK_DIRE_STOP) == 0)
+        if ((dire.flags & Directive.MASK_DIRE_STOP) == 0) {
+            if (back instanceof Goal)
                 back.flags |= Goal.MASK_GOAL_CEND;
         }
     }
