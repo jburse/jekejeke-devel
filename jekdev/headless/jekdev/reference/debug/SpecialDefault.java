@@ -13,6 +13,7 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.SpecialLoad;
@@ -340,12 +341,11 @@ public final class SpecialDefault extends AbstractSpecial {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         try {
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(t, dc, en);
-            CallFrame ref = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
+            CallFrame ref = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref;
             if (!en.runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(

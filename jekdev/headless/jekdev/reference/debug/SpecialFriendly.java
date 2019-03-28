@@ -1,6 +1,7 @@
 package jekdev.reference.debug;
 
 import jekdev.model.bugger.ClauseTrace;
+import jekdev.model.bugger.DirectiveTrace;
 import jekdev.model.bugger.GoalTrace;
 import jekpro.model.inter.*;
 import jekpro.model.molec.Display;
@@ -61,6 +62,8 @@ public final class SpecialFriendly extends AbstractSpecial {
 
     private final static String CODE_CALL_GOAL = " call_goal";
     private final static String CODE_CALL_META = " call_meta";
+
+    private final static String CODE_ALTER_FLOW = " alter_flow";
 
     /**
      * <p>Create a index dump special.</p>
@@ -176,7 +179,7 @@ public final class SpecialFriendly extends AbstractSpecial {
             pw.setSource(en.visor.peekStack());
             pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
             pw.setOffset(0);
-            intermediateClause(pw, t, clause, ref, flags);
+            friendlyClause(pw, clause, ref, flags);
         }
     }
 
@@ -184,15 +187,14 @@ public final class SpecialFriendly extends AbstractSpecial {
      * <p>Disassemble a clause.</p>
      *
      * @param pw     The prolog writer.
-     * @param t      The clause term.
      * @param clause The clause.
      * @param ref    The display.
      * @param flags  The flags.
      * @throws EngineMessage IO error.
      */
-    private static void intermediateClause(PrologWriter pw, Object t,
-                                           Clause clause, Display ref,
-                                           int flags)
+    private static void friendlyClause(PrologWriter pw,
+                                       Clause clause, Display ref,
+                                       int flags)
             throws EngineMessage, EngineException {
         try {
             Writer wr = pw.getWriter();
@@ -203,7 +205,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     int n = clause.intargs[l];
                     if (n >= 0) {
                         if (n != Integer.MIN_VALUE) {
-                            count = intermediateCount(wr, count);
+                            count = friendlyCount(wr, count);
                             wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                             wr.write(" _");
                             wr.write(Integer.toString(n));
@@ -213,7 +215,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                             wr.flush();
                         }
                     } else if (n == Optimization.UNIFY_TERM) {
-                        count = intermediateCount(wr, count);
+                        count = friendlyCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
@@ -222,7 +224,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write('\n');
                         wr.flush();
                     } else if (n == Optimization.UNIFY_VAR) {
-                        count = intermediateCount(wr, count);
+                        count = friendlyCount(wr, count);
                         wr.write(SpecialFriendly.CODE_UNIFY_VAR);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
@@ -234,42 +236,73 @@ public final class SpecialFriendly extends AbstractSpecial {
                 }
             }
             Intermediate end = nextClause(clause, flags);
-            while (!(end instanceof Clause)) {
-                Goal goal = (Goal) end;
-                /* dissassemble a goal */
-                count = intermediateCallGoal(goal, pw, ref, count);
-                end = nextGoal(end, flags);
-            }
+            friendlyBody(end, pw, ref, count, flags);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
     }
 
     /**
-     * <p>Write out a call goal instruction.</p>
+     * <p>Write out a goal list.</p>
      *
-     * @param goal  The body goal.
+     * @param end  The intermediate.
      * @param pw    The prolog writer.
      * @param ref   The display.
      * @param count The statement counter.
      * @return The statement counter.
      * @throws IOException IO error.
      */
-    private static int intermediateCallGoal(Goal goal,
-                                            PrologWriter pw, Display ref,
-                                            int count)
+    private static int friendlyBody(Intermediate end,
+                                    PrologWriter pw, Display ref,
+                                    int count, int flags)
             throws IOException, EngineException, EngineMessage {
-        Writer wr = pw.getWriter();
-        count = intermediateCount(wr, count);
-        if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
-            wr.write(SpecialFriendly.CODE_CALL_GOAL);
-        } else {
-            wr.write(SpecialFriendly.CODE_CALL_META);
+        while (end  != Success.DEFAULT) {
+            Goal goal = (Goal) end;
+            end = nextGoal(end, flags);
+            if (end == Success.DEFAULT && Goal.isAlternative(goal.term)) {
+                friendlyAlternative(goal.term, pw, ref, count, flags);
+            } else {
+                Writer wr = pw.getWriter();
+                count = friendlyCount(wr, count);
+                if ((goal.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                    wr.write(SpecialFriendly.CODE_CALL_GOAL);
+                } else {
+                    wr.write(SpecialFriendly.CODE_CALL_META);
+                }
+                wr.write(' ');
+                pw.unparseStatement(goal.term, ref);
+                wr.write('\n');
+                wr.flush();
+            }
         }
+        return count;
+    }
+
+    /**
+     * <p>Write out an alternative.</p>
+     *
+     * @param term  The alternative.
+     * @param pw    The prolog writer.
+     * @param ref   The display.
+     * @param count The statement counter.
+     * @return The statement counter.
+     * @throws IOException IO error.
+     */
+    private static int friendlyAlternative(Object term,
+                                           PrologWriter pw, Display ref,
+                                           int count, int flags)
+            throws EngineException, IOException, EngineMessage {
+        int back=count;
+        SkelCompound sc=(SkelCompound)term;
+        count = friendlyBody(nextDirective((Directive)sc.args[0], flags), pw, ref, count, flags);
+        Writer wr = pw.getWriter();
+        count = friendlyCount(wr, count);
+        wr.write(SpecialFriendly.CODE_ALTER_FLOW);
         wr.write(' ');
-        pw.unparseStatement(goal.term, ref);
+        wr.write(Integer.toString(back));
         wr.write('\n');
         wr.flush();
+        count = friendlyBody(nextDirective((Directive)sc.args[1], flags), pw, ref, count, flags);
         return count;
     }
 
@@ -280,7 +313,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param count The line number count.
      * @return The incremented line number count.
      */
-    private static int intermediateCount(Writer wr, int count)
+    private static int friendlyCount(Writer wr, int count)
             throws IOException {
         wr.write(Integer.toString(count));
         wr.write(" ");
@@ -303,6 +336,20 @@ public final class SpecialFriendly extends AbstractSpecial {
                 clause instanceof ClauseTrace)
             return ((ClauseTrace) clause).nexttrace;
         return clause.next;
+    }
+
+    /**
+     * <p>Get the first literal of a directive.</p>
+     *
+     * @param dire The directive.
+     * @param flags  The flags.
+     * @return The first literal.
+     */
+    private static Intermediate nextDirective(Directive dire, int flags) {
+        if ((flags & MASK_FRIEND_DEBUG) != 0 &&
+                dire instanceof DirectiveTrace)
+            return ((DirectiveTrace) dire).nexttrace;
+        return dire.next;
     }
 
     /**

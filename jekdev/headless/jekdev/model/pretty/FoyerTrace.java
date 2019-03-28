@@ -1,6 +1,7 @@
 package jekdev.model.pretty;
 
 import jekdev.model.bugger.ClauseTrace;
+import jekdev.model.bugger.DirectiveTrace;
 import jekdev.model.bugger.SupervisorTrace;
 import jekdev.reference.system.SpecialMode;
 import jekpro.model.inter.Engine;
@@ -9,6 +10,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.SkelAtom;
@@ -241,6 +243,16 @@ public abstract class FoyerTrace extends Foyer {
         if ((m & SkelAtom.MASK_ATOM_QALI) != 0)
             return new SkelAtomQualiTrace(f, s);
         return new SkelAtomTrace(f, s);
+    }
+
+    /**
+     * <p>Factor for directive.</p>
+     *
+     * @param copt The flags.
+     * @return The directive.
+     */
+    public Directive createDirective(int copt) {
+        return new DirectiveTrace(copt);
     }
 
     /**

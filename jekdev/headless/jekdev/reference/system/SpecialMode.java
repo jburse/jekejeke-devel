@@ -9,7 +9,7 @@ import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Goal;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -232,7 +232,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if there are previous choice points, otherwise false.
      */
     private static boolean isCutChoice(int num, CallFrame u2) {
-        while ((u2.disp.flags & Display.MASK_DISP_NOBR) != 0)
+        while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0)
             u2 = u2.contdisplay;
         if (u2.number >= num)
             return false;
@@ -293,14 +293,13 @@ public final class SpecialMode extends AbstractSpecial {
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
                 en.visor.setVerify(backverify);
@@ -350,14 +349,13 @@ public final class SpecialMode extends AbstractSpecial {
         try {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
-            Clause clause = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(clause.size);
-            d2.setClause(clause);
+            Directive dire = en.store.foyer.CLAUSE_CALL;
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
             en.contdisplay = ref2;
             if (!en.runLoop(snap, true)) {
                 en.visor.setIgnore(backignore);
