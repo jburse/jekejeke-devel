@@ -9,7 +9,6 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.NamedDistance;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
-import jekpro.model.rope.Clause;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.tools.term.*;
@@ -152,8 +151,9 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_NUMBER_VARIABLES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    multi = SpecialVars.numberVariables(temp, ref, en);
+                    SpecialVars.numberVariables(temp, ref, en);
                     d = en.display;
+                    multi = d.getAndReset();
                     if (!en.unifyTerm(temp[3], ref, en.skel, d))
                         return false;
                     if (multi)
@@ -162,10 +162,11 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    d = en.visor.query;
-                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d.vars, d, en);
-                    multi = mapToAssoc(print, en);
+                    DisplayClause d2 = en.visor.query;
+                    MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
+                    mapToAssoc(print, en);
                     d = en.display;
+                    multi = d.getAndReset();
                     if (!en.unifyTerm(temp[0], ref, en.skel, d))
                         return false;
                     if (multi)
@@ -373,14 +374,14 @@ public final class SpecialVars extends AbstractSpecial {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean numberVariables(Object[] temp, Display ref,
-                                           Engine en)
+    private static void numberVariables(Object[] temp, Display ref,
+                                        Engine en)
             throws EngineMessage {
         SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
         MapHashLink<Object, NamedDistance> print = SpecialVars.assocToMap(temp[1], ref, en);
         SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
         MapHashLink<Object, NamedDistance> copy = SpecialVars.numberVars(vars, anon, print, 0);
-        return SpecialVars.mapToAssoc(copy, en);
+        SpecialVars.mapToAssoc(copy, en);
     }
 
     /**
@@ -509,8 +510,8 @@ public final class SpecialVars extends AbstractSpecial {
      * @param mvs The variable map.
      * @param en  The engine.
      */
-    public static boolean mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
-                                     Engine en) {
+    public static void mapToAssoc(MapHashLink<Object, NamedDistance> mvs,
+                                  Engine en) {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
@@ -528,8 +529,10 @@ public final class SpecialVars extends AbstractSpecial {
                 }
             }
         }
-        if (multi)
+        if (multi) {
             last = new Display(countvar);
+            last.flags |= Display.MASK_DISP_MLTI;
+        }
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;
         for (MapEntry<Object, NamedDistance> entry =
@@ -552,7 +555,6 @@ public final class SpecialVars extends AbstractSpecial {
         }
         en.skel = m;
         en.display = last;
-        return multi;
     }
 
     /**

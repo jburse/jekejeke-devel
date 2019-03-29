@@ -76,12 +76,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        Display d2 = null;
+        DisplayClause d2 = null;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (d2 == null) {
-                d2 = new Display(clause.sizerule);
+                d2 = new DisplayClause(clause.sizerule);
             } else {
                 d2.setSize(clause.sizerule);
             }

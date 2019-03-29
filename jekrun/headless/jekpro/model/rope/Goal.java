@@ -48,6 +48,9 @@ public class Goal extends Intermediate {
     public static final String OP_CONDITION = "->";
     public static final String OP_SOFT_CONDITION = "*->";
     public static final String OP_ALTERNATIVE = "sys_alter";
+    public static final String OP_BEGIN = "sys_begin";
+    public static final String OP_COMMIT = "sys_commit";
+    public static final String OP_TESTING = "$if";
 
     public final static int MASK_GOAL_NAKE = 0x00000100;
     public final static int MASK_GOAL_CEND = 0x00000200;
@@ -144,7 +147,7 @@ public class Goal extends Intermediate {
                 if (isDisjunction(term))
                     term = disjunctionToAlternative(dire, term, en);
                 Goal goal = new Goal(term);
-                dire.addInter(goal, true);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             }
             body = bodyToRest(body);
         }
@@ -163,7 +166,10 @@ public class Goal extends Intermediate {
         SkelCompound back = null;
         do {
             SkelCompound sc = (SkelCompound) term;
-            Directive left = makeDirective(dire, sc.args[0], en);
+            term = sc.args[0];
+            if (isCondition(term))
+                term = conditionToSequence(dire, term, en);
+            Directive left = makeDirective(dire, term, en);
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
@@ -171,6 +177,8 @@ public class Goal extends Intermediate {
             back = new SkelCompound(sa, args, null);
             term = sc.args[1];
         } while (isDisjunction(term));
+        if (isCondition(term))
+            term = conditionToSequence(dire, term, en);
         Object t = makeDirective(dire, term, en);
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
@@ -180,6 +188,27 @@ public class Goal extends Intermediate {
             back = jack;
         }
         return t;
+    }
+
+    /**
+     * <p>Convert a condition to a sequence.</p>
+     *
+     * @param dire The directive.
+     * @param term The condition.
+     * @param en   The engine.
+     * @return The sequence.
+     */
+    private static Object conditionToSequence(Directive dire,
+                                              Object term, Engine en) {
+        SkelCompound sc = (SkelCompound) term;
+        SkelAtom sa = SpecialQuali.makeAtom(OP_COMMIT, en, sc.sym);
+        Object res = new SkelCompound(en.store.foyer.ATOM_COMMA, sa, sc.args[1]);
+
+        Directive begin = makeDirective(dire, sc.args[0], en);
+        sa = SpecialQuali.makeAtom(OP_BEGIN, en, sc.sym);
+        Object res2 = new SkelCompound(sa, begin);
+
+        return new SkelCompound(en.store.foyer.ATOM_COMMA, res2, res);
     }
 
     /**
@@ -207,6 +236,22 @@ public class Goal extends Intermediate {
             } else {
                 return true;
             }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isCondition(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(OP_TESTING)) {
+            return true;
         } else {
             return false;
         }
@@ -264,7 +309,7 @@ public class Goal extends Intermediate {
      * @param en   The engine.
      * @return The new directive.
      */
-    public static Directive makeDirective(Directive dire, Object term, Engine en) {
+    private static Directive makeDirective(Directive dire, Object term, Engine en) {
         int copt = 0;
         if ((dire.flags & Directive.MASK_DIRE_NLST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NLST;
@@ -276,9 +321,9 @@ public class Goal extends Intermediate {
             copt |= AbstractDelegate.MASK_DELE_NOBR;
         if ((dire.flags & Directive.MASK_DIRE_NIST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NIST;
-        Directive help = Directive.createDirective(copt, en);
-        help.bodyToInter(term, en, false);
-        return help;
+        Directive left = Directive.createDirective(copt, en);
+        left.bodyToInter(term, en, false);
+        return left;
     }
 
     /**************************************************************/
@@ -335,6 +380,8 @@ public class Goal extends Intermediate {
         do {
             SkelCompound sc = (SkelCompound) term;
             Object left = interToBody((Directive) sc.args[0], en);
+            if (isSequence(left))
+                left = sequenceToCondition(left, en);
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
@@ -343,6 +390,8 @@ public class Goal extends Intermediate {
             term = sc.args[1];
         } while (isAlternative(term));
         Object t = interToBody((Directive) term, en);
+        if (isSequence(t))
+            t = sequenceToCondition(t, en);
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
@@ -351,6 +400,53 @@ public class Goal extends Intermediate {
             back = jack;
         }
         return t;
+    }
+
+    /**
+     * <p>Convert an sequence to a condition.</p>
+     *
+     * @param term The sequence.
+     * @param en   The engine.
+     * @return The condition.
+     */
+    public static Object sequenceToCondition(Object term, Engine en) {
+        SkelCompound sc = (SkelCompound) term;
+        term = sc.args[0];
+
+        SkelCompound sc2 = (SkelCompound) term;
+        Object left = interToBody((Directive) sc2.args[0], en);
+        SkelAtom sa = SpecialQuali.makeAtom(OP_TESTING, en, sc.sym);
+
+        term = sc.args[1];
+        Object right;
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
+            sc2 = (SkelCompound) term;
+            right = sc2.args[1];
+        } else {
+            right = en.store.foyer.ATOM_TRUE;
+        }
+
+        return new SkelCompound(sa, left, right);
+    }
+
+    /**
+     * <p>Check whether the given term is a sequence.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a sequence.
+     */
+    public static boolean isSequence(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) term;
+            term = sc.args[0];
+            return isBegin(term);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -363,6 +459,37 @@ public class Goal extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(OP_ALTERNATIVE)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isBegin(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(OP_BEGIN)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a commit.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a commit.
+     */
+    public static boolean isCommit(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(OP_COMMIT)) {
             return true;
         } else {
             return false;

@@ -41,11 +41,12 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ChoiceAlter extends AbstractChoice {
+public final class ChoiceAlter extends AbstractChoice {
     protected Object at;
     protected final Intermediate goalskel;
     protected final CallFrame goaldisplay;
     protected final AbstractUndo mark;
+    public int barrier = -2;
 
     /**
      * <p>Create an abstract choice inspect.</p>
@@ -79,6 +80,12 @@ final class ChoiceAlter extends AbstractChoice {
         /* remove choice point */
         en.choices = next;
         en.number--;
+
+        /* undo begin condition */
+        if (barrier != -2) {
+            goaldisplay.disp.barrier = barrier;
+            barrier = -2;
+        }
 
         /* undo bindings */
         en.contskel = goalskel;
@@ -114,6 +121,12 @@ final class ChoiceAlter extends AbstractChoice {
         /* remove choice point */
         en.choices = next;
         en.number--;
+
+        /* undo begin condition */
+        if (barrier != -2) {
+            goaldisplay.disp.barrier = barrier;
+            barrier = -2;
+        }
     }
 
 }

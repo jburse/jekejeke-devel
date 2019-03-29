@@ -4,10 +4,7 @@ import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
@@ -286,7 +283,7 @@ public abstract class AbstractDelegate {
         boolean multi = en.wrapGoal();
         Display ref = en.display;
         Directive dire = en.store.foyer.CLAUSE_CALL;
-        Display d2 = new Display(dire.size);
+        DisplayClause d2 = new DisplayClause(dire.size);
         d2.bind[0].bindUniv(en.skel, ref, en);
         if (multi)
             ref.remTab(en);

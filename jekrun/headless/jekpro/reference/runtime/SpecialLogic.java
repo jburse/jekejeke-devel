@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Directive;
 import jekpro.tools.term.SkelCompound;
@@ -102,7 +103,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
+                DisplayClause d2 = new DisplayClause(dire.size);
                 d2.bind[0].bindUniv(en.skel, en.display, en);
                 CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;

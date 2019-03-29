@@ -1,8 +1,6 @@
 package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
-import jekpro.model.rope.Intermediate;
 
 /**
  * <p>The class provides a display.</p>
@@ -35,51 +33,108 @@ import jekpro.model.rope.Intermediate;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Display extends StackElement {
-    public final static int MASK_DPCL_MORE = 0x00000001;
-    public final static int MASK_DPCL_SOFT = 0x00000002;
+public class Display {
+    public final static Display DISPLAY_CONST = new Display(0);
 
-    public BindCount[] bind;
+    public final static int MASK_DISP_MLTI = 0x00000001;
+    public final static int MASK_DISP_MORE = 0x00000002;
+    public final static int MASK_DISP_SOFT = 0x00000004;
+    public final static int MASK_DISP_LTGC = 0x00000008;
+
+    public BindUniv[] bind;
     public int flags;
-    public int lastalloc;
-    public int lastgc;
-    public int number;
-    public Display prune;
 
     /**
-     * <p>Create a display clause.</p>
+     * <p>Create a new display.</p>
      */
     public Display() {
     }
 
-    /****************************************************/
-    /* Goal Preparation                                 */
-    /****************************************************/
-
     /**
-     * <p>Add a variable value to the prepared call.</p>
+     * <p>Create a new display.</p>
      *
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param size The requested size.
      */
-    public final void addArgument(Object m, BindCount[] d, Engine en) {
-        BindCount b = new BindCount();
-        bind[lastalloc] = b;
-        bind[lastalloc].bindVar(m, d, en);
-        lastalloc++;
+    public Display(int size) {
+        if (size == 0) {
+            bind = BindUniv.BIND_CONST;
+        } else {
+            BindUniv[] b = new BindUniv[size];
+            for (int i = 0; i < size; i++)
+                b[i] = new BindUniv();
+            bind = b;
+        }
     }
 
     /**
-     * <p>Prepare the call.</p>
+     * <p>Resize the display.</p>
+     *
+     * @param size The new size.
+     */
+    public final void setSize(int size) {
+        BindUniv[] b = bind;
+        if (size != b.length) {
+            if (size == 0) {
+                b = BindUniv.BIND_CONST;
+            } else {
+                b = new BindUniv[size];
+                int n = Math.min(bind.length, size);
+                if (n != 0)
+                    System.arraycopy(bind, 0, b, 0, n);
+            }
+            bind = b;
+        }
+        for (int i = 0; i < size; i++) {
+            if (b[i] == null)
+                b[i] = new BindUniv();
+        }
+    }
+
+    /**
+     * <p>Retrieve and clear the multi flag.</p>
+     *
+     * @return The multi flag.
+     */
+    public boolean getAndReset() {
+        if ((flags & Display.MASK_DISP_MLTI) != 0) {
+            flags &= ~Display.MASK_DISP_MLTI;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Unbind all the variables of a display.</p>
      *
      * @param en The engine.
      */
-    public final void setEngine(Engine en) {
-        number = en.number;
-        prune = this;
-        contskel = en.contskel;
-        contdisplay = en.contdisplay;
+    public void remTab(Engine en) {
+        BindUniv[] b = bind;
+        for (int k = 0; k < b.length; k++) {
+            BindUniv bc = b[k];
+            int j = bc.refs;
+            if (j == 0) {
+                b[k] = null;
+                if (bc.display != null)
+                    BindUniv.unbind(bc, en);
+            } else {
+                bc.refs = j - 1;
+            }
+        }
+    }
+
+    /**
+     * <p>Perform environment trimming optimization.</p>
+     *
+     * @param en The engine.
+     */
+    public void lastCollect(Engine en) {
+        if ((flags & Display.MASK_DISP_LTGC) == 0) {
+            if (bind.length > 0)
+                remTab(en);
+            flags |= Display.MASK_DISP_LTGC;
+        }
     }
 
 }

@@ -151,7 +151,7 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d3 = new Display(dire.size);
+            DisplayClause d3 = new DisplayClause(dire.size);
             d3.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
                 ref.remTab(en);

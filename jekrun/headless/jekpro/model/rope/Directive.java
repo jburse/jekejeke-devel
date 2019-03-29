@@ -49,6 +49,9 @@ public class Directive extends Intermediate {
     public final static int MASK_DIRE_CALL = MASK_DIRE_NOBR |
             MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST;
 
+    public final static int MASK_FIXUP_MOVE = 0x00000001;
+    public final static int MASK_FIXUP_MARK = 0x00000002;
+
     public int size;
     public Goal last;
 
@@ -109,7 +112,7 @@ public class Directive extends Intermediate {
     public void bodyToInter(Object body, Engine en, boolean close) {
         Goal.bodyToInter(this, body, en);
         if (close)
-            markEnd();
+            addInter(Success.DEFAULT, MASK_FIXUP_MARK);
     }
 
     /******************************************************/
@@ -119,48 +122,44 @@ public class Directive extends Intermediate {
     /**
      * <p>Add a goal to the directive.</p>
      *
-     * @param goal The goal.
-     * @param main The main flag.
+     * @param inter The intermediate.
+     * @param mask  The flag.
      */
-    public void addInter(Goal goal, boolean main) {
+    public final void addInter(Intermediate inter, int mask) {
         if (last == null) {
-            next = goal;
+            next = inter;
         } else {
             if (Goal.isAlternative(last.term)) {
                 Object term = last.term;
                 do {
                     SkelCompound sc = (SkelCompound) term;
-                    ((Directive) sc.args[0]).addInter(goal, false);
+                    ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
                     term = sc.args[1];
                 } while (Goal.isAlternative(term));
-                ((Directive) term).addInter(goal, false);
+                ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
+            } else if (Goal.isBegin(last.term)) {
+                Object term = last.term;
+                SkelCompound sc = (SkelCompound) term;
+                ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
             }
-            last.next = goal;
+            last.next = inter;
+            if ((mask & MASK_FIXUP_MARK) != 0) {
+                if ((flags & Directive.MASK_DIRE_STOP) == 0)
+                    last.flags |= Goal.MASK_GOAL_CEND;
+            }
         }
-        if (main)
-            last = goal;
+        if ((mask & MASK_FIXUP_MOVE) != 0)
+            last = (Goal) inter;
     }
 
     /**
-     * <p>Mark the end.</p>
+     * <p>Add a goal to the directive.</p>
+     *
+     * @param inter The intermediate.
+     * @param flags The flag.
      */
-    public void markEnd() {
-        if (last == null) {
-            next = Success.DEFAULT;
-        } else {
-            if (Goal.isAlternative(last.term)) {
-                Object term = last.term;
-                do {
-                    SkelCompound sc = (SkelCompound) term;
-                    ((Directive) sc.args[0]).markEnd();
-                    term = sc.args[1];
-                } while (Goal.isAlternative(term));
-                ((Directive) term).markEnd();
-            }
-            last.next = Success.DEFAULT;
-            if ((flags & Directive.MASK_DIRE_STOP) == 0)
-                last.flags |= Goal.MASK_GOAL_CEND;
-        }
+    public void addInterTrace(Intermediate inter, int flags) {
+
     }
 
 }

@@ -119,7 +119,7 @@ public final class SpecialSession extends AbstractSpecial {
             case SPECIAL_SYS_GET_RAW_VARIABLES:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Display d = en.visor.query;
+                DisplayClause d = en.visor.query;
                 en.skel = SpecialSession.hashToRawAssoc(d.vars, d, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
@@ -323,9 +323,9 @@ public final class SpecialSession extends AbstractSpecial {
                 CallFrame u = en.contdisplay;
                 AbstractUndo mark = en.bind;
                 int snap = en.number;
-                Display backref = en.visor.query;
+                DisplayClause backref = en.visor.query;
                 try {
-                    Display d2 = new Display(dire.size);
+                    DisplayClause d2 = new DisplayClause(dire.size);
                     d2.vars = pre.vars;
                     en.visor.query = d2;
                     CallFrame ref = CallFrame.getFrame(d2, dire, en);
@@ -450,10 +450,10 @@ public final class SpecialSession extends AbstractSpecial {
             dire.bodyToInter(body, en, true);
 
             int snap = en.number;
-            Display backref = en.visor.query;
+            DisplayClause backref = en.visor.query;
             CallFrame ref;
             try {
-                Display d2 = new Display(dire.size);
+                DisplayClause d2 = new DisplayClause(dire.size);
                 d2.vars = rd.getVars();
                 en.visor.query = d2;
                 ref = CallFrame.getFrame(d2, dire, en);

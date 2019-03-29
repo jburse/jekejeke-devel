@@ -2,10 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.reference.runtime.SpecialQuali;
@@ -102,7 +99,7 @@ public final class SpecialApply extends AbstractSpecial {
                     d.remTab(en);
                 ref = en.display;
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
+                DisplayClause d2 = new DisplayClause(dire.size);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi || ext)
                     ref.remTab(en);

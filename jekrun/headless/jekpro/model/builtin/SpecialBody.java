@@ -2,11 +2,9 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
+import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -43,6 +41,8 @@ import jekpro.tools.term.SkelCompound;
 public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_CALL = 0;
     private final static int SPECIAL_SYS_ALTER = 1;
+    private final static int SPECIAL_SYS_BEGIN = 2;
+    private final static int SPECIAL_SYS_COMMIT = 3;
 
     /**
      * <p>Create a body special.</p>
@@ -76,7 +76,7 @@ public final class SpecialBody extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
+                DisplayClause d2 = new DisplayClause(dire.size);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
@@ -90,6 +90,23 @@ public final class SpecialBody extends AbstractSpecial {
                         en.contdisplay, en.bind);
                 en.number++;
                 en.contskel = (Directive) temp[0];
+                return true;
+            case SPECIAL_SYS_BEGIN:
+                temp = ((SkelCompound) en.skel).args;
+                ChoiceAlter cp = (ChoiceAlter) en.choices;
+                d2 = en.contdisplay.disp;
+                cp.barrier = d2.barrier;
+                d2.barrier = en.number;
+                en.contskel = (Directive) temp[0];
+                return true;
+            case SPECIAL_SYS_COMMIT:
+                ref2 = en.contdisplay;
+                en.window = ref2;
+                en.fault = null;
+                en.cutChoices(ref2.disp.barrier - 1);
+                en.window = null;
+                if (en.fault != null)
+                    throw en.fault;
                 return true;
             default:
                 throw new IllegalArgumentException(

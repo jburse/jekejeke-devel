@@ -133,7 +133,7 @@ public final class SpecialControl extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);

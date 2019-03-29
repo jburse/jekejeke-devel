@@ -266,7 +266,7 @@ public class Engine extends StackElement {
             d2.remTab(this);
         Display ref = display;
         Directive dire = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(dire.size);
+        DisplayClause d3 = new DisplayClause(dire.size);
         d3.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
             ref.remTab(this);
@@ -378,7 +378,7 @@ public class Engine extends StackElement {
             boolean multi = wrapGoal();
             Display ref = display;
             Directive dire = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(skel, ref, this);
             if (multi)
                 ref.remTab(this);
