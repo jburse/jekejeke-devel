@@ -13,7 +13,6 @@ import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.data.ListArray;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -63,7 +62,9 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_LAST_META = " last_meta";
 
-    private final static String CODE_ALTER_FLOW = " alter_flow";
+    private final static String CODE_TRY_FLOW = " try_flow";
+    private final static String CODE_RETRY_FLOW = " retry_flow";
+    private final static String CODE_TRUST_FLOW = " trust_flow";
 
     /**
      * <p>Create a index dump special.</p>
@@ -233,42 +234,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                     }
                 }
             }
-            friendlyBodyAndAlter(clause, ref, fp);
+            friendlyBody(clause, ref, fp);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>Write out a goal list.</p>
-     *
-     * @param dire The directive.
-     * @param ref  The display.
-     * @param fp   The firendly printer.
-     * @throws IOException IO error.
-     */
-    private static void friendlyBodyAndAlter(Directive dire,
-                                             Display ref,
-                                             FriendlyPrinter fp)
-            throws IOException, EngineMessage, EngineException {
-        fp.alter = new ListArray<AlternateFlow>();
-        friendlyBody(dire, ref, fp);
-        ListArray<AlternateFlow> alter = fp.alter;
-        fp.alter = null;
-        for (int i = 0; i < alter.size(); i++) {
-            AlternateFlow af = alter.get(i);
-            fp.friendlyCount();
-            Writer wr = fp.pw.getWriter();
-            wr.write(SpecialFriendly.CODE_ALTER_FLOW);
-            wr.write(' ');
-            wr.write(Integer.toString(af.begin));
-            wr.write(", ");
-            wr.write(Integer.toString(af.end));
-            wr.write('\n');
-            wr.flush();
-            fp.level++;
-            friendlyBodyAndAlter(af.dire, ref, fp);
-            fp.level--;
         }
     }
 
@@ -289,25 +257,30 @@ public final class SpecialFriendly extends AbstractSpecial {
         Intermediate temp = fp.nextDirective(dire);
         for (; ; ) {
             if (Goal.isAlternative(temp.term)) {
-                SkelCompound sc = (SkelCompound) temp.term;
-                int begin = fp.count;
-                friendlyBody((Directive) sc.args[0], ref, fp);
-                int end = fp.count;
-                Object branch = sc.args[1];
-                while (Goal.isAlternative(branch)) {
-                    sc = (SkelCompound) branch;
-                    AlternateFlow af = new AlternateFlow();
-                    af.begin = begin;
-                    af.end = end;
-                    af.dire = (Directive) sc.args[0];
-                    fp.alter.add(af);
+                Object branch = temp.term;
+                Writer wr = fp.pw.getWriter();
+                do {
+                    SkelCompound sc = (SkelCompound) branch;
+                    fp.friendlyCount();
+                    if (branch == temp.term) {
+                        wr.write(SpecialFriendly.CODE_TRY_FLOW);
+                    } else {
+                        wr.write(SpecialFriendly.CODE_RETRY_FLOW);
+                    }
+                    wr.write('\n');
+                    wr.flush();
+                    fp.level++;
+                    friendlyBody((Directive) sc.args[0], ref, fp);
+                    fp.level--;
                     branch = sc.args[1];
-                }
-                AlternateFlow af = new AlternateFlow();
-                af.begin = begin;
-                af.end = end;
-                af.dire = (Directive) branch;
-                fp.alter.add(af);
+                } while (Goal.isAlternative(branch));
+                fp.friendlyCount();
+                wr.write(SpecialFriendly.CODE_TRUST_FLOW);
+                wr.write('\n');
+                wr.flush();
+                fp.level++;
+                friendlyBody((Directive) branch, ref, fp);
+                fp.level--;
             } else {
                 Writer wr = fp.pw.getWriter();
                 fp.friendlyCount();

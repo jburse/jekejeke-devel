@@ -6,7 +6,6 @@ import jekdev.model.bugger.GoalTrace;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
-import matula.util.data.ListArray;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -46,7 +45,6 @@ final class FriendlyPrinter {
     int flags;
     int count;
     PrologWriter pw;
-    ListArray<AlternateFlow> alter;
     int level;
 
     /**
