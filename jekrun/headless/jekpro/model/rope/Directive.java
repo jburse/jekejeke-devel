@@ -127,9 +127,13 @@ public class Directive extends Intermediate {
             next = goal;
         } else {
             if (Goal.isAlternative(last.term)) {
-                SkelCompound sc = (SkelCompound) last.term;
-                ((Directive) sc.args[0]).addInter(goal, false);
-                ((Directive) sc.args[1]).addInter(goal, false);
+                Object term = last.term;
+                do {
+                    SkelCompound sc = (SkelCompound) term;
+                    ((Directive) sc.args[0]).addInter(goal, false);
+                    term = sc.args[1];
+                } while (Goal.isAlternative(term));
+                ((Directive) term).addInter(goal, false);
             }
             last.next = goal;
         }
@@ -145,9 +149,13 @@ public class Directive extends Intermediate {
             next = Success.DEFAULT;
         } else {
             if (Goal.isAlternative(last.term)) {
-                SkelCompound sc = (SkelCompound) last.term;
-                ((Directive) sc.args[0]).markEnd();
-                ((Directive) sc.args[1]).markEnd();
+                Object term = last.term;
+                do {
+                    SkelCompound sc = (SkelCompound) term;
+                    ((Directive) sc.args[0]).markEnd();
+                    term = sc.args[1];
+                } while (Goal.isAlternative(term));
+                ((Directive) term).markEnd();
             }
             last.next = Success.DEFAULT;
             if ((flags & Directive.MASK_DIRE_STOP) == 0)

@@ -160,13 +160,26 @@ public class Goal extends Intermediate {
      */
     public static Object disjunctionToAlternative(Directive dire,
                                                   Object term, Engine en) {
-        SkelCompound sc = (SkelCompound) term;
-        Directive left = makeDirective(dire, en);
-        left.bodyToInter(sc.args[0], en, false);
-        Directive right = makeDirective(dire, en);
-        right.bodyToInter(sc.args[1], en, false);
-        SkelAtom sa = SpecialQuali.makeAtom(OP_ALTERNATIVE, en, sc.sym);
-        return new SkelCompound(sa, left, right);
+        SkelCompound back = null;
+        do {
+            SkelCompound sc = (SkelCompound) term;
+            Directive left = makeDirective(dire, sc.args[0], en);
+            Object[] args = new Object[2];
+            args[0] = left;
+            args[1] = back;
+            SkelAtom sa = SpecialQuali.makeAtom(OP_ALTERNATIVE, en, sc.sym);
+            back = new SkelCompound(sa, args, null);
+            term = sc.args[1];
+        } while (isDisjunction(term));
+        Object t = makeDirective(dire, term, en);
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
     }
 
     /**
@@ -247,10 +260,11 @@ public class Goal extends Intermediate {
      * <p>Create a new directive with same flags.</p>
      *
      * @param dire The directive.
+     * @param term The term.
      * @param en   The engine.
      * @return The new directive.
      */
-    public static Directive makeDirective(Directive dire, Engine en) {
+    public static Directive makeDirective(Directive dire, Object term, Engine en) {
         int copt = 0;
         if ((dire.flags & Directive.MASK_DIRE_NLST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NLST;
@@ -262,7 +276,9 @@ public class Goal extends Intermediate {
             copt |= AbstractDelegate.MASK_DELE_NOBR;
         if ((dire.flags & Directive.MASK_DIRE_NIST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NIST;
-        return Directive.createDirective(copt, en);
+        Directive help = Directive.createDirective(copt, en);
+        help.bodyToInter(term, en, false);
+        return help;
     }
 
     /**************************************************************/
@@ -310,16 +326,31 @@ public class Goal extends Intermediate {
     /**
      * <p>Convert an alternative to a disjunction.</p>
      *
-     * @param t  The alternative.
-     * @param en The engine.
+     * @param term The alternative.
+     * @param en   The engine.
      * @return The disjunction.
      */
-    private static Object alternativeToDisjunction(Object t, Engine en) {
-        SkelCompound sc = (SkelCompound) t;
-        Object left = interToBody((Directive) sc.args[0], en);
-        Object right = interToBody((Directive) sc.args[1], en);
-        SkelAtom sa = SpecialQuali.makeAtom(OP_DISJUNCTION, en, sc.sym);
-        return new SkelCompound(sa, left, right);
+    private static Object alternativeToDisjunction(Object term, Engine en) {
+        SkelCompound back = null;
+        do {
+            SkelCompound sc = (SkelCompound) term;
+            Object left = interToBody((Directive) sc.args[0], en);
+            Object[] args = new Object[2];
+            args[0] = left;
+            args[1] = back;
+            SkelAtom sa = SpecialQuali.makeAtom(OP_DISJUNCTION, en, sc.sym);
+            back = new SkelCompound(sa, args, null);
+            term = sc.args[1];
+        } while (isAlternative(term));
+        Object t = interToBody((Directive) term, en);
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
     }
 
     /**

@@ -86,7 +86,8 @@ public final class SpecialBody extends AbstractSpecial {
                 return true;
             case SPECIAL_SYS_ALTER:
                 temp = ((SkelCompound) en.skel).args;
-                en.choices = new ChoiceAlter(en.choices, en.contskel, en.contdisplay, en.bind);
+                en.choices = new ChoiceAlter(en.choices, temp[1], en.contskel,
+                        en.contdisplay, en.bind);
                 en.number++;
                 en.contskel = (Directive) temp[0];
                 return true;

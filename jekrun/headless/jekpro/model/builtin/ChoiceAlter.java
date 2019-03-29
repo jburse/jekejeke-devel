@@ -2,12 +2,13 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.AbstractUndo;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
 
 /**
  * <p>Provides a choice point for ;/2.</p>
@@ -41,6 +42,7 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class ChoiceAlter extends AbstractChoice {
+    protected Object at;
     protected final Intermediate goalskel;
     protected final CallFrame goaldisplay;
     protected final AbstractUndo mark;
@@ -53,13 +55,14 @@ final class ChoiceAlter extends AbstractChoice {
      * @param u The continuation display.
      * @param m The mark.
      */
-    ChoiceAlter(AbstractChoice n,
+    ChoiceAlter(AbstractChoice n, Object a,
                 Intermediate r, CallFrame u,
                 AbstractUndo m) {
         super(n);
         goalskel = r;
         goaldisplay = u;
         mark = m;
+        at = a;
     }
 
     /**
@@ -85,22 +88,18 @@ final class ChoiceAlter extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        Intermediate ir = goalskel;
-        Object t = ir.term;
-        Display d = goaldisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv b1;
-            while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
-                t = b1.skel;
-                d = b1.display;
-            }
+        if (Goal.isAlternative(at)) {
+            SkelCompound sc = (SkelCompound) at;
+            at = sc.args[1];
+            /* reuse choice point */
+            en.choices = this;
+            en.number++;
+            en.contskel = (Directive) sc.args[0];
+            return true;
+        } else {
+            en.contskel = (Directive) at;
+            return true;
         }
-        Object[] temp = ((SkelCompound) t).args;
-
-        en.contskel = (Directive) temp[1];
-        return true;
     }
 
     /**

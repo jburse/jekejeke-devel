@@ -63,8 +63,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_LAST_GOAL = " last_goal";
     private final static String CODE_LAST_META = " last_meta";
 
-    private final static String CODE_BEGIN_ALTER = " begin_alter";
-    private final static String CODE_END_ALTER = " end_alter";
+    private final static String CODE_ALTER_FLOW = " alter_flow";
 
     /**
      * <p>Create a index dump special.</p>
@@ -260,20 +259,16 @@ public final class SpecialFriendly extends AbstractSpecial {
             AlternateFlow af = alter.get(i);
             fp.friendlyCount();
             Writer wr = fp.pw.getWriter();
-            wr.write(SpecialFriendly.CODE_BEGIN_ALTER);
+            wr.write(SpecialFriendly.CODE_ALTER_FLOW);
             wr.write(' ');
             wr.write(Integer.toString(af.begin));
+            wr.write(", ");
+            wr.write(Integer.toString(af.end));
             wr.write('\n');
             wr.flush();
             fp.level++;
             friendlyBodyAndAlter(af.dire, ref, fp);
             fp.level--;
-            fp.friendlyCount();
-            wr.write(SpecialFriendly.CODE_END_ALTER);
-            wr.write(' ');
-            wr.write(Integer.toString(af.end));
-            wr.write('\n');
-            wr.flush();
         }
     }
 
@@ -295,16 +290,28 @@ public final class SpecialFriendly extends AbstractSpecial {
         for (; ; ) {
             if (Goal.isAlternative(temp.term)) {
                 SkelCompound sc = (SkelCompound) temp.term;
-                AlternateFlow af = new AlternateFlow();
-                af.begin = fp.count;
-                af.dire = (Directive) sc.args[1];
+                int begin = fp.count;
                 friendlyBody((Directive) sc.args[0], ref, fp);
-                af.end = fp.count;
+                int end = fp.count;
+                Object branch = sc.args[1];
+                while (Goal.isAlternative(branch)) {
+                    sc = (SkelCompound) branch;
+                    AlternateFlow af = new AlternateFlow();
+                    af.begin = begin;
+                    af.end = end;
+                    af.dire = (Directive) sc.args[0];
+                    fp.alter.add(af);
+                    branch = sc.args[1];
+                }
+                AlternateFlow af = new AlternateFlow();
+                af.begin = begin;
+                af.end = end;
+                af.dire = (Directive) branch;
                 fp.alter.add(af);
             } else {
                 Writer wr = fp.pw.getWriter();
                 fp.friendlyCount();
-                if ((temp.flags & Goal.MASK_GOAL_CEND)==0) {
+                if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
                     if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
                         wr.write(SpecialFriendly.CODE_CALL_GOAL);
                     } else {
