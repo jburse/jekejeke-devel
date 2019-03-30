@@ -167,6 +167,7 @@ public class Goal extends Intermediate {
         }
         return left;
     }
+
     /**
      * <p>Convert a disjunction to an alternative.</p>
      *

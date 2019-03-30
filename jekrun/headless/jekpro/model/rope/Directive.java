@@ -55,7 +55,7 @@ public class Directive extends Intermediate {
     public final static int MASK_FIXUP_MARK = 0x00000002;
 
     public int size;
-    public Goal last;
+    public Intermediate last;
 
     /**
      * <p>Create a directive.</p>
@@ -128,7 +128,7 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     public Object interToBody(Engine en) {
-        return interToBody(next, last, en);
+        return interToBody(this, last, en);
     }
 
     /**
@@ -138,24 +138,24 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     public Object interToBranch(Engine en) {
-        return interToBranch(next, last, en);
+        return interToBranch(this, last, en);
     }
 
     /**
      * <p>Convert the intermediate form into a term.</p>
      * <p>Will skip begin and commit nodes.</p>
      *
-     * @param temp The conversion start.
      * @param last The conversion end.
      * @param en   The store.
      * @return The vector.
      */
-    private static Object interToBody(Intermediate temp, Goal last,
+    private static Object interToBody(Intermediate temp, Intermediate last,
                                       Engine en) {
         SkelCompound back = null;
         Object t = null;
         if (last != null) {
-            for (; last != temp; temp = temp.next) {
+            do {
+                temp = temp.next;
                 Object left = temp.term;
                 if (isAlternative(left)) {
                     left = alternativeToDisjunction(left, en);
@@ -169,7 +169,7 @@ public class Directive extends Intermediate {
                     back = new SkelCompound(en.store.foyer.ATOM_COMMA, args, null);
                 }
                 t = left;
-            }
+            } while (temp != last);
         }
         if (t == null)
             t = en.store.foyer.ATOM_TRUE;
@@ -192,12 +192,12 @@ public class Directive extends Intermediate {
      * @param en   The store.
      * @return The vector.
      */
-    private static Object interToBranch(Intermediate temp, Goal last,
+    private static Object interToBranch(Intermediate temp, Intermediate last,
                                         Engine en) {
-        if (last != null && isBegin(temp.term)) {
-            Goal split = findSplit(temp, last);
+        if (last != null && isBegin(temp.next.term)) {
+            Intermediate split = findSplit(temp, last);
             Object left = interToBody(temp, split, en);
-            Object right = interToBody(split.next, last, en);
+            Object right = interToBody(split, last, en);
             return new SkelCompound(en.store.foyer.ATOM_TESTING, left, right);
         } else {
             return interToBody(temp, last, en);
@@ -211,15 +211,14 @@ public class Directive extends Intermediate {
      * @param last The conversion end.
      * @return The split, or null.
      */
-    private static Goal findSplit(Intermediate temp, Goal last) {
-        Goal back = null;
+    private static Intermediate findSplit(Intermediate temp, Intermediate last) {
         if (last != null) {
-            for (; last != temp; temp = temp.next) {
-                Object left = temp.term;
-                if (isCommit(left))
+            do {
+                Intermediate back = temp;
+                temp = back.next;
+                if (isCommit(temp.term))
                     return back;
-                back = (Goal) temp;
-            }
+            } while (temp != last);
         }
         return null;
     }
@@ -329,7 +328,7 @@ public class Directive extends Intermediate {
             }
         }
         if ((mask & MASK_FIXUP_MOVE) != 0)
-            last = (Goal) inter;
+            last = inter;
     }
 
     /**
