@@ -71,6 +71,11 @@ public abstract class Foyer extends Enforced {
     public final static String OP_GREATER = ">";
     public final static String OP_SET = "{}";
     public final static String OP_UNIT = "()";
+    public final static String OP_SEMICOLON = ";";
+    public final static String OP_TESTING = "$if";
+    public final static String OP_SYS_ALTER = "sys_alter";
+    public final static String OP_SYS_BEGIN = "sys_begin";
+    public final static String OP_SYS_COMMIT = "sys_commit";
 
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
@@ -128,6 +133,12 @@ public abstract class Foyer extends Enforced {
     public SkelAtom ATOM_COMMA;
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
+    public SkelAtom ATOM_SEMICOLON;
+    public SkelAtom ATOM_TESTING;
+
+    public SkelAtom ATOM_SYS_ALTER;
+    public SkelAtom ATOM_SYS_BEGIN;
+    public SkelAtom ATOM_SYS_COMMIT;
 
     public Directive CLAUSE_CONT;
     public Directive CLAUSE_CALL;

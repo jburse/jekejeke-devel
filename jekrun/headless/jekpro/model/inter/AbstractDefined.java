@@ -582,7 +582,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (!(clause.term instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.term).args, ref1, en)) {
-                Object end = Goal.interToBody(clause, en);
+                Object end = clause.interToBody(en);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(temp[2], ref,

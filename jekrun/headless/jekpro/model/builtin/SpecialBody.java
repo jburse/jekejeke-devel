@@ -8,7 +8,7 @@ import jekpro.model.rope.Goal;
 import jekpro.tools.term.SkelCompound;
 
 /**
- * <p>Provides built-in predicates for body conversion.</p>
+ * <p>Provides built-in predicates for body execution.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -92,12 +92,10 @@ public final class SpecialBody extends AbstractSpecial {
                 en.contskel = (Directive) temp[0];
                 return true;
             case SPECIAL_SYS_BEGIN:
-                temp = ((SkelCompound) en.skel).args;
                 ChoiceAlter cp = (ChoiceAlter) en.choices;
                 d2 = en.contdisplay.disp;
                 cp.barrier = d2.barrier;
                 d2.barrier = en.number;
-                en.contskel = (Directive) temp[0];
                 return true;
             case SPECIAL_SYS_COMMIT:
                 ref2 = en.contdisplay;

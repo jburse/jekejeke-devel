@@ -44,13 +44,8 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public static final String OP_DISJUNCTION = ";";
     public static final String OP_CONDITION = "->";
     public static final String OP_SOFT_CONDITION = "*->";
-    public static final String OP_ALTERNATIVE = "sys_alter";
-    public static final String OP_BEGIN = "sys_begin";
-    public static final String OP_COMMIT = "sys_commit";
-    public static final String OP_TESTING = "$if";
 
     public final static int MASK_GOAL_NAKE = 0x00000100;
     public final static int MASK_GOAL_CEND = 0x00000200;
@@ -134,7 +129,6 @@ public class Goal extends Intermediate {
 
     /**
      * <p>Convert a body to intermediate form.</p>
-     * <p>Can be overridden by sub classes.</p>
      *
      * @param dire The directive.
      * @param body The term list, or null.
@@ -154,6 +148,26 @@ public class Goal extends Intermediate {
     }
 
     /**
+     * <p>Convert a body to intermediate form.</p>
+     *
+     * @param dire The directive.
+     * @param body The term list, or null.
+     * @param en   The engine.
+     */
+    static Directive branchToInter(Directive dire, Object body, Engine en) {
+        Directive left = makeDirective(dire, en);
+        if (isCondition(body)) {
+            SkelCompound sc = (SkelCompound) body;
+            left.bodyToInter(en.store.foyer.ATOM_SYS_BEGIN, en, false);
+            left.bodyToInter(sc.args[0], en, false);
+            left.bodyToInter(en.store.foyer.ATOM_SYS_COMMIT, en, false);
+            left.bodyToInter(sc.args[1], en, false);
+        } else {
+            left.bodyToInter(body, en, false);
+        }
+        return left;
+    }
+    /**
      * <p>Convert a disjunction to an alternative.</p>
      *
      * @param dire The directive.
@@ -166,20 +180,14 @@ public class Goal extends Intermediate {
         SkelCompound back = null;
         do {
             SkelCompound sc = (SkelCompound) term;
-            term = sc.args[0];
-            if (isCondition(term))
-                term = conditionToSequence(dire, term, en);
-            Directive left = makeDirective(dire, term, en);
+            Directive left = branchToInter(dire, sc.args[0], en);
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
-            SkelAtom sa = SpecialQuali.makeAtom(OP_ALTERNATIVE, en, sc.sym);
-            back = new SkelCompound(sa, args, null);
+            back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
             term = sc.args[1];
         } while (isDisjunction(term));
-        if (isCondition(term))
-            term = conditionToSequence(dire, term, en);
-        Object t = makeDirective(dire, term, en);
+        Object t = branchToInter(dire, term, en);
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
@@ -191,27 +199,6 @@ public class Goal extends Intermediate {
     }
 
     /**
-     * <p>Convert a condition to a sequence.</p>
-     *
-     * @param dire The directive.
-     * @param term The condition.
-     * @param en   The engine.
-     * @return The sequence.
-     */
-    private static Object conditionToSequence(Directive dire,
-                                              Object term, Engine en) {
-        SkelCompound sc = (SkelCompound) term;
-        SkelAtom sa = SpecialQuali.makeAtom(OP_COMMIT, en, sc.sym);
-        Object res = new SkelCompound(en.store.foyer.ATOM_COMMA, sa, sc.args[1]);
-
-        Directive begin = makeDirective(dire, sc.args[0], en);
-        sa = SpecialQuali.makeAtom(OP_BEGIN, en, sc.sym);
-        Object res2 = new SkelCompound(sa, begin);
-
-        return new SkelCompound(en.store.foyer.ATOM_COMMA, res2, res);
-    }
-
-    /**
      * <p>Check whether the given term is an alternative.</p>
      *
      * @param term The term.
@@ -220,7 +207,7 @@ public class Goal extends Intermediate {
     public static boolean isDisjunction(Object term) {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(OP_DISJUNCTION)) {
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SEMICOLON)) {
             SkelCompound sc = (SkelCompound) term;
             term = sc.args[0];
             if (term instanceof SkelCompound &&
@@ -250,7 +237,7 @@ public class Goal extends Intermediate {
     public static boolean isCondition(Object term) {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(OP_TESTING)) {
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_TESTING)) {
             return true;
         } else {
             return false;
@@ -305,11 +292,10 @@ public class Goal extends Intermediate {
      * <p>Create a new directive with same flags.</p>
      *
      * @param dire The directive.
-     * @param term The term.
      * @param en   The engine.
      * @return The new directive.
      */
-    private static Directive makeDirective(Directive dire, Object term, Engine en) {
+    private static Directive makeDirective(Directive dire, Engine en) {
         int copt = 0;
         if ((dire.flags & Directive.MASK_DIRE_NLST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NLST;
@@ -321,179 +307,7 @@ public class Goal extends Intermediate {
             copt |= AbstractDelegate.MASK_DELE_NOBR;
         if ((dire.flags & Directive.MASK_DIRE_NIST) != 0)
             copt |= AbstractDefined.MASK_DEFI_NIST;
-        Directive left = Directive.createDirective(copt, en);
-        left.bodyToInter(term, en, false);
-        return left;
-    }
-
-    /**************************************************************/
-    /* Convert from Intermediate Form                             */
-    /**************************************************************/
-
-    /**
-     * <p>Convert the intermediate form into a term.</p>
-     *
-     * @param en The store.
-     * @return The vector.
-     */
-    public static Object interToBody(Directive dire,
-                                     Engine en) {
-        Foyer foyer = en.store.foyer;
-        SkelCompound back = null;
-        Object t;
-        if (dire.last == null) {
-            t = foyer.ATOM_TRUE;
-        } else {
-            Intermediate temp = dire.next;
-            for (; ; ) {
-                t = temp.term;
-                if (isAlternative(t))
-                    t = alternativeToDisjunction(t, en);
-                if (dire.last == temp)
-                    break;
-                Object[] args = new Object[2];
-                args[0] = t;
-                args[1] = back;
-                back = new SkelCompound(foyer.ATOM_COMMA, args, null);
-                temp = temp.next;
-            }
-        }
-        while (back != null) {
-            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
-            back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
-            t = back;
-            back = jack;
-        }
-        return t;
-    }
-
-    /**
-     * <p>Convert an alternative to a disjunction.</p>
-     *
-     * @param term The alternative.
-     * @param en   The engine.
-     * @return The disjunction.
-     */
-    private static Object alternativeToDisjunction(Object term, Engine en) {
-        SkelCompound back = null;
-        do {
-            SkelCompound sc = (SkelCompound) term;
-            Object left = interToBody((Directive) sc.args[0], en);
-            if (isSequence(left))
-                left = sequenceToCondition(left, en);
-            Object[] args = new Object[2];
-            args[0] = left;
-            args[1] = back;
-            SkelAtom sa = SpecialQuali.makeAtom(OP_DISJUNCTION, en, sc.sym);
-            back = new SkelCompound(sa, args, null);
-            term = sc.args[1];
-        } while (isAlternative(term));
-        Object t = interToBody((Directive) term, en);
-        if (isSequence(t))
-            t = sequenceToCondition(t, en);
-        while (back != null) {
-            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
-            back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
-            t = back;
-            back = jack;
-        }
-        return t;
-    }
-
-    /**
-     * <p>Convert an sequence to a condition.</p>
-     *
-     * @param term The sequence.
-     * @param en   The engine.
-     * @return The condition.
-     */
-    public static Object sequenceToCondition(Object term, Engine en) {
-        SkelCompound sc = (SkelCompound) term;
-        term = sc.args[0];
-
-        SkelCompound sc2 = (SkelCompound) term;
-        Object left = interToBody((Directive) sc2.args[0], en);
-        SkelAtom sa = SpecialQuali.makeAtom(OP_TESTING, en, sc.sym);
-
-        term = sc.args[1];
-        Object right;
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
-            sc2 = (SkelCompound) term;
-            right = sc2.args[1];
-        } else {
-            right = en.store.foyer.ATOM_TRUE;
-        }
-
-        return new SkelCompound(sa, left, right);
-    }
-
-    /**
-     * <p>Check whether the given term is a sequence.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a sequence.
-     */
-    public static boolean isSequence(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
-            SkelCompound sc = (SkelCompound) term;
-            term = sc.args[0];
-            return isBegin(term);
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isAlternative(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(OP_ALTERNATIVE)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isBegin(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(OP_BEGIN)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a commit.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a commit.
-     */
-    public static boolean isCommit(Object term) {
-        if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(OP_COMMIT)) {
-            return true;
-        } else {
-            return false;
-        }
+        return Directive.createDirective(copt, en);
     }
 
 }

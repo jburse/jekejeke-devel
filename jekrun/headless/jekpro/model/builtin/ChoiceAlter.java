@@ -6,7 +6,6 @@ import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Directive;
-import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
 
@@ -95,7 +94,7 @@ public final class ChoiceAlter extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        if (Goal.isAlternative(at)) {
+        if (Directive.isAlternative(at)) {
             SkelCompound sc = (SkelCompound) at;
             at = sc.args[1];
             /* reuse choice point */

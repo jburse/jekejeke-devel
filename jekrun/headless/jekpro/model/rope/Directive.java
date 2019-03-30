@@ -4,7 +4,9 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -115,9 +117,191 @@ public class Directive extends Intermediate {
             addInter(Success.DEFAULT, MASK_FIXUP_MARK);
     }
 
-    /******************************************************/
-    /* Builder Utilities                                  */
-    /******************************************************/
+    /**************************************************************/
+    /* Convert from Intermediate Form                             */
+    /**************************************************************/
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     *
+     * @param en The store.
+     * @return The vector.
+     */
+    public Object interToBody(Engine en) {
+        return interToBody(next, last, en);
+    }
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     *
+     * @param en The store.
+     * @return The vector.
+     */
+    public Object interToBranch(Engine en) {
+        return interToBranch(next, last, en);
+    }
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     * <p>Will skip begin and commit nodes.</p>
+     *
+     * @param temp The conversion start.
+     * @param last The conversion end.
+     * @param en   The store.
+     * @return The vector.
+     */
+    private static Object interToBody(Intermediate temp, Goal last,
+                                      Engine en) {
+        SkelCompound back = null;
+        Object t = null;
+        if (last != null) {
+            for (; last != temp; temp = temp.next) {
+                Object left = temp.term;
+                if (isAlternative(left)) {
+                    left = alternativeToDisjunction(left, en);
+                } else if (isBegin(left) || isCommit(left)) {
+                    continue;
+                }
+                if (t != null) {
+                    Object[] args = new Object[2];
+                    args[0] = t;
+                    args[1] = back;
+                    back = new SkelCompound(en.store.foyer.ATOM_COMMA, args, null);
+                }
+                t = left;
+            }
+        }
+        if (t == null)
+            t = en.store.foyer.ATOM_TRUE;
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
+    }
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     * <p>Will split a sequence.</p>
+     *
+     * @param temp The conversion start.
+     * @param last The conversion end.
+     * @param en   The store.
+     * @return The vector.
+     */
+    private static Object interToBranch(Intermediate temp, Goal last,
+                                        Engine en) {
+        if (last != null && isBegin(temp.term)) {
+            Goal split = findSplit(temp, last);
+            Object left = interToBody(temp, split, en);
+            Object right = interToBody(split.next, last, en);
+            return new SkelCompound(en.store.foyer.ATOM_TESTING, left, right);
+        } else {
+            return interToBody(temp, last, en);
+        }
+    }
+
+    /**
+     * <p>Find the split inside a sequence.</p>
+     *
+     * @param temp The conversion start.
+     * @param last The conversion end.
+     * @return The split, or null.
+     */
+    private static Goal findSplit(Intermediate temp, Goal last) {
+        Goal back = null;
+        if (last != null) {
+            for (; last != temp; temp = temp.next) {
+                Object left = temp.term;
+                if (isCommit(left))
+                    return back;
+                back = (Goal) temp;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * <p>Convert an alternative to a disjunction.</p>
+     *
+     * @param term The alternative.
+     * @param en   The engine.
+     * @return The disjunction.
+     */
+    private static Object alternativeToDisjunction(Object term, Engine en) {
+        SkelCompound back = null;
+        do {
+            SkelCompound sc = (SkelCompound) term;
+            Object left = ((Directive) sc.args[0]).interToBranch(en);
+            Object[] args = new Object[2];
+            args[0] = left;
+            args[1] = back;
+            back = new SkelCompound(en.store.foyer.ATOM_SEMICOLON, args, null);
+            term = sc.args[1];
+        } while (isAlternative(term));
+        Object t = ((Directive) term).interToBranch(en);
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isAlternative(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isBegin(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a commit.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a commit.
+     */
+    public static boolean isCommit(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**************************************************************/
+    /* Builder Utilities                                          */
+    /**************************************************************/
 
     /**
      * <p>Add a goal to the directive.</p>
@@ -129,18 +313,14 @@ public class Directive extends Intermediate {
         if (last == null) {
             next = inter;
         } else {
-            if (Goal.isAlternative(last.term)) {
+            if (isAlternative(last.term)) {
                 Object term = last.term;
                 do {
                     SkelCompound sc = (SkelCompound) term;
                     ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
                     term = sc.args[1];
-                } while (Goal.isAlternative(term));
+                } while (isAlternative(term));
                 ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
-            } else if (Goal.isBegin(last.term)) {
-                Object term = last.term;
-                SkelCompound sc = (SkelCompound) term;
-                ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
             }
             last.next = inter;
             if ((mask & MASK_FIXUP_MARK) != 0) {
