@@ -92,15 +92,15 @@ public final class SpecialBody extends AbstractSpecial {
                 return true;
             case SPECIAL_SYS_BEGIN:
                 ChoiceAlter cp = (ChoiceAlter) en.choices;
-                d2 = en.contdisplay.disp;
-                cp.barrier = d2.barrier;
-                d2.barrier = en.number;
+                ref2 = en.contdisplay;
+                cp.barrier = ref2.barrier;
+                ref2.barrier = en.number;
                 return true;
             case SPECIAL_SYS_COMMIT:
                 ref2 = en.contdisplay;
                 en.window = ref2;
                 en.fault = null;
-                en.cutChoices(ref2.disp.barrier - 1);
+                en.cutChoices(ref2.barrier - 1);
                 en.window = null;
                 if (en.fault != null)
                     throw en.fault;

@@ -38,7 +38,6 @@ public class Display {
 
     public final static int MASK_DISP_MLTI = 0x00000001;
     public final static int MASK_DISP_MORE = 0x00000002;
-    public final static int MASK_DISP_SOFT = 0x00000004;
     public final static int MASK_DISP_LTGC = 0x00000008;
 
     public BindUniv[] bind;

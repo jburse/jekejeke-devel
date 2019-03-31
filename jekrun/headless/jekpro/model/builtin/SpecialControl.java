@@ -80,10 +80,10 @@ public final class SpecialControl extends AbstractSpecial {
                 CallFrame u = en.contdisplay;
                 CallFrame u2 = u;
                 while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
-                        u2.disp.barrier == -1)
+                        u2.barrier == -1)
                     u2 = u2.contdisplay;
-                int level = (u2.disp.barrier != -1 ?
-                        u2.disp.barrier : u2.number);
+                int level = (u2.barrier != -1 ?
+                        u2.barrier : u2.number);
                 if (level < en.number) {
                     en.window = u;
                     en.fault = null;

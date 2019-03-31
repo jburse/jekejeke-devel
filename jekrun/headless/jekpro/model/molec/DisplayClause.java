@@ -36,7 +36,6 @@ import matula.util.data.MapHashLink;
  */
 public class DisplayClause extends Display {
     public MapHashLink<String, SkelVar> vars;
-    public int barrier = -1;
 
     /**
      * <p>Create a new clause display.</p>

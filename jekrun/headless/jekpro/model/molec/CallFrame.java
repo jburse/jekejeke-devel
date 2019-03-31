@@ -40,6 +40,7 @@ public final class CallFrame extends StackElement {
     public DisplayClause disp;
     public int flags;
     public int number;
+    public int barrier = -1;
 
     /**
      * <p>Create a new call frame.</p>

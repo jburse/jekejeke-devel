@@ -82,7 +82,7 @@ public final class ChoiceAlter extends AbstractChoice {
 
         /* undo begin condition */
         if (barrier != -2) {
-            goaldisplay.disp.barrier = barrier;
+            goaldisplay.barrier = barrier;
             barrier = -2;
         }
 
@@ -123,7 +123,7 @@ public final class ChoiceAlter extends AbstractChoice {
 
         /* undo begin condition */
         if (barrier != -2) {
-            goaldisplay.disp.barrier = barrier;
+            goaldisplay.barrier = barrier;
             barrier = -2;
         }
     }

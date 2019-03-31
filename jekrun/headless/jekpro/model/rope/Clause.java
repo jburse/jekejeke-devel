@@ -43,6 +43,7 @@ import matula.util.data.MapHashLink;
 public class Clause extends Directive implements InterfaceReference {
     public final static int MASK_CLAUSE_ASSE = 0x00000100;
     public final static int MASK_CLAUSE_NHED = 0x00000200;
+    public final static int MASK_CLAUSE_SOFT = 0x00000400;
 
     public int sizerule;
     public int[] intargs;

@@ -72,7 +72,8 @@ public abstract class Foyer extends Enforced {
     public final static String OP_SET = "{}";
     public final static String OP_UNIT = "()";
     public final static String OP_SEMICOLON = ";";
-    public final static String OP_TESTING = "$if";
+    public final static String OP_CONDITION = "->";
+
     public final static String OP_SYS_ALTER = "sys_alter";
     public final static String OP_SYS_BEGIN = "sys_begin";
     public final static String OP_SYS_COMMIT = "sys_commit";
@@ -134,7 +135,7 @@ public abstract class Foyer extends Enforced {
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
     public SkelAtom ATOM_SEMICOLON;
-    public SkelAtom ATOM_TESTING;
+    public SkelAtom ATOM_CONDITION;
 
     public SkelAtom ATOM_SYS_ALTER;
     public SkelAtom ATOM_SYS_BEGIN;
@@ -153,24 +154,6 @@ public abstract class Foyer extends Enforced {
     public AbstractFactory getFactory() {
         return (AbstractFactory) getFramework();
     }
-
-    /************************************************************/
-    /* Session Id                                               */
-    /************************************************************/
-
-    /**
-     * <p>Generatea a new sym.</p>
-     *
-     * @return The new sym.
-     */
-//    public int genSym() {
-//        int res;
-//        synchronized (this) {
-//            res = gensym;
-//            gensym = res + 1;
-//        }
-//        return res;
-//    }
 
     /************************************************************/
     /* Thread Locale Identifiers                                */

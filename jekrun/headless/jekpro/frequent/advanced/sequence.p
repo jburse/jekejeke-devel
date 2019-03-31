@@ -115,6 +115,7 @@ call_nth2(G, N) :-
  * The predicate succeeds in P with a new pivot.
  */
 % pivot_new(-Pivot)
+:- public pivot_new/1.
 :- special(pivot_new/1, 'SpecialSequence', 0).
 
 /**
@@ -122,6 +123,7 @@ call_nth2(G, N) :-
  * The predicate succeeds setting the pivot P to O.
  */
 % pivot_set(+Pivot, +Term)
+:- public pivot_set/2.
 :- special(pivot_set/2, 'SpecialSequence', 1).
 
 /**
@@ -129,4 +131,5 @@ call_nth2(G, N) :-
  * The predicate succeeds in O with a copy of the pivot P.
  */
 % pivot_get(+Pivot, -Term)
+:- public pivot_get/2.
 :- special(pivot_get/2, 'SpecialSequence', 2).

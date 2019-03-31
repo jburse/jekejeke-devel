@@ -44,7 +44,6 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public static final String OP_CONDITION = "->";
     public static final String OP_SOFT_CONDITION = "*->";
 
     public final static int MASK_GOAL_NAKE = 0x00000100;
@@ -154,7 +153,7 @@ public class Goal extends Intermediate {
      * @param body The term list, or null.
      * @param en   The engine.
      */
-    static Directive branchToInter(Directive dire, Object body, Engine en) {
+    private static Directive branchToInter(Directive dire, Object body, Engine en) {
         Directive left = makeDirective(dire, en);
         if (isCondition(body)) {
             SkelCompound sc = (SkelCompound) body;
@@ -213,10 +212,6 @@ public class Goal extends Intermediate {
             term = sc.args[0];
             if (term instanceof SkelCompound &&
                     ((SkelCompound) term).args.length == 2 &&
-                    ((SkelCompound) term).sym.fun.equals(OP_CONDITION)) {
-                return false;
-            } else if (term instanceof SkelCompound &&
-                    ((SkelCompound) term).args.length == 2 &&
                     ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
                 return false;
             } else if (term instanceof SkelVar) {
@@ -235,10 +230,10 @@ public class Goal extends Intermediate {
      * @param term The term.
      * @return True if the term is an alterantive.
      */
-    public static boolean isCondition(Object term) {
+    private static boolean isCondition(Object term) {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_TESTING)) {
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONDITION)) {
             return true;
         } else {
             return false;

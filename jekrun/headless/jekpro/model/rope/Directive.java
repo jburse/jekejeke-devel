@@ -198,7 +198,7 @@ public class Directive extends Intermediate {
             Intermediate split = findSplit(temp, last);
             Object left = interToBody(temp, split, en);
             Object right = interToBody(split, last, en);
-            return new SkelCompound(en.store.foyer.ATOM_TESTING, left, right);
+            return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
         } else {
             return interToBody(temp, last, en);
         }

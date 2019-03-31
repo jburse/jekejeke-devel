@@ -6,6 +6,7 @@ import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
+import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.tools.term.SkelCompound;
 
@@ -68,32 +69,32 @@ public final class SpecialLogic extends AbstractSpecial {
             throws EngineException {
         switch (id) {
             case SPECIAL_SYS_LOCAL_CUT:
-                CallFrame u = en.contdisplay;
-                if (u.number < en.number) {
-                    en.window = u;
+                CallFrame ref2 = en.contdisplay;
+                if (ref2.number < en.number) {
+                    en.window = ref2;
                     en.fault = null;
-                    en.cutChoices(u.number);
+                    en.cutChoices(ref2.number);
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    en.contdisplay = u.getFrame(en);
+                    en.contdisplay = ref2.getFrame(en);
                 }
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
-                u = en.contdisplay;
-                if ((((u.disp.flags & Display.MASK_DISP_MORE) != 0) ?
-                        u.number + 1 : u.number) >= en.number) {
-                    if (u.number < en.number) {
-                        en.window = u;
+                ref2 = en.contdisplay;
+                if ((((ref2.disp.flags & Display.MASK_DISP_MORE) != 0) ?
+                        ref2.number + 1 : ref2.number) >= en.number) {
+                    if (ref2.number < en.number) {
+                        en.window = ref2;
                         en.fault = null;
-                        en.cutChoices(u.number);
+                        en.cutChoices(ref2.number);
                         en.window = null;
                         if (en.fault != null)
                             throw en.fault;
-                        en.contdisplay = u.getFrame(en);
+                        en.contdisplay = ref2.getFrame(en);
                     }
                 } else {
-                    u.disp.flags |= Display.MASK_DISP_SOFT;
+                    ref2.flags |= Clause.MASK_CLAUSE_SOFT;
                 }
                 return true;
             case SPECIAL_SYS_SAFE:
@@ -105,7 +106,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 Directive dire = en.store.foyer.CLAUSE_CONT;
                 DisplayClause d2 = new DisplayClause(dire.size);
                 d2.bind[0].bindUniv(en.skel, en.display, en);
-                CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+                ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
