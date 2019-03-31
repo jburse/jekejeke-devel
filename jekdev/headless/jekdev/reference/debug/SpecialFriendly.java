@@ -66,6 +66,10 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_RETRY_FLOW = " retry_flow";
     private final static String CODE_TRUST_FLOW = " trust_flow";
 
+    private final static String CODE_IF_FLOW = " if_flow";
+    private final static String CODE_ELSE_FLOW = " else_flow";
+    private final static String CODE_THEN_FLOW = " then_flow";
+
     /**
      * <p>Create a index dump special.</p>
      *
@@ -256,24 +260,33 @@ public final class SpecialFriendly extends AbstractSpecial {
             return;
         Intermediate temp = fp.nextDirective(dire);
         for (; ; ) {
-            if (Goal.isAlternative(temp.term)) {
+            if (Directive.isAlternative(temp.term)) {
                 Object branch = temp.term;
                 Writer wr = fp.pw.getWriter();
                 do {
                     SkelCompound sc = (SkelCompound) branch;
+                    Directive help = (Directive) sc.args[0];
                     fp.friendlyCount();
-                    if (branch == temp.term) {
-                        wr.write(SpecialFriendly.CODE_TRY_FLOW);
+                    if (help.last != null && Directive.isBegin(help.next.term)) {
+                        if (branch == temp.term) {
+                            wr.write(SpecialFriendly.CODE_IF_FLOW);
+                        } else {
+                            wr.write(SpecialFriendly.CODE_ELSE_FLOW);
+                        }
                     } else {
-                        wr.write(SpecialFriendly.CODE_RETRY_FLOW);
+                        if (branch == temp.term) {
+                            wr.write(SpecialFriendly.CODE_TRY_FLOW);
+                        } else {
+                            wr.write(SpecialFriendly.CODE_RETRY_FLOW);
+                        }
                     }
                     wr.write('\n');
                     wr.flush();
                     fp.level++;
-                    friendlyBody((Directive) sc.args[0], ref, fp);
+                    friendlyBody(help, ref, fp);
                     fp.level--;
                     branch = sc.args[1];
-                } while (Goal.isAlternative(branch));
+                } while (Directive.isAlternative(branch));
                 fp.friendlyCount();
                 wr.write(SpecialFriendly.CODE_TRUST_FLOW);
                 wr.write('\n');
@@ -281,6 +294,14 @@ public final class SpecialFriendly extends AbstractSpecial {
                 fp.level++;
                 friendlyBody((Directive) branch, ref, fp);
                 fp.level--;
+            } else if (Directive.isBegin(temp.term)) {
+                /* */
+            } else if (Directive.isCommit(temp.term)) {
+                Writer wr = fp.pw.getWriter();
+                fp.friendlyCount();
+                wr.write(SpecialFriendly.CODE_THEN_FLOW);
+                wr.write('\n');
+                wr.flush();
             } else {
                 Writer wr = fp.pw.getWriter();
                 fp.friendlyCount();

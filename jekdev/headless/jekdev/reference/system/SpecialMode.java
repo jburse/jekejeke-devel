@@ -115,12 +115,10 @@ public final class SpecialMode extends AbstractSpecial {
                 if (sa != null && sa.scope != null &&
                         (sa.scope.getBits() & AbstractSource.MASK_SRC_NOTR) != 0)
                     return true;
-
                 return false;
             case SPECIAL_SYS_PORT_SHOW:
                 temp = ((SkelCompound) en.skel).args;
                 port = ((Integer) temp[0]).intValue();
-
                 if (!SpecialMode.isDebug(en))
                     return true;
 
@@ -295,7 +293,7 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
@@ -351,7 +349,7 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);

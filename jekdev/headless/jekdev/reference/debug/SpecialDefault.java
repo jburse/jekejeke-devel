@@ -323,7 +323,7 @@ public final class SpecialDefault extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write port and goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            Display d2 = en.visor.query;
+            DisplayClause d2 = en.visor.query;
             MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
             pw.setPrintMap(print);
             pw.unparseStatement(t, d);
@@ -341,7 +341,7 @@ public final class SpecialDefault extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
@@ -375,7 +375,7 @@ public final class SpecialDefault extends AbstractSpecial {
 
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        Display d2 = en.visor.query;
+        DisplayClause d2 = en.visor.query;
         MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
         pw.setPrintMap(print);
         pw.unparseStatement(t, d);
