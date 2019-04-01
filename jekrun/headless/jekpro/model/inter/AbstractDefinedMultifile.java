@@ -1,7 +1,9 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
+import jekpro.model.rope.Success;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -118,7 +120,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             d2.flags |= Display.MASK_DISP_MORE;
             CallFrame dc = new CallFrame(d2, clause, en);
             /* create choice point */
-            en.choices = new ChoiceDefinedMultfile(en.choices, at, list, dc, mark);
+            en.choices = new ChoiceDefinedMultifile(en.choices, at, list, dc, mark);
             en.number++;
             en.contskel = clause;
             en.contdisplay = dc;
