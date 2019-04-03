@@ -1,7 +1,11 @@
-package matula.util.misc;
+package jekpro.frequent.misc;
+
+import matula.util.misc.AbstractLock;
+
+import java.util.concurrent.TimeUnit;
 
 /**
- * <p>This class provides a slotted and escalable read write pair.</p>
+ * The foreign predicates for the module misc/lock.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,26 +35,19 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Lock extends AbstractPair {
-    final LockRead read = new LockRead(this);
-    final LockWrite write = new LockWrite(this);
+public final class ForeignLock {
 
     /**
-     * <p>Retrieve the read lock.</p>
+     * <p>Perform a millisecond try lock.</p>
      *
-     * @return The read lock.
+     * @param lock The lock.
+     * @param timeout The time-out.
+     * @return True if lock was acquired, or false otherwise.
+     * @throws InterruptedException If the request was cancelled.
      */
-    public AbstractLock getRead() {
-        return read;
-    }
-
-    /**
-     * <p>Retrieve the write lock.</p>
-     *
-     * @return The write lock.
-     */
-    public AbstractLock getWrite() {
-        return write;
+    public static boolean sysTryLock(AbstractLock lock, long timeout)
+            throws InterruptedException {
+        return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
     }
 
 }

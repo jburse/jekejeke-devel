@@ -38,7 +38,6 @@ public class Display {
 
     public final static int MASK_DISP_MLTI = 0x00000001;
     public final static int MASK_DISP_MORE = 0x00000002;
-    public final static int MASK_DISP_LTGC = 0x00000008;
 
     public BindUniv[] bind;
     public int flags;
@@ -120,19 +119,6 @@ public class Display {
             } else {
                 bc.refs = j - 1;
             }
-        }
-    }
-
-    /**
-     * <p>Perform environment trimming optimization.</p>
-     *
-     * @param en The engine.
-     */
-    public void lastCollect(Engine en) {
-        if ((flags & Display.MASK_DISP_LTGC) == 0) {
-            if (bind.length > 0)
-                remTab(en);
-            flags |= Display.MASK_DISP_LTGC;
         }
     }
 

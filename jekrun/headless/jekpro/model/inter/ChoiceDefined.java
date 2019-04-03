@@ -128,7 +128,7 @@ public class ChoiceDefined extends AbstractChoice {
         d2.vars = clause.vars;
 
         if (at != list.length) {
-            d2.flags &= ~Display.MASK_DISP_LTGC;
+            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -136,7 +136,7 @@ public class ChoiceDefined extends AbstractChoice {
             en.contdisplay = newdisp;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            d2.flags &= ~Display.MASK_DISP_LTGC;
+            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
             d2.flags &= ~Display.MASK_DISP_MORE;
             CallFrame dc = newdisp.getFrame(en);
             en.contskel = clause;
@@ -164,19 +164,32 @@ public class ChoiceDefined extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        Display d = newdisp.disp;
+        CallFrame dc = newdisp;
+        Display d = dc.disp;
         d.flags &= ~Display.MASK_DISP_MORE;
 
         CallFrame back = en.window;
 
-        while (back != null && back.number > newdisp.number) {
-            back.number = n;
-            back = back.contdisplay;
+        while (dc != back && dc != null) {
+            d = dc.disp;
+            if ((((d.flags & Display.MASK_DISP_MORE) != 0) ?
+                    dc.number + 1 : dc.number) >= n) {
+                if ((dc.flags & Directive.MASK_DIRE_LTGC) == 0) {
+                    if ((dc.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                        if (d.bind.length > 0)
+                            d.remTab(en);
+                    }
+                    dc.flags |= Directive.MASK_DIRE_LTGC;
+                }
+            }
+
+            if ((dc.flags & Directive.MASK_DIRE_STOP) != 0) {
+                dc = null;
+            } else {
+                dc = dc.contdisplay;
+            }
         }
-        if (newdisp != back) {
-            if ((newdisp.flags & Directive.MASK_DIRE_NBDY) == 0)
-                d.lastCollect(en);
-        }
+
         en.window = back;
     }
 

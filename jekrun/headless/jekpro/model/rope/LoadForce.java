@@ -11,6 +11,8 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.wire.AbstractLivestock;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>Module begin and end options.</p>
  * <p/>
@@ -248,7 +250,7 @@ public class LoadForce {
 
         try {
             /* wait for complete source */
-            if (!source.getWrite().attempt(source.getStore().foyer.timeout))
+            if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
@@ -305,15 +307,15 @@ public class LoadForce {
             }
         } catch (EngineMessage x) {
             en.visor.popStack();
-            source.getWrite().release();
+            source.getWrite().unlock();
             throw x;
         } catch (EngineException x) {
             en.visor.popStack();
-            source.getWrite().release();
+            source.getWrite().unlock();
             throw x;
         }
         en.visor.popStack();
-        source.getWrite().release();
+        source.getWrite().unlock();
     }
 
     /************************************************************/

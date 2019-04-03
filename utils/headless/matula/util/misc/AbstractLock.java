@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides an abstract lock.</p>
  * Warranty & Liability
@@ -38,7 +40,7 @@ public abstract class AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public abstract void acquire()
+    public abstract void lockInterruptibly()
             throws InterruptedException;
 
     /**
@@ -47,21 +49,22 @@ public abstract class AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public abstract boolean attempt();
+    public abstract boolean tryLock();
 
     /**
      * <p>Acquire the lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public abstract boolean attempt(long sleep)
+    public abstract boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException;
 
     /**
      * <p>Release the lock.</p>
      */
-    public abstract void release();
+    public abstract void unlock();
 
 }

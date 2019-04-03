@@ -77,21 +77,33 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_TRUE:
                 return true;
             case SPECIAL_CUT:
-                CallFrame u = en.contdisplay;
-                CallFrame u2 = u;
-                while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
-                        u2.barrier == -1)
-                    u2 = u2.contdisplay;
-                int level = (u2.barrier != -1 ?
-                        u2.barrier : u2.number);
+                CallFrame ref2 = en.contdisplay;
+                while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
+                        ref2.barrier == -1)
+                    ref2 = ref2.contdisplay;
+                int level = (ref2.barrier != -1 ?
+                        ref2.barrier : ref2.number);
                 if (level < en.number) {
-                    en.window = u;
+                    ref2 = en.contdisplay;
+                    while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
+                            ref2.barrier == -1) {
+                        en.window = ref2;
+                        en.fault = null;
+                        en.cutChoices(ref2.number);
+                        en.window = null;
+                        if (en.fault != null)
+                            throw en.fault;
+                        ref2.number = level;
+                        ref2 = ref2.contdisplay;
+                    }
+                    en.window = ref2;
                     en.fault = null;
                     en.cutChoices(level);
                     en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    en.contdisplay = u.getFrame(en);
+                    ref2 = en.contdisplay;
+                    en.contdisplay = ref2.getFrame(en);
                 }
                 return true;
             case SPECIAL_SYS_FETCH_STACK:
@@ -143,20 +155,28 @@ public final class SpecialControl extends AbstractSpecial {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop(snap, true))
+            if (!en.runLoop2(snap, true))
                 return false;
             en.contskel = r;
             en.contdisplay = u;
             en.fault = null;
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = new EngineException(x, EngineException.fetchStack(en));
-            en.releaseBind(mark);
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
             en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.releaseBind(mark);
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
         }
         if (en.fault != null)

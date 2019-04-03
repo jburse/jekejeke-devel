@@ -1,9 +1,9 @@
 package matula.util.misc;
 
-import matula.util.data.SetHash;
+import java.util.concurrent.TimeUnit;
 
 /**
- * <p>This class provides a slotted and escalable read lock object.</p>
+ * <p>This class provides a write lock object.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,16 +33,16 @@ import matula.util.data.SetHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class LockRead extends AbstractLock {
-    SetHash<Thread> set = new SetHash<Thread>();
-    private final Lock parent;
+final class LockerWrite extends AbstractLock {
+    Thread locked;
+    private final Locker parent;
 
     /**
-     * <p>Create a read lock.</p>
+     * <p>Create a write lock.</p>
      *
      * @param p The read write state.
      */
-    LockRead(Lock p) {
+    LockerWrite(Locker p) {
         parent = p;
     }
 
@@ -52,14 +52,15 @@ final class LockRead extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire() throws InterruptedException {
+    public void lockInterruptibly() throws InterruptedException {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (set.getKey(thread) != null)
+            if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while (parent.write.otherWriter(thread))
+            while (parent.read.otherReaders(thread) != 0 ||
+                    locked != null)
                 parent.wait();
-            set.add(thread);
+            locked = thread;
         }
     }
 
@@ -69,13 +70,14 @@ final class LockRead extends AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public boolean attempt() {
+    public boolean tryLock() {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (set.getKey(thread) != null)
+            if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            if (!parent.write.otherWriter(thread)) {
-                set.add(thread);
+            if (parent.read.otherReaders(thread) == 0 &&
+                    locked == null) {
+                locked = thread;
                 return true;
             } else {
                 return false;
@@ -84,24 +86,28 @@ final class LockRead extends AbstractLock {
     }
 
     /**
-     * <p>Acquire the read lock or time-out.</p>
+     * <p>Acquire the write lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep) throws InterruptedException {
+    public boolean tryLock(long sleep, TimeUnit tu)
+            throws InterruptedException {
+        sleep = tu.toMillis(sleep);
         Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
         synchronized (parent) {
-            if (set.getKey(thread) != null)
+            if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while (parent.write.otherWriter(thread) && sleep > 0) {
+            while ((parent.read.otherReaders(thread) != 0 ||
+                    locked != null) && sleep > 0) {
                 parent.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                set.add(thread);
+                locked = thread;
                 return true;
             } else {
                 return false;
@@ -110,32 +116,26 @@ final class LockRead extends AbstractLock {
     }
 
     /**
-     * <p>Release a read lock.</p>
-     *
-     * @throws IllegalStateException If the write lock was not yet acquired.
+     * <p>Release the write lock.</p>
      */
-    public void release() throws IllegalStateException {
+    public void unlock() {
         Thread thread = Thread.currentThread();
         synchronized (parent) {
-            if (set.getKey(thread) == null)
+            if (locked != thread)
                 throw new IllegalStateException("not_locked");
-            set.remove(thread);
+            locked = null;
             parent.notifyAll();
         }
     }
 
     /**
-     * <p>Determine the number of other readers.</p>
+     * <p>Determine wether there is another writer.</p>
      *
      * @param thread The current thread.
-     * @return The number of other readers.
+     * @return True if there is another writer, otherwise false.
      */
-    int otherReaders(Thread thread) {
-        if (set.getKey(thread) != null) {
-            return set.size - 1;
-        } else {
-            return set.size;
-        }
+    boolean otherWriter(Thread thread) {
+        return (locked != null && locked != thread);
     }
 
 }

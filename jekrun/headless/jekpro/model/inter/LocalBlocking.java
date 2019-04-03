@@ -1,7 +1,6 @@
 package jekpro.model.inter;
 
 import jekpro.model.rope.Bouquet;
-import matula.util.misc.AbstractLock;
 import matula.util.misc.Nonescalable;
 
 /**
@@ -38,7 +37,7 @@ import matula.util.misc.Nonescalable;
 public final class LocalBlocking {
     Bouquet cr = new Bouquet();
     DefinedGroupLocal del;
-    private final Nonescalable lock = new Nonescalable();
+    final Nonescalable lock = new Nonescalable();
 
     /**
      * <p>Create a new local blocking.</p>
@@ -47,24 +46,6 @@ public final class LocalBlocking {
      */
     LocalBlocking(DefinedGroupLocal d) {
         del = d;
-    }
-
-    /**
-     * <p>Retrieve the write lock.</p>
-     *
-     * @return The write lock.
-     */
-    AbstractLock getWrite() {
-        return lock.getWrite();
-    }
-
-    /**
-     * <p>Retrieve the read lock.</p>
-     *
-     * @return The read lock.
-     */
-    AbstractLock getRead() {
-        return lock.getRead();
     }
 
 }

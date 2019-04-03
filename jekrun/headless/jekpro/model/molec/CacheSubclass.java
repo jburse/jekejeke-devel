@@ -17,6 +17,7 @@ import matula.util.system.ForeignUri;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>The polymorphic cache for the subclass relation.</p>
@@ -112,7 +113,7 @@ public final class CacheSubclass extends AbstractCache {
             throws InterruptedException, EngineMessage {
         MapEntry<AbstractSource, Integer>[] deps2;
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
@@ -123,7 +124,7 @@ public final class CacheSubclass extends AbstractCache {
                 return true;
             deps2 = base.snapshotDeps();
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
         ListArray visited = new ListArray<AbstractCache>();
         visited.add(base);
@@ -155,7 +156,7 @@ public final class CacheSubclass extends AbstractCache {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -166,7 +167,7 @@ public final class CacheSubclass extends AbstractCache {
                     return true;
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             if (lookupChain(other, deps2, visited))

@@ -1,9 +1,8 @@
-package jekpro.frequent.basic;
-
-import java.util.concurrent.atomic.AtomicInteger;
+package matula.util.misc;
 
 /**
- * <p>This class provides an atomic integer counter.</p>
+ * <p>This class provides a slotted and escalable read write pair.</p>
+ * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -32,21 +31,26 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Counter {
-    private final AtomicInteger counter = new AtomicInteger();
+public final class Locker extends AbstractPair {
+    final LockerRead read = new LockerRead(this);
+    final LockerWrite write = new LockerWrite(this);
 
     /**
-     * <p>Increment this counter and return the old value.</p>
+     * <p>Retrieve the read lock.</p>
      *
-     * @return The old value.
+     * @return The read lock.
      */
-    public int next() {
-        AtomicInteger atomic = counter;
-        int oldcount;
-        do {
-            oldcount = atomic.get();
-        } while (!atomic.compareAndSet(oldcount, oldcount + 1));
-        return oldcount;
+    public AbstractLock getRead() {
+        return read;
+    }
+
+    /**
+     * <p>Retrieve the write lock.</p>
+     *
+     * @return The write lock.
+     */
+    public AbstractLock getWrite() {
+        return write;
     }
 
 }

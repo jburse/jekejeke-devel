@@ -158,22 +158,32 @@ public final class SpecialFind extends AbstractSpecial {
             CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            boolean found = en.runLoop(snap, true);
+            boolean found = en.runLoop2(snap, true);
             while (found) {
                 Object val = AbstractSkel.copySkel(t2, d2, en);
                 if (temp == null)
                     temp = new ListArray<Object>();
                 temp.add(val);
-                found = en.runLoop(snap, false);
+                found = en.runLoop2(snap, false);
             }
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            throw new EngineException(x, EngineException.fetchStack(en));
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            throw x;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;

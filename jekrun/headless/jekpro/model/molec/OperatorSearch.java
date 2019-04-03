@@ -11,6 +11,8 @@ import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>Search of qualified operators.</p>
  * <p/>
@@ -92,7 +94,7 @@ public final class OperatorSearch {
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
@@ -110,7 +112,7 @@ public final class OperatorSearch {
             }
             deps2 = base.snapshotDeps();
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
@@ -145,7 +147,7 @@ public final class OperatorSearch {
             n = CacheFunctor.sepName(key);
         }
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
@@ -161,7 +163,7 @@ public final class OperatorSearch {
                         getOperUser(type, n, scope.getStore()));
             }
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
     }
 
@@ -188,14 +190,14 @@ public final class OperatorSearch {
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
             s = base.getFullName();
             deps2 = base.snapshotDeps();
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
@@ -269,7 +271,7 @@ public final class OperatorSearch {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -282,7 +284,7 @@ public final class OperatorSearch {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Operator oper = performReexported(key, type, base, deps2, visited);
@@ -318,7 +320,7 @@ public final class OperatorSearch {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -331,7 +333,7 @@ public final class OperatorSearch {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Operator oper = performReexported(fun, type, base, deps2, visited);
@@ -366,7 +368,7 @@ public final class OperatorSearch {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -379,7 +381,7 @@ public final class OperatorSearch {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Operator oper = performImported(key, type, base, deps2, visited);

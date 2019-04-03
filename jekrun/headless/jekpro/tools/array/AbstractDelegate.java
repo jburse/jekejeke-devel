@@ -290,14 +290,15 @@ public abstract class AbstractDelegate {
         CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
         en.contskel = dire;
         en.contdisplay = ref2;
-        if (!en.runLoop(snap, true))
+        if (!en.runLoop2(snap, true))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));
         en.contskel = r;
         en.contdisplay = u;
-        en.window = null;
+        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
+        en.window = null;
         if (en.fault != null)
             throw en.fault;
     }

@@ -11,6 +11,8 @@ import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>The polymorphic cache for the qualified predicates.</p>
  * <p/>
@@ -104,7 +106,7 @@ public final class CachePredicate extends AbstractCache {
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
@@ -122,7 +124,7 @@ public final class CachePredicate extends AbstractCache {
             }
             deps2 = base.snapshotDeps();
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
@@ -158,7 +160,7 @@ public final class CachePredicate extends AbstractCache {
             n = CacheFunctor.sepName(sa.fun);
         }
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
@@ -176,7 +178,7 @@ public final class CachePredicate extends AbstractCache {
                         getRoutineUser(arity, n, scope.getStore()));
             }
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
     }
 
@@ -203,14 +205,14 @@ public final class CachePredicate extends AbstractCache {
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
-        if (!base.getRead().attempt(base.getStore().foyer.timeout))
+        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         try {
             s = base.getFullName();
             deps2 = base.snapshotDeps();
         } finally {
-            base.getRead().release();
+            base.getRead().unlock();
         }
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
@@ -286,7 +288,7 @@ public final class CachePredicate extends AbstractCache {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -299,7 +301,7 @@ public final class CachePredicate extends AbstractCache {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Predicate pick = performReexported(fun, arity, base, deps2, visited);
@@ -335,7 +337,7 @@ public final class CachePredicate extends AbstractCache {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -348,7 +350,7 @@ public final class CachePredicate extends AbstractCache {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Predicate pick = performReexported(fun, arity, base, deps2, visited);
@@ -384,7 +386,7 @@ public final class CachePredicate extends AbstractCache {
                 continue;
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
-            if (!base.getRead().attempt(base.getStore().foyer.timeout))
+            if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -397,7 +399,7 @@ public final class CachePredicate extends AbstractCache {
                 }
                 deps2 = base.snapshotDeps();
             } finally {
-                base.getRead().release();
+                base.getRead().unlock();
             }
             visited.add(base);
             Predicate pick = performImported(fun, arity, base, deps2, visited);

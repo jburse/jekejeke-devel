@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides a slotted mutex object.</p>
  * <p/>
@@ -40,7 +42,7 @@ public final class Mutex extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire()
+    public void lockInterruptibly()
             throws InterruptedException {
         Thread thread = Thread.currentThread();
         synchronized (this) {
@@ -58,7 +60,7 @@ public final class Mutex extends AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public boolean attempt() {
+    public boolean tryLock() {
         Thread thread = Thread.currentThread();
         synchronized (this) {
             if (locked == thread)
@@ -76,11 +78,13 @@ public final class Mutex extends AbstractLock {
      * <p>Acquire the lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep)
+    public boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException {
+        sleep = tu.toMillis(sleep);
         Thread thread = Thread.currentThread();
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
@@ -102,7 +106,7 @@ public final class Mutex extends AbstractLock {
     /**
      * <p>Release the lock.</p>
      */
-    public void release() {
+    public void unlock() {
         Thread thread = Thread.currentThread();
         synchronized (this) {
             if (locked != thread)
@@ -113,7 +117,7 @@ public final class Mutex extends AbstractLock {
     }
 
     /******************************************************/
-    /* Lock Inspection                                    */
+    /* Locker Inspection                                    */
     /******************************************************/
 
     /**

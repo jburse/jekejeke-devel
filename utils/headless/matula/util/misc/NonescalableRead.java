@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides a unslotted and non-escalable read lock object.</p>
  * <p/>
@@ -50,7 +52,7 @@ public final class NonescalableRead extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire() throws InterruptedException {
+    public void lockInterruptibly() throws InterruptedException {
         synchronized (parent) {
             while (parent.write.locked)
                 parent.wait();
@@ -64,7 +66,7 @@ public final class NonescalableRead extends AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public boolean attempt() {
+    public boolean tryLock() {
         synchronized (parent) {
             if (!parent.write.locked) {
                 set++;
@@ -79,10 +81,13 @@ public final class NonescalableRead extends AbstractLock {
      * <p>Acquire the read lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu  The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep) throws InterruptedException {
+    public boolean tryLock(long sleep, TimeUnit tu)
+            throws InterruptedException {
+        sleep = tu.toMillis(sleep);
         long when = System.currentTimeMillis() + sleep;
         synchronized (parent) {
             while (parent.write.locked && sleep > 0) {
@@ -103,7 +108,7 @@ public final class NonescalableRead extends AbstractLock {
      *
      * @throws IllegalStateException If the write lock was not yet acquired.
      */
-    public void release() throws IllegalStateException {
+    public void unlock() throws IllegalStateException {
         synchronized (parent) {
             if (set == 0)
                 throw new IllegalStateException("not_locked");

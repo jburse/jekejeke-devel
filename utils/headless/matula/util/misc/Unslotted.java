@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides an unslotted mutex object.</p>
  * <p/>
@@ -40,7 +42,7 @@ public final class Unslotted extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire()
+    public void lockInterruptibly()
             throws InterruptedException {
         synchronized (this) {
             while (locked)
@@ -55,7 +57,7 @@ public final class Unslotted extends AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public boolean attempt() {
+    public boolean tryLock() {
         synchronized (this) {
             if (!locked) {
                 locked = true;
@@ -70,11 +72,13 @@ public final class Unslotted extends AbstractLock {
      * <p>Acquire the lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu  The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep)
+    public boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException {
+        sleep = tu.toMillis(sleep);
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
             while (!locked && sleep > 0) {
@@ -93,7 +97,7 @@ public final class Unslotted extends AbstractLock {
     /**
      * <p>Release the lock.</p>
      */
-    public void release() {
+    public void unlock() {
         synchronized (this) {
             if (!locked)
                 throw new IllegalStateException("not_locked");

@@ -331,7 +331,7 @@ public final class SpecialSession extends AbstractSpecial {
                     CallFrame ref = CallFrame.getFrame(d2, dire, en);
                     en.contskel = dire;
                     en.contdisplay = ref;
-                    boolean found = en.runLoop(snap, true);
+                    boolean found = en.runLoop2(snap, true);
                     if (!found)
                         failFeedback(en);
                     while (found) {
@@ -346,7 +346,7 @@ public final class SpecialSession extends AbstractSpecial {
                                 throw new EngineMessage(EngineMessage.systemError(
                                         EngineMessage.OP_SYSTEM_USER_EXIT));
                             } else if (";".equals(action)) {
-                                found = en.runLoop(snap, false);
+                                found = en.runLoop2(snap, false);
                                 if (!found)
                                     failFeedback(en);
                             } else if ("?".equals(action)) {
@@ -369,29 +369,37 @@ public final class SpecialSession extends AbstractSpecial {
                             found = false;
                         }
                     }
-                } catch (EngineMessage x) {
-                    en.contskel = r;
-                    en.contdisplay = u;
-                    PositionKey pos = PositionKey.createPos(lr);
-                    en.fault = new EngineException(x,
-                            EngineException.fetchLoc(
-                                    EngineException.fetchStack(en), pos, en));
-                    en.releaseBind(mark);
-                    en.visor.query = backref;
-                    throw en.fault;
                 } catch (EngineException x) {
                     en.contskel = r;
                     en.contdisplay = u;
+                    en.window = en.contdisplay;
                     en.fault = x;
+                    en.cutChoices(snap);
+                    en.window = null;
+                    en.releaseBind(mark);
+                    en.visor.query = backref;
+                    throw en.fault;
+                } catch (EngineMessage y) {
+                    PositionKey pos = PositionKey.createPos(lr);
+                    EngineException x = new EngineException(y,
+                            EngineException.fetchLoc(
+                                    EngineException.fetchStack(en), pos, en));
+                    en.contskel = r;
+                    en.contdisplay = u;
+                    en.window = en.contdisplay;
+                    en.fault = x;
+                    en.cutChoices(snap);
+                    en.window = null;
                     en.releaseBind(mark);
                     en.visor.query = backref;
                     throw en.fault;
                 }
                 en.contskel = r;
                 en.contdisplay = u;
-                en.window = null;
+                en.window = en.contdisplay;
                 en.fault = null;
                 en.cutChoices(snap);
+                en.window = null;
                 en.releaseBind(mark);
                 en.visor.query = backref;
                 if (en.fault != null)
@@ -459,32 +467,40 @@ public final class SpecialSession extends AbstractSpecial {
                 ref = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref;
-                if (!en.runLoop(snap, true))
+                if (!en.runLoop2(snap, true))
                     throw new EngineMessage(EngineMessage.syntaxError(
                             EngineMessage.OP_SYNTAX_EXPAND_FAILED));
-            } catch (EngineMessage x) {
-                en.contskel = r;
-                en.contdisplay = u;
-                Reader lr = rd.getScanner().getReader();
-                PositionKey pos = PositionKey.createPos(lr);
-                en.fault = new EngineException(x, EngineException.fetchLoc(
-                        EngineException.fetchStack(en), pos, en));
-                en.releaseBind(mark);
-                en.visor.query = backref;
-                throw en.fault;
             } catch (EngineException x) {
                 en.contskel = r;
                 en.contdisplay = u;
+                en.window = en.contdisplay;
                 en.fault = x;
+                en.cutChoices(snap);
+                en.window = null;
+                en.releaseBind(mark);
+                en.visor.query = backref;
+                throw en.fault;
+            } catch (EngineMessage y) {
+                Reader lr = rd.getScanner().getReader();
+                PositionKey pos = PositionKey.createPos(lr);
+                EngineException x = new EngineException(y, EngineException.fetchLoc(
+                        EngineException.fetchStack(en), pos, en));
+                en.contskel = r;
+                en.contdisplay = u;
+                en.window = en.contdisplay;
+                en.fault = x;
+                en.cutChoices(snap);
+                en.window = null;
                 en.releaseBind(mark);
                 en.visor.query = backref;
                 throw en.fault;
             }
             en.contskel = r;
             en.contdisplay = u;
-            en.window = null;
+            en.window = en.contdisplay;
             en.fault = null;
             en.cutChoices(snap);
+            en.window = null;
             en.visor.query = backref;
             t = var;
             d = ref.disp;

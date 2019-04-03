@@ -2,7 +2,6 @@ package jekpro.tools.call;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
@@ -298,25 +297,33 @@ public final class CallIn {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (en.runLoop(snap, true)) {
+            if (en.runLoop2(snap, true)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);
                 en.visor.setInuse(backuse);
                 return true;
             }
-        } catch (EngineMessage x) {
+        } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.fault = new EngineException(x, EngineException.fetchStack(en));
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
             throw new InterpreterException(en.fault);
-        } catch (EngineException x) {
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
             en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -347,7 +354,7 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
-            if (en.runLoop(snap, false)) {
+            if (en.runLoop2(snap, false)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);
@@ -357,7 +364,23 @@ public final class CallIn {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
             en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.releaseBind(mark);
+            en.visor.setFence(backthread);
+            en.visor.setInuse(backuse);
+            throw new InterpreterException(en.fault);
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -384,10 +407,13 @@ public final class CallIn {
         Engine en = (Engine) inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
-        en.window = null;
+
+        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
+        en.window = null;
         en.releaseBind(mark);
+
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
         if (en.fault != null)
@@ -410,9 +436,10 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
-        en.window = null;
+        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
+        en.window = null;
         if (en.fault != null)
             en.releaseBind(mark);
 
@@ -434,9 +461,10 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
-        en.window = null;
+        en.window = en.contdisplay;
         en.fault = (e != null ? (EngineException) e.getException() : null);
         en.cutChoices(snap);
+        en.window = null;
         en.releaseBind(mark);
 
         en.visor.setFence(backthread);

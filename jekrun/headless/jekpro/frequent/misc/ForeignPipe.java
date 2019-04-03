@@ -6,7 +6,7 @@ import matula.util.misc.InterfacePipe;
 import matula.util.misc.Queue;
 
 /**
- * The foreign predicates for the module misc/queue.
+ * The foreign predicates for the module misc/pipe.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

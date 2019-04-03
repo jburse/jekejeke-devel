@@ -848,27 +848,36 @@ public final class SpecialLoad extends AbstractSpecial {
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
-            if (!en.runLoop(snap, true))
+            if (!en.runLoop2(snap, true))
                 throw new EngineMessage(
                         EngineMessage.syntaxError(EngineMessage.OP_SYNTAX_REBUILD_FAILED));
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = new EngineException(x, EngineException.fetchStack(en));
-            en.releaseBind(mark);
-            throw en.fault;
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
             en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.releaseBind(mark);
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
             throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.window = null;
+        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
+        en.window = null;
         try {
             if (en.fault != null)
                 throw en.fault;

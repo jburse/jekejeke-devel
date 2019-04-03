@@ -54,7 +54,8 @@ final class ChoiceTrap extends AbstractChoice {
      * @param u The term list display.
      * @param m The engine mark.
      */
-    ChoiceTrap(AbstractChoice n, int c, Intermediate r, CallFrame u, AbstractUndo m) {
+    ChoiceTrap(AbstractChoice n, int c, Intermediate r,
+               CallFrame u, AbstractUndo m) {
         super(n);
         snap = c;
         goalskel = r;
@@ -78,7 +79,7 @@ final class ChoiceTrap extends AbstractChoice {
         en.number--;
 
         try {
-            if (!en.runLoop(snap, false))
+            if (!en.runLoop2(snap, false))
                 return false;
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
@@ -86,7 +87,20 @@ final class ChoiceTrap extends AbstractChoice {
         } catch (EngineException x) {
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
+            en.window = en.contdisplay;
             en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.releaseBind(mark);
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = goalskel;
+            en.contdisplay = goaldisplay;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.releaseBind(mark);
         }
         if (en.fault != null)
@@ -114,16 +128,7 @@ final class ChoiceTrap extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        CallFrame back = en.window;
-        EngineException back2 = en.fault;
-
-        en.window = null;
-        en.fault = back2;
         en.cutChoices(snap);
-        back2 = en.fault;
-
-        en.window = back;
-        en.fault = back2;
     }
 
 }

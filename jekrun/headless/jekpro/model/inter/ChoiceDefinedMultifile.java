@@ -131,7 +131,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         }
 
         if (at != list.length) {
-            d2.flags &= ~Display.MASK_DISP_LTGC;
+            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -139,7 +139,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             en.contdisplay = newdisp;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            d2.flags &= ~Display.MASK_DISP_LTGC;
+            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
             d2.flags &= ~Display.MASK_DISP_MORE;
             CallFrame dc = newdisp.getFrame(en);
             en.contskel = clause;

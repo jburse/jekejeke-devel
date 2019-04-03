@@ -48,8 +48,11 @@ public class Directive extends Intermediate {
     public final static int MASK_DIRE_NBDY = 0x00000040;
     public final static int MASK_DIRE_NLST = 0x00000080;
 
+    public final static int MASK_DIRE_LTGC = 0x00000100;
+
     public final static int MASK_DIRE_CALL = MASK_DIRE_NOBR |
-            MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST;
+            MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST |
+            MASK_DIRE_LTGC;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;

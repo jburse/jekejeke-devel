@@ -184,41 +184,25 @@ public class Engine extends StackElement {
      * @return True if the term list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
-    public boolean runLoop(int snap, boolean found)
-            throws EngineException {
-        try {
-            for (; ; ) {
-                if (found) {
-                    if (contskel != null) {
-                        if (hasCont())
-                            retireCont();
-                        contskel = contskel.getNextRaw(this);
-                        found = contskel.resolveNext(this);
-                    } else {
-                        break;
-                    }
+    public boolean runLoop2(int snap, boolean found)
+            throws EngineException, EngineMessage {
+        for (; ; ) {
+            if (found) {
+                if (contskel != null) {
+                    if (hasCont())
+                        retireCont();
+                    contskel = contskel.getNextRaw(this);
+                    found = contskel.resolveNext(this);
                 } else {
-                    if (snap < number) {
-                        found = choices.moniNext(this);
-                    } else {
-                        break;
-                    }
+                    break;
+                }
+            } else {
+                if (snap < number) {
+                    found = choices.moniNext(this);
+                } else {
+                    break;
                 }
             }
-        } catch (EngineException x) {
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(this));
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
         }
         return found;
     }
@@ -385,22 +369,29 @@ public class Engine extends StackElement {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
             contskel = dire;
             contdisplay = ref2;
-            if (!runLoop(snap, true))
+            if (!runLoop2(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
-
-        } catch (EngineMessage x) {
+        } catch (EngineException x) {
             contskel = r;
             contdisplay = u;
-            fault = new EngineException(x, EngineException.fetchStack(this));
+            window = contdisplay;
+            fault = x;
+            cutChoices(snap);
+            window = null;
             releaseBind(mark);
             visor.setVerify(backverify);
             visor.setIgnore(backignore);
             throw fault;
-        } catch (EngineException x) {
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(this));
             contskel = r;
             contdisplay = u;
+            window = contdisplay;
             fault = x;
+            cutChoices(snap);
+            window = null;
             releaseBind(mark);
             visor.setVerify(backverify);
             visor.setIgnore(backignore);
@@ -408,9 +399,10 @@ public class Engine extends StackElement {
         }
         contskel = r;
         contdisplay = u;
-        window = null;
+        window = contdisplay;
         fault = null;
         cutChoices(snap);
+        window = null;
         releaseBind(mark);
         visor.setVerify(backverify);
         visor.setIgnore(backignore);

@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides a unslotted and non-escalable write lock object.</p>
  * <p/>
@@ -50,10 +52,9 @@ public final class NonescalableWrite extends AbstractLock {
      *
      * @throws InterruptedException If the request was cancelled.
      */
-    public void acquire() throws InterruptedException {
+    public void lockInterruptibly() throws InterruptedException {
         synchronized (parent) {
-            while (parent.read.set != 0 ||
-                    locked)
+            while (parent.read.set != 0 || locked)
                 parent.wait();
             locked = true;
         }
@@ -65,10 +66,9 @@ public final class NonescalableWrite extends AbstractLock {
      *
      * @return True if lock was acquired, or false otherwise.
      */
-    public boolean attempt() {
+    public boolean tryLock() {
         synchronized (parent) {
-            if (parent.read.set == 0 &&
-                    !locked) {
+            if (parent.read.set == 0 && !locked) {
                 locked = true;
                 return true;
             } else {
@@ -81,14 +81,16 @@ public final class NonescalableWrite extends AbstractLock {
      * <p>Acquire the write lock or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param tu  The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public boolean attempt(long sleep) throws InterruptedException {
+    public boolean tryLock(long sleep, TimeUnit tu)
+            throws InterruptedException {
+        sleep = tu.toMillis(sleep);
         long when = System.currentTimeMillis() + sleep;
         synchronized (parent) {
-            while ((parent.read.set != 0 ||
-                    locked) && sleep > 0) {
+            while ((parent.read.set != 0 || locked) && sleep > 0) {
                 parent.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
@@ -104,7 +106,7 @@ public final class NonescalableWrite extends AbstractLock {
     /**
      * <p>Release the write lock.</p>
      */
-    public void release() {
+    public void unlock() {
         synchronized (parent) {
             if (!locked)
                 throw new IllegalStateException("not_locked");

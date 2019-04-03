@@ -14,7 +14,6 @@ import java.io.Writer;
 
 /**
  * <p>This class provides an index.</p>
- * <p>When there are keys then map!=null.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -9,7 +9,6 @@ import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.tools.term.SkelAtom;
-import matula.util.misc.AbstractLock;
 import matula.util.misc.Nonescalable;
 import matula.util.wire.AbstractLivestock;
 
@@ -60,24 +59,6 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         super(flags);
     }
 
-    /**
-     * <p>Retrieve the write lock.</p>
-     *
-     * @return The write lock.
-     */
-    public AbstractLock getWrite() {
-        return lock.getWrite();
-    }
-
-    /**
-     * <p>Retrieve the read lock.</p>
-     *
-     * @return The read lock.
-     */
-    public AbstractLock getRead() {
-        return lock.getRead();
-    }
-
     /**************************************************************/
     /* Variation Points Predicate                                 */
     /**************************************************************/
@@ -123,14 +104,14 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     public final Clause[] listClauses(Engine en)
             throws EngineMessage {
         try {
-            getRead().acquire();
+            lock.getRead().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
             return cr.getClauses();
         } finally {
-            getRead().release();
+            lock.getRead().unlock();
         }
     }
 
@@ -145,7 +126,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     final Clause[] definedClauses(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
-            getRead().acquire();
+            lock.getRead().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -157,7 +138,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {
-            getRead().release();
+            lock.getRead().unlock();
         }
     }
 
@@ -186,7 +167,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         try {
-            getWrite().acquire();
+            lock.getWrite().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -197,7 +178,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
             cr.assertClause(0, clause, flags);
             return true;
         } finally {
-            getWrite().release();
+            lock.getWrite().unlock();
         }
     }
 
@@ -213,7 +194,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         try {
-            getWrite().acquire();
+            lock.getWrite().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -224,7 +205,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
             cr.retractClause(0, clause);
             return true;
         } finally {
-            getWrite().release();
+            lock.getWrite().unlock();
         }
     }
 
@@ -239,7 +220,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     public final void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
-            getRead().acquire();
+            lock.getRead().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -252,7 +233,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
                 throw EngineMessage.mapIOException(x);
             }
         } finally {
-            getRead().release();
+            lock.getRead().unlock();
         }
     }
 

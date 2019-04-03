@@ -9,12 +9,11 @@ import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.tools.term.SkelAtom;
-import matula.util.misc.AbstractLock;
-import matula.util.misc.Nonescalable;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>The delegate class for a blocking delegate.</p>
@@ -49,7 +48,8 @@ import java.io.Writer;
  */
 final class DefinedBlocking extends AbstractDefined {
     private final Bouquet cr = new Bouquet();
-    private final Nonescalable lock = new Nonescalable();
+    //    private final Nonescalable lock = new Nonescalable();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * <p>Create a blocking delegate.</p>
@@ -58,24 +58,6 @@ final class DefinedBlocking extends AbstractDefined {
      */
     DefinedBlocking(int flags) {
         super(flags);
-    }
-
-    /**
-     * <p>Retrieve the write lock.</p>
-     *
-     * @return The write lock.
-     */
-    public AbstractLock getWrite() {
-        return lock.getWrite();
-    }
-
-    /**
-     * <p>Retrieve the read lock.</p>
-     *
-     * @return The read lock.
-     */
-    public AbstractLock getRead() {
-        return lock.getRead();
     }
 
     /**************************************************************/
@@ -123,14 +105,16 @@ final class DefinedBlocking extends AbstractDefined {
     public final Clause[] listClauses(Engine en)
             throws EngineMessage {
         try {
-            getRead().acquire();
+//            lock.getRead().acquire();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
             return cr.getClauses();
         } finally {
-            getRead().release();
+//            lock.getRead().release();
+            lock.readLock().unlock();
         }
     }
 
@@ -145,7 +129,8 @@ final class DefinedBlocking extends AbstractDefined {
     final Clause[] definedClauses(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
-            getRead().acquire();
+//            lock.getRead().acquire();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -157,7 +142,8 @@ final class DefinedBlocking extends AbstractDefined {
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {
-            getRead().release();
+//            lock.getRead().release();
+            lock.readLock().unlock();
         }
     }
 
@@ -186,7 +172,8 @@ final class DefinedBlocking extends AbstractDefined {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         try {
-            getWrite().acquire();
+//            lock.getWrite().acquire();
+            lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -197,7 +184,8 @@ final class DefinedBlocking extends AbstractDefined {
             cr.assertClause(0, clause, flags);
             return true;
         } finally {
-            getWrite().release();
+//            lock.getWrite().release();
+            lock.writeLock().unlock();
         }
     }
 
@@ -213,7 +201,8 @@ final class DefinedBlocking extends AbstractDefined {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         try {
-            getWrite().acquire();
+//            lock.getWrite().acquire();
+            lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -224,7 +213,8 @@ final class DefinedBlocking extends AbstractDefined {
             cr.retractClause(0, clause);
             return true;
         } finally {
-            getWrite().release();
+//            lock.getWrite().release();
+            lock.writeLock().unlock();
         }
     }
 
@@ -239,7 +229,8 @@ final class DefinedBlocking extends AbstractDefined {
     public final void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
-            getRead().acquire();
+//            lock.getRead().acquire();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -252,7 +243,8 @@ final class DefinedBlocking extends AbstractDefined {
                 throw EngineMessage.mapIOException(x);
             }
         } finally {
-            getRead().release();
+//            lock.getRead().release();
+            lock.readLock().unlock();
         }
     }
 

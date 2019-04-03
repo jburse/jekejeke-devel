@@ -64,43 +64,27 @@ public class EngineYield extends Engine {
      * @return True if the term list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
-    public final boolean runLoop(int snap, boolean found)
-            throws EngineException {
-        try {
-            for (; ; ) {
+    public final boolean runLoop2(int snap, boolean found)
+            throws EngineException, EngineMessage {
+        for (; ; ) {
+            if (found) {
                 if ((yieldcount++) >= YIELD_MAX)
                     yieldReset();
-                if (found) {
-                    if (contskel != null) {
-                        if (hasCont())
-                            retireCont();
-                        contskel = contskel.getNextRaw(this);
-                        found = contskel.resolveNext(this);
-                    } else {
-                        break;
-                    }
+                if (contskel != null) {
+                    if (hasCont())
+                        retireCont();
+                    contskel = contskel.getNextRaw(this);
+                    found = contskel.resolveNext(this);
                 } else {
-                    if (snap < number) {
-                        found = choices.moniNext(this);
-                    } else {
-                        break;
-                    }
+                    break;
+                }
+            } else {
+                if (snap < number) {
+                    found = choices.moniNext(this);
+                } else {
+                    break;
                 }
             }
-        } catch (EngineException x) {
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(this));
-            window = contdisplay;
-            fault = x;
-            cutChoices(snap);
-            window = null;
-            throw fault;
         }
         return found;
     }

@@ -175,7 +175,7 @@ final class ChoiceForeign extends AbstractChoice {
         CallFrame u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        if (en.skel != null) {
+        if (en.fault != null) {
             co.setException(new InterpreterException(en.fault));
         } else {
             co.setException(null);

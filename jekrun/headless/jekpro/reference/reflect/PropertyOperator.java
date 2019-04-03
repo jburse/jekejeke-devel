@@ -138,7 +138,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 if (flags != 0) {
                     Object val = Integer.valueOf(flags);
                     Object val2 = new SkelAtom(SpecialOper.modeTypeToAtom(
-                            flags & Operator.MASK_OPER_MODE, oper.getType()));
+                            oper.getBits() & Operator.MASK_OPER_MODE, oper.getType()));
                     return new Object[]{AbstractTerm.createMolec(
                             new SkelCompound(new SkelAtom(OP_OP), val, val2), Display.DISPLAY_CONST)};
                 } else {

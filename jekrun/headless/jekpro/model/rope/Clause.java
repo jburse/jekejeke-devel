@@ -41,9 +41,9 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Clause extends Directive implements InterfaceReference {
-    public final static int MASK_CLAUSE_ASSE = 0x00000100;
-    public final static int MASK_CLAUSE_NHED = 0x00000200;
-    public final static int MASK_CLAUSE_SOFT = 0x00000400;
+    public final static int MASK_CLAUSE_ASSE = 0x00001000;
+    public final static int MASK_CLAUSE_NHED = 0x00002000;
+    public final static int MASK_CLAUSE_SOFT = 0x00004000;
 
     public int sizerule;
     public int[] intargs;

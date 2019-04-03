@@ -19,7 +19,7 @@ import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.util.data.*;
 import matula.util.misc.AbstractLock;
-import matula.util.misc.Lock;
+import matula.util.misc.Locker;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenOpts;
@@ -137,7 +137,7 @@ public abstract class AbstractSource {
     public MapEntry<Predicate, Integer>[] cachepredsinv;
     public final SetHashLink<Operator> opsinv = new SetHashLink<Operator>();
     public Operator[] cacheopsinv;
-    private final Lock lock = new Lock();
+    private final Locker lock = new Locker();
     private final MapHash<String, AssocArray<Integer, Predicate>> preds = new MapHash<String, AssocArray<Integer, Predicate>>();
     private Predicate[] cachepreds;
     private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<String, AssocArray<Integer, Operator>>();

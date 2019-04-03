@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>File load and unload options.</p>
@@ -192,7 +193,7 @@ public final class LoadOpts extends LoadForce {
             throws EngineMessage, EngineException {
         try {
             /* wait for complete source */
-            if (!source.getWrite().attempt(source.getStore().foyer.timeout))
+            if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
@@ -216,17 +217,17 @@ public final class LoadOpts extends LoadForce {
             en.visor.cond.verboseConsult(reader, source, en);
         } catch (EngineMessage x) {
             LoadForce.undoNonEmptyStack(en);
-            source.getWrite().release();
+            source.getWrite().unlock();
             en.visor.modstack = backmodstack;
             throw x;
         } catch (EngineException x) {
             LoadForce.undoNonEmptyStack(en);
-            source.getWrite().release();
+            source.getWrite().unlock();
             en.visor.modstack = backmodstack;
             throw x;
         }
         LoadForce.undoNonEmptyStack(en);
-        source.getWrite().release();
+        source.getWrite().unlock();
         en.visor.modstack = backmodstack;
     }
 
@@ -245,13 +246,13 @@ public final class LoadOpts extends LoadForce {
         MapEntry<AbstractSource, Integer>[] deps;
         try {
             /* wait for complete source */
-            if (!source.getRead().attempt(source.getStore().foyer.timeout))
+            if (!source.getRead().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 deps = source.snapshotDeps();
             } finally {
-                source.getRead().release();
+                source.getRead().unlock();
             }
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -409,13 +410,13 @@ public final class LoadOpts extends LoadForce {
         MapEntry<AbstractSource, Integer>[] deps;
         try {
             /* wait for complete source */
-            if (!source.getRead().attempt(source.getStore().foyer.timeout))
+            if (!source.getRead().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
                 deps = source.snapshotDeps();
             } finally {
-                source.getRead().release();
+                source.getRead().unlock();
             }
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -438,7 +439,7 @@ public final class LoadOpts extends LoadForce {
             throws EngineMessage, EngineException {
         try {
             /* unload with locking */
-            if (!source.getWrite().attempt(source.getStore().foyer.timeout))
+            if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
                 throw new EngineMessage(EngineMessage.systemError(
                         EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
             try {
@@ -448,7 +449,7 @@ public final class LoadOpts extends LoadForce {
                 source.setTiming(source.getTiming() + System.currentTimeMillis());
                 verboseUnload(source, out);
             } finally {
-                source.getWrite().release();
+                source.getWrite().unlock();
             }
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
