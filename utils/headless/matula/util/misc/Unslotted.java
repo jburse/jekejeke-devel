@@ -1,6 +1,8 @@
 package matula.util.misc;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class provides an unslotted mutex object.</p>
@@ -33,8 +35,16 @@ import java.util.concurrent.TimeUnit;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Unslotted extends AbstractLock {
+public final class Unslotted implements Lock {
     private boolean locked;
+
+    /**
+     * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
+     */
+    public void lock() {
+        throw new IllegalArgumentException("not supported");
+    }
 
     /**
      * <p>Acquire the lock.</p>
@@ -72,7 +82,7 @@ public final class Unslotted extends AbstractLock {
      * <p>Acquire the lock or time-out.</p>
      *
      * @param sleep The time-out.
-     * @param tu  The time unit.
+     * @param tu    The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
@@ -92,6 +102,15 @@ public final class Unslotted extends AbstractLock {
                 return false;
             }
         }
+    }
+
+    /**
+     * <p>Retrieve a condition.</p>
+     *
+     * @return The condition.
+     */
+    public Condition newCondition() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**

@@ -97,14 +97,14 @@ public final class DefinedGroupLocal extends AbstractDefined {
             throws EngineMessage {
         LocalBlocking ep = defineLocalBlocking(en);
         try {
-            ep.lock.getRead().lockInterruptibly();
+            ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
             return ep.cr.getClauses();
         } finally {
-            ep.lock.getRead().unlock();
+            ep.lock.readLock().unlock();
         }
     }
 
@@ -120,7 +120,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             throws EngineMessage {
         LocalBlocking ep = defineLocalBlocking(en);
         try {
-            ep.lock.getRead().lockInterruptibly();
+            ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -132,7 +132,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {
-            ep.lock.getRead().unlock();
+            ep.lock.readLock().unlock();
         }
     }
 
@@ -163,7 +163,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             return false;
         LocalBlocking ep = defineLocalBlocking(en);
         try {
-            ep.lock.getWrite().lockInterruptibly();
+            ep.lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -174,7 +174,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             ep.cr.assertClause(0, clause, flags);
             return true;
         } finally {
-            ep.lock.getWrite().unlock();
+            ep.lock.writeLock().unlock();
         }
     }
 
@@ -192,7 +192,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             return false;
         LocalBlocking ep = defineLocalBlocking(en);
         try {
-            ep.lock.getWrite().lockInterruptibly();
+            ep.lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -203,7 +203,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             ep.cr.retractClause(0, clause);
             return true;
         } finally {
-            ep.lock.getWrite().unlock();
+            ep.lock.writeLock().unlock();
         }
     }
 
@@ -219,7 +219,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
             throws EngineMessage, EngineException {
         LocalBlocking ep = defineLocalBlocking(en);
         try {
-            ep.lock.getRead().lockInterruptibly();
+            ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -232,7 +232,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
                 throw EngineMessage.mapIOException(x);
             }
         } finally {
-            ep.lock.getRead().unlock();
+            ep.lock.readLock().unlock();
         }
     }
 

@@ -1,5 +1,8 @@
 package matula.util.misc;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+
 /**
  * <p>This class provides a slotted and escalable read write pair.</p>
  * <p/>
@@ -31,7 +34,7 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Locker extends AbstractPair {
+public final class Locker implements ReadWriteLock {
     final LockerRead read = new LockerRead(this);
     final LockerWrite write = new LockerWrite(this);
 
@@ -40,7 +43,7 @@ public final class Locker extends AbstractPair {
      *
      * @return The read lock.
      */
-    public AbstractLock getRead() {
+    public Lock readLock() {
         return read;
     }
 
@@ -49,7 +52,7 @@ public final class Locker extends AbstractPair {
      *
      * @return The write lock.
      */
-    public AbstractLock getWrite() {
+    public Lock writeLock() {
         return write;
     }
 

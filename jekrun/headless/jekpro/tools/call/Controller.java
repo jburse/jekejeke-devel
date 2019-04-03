@@ -38,7 +38,7 @@ import matula.util.wire.AbstractLivestock;
  * methods setFence() and currentController() can be used to set and
  * retrieve the thread a controller occupies. Both information pieces
  * are automatically tracked by the call-in interactor, so that the
- * application programmer usually doesn�t have to bother with
+ * application programmer usually doesn't have to bother with
  * these methods.
  * <p/>
  * Warranty & Liability

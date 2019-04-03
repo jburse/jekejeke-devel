@@ -192,13 +192,13 @@ public class Engine extends StackElement {
                     if (hasCont())
                         retireCont();
                     contskel = contskel.getNextRaw(this);
-                    found = contskel.resolveNext(this);
+                        found = contskel.resolveNext(this);
                 } else {
                     break;
                 }
             } else {
                 if (snap < number) {
-                    found = choices.moniNext(this);
+                        found = choices.moniNext(this);
                 } else {
                     break;
                 }

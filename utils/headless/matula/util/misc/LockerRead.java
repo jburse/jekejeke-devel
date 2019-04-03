@@ -3,6 +3,8 @@ package matula.util.misc;
 import matula.util.data.SetHash;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class provides a slotted and escalable read lock object.</p>
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class LockerRead extends AbstractLock {
+final class LockerRead implements Lock {
     SetHash<Thread> set = new SetHash<Thread>();
     private final Locker parent;
 
@@ -46,6 +48,14 @@ final class LockerRead extends AbstractLock {
      */
     LockerRead(Locker p) {
         parent = p;
+    }
+
+    /**
+     * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
+     */
+    public void lock() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**
@@ -89,7 +99,7 @@ final class LockerRead extends AbstractLock {
      * <p>Acquire the read lock or time-out.</p>
      *
      * @param sleep The time-out.
-     * @param tu The time unit.
+     * @param tu    The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
@@ -127,6 +137,15 @@ final class LockerRead extends AbstractLock {
             set.remove(thread);
             parent.notifyAll();
         }
+    }
+
+    /**
+     * <p>Retrieve a condition.</p>
+     *
+     * @return The condition.
+     */
+    public Condition newCondition() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**

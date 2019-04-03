@@ -14,6 +14,7 @@ import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>The delegate class for a multi blocking delegate.</p>
@@ -48,7 +49,7 @@ import java.io.Writer;
  */
 public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     private final Bouquet cr = new Bouquet();
-    private final Nonescalable lock = new Nonescalable();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * <p>Create a blocking delegate.</p>
@@ -104,14 +105,14 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     public final Clause[] listClauses(Engine en)
             throws EngineMessage {
         try {
-            lock.getRead().lockInterruptibly();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
         try {
             return cr.getClauses();
         } finally {
-            lock.getRead().unlock();
+            lock.readLock().unlock();
         }
     }
 
@@ -126,7 +127,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     final Clause[] definedClauses(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
-            lock.getRead().lockInterruptibly();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -138,7 +139,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {
-            lock.getRead().unlock();
+            lock.readLock().unlock();
         }
     }
 
@@ -167,7 +168,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         try {
-            lock.getWrite().lockInterruptibly();
+            lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -178,7 +179,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
             cr.assertClause(0, clause, flags);
             return true;
         } finally {
-            lock.getWrite().unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -194,7 +195,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         try {
-            lock.getWrite().lockInterruptibly();
+            lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -205,7 +206,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
             cr.retractClause(0, clause);
             return true;
         } finally {
-            lock.getWrite().unlock();
+            lock.writeLock().unlock();
         }
     }
 
@@ -220,7 +221,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     public final void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
-            lock.getRead().lockInterruptibly();
+            lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -233,7 +234,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
                 throw EngineMessage.mapIOException(x);
             }
         } finally {
-            lock.getRead().unlock();
+            lock.readLock().unlock();
         }
     }
 

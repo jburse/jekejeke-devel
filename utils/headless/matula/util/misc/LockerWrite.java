@@ -1,6 +1,8 @@
 package matula.util.misc;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class provides a write lock object.</p>
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class LockerWrite extends AbstractLock {
+final class LockerWrite implements Lock {
     Thread locked;
     private final Locker parent;
 
@@ -44,6 +46,14 @@ final class LockerWrite extends AbstractLock {
      */
     LockerWrite(Locker p) {
         parent = p;
+    }
+
+    /**
+     * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
+     */
+    public void lock() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**
@@ -89,7 +99,7 @@ final class LockerWrite extends AbstractLock {
      * <p>Acquire the write lock or time-out.</p>
      *
      * @param sleep The time-out.
-     * @param tu The time unit.
+     * @param tu    The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
@@ -126,6 +136,15 @@ final class LockerWrite extends AbstractLock {
             locked = null;
             parent.notifyAll();
         }
+    }
+
+    /**
+     * <p>Retrieve a condition.</p>
+     *
+     * @return The condition.
+     */
+    public Condition newCondition() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**

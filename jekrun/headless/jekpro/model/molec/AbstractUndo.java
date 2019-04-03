@@ -34,7 +34,7 @@ import jekpro.model.inter.Engine;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractUndo {
-    private AbstractUndo next;
+    public AbstractUndo next;
     private AbstractUndo prev;
 
     /**
@@ -56,6 +56,7 @@ public abstract class AbstractUndo {
         prev = null;
         AbstractUndo g = next;
         next = null;
+
         if (f != null) {
             f.next = g;
         } else {

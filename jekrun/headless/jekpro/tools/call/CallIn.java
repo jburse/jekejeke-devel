@@ -45,16 +45,41 @@ import jekpro.tools.term.AbstractTerm;
  * The later behaviour might be not appropriate if a variable binding
  * side effect of the term is desired. The method run() acts similar to
  * nextClose() but swallows failure and exceptions.
- * </p>
- *
- * @author Copyright 2010-2015, XLOG Technologies GmbH, Switzerland
- * @version Jekejeke Prolog 0.9.1 (a fast and small prolog interpreter)
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CallIn {
     private AbstractUndo mark;
     private int snap;
     private int state;
     private Object goal;
+    private boolean ext;
     private final Interpreter inter;
 
     private static final int STATE_FIRST = 0;
@@ -73,6 +98,8 @@ public final class CallIn {
             throw new NullPointerException("term missing");
         goal = g;
         inter = i;
+        Display ref = AbstractTerm.getDisplay(goal);
+        ext = ref.getAndReset();
     }
 
     /**
@@ -99,13 +126,23 @@ public final class CallIn {
         switch (state) {
             case STATE_FIRST:
                 state = STATE_FAILURE;
-                if (unfoldFirst())
+                if (unfoldFirst()) {
                     state = STATE_SUCCESS;
+                } else if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             case STATE_NEXT:
                 state = STATE_FAILURE;
-                if (unfoldNext())
+                if (unfoldNext()) {
                     state = STATE_SUCCESS;
+                } else if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             case STATE_FAILURE:
             case STATE_SUCCESS:
@@ -128,13 +165,23 @@ public final class CallIn {
         switch (state) {
             case STATE_FIRST:
                 state = STATE_FAILURE;
-                if (unfoldFirst())
+                if (unfoldFirst()) {
                     state = STATE_NEXT;
+                } else if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             case STATE_NEXT:
                 state = STATE_FAILURE;
-                if (unfoldNext())
+                if (unfoldNext()) {
                     state = STATE_NEXT;
+                } else if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             case STATE_FAILURE:
                 break;
@@ -166,12 +213,22 @@ public final class CallIn {
             case STATE_NEXT:
                 state = STATE_FAILURE;
                 unfoldClose();
+                if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             case STATE_FAILURE:
                 break;
             case STATE_SUCCESS:
                 state = STATE_FAILURE;
                 unfoldClose();
+                if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("illagel state");
@@ -218,14 +275,12 @@ public final class CallIn {
             case STATE_NEXT:
                 state = STATE_FAILURE;
                 unfoldCut();
-                state = STATE_NEXT;
                 break;
             case STATE_FAILURE:
                 break;
             case STATE_SUCCESS:
                 state = STATE_FAILURE;
                 unfoldCut();
-                state = STATE_SUCCESS;
                 break;
             default:
                 throw new IllegalArgumentException("illagel state");
@@ -247,12 +302,24 @@ public final class CallIn {
                 return x;
             case STATE_NEXT:
                 state = STATE_FAILURE;
-                return unfoldCleanup(x);
+                x = unfoldCleanup(x);
+                if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
+                return x;
             case STATE_FAILURE:
                 return x;
             case STATE_SUCCESS:
                 state = STATE_FAILURE;
-                return unfoldCleanup(x);
+                x = unfoldCleanup(x);
+                if (ext) {
+                    Engine en = (Engine) inter.getEngine();
+                    Display ref = AbstractTerm.getDisplay(goal);
+                    ref.remTab(en);
+                }
+                return x;
             default:
                 throw new IllegalArgumentException("illagel state");
         }
@@ -276,23 +343,19 @@ public final class CallIn {
         CallFrame u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
+
         en.skel = AbstractTerm.getSkel(goal);
-        Display ref = AbstractTerm.getDisplay(goal);
-        en.display = ref;
+        en.display = AbstractTerm.getDisplay(goal);
         en.deref();
-        goal = null;
         mark = en.bind;
         snap = en.number;
         try {
-            boolean ext = ref.getAndReset();
             boolean multi = en.wrapGoal();
-            if (multi && ext)
-                ref.remTab(en);
-            ref = en.display;
+            Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
             DisplayClause d2 = new DisplayClause(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi || ext)
+            if (multi)
                 ref.remTab(en);
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;

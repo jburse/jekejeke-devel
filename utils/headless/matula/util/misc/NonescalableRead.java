@@ -1,6 +1,8 @@
 package matula.util.misc;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class provides a unslotted and non-escalable read lock object.</p>
@@ -33,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class NonescalableRead extends AbstractLock {
+public final class NonescalableRead implements Lock {
     int set;
     private final Nonescalable parent;
 
@@ -44,6 +46,14 @@ public final class NonescalableRead extends AbstractLock {
      */
     NonescalableRead(Nonescalable p) {
         parent = p;
+    }
+
+    /**
+     * <p>Acquire the lock.</p>
+     * <p>Blocks if lock is already held.</p>
+     */
+    public void lock() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**
@@ -81,7 +91,7 @@ public final class NonescalableRead extends AbstractLock {
      * <p>Acquire the read lock or time-out.</p>
      *
      * @param sleep The time-out.
-     * @param tu  The time unit.
+     * @param tu    The time unit.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
@@ -101,6 +111,15 @@ public final class NonescalableRead extends AbstractLock {
                 return false;
             }
         }
+    }
+
+    /**
+     * <p>Retrieve a condition.</p>
+     *
+     * @return The condition.
+     */
+    public Condition newCondition() {
+        throw new IllegalArgumentException("not supported");
     }
 
     /**

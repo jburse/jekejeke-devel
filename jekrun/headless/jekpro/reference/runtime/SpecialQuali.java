@@ -96,11 +96,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
                 ref = en.display;
-                boolean ext = ref.getAndReset();
+                boolean multi = ref.getAndReset();
                 Directive dire = en.store.foyer.CLAUSE_TRAN;
                 DisplayClause d3 = new DisplayClause(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
-                if (ext)
+                if (multi)
                     ref.remTab(en);
                 CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;
@@ -121,11 +121,11 @@ public final class SpecialQuali extends AbstractSpecial {
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
                 ref = en.display;
-                ext = ref.getAndReset();
+                multi = ref.getAndReset();
                 dire = en.store.foyer.CLAUSE_TRAN;
                 d3 = new DisplayClause(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
-                if (ext)
+                if (multi)
                     ref.remTab(en);
                 ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;

@@ -3,6 +3,8 @@ package jekpro.model.inter;
 import jekpro.model.rope.Bouquet;
 import matula.util.misc.Nonescalable;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
  * <p>An entry for a dynamic predicate.</p>
  * <p/>
@@ -37,7 +39,7 @@ import matula.util.misc.Nonescalable;
 public final class LocalBlocking {
     Bouquet cr = new Bouquet();
     DefinedGroupLocal del;
-    final Nonescalable lock = new Nonescalable();
+    final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * <p>Create a new local blocking.</p>

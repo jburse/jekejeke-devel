@@ -1,5 +1,8 @@
 package matula.util.misc;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+
 /**
  * <p>This class provides a unslotted and non-escalable read write pair.</p>
  * <p/>
@@ -31,7 +34,7 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Nonescalable extends AbstractPair {
+public final class Nonescalable implements ReadWriteLock {
     final NonescalableRead read = new NonescalableRead(this);
     final NonescalableWrite write = new NonescalableWrite(this);
 
@@ -40,7 +43,7 @@ public final class Nonescalable extends AbstractPair {
      *
      * @return The read lock.
      */
-    public AbstractLock getRead() {
+    public Lock readLock() {
         return read;
     }
 
@@ -49,7 +52,7 @@ public final class Nonescalable extends AbstractPair {
      *
      * @return The write lock.
      */
-    public AbstractLock getWrite() {
+    public Lock writeLock() {
         return write;
     }
 

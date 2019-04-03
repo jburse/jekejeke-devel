@@ -18,7 +18,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractBundle;
 import matula.util.data.*;
-import matula.util.misc.AbstractLock;
 import matula.util.misc.Locker;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
@@ -27,6 +26,7 @@ import matula.util.system.OpenOpts;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class represents a source. Besides the predicates and operators,
@@ -229,8 +229,8 @@ public abstract class AbstractSource {
      *
      * @return The write lock.
      */
-    public AbstractLock getWrite() {
-        return lock.getWrite();
+    public Lock getWrite() {
+        return lock.writeLock();
     }
 
     /**
@@ -238,8 +238,8 @@ public abstract class AbstractSource {
      *
      * @return The read lock.
      */
-    public AbstractLock getRead() {
-        return lock.getRead();
+    public Lock getRead() {
+        return lock.readLock();
     }
 
     /**************************************************************/

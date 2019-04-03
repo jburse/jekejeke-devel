@@ -48,7 +48,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 final class DefinedBlocking extends AbstractDefined {
     private final Bouquet cr = new Bouquet();
-    //    private final Nonescalable lock = new Nonescalable();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
@@ -105,7 +104,6 @@ final class DefinedBlocking extends AbstractDefined {
     public final Clause[] listClauses(Engine en)
             throws EngineMessage {
         try {
-//            lock.getRead().acquire();
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -113,7 +111,6 @@ final class DefinedBlocking extends AbstractDefined {
         try {
             return cr.getClauses();
         } finally {
-//            lock.getRead().release();
             lock.readLock().unlock();
         }
     }
@@ -129,7 +126,6 @@ final class DefinedBlocking extends AbstractDefined {
     final Clause[] definedClauses(Object m, Display d, Engine en)
             throws EngineMessage {
         try {
-//            lock.getRead().acquire();
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -142,7 +138,6 @@ final class DefinedBlocking extends AbstractDefined {
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {
-//            lock.getRead().release();
             lock.readLock().unlock();
         }
     }
@@ -172,7 +167,6 @@ final class DefinedBlocking extends AbstractDefined {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         try {
-//            lock.getWrite().acquire();
             lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -184,7 +178,6 @@ final class DefinedBlocking extends AbstractDefined {
             cr.assertClause(0, clause, flags);
             return true;
         } finally {
-//            lock.getWrite().release();
             lock.writeLock().unlock();
         }
     }
@@ -201,7 +194,6 @@ final class DefinedBlocking extends AbstractDefined {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         try {
-//            lock.getWrite().acquire();
             lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -213,7 +205,6 @@ final class DefinedBlocking extends AbstractDefined {
             cr.retractClause(0, clause);
             return true;
         } finally {
-//            lock.getWrite().release();
             lock.writeLock().unlock();
         }
     }
@@ -229,7 +220,6 @@ final class DefinedBlocking extends AbstractDefined {
     public final void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
-//            lock.getRead().acquire();
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
@@ -243,7 +233,6 @@ final class DefinedBlocking extends AbstractDefined {
                 throw EngineMessage.mapIOException(x);
             }
         } finally {
-//            lock.getRead().release();
             lock.readLock().unlock();
         }
     }

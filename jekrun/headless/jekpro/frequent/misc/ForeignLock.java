@@ -1,8 +1,7 @@
 package jekpro.frequent.misc;
 
-import matula.util.misc.AbstractLock;
-
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
  * The foreign predicates for the module misc/lock.
@@ -45,7 +44,7 @@ public final class ForeignLock {
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public static boolean sysTryLock(AbstractLock lock, long timeout)
+    public static boolean sysTryLock(Lock lock, long timeout)
             throws InterruptedException {
         return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
     }

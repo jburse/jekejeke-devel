@@ -81,9 +81,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
                 ref = en.display;
-                boolean ext = ref.getAndReset();
+                boolean multi = ref.getAndReset();
                 en.computeExpr(en.skel, ref);
-                if (ext)
+                if (multi)
                     ref.remTab(en);
                 return;
             case EVALUABLE_COLONCOLON:
@@ -101,9 +101,9 @@ public final class EvaluableQuali extends AbstractSpecial {
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
                 ref = en.display;
-                ext = ref.getAndReset();
+                multi = ref.getAndReset();
                 en.computeExpr(en.skel, ref);
-                if (ext)
+                if (multi)
                     ref.remTab(en);
                 return;
             default:
