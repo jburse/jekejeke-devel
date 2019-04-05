@@ -32,7 +32,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Unbounded implements InterfacePipe {
+public final class Unbounded<T> implements InterfacePipe<T> {
     private final ListArray<Object> list;
 
     /**
@@ -47,11 +47,12 @@ public final class Unbounded implements InterfacePipe {
      *
      * @param t The object, not null.
      */
-    public void put(Object t) {
+    public void put(T t) {
         if (t == null)
             throw new NullPointerException("null_element");
         synchronized (this) {
             list.add(t);
+            this.notifyAll();
         }
     }
 
@@ -62,14 +63,13 @@ public final class Unbounded implements InterfacePipe {
      * @return The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    public Object take()
+    public T take()
             throws InterruptedException {
         synchronized (this) {
             while (list.size() == 0)
                 this.wait();
-            Object t = list.get(0);
+            T t = (T)list.get(0);
             list.remove(0);
-            this.notifyAll();
             return t;
         }
     }
@@ -80,10 +80,10 @@ public final class Unbounded implements InterfacePipe {
      *
      * @return The object or null if no object was taken.
      */
-    public Object poll() {
+    public T poll() {
         synchronized (this) {
             if (list.size() != 0) {
-                Object t = list.get(0);
+                T t = (T)list.get(0);
                 list.remove(0);
                 return t;
             } else {
@@ -99,7 +99,7 @@ public final class Unbounded implements InterfacePipe {
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public Object poll(long sleep)
+    public T poll(long sleep)
             throws InterruptedException {
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
@@ -108,9 +108,8 @@ public final class Unbounded implements InterfacePipe {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                Object t = list.get(0);
+                T t = (T)list.get(0);
                 list.remove(0);
-                this.notifyAll();
                 return t;
             } else {
                 return null;

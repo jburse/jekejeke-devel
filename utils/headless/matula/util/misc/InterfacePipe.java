@@ -30,7 +30,7 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public interface InterfacePipe {
+public interface InterfacePipe<T> {
 
     /**
      * <p>Add an object to the end of the pipe.</p>
@@ -39,7 +39,7 @@ public interface InterfacePipe {
      * @param t The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    void put(Object t)
+    void put(T t)
             throws InterruptedException;
 
     /**
@@ -49,7 +49,7 @@ public interface InterfacePipe {
      * @return The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    Object take()
+    T take()
             throws InterruptedException;
 
     /**
@@ -58,7 +58,7 @@ public interface InterfacePipe {
      *
      * @return The object or null if no object was taken.
      */
-    Object poll();
+    T poll();
 
     /**
      * <p>Remove an object from the front of the pipe.</p>
@@ -68,7 +68,7 @@ public interface InterfacePipe {
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    Object poll(long sleep)
+    T poll(long sleep)
             throws InterruptedException;
 
 }

@@ -50,7 +50,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Queue implements InterfacePipe {
+public final class Queue<T> implements InterfacePipe<T> {
     private final ListArray<Object> list;
     private final int max;
 
@@ -73,7 +73,7 @@ public final class Queue implements InterfacePipe {
      * @param t The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    public void put(Object t)
+    public void put(T t)
             throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null_element");
@@ -91,7 +91,7 @@ public final class Queue implements InterfacePipe {
      *
      * @return True if object was posted, or false otherwise.
      */
-    public boolean offer(Object t) {
+    public boolean offer(T t) {
         if (t == null)
             throw new NullPointerException("null_element");
         synchronized (this) {
@@ -111,7 +111,7 @@ public final class Queue implements InterfacePipe {
      * @param sleep The time-out.
      * @return True if object was posted, or false otherwise.
      */
-    public boolean offer(Object t, long sleep)
+    public boolean offer(T t, long sleep)
             throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null_element");
@@ -138,12 +138,12 @@ public final class Queue implements InterfacePipe {
      * @return The object, not null.
      * @throws InterruptedException If the request was cancelled.
      */
-    public Object take()
+    public T take()
             throws InterruptedException {
         synchronized (this) {
             while (list.size() == 0)
                 this.wait();
-            Object t = list.get(0);
+            T t = (T)list.get(0);
             list.remove(0);
             this.notifyAll();
             return t;
@@ -156,10 +156,10 @@ public final class Queue implements InterfacePipe {
      *
      * @return The object or null if no object was taken.
      */
-    public Object poll() {
+    public T poll() {
         synchronized (this) {
             if (list.size() != 0) {
-                Object t = list.get(0);
+                T t = (T)list.get(0);
                 list.remove(0);
                 return t;
             } else {
@@ -175,7 +175,7 @@ public final class Queue implements InterfacePipe {
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public Object poll(long sleep)
+    public T poll(long sleep)
             throws InterruptedException {
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
@@ -184,7 +184,7 @@ public final class Queue implements InterfacePipe {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                Object t = list.get(0);
+                T t = (T)list.get(0);
                 list.remove(0);
                 this.notifyAll();
                 return t;
