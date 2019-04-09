@@ -78,12 +78,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        DisplayClause d2 = null;
+        Display d2 = null;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
             if (d2 == null) {
-                d2 = new DisplayClause(clause.sizerule);
+                d2 = new Display(clause.sizerule);
             } else {
                 d2.setSize(clause.sizerule);
             }
@@ -117,8 +117,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         }
 
         if (at != list.length) {
-            d2.flags |= Display.MASK_DISP_MORE;
             CallFrame dc = new CallFrame(d2, clause, en);
+            dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefinedMultifile(en.choices, at, list, dc, mark);
             en.number++;

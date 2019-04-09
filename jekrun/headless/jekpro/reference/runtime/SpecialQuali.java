@@ -98,7 +98,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 boolean multi = ref.getAndReset();
                 Directive dire = en.store.foyer.CLAUSE_TRAN;
-                DisplayClause d3 = new DisplayClause(dire.size);
+                Display d3 = new Display(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
@@ -123,7 +123,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 multi = ref.getAndReset();
                 dire = en.store.foyer.CLAUSE_TRAN;
-                d3 = new DisplayClause(dire.size);
+                d3 = new Display(dire.size);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
@@ -686,7 +686,7 @@ public final class SpecialQuali extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DISP_MLTI;
+            last.vars = Display.VARS_MARKER;
         }
         en.display = last;
         return multi;

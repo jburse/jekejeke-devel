@@ -96,7 +96,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         }
 
         Clause clause;
-        DisplayClause d2 = newdisp.disp;
+        Display d2 = newdisp.disp;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
@@ -139,9 +139,9 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             en.contdisplay = newdisp;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
-            d2.flags &= ~Display.MASK_DISP_MORE;
             CallFrame dc = newdisp.getFrame(en);
+            dc.flags &= ~Directive.MASK_DIRE_LTGC;
+            dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;

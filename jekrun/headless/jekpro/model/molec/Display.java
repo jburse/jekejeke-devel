@@ -1,6 +1,8 @@
 package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
+import jekpro.tools.term.SkelVar;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides a display.</p>
@@ -33,14 +35,14 @@ import jekpro.model.inter.Engine;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Display {
+public final class Display {
     public final static Display DISPLAY_CONST = new Display(0);
 
-    public final static int MASK_DISP_MLTI = 0x00000001;
-    public final static int MASK_DISP_MORE = 0x00000002;
+    public final static MapHashLink<String, SkelVar> VARS_MARKER
+            = new MapHashLink<String, SkelVar>();
 
     public BindUniv[] bind;
-    public int flags;
+    public MapHashLink<String, SkelVar> vars;
 
     /**
      * <p>Create a new display.</p>
@@ -94,8 +96,8 @@ public class Display {
      * @return The multi flag.
      */
     public boolean getAndReset() {
-        if ((flags & Display.MASK_DISP_MLTI) != 0) {
-            flags &= ~Display.MASK_DISP_MLTI;
+        if (vars == VARS_MARKER) {
+            vars = null;
             return true;
         } else {
             return false;

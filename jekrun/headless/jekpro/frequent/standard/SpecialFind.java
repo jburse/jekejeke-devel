@@ -151,7 +151,7 @@ public final class SpecialFind extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            DisplayClause d3 = new DisplayClause(dire.size);
+            Display d3 = new Display(dire.size);
             d3.bind[0].bindUniv(en.skel, en.display, en);
             if (multi)
                 ref.remTab(en);
@@ -244,7 +244,7 @@ public final class SpecialFind extends AbstractSpecial {
             en.display = d2;
         } else {
             Display d3 = new Display(2);
-            d3.flags |= Display.MASK_DISP_MLTI;
+            d3.vars = Display.VARS_MARKER;
             boolean ext = d2.getAndReset();
             d3.bind[0].bindUniv(t2, d2, en);
             if (ext)

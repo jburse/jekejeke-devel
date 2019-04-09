@@ -162,7 +162,7 @@ public final class SpecialVars extends AbstractSpecial {
                 case SPECIAL_SYS_GET_VARIABLE_NAMES:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    DisplayClause d2 = en.visor.query;
+                    Display d2 = en.visor.query;
                     MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
                     mapToAssoc(print, en);
                     d = en.display;
@@ -531,7 +531,7 @@ public final class SpecialVars extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DISP_MLTI;
+            last.vars = Display.VARS_MARKER;
         }
         countvar = 0;
         Object m = en.store.foyer.ATOM_NIL;

@@ -75,7 +75,7 @@ public final class SpecialBody extends AbstractSpecial {
                 boolean multi = en.wrapGoal();
                 ref = en.display;
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                DisplayClause d2 = new DisplayClause(dire.size);
+                Display d2 = new Display(dire.size);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);

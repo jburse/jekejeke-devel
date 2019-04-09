@@ -37,7 +37,7 @@ import jekpro.model.rope.Goal;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CallFrame extends StackElement {
-    public DisplayClause disp;
+    public Display disp;
     public int flags;
     public int number;
     public int barrier = -1;
@@ -49,7 +49,7 @@ public final class CallFrame extends StackElement {
      * @param directive The directive.
      * @param en        The engine.
      */
-    public CallFrame(DisplayClause d, Directive directive, Engine en) {
+    public CallFrame(Display d, Directive directive, Engine en) {
         disp = d;
         contskel = en.contskel;
         contdisplay = en.contdisplay;
@@ -95,7 +95,7 @@ public final class CallFrame extends StackElement {
      * @param en        The engine.
      * @return The new or old frame.
      */
-    public static CallFrame getFrame(DisplayClause d, Directive directive, Engine en) {
+    public static CallFrame getFrame(Display d, Directive directive, Engine en) {
         if ((directive.flags & Directive.MASK_DIRE_NLST) == 0) {
             if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = en.contdisplay;

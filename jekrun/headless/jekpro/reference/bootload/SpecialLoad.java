@@ -843,7 +843,7 @@ public final class SpecialLoad extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            DisplayClause d2 = new DisplayClause(dire.size);
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;

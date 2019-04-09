@@ -404,7 +404,7 @@ public final class Interpreter {
             throw new InterpreterException(x);
         }
         if (EngineCopy.displaySize(val) != 0)
-            ref.flags |= Display.MASK_DISP_MLTI;
+            ref.vars = Display.VARS_MARKER;
         return AbstractTerm.createTermWrapped(val, ref);
     }
 

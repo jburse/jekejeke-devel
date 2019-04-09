@@ -99,7 +99,7 @@ public final class SpecialApply extends AbstractSpecial {
                     d.remTab(en);
                 ref = en.display;
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                DisplayClause d2 = new DisplayClause(dire.size);
+                Display d2 = new Display(dire.size);
                 d2.bind[0].bindUniv(en.skel, ref, en);
                 if (multi || ext)
                     ref.remTab(en);
@@ -213,7 +213,7 @@ public final class SpecialApply extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DISP_MLTI;
+            last.vars = Display.VARS_MARKER;
         }
         en.display = last;
         return multi;
@@ -326,7 +326,7 @@ public final class SpecialApply extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.flags |= Display.MASK_DISP_MLTI;
+            last.vars = Display.VARS_MARKER;
         }
         en.display = last;
         return multi;

@@ -4,7 +4,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayClause;
 import jekpro.model.molec.EngineException;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
@@ -82,7 +81,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 return true;
             case SPECIAL_SYS_SOFT_LOCAL_CUT:
                 ref2 = en.contdisplay;
-                if ((((ref2.disp.flags & Display.MASK_DISP_MORE) != 0) ?
+                if ((((ref2.flags & Directive.MASK_DIRE_MORE) != 0) ?
                         ref2.number + 1 : ref2.number) >= en.number) {
                     if (ref2.number < en.number) {
                         en.window = ref2;
@@ -104,7 +103,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 Directive dire = en.store.foyer.CLAUSE_CONT;
-                DisplayClause d2 = new DisplayClause(dire.size);
+                Display d2 = new Display(dire.size);
                 d2.bind[0].bindUniv(en.skel, en.display, en);
                 ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;

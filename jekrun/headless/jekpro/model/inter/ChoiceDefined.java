@@ -104,7 +104,7 @@ public class ChoiceDefined extends AbstractChoice {
         }
 
         Clause clause;
-        DisplayClause d2 = newdisp.disp;
+        Display d2 = newdisp.disp;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
@@ -136,9 +136,9 @@ public class ChoiceDefined extends AbstractChoice {
             en.contdisplay = newdisp;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
-            d2.flags &= ~Display.MASK_DISP_MORE;
             CallFrame dc = newdisp.getFrame(en);
+            dc.flags &= ~Directive.MASK_DIRE_LTGC;
+            dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
@@ -165,17 +165,16 @@ public class ChoiceDefined extends AbstractChoice {
         en.number--;
 
         CallFrame dc = newdisp;
-        Display d = dc.disp;
-        d.flags &= ~Display.MASK_DISP_MORE;
+        dc.flags &= ~Directive.MASK_DIRE_MORE;
 
         CallFrame back = en.window;
 
         while (dc != back && dc != null) {
-            d = dc.disp;
-            if ((((d.flags & Display.MASK_DISP_MORE) != 0) ?
+            if ((((dc.flags & Directive.MASK_DIRE_MORE) != 0) ?
                     dc.number + 1 : dc.number) >= n) {
                 if ((dc.flags & Directive.MASK_DIRE_LTGC) == 0) {
                     if ((dc.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                        Display d = dc.disp;
                         if (d.bind.length > 0)
                             d.remTab(en);
                     }
