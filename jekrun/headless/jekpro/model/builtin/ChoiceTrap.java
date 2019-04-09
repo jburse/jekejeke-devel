@@ -42,7 +42,6 @@ import jekpro.model.rope.Intermediate;
 final class ChoiceTrap extends AbstractChoice {
     private final int snap;
     private final Intermediate goalskel;
-    private final CallFrame goaldisplay;
     private final AbstractUndo mark;
 
     /**
@@ -56,10 +55,9 @@ final class ChoiceTrap extends AbstractChoice {
      */
     ChoiceTrap(AbstractChoice n, int c, Intermediate r,
                CallFrame u, AbstractUndo m) {
-        super(n);
+        super(n, u);
         snap = c;
         goalskel = r;
-        goaldisplay = u;
         mark = m;
     }
 

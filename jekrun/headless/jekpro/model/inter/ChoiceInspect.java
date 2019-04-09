@@ -1,16 +1,15 @@
-package jekpro.model.builtin;
+package jekpro.model.inter;
 
-import jekpro.model.inter.AbstractChoice;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.EngineException;
-import jekpro.model.rope.Directive;
+import jekpro.model.molec.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
+import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 
 /**
- * <p>Provides a choice point for ;/2.</p>
+ * <p>The class provides a choice point for clause retrieval.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,27 +39,37 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ChoiceAlter extends AbstractChoice {
-    protected Object at;
+class ChoiceInspect extends AbstractChoice {
+    protected int at;
+    protected final Clause[] list;
+    protected final int flags;
     protected final Intermediate goalskel;
+    protected Display newdisp;
     protected final AbstractUndo mark;
-    public int barrier = -2;
 
     /**
-     * <p>Create an abstract choice inspect.</p>
+     * <p>Create an choice inspect.</p>
      *
      * @param n The molec.
+     * @param a The position.
+     * @param c The clause list.
+     * @param f The flags.
      * @param r The continuation skel.
      * @param u The continuation display.
+     * @param d The new display.
      * @param m The mark.
      */
-    ChoiceAlter(AbstractChoice n, Object a,
-                Intermediate r, CallFrame u,
-                AbstractUndo m) {
+    ChoiceInspect(AbstractChoice n, int a,
+                  Clause[] c, int f,
+                  Intermediate r, CallFrame u,
+                  Display d, AbstractUndo m) {
         super(n, u);
-        goalskel = r;
-        mark = m;
         at = a;
+        list = c;
+        flags = f;
+        goalskel = r;
+        newdisp = d;
+        mark = m;
     }
 
     /**
@@ -71,18 +80,17 @@ public final class ChoiceAlter extends AbstractChoice {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public boolean moniNext(Engine en)
-            throws EngineException {
+            throws EngineException, EngineMessage {
         /* remove choice point */
         en.choices = next;
         en.number--;
 
-        /* undo begin condition */
-        if (barrier != -2) {
-            goaldisplay.barrier = barrier;
-            barrier = -2;
-        }
+        /* end of cursor */
+        if (at == list.length)
+            return false;
 
         /* undo bindings */
         en.contskel = goalskel;
@@ -92,18 +100,71 @@ public final class ChoiceAlter extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        if (Directive.isAlternative(at)) {
-            SkelCompound sc = (SkelCompound) at;
-            at = sc.args[1];
+        Intermediate ir = goalskel;
+        Object t = ir.term;
+        Display d = goaldisplay.disp;
+        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
+            /* inlined deref */
+            BindUniv b1;
+            while (t instanceof SkelVar &&
+                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                t = b1.skel;
+                d = b1.display;
+            }
+        }
+        Object[] temp = ((SkelCompound) t).args;
+
+        /* detect term and body */
+        SpecialQuali.colonToCallable(temp[0], d, true, en);
+        Object head = en.skel;
+        Display refhead = en.display;
+
+        Clause clause;
+        boolean ext = refhead.getAndReset();
+        /* search rope */
+        for (; ; ) {
+            clause = list[at++];
+            newdisp.setSize(clause.size);
+            if (!(clause.term instanceof SkelCompound) ||
+                    AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
+                            ((SkelCompound) clause.term).args, newdisp, en)) {
+                Object end = clause.interToBody(en);
+                if (en.unifyTerm(temp[1], d, end, newdisp)) {
+                    if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
+                        if (en.unifyTerm(temp[2], d,
+                                clause, Display.DISPLAY_CONST))
+                            break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            /* end of cursor */
+            if (at == list.length)
+                return false;
+
+            /* undo bindings */
+            en.fault = null;
+            en.releaseBind(mark);
+            if (en.fault != null)
+                throw en.fault;
+        }
+        if (ext)
+            refhead.remTab(en);
+        if (clause.size != 0)
+            newdisp.remTab(en);
+
+        if (at != list.length) {
             /* reuse choice point */
             en.choices = this;
             en.number++;
-            en.contskel = (Directive) sc.args[0];
-            return true;
         } else {
-            en.contskel = (Directive) at;
-            return true;
+            /* */
         }
+
+        /* succeed */
+        return true;
     }
 
     /**
@@ -118,12 +179,6 @@ public final class ChoiceAlter extends AbstractChoice {
         /* remove choice point */
         en.choices = next;
         en.number--;
-
-        /* undo begin condition */
-        if (barrier != -2) {
-            goaldisplay.barrier = barrier;
-            barrier = -2;
-        }
 
         replySuccess(n, en);
     }

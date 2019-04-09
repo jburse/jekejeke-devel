@@ -39,7 +39,6 @@ import jekpro.tools.term.SkelVar;
 public class ChoiceDefined extends AbstractChoice {
     protected int at;
     protected final Clause[] list;
-    public final CallFrame newdisp; // access by debugger
     protected final AbstractUndo mark;
 
     /**
@@ -48,16 +47,14 @@ public class ChoiceDefined extends AbstractChoice {
      * @param n The molec.
      * @param a The position.
      * @param c The clause list.
-     * @param d The new display.
      * @param m The mark.
      */
     ChoiceDefined(AbstractChoice n, int a,
                   Clause[] c,
-                  CallFrame d, AbstractUndo m) {
-        super(n);
+                  CallFrame u, AbstractUndo m) {
+        super(n, u);
         at = a;
         list = c;
-        newdisp = d;
         mark = m;
     }
 
@@ -79,20 +76,20 @@ public class ChoiceDefined extends AbstractChoice {
 
         /* end of cursor */
         if (at == list.length ||
-                (newdisp.flags & Clause.MASK_CLAUSE_SOFT) != 0)
+                (goaldisplay.flags & Clause.MASK_CLAUSE_SOFT) != 0)
             return false;
 
         /* undo bindings */
-        en.contskel = newdisp.contskel;
-        en.contdisplay = newdisp.contdisplay;
+        en.contskel = goaldisplay.contskel;
+        en.contdisplay = goaldisplay.contdisplay;
         en.fault = null;
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;
 
-        Intermediate ir = newdisp.contskel;
+        Intermediate ir = goaldisplay.contskel;
         Object t = ir.term;
-        Display d = newdisp.contdisplay.disp;
+        Display d = goaldisplay.contdisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b1;
@@ -104,7 +101,7 @@ public class ChoiceDefined extends AbstractChoice {
         }
 
         Clause clause;
-        Display d2 = newdisp.disp;
+        Display d2 = goaldisplay.disp;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
@@ -128,15 +125,15 @@ public class ChoiceDefined extends AbstractChoice {
         d2.vars = clause.vars;
 
         if (at != list.length) {
-            newdisp.flags &= ~Directive.MASK_DIRE_LTGC;
+            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
             en.contskel = clause;
-            en.contdisplay = newdisp;
+            en.contdisplay = goaldisplay;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            CallFrame dc = newdisp.getFrame(en);
+            CallFrame dc = goaldisplay.getFrame(en);
             dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
@@ -159,37 +156,14 @@ public class ChoiceDefined extends AbstractChoice {
      * @param n  The cut level.
      * @param en The engine.
      */
-    public void moniCut(int n, Engine en) {
+    public final void moniCut(int n, Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;
 
-        CallFrame dc = newdisp;
-        dc.flags &= ~Directive.MASK_DIRE_MORE;
+        goaldisplay.flags &= ~Directive.MASK_DIRE_MORE;
 
-        CallFrame back = en.window;
-
-        while (dc != back && dc != null) {
-            if ((((dc.flags & Directive.MASK_DIRE_MORE) != 0) ?
-                    dc.number + 1 : dc.number) >= n) {
-                if ((dc.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                    if ((dc.flags & Directive.MASK_DIRE_NBDY) == 0) {
-                        Display d = dc.disp;
-                        if (d.bind.length > 0)
-                            d.remTab(en);
-                    }
-                    dc.flags |= Directive.MASK_DIRE_LTGC;
-                }
-            }
-
-            if ((dc.flags & Directive.MASK_DIRE_STOP) != 0) {
-                dc = null;
-            } else {
-                dc = dc.contdisplay;
-            }
-        }
-
-        en.window = back;
+        replySuccess(n, en);
     }
 
 }

@@ -1,12 +1,15 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Goal;
+import jekpro.model.rope.Intermediate;
+import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
- * <p>The class provides a choice point for multifile defined predicates.</p>
+ * <p>The class provides a choice point for multifile clause retrieval.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,21 +39,25 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ChoiceDefinedMultifile extends ChoiceDefined {
+final class ChoiceInspectMultifile extends ChoiceInspect {
 
     /**
-     * <p>Create pick choice.</p>
+     * <p>Create an abstract choice inspect.</p>
      *
      * @param n The molec.
      * @param a The position.
      * @param c The clause list.
+     * @param f The flags.
+     * @param r The continuation skel.
+     * @param u The continuation display.
      * @param d The new display.
      * @param m The mark.
      */
-    ChoiceDefinedMultifile(AbstractChoice n, int a,
-                           Clause[] c,
-                           CallFrame d, AbstractUndo m) {
-        super(n, a, c, d, m);
+    ChoiceInspectMultifile(AbstractChoice n, int a,
+                           Clause[] c, int f,
+                           Intermediate r, CallFrame u,
+                           Display d, AbstractUndo m) {
+        super(n, a, c, f, r, u, d, m);
     }
 
     /**
@@ -70,21 +77,20 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         en.number--;
 
         /* end of cursor */
-        if (at == list.length ||
-                (goaldisplay.flags & Clause.MASK_CLAUSE_SOFT) != 0)
+        if (at == list.length)
             return false;
 
         /* undo bindings */
-        en.contskel = goaldisplay.contskel;
-        en.contdisplay = goaldisplay.contdisplay;
+        en.contskel = goalskel;
+        en.contdisplay = goaldisplay;
         en.fault = null;
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;
 
-        Intermediate ir = goaldisplay.contskel;
+        Intermediate ir = goalskel;
         Object t = ir.term;
-        Display d = goaldisplay.contdisplay.disp;
+        Display d = goaldisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b1;
@@ -94,18 +100,33 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
                 d = b1.display;
             }
         }
+        Object[] temp = ((SkelCompound) t).args;
+
+        /* detect term and body */
+        SpecialQuali.colonToCallable(temp[0], d, true, en);
+        Object head = en.skel;
+        Display refhead = en.display;
 
         Clause clause;
-        Display d2 = goaldisplay.disp;
+        boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            d2.setSize(clause.sizerule);
-            if (clause.intargs == null ||
-                    AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
-                            clause.intargs, en))
-                break;
+            newdisp.setSize(clause.size);
+            if (!(clause.term instanceof SkelCompound) ||
+                    AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
+                            ((SkelCompound) clause.term).args, newdisp, en)) {
+                Object end = clause.interToBody(en);
+                if (en.unifyTerm(temp[1], d, end, newdisp)) {
+                    if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
+                        if (en.unifyTerm(temp[2], d,
+                                clause, Display.DISPLAY_CONST))
+                            break;
+                    } else {
+                        break;
+                    }
+                }
+            }
 
             /* end of cursor */
             for (; ; ) {
@@ -122,7 +143,10 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.vars = clause.vars;
+        if (ext)
+            refhead.remTab(en);
+        if (clause.size != 0)
+            newdisp.remTab(en);
 
         while (at != list.length) {
             if (AbstractDefinedMultifile.multiVisible(list[at], en))
@@ -131,27 +155,15 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         }
 
         if (at != list.length) {
-            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
-            en.contskel = clause;
-            en.contdisplay = goaldisplay;
-            return true;
-        } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            CallFrame dc = goaldisplay.getFrame(en);
-            dc.flags &= ~Directive.MASK_DIRE_LTGC;
-            dc.flags &= ~Directive.MASK_DIRE_MORE;
-            en.contskel = clause;
-            en.contdisplay = dc;
-            return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
-                if (d2.bind.length > 0)
-                    d2.remTab(en);
-            }
-            return true;
+            /* */
         }
+
+        /* succeed */
+        return true;
     }
 
 }
