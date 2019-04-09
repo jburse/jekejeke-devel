@@ -280,10 +280,9 @@ public final class SpecialMode extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private static boolean invokeBoth(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
@@ -293,30 +292,40 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            DisplayClause d2 = new DisplayClause(dire.size);
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop(snap, true)) {
+            if (!en.runLoop2(snap, true)) {
                 en.visor.setVerify(backverify);
                 en.visor.setIgnore(backignore);
                 return false;
             }
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.visor.setVerify(backverify);
-            en.visor.setIgnore(backignore);
-            throw x;
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.visor.setVerify(backverify);
             en.visor.setIgnore(backignore);
-            throw x;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.visor.setVerify(backverify);
+            en.visor.setIgnore(backignore);
+            throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
@@ -337,10 +346,9 @@ public final class SpecialMode extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private static boolean invokeIgnore(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         boolean backignore = en.visor.setIgnore(false);
@@ -349,27 +357,37 @@ public final class SpecialMode extends AbstractSpecial {
             boolean multi = en.wrapGoal();
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            DisplayClause d2 = new DisplayClause(dire.size);
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop(snap, true)) {
+            if (!en.runLoop2(snap, true)) {
                 en.visor.setIgnore(backignore);
                 return false;
             }
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.visor.setIgnore(backignore);
-            throw x;
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
             en.visor.setIgnore(backignore);
-            throw x;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            en.visor.setIgnore(backignore);
+            throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;

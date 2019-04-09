@@ -323,7 +323,7 @@ public final class SpecialDefault extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write port and goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            DisplayClause d2 = en.visor.query;
+            Display d2 = en.visor.query;
             MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
             pw.setPrintMap(print);
             pw.unparseStatement(t, d);
@@ -341,28 +341,39 @@ public final class SpecialDefault extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            DisplayClause d2 = new DisplayClause(dire.size);
+            Display d2 = new Display(dire.size);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
-            if (!en.runLoop(snap, true))
+            if (!en.runLoop2(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_REBUILD_FAILED));
-        } catch (EngineMessage x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            throw new EngineException(x, EngineException.fetchStack(en));
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            throw x;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.window = en.contdisplay;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.window = null;
+            throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.window = null;
+        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
+        en.window = null;
         if (en.fault != null)
             throw en.fault;
 
@@ -375,7 +386,7 @@ public final class SpecialDefault extends AbstractSpecial {
 
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        DisplayClause d2 = en.visor.query;
+        Display d2 = en.visor.query;
         MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
         pw.setPrintMap(print);
         pw.unparseStatement(t, d);
