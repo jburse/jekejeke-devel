@@ -1,15 +1,14 @@
-package jekpro.model.builtin;
+package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Intermediate;
 
 /**
- * <p>Provides a choice point for catch/3.</p>
+ * <p>The class provides a choice point for atomic calls.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -39,26 +38,28 @@ import jekpro.model.rope.Intermediate;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ChoiceTrap extends AbstractChoice {
-    private final int snap;
+public final class ChoiceAtomic extends AbstractChoice {
+    public static final int MASK_FLAGS_MASK = 0x00000001;
+    public static final int MASK_FLAGS_VRFY = 0x00000002;
+    public static final int MASK_FLAGS_IGNR = 0x00000004;
+
     private final Intermediate goalskel;
-    private final AbstractUndo mark;
+    private final int snap;
+    private final int mask;
 
     /**
-     * <p>Create a choice trap.</p>
+     * <p>Create a choice context.</p>
      *
      * @param n The parent choice.
      * @param c The engine snap.
      * @param r The term list skeleton.
      * @param u The term list display.
-     * @param m The engine mark.
      */
-    ChoiceTrap(AbstractChoice n, int c, Intermediate r,
-               CallFrame u, AbstractUndo m) {
+    ChoiceAtomic(AbstractChoice n, int c, Intermediate r, CallFrame u, int m) {
         super(n, u);
-        snap = c;
         goalskel = r;
-        mark = m;
+        snap = c;
+        mask = m;
     }
 
     /**
@@ -71,17 +72,18 @@ final class ChoiceTrap extends AbstractChoice {
      * @throws EngineException Shit happens.
      */
     public final boolean moniNext(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         /* remove choice point */
         en.choices = next;
         en.number--;
 
+        int backup = clearFlags(mask, en);
+
         try {
-            if (!en.runLoop2(snap, false))
+            if (!en.runLoop2(snap, false)) {
+                setFlags(mask, backup, en);
                 return false;
-            en.contskel = goalskel;
-            en.contdisplay = goaldisplay;
-            en.fault = null;
+            }
         } catch (EngineException x) {
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
@@ -89,7 +91,8 @@ final class ChoiceTrap extends AbstractChoice {
             en.fault = x;
             en.cutChoices(snap);
             en.window = null;
-            en.releaseBind(mark);
+            setFlags(mask, backup, en);
+            throw en.fault;
         } catch (EngineMessage y) {
             EngineException x = new EngineException(y,
                     EngineException.fetchStack(en));
@@ -99,10 +102,9 @@ final class ChoiceTrap extends AbstractChoice {
             en.fault = x;
             en.cutChoices(snap);
             en.window = null;
-            en.releaseBind(mark);
+            setFlags(mask, backup, en);
+            throw en.fault;
         }
-        if (en.fault != null)
-            return SpecialControl.handleException(en);
         if (en.number != snap) {
             /* meta argument change */
             next = en.choices;
@@ -110,6 +112,9 @@ final class ChoiceTrap extends AbstractChoice {
             en.choices = this;
             en.number++;
         }
+        setFlags(mask, backup, en);
+        en.contskel = goalskel;
+        en.contdisplay = goaldisplay;
         return true;
     }
 
@@ -125,6 +130,8 @@ final class ChoiceTrap extends AbstractChoice {
         /* remove choice point */
         en.choices = next;
         en.number--;
+
+        int backup = clearFlags(mask, en);
 
         /* backup sliding window */
         CallFrame back = en.window;
@@ -145,7 +152,55 @@ final class ChoiceTrap extends AbstractChoice {
         /* restore sliding window */
         en.window = back;
 
+        setFlags(mask, backup, en);
+
         replySuccess(n, en);
+    }
+
+    /**
+     * <p>Clear the flags.</p>
+     *
+     * @param mask The flags mask.
+     * @param en   The engine.
+     * @return The flags backup.
+     */
+    public static int clearFlags(int mask, Engine en) {
+        int backup = 0;
+        if ((mask & MASK_FLAGS_MASK) != 0) {
+            if (en.visor.setMask(false))
+                backup |= MASK_FLAGS_MASK;
+        }
+        if ((mask & MASK_FLAGS_VRFY) != 0) {
+            if (en.visor.setVerify(false))
+                backup |= MASK_FLAGS_VRFY;
+        }
+        if ((mask & MASK_FLAGS_IGNR) != 0) {
+            if (en.visor.setIgnore(false))
+                backup |= MASK_FLAGS_IGNR;
+        }
+        return backup;
+    }
+
+    /**
+     * <p>Set the flags.</p>
+     *
+     * @param mask   The flags mask.
+     * @param backup The flags backup.
+     * @param en     The engine.
+     */
+    public static void setFlags(int mask, int backup, Engine en) {
+        if ((mask & MASK_FLAGS_MASK) != 0) {
+            if ((backup & MASK_FLAGS_MASK) != 0)
+                en.visor.setMask(true);
+        }
+        if ((mask & MASK_FLAGS_VRFY) != 0) {
+            if ((backup & MASK_FLAGS_VRFY) != 0)
+                en.visor.setVerify(true);
+        }
+        if ((mask & MASK_FLAGS_IGNR) != 0) {
+            if ((backup & MASK_FLAGS_IGNR) != 0)
+                en.visor.setIgnore(true);
+        }
     }
 
 }

@@ -56,15 +56,14 @@ final class ChoiceForeign extends AbstractChoice {
     Object[] args;
     AbstractUndo mark;
     Intermediate goalskel;
-    CallFrame goaldisplay;
 
     /**
      * <p>Creata choice foreign.</p>
      *
-     * @param u The parent choice.
+     * @param n The parent choice.
      */
-    ChoiceForeign(AbstractChoice u) {
-        super(u);
+    ChoiceForeign(AbstractChoice n, CallFrame u) {
+        super(n, u);
     }
 
     /**
@@ -165,12 +164,15 @@ final class ChoiceForeign extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0)
+        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0) {
+            replySuccess(n, en);
             return;
+        }
 
         /* backup sliding window */
         CallFrame back = en.window;
 
+        /* backup continuation */
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         en.contskel = goalskel;
@@ -211,6 +213,8 @@ final class ChoiceForeign extends AbstractChoice {
 
         /* restore sliding window */
         en.window = back;
+
+        replySuccess(n, en);
     }
 
 }

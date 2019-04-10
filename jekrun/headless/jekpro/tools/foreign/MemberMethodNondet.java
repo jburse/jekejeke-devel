@@ -174,14 +174,13 @@ final class MemberMethodNondet extends AbstractMember {
                     d.remTab(en);
 
                 if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
-                    ChoiceForeign cp = new ChoiceForeign(en.choices);
+                    ChoiceForeign cp = new ChoiceForeign(en.choices, en.contdisplay);
                     cp.co = co;
                     cp.del = this;
                     cp.obj = obj;
                     cp.args = args;
                     cp.mark = mark;
                     cp.goalskel = en.contskel;
-                    cp.goaldisplay = en.contdisplay;
                     en.choices = cp;
                     en.number++;
                 }

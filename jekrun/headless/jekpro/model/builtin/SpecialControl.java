@@ -1,5 +1,6 @@
 package jekpro.model.builtin;
 
+import jekpro.frequent.standard.ChoiceAtomic;
 import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -195,10 +196,9 @@ public final class SpecialControl extends AbstractSpecial {
      *
      * @param en The engine.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     public static boolean handleException(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         EngineException y = en.fault;
@@ -219,7 +219,7 @@ public final class SpecialControl extends AbstractSpecial {
         en.skel = temp[2];
         en.display = ref;
         en.deref();
-        if (!SpecialSignal.invokeAtomic(en))
+        if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_MASK))
             return false;
         return true;
     }

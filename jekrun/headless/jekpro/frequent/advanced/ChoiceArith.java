@@ -4,6 +4,7 @@ import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.arithmetic.EvaluableElem;
@@ -46,7 +47,6 @@ import jekpro.tools.term.SkelVar;
 final class ChoiceArith extends AbstractChoice {
     private Number cur;
     private final Intermediate goalskel;
-    private final CallFrame goaldisplay;
     private final AbstractUndo mark;
     private final int id;
 
@@ -60,9 +60,8 @@ final class ChoiceArith extends AbstractChoice {
     ChoiceArith(AbstractChoice n,
                 Number c, Intermediate r, CallFrame u,
                 AbstractUndo m, int i) {
-        super(n);
+        super(n, u);
         goalskel = r;
-        goaldisplay = u;
         cur = c;
         mark = m;
         id = i;
@@ -165,10 +164,12 @@ final class ChoiceArith extends AbstractChoice {
      * @param n  The cut level.
      * @param en The engine.
      */
-    public final void moniCut(int n, Engine en) {
+    public void moniCut(int n, Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;
+
+        replySuccess(n, en);
     }
 
 }

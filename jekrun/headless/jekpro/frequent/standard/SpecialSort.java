@@ -19,7 +19,7 @@ import matula.util.data.*;
 import java.util.Comparator;
 
 /**
- * <p>Provides built-in predicates for the set theory.</p>
+ * <p>Provides built-in predicates for the sort predicates.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
