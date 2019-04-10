@@ -215,23 +215,11 @@ public class Engine extends StackElement {
      * @param n The cut number.
      */
     public final void cutChoices(int n) {
-        AbstractChoice back = null;
         while (n < number) {
             AbstractChoice choice = choices;
 
             choice.moniCut(n, this);
-
-            choice.next = back;
-            back = choice;
-        }
-        while (back != null) {
-            CallFrame u = back.goaldisplay;
-            while (u != contdisplay && (u.flags & Directive.MASK_DIRE_TREE) == 0) {
-                u.flags |= Directive.MASK_DIRE_TREE;
-                Success.replayNext(u, this);
-                u = u.contdisplay;
-            }
-            back = back.next;
+            choice.replayNext(this);
         }
     }
 
