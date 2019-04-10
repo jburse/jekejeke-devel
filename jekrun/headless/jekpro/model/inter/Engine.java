@@ -6,6 +6,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.model.rope.Success;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
@@ -58,7 +59,6 @@ public class Engine extends StackElement {
     public EngineWrap enginewrap;
     public Object proxy;
     public EngineException fault;
-    public CallFrame window;
 
     /**
      * <p>Create a new engine.</p>
@@ -192,13 +192,13 @@ public class Engine extends StackElement {
                     if (hasCont())
                         retireCont();
                     contskel = contskel.getNextRaw(this);
-                        found = contskel.resolveNext(this);
+                    found = contskel.resolveNext(this);
                 } else {
                     break;
                 }
             } else {
                 if (snap < number) {
-                        found = choices.moniNext(this);
+                    found = choices.moniNext(this);
                 } else {
                     break;
                 }
@@ -209,16 +209,30 @@ public class Engine extends StackElement {
 
     /**
      * <p>Prune the choices.</p>
-     * <p>The current exception and the sliding window are passed via
-     * the skel and display of this engine.</p>
-     * <p>The new current exception and the sliding window are returned via
-     * the skel and display of this engine.</p>
+     * <p>The current exception is passed via the engine fault.</p>
+     * <p>The new current exception is returned via the engine fault.</p>
      *
      * @param n The cut number.
      */
     public final void cutChoices(int n) {
-        while (n < number)
-            choices.moniCut(n, this);
+        AbstractChoice back = null;
+        while (n < number) {
+            AbstractChoice choice = choices;
+
+            choice.moniCut(n, this);
+
+            choice.next = back;
+            back = choice;
+        }
+        while (back != null) {
+            CallFrame u = back.goaldisplay;
+            while (u != contdisplay && (u.flags & Directive.MASK_DIRE_TREE) == 0) {
+                u.flags |= Directive.MASK_DIRE_TREE;
+                Success.replayNext(u, this);
+                u = u.contdisplay;
+            }
+            back = back.next;
+        }
     }
 
     /***************************************************************/
@@ -375,10 +389,8 @@ public class Engine extends StackElement {
         } catch (EngineException x) {
             contskel = r;
             contdisplay = u;
-            window = contdisplay;
             fault = x;
             cutChoices(snap);
-            window = null;
             releaseBind(mark);
             visor.setVerify(backverify);
             visor.setIgnore(backignore);
@@ -388,10 +400,8 @@ public class Engine extends StackElement {
                     EngineException.fetchStack(this));
             contskel = r;
             contdisplay = u;
-            window = contdisplay;
             fault = x;
             cutChoices(snap);
-            window = null;
             releaseBind(mark);
             visor.setVerify(backverify);
             visor.setIgnore(backignore);
@@ -399,10 +409,8 @@ public class Engine extends StackElement {
         }
         contskel = r;
         contdisplay = u;
-        window = contdisplay;
         fault = null;
         cutChoices(snap);
-        window = null;
         releaseBind(mark);
         visor.setVerify(backverify);
         visor.setIgnore(backignore);

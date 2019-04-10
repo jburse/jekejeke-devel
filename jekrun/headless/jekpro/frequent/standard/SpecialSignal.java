@@ -137,10 +137,8 @@ public final class SpecialSignal extends AbstractSpecial {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             ChoiceAtomic.setFlags(mask, backup, en);
             throw en.fault;
         } catch (EngineMessage y) {
@@ -148,10 +146,8 @@ public final class SpecialSignal extends AbstractSpecial {
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             ChoiceAtomic.setFlags(mask, backup, en);
             throw en.fault;
         }

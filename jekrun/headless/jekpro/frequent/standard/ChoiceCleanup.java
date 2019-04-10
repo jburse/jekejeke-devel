@@ -70,8 +70,7 @@ final class ChoiceCleanup extends AbstractChoice {
 
     /**
      * <p>Logically evaluate a term in a list of goals for an additional time.</p>
-     * <p>The result is returned via the skel and display of the engine.</p>
-     * <p>A new exception sliding window is returned via the engine display.</p>
+     * <p>The result is returned via the contskel and contdisplay of the engine.</p>
      *
      * @param en The engine.
      * @return True if the term succeeded, otherwise false.
@@ -98,8 +97,8 @@ final class ChoiceCleanup extends AbstractChoice {
 
     /**
      * <p>Free data used to logically evaluate a term an additional time.</p>
-     * <p>The current exception and sliding window are passed via the engine skel and display.</p>
-     * <p>The new current exception and sliding window are returned via the engine skel and display.</p>
+     * <p>The current exception is passed via the engine fault.</p>
+     * <p>The new current exception is returned via the engine skel and display.</p>
      *
      * @param n  The cut level.
      * @param en The engine.
@@ -109,8 +108,7 @@ final class ChoiceCleanup extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        /* backup exception and sliding window */
-        CallFrame back = en.window;
+        /* backup exception */
         EngineException back2 = en.fault;
 
         /* fetch term argument */
@@ -135,11 +133,8 @@ final class ChoiceCleanup extends AbstractChoice {
         en.contskel = r;
         en.contdisplay = u;
 
-        /* restore exception and sliding window */
-        en.window = back;
+        /* restore exception */
         en.fault = back2;
-
-        replySuccess(n, en);
     }
 
     /**
@@ -166,10 +161,8 @@ final class ChoiceCleanup extends AbstractChoice {
         } catch (EngineException x) {
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.visor.setMask(backmask);
             en.visor.setVerify(backverify);
             throw en.fault;
@@ -178,20 +171,16 @@ final class ChoiceCleanup extends AbstractChoice {
                     EngineException.fetchStack(en));
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.visor.setMask(backmask);
             en.visor.setVerify(backverify);
             throw en.fault;
         }
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         en.visor.setMask(backmask);
         en.visor.setVerify(backverify);
         if (en.fault != null)

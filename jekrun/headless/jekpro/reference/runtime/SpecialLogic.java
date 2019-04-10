@@ -70,10 +70,8 @@ public final class SpecialLogic extends AbstractSpecial {
             case SPECIAL_SYS_LOCAL_CUT:
                 CallFrame ref2 = en.contdisplay;
                 if (ref2.number < en.number) {
-                    en.window = ref2;
                     en.fault = null;
                     en.cutChoices(ref2.number);
-                    en.window = null;
                     if (en.fault != null)
                         throw en.fault;
                     en.contdisplay = ref2.getFrame(en);
@@ -84,10 +82,8 @@ public final class SpecialLogic extends AbstractSpecial {
                 if ((((ref2.flags & Directive.MASK_DIRE_MORE) != 0) ?
                         ref2.number + 1 : ref2.number) >= en.number) {
                     if (ref2.number < en.number) {
-                        en.window = ref2;
                         en.fault = null;
                         en.cutChoices(ref2.number);
-                        en.window = null;
                         if (en.fault != null)
                             throw en.fault;
                         en.contdisplay = ref2.getFrame(en);

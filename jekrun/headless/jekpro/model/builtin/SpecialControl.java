@@ -82,29 +82,33 @@ public final class SpecialControl extends AbstractSpecial {
                 while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
                         ref2.barrier == -1)
                     ref2 = ref2.contdisplay;
-                int level = (ref2.barrier != -1 ?
-                        ref2.barrier : ref2.number);
+                int level = (ref2.barrier != -1 ? ref2.barrier : ref2.number);
                 if (level < en.number) {
+                    /* backup continuation */
+                    Intermediate r = en.contskel;
                     ref2 = en.contdisplay;
+                    CallFrame u = ref2;
+
                     while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
                             ref2.barrier == -1) {
-                        en.window = ref2;
                         en.fault = null;
                         en.cutChoices(ref2.number);
-                        en.window = null;
                         if (en.fault != null)
                             throw en.fault;
                         ref2.number = level;
+
+                        en.contskel = ref2.contskel;
                         ref2 = ref2.contdisplay;
+                        en.contdisplay = ref2;
                     }
-                    en.window = ref2;
                     en.fault = null;
                     en.cutChoices(level);
-                    en.window = null;
                     if (en.fault != null)
                         throw en.fault;
-                    ref2 = en.contdisplay;
-                    en.contdisplay = ref2.getFrame(en);
+
+                    /* restore and last call */
+                    en.contskel = r;
+                    en.contdisplay = u.getFrame(en);
                 }
                 return true;
             case SPECIAL_SYS_FETCH_STACK:
@@ -164,20 +168,16 @@ public final class SpecialControl extends AbstractSpecial {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
         } catch (EngineMessage y) {
             EngineException x = new EngineException(y,
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
         }
         if (en.fault != null)

@@ -64,8 +64,7 @@ public final class ChoiceAtomic extends AbstractChoice {
 
     /**
      * <p>Logically evaluate a term in a list of goals for an additional time.</p>
-     * <p>The result is returned via the skel and display of the engine.</p>
-     * <p>A new exception sliding window is returned via the engine display.</p>
+     * <p>The result is returned via the contskel and contdisplay of the engine.</p>
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
@@ -87,10 +86,8 @@ public final class ChoiceAtomic extends AbstractChoice {
         } catch (EngineException x) {
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             setFlags(mask, backup, en);
             throw en.fault;
         } catch (EngineMessage y) {
@@ -98,10 +95,8 @@ public final class ChoiceAtomic extends AbstractChoice {
                     EngineException.fetchStack(en));
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             setFlags(mask, backup, en);
             throw en.fault;
         }
@@ -120,8 +115,9 @@ public final class ChoiceAtomic extends AbstractChoice {
 
     /**
      * <p>Free data used to logically evaluate a term an additional time.</p>
-     * <p>The current exception and sliding window are passed via the engine skel and display.</p>
-     * <p>The new current exception and sliding window are returned via the engine skel and display.</p>
+     * <p>The current exception is passed via the engine fault.</p>
+     * <p>The new current exception is returned via the engine fault.</p>
+     * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
      * @param n  The cut level.
      * @param en The engine.
@@ -133,28 +129,19 @@ public final class ChoiceAtomic extends AbstractChoice {
 
         int backup = clearFlags(mask, en);
 
-        /* backup sliding window */
-        CallFrame back = en.window;
-
         /* backup continuation */
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
 
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        en.window = en.contdisplay;
         en.cutChoices(snap);
 
         /* restore continuation */
         en.contskel = r;
         en.contdisplay = u;
 
-        /* restore sliding window */
-        en.window = back;
-
         setFlags(mask, backup, en);
-
-        replySuccess(n, en);
     }
 
     /**

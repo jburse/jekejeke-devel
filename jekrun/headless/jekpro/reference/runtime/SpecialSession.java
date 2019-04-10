@@ -372,10 +372,8 @@ public final class SpecialSession extends AbstractSpecial {
                 } catch (EngineException x) {
                     en.contskel = r;
                     en.contdisplay = u;
-                    en.window = en.contdisplay;
                     en.fault = x;
                     en.cutChoices(snap);
-                    en.window = null;
                     en.releaseBind(mark);
                     en.visor.query = backref;
                     throw en.fault;
@@ -386,20 +384,16 @@ public final class SpecialSession extends AbstractSpecial {
                                     EngineException.fetchStack(en), pos, en));
                     en.contskel = r;
                     en.contdisplay = u;
-                    en.window = en.contdisplay;
                     en.fault = x;
                     en.cutChoices(snap);
-                    en.window = null;
                     en.releaseBind(mark);
                     en.visor.query = backref;
                     throw en.fault;
                 }
                 en.contskel = r;
                 en.contdisplay = u;
-                en.window = en.contdisplay;
                 en.fault = null;
                 en.cutChoices(snap);
-                en.window = null;
                 en.releaseBind(mark);
                 en.visor.query = backref;
                 if (en.fault != null)
@@ -473,10 +467,8 @@ public final class SpecialSession extends AbstractSpecial {
             } catch (EngineException x) {
                 en.contskel = r;
                 en.contdisplay = u;
-                en.window = en.contdisplay;
                 en.fault = x;
                 en.cutChoices(snap);
-                en.window = null;
                 en.releaseBind(mark);
                 en.visor.query = backref;
                 throw en.fault;
@@ -487,20 +479,16 @@ public final class SpecialSession extends AbstractSpecial {
                         EngineException.fetchStack(en), pos, en));
                 en.contskel = r;
                 en.contdisplay = u;
-                en.window = en.contdisplay;
                 en.fault = x;
                 en.cutChoices(snap);
-                en.window = null;
                 en.releaseBind(mark);
                 en.visor.query = backref;
                 throw en.fault;
             }
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = null;
             en.cutChoices(snap);
-            en.window = null;
             en.visor.query = backref;
             t = var;
             d = ref.disp;

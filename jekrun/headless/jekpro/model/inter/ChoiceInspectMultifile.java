@@ -62,8 +62,7 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
 
     /**
      * <p>Logically evaluate a term in a list of goals for an additional time.</p>
-     * <p>The result is returned via the skel and display of the engine.</p>
-     * <p>A new exception sliding window is returned via the engine display.</p>
+     * <p>The result is returned via the contskel and contdisplay of the engine.</p>
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.

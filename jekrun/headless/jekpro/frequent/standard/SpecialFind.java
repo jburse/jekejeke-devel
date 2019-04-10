@@ -169,20 +169,16 @@ public final class SpecialFind extends AbstractSpecial {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             throw en.fault;
         } catch (EngineMessage y) {
             EngineException x = new EngineException(y,
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             throw en.fault;
         }
         en.contskel = r;

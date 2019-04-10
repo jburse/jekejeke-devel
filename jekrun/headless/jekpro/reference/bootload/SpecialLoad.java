@@ -854,10 +854,8 @@ public final class SpecialLoad extends AbstractSpecial {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             throw en.fault;
         } catch (EngineMessage y) {
@@ -865,19 +863,15 @@ public final class SpecialLoad extends AbstractSpecial {
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         try {
             if (en.fault != null)
                 throw en.fault;
