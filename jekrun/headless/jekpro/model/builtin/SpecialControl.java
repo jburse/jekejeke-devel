@@ -141,10 +141,9 @@ public final class SpecialControl extends AbstractSpecial {
      * @param en The engine.
      * @return True fi the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     private boolean invokeTrap(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         AbstractUndo mark = en.bind;

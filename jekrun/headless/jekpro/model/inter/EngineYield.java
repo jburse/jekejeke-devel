@@ -35,7 +35,7 @@ import jekpro.model.pretty.Store;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class EngineYield extends Engine {
+public final class EngineYield extends Engine {
     private static final int YIELD_MAX = 20000;
 
     private int yieldcount;
