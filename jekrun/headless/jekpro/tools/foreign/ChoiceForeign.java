@@ -68,8 +68,7 @@ final class ChoiceForeign extends AbstractChoice {
 
     /**
      * <p>Logically evaluate a term in a list of goals for an additional time.</p>
-     * <p>The result is returned via the skel and display of the engine.</p>
-     * <p>A new exception sliding window is returned via the engine display.</p>
+     * <p>The result is returned via the contskel and contdisplay of the engine.</p>
      *
      * @param en The engine.
      * @return True if the foreign predicate succeeded, otherwise false.
@@ -153,8 +152,9 @@ final class ChoiceForeign extends AbstractChoice {
 
     /**
      * <p>Free data used to logically evaluate a term an additional time.</p>
-     * <p>The sliding window is passed via the engine display.</p>
-     * <p>The new sliding window is passed via the engine display.</p>
+     * <p>The current exception is passed via the engine fault.</p>
+     * <p>The new current exception is returned via the engine fault.</p>
+     * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
      * @param n  The cut level.
      * @param en The engine.
@@ -164,13 +164,8 @@ final class ChoiceForeign extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0) {
-            replySuccess(n, en);
+        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0)
             return;
-        }
-
-        /* backup sliding window */
-        CallFrame back = en.window;
 
         /* backup continuation */
         Intermediate r = en.contskel;
@@ -210,11 +205,6 @@ final class ChoiceForeign extends AbstractChoice {
         /* restore continuation */
         en.contskel = r;
         en.contdisplay = u;
-
-        /* restore sliding window */
-        en.window = back;
-
-        replySuccess(n, en);
     }
 
 }

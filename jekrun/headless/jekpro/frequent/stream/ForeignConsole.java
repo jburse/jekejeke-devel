@@ -9,7 +9,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.regex.CodeType;
 import matula.util.regex.ScannerToken;
-import matula.util.wire.XSelectFormat;
+import matula.util.wire.LangProperties;
 
 import java.io.*;
 import java.util.Locale;
@@ -176,7 +176,7 @@ public final class ForeignConsole {
                                           String locstr, Properties prop)
             throws IOException, InterpreterMessage, InterpreterException {
         try {
-            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Locale locale = LangProperties.stringToLocale(locstr);
             Engine en = (Engine) inter.getEngine();
             EngineException.printStackTrace(wr, AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, prop, en);

@@ -12,7 +12,6 @@ import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 import matula.util.regex.ScannerToken;
-import matula.util.wire.JsonReader;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -738,7 +737,7 @@ public class PrologWriter {
         }
         StringBuilder buf = new StringBuilder();
         buf.appendCodePoint(quote);
-        fun = JsonReader.JSON_COMPLANG.escapeControl(fun,
+        fun = CompLang.JSON_COMPLANG.escapeControl(fun,
                 CodeType.ISO_CODETYPE, quote);
         buf.append(fun);
         buf.appendCodePoint(quote);

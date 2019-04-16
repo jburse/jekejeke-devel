@@ -41,6 +41,9 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class LangProperties {
+    public static final String PATTERN_DATE = "yyyy-MM-dd";
+    public static final String PATTERN_DATETIME = "yyyy-MM-dd HH:mm:ss";
+
     private static final HashMap<String, Properties> cache =
             new HashMap<String, Properties>();
 
@@ -79,4 +82,29 @@ public final class LangProperties {
         }
     }
 
+    /**
+     * <p>Convert a string to a locale.</p>
+     *
+     * @param locstr The string.
+     * @return The locale.
+     */
+    public static Locale stringToLocale(String locstr) {
+        if (!"en_GB".equals(locstr)) {
+            int k1 = locstr.indexOf('_');
+            if (k1 == -1) {
+                return new Locale(locstr);
+            } else {
+                int k2 = locstr.indexOf('_', k1 + 1);
+                if (k2 == -1) {
+                    return new Locale(locstr.substring(0, k1),
+                            locstr.substring(k1 + 1));
+                } else {
+                    return new Locale(locstr.substring(0, k1),
+                            locstr.substring(k1 + 1, k2), locstr.substring(k2 + 1));
+                }
+            }
+        } else {
+            return Locale.UK;
+        }
+    }
 }

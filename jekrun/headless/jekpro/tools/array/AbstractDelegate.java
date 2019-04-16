@@ -295,10 +295,8 @@ public abstract class AbstractDelegate {
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));
         en.contskel = r;
         en.contdisplay = u;
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         if (en.fault != null)
             throw en.fault;
     }

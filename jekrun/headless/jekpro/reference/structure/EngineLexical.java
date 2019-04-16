@@ -9,7 +9,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.regex.IgnoreCase;
-import matula.util.wire.XSelectFormat;
+import matula.util.wire.LangProperties;
 
 import java.text.Collator;
 import java.util.Comparator;
@@ -157,7 +157,7 @@ public final class EngineLexical implements Comparator<Object> {
         if ("IGNORE_CASE".equals(fun)) {
             return DEFAULT;
         } else {
-            Locale loc = XSelectFormat.stringToLocale(fun);
+            Locale loc = LangProperties.stringToLocale(fun);
             Comparator<String> cmpstr = (Comparator) Collator.getInstance(loc);
             return new EngineLexical(cmpstr);
         }

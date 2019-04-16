@@ -370,10 +370,8 @@ public final class CallIn {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -383,10 +381,8 @@ public final class CallIn {
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -427,10 +423,8 @@ public final class CallIn {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -440,10 +434,8 @@ public final class CallIn {
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             en.releaseBind(mark);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
@@ -471,10 +463,8 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         en.releaseBind(mark);
 
         en.visor.setFence(backthread);
@@ -499,10 +489,8 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         if (en.fault != null)
             en.releaseBind(mark);
 
@@ -524,10 +512,8 @@ public final class CallIn {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
-        en.window = en.contdisplay;
         en.fault = (e != null ? (EngineException) e.getException() : null);
         en.cutChoices(snap);
-        en.window = null;
         en.releaseBind(mark);
 
         en.visor.setFence(backthread);

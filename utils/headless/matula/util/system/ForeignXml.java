@@ -1,7 +1,8 @@
 package matula.util.system;
 
 import matula.util.data.MapHash;
-import matula.util.format.XmlMachine;
+import matula.util.regex.CodeType;
+import matula.util.regex.CompLang;
 
 import java.text.ParseException;
 
@@ -46,7 +47,7 @@ public final class ForeignXml {
     private static final String[] entityrev = new String[256];
 
     static {
-        addEntity("quot", XmlMachine.CHAR_DOUBLE);
+        addEntity("quot", CodeType.LINE_DOUBLE);
 //        addEntity("apos", XmlMachine.CHAR_SINGLE);
         addEntity("lt", '<');
         addEntity("gt", '>');
@@ -135,9 +136,9 @@ public final class ForeignXml {
             if (help != null) {
                 if (buf == null)
                     buf = new StringBuilder(s.substring(back, begin));
-                buf.appendCodePoint(XmlMachine.CHAR_AMPER);
+                buf.appendCodePoint(CompLang.CHAR_AMPER);
                 buf.append(help);
-                buf.appendCodePoint(XmlMachine.CHAR_SEMI);
+                buf.appendCodePoint(CompLang.CHAR_SEMI);
             } else {
                 if (buf != null)
                     buf.appendCodePoint(ch);
@@ -164,20 +165,20 @@ public final class ForeignXml {
         int pos = 0;
         while (pos < n) {
             int ch = str.codePointAt(pos);
-            if (ch == XmlMachine.CHAR_AMPER) {
+            if (ch == CompLang.CHAR_AMPER) {
                 int k = pos;
                 pos += Character.charCount(ch);
                 if (temp == null)
                     temp = new StringBuilder();
                 while (pos < n && pos - k < MAX_ENTITY &&
-                        (ch = str.codePointAt(pos)) != XmlMachine.CHAR_SEMI &&
-                        ch != XmlMachine.CHAR_AMPER &&
-                        ch > XmlMachine.CHAR_SPACE &&
-                        ch != XmlMachine.CHAR_BOM) {
+                        (ch = str.codePointAt(pos)) != CompLang.CHAR_SEMI &&
+                        ch != CompLang.CHAR_AMPER &&
+                        ch > CompLang.CHAR_SPACE &&
+                        ch != CompLang.CHAR_BOM) {
                     temp.appendCodePoint(ch);
                     pos += Character.charCount(ch);
                 }
-                if (pos < n && pos - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
+                if (pos < n && pos - k < MAX_ENTITY && ch == CompLang.CHAR_SEMI) {
                     String help = temp.toString();
                     int ival = getEntity(help);
                     if (ival != -1) {
@@ -186,16 +187,16 @@ public final class ForeignXml {
                         buf.appendCodePoint(ival);
                     } else {
                         if (buf != null) {
-                            buf.appendCodePoint(XmlMachine.CHAR_AMPER);
+                            buf.appendCodePoint(CompLang.CHAR_AMPER);
                             buf.append(help);
-                            buf.appendCodePoint(XmlMachine.CHAR_SEMI);
+                            buf.appendCodePoint(CompLang.CHAR_SEMI);
                         }
                     }
                     pos += Character.charCount(ch);
                 } else {
                     if (buf != null) {
                         String help = temp.toString();
-                        buf.appendCodePoint(XmlMachine.CHAR_AMPER);
+                        buf.appendCodePoint(CompLang.CHAR_AMPER);
                         buf.append(help);
                     }
                 }
@@ -224,20 +225,20 @@ public final class ForeignXml {
         int i = 0;
         for (; i < n && 0 < pos; i++) {
             char ch = str.charAt(i);
-            if (ch == XmlMachine.CHAR_AMPER) {
+            if (ch == CompLang.CHAR_AMPER) {
                 int k = i;
                 i++;
                 if (buf == null)
                     buf = new StringBuilder();
                 while (i < n && i - k < MAX_ENTITY &&
-                        (ch = str.charAt(i)) != XmlMachine.CHAR_SEMI &&
-                        ch != XmlMachine.CHAR_AMPER &&
-                        ch > XmlMachine.CHAR_SPACE &&
-                        ch != XmlMachine.CHAR_BOM) {
+                        (ch = str.charAt(i)) != CompLang.CHAR_SEMI &&
+                        ch != CompLang.CHAR_AMPER &&
+                        ch > CompLang.CHAR_SPACE &&
+                        ch != CompLang.CHAR_BOM) {
                     buf.append(ch);
                     i++;
                 }
-                if (i < n && i - k < MAX_ENTITY && ch == XmlMachine.CHAR_SEMI) {
+                if (i < n && i - k < MAX_ENTITY && ch == CompLang.CHAR_SEMI) {
                     String help = buf.toString();
                     int ival = getEntity(help);
                     if (ival != -1) {

@@ -32,6 +32,12 @@ package matula.util.regex;
  */
 public final class CompLang {
     public final static CompLang ISO_COMPLANG = new CompLang();
+    public final static CompLang JSON_COMPLANG = new CompLang();
+
+    public static final char CHAR_AMPER = '&';
+    public static final char CHAR_SEMI = ';';
+    public static final char CHAR_BOM = 0xFEFF;
+    public static final char CHAR_SPACE = ' ';
 
     public static final String OP_SYNTAX_ILLEGAL_ESCAPE = "illegal_escape";
     public static final String OP_SYNTAX_ILLEGAL_LAYOUT = "illegal_layout";
@@ -47,6 +53,11 @@ public final class CompLang {
         ISO_COMPLANG.setBlockCommentStart("/*");
         ISO_COMPLANG.setBlockCommentEnd("*/");
         ISO_COMPLANG.setCodeEscapes("x0");
+
+        CompLang.JSON_COMPLANG.setLineComment("//");
+        CompLang.JSON_COMPLANG.setBlockCommentStart("/*");
+        CompLang.JSON_COMPLANG.setBlockCommentEnd("*/");
+        CompLang.JSON_COMPLANG.setCodeEscapes("u");
     }
 
     /**

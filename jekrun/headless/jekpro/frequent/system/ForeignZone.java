@@ -1,7 +1,7 @@
 package jekpro.frequent.system;
 
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.wire.XSelectFormat;
+import matula.util.wire.LangProperties;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -57,7 +57,7 @@ public final class ForeignZone {
      */
     public static Calendar sysGetTime(String locstr,
                                       long time, String zone) {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
+        Locale locale = LangProperties.stringToLocale(locstr);
         TimeZone tz;
         if (!"GMT".equals(zone)) {
             tz = TimeZone.getTimeZone(zone);
@@ -83,7 +83,7 @@ public final class ForeignZone {
      */
     public static String sysDateToString(String locstr,
                                          String format, Object date) {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
+        Locale locale = LangProperties.stringToLocale(locstr);
         SimpleDateFormat sf = new SimpleDateFormat(format, locale);
         if (date instanceof Calendar) {
             sf.setCalendar((Calendar) date);
@@ -105,7 +105,7 @@ public final class ForeignZone {
                                          String format, String str)
             throws InterpreterMessage {
         try {
-            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Locale locale = LangProperties.stringToLocale(locstr);
             SimpleDateFormat sf = new SimpleDateFormat(format, locale);
             return sf.parse(str);
         } catch (ParseException x) {

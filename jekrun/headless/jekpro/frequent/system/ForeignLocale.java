@@ -16,7 +16,7 @@ import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
 import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
-import matula.util.wire.XSelectFormat;
+import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -122,7 +122,7 @@ public final class ForeignLocale {
     public static String sysFormatToString(Interpreter inter, String locstr,
                                            String format, Object list)
             throws InterpreterMessage, InterpreterException {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
+        Locale locale = LangProperties.stringToLocale(locstr);
         Object[] args = ForeignLocale.prepareArguments(inter, list);
         return String.format(locale, format, args);
     }
@@ -187,7 +187,7 @@ public final class ForeignLocale {
                                         Properties obj, Object term)
             throws InterpreterMessage, InterpreterException {
         try {
-            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Locale locale = LangProperties.stringToLocale(locstr);
             Engine en = (Engine) inter.getEngine();
             return EngineMessage.messageMake(AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, obj, en);
@@ -217,7 +217,7 @@ public final class ForeignLocale {
                                       Properties obj, Object term)
             throws InterpreterMessage, InterpreterException {
         try {
-            Locale locale = XSelectFormat.stringToLocale(locstr);
+            Locale locale = LangProperties.stringToLocale(locstr);
             Engine en = (Engine) inter.getEngine();
             return EngineException.errorMake(AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, obj, en);
@@ -242,7 +242,7 @@ public final class ForeignLocale {
     public static Properties sysGetErrorProperties(Interpreter inter,
                                                    String locstr)
             throws IOException {
-        Locale locale = XSelectFormat.stringToLocale(locstr);
+        Locale locale = LangProperties.stringToLocale(locstr);
         return inter.getKnowledgebase().getErrorProperties(locale);
     }
 
@@ -259,7 +259,7 @@ public final class ForeignLocale {
                                                          String locstr, String clazz)
             throws InterpreterMessage {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        Locale locale = XSelectFormat.stringToLocale(locstr);
+        Locale locale = LangProperties.stringToLocale(locstr);
         return capa.getDescriptionProperties(locale);
     }
 

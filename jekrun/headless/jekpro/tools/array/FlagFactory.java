@@ -11,7 +11,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
-import matula.util.wire.XSelectFormat;
+import matula.util.wire.LangProperties;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -254,7 +254,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                 return true;
             case FLAG_SYS_LOCALE:
                 fun = SpecialUniv.derefAndCastString(m, d);
-                en.store.foyer.locale = XSelectFormat.stringToLocale(fun);
+                en.store.foyer.locale = LangProperties.stringToLocale(fun);
                 return true;
             case FLAG_SYS_GOOD_FOR:
                 en.store.foyer.goodfor = SpecialUniv.derefAndCastRefOrNull(m, d);
