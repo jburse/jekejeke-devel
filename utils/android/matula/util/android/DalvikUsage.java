@@ -1,6 +1,6 @@
 package matula.util.android;
 
-import matula.util.data.ListArray;
+import matula.util.data.AssocArray;
 
 /**
  * <p>Dalvik memory usage events.</p>
@@ -36,7 +36,8 @@ import matula.util.data.ListArray;
 public final class DalvikUsage {
     public static DalvikUsage DEFAULT = new DalvikUsage();
 
-    private final ListArray<NotificationListener> listeners = new ListArray<NotificationListener>();
+    private final AssocArray<NotificationListener, Object> listeners
+            = new AssocArray<NotificationListener, Object>();
 
     /**
      * <p>Create a dalvik usage.</p>
@@ -49,10 +50,11 @@ public final class DalvikUsage {
      * <p>Add a notification listener.</p>
      *
      * @param listener The listener.
+     * @param handback The handback.
      */
-    public final void addListener(NotificationListener listener) {
+    public final void addListener(NotificationListener listener, Object handback) {
         synchronized (listeners) {
-            listeners.add(listener);
+            listeners.add(listener, handback);
         }
     }
 
@@ -61,9 +63,16 @@ public final class DalvikUsage {
      *
      * @param listener The listener.
      */
-    public final void removeListener(NotificationListener listener) {
+    public final void removeListener(NotificationListener listener, Object handback) {
         synchronized (listeners) {
-            listeners.remove(listener);
+            for (int i = 0; i < listeners.size(); i++) {
+                if (listeners.getKey(i) != listener)
+                    continue;
+                if (listeners.getValue(i) != handback)
+                    continue;
+                listeners.remove(i);
+                return;
+            }
         }
     }
 
@@ -72,13 +81,16 @@ public final class DalvikUsage {
      */
     public final void fireListeners() {
         NotificationListener[] snapshot;
+        Object[] snapshot2;
         synchronized (listeners) {
             snapshot = new NotificationListener[listeners.size()];
-            listeners.toArray(snapshot);
+            snapshot2 = new Object[listeners.size()];
+            listeners.toArray(snapshot, snapshot2);
         }
         for (int i = 0; i < snapshot.length; i++) {
             NotificationListener listener = snapshot[i];
-            listener.handleNotification();
+            Object handback = snapshot2[i];
+            listener.handleNotification(handback);
         }
     }
 

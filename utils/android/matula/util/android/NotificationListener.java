@@ -37,7 +37,9 @@ public interface NotificationListener extends EventListener {
 
     /**
      * <p>Handle a notification.</p>
+     *
+     * @param handback The handback.
      */
-    public void handleNotification();
+    void handleNotification(Object handback);
 
 }

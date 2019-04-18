@@ -71,6 +71,25 @@ public abstract class AbstractAssoc<K, V>
      */
     public abstract void clear();
 
+    /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target The key array.
+     * @param target2 The value array.
+     */
+    public void toArray(K[] target, V[] target2) {
+        toArray(target, target2, 0);
+    }
+
+    /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target The key array.
+     * @param target2 The value array.
+     * @param pos    The start index.
+     */
+    public abstract void toArray(K[] target, V[] target2, int pos);
+
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/

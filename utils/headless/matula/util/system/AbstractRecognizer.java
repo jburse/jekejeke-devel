@@ -58,4 +58,11 @@ public abstract class AbstractRecognizer {
      */
     public abstract AbstractRecognizer getParent();
 
+    /**
+     * <p>Retrieve the loader.</p>
+     *
+     * @return The loader.
+     */
+    public abstract ClassLoader getLoader();
+
 }

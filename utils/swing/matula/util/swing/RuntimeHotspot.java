@@ -1,6 +1,7 @@
 package matula.util.swing;
 
 import derek.util.protect.LicenseError;
+import matula.comp.sharik.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.system.AbstractRuntime;
 import matula.util.system.ForeignDomain;
@@ -49,12 +50,14 @@ import java.util.jar.Manifest;
  */
 public final class RuntimeHotspot extends AbstractRuntime {
     public static RuntimeHotspot DEFAULT = new RuntimeHotspot();
+
     public static final String DIRECTORY_APK = "apk";
 
     /**
      * <p>Create an activator android.</p>
      */
     private RuntimeHotspot() {
+        setAspect(AbstractBundle.ASPECT_SWING);
     }
 
     /*******************************************************************/

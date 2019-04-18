@@ -75,6 +75,22 @@ public abstract class AbstractMap<K, V>
     }
 
     /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target  The key array.
+     * @param target2 The value array.
+     * @param pos     The start index.
+     */
+    public void toArray(K[] target, V[] target2, int pos) {
+        for (MapEntry<K, V> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            target[pos] = entry.key;
+            target2[pos] = entry.value;
+            pos++;
+        }
+    }
+
+    /**
      * <p>Copy the hash map entries to an array.</p>
      *
      * @param target The entry array.

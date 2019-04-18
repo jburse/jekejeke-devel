@@ -47,6 +47,8 @@ public final class LangProperties {
     private static final HashMap<String, Properties> cache =
             new HashMap<String, Properties>();
 
+    private final static String EXT_PROPX = ".propertiesx";
+
     /*****************************************************************/
     /* Legacy API                                                    */
     /*****************************************************************/
@@ -59,23 +61,57 @@ public final class LangProperties {
      * @param locale The locale.
      * @return The language properties, or null.
      */
-    public static Properties getLang(Class<?> clazz, String name, Locale locale) {
-        try {
-            if (clazz == null)
-                throw new NullPointerException("clazz missing");
-            if (name == null)
-                throw new NullPointerException("name missing");
-            if (locale == null)
-                throw new NullPointerException("locale missing");
+    public static Properties getLang(Class<?> clazz, String name,
+                                     Locale locale) {
+        if (clazz == null)
+            throw new NullPointerException("clazz missing");
+        if (name == null)
+            throw new NullPointerException("name missing");
+        if (locale == null)
+            throw new NullPointerException("locale missing");
 
-            URL url = clazz.getResource(name + ".propertiesx");
-            if (url == null)
-                throw new NullPointerException("root missing");
-            String adr = url.toString();
-            String locstr = "_" + locale;
-            int k = adr.lastIndexOf(".");
-            String key = adr.substring(0, k) + locstr + adr.substring(k);
-            Properties prop = ForeignCache.getCached(cache, key);
+        URL url = clazz.getResource(name + EXT_PROPX);
+        if (url == null)
+            throw new NullPointerException("root missing");
+
+        String adr = url.toString();
+        String locstr = "_" + locale;
+        int k = adr.length() - EXT_PROPX.length();
+        String key = adr.substring(0, k) + locstr + adr.substring(k);
+        Properties prop = ForeignCache.getCached(cache, key);
+        try {
+            return ForeignCache.getLang(prop, DefaultRecognizer.DEFAULT, adr, locstr);
+        } catch (IOException x) {
+            throw new RuntimeException("io exception", x);
+        }
+    }
+
+    /**
+     * <p>Cache and load encrypted language properties.</p>
+     *
+     * @param loader The class loader.
+     * @param name   The name.
+     * @param locale The locale.
+     * @return The language properties, or null.
+     */
+    public static Properties getLang(ClassLoader loader, String name, Locale locale) {
+        if (loader == null)
+            throw new NullPointerException("loader missing");
+        if (name == null)
+            throw new NullPointerException("name missing");
+        if (locale == null)
+            throw new NullPointerException("locale missing");
+
+        URL url = loader.getResource(name + EXT_PROPX);
+        if (url == null)
+            throw new NullPointerException("root missing");
+
+        String adr = url.toString();
+        String locstr = "_" + locale;
+        int k = adr.length() - EXT_PROPX.length();
+        String key = adr.substring(0, k) + locstr + adr.substring(k);
+        Properties prop = ForeignCache.getCached(cache, key);
+        try {
             return ForeignCache.getLang(prop, DefaultRecognizer.DEFAULT, adr, locstr);
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
@@ -107,4 +143,5 @@ public final class LangProperties {
             return Locale.UK;
         }
     }
+
 }

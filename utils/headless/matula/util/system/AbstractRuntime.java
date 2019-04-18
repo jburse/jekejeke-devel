@@ -41,6 +41,8 @@ public abstract class AbstractRuntime {
     public final static String JAVA_ARRAY = "[]";
     private final static MapHash<String, Class> primitive = new MapHash<String, Class>();
 
+    private String aspect;
+
     /* initialize the primitives */
     static {
         primitive.add(Character.TYPE.getName(), Character.TYPE);
@@ -52,6 +54,25 @@ public abstract class AbstractRuntime {
         primitive.add(Double.TYPE.getName(), Double.TYPE);
         primitive.add(Boolean.TYPE.getName(), Boolean.TYPE);
         primitive.add(Void.TYPE.getName(), Void.TYPE);
+    }
+
+
+    /**
+     * <p>Retrieve the aspect.</p>
+     *
+     * @return The aspect.
+     */
+    public String getAspect() {
+        return aspect;
+    }
+
+    /**
+     * <p>Set the aspect.</p>
+     *
+     * @param a The aspect.
+     */
+    public void setAspect(String a) {
+        aspect = a;
     }
 
     /*******************************************************************/

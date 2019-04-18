@@ -85,16 +85,17 @@ public class AssocArray<K, V>
     public void remove(K key) {
         int i = indexOf(key);
         if (i < 0)
-            return;
+            remove(i);
+    }
 
-        int k = size - i - 1;
-        if (k > 0)
-            System.arraycopy(kvs, 2 * i + 2, kvs, 2 * i, 2 * k);
-        --size;
-        kvs[2 * size] = null;
-        kvs[2 * size + 1] = null;
-        if (size < kvs.length / 8 && kvs.length / 4 > MIN_SIZE)
-            resize(kvs.length / 4);
+    /**
+     * <p>Remove an element at a position.</p>
+     *
+     * @param i The index.
+     */
+    public void remove(int i) {
+        removeEntry(i);
+        resize();
     }
 
     /**
@@ -149,6 +150,21 @@ public class AssocArray<K, V>
             }
         }
         size = 0;
+    }
+
+    /**
+     * <p>Copy elements to an array.</p>
+     *
+     * @param target  The key array.
+     * @param target2 The value array.
+     * @param pos     The start index.
+     */
+    public void toArray(K[] target, V[] target2, int pos) {
+        for (int i = 0; i < size; i++) {
+            target[pos] = getKey(i);
+            target2[pos] = getValue(i);
+            pos++;
+        }
     }
 
     /***************************************************************/

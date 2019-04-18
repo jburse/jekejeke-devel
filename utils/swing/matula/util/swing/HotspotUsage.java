@@ -57,8 +57,9 @@ public final class HotspotUsage {
      * <p>If this is the first listener save and init the threshold.</p>
      *
      * @param listener The listener.
+     * @param handback The handback.
      */
-    public final void addListener(NotificationListener listener) {
+    public final void addListener(NotificationListener listener, Object handback) {
         synchronized (thresholds) {
             if (count == 0) {
                 Iterator<MemoryPoolMXBean> pool = ManagementFactory.getMemoryPoolMXBeans().iterator();
@@ -75,7 +76,7 @@ public final class HotspotUsage {
             count++;
         }
         NotificationEmitter emitter = (NotificationEmitter) ManagementFactory.getMemoryMXBean();
-        emitter.addNotificationListener(listener, null, null);
+        emitter.addNotificationListener(listener, null, handback);
     }
 
     /**
@@ -83,11 +84,12 @@ public final class HotspotUsage {
      * <p>If this is the last listener restore the threshold.</p>
      *
      * @param listener The listener.
+     * @param handback The handback.
      */
-    public final void removeListener(NotificationListener listener) {
+    public final void removeListener(NotificationListener listener, Object handback) {
         NotificationEmitter emitter = (NotificationEmitter) ManagementFactory.getMemoryMXBean();
         try {
-            emitter.removeNotificationListener(listener, null, null);
+            emitter.removeNotificationListener(listener, null, handback);
         } catch (ListenerNotFoundException e) {
             throw new RuntimeException(e);
         }
