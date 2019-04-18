@@ -163,57 +163,6 @@ public abstract class AbstractProperty<T> {
     /********************************************************************/
 
     /**
-     * <p>Add a value to some values.</p>
-     *
-     * @param vals The values.
-     * @param val  The value.
-     * @return The values.
-     */
-    public static Object[] addValue(Object[] vals, Object val) {
-        int k = indexValue(vals, val);
-        if (k != -1)
-            return vals;
-        Object[] vals2 = new Object[vals.length + 1];
-        System.arraycopy(vals, 0, vals2, 0, vals.length);
-        vals2[vals.length] = val;
-        return vals2;
-    }
-
-    /**
-     * <p>Remove a value from some values.</p>
-     *
-     * @param vals The values.
-     * @param val  The value.
-     * @return The values.
-     */
-    public static Object[] removeValue(Object[] vals, Object val) {
-        int k = indexValue(vals, val);
-        if (k == -1)
-            return vals;
-        if (vals.length == 1)
-            return AbstractBranch.FALSE_PROPERTY;
-        Object[] vals2 = new Object[vals.length - 1];
-        System.arraycopy(vals, 0, vals2, 0, k);
-        System.arraycopy(vals, k + 1, vals2, k, vals2.length - k);
-        return vals2;
-    }
-
-    /**
-     * <p>Find a value in some values.</p>
-     *
-     * @param vals The values.
-     * @param val  The value.
-     * @return The index, or -1.
-     */
-    public static int indexValue(Object[] vals, Object val) {
-        for (int i = 0; i < vals.length; i++) {
-            if (val.equals(vals[i]))
-                return i;
-        }
-        return -1;
-    }
-
-    /**
      * <p>Cons an array of values to the given term.</p>
      * <p>The tail is passed in skeleton and display.</p>
      * <p>The result is returned in skeleton and display.</p>

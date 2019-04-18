@@ -150,7 +150,7 @@ public final class SpecialOper extends AbstractSpecial {
                 if (oper == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                operToProperty(oper, prop, en);
+                SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
@@ -179,7 +179,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                resetOperProp(oper, en.skel, en.display, en);
+                SpecialOper.resetOperProp(oper, en.skel, en.display, en);
                 return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -293,6 +293,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @param oper The operator.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static void operToProperties(Operator oper,
                                         Engine en)
@@ -382,7 +383,7 @@ public final class SpecialOper extends AbstractSpecial {
                                      Object m, Display d, Engine en)
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
-        AbstractProperty<Operator> prop = findOperProperty(sk, en);
+        AbstractProperty<Operator> prop = SpecialOper.findOperProperty(sk, en);
         if (!prop.resetObjProp(oper, m, d, en))
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
@@ -438,7 +439,6 @@ public final class SpecialOper extends AbstractSpecial {
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
                 StoreKey.storeKeyToSkel(sk)));
     }
-
 
     /*************************************************************************/
     /* Mode Conversions                                                      */

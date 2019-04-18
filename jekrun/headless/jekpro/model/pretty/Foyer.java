@@ -59,7 +59,7 @@ import java.util.Random;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class Foyer extends Enforced {
+public class Foyer extends Enforced {
     public final static String OP_COMMA = ",";
     public final static String OP_SLASH = "/";
     public final static String OP_NIL = "[]";
@@ -471,6 +471,8 @@ public abstract class Foyer extends Enforced {
      * @param store The store.
      */
     public void addStore(Store store) {
+        if (store.parent == null)
+            setRoot(store);
         synchronized (this) {
             regs.add(store);
             cacheregs = null;
@@ -490,6 +492,8 @@ public abstract class Foyer extends Enforced {
             regs.remove(k);
             cacheregs = null;
         }
+        if (store.parent == null)
+            setRoot(null);
     }
 
     /**
@@ -574,7 +578,7 @@ public abstract class Foyer extends Enforced {
      *
      * @param h The hint.
      */
-    public void setHint(int h) {
+    public final void setHint(int h) {
         hint = h;
     }
 

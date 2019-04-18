@@ -12,6 +12,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
+import matula.comp.sharik.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
 import matula.util.system.ForeignFile;
@@ -255,12 +256,12 @@ public final class ForeignLocale {
      * @return The properties.
      * @throws InterpreterMessage Capability not found.
      */
-    public static Properties sysGetDescriptionProperties(Interpreter inter,
-                                                         String locstr, String clazz)
+    public static Properties sysGetDescrProp(Interpreter inter,
+                                             String locstr, String clazz)
             throws InterpreterMessage {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);
-        return capa.getDescriptionProperties(locale);
+        return capa.getDescrProp(locale);
     }
 
     /**************************************************************/

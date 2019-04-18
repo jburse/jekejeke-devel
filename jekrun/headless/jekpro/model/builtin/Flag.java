@@ -12,6 +12,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
+import matula.comp.sharik.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
@@ -167,12 +168,12 @@ public final class Flag extends AbstractFlag<Engine> {
                 return Integer.valueOf(en.number);
             case FLAG_DIALECT:
                 AbstractBranch branch = en.store.foyer.getFactory().getBrandBranch();
-                Properties descr = branch.getDescriptionLang(en.store.foyer.locale);
+                Properties descr = branch.getDescrLang(en.store.foyer.locale);
                 String family = descr.getProperty("family");
                 return new SkelAtom(family);
             case FLAG_VERSION_DATA:
                 branch = en.store.foyer.getFactory().getBrandBranch();
-                descr = branch.getDescriptionLang(en.store.foyer.locale);
+                descr = branch.getDescrLang(en.store.foyer.locale);
                 String release = descr.getProperty("release");
                 ListArray<Object> list = new ListArray<Object>();
                 int k1 = 0;

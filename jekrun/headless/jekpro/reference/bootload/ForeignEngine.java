@@ -21,8 +21,13 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.wire.LangProperties;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -275,13 +280,49 @@ public final class ForeignEngine {
      * @return The Prolog version.
      */
     public static String sysPrologVersion(Interpreter inter) {
+        Capability brand = inter.getKnowledgebase().getLobby().getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
-        AbstractBranch brand = en.store.foyer.getFactory().getBrandBranch();
         Locale locale = en.store.foyer.locale;
-        Properties descr = brand.getDescriptionLang(locale);
+        return ForeignEngine.sysFamilyProduct(brand, locale);
+    }
+
+    /**
+     * <p>Retrieve the family and product text.</p>
+     *
+     * @param cap The capability.
+     * @param locale The locale.
+     * @return The family and product.
+     */
+    public static String sysFamilyProduct(Capability cap, Locale locale) {
+        Properties descr = cap.getDescrProp(locale);
         String family = descr.getProperty("family");
-        String product = descr.getProperty("product") + " " + descr.getProperty("release");
-        return family + ", " + product;
+        return family + ", " + ForeignEngine.sysProductRelease(cap, locale);
+    }
+
+    /**
+     * <p>Retrieve the product and release text.</p>
+     *
+     * @param cap The capability.
+     * @param locale The locale.
+     * @return The product and release.
+     */
+    public static String sysProductRelease(Capability cap, Locale locale) {
+        Properties descr = cap.getDescrProp(locale);
+        String res = descr.getProperty("product") + " " + descr.getProperty("release");
+        String datestr = descr.getProperty("date");
+        if (datestr != null) {
+            try {
+                DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
+                Date date = df.parse(datestr);
+                df = DateFormat.getDateInstance(DateFormat.LONG, locale);
+                datestr = df.format(date);
+                return res + " (" + datestr + ")";
+            } catch (ParseException x) {
+                return res;
+            }
+        } else {
+            return res;
+        }
     }
 
     /**
@@ -291,10 +332,10 @@ public final class ForeignEngine {
      * @return The Prolog vendor.
      */
     public static String sysPrologVendor(Interpreter inter) {
+        Capability brand = inter.getKnowledgebase().getLobby().getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
-        AbstractBranch brand = en.store.foyer.getFactory().getBrandBranch();
         Locale locale = en.store.foyer.locale;
-        Properties descr = brand.getDescriptionLang(locale);
+        Properties descr = brand.getDescrProp(locale);
         return descr.getProperty("company");
     }
 
