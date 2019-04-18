@@ -242,15 +242,6 @@ public class Knowledgebase {
     /*******************************************************/
 
     /**
-     * <p>Retrieve a committed loader.</p>
-     *
-     * @return The commited loader.
-     */
-    public final ClassLoader getLoader() {
-        return store.loader;
-    }
-
-    /**
      * <p>Add a path.</p>
      *
      * @param path The path.
@@ -328,7 +319,7 @@ public class Knowledgebase {
         AbstractFactory factory = store.foyer.getFactory();
         try {
             AbstractBranch branch = factory.getReflection().stringToBranch(name, store.loader);
-            return (Capability) branch.proxy;
+            return branch.capa;
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -371,6 +362,15 @@ public class Knowledgebase {
      */
     public final Object getStore() {
         return store;
+    }
+
+    /**
+     * <p>Retrieve the class loader.</p>
+     *
+     * @return The class loader.
+     */
+    public ClassLoader getLoader() {
+       return store.getLoader();
     }
 
 }

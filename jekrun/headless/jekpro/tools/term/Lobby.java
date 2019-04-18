@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.InterpreterMessage;
@@ -85,6 +86,7 @@ public final class Lobby {
 
         foyer = factory.createFoyer();
         foyer.proxy = this;
+
         ATOM_CONS = new TermAtomic(foyer.ATOM_CONS);
         ATOM_NIL = new TermAtomic(foyer.ATOM_NIL);
     }
@@ -148,10 +150,10 @@ public final class Lobby {
         Capability[] res = new Capability[snapshot.length];
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            Object proxy = ((AbstractBranch) entry.key).proxy;
-            if (!(proxy instanceof Capability))
+            Capability capa = ((AbstractBranch) entry.key).capa;
+            if (!(capa instanceof Capability))
                 throw new NullPointerException("capability missing");
-            res[i] = (Capability) proxy;
+            res[i] = capa;
         }
         return res;
     }
@@ -195,7 +197,7 @@ public final class Lobby {
         if (c == null)
             throw new NullPointerException("capability missing");
         try {
-            return foyer.getFramework().getActivator().calcInstallID((AbstractBranch) c.getBranch());
+            return foyer.getFramework().getActivator().calcInstallID(foyer, (AbstractBranch) c.getBranch());
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
         }
@@ -253,7 +255,8 @@ public final class Lobby {
      * @param h The hint.
      */
     public void setHint(int h) {
-        foyer.setHint(h);
+        AbstractFactory factory = foyer.getFactory();
+        factory.setHint(foyer, h);
     }
 
     /**
@@ -276,6 +279,16 @@ public final class Lobby {
      */
     public final Object getFoyer() {
         return foyer;
+    }
+
+    /**
+     * <p>Retrieve the root knowledge base.</p>
+     *
+     * @return The root knowledge base.
+     */
+    public Knowledgebase getRoot() {
+        Store store = (Store) foyer.getRoot();
+        return (store != null ? (Knowledgebase) store.proxy : null);
     }
 
 }

@@ -128,7 +128,7 @@ public abstract class AbstractFactory extends AbstractFramework {
     }
 
     /*******************************************************************/
-    /* Life Cycle                                                      */
+    /* Factory Methods                                                 */
     /*******************************************************************/
 
     /**
@@ -137,6 +137,10 @@ public abstract class AbstractFactory extends AbstractFramework {
      * @return The foyer.
      */
     public abstract Foyer createFoyer();
+
+    /*******************************************************************/
+    /* Configuration Data                                                 */
+    /*******************************************************************/
 
     /**
      * <p>Retrieve the init branches.</p>
@@ -152,5 +156,30 @@ public abstract class AbstractFactory extends AbstractFramework {
      */
     public abstract AbstractBranch getBrandBranch();
 
+    /*******************************************************************/
+    /* Life Cycle                                                      */
+    /*******************************************************************/
+
+    /**
+     * <p>Add a mem listener to a foyer.</p>
+     *
+     * @param f The foyer.
+     */
+    public abstract void addMemListener(Foyer f);
+
+    /**
+     * <p>Remove a mem listener from  a foyer.</p>
+     *
+     * @param f The foyer.
+     */
+    public abstract void removeMemListener(Foyer f);
+
+    /**
+     * <p>Set the hint.</p>
+     *
+     * @param f The foyer.
+     * @param h The hint.
+     */
+    public abstract void setHint(Foyer f, int h);
 
 }

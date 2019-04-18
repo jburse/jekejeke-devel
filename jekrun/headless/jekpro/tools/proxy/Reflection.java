@@ -185,10 +185,10 @@ public final class Reflection extends AbstractReflection {
      * @return The name.
      */
     public String branchToString(AbstractBranch branch) {
-        Object proxy = branch.proxy;
-        if (!(proxy instanceof Capability))
+        Capability capa = branch.capa;
+        if (!(capa instanceof Capability))
             throw new NullPointerException("capability missing");
-        return AbstractRuntime.classToString(proxy.getClass());
+        return AbstractRuntime.classToString(capa.getClass());
     }
 
     /**
