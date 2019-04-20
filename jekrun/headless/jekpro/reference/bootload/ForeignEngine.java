@@ -16,7 +16,7 @@ import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;

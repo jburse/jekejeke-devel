@@ -12,7 +12,6 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
-import matula.comp.sharik.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
 import matula.util.system.ForeignFile;

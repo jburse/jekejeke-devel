@@ -16,7 +16,7 @@ import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.system.AbstractRuntime;
+import matula.util.config.AbstractRuntime;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

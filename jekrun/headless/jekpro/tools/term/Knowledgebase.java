@@ -9,8 +9,8 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
+import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
-import matula.util.system.FileExtension;
 
 import java.io.IOException;
 import java.util.HashMap;

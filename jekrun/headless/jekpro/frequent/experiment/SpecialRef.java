@@ -4,7 +4,10 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -13,12 +16,11 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.comp.sharik.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
@@ -251,7 +253,7 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param ptr The reference.
      * @param en  The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private static void refToProperties(InterfaceReference ptr, Engine en)
@@ -284,10 +286,10 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Create a prolog list for the property of the given reference.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param ptr  The ptr.
-     * @param sk The property.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @param ptr The ptr.
+     * @param sk  The property.
+     * @param en  The engine.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private static void refToProperty(InterfaceReference ptr, StoreKey sk,
@@ -304,10 +306,10 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Set a ptr property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param ptr  The ptr.
-     * @param m The value skeleton.
-     * @param d  The value display.
-     * @param en   The engine.
+     * @param ptr The ptr.
+     * @param m   The value skeleton.
+     * @param d   The value display.
+     * @param en  The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void setRefProp(InterfaceReference ptr, Object m, Display d,
@@ -326,14 +328,14 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Reset a ptr property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param ptr  The ptr.
-     * @param m The value skeleton.
-     * @param d  The value display.
-     * @param en   The engine.
+     * @param ptr The ptr.
+     * @param m   The value skeleton.
+     * @param d   The value display.
+     * @param en  The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void resetRefProp(InterfaceReference ptr, Object m, Display d,
-                                      Engine en)
+                                     Engine en)
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
         AbstractProperty<InterfaceReference> prop = SpecialRef.findRefProperty(sk, en);
@@ -350,7 +352,7 @@ public final class SpecialRef extends AbstractSpecial {
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param sk The property.
-     * @param en   The engine.
+     * @param en The engine.
      * @return The value.
      * @throws EngineMessage Shit happens.
      */
@@ -414,7 +416,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, Display d,
-                                                                                Engine en)
+                                                                         Engine en)
             throws EngineMessage {
         MapHashLink<Object, NamedDistance> vars = null;
         en.skel = t;

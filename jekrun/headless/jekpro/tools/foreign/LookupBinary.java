@@ -7,9 +7,9 @@ import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
+import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
-import matula.util.system.AbstractRuntime;
-import matula.util.system.FileExtension;
+import matula.util.config.AbstractRuntime;
 
 /**
  * <p>Concerned with the lookup of binaries, escpecially Java classes</p>

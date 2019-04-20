@@ -13,8 +13,8 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
+import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
-import matula.util.system.FileExtension;
 
 import java.io.IOException;
 
@@ -403,7 +403,7 @@ public final class ForeignPath {
     private static FileExtension decodeFileExtension(Object opt)
             throws InterpreterMessage {
         int type = 0;
-        String mime = "";
+        String mime = null;
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
@@ -441,7 +441,8 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_MIME)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                mime = InterpreterMessage.castString(help);
+                String str = InterpreterMessage.castString(help);
+                mime = (!"".equals(str) ? str : null);
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_MIME)) {
@@ -518,7 +519,7 @@ public final class ForeignPath {
     private static Object encodeFileExtension(Interpreter inter, FileExtension fe) {
         Lobby lobby = inter.getKnowledgebase().getLobby();
         Object end = lobby.ATOM_NIL;
-        if (!"".equals(fe.getMimeType())) {
+        if (fe.getMimeType() != null) {
             Object val = new TermCompound(OP_MIME, fe.getMimeType());
             end = new TermCompound(lobby.ATOM_CONS, val, end);
         }

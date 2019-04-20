@@ -16,7 +16,7 @@ import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
-import matula.util.system.AbstractRuntime;
+import matula.util.config.AbstractRuntime;
 import matula.util.system.ForeignUri;
 
 import java.lang.reflect.Constructor;

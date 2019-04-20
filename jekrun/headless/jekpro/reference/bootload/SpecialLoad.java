@@ -14,7 +14,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;

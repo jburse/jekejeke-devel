@@ -16,7 +16,7 @@ import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.util.data.*;
 import matula.util.misc.Locker;
 import matula.util.regex.ScannerError;

@@ -9,7 +9,7 @@ import jekpro.model.rope.LoadOpts;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
-import matula.util.system.AbstractRuntime;
+import matula.util.config.AbstractRuntime;
 import matula.util.wire.AbstractLivestock;
 
 import java.io.Reader;

@@ -17,7 +17,7 @@ import jekpro.tools.proxy.ProxyHandler;
 import jekpro.tools.proxy.ProxyState;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.system.AbstractRuntime;
+import matula.util.config.AbstractRuntime;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
