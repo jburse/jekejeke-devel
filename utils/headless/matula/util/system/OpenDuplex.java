@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.config.AbstractRecognizer;
 
 import java.io.*;
 import java.net.Socket;

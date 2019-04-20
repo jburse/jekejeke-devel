@@ -1,6 +1,9 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractRecognizer;
+import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 
 import java.io.*;
@@ -134,16 +137,19 @@ public final class OpenOpts extends OpenDuplex {
             }
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             InputStream in = new FileInputStream(raf.getFD());
-            AbstractDecoder cap = know.pathToDecoder(adr2);
-            if (cap != null)
-                in = cap.prepareStream(in, know);
+            FileExtension fe = OpenOpts.getFileExtension(spec, know);
+            if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
+                AbstractBundle cap = know.pathToDecoder(adr2);
+                if (cap != null)
+                    in = cap.prepareStream(in, know);
+            }
             if (getBuffer() != 0)
                 in = new BufferedInputStream(in, getBuffer());
-            String mt = OpenOpts.getMimeType(know, path);
             if ((getFlags() & MASK_OPEN_BINR) != 0) {
                 ConnectionInput cin = new ConnectionInput(in);
                 cin.setLastModified(file.lastModified());
                 cin.setETag(Long.toString(cin.getLastModified()));
+                String mt = (fe != null ? fe.getMimeType() : null);
                 cin.setMimeType(mt != null ? mt : "");
                 cin.setRaf(raf);
                 cin.setPath(adr2);
@@ -177,6 +183,7 @@ public final class OpenOpts extends OpenDuplex {
                 crd.setBom(hasbom);
                 crd.setLastModified(file.lastModified());
                 crd.setETag(Long.toString(crd.getLastModified()));
+                String mt = (fe != null ? fe.getMimeType() : null);
                 crd.setMimeType(mt != null ? mt : "");
                 crd.setLineNumber(1);
                 crd.setRaf(raf);
@@ -201,16 +208,19 @@ public final class OpenOpts extends OpenDuplex {
                 }
 
                 InputStream in = new FileInputStream(file);
-                AbstractDecoder cap = know.pathToDecoder(adr2);
-                if (cap != null)
-                    in = cap.prepareStream(in, know);
+                FileExtension fe = OpenOpts.getFileExtension(spec, know);
+                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
+                    AbstractBundle cap = know.pathToDecoder(adr2);
+                    if (cap != null)
+                        in = cap.prepareStream(in, know);
+                }
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                String mt = OpenOpts.getMimeType(know, path);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(file.lastModified());
                     cin.setETag(Long.toString(cin.getLastModified()));
+                    String mt = (fe != null ? fe.getMimeType() : null);
                     cin.setMimeType(mt != null ? mt : "");
                     cin.setPath(adr2);
                     cin.setBuffer(getBuffer());
@@ -240,6 +250,7 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setBom(hasbom);
                     crd.setLastModified(file.lastModified());
                     crd.setETag(Long.toString(crd.getLastModified()));
+                    String mt = (fe != null ? fe.getMimeType() : null);
                     crd.setMimeType(mt != null ? mt : "");
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
@@ -282,18 +293,21 @@ public final class OpenOpts extends OpenDuplex {
                 }
 
                 InputStream in = con.getInputStream();
-                AbstractDecoder cap = know.pathToDecoder(adr2);
-                if (cap != null)
-                    in = cap.prepareStream(in, know);
+                FileExtension fe = OpenOpts.getFileExtension(spec, know);
+                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
+                    AbstractBundle cap = know.pathToDecoder(adr2);
+                    if (cap != null)
+                        in = cap.prepareStream(in, know);
+                }
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                MimeHeader mh = OpenOpts.getMimeHeader(con, know);
                 if ((getFlags() & MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(OpenOpts.getLastModified(con));
                     cin.setETag(OpenOpts.getETag(con));
                     cin.setExpiration(OpenOpts.getExpiration(con));
-                    cin.setMimeType(mh != null ? mh.getMimeType() : "");
+                    String mt = (fe != null ? fe.getMimeType() : null);
+                    cin.setMimeType(mt != null ? mt : "");
                     cin.setPath(adr2);
                     cin.setBuffer(getBuffer());
                     cin.setDate(con.getDate());
@@ -303,7 +317,7 @@ public final class OpenOpts extends OpenDuplex {
                     boolean hasbom = false;
                     String theencoding = getEncoding();
                     if (theencoding == null)
-                        theencoding = (mh != null ? mh.getValue(MimeHeader.MIME_CHARSET) : null);
+                        theencoding = OpenOpts.getCharSet(con);
                     if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null && getBuffer() != 0) {
                         in.mark(3);
                         theencoding = detectBom(in);
@@ -326,7 +340,8 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setLastModified(OpenOpts.getLastModified(con));
                     crd.setETag(OpenOpts.getETag(con));
                     crd.setExpiration(OpenOpts.getExpiration(con));
-                    crd.setMimeType(mh != null ? mh.getMimeType() : "");
+                    String mt = (fe != null ? fe.getMimeType() : null);
+                    crd.setMimeType(mt != null ? mt : "");
                     crd.setLineNumber(1);
                     crd.setPath(adr2);
                     crd.setBuffer(getBuffer());
@@ -611,42 +626,41 @@ public final class OpenOpts extends OpenDuplex {
     }
 
     /**
-     * <p>Retrieve the mime header.</p>
+     * <p>Retrieve the file extension of a URL spec.</p>
      *
-     * @param con  The connection.
+     * @param spec The URL spec.
      * @param know The recognizer.
-     * @return The mime header.
+     * @return The mime type or null.
      */
-    private static MimeHeader getMimeHeader(URLConnection con,
-                                           AbstractRecognizer know) {
-        String typ;
-        if (con instanceof JarURLConnection) {
-            String name = ((JarURLConnection) con).getEntryName();
-            typ = (name != null ? OpenOpts.getMimeType(know, name) : null);
-        } else {
-            typ = con.getContentType();
-        }
-        return (typ != null ? MimeHeader.getInstance(typ) : null);
-    }
-
-    /**
-     * <p>Retrieve the mime type of a file path.</p>
-     *
-     * @param know The recognizer.
-     * @param path The file path.
-     * @return The mime header or null.
-     */
-    private static String getMimeType(AbstractRecognizer know, String path) {
+    private static FileExtension getFileExtension(String spec, AbstractRecognizer know) {
         do {
             MapEntry<String, FileExtension>[] exts = know.snapshotFileExtensions();
             for (int i = 0; i < exts.length; i++) {
                 MapEntry<String, FileExtension> ext = exts[i];
-                if (path.endsWith(ext.key))
-                    return ext.value.getMimeType();
+                if (spec.endsWith(ext.key))
+                    return ext.value;
             }
             know = know.getParent();
         } while (know != null);
         return null;
+    }
+
+    /**
+     * <p>Retrieve the charset from the connection.</p>
+     *
+     * @param con The connection.
+     * @return The charset or null.
+     */
+    private static String getCharSet(URLConnection con) {
+        if (con instanceof JarURLConnection)
+            return null;
+        String typ = con.getContentType();
+        if (typ == null)
+            return null;
+        MimeHeader mh = MimeHeader.getInstance(typ);
+        if (mh == null)
+            return null;
+        return mh.getValue(MimeHeader.MIME_CHARSET);
     }
 
     /**
@@ -656,19 +670,17 @@ public final class OpenOpts extends OpenDuplex {
      * @return The cache control max age.
      */
     private static int getMaxAge(URLConnection con) {
-        if (con instanceof JarURLConnection) {
+        if (con instanceof JarURLConnection)
             return -1;
-        } else {
-            List<String> controls = con.getHeaderFields().get("cache-control");
-            if (controls == null)
-                return -1;
-            for (int i = 0; i < controls.size(); i++) {
-                String control = controls.get(i);
-                if (control.startsWith("max-age="))
-                    return Integer.parseInt(control.substring("max-age=".length()));
-            }
+        List<String> controls = con.getHeaderFields().get("cache-control");
+        if (controls == null)
             return -1;
+        for (int i = 0; i < controls.size(); i++) {
+            String control = controls.get(i);
+            if (control.startsWith("max-age="))
+                return Integer.parseInt(control.substring("max-age=".length()));
         }
+        return -1;
     }
 
     /*************************************************************/

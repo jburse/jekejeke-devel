@@ -1,6 +1,7 @@
 package matula.util.system;
 
 import derek.util.protect.LicenseError;
+import matula.util.config.AbstractRecognizer;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;

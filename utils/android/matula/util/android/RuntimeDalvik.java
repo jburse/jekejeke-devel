@@ -6,9 +6,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import derek.util.protect.LicenseError;
-import matula.comp.sharik.AbstractBundle;
 import matula.util.data.ListArray;
-import matula.util.system.AbstractRuntime;
+import matula.util.config.AbstractRuntime;
 import matula.util.system.ForeignUri;
 
 import java.net.MalformedURLException;
@@ -54,7 +53,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * <p>Create an activator android.</p>
      */
     private RuntimeDalvik() {
-        setAspect(AbstractBundle.ASPECT_ANDROID);
+        setAspect(AbstractRuntime.ASPECT_ANDROID);
     }
 
     /*******************************************************************/

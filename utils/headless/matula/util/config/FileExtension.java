@@ -1,9 +1,13 @@
-package matula.util.system;
-
-import matula.util.data.MapEntry;
+package matula.util.config;
 
 /**
- * <p>An abstract recognizer such as a knowledgebase.</p>
+ * <p>An object that encapsulates a file extension.</p>
+ * <p>The following flags are supported:</p
+ * <ul>
+ * <li><b>MASK_USES_TEXT:</b> Library file.</li>
+ * <li><b>MASK_USES_BNRY:</b> Foreign file.</li>
+ * <li><b>MASK_USES_RSCS:</b> Resource file.</li>
+ * </ul>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -33,36 +37,48 @@ import matula.util.data.MapEntry;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractRecognizer {
+public final class FileExtension {
+    /* suffix relationship flags */
+    public static final int MASK_USES_TEXT = 0x00000010;
+    public static final int MASK_USES_BNRY = 0x00000020;
+    public static final int MASK_USES_RSCS = 0x00000040;
+
+    public static final int MASK_DATA_ECRY = 0x00000100;
+
+    /* combined suffix flags */
+    public static final int MASK_USES_SUFX
+            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
+
+    private int type;
+    private String mimetype;
 
     /**
-     * <p>Determine the decoder for a path.</p>
+     * <p>Create a new file extension object.</p>
      *
-     * @param path The path.
-     * @return The decoder, or null.
+     * @param t The type.
+     * @param m The mimetype.
      */
-    public abstract AbstractDecoder pathToDecoder(String path);
+    public FileExtension(int t, String m) {
+        type = t;
+        mimetype = m;
+    }
 
     /**
-     * <p>Retrieve the file extensions.</p>
-     * <p>Returns a copy which should be treated immutable.</p>
+     * <p>Retrieve the type.</p>
      *
-     * @return The file extensions and their type.
+     * @return The type.
      */
-    public abstract MapEntry<String, FileExtension>[] snapshotFileExtensions();
+    public int getType() {
+        return type;
+    }
 
     /**
-     * <p>Retrieve the parent.</p>
+     * <p>Retrieve the mime type.</p>
      *
-     * @return The parent.
+     * @return The mime type.
      */
-    public abstract AbstractRecognizer getParent();
-
-    /**
-     * <p>Retrieve the loader.</p>
-     *
-     * @return The loader.
-     */
-    public abstract ClassLoader getLoader();
+    public String getMimeType() {
+        return mimetype;
+    }
 
 }
