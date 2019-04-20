@@ -73,8 +73,10 @@ import matula.util.regex.ScannerError;
  */
 public final class Lobby {
     private final Foyer foyer;
+
     public final TermAtomic ATOM_CONS;
     public final TermAtomic ATOM_NIL;
+    public final TermAtomic ATOM_SUB;
 
     /**
      * <p>Create a new lobby.</p>
@@ -89,6 +91,7 @@ public final class Lobby {
 
         ATOM_CONS = new TermAtomic(foyer.ATOM_CONS);
         ATOM_NIL = new TermAtomic(foyer.ATOM_NIL);
+        ATOM_SUB = new TermAtomic(foyer.ATOM_SUB);
     }
 
     /**

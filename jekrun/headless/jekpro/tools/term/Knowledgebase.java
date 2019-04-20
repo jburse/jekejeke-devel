@@ -276,11 +276,10 @@ public class Knowledgebase {
      * <p>Add a file extension.</p>
      *
      * @param e The file extension.
-     * @param t The type.
-     * @param m The mime type.
+     * @param fe The type and mime.
      */
-    public final void addFileExtension(String e, int t, String m) {
-        store.addFileExtension(e, t, m);
+    public final void addFileExtension(String e, FileExtension fe) {
+        store.addFileExtension(e, fe);
     }
 
     /**

@@ -1,5 +1,6 @@
 package jekpro.reference.bootload;
 
+import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CacheSubclass;
@@ -91,6 +92,15 @@ public final class ForeignPath {
     private static final String OP_FAILURE = "failure";
     private static final String OP_FAILURE_READ = "read";
     private static final String OP_FAILURE_CHILD = "child";
+
+    private static final String OP_MIME = "mime";
+
+    private static final String OP_DATA = "data";
+    private static final String OP_DATA_PLAIN = "plain";
+    private static final String OP_DATA_ENCRYPT = "encrypt";
+
+    private static final int DATA_PLAIN = 0;
+    private static final int DATA_ENCRYPT = 1;
 
     /**
      * <p>Find a write key according to the auto loader.</p>
@@ -373,12 +383,95 @@ public final class ForeignPath {
      *
      * @param inter The interpreter.
      * @param e     The file extension.
-     * @param t     The type.
-     * @param m     The mime type.
+     * @param opt   The type and mime options.
+     * @throws InterpreterMessage Shit happens.
      */
     public static void sysAddFileExtenstion(Interpreter inter,
-                                            String e, int t, String m) {
-        inter.getKnowledgebase().addFileExtension(e, t, m);
+                                            String e, Object opt)
+            throws InterpreterMessage {
+        FileExtension fe = decodeFileExtension(opt);
+        inter.getKnowledgebase().addFileExtension(e, fe);
+    }
+
+    /**
+     * <p>Decode type and mime options.</p>
+     *
+     * @param opt The type and mime options.
+     * @return The type and mime options.
+     * @throws InterpreterMessage Shit happens.
+     */
+    private static FileExtension decodeFileExtension(Object opt)
+            throws InterpreterMessage {
+        int type = 0;
+        String mime = "";
+        while (opt instanceof TermCompound &&
+                ((TermCompound) opt).getArity() == 2 &&
+                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+            Object temp = ((TermCompound) opt).getArg(0);
+            if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                switch (ForeignStream.atomToType(help)) {
+                    case ForeignStream.TYPE_NONE:
+                        type &= ~FileExtension.MASK_USES_BNRY;
+                        type &= ~FileExtension.MASK_USES_TEXT;
+                        type &= ~FileExtension.MASK_USES_RSCS;
+                        break;
+                    case ForeignStream.TYPE_BINARY:
+                        type |= FileExtension.MASK_USES_BNRY;
+                        type &= ~FileExtension.MASK_USES_TEXT;
+                        type &= ~FileExtension.MASK_USES_RSCS;
+                        break;
+                    case ForeignStream.TYPE_TEXT:
+                        type &= ~FileExtension.MASK_USES_BNRY;
+                        type |= FileExtension.MASK_USES_TEXT;
+                        type &= ~FileExtension.MASK_USES_RSCS;
+                        break;
+                    case ForeignStream.TYPE_RESOURCE:
+                        type &= ~FileExtension.MASK_USES_BNRY;
+                        type &= ~FileExtension.MASK_USES_TEXT;
+                        type |= FileExtension.MASK_USES_RSCS;
+                        break;
+                    default:
+                        throw new InterpreterMessage(InterpreterMessage.domainError(
+                                InterpreterMessage.OP_DOMAIN_FLAG_VALUE, help));
+                }
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_MIME)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                mime = InterpreterMessage.castString(help);
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_MIME)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                switch (atomToData(help)) {
+                    case DATA_PLAIN:
+                        type &= ~FileExtension.MASK_DATA_ECRY;
+                        break;
+                    case DATA_ENCRYPT:
+                        type |= FileExtension.MASK_DATA_ECRY;
+                        break;
+                    default:
+                        throw new InterpreterMessage(InterpreterMessage.domainError(
+                                InterpreterMessage.OP_DOMAIN_FLAG_VALUE, help));
+                }
+            } else {
+                InterpreterMessage.checkInstantiated(temp);
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        ForeignStream.OP_OPEN_OPTION, temp));
+            }
+            opt = ((TermCompound) opt).getArg(1);
+        }
+        if (opt.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            InterpreterMessage.checkInstantiated(opt);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, opt));
+        }
+        return new FileExtension(type, mime);
     }
 
     /**
@@ -406,12 +499,67 @@ public final class ForeignPath {
             MapEntry<String, FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
                 MapEntry<String, FileExtension> ext = exts[i];
-                Object val = new TermCompound("ext", ext.key, ext.value.getType(), ext.value.getMimeType());
+                Object val = encodeFileExtension(inter, ext.value);
+                val = new TermCompound(lobby.ATOM_SUB, ext.key, val);
                 end = new TermCompound(lobby.ATOM_CONS, val, end);
             }
             know = know.getParent();
         } while (know != null);
         return end;
+    }
+
+    /**
+     * <p>Encode type and mime options.</p>
+     *
+     * @param inter The interpreter.
+     * @param fe    The type and mime options.
+     * @return The type and mime options.
+     */
+    private static Object encodeFileExtension(Interpreter inter, FileExtension fe) {
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Object end = lobby.ATOM_NIL;
+        if (!"".equals(fe.getMimeType())) {
+            Object val = new TermCompound(OP_MIME, fe.getMimeType());
+            end = new TermCompound(lobby.ATOM_CONS, val, end);
+        }
+        if ((fe.getType() & FileExtension.MASK_USES_SUFX) != 0) {
+            Object val;
+            if ((fe.getType() & FileExtension.MASK_USES_BNRY) != 0) {
+                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_BINARY);
+            } else if ((fe.getType() & FileExtension.MASK_USES_TEXT) != 0) {
+                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_TEXT);
+            } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
+                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_RESOURCE);
+            } else {
+                throw new IllegalArgumentException("unkown uses");
+            }
+            end = new TermCompound(lobby.ATOM_CONS, val, end);
+        }
+        if ((fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
+            Object val = new TermCompound(OP_DATA, OP_DATA_ENCRYPT);
+            end = new TermCompound(lobby.ATOM_CONS, val, end);
+        }
+        return end;
+    }
+
+    /**
+     * <p>Convert an atom to a type. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param t The type term.
+     * @return The type value.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static int atomToData(Object t) throws InterpreterMessage {
+        String val = InterpreterMessage.castString(t);
+        if (val.equals(OP_DATA_PLAIN)) {
+            return DATA_PLAIN;
+        } else if (val.equals(OP_DATA_ENCRYPT)) {
+            return DATA_ENCRYPT;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
     }
 
 }

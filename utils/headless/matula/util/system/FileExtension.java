@@ -43,13 +43,18 @@ public final class FileExtension {
     public static final int MASK_USES_BNRY = 0x00000020;
     public static final int MASK_USES_RSCS = 0x00000040;
 
+    public static final int MASK_DATA_ECRY = 0x00000100;
+
+    /* combined suffix flags */
+    public static final int MASK_USES_SUFX
+            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
+
     private int type;
     private String mimetype;
 
     /**
      * <p>Create a new file extension object.</p>
      *
-     * @param e The extension.
      * @param t The type.
      * @param m The mimetype.
      */
