@@ -60,8 +60,16 @@ public final class ForeignStream {
     public final static String OP_APPEND = "append";
 
     /* type values */
-    private final static String OP_BINARY = "binary";
-    private final static String OP_TEXT = "text";
+    public final static String OP_TYPE = "type";
+    public final static String OP_TYPE_NONE = "none";
+    public final static String OP_TYPE_BINARY = "binary";
+    public final static String OP_TYPE_TEXT = "text";
+    public final static String OP_TYPE_RESOURCE = "resource";
+
+    public final static int TYPE_NONE = -1;
+    public final static int TYPE_BINARY = 0;
+    public final static int TYPE_TEXT = 1;
+    public final static int TYPE_RESOURCE = 2;
 
     /* open options */
     public final static String OP_BOM = "bom";
@@ -70,7 +78,6 @@ public final class ForeignStream {
     private final static String OP_IF_MODIFIED_SINCE = "if_modified_since";
     private final static String OP_IF_NONE_MATCH = "if_none_match";
     public final static String OP_USE_CACHES = "use_caches";
-    public final static String OP_TYPE = "type";
     public final static String OP_REPOSITION = "reposition";
     public final static String OP_NEWLINE = "newline";
 
@@ -291,28 +298,28 @@ public final class ForeignStream {
         Object res = Knowledgebase.OP_NIL;
         if (str instanceof Reader) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TEXT), res);
+                    new TermCompound(OP_TYPE, OP_TYPE_TEXT), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
                     OP_INPUT, res);
             if (str instanceof ConnectionReader)
                 res = sysReaderProperties((ConnectionReader) str, res);
         } else if (str instanceof Writer) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TEXT), res);
+                    new TermCompound(OP_TYPE, OP_TYPE_TEXT), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
                     OP_OUTPUT, res);
             if (str instanceof ConnectionWriter)
                 res = sysWriterProperties((ConnectionWriter) str, res);
         } else if (str instanceof InputStream) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_BINARY), res);
+                    new TermCompound(OP_TYPE, OP_TYPE_BINARY), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
                     OP_INPUT, res);
             if (str instanceof ConnectionInput)
                 res = sysInputProperties((ConnectionInput) str, res);
         } else if (str instanceof OutputStream) {
             res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_BINARY), res);
+                    new TermCompound(OP_TYPE, OP_TYPE_BINARY), res);
             res = new TermCompound(Knowledgebase.OP_CONS,
                     OP_OUTPUT, res);
             if (str instanceof ConnectionOutput)
@@ -505,10 +512,16 @@ public final class ForeignStream {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                if (atomToType(help)) {
-                    res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
-                } else {
-                    res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                switch (atomToType(help)) {
+                    case TYPE_BINARY:
+                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                        break;
+                    case TYPE_TEXT:
+                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                        break;
+                    default:
+                        throw new InterpreterMessage(InterpreterMessage.domainError(
+                                InterpreterMessage.OP_DOMAIN_FLAG_VALUE, help));
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
@@ -655,10 +668,16 @@ public final class ForeignStream {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                if (atomToType(help)) {
-                    res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
-                } else {
-                    res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                switch (atomToType(help)) {
+                    case TYPE_BINARY:
+                       res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                       break;
+                    case TYPE_TEXT:
+                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                        break;
+                    default:
+                        throw new InterpreterMessage(InterpreterMessage.domainError(
+                                InterpreterMessage.OP_DOMAIN_FLAG_VALUE, help));
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
@@ -718,12 +737,16 @@ public final class ForeignStream {
      * @return The type value.
      * @throws InterpreterMessage Validation error.
      */
-    public static boolean atomToType(Object t) throws InterpreterMessage {
+    public static int atomToType(Object t) throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_BINARY)) {
-            return true;
-        } else if (val.equals(OP_TEXT)) {
-            return false;
+        if (val.equals(OP_TYPE_NONE)) {
+            return TYPE_NONE;
+        } else if (val.equals(OP_TYPE_BINARY)) {
+            return TYPE_BINARY;
+        } else if (val.equals(OP_TYPE_TEXT)) {
+            return TYPE_TEXT;
+        } else if (val.equals(OP_TYPE_RESOURCE)) {
+            return TYPE_RESOURCE;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
