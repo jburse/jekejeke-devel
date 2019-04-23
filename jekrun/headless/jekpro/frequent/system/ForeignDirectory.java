@@ -4,6 +4,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
+import matula.util.config.AbstractBundle;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
@@ -42,7 +43,6 @@ import java.util.Set;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignDirectory {
-    private static final String[] VOID_LIST = new String[0];
 
     /************************************************************/
     /* File Ops                                                 */
@@ -119,7 +119,7 @@ public final class ForeignDirectory {
         if (co.getFirst()) {
             File f = new File(uriToFilePath(uristr));
             String[] list = f.list();
-            dc = new ArrayEnumeration<String>(list != null ? list : VOID_LIST);
+            dc = new ArrayEnumeration<String>(list != null ? list : AbstractBundle.VOID_LIST);
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();

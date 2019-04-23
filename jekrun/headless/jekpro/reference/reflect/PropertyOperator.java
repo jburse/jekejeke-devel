@@ -50,6 +50,9 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyOperator extends AbstractProperty<Operator> {
+    public final static MapHashLink<StoreKey, AbstractProperty<Operator>> DEFAULT
+         = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
+
     private final static String OP_OP = "op";
     private final static String OP_NSPL = "nspl";
     private final static String OP_NSPR = "nspr";
@@ -65,6 +68,25 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     private static final int PROP_SYS_PORTRAY = 6;
     private static final int PROP_SYS_ALIAS = 7;
     private static final int PROP_FULL_NAME = 8;
+
+    static {
+        DEFAULT.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
+                        AbstractProperty.MASK_PROP_PRJF));
+        DEFAULT.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
+        DEFAULT.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
+        DEFAULT.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
+        DEFAULT.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
+    }
 
     /**
      * <p>Create an operator property.</p>
@@ -83,32 +105,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
      */
     public PropertyOperator(int i, int f) {
         super(i, f);
-    }
-
-    /**
-     * <p>Define the operator properties.</p>
-     *
-     * @return The operator properties.
-     */
-    public static MapHashLink<StoreKey, AbstractProperty<Operator>> defineOperProps() {
-        MapHashLink<StoreKey, AbstractProperty<Operator>> operprops = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
-        operprops.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
-                        AbstractProperty.MASK_PROP_PRJF));
-        operprops.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        operprops.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        operprops.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        operprops.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
-        operprops.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
-        operprops.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        operprops.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        operprops.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
-        return operprops;
     }
 
     /**

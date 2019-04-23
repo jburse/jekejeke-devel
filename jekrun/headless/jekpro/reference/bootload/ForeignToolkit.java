@@ -43,11 +43,12 @@ public final class ForeignToolkit {
      * @param inter The call-in.
      * @param clazz The capability class.
      * @param hash  The license key.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static void sysActivateCapability(Interpreter inter,
                                              String clazz, String hash)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         inter.getKnowledgebase().getLobby().activateCapability(capa, hash);
     }
@@ -58,11 +59,12 @@ public final class ForeignToolkit {
      * @param inter The call-in.
      * @param clazz The capability class.
      * @return The install ID.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static String sysCalcInstallID(Interpreter inter,
                                           String clazz)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         return inter.getKnowledgebase().getLobby().calcInstallID(capa);
     }
@@ -73,11 +75,12 @@ public final class ForeignToolkit {
      * @param inter The call-in.
      * @param clazz The capability class.
      * @param text  The license text.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static void sysRegLicenseText(Interpreter inter,
                                          String clazz, String text)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         inter.getKnowledgebase().getLobby().regLicenseText(capa, text);
     }
@@ -88,11 +91,12 @@ public final class ForeignToolkit {
      * @param inter The call-in.
      * @param clazz The capability class.
      * @return The license text.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static String sysRegedLicenseText(Interpreter inter,
                                              String clazz)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         return inter.getKnowledgebase().getLobby().regedLicenseText(capa);
     }
@@ -170,11 +174,12 @@ public final class ForeignToolkit {
      * @param inter The call-in.
      * @param clazz The capability class.
      * @return The properties.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static Object sysGetCapabilityProperties(Interpreter inter,
                                                     String clazz)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Lobby lobby = inter.getKnowledgebase().getLobby();
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Object res = lobby.ATOM_NIL;
@@ -195,11 +200,12 @@ public final class ForeignToolkit {
      * @param clazz The capability class.
      * @param prop  The property name.
      * @return The properties.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static Object sysGetCapabilityProperty(Interpreter inter,
                                                   String clazz, String prop)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Object val = capa.getProperty(prop, inter.getKnowledgebase().getLobby());
         if (val == null)
@@ -213,11 +219,12 @@ public final class ForeignToolkit {
      *
      * @param inter The call-in.
      * @param clazz The capability class.
-     * @throws InterpreterMessage Validation error.
+     * @throws InterpreterMessage   Validation error.
+     * @throws InterpreterException Validation error.
      */
     public static void sysCheckLicense(Interpreter inter,
                                        String clazz)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         inter.getKnowledgebase().getLobby().checkLicense(capa);
     }

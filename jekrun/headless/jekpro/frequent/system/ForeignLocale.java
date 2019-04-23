@@ -255,12 +255,29 @@ public final class ForeignLocale {
      * @return The properties.
      * @throws InterpreterMessage Capability not found.
      */
-    public static Properties sysGetDescrProp(Interpreter inter,
+    public static Properties sysGetDescrModel(Interpreter inter,
                                              String locstr, String clazz)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);
-        return capa.getDescrProp(locale);
+        return capa.getDescrModel(locale);
+    }
+
+    /**
+     * <p>Retrieve the description properties of a capability.</p>
+     *
+     * @param inter  The interpreter.
+     * @param locstr The locale.
+     * @param clazz  The capability.
+     * @return The properties.
+     * @throws InterpreterMessage Capability not found.
+     */
+    public static Properties sysGetDescrPlatform(Interpreter inter,
+                                              String locstr, String clazz)
+            throws InterpreterMessage, InterpreterException {
+        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        Locale locale = LangProperties.stringToLocale(locstr);
+        return capa.getDescrPlatform(locale, inter.getKnowledgebase().getLobby());
     }
 
     /**************************************************************/

@@ -53,6 +53,9 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyPredicate extends AbstractProperty<Predicate> {
+    public static final MapHashLink<StoreKey, AbstractProperty<Predicate>> DEFAULT
+            = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
+
     public final static String OP_VISIBLE = "visible";
 
     public final static String OP_OVERRIDE = "override";
@@ -135,6 +138,71 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public final static int PROP_SYS_NOSTACK = 32;
     public final static int PROP_SYS_NOHEAD = 33;
 
+    static {
+        DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
+                        AbstractProperty.MASK_PROP_PRJF | AbstractProperty.MASK_PROP_MODI));
+
+        DEFAULT.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicate(PROP_OVERRIDE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
+                        AbstractProperty.MASK_PROP_MODI));
+        DEFAULT.add(new StoreKey(OP_SYS_MULTIFILE, 1), new PropertyPredicate(PROP_SYS_MULTIFILE));
+        DEFAULT.add(new StoreKey(OP_DISCONTIGUOUS, 1), new PropertyPredicate(PROP_DISCONTIGUOUS,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
+                        AbstractProperty.MASK_PROP_MODI));
+        DEFAULT.add(new StoreKey(OP_SYS_STYLE_CHECK, 1), new PropertyPredicate(PROP_SYS_STYLE_CHECK));
+        DEFAULT.add(new StoreKey(OP_SYS_PUBLIC, 1), new PropertyPredicate(PROP_SYS_PUBLIC));
+        DEFAULT.add(new StoreKey(OP_SYS_PRIVATE, 1), new PropertyPredicate(PROP_SYS_PRIVATE));
+        DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicate(PROP_SYS_META_PREDICATE));
+        DEFAULT.add(new StoreKey(OP_SYS_META_FUNCTION, 1), new PropertyPredicate(PROP_SYS_META_FUNCTION));
+        DEFAULT.add(new StoreKey(OP_SYS_DYNAMIC, 1), new PropertyPredicate(PROP_SYS_DYNAMIC));
+        DEFAULT.add(new StoreKey(OP_SYS_THREAD_LOCAL, 1), new PropertyPredicate(PROP_SYS_THREAD_LOCAL));
+        DEFAULT.add(new StoreKey(OP_SYS_GROUP_LOCAL, 1), new PropertyPredicate(PROP_SYS_GROUP_LOCAL));
+
+        DEFAULT.add(new StoreKey(OP_MULTIFILE, 0), new PropertyPredicate(PROP_MULTIFILE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
+        DEFAULT.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
+        DEFAULT.add(new StoreKey(OP_SYS_ARITHMETIC, 0), new PropertyPredicate(PROP_SYS_ARITHMETIC));
+        DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
+        DEFAULT.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+
+        DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicate(PROP_SYS_NOMACRO,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_BODY, 0), new PropertyPredicate(PROP_SYS_BODY,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_RULE, 0), new PropertyPredicate(PROP_SYS_RULE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
+
+        DEFAULT.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicate(PROP_META_PREDICATE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
+        DEFAULT.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicate(PROP_META_FUNCTION,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
+
+        DEFAULT.add(new StoreKey(OP_BUILT_IN, 0), new PropertyPredicate(PROP_BUILT_IN,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        DEFAULT.add(new StoreKey(OP_STATIC, 0), new PropertyPredicate(PROP_STATIC,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL |
+                        AbstractProperty.MASK_PROP_DELE));
+        DEFAULT.add(new StoreKey(OP_DYNAMIC, 0), new PropertyPredicate(PROP_DYNAMIC,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        DEFAULT.add(new StoreKey(OP_THREAD_LOCAL, 0), new PropertyPredicate(PROP_THREAD_LOCAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+        DEFAULT.add(new StoreKey(OP_GROUP_LOCAL, 0), new PropertyPredicate(PROP_GROUP_LOCAL,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
+
+        DEFAULT.add(new StoreKey(OP_FULL_NAME, 1), new PropertyPredicate(PROP_FULL_NAME));
+        DEFAULT.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
+        DEFAULT.add(new StoreKey(OP_SYS_NOBODY, 0), new PropertyPredicate(PROP_SYS_NOBODY));
+        DEFAULT.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
+        DEFAULT.add(new StoreKey(OP_SYS_NOHEAD, 0), new PropertyPredicate(PROP_SYS_NOHEAD));
+    }
+
     /**
      * <p>Create a predicate property.</p>
      *
@@ -152,78 +220,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      */
     private PropertyPredicate(int i, int f) {
         super(i, f);
-    }
-
-    /**
-     * <p>Define the predicate properties.</p>
-     *
-     * @return The predicate properties.
-     */
-    public static MapHashLink<StoreKey, AbstractProperty<Predicate>> definePredProps() {
-        MapHashLink<StoreKey, AbstractProperty<Predicate>> predprops = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
-        predprops.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
-                        AbstractProperty.MASK_PROP_PRJF | AbstractProperty.MASK_PROP_MODI));
-
-        predprops.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicate(PROP_OVERRIDE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
-                        AbstractProperty.MASK_PROP_MODI));
-        predprops.add(new StoreKey(OP_SYS_MULTIFILE, 1), new PropertyPredicate(PROP_SYS_MULTIFILE));
-        predprops.add(new StoreKey(OP_DISCONTIGUOUS, 1), new PropertyPredicate(PROP_DISCONTIGUOUS,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
-                        AbstractProperty.MASK_PROP_MODI));
-        predprops.add(new StoreKey(OP_SYS_STYLE_CHECK, 1), new PropertyPredicate(PROP_SYS_STYLE_CHECK));
-        predprops.add(new StoreKey(OP_SYS_PUBLIC, 1), new PropertyPredicate(PROP_SYS_PUBLIC));
-        predprops.add(new StoreKey(OP_SYS_PRIVATE, 1), new PropertyPredicate(PROP_SYS_PRIVATE));
-        predprops.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicate(PROP_SYS_META_PREDICATE));
-        predprops.add(new StoreKey(OP_SYS_META_FUNCTION, 1), new PropertyPredicate(PROP_SYS_META_FUNCTION));
-        predprops.add(new StoreKey(OP_SYS_DYNAMIC, 1), new PropertyPredicate(PROP_SYS_DYNAMIC));
-        predprops.add(new StoreKey(OP_SYS_THREAD_LOCAL, 1), new PropertyPredicate(PROP_SYS_THREAD_LOCAL));
-        predprops.add(new StoreKey(OP_SYS_GROUP_LOCAL, 1), new PropertyPredicate(PROP_SYS_GROUP_LOCAL));
-
-        predprops.add(new StoreKey(OP_MULTIFILE, 0), new PropertyPredicate(PROP_MULTIFILE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-        predprops.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-        predprops.add(new StoreKey(OP_SYS_ARITHMETIC, 0), new PropertyPredicate(PROP_SYS_ARITHMETIC));
-        predprops.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
-        predprops.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-
-        predprops.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        predprops.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicate(PROP_SYS_NOMACRO,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        predprops.add(new StoreKey(OP_SYS_BODY, 0), new PropertyPredicate(PROP_SYS_BODY,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        predprops.add(new StoreKey(OP_SYS_RULE, 0), new PropertyPredicate(PROP_SYS_RULE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        predprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-
-        predprops.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicate(PROP_META_PREDICATE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        predprops.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicate(PROP_META_FUNCTION,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-
-        predprops.add(new StoreKey(OP_BUILT_IN, 0), new PropertyPredicate(PROP_BUILT_IN,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
-        predprops.add(new StoreKey(OP_STATIC, 0), new PropertyPredicate(PROP_STATIC,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL |
-                        AbstractProperty.MASK_PROP_DELE));
-        predprops.add(new StoreKey(OP_DYNAMIC, 0), new PropertyPredicate(PROP_DYNAMIC,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
-        predprops.add(new StoreKey(OP_THREAD_LOCAL, 0), new PropertyPredicate(PROP_THREAD_LOCAL,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
-        predprops.add(new StoreKey(OP_GROUP_LOCAL, 0), new PropertyPredicate(PROP_GROUP_LOCAL,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
-
-        predprops.add(new StoreKey(OP_FULL_NAME, 1), new PropertyPredicate(PROP_FULL_NAME));
-        predprops.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
-        predprops.add(new StoreKey(OP_SYS_NOBODY, 0), new PropertyPredicate(PROP_SYS_NOBODY));
-        predprops.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
-        predprops.add(new StoreKey(OP_SYS_NOHEAD, 0), new PropertyPredicate(PROP_SYS_NOHEAD));
-        return predprops;
     }
 
     /**
@@ -825,10 +821,9 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      * @param d  The property display.
      * @return The properties.
      * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
     public Predicate[] idxObjProp(Object m, Display d, Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineMessage {
         if (id == PROP_SYS_USAGE) {
             AbstractSource src = derefAndCastDef(m, d, OP_SYS_USAGE, en);
             if (src == null || !Clause.ancestorSource(src, en))

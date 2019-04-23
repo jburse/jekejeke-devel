@@ -16,8 +16,8 @@ import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -289,27 +289,27 @@ public final class ForeignEngine {
     /**
      * <p>Retrieve the family and product text.</p>
      *
-     * @param cap The capability.
+     * @param cap    The capability.
      * @param locale The locale.
      * @return The family and product.
      */
     public static String sysFamilyProduct(Capability cap, Locale locale) {
-        Properties descr = cap.getDescrProp(locale);
-        String family = descr.getProperty("family");
-        return family + ", " + ForeignEngine.sysProductRelease(cap, locale);
+        Properties descr = cap.getDescrModel(locale);
+        String family = descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
+        return family + ", " + ForeignEngine.sysProductRelease(descr, locale);
     }
 
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param cap The capability.
+     * @param descr The model properties.
      * @param locale The locale.
      * @return The product and release.
      */
-    public static String sysProductRelease(Capability cap, Locale locale) {
-        Properties descr = cap.getDescrProp(locale);
-        String res = descr.getProperty("product") + " " + descr.getProperty("release");
-        String datestr = descr.getProperty("date");
+    public static String sysProductRelease(Properties descr, Locale locale) {
+        String res = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT) + " " +
+                descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
+        String datestr = descr.getProperty(AbstractBundle.PROP_CAPA_DATE);
         if (datestr != null) {
             try {
                 DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
@@ -335,8 +335,8 @@ public final class ForeignEngine {
         Capability brand = inter.getKnowledgebase().getLobby().getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        Properties descr = brand.getDescrProp(locale);
-        return descr.getProperty("company");
+        Properties descr = brand.getDescrModel(locale);
+        return descr.getProperty(AbstractBundle.PROP_PRODUCT_COMPANY);
     }
 
     /*************************************************************/

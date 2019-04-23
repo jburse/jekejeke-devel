@@ -60,6 +60,9 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertySource extends AbstractProperty<AbstractSource> {
+    public final static MapHash<StoreKey, AbstractProperty<AbstractSource>> DEFAULT
+            = new MapHash<StoreKey, AbstractProperty<AbstractSource>>();
+
     private final static String OP_SHORT_NAME = "short_name";
     private final static String OP_SYS_CAPABILITY = "sys_capability";
     public final static String OP_EXPIRATION = "expiration";
@@ -100,6 +103,32 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     private static final int PROP_SYS_SOURCE_ANNOTATION = 15;
     private static final int PROP_SYS_MODULE = 16;
 
+    static {
+        DEFAULT.add(new StoreKey(OP_SHORT_NAME, 1), new PropertySource(PROP_SHORT_NAME));
+        DEFAULT.add(new StoreKey(OP_SYS_CAPABILITY, 1), new PropertySource(PROP_SYS_CAPABILITY));
+        DEFAULT.add(new StoreKey(OP_EXPIRATION, 1), new PropertySource(PROP_EXPIRATION));
+        DEFAULT.add(new StoreKey(OP_LAST_MODIFIED, 1), new PropertySource(PROP_LAST_MODIFIED));
+        DEFAULT.add(new StoreKey(OP_VERSION_TAG, 1), new PropertySource(PROP_VERSION_TAG));
+        DEFAULT.add(new StoreKey(OP_DATE, 1), new PropertySource(PROP_DATE));
+        DEFAULT.add(new StoreKey(OP_MAX_AGE, 1), new PropertySource(PROP_MAX_AGE));
+        DEFAULT.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertySource(PROP_SYS_NOTRACE,
+                AbstractProperty.MASK_PROP_SHOW));
+        DEFAULT.add(new StoreKey(OP_SYS_SOURCE_PRELOAD, 0), new PropertySource(PROP_SYS_SOURCE_PRELOAD,
+                AbstractProperty.MASK_PROP_SHOW));
+        DEFAULT.add(new StoreKey(OP_SYS_TIMING, 1), new PropertySource(PROP_SYS_TIMING));
+
+        DEFAULT.add(new StoreKey(OP_SYS_SOURCE_VISIBLE, 1), new PropertySource(PROP_SYS_SOURCE_VISIBLE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
+        DEFAULT.add(new StoreKey(OP_PACKAGE, 1), new PropertySource(PROP_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
+        DEFAULT.add(new StoreKey(OP_USE_PACKAGE, 1), new PropertySource(PROP_USE_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
+        DEFAULT.add(new StoreKey(OP_SYS_SOURCE_NAME, 1), new PropertySource(PROP_SYS_SOURCE_NAME,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
+        DEFAULT.add(new StoreKey(OP_SYS_LINK, 2), new PropertySource(PROP_SYS_LINK, AbstractProperty.MASK_PROP_SHOW));
+
+        DEFAULT.add(new StoreKey(OP_SYS_SOURCE_ANNOTATION, 1), new PropertySource(PROP_SYS_SOURCE_ANNOTATION));
+        DEFAULT.add(new StoreKey(OP_SYS_MODULE, 1), new PropertySource(PROP_SYS_MODULE));
+    }
+
     /**
      * <p>Create a source property.</p>
      *
@@ -120,49 +149,15 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     }
 
     /**
-     * <p>Define the source properties.</p>
-     *
-     * @return The source properties.
-     */
-    public static MapHash<StoreKey, AbstractProperty<AbstractSource>> defineSrcProps() {
-        MapHash<StoreKey, AbstractProperty<AbstractSource>> srcprops = new MapHash<StoreKey, AbstractProperty<AbstractSource>>();
-        srcprops.add(new StoreKey(OP_SHORT_NAME, 1), new PropertySource(PROP_SHORT_NAME));
-        srcprops.add(new StoreKey(OP_SYS_CAPABILITY, 1), new PropertySource(PROP_SYS_CAPABILITY));
-        srcprops.add(new StoreKey(OP_EXPIRATION, 1), new PropertySource(PROP_EXPIRATION));
-        srcprops.add(new StoreKey(OP_LAST_MODIFIED, 1), new PropertySource(PROP_LAST_MODIFIED));
-        srcprops.add(new StoreKey(OP_VERSION_TAG, 1), new PropertySource(PROP_VERSION_TAG));
-        srcprops.add(new StoreKey(OP_DATE, 1), new PropertySource(PROP_DATE));
-        srcprops.add(new StoreKey(OP_MAX_AGE, 1), new PropertySource(PROP_MAX_AGE));
-        srcprops.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertySource(PROP_SYS_NOTRACE,
-                AbstractProperty.MASK_PROP_SHOW));
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_PRELOAD, 0), new PropertySource(PROP_SYS_SOURCE_PRELOAD,
-                AbstractProperty.MASK_PROP_SHOW));
-        srcprops.add(new StoreKey(OP_SYS_TIMING, 1), new PropertySource(PROP_SYS_TIMING));
-
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_VISIBLE, 1), new PropertySource(PROP_SYS_SOURCE_VISIBLE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
-        srcprops.add(new StoreKey(OP_PACKAGE, 1), new PropertySource(PROP_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
-        srcprops.add(new StoreKey(OP_USE_PACKAGE, 1), new PropertySource(PROP_USE_PACKAGE, AbstractProperty.MASK_PROP_SHOW));
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_NAME, 1), new PropertySource(PROP_SYS_SOURCE_NAME,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
-        srcprops.add(new StoreKey(OP_SYS_LINK, 2), new PropertySource(PROP_SYS_LINK, AbstractProperty.MASK_PROP_SHOW));
-
-        srcprops.add(new StoreKey(OP_SYS_SOURCE_ANNOTATION, 1), new PropertySource(PROP_SYS_SOURCE_ANNOTATION));
-        srcprops.add(new StoreKey(OP_SYS_MODULE, 1), new PropertySource(PROP_SYS_MODULE));
-        return srcprops;
-    }
-
-    /**
      * <p>Retrieve all the object properties.</p>
      *
      * @param src The object.
      * @param en  The engine.
      * @return The properties.
      * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
     public Object[] getObjProps(AbstractSource src, Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineMessage {
         switch (id) {
             case PROP_SHORT_NAME:
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(

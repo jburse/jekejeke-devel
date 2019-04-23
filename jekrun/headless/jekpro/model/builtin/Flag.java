@@ -50,6 +50,9 @@ import java.util.Random;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Flag extends AbstractFlag<Engine> {
+    public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
+            = new MapHash<String, AbstractFlag<Engine>>();
+
     public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
     public final static String OP_BACK_QUOTES = "back_quotes";
     public final static String OP_SINGLE_QUOTES = "single_quotes";
@@ -71,11 +74,30 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SINGLE_QUOTES = 12;
     private static final int FLAG_SYS_VARIABLES = 13;
     private static final int FLAG_SYS_CHOICES = 14;
-    private static final int FLAG_DIALECT = 15;
-    private static final int FLAG_VERSION_DATA = 16;
-    private static final int FLAG_SYS_RANDOM = 17;
-    private static final int FLAG_SYS_TIMEOUT = 18;
-    private static final int FLAG_STYLE_CHECK = 19;
+    private static final int FLAG_SYS_RANDOM = 15;
+    private static final int FLAG_SYS_TIMEOUT = 16;
+    private static final int FLAG_STYLE_CHECK = 17;
+
+    static {
+        DEFAULT.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
+        DEFAULT.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
+        DEFAULT.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
+        DEFAULT.add("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
+        DEFAULT.add("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
+        DEFAULT.add("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
+        DEFAULT.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
+        DEFAULT.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
+        DEFAULT.add("max_code", new Flag(FLAG_MAX_CODE));
+        DEFAULT.add("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
+        DEFAULT.add("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
+        DEFAULT.add(OP_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
+        DEFAULT.add(OP_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
+        DEFAULT.add("sys_variables", new Flag(FLAG_SYS_VARIABLES));
+        DEFAULT.add("sys_choices", new Flag(FLAG_SYS_CHOICES));
+        DEFAULT.add("sys_random", new Flag(FLAG_SYS_RANDOM));
+        DEFAULT.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
+        DEFAULT.add("style_check", new Flag(FLAG_STYLE_CHECK));
+    }
 
     /**
      * <p>Create a Prolog flag.</p>
@@ -84,36 +106,6 @@ public final class Flag extends AbstractFlag<Engine> {
      */
     private Flag(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Define the prolog flags.</p>
-     *
-     * @return The prolog flags.
-     */
-    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
-        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
-        prologflags.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
-        prologflags.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
-        prologflags.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
-        prologflags.add("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
-        prologflags.add("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
-        prologflags.add("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
-        prologflags.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
-        prologflags.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
-        prologflags.add("max_code", new Flag(FLAG_MAX_CODE));
-        prologflags.add("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
-        prologflags.add("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
-        prologflags.add(OP_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
-        prologflags.add(OP_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
-        prologflags.add("sys_variables", new Flag(FLAG_SYS_VARIABLES));
-        prologflags.add("sys_choices", new Flag(FLAG_SYS_CHOICES));
-        prologflags.add("dialect", new Flag(FLAG_DIALECT));
-        prologflags.add("version_data", new Flag(FLAG_VERSION_DATA));
-        prologflags.add("sys_random", new Flag(FLAG_SYS_RANDOM));
-        prologflags.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
-        prologflags.add("style_check", new Flag(FLAG_STYLE_CHECK));
-        return prologflags;
     }
 
     /**
@@ -165,30 +157,6 @@ public final class Flag extends AbstractFlag<Engine> {
                 return Integer.valueOf(en.serno);
             case FLAG_SYS_CHOICES:
                 return Integer.valueOf(en.number);
-            case FLAG_DIALECT:
-                AbstractBranch branch = en.store.foyer.getFactory().getBrandBranch();
-                Properties descr = branch.getDescrLang(en.store.foyer.locale);
-                String family = descr.getProperty("family");
-                return new SkelAtom(family);
-            case FLAG_VERSION_DATA:
-                branch = en.store.foyer.getFactory().getBrandBranch();
-                descr = branch.getDescrLang(en.store.foyer.locale);
-                String release = descr.getProperty("release");
-                ListArray<Object> list = new ListArray<Object>();
-                int k1 = 0;
-                int k2 = release.indexOf('.');
-                while (k2 != -1) {
-                    list.add(Integer.valueOf(release.substring(k1, k2)));
-                    k1 = k2 + 1;
-                    k2 = release.indexOf('.', k1);
-                }
-                list.add(Integer.valueOf(release.substring(k1)));
-                String product = descr.getProperty("product");
-                list.add(new SkelAtom(product));
-                Object[] args = new Object[list.size()];
-                list.toArray(args);
-                family = descr.getProperty("family");
-                return new SkelCompound(new SkelAtom(family), args);
             case FLAG_SYS_RANDOM:
                 return en.store.foyer.random;
             case FLAG_SYS_TIMEOUT:
@@ -289,12 +257,6 @@ public final class Flag extends AbstractFlag<Engine> {
                     /* can't modify */
                     return false;
                 case FLAG_SYS_CHOICES:
-                    /* can't modify */
-                    return false;
-                case FLAG_DIALECT:
-                    /* can't modify */
-                    return false;
-                case FLAG_VERSION_DATA:
                     /* can't modify */
                     return false;
                 case FLAG_SYS_RANDOM:

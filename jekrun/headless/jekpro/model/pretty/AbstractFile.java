@@ -290,7 +290,7 @@ public abstract class AbstractFile extends AbstractSource {
         } else {
             src = new FileText(key);
         }
-        src.setBranch(LookupResource.AbsoluteURIstoRoots(key, store));
+        src.setBranch(LookupResource.absoluteURIstoRoots(key, store));
         return src;
     }
 

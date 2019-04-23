@@ -37,6 +37,9 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FlagThread extends AbstractFlag<Thread> {
+    public final static MapHash<String, AbstractFlag<Thread>> DEFAULT
+            = new MapHash<String, AbstractFlag<Thread>>();
+
     public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
     public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";
     public final static String OP_FLAG_SYS_THREAD_GROUP = "sys_thread_group";
@@ -45,6 +48,12 @@ public final class FlagThread extends AbstractFlag<Thread> {
     private static final int FLAG_SYS_THREAD_STATE = 1;
     private static final int FLAG_SYS_THREAD_GROUP = 2;
 
+    static {
+        DEFAULT.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
+        DEFAULT.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
+        DEFAULT.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
+    }
+
     /**
      * <p>Create a thread flag.</p>
      *
@@ -52,19 +61,6 @@ public final class FlagThread extends AbstractFlag<Thread> {
      */
     private FlagThread(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Define the prolog flags.</p>
-     *
-     * @return The prolog flags.
-     */
-    static MapHash<String, AbstractFlag<Thread>> defineThreadFlags() {
-        MapHash<String, AbstractFlag<Thread>> threadflags = new MapHash<String, AbstractFlag<Thread>>();
-        threadflags.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
-        threadflags.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
-        threadflags.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
-        return threadflags;
     }
 
     /**
@@ -95,11 +91,9 @@ public final class FlagThread extends AbstractFlag<Thread> {
      * @param d  The value display.
      * @param en The engine.
      * @return True if flag could be changed, otherwise false.
-     * @throws EngineMessage Shit happens.
      */
     public boolean setObjFlag(Thread t, Object m, Display d,
-                              Engine en)
-            throws EngineMessage {
+                              Engine en) {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
                 /* can't modify */

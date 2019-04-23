@@ -90,7 +90,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Display ref = en.display;
                     Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
-                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en), en);
+                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return true;
@@ -102,7 +102,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
-                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size, en);
+                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
                     if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return true;
@@ -133,12 +133,11 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Instantiate the Java proxy class of the given Prolog text.</p>
      *
      * @param scope The Prolog text.
-     * @param en    The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newProxyHandler(AbstractSource scope, Engine en)
+    private static Object newProxyHandler(AbstractSource scope)
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
@@ -148,7 +147,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     SpecialForeign.constructorToCallable(new Class[]{})));
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         AbstractFactory factory = scope.getStore().foyer.getFactory();
-        return factory.getReflection().newInstance(constr, new Object[]{handler}, en);
+        return factory.getReflection().newInstance(constr, new Object[]{handler});
     }
 
     /**
@@ -156,12 +155,11 @@ public final class SpecialProxy extends AbstractSpecial {
      *
      * @param scope The Prolog text.
      * @param size  The size.
-     * @param en    The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newProxyState(AbstractSource scope, int size, Engine en)
+    private static Object newProxyState(AbstractSource scope, int size)
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope);
         Class clazz = handler.defineGener();
@@ -172,7 +170,7 @@ public final class SpecialProxy extends AbstractSpecial {
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
         ProxyState state = handler.createState(size);
         AbstractFactory factory = scope.getStore().foyer.getFactory();
-        return factory.getReflection().newInstance(constr, new Object[]{state}, en);
+        return factory.getReflection().newInstance(constr, new Object[]{state});
     }
 
     /**
