@@ -3,6 +3,11 @@ package jekpro.tools.bundle;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
+import matula.comp.sharik.Enforced;
+import matula.util.wire.LangProperties;
+
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * <p>The internal implementation of a SWI package.</p>
@@ -63,6 +68,20 @@ final class BranchSWI extends AbstractBranch {
 //        tracking.setLicense("");
         tracking.setLicense("DIST");
         return tracking;
+    }
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @param e      The enforced.
+     * @return The properties or null.
+     */
+    public Properties getDescrPlatform(Locale locale, Enforced e) {
+        String aspect = e.getFramework().getRuntime().getAspect();
+        String name = "jekpro/swipl/" + aspect + "/description";
+        ClassLoader loader = e.getRoot().getLoader();
+        return LangProperties.getLang(loader, name, locale);
     }
 
 }
