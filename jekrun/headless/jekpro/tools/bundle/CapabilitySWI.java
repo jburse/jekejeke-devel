@@ -1,13 +1,10 @@
-package matula.util.config;
+package jekpro.tools.bundle;
+
+import jekpro.tools.call.Capability;
+import jekpro.tools.proxy.CapabilityAPI;
 
 /**
- * <p>An object that encapsulates a file extension.</p>
- * <p>The following flags are supported:</p
- * <ul>
- * <li><b>MASK_USES_TEXT:</b> Library file.</li>
- * <li><b>MASK_USES_BNRY:</b> Foreign file.</li>
- * <li><b>MASK_USES_RSCS:</b> Resource file.</li>
- * </ul>
+ * <p>The capability facade for a SWI package.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,50 +34,13 @@ package matula.util.config;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FileExtension {
-    /* suffix relationship flags */
-    public static final int MASK_USES_TEXT = 0x00000010;
-    public static final int MASK_USES_BNRY = 0x00000020;
-    public static final int MASK_USES_RSCS = 0x00000040;
-
-    public static final int MASK_DATA_ECRY = 0x00000100;
-
-    /* combined suffix flags */
-    public static final int MASK_USES_SUFX
-            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
-
-    public final static String ENCRYPTION_MARK = "x";
-
-    private int type;
-    private String mimetype;
+public final class CapabilitySWI extends Capability {
 
     /**
-     * <p>Create a new file extension object.</p>
-     *
-     * @param t The type.
-     * @param m The mimetype.
+     * <p>Create the capability headless.</p>
      */
-    public FileExtension(int t, String m) {
-        type = t;
-        mimetype = m;
-    }
-
-    /**
-     * <p>Retrieve the type.</p>
-     *
-     * @return The type.
-     */
-    public int getType() {
-        return type;
-    }
-
-    /**
-     * <p>Retrieve the mime type.</p>
-     *
-     * @return The mime type.
-     */
-    public String getMimeType() {
-        return mimetype;
+    public CapabilitySWI() {
+        super(new BranchSWI());
     }
 
 }

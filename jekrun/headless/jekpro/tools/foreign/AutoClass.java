@@ -619,13 +619,12 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param constructor The constructor.
      * @param args        The arguments array.
-     * @param en          The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
     public static Object invokeNew(Constructor constructor,
-                                   Object[] args, Engine en)
+                                   Object[] args)
             throws EngineException, EngineMessage {
         try {
             return constructor.newInstance(args);

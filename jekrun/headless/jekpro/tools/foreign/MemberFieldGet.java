@@ -1,7 +1,6 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;

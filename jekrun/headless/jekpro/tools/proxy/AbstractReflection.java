@@ -61,13 +61,12 @@ public abstract class AbstractReflection {
      *
      * @param con  The constructor.
      * @param args The constructor arguments.
-     * @param en   The engine.
      * @return The special.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
     public abstract Object newInstance(Constructor con,
-                                       Object[] args, Engine en)
+                                       Object[] args)
             throws EngineException, EngineMessage;
 
     /*******************************************************************/
@@ -130,7 +129,7 @@ public abstract class AbstractReflection {
      */
     public abstract AbstractBranch stringToBranch(String name,
                                                   ClassLoader loader)
-            throws EngineMessage;
+            throws EngineMessage, EngineException;
 
     /**
      * <p>Convert a branch to a string.</p>

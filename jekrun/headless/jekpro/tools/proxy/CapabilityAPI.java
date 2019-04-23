@@ -45,15 +45,13 @@ import jekpro.tools.call.Capability;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class CapabilityAPI extends Capability {
-    public final static CapabilityAPI DEFAULT = new CapabilityAPI();
-
     public final static String PROP_SYS_ACT_STATUS = Flag.OP_SYS_ACT_STATUS;
 
     /**
      * <p>Create the capability headless.</p>
      */
-    private CapabilityAPI() {
-        super(BranchAPI.DEFAULT);
+    public CapabilityAPI() {
+        super(new BranchAPI());
     }
 
 }

@@ -5,7 +5,7 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.proxy.AbstractReflection;
-import matula.comp.sharik.AbstractFramework;
+import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 

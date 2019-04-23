@@ -275,7 +275,7 @@ public class Knowledgebase {
     /**
      * <p>Add a file extension.</p>
      *
-     * @param e The file extension.
+     * @param e  The file extension.
      * @param fe The type and mime.
      */
     public final void addFileExtension(String e, FileExtension fe) {
@@ -313,15 +313,21 @@ public class Knowledgebase {
      * @throws InterpreterMessage Shit happens.
      */
     public final Capability stringToCapability(String name)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         Store store = (Store) getStore();
         AbstractFactory factory = store.foyer.getFactory();
+        AbstractBranch branch;
         try {
-            AbstractBranch branch = factory.getReflection().stringToBranch(name, store.loader);
-            return branch.capa;
+            branch = factory.getReflection().stringToBranch(name, store.loader);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
         }
+        Capability capa = (Capability) branch.proxy;
+        if (capa == null)
+            throw new NullPointerException("capability missing");
+        return capa;
     }
 
     /***********************************************************/
@@ -369,7 +375,7 @@ public class Knowledgebase {
      * @return The class loader.
      */
     public ClassLoader getLoader() {
-       return store.getLoader();
+        return store.getLoader();
     }
 
 }

@@ -39,7 +39,21 @@ import jekpro.model.pretty.AbstractSource;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class BranchAPI extends Branch {
-    public final static BranchAPI DEFAULT = new BranchAPI();
+
+    /**
+     * <p>Retrieve the parameters of this branch.</p>
+     *
+     * @return The parameters of this brach.
+     */
+    public String[] getParams() {
+        return VOID_LIST;
+    }
+
+    /**
+     * <p>Create the branch API.</p>
+     */
+    BranchAPI() {
+    }
 
     /**
      * <p>Init the store with this branch.</p>
@@ -72,8 +86,8 @@ final class BranchAPI extends Branch {
         loadSystem("jekpro/reference/bootload/load.p", en);
         loadSystem("jekpro/reference/bootload/module.p", en);
 
-        String aspect=en.store.foyer.getFactory().getRuntime().getAspect();
-        loadSystem("jekpro/platform/"+aspect+"/stats.p", en);
+        String aspect = en.store.foyer.getFactory().getRuntime().getAspect();
+        loadSystem("jekpro/platform/" + aspect + "/stats.p", en);
     }
 
 }

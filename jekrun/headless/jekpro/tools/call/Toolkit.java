@@ -68,8 +68,8 @@ public abstract class Toolkit {
         AbstractBranch[] branches = factory.getInitBranches();
         Capability[] res = new Capability[branches.length];
         for (int i = 0; i < branches.length; i++) {
-            Capability capa = branches[i].capa;
-            if (!(capa instanceof Capability))
+            Capability capa = (Capability) branches[i].proxy;
+            if (capa == null)
                 throw new NullPointerException("capability missing");
             res[i] = capa;
         }
@@ -82,8 +82,8 @@ public abstract class Toolkit {
      * @return Then capability.
      */
     public final Capability getBrandCapability() {
-        Capability capa = factory.getBrandBranch().capa;
-        if (!(capa instanceof Capability))
+        Capability capa = (Capability) factory.getBrandBranch().proxy;
+        if (capa == null)
             throw new NullPointerException("capability missing");
         return capa;
     }

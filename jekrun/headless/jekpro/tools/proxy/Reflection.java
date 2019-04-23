@@ -1,7 +1,6 @@
 package jekpro.tools.proxy;
 
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
@@ -16,7 +15,9 @@ import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
+import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.lang.reflect.Constructor;
@@ -86,14 +87,13 @@ public final class Reflection extends AbstractReflection {
      *
      * @param con  The constructor.
      * @param args The arguments.
-     * @param en   The engine.
      * @return The special delegate.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public Object newInstance(Constructor con, Object[] args, Engine en)
+    public Object newInstance(Constructor con, Object[] args)
             throws EngineMessage, EngineException {
-        return AutoClass.invokeNew(con, args, en);
+        return AutoClass.invokeNew(con, args);
     }
 
     /*******************************************************************/
@@ -163,18 +163,42 @@ public final class Reflection extends AbstractReflection {
      * @throws EngineMessage Shit happens.
      */
     public AbstractBranch stringToBranch(String name, ClassLoader loader)
-            throws EngineMessage {
-        Class clazz = AbstractRuntime.stringToClass(name, loader);
+            throws EngineMessage, EngineException {
+        int i = name.indexOf('(');
+        Class clazz;
+        String[] params;
+        Class[] types;
+        if (i != -1) {
+            clazz = AbstractRuntime.stringToClass(name.substring(0, i), loader);
+            ListArray<String> list = new ListArray<String>();
+            int k = name.indexOf(i + 1, ',');
+            while (k != -1) {
+                list.add(name.substring(i + 1, k));
+                i = k;
+                k = name.indexOf(i + 1, ',');
+            }
+            k = name.indexOf(i + 1, ')');
+            if (k != name.length() - 1)
+                throw new IllegalArgumentException("parameter error");
+            list.add(name.substring(i + 1, k));
+            params = new String[list.size()];
+            list.toArray(params);
+            types = new Class[list.size()];
+            for (i = 0; i < types.length; i++)
+                types[i] = String.class;
+        } else {
+            clazz = AbstractRuntime.stringToClass(name, loader);
+            params = AbstractBundle.VOID_LIST;
+            types = SpecialForeign.VOID_TYPES;
+        }
         if (clazz == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CLASS, new SkelAtom(name)));
-        Field field = SpecialForeign.getDeclaredField(clazz, OP_DEFAULT);
-        Object value = AutoClass.invokeGetter(field, null);
+        Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, types);
+        Object value = AutoClass.invokeNew(constr, params);
         if (!(value instanceof Capability))
             throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CAPABILITY,
-                    new SkelAtom(value != null ? AbstractRuntime.classToString(
-                            value.getClass()) : AbstractFlag.OP_NULL)));
+                    EngineMessage.OP_TYPE_CAPABILITY, value));
         return (AbstractBranch) ((Capability) value).getBranch();
     }
 
@@ -185,10 +209,24 @@ public final class Reflection extends AbstractReflection {
      * @return The name.
      */
     public String branchToString(AbstractBranch branch) {
-        Capability capa = branch.capa;
-        if (!(capa instanceof Capability))
+        Capability capa = (Capability) branch.proxy;
+        if (capa == null)
             throw new NullPointerException("capability missing");
-        return AbstractRuntime.classToString(capa.getClass());
+        String[] params = branch.getParams();
+        if (params.length > 0) {
+            StringBuilder buf = new StringBuilder();
+            buf.append(AbstractRuntime.classToString(capa.getClass()));
+            buf.append('(');
+            buf.append(params[0]);
+            for (int i = 1; i < params.length; i++) {
+                buf.append(',');
+                buf.append(params[i]);
+            }
+            buf.append(')');
+            return buf.toString();
+        } else {
+            return AbstractRuntime.classToString(capa.getClass());
+        }
     }
 
     /**
@@ -208,7 +246,7 @@ public final class Reflection extends AbstractReflection {
                 } else {
                     src = new AutoClass(key);
                 }
-                src.setBranch(LookupResource.RelativeURIstoRoots(key, store));
+                src.setBranch(LookupResource.relativeURIstoRoots(key, store));
                 return src;
             }
             AbstractSource src = new SourceLocal(key);
@@ -217,7 +255,7 @@ public final class Reflection extends AbstractReflection {
             return src;
         }
         AbstractSource src = new SourceLocal(key);
-        src.setBranch(LookupResource.AbsoluteURIstoRoots(key, store));
+        src.setBranch(LookupResource.absoluteURIstoRoots(key, store));
         return src;
     }
 

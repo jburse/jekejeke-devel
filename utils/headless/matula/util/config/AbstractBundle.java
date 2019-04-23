@@ -4,7 +4,6 @@ import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Check;
 import matula.comp.sharik.Enforced;
-import matula.util.config.AbstractRecognizer;
 import matula.util.wire.LangProperties;
 
 import java.io.IOException;
@@ -44,18 +43,19 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractBundle extends Check {
-    public final static int BUNDLE_MASK_NACT = 0x00000001;
+    public final static int MASK_BNDL_NACT = 0x00000001;
 
     public final static String PROP_PRODUCT_LANG = "product.lang";
     public final static String PROP_PRODUCT_PACK = "product.pack";
-
     public final static String PROP_PRODUCT_INST = "product.inst";
-
     public final static String PROP_PRODUCT_USERDIR = "product.userdir";
     public final static String PROP_PRODUCT_SERVER = "product.server";
 
+    public final static String PROP_CAPA_FAMILY = "capa.family";
     public final static String PROP_CAPA_ICON = "capa.icon";
     public final static String PROP_CAPA_BIGICON = "capa.bigicon";
+
+    public static final String[] VOID_LIST = new String[0];
 
     private int flags;
     private String mainroot;
@@ -96,49 +96,16 @@ public abstract class AbstractBundle extends Check {
         mainroot = m;
     }
 
+    /***************************************************************/
+    /* Variation Points                                            */
+    /***************************************************************/
+
     /**
      * <p>Create the info.
      *
      * @return The info.
      */
     public abstract AbstractTracking createTracking();
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @return The properties.
-     */
-    public Properties getDescrLang(Locale locale) {
-        String name = getMainRoot() + "model/builtin/description";
-        ClassLoader loader = getClass().getClassLoader();
-        return LangProperties.getLang(loader, name, locale);
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param e The enforced.
-     * @return The properties.
-     */
-    public Properties getDescrLang(Locale locale, Enforced e) {
-        String aspect = e.getFramework().getRuntime().getAspect();
-        String name = getMainRoot() + "platform/"+ aspect + "/description";
-        ClassLoader loader = e.getRoot().getLoader();
-        return LangProperties.getLang(loader, name, locale);
-    }
-
-    /**
-     * <p>Retrieve the install.</p>
-     *
-     * @param e The enforced.
-     * @return The install.
-     */
-    public String getInstall(Enforced e) {
-        Properties prop = getDescrLang(Locale.getDefault(), e);
-        return prop.getProperty(PROP_PRODUCT_INST);
-    }
 
     /**
      * <p>Prepare a stream.</p>
@@ -151,5 +118,78 @@ public abstract class AbstractBundle extends Check {
      */
     public abstract InputStream prepareStream(InputStream in, AbstractRecognizer know)
             throws LicenseError, IOException;
+
+    /**
+     * <p>Retrieve the parameters of this branch.</p>
+     *
+     * @return The parameters of this brach.
+     */
+    public abstract String[] getParams();
+
+    /**
+     * <p>Retrieve the hash code of the bundle.</p>
+     *
+     * @return The hash code.
+     */
+    public int hashCode() {
+        int res = getClass().hashCode();
+        String[] params = getParams();
+        for (int i = 0; i < params.length; i++)
+            res = res * 31 + params[i].hashCode();
+        return res;
+    }
+
+    /**
+     * <p>Check the identity.</p>
+     *
+     * @param o The other object.
+     */
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof AbstractBundle))
+            return false;
+        if (!getClass().equals(o.getClass()))
+            return false;
+        String[] params = getParams();
+        String[] oparams = ((AbstractBundle) o).getParams();
+        if (params.length != oparams.length)
+            return false;
+        for (int i = 0; i < params.length; i++) {
+            if (!params[i].equals(oparams[i]))
+                return false;
+        }
+        return true;
+    }
+
+    /***************************************************************/
+    /* Default Services                                            */
+    /***************************************************************/
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @return The properties or null.
+     */
+    public Properties getDescrModel(Locale locale) {
+        String name = getMainRoot() + "model/builtin/description";
+        ClassLoader loader = getClass().getClassLoader();
+        return LangProperties.getLang(loader, name, locale);
+    }
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @param e      The enforced.
+     * @return The properties or null.
+     */
+    public Properties getDescrPlatform(Locale locale, Enforced e) {
+        String aspect = e.getFramework().getRuntime().getAspect();
+        String name = getMainRoot() + "platform/" + aspect + "/description";
+        ClassLoader loader = e.getRoot().getLoader();
+        return LangProperties.getLang(loader, name, locale);
+    }
 
 }

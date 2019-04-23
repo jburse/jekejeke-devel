@@ -7,8 +7,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -64,7 +64,7 @@ public final class LookupResource {
      */
     public static String findResource(String relpath, Store store)
             throws IOException {
-        AbstractBranch branch = RelativeURIstoRoots(relpath, store);
+        AbstractBranch branch = relativeURIstoRoots(relpath, store);
         if (branch != null) {
             String res = (String) store.foyer.getCanonCache(relpath);
             if (res != null)
@@ -150,6 +150,8 @@ public final class LookupResource {
      */
     public static String[][] rootsToAbsoluteURIs(String[] roots, ClassLoader loader)
             throws IOException {
+        if (roots == null)
+            return null;
         ListArray<String[]> res = new ListArray<String[]>();
         for (int j = 0; j < roots.length; j++) {
             ListArray<String> res2 = new ListArray<String>();
@@ -177,7 +179,7 @@ public final class LookupResource {
      * @param store The store.
      * @return The branch, or null.
      */
-    public static AbstractBranch RelativeURIstoRoots(String path, Store store) {
+    public static AbstractBranch relativeURIstoRoots(String path, Store store) {
         /* for the capabilities */
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -187,6 +189,8 @@ public final class LookupResource {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             String[] roots = branch.getArchiveRoots();
+            if (roots == null)
+                continue;
             for (int j = 0; j < roots.length; j++) {
                 if (path.startsWith(roots[j]))
                     return branch;
@@ -207,7 +211,7 @@ public final class LookupResource {
      * @param store The store.
      * @return The branch, or null.
      */
-    public static AbstractBranch AbsoluteURIstoRoots(String path, Store store) {
+    public static AbstractBranch absoluteURIstoRoots(String path, Store store) {
         /* for the capabilities */
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -217,6 +221,8 @@ public final class LookupResource {
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
             String[] roots = branch.getArchiveRoots();
+            if (roots == null)
+                continue;
             String[][] uris = tracking.getArchiveURIs();
             for (int j = 0; j < roots.length; j++) {
                 String[] uris2 = uris[j];

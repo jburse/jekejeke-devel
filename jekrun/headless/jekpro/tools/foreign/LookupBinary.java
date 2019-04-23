@@ -7,9 +7,9 @@ import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
+import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
-import matula.util.config.AbstractRuntime;
 
 /**
  * <p>Concerned with the lookup of binaries, escpecially Java classes</p>
@@ -53,7 +53,7 @@ public final class LookupBinary {
      * @return The class, or null.
      */
     public static Class keyToClass(String relpath, Store store) {
-        AbstractBranch branch = LookupResource.RelativeURIstoRoots(relpath, store);
+        AbstractBranch branch = LookupResource.relativeURIstoRoots(relpath, store);
         if (branch != null) {
             Object obj = store.foyer.getCanonCache(relpath);
             if (obj != null)

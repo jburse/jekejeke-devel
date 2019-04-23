@@ -1,13 +1,13 @@
 package matula.util.config;
 
+import matula.comp.sharik.AbstractActivator;
+import matula.util.config.AbstractRuntime;
+
+import java.util.Locale;
+import java.util.Properties;
+
 /**
- * <p>An object that encapsulates a file extension.</p>
- * <p>The following flags are supported:</p
- * <ul>
- * <li><b>MASK_USES_TEXT:</b> Library file.</li>
- * <li><b>MASK_USES_BNRY:</b> Foreign file.</li>
- * <li><b>MASK_USES_RSCS:</b> Resource file.</li>
- * </ul>
+ * <p>An abstract framework such as a toolkit.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,50 +37,60 @@ package matula.util.config;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FileExtension {
-    /* suffix relationship flags */
-    public static final int MASK_USES_TEXT = 0x00000010;
-    public static final int MASK_USES_BNRY = 0x00000020;
-    public static final int MASK_USES_RSCS = 0x00000040;
-
-    public static final int MASK_DATA_ECRY = 0x00000100;
-
-    /* combined suffix flags */
-    public static final int MASK_USES_SUFX
-            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
-
-    public final static String ENCRYPTION_MARK = "x";
-
-    private int type;
-    private String mimetype;
+public abstract class AbstractFramework {
+    private AbstractActivator activator;
+    private AbstractRuntime runtime;
 
     /**
-     * <p>Create a new file extension object.</p>
+     * <p>Retrieve the activator.
      *
-     * @param t The type.
-     * @param m The mimetype.
+     * @return The activator.
      */
-    public FileExtension(int t, String m) {
-        type = t;
-        mimetype = m;
+    public AbstractActivator getActivator() {
+        return activator;
     }
 
     /**
-     * <p>Retrieve the type.</p>
+     * <p>Set the activator.
      *
-     * @return The type.
+     * @param a The activator.
      */
-    public int getType() {
-        return type;
+    public void setActivator(AbstractActivator a) {
+        activator = a;
     }
 
     /**
-     * <p>Retrieve the mime type.</p>
+     * <p>Retrieve the runtime.</p>
      *
-     * @return The mime type.
+     * @return The runtime.
      */
-    public String getMimeType() {
-        return mimetype;
+    public AbstractRuntime getRuntime() {
+        return runtime;
     }
+
+    /**
+     * <p>Set the runtime.</p>
+     *
+     * @param r The runtime.
+     */
+    public void setRuntime(AbstractRuntime r) {
+        runtime = r;
+    }
+
+    /**
+     * <p>Retrieve the product language properties.</p>
+     *
+     * @param locale The locale.
+     * @return The properties.
+     */
+    public abstract Properties getProductLang(Locale locale);
+
+    /**
+     * <p>Retrieve the error language properties.</p>
+     *
+     * @param locale The locale.
+     * @return The properties.
+     */
+    public abstract Properties getErrorLang(Locale locale);
 
 }

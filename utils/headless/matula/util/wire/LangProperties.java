@@ -1,6 +1,7 @@
 package matula.util.wire;
 
 import matula.comp.text.DefaultRecognizer;
+import matula.util.config.FileExtension;
 import matula.util.system.ForeignCache;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public final class LangProperties {
     private static final HashMap<String, Properties> cache =
             new HashMap<String, Properties>();
 
-    private final static String EXT_PROPX = ".propertiesx";
+    private final static String EXT_PROP = ".properties";
 
     /*****************************************************************/
     /* Legacy API                                                    */
@@ -61,7 +62,7 @@ public final class LangProperties {
      * @param locale The locale.
      * @return The language properties, or null.
      */
-    public static Properties getLang(Class<?> clazz, String name,
+    public static Properties getLang(Class clazz, String name,
                                      Locale locale) {
         if (clazz == null)
             throw new NullPointerException("clazz missing");
@@ -70,13 +71,13 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = clazz.getResource(name + EXT_PROPX);
+        URL url = getURL(clazz, name + EXT_PROP);
         if (url == null)
-            throw new NullPointerException("root missing");
+            return null;
 
         String adr = url.toString();
         String locstr = "_" + locale;
-        int k = adr.length() - EXT_PROPX.length();
+        int k = adr.lastIndexOf('.');
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
@@ -84,6 +85,23 @@ public final class LangProperties {
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }
+    }
+
+    /**
+     * <p>Retrieve the URL of a language property.</p>
+     *
+     * @param clazz The class.
+     * @param name The name of the language property.
+     * @return The URL of the language property.
+     */
+    private static URL getURL(Class clazz, String name) {
+        URL url = clazz.getResource(name + FileExtension.ENCRYPTION_MARK);
+        if (url!=null)
+            return url;
+        url= clazz.getResource(name);
+        if (url!=null)
+            return url;
+        return null;
     }
 
     /**
@@ -102,13 +120,13 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = loader.getResource(name + EXT_PROPX);
+        URL url = getURL(loader, name + EXT_PROP);
         if (url == null)
-            throw new NullPointerException("root missing");
+            return null;
 
         String adr = url.toString();
         String locstr = "_" + locale;
-        int k = adr.length() - EXT_PROPX.length();
+        int k = adr.lastIndexOf('.');
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
@@ -116,6 +134,23 @@ public final class LangProperties {
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }
+    }
+
+    /**
+     * <p>Retrieve the URL of a language property.</p>
+     *
+     * @param loader The loader.
+     * @param name The name of the language property.
+     * @return The URL of the language property.
+     */
+    private static URL getURL(ClassLoader loader, String name) {
+        URL url = loader.getResource(name + FileExtension.ENCRYPTION_MARK);
+        if (url!=null)
+            return url;
+        url= loader.getResource(name);
+        if (url!=null)
+            return url;
+        return null;
     }
 
     /**

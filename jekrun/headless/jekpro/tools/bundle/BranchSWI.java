@@ -1,13 +1,11 @@
-package matula.util.config;
+package jekpro.tools.bundle;
+
+import jekpro.model.builtin.AbstractBranch;
+import jekpro.tools.foreign.Tracking;
+import matula.comp.sharik.AbstractTracking;
 
 /**
- * <p>An object that encapsulates a file extension.</p>
- * <p>The following flags are supported:</p
- * <ul>
- * <li><b>MASK_USES_TEXT:</b> Library file.</li>
- * <li><b>MASK_USES_BNRY:</b> Foreign file.</li>
- * <li><b>MASK_USES_RSCS:</b> Resource file.</li>
- * </ul>
+ * <p>The internal implementation of a SWI package.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,50 +35,34 @@ package matula.util.config;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class FileExtension {
-    /* suffix relationship flags */
-    public static final int MASK_USES_TEXT = 0x00000010;
-    public static final int MASK_USES_BNRY = 0x00000020;
-    public static final int MASK_USES_RSCS = 0x00000040;
-
-    public static final int MASK_DATA_ECRY = 0x00000100;
-
-    /* combined suffix flags */
-    public static final int MASK_USES_SUFX
-            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
-
-    public final static String ENCRYPTION_MARK = "x";
-
-    private int type;
-    private String mimetype;
+final class BranchSWI extends AbstractBranch {
 
     /**
-     * <p>Create a new file extension object.</p>
+     * <p>Retrieve the parameters of this branch.</p>
      *
-     * @param t The type.
-     * @param m The mimetype.
+     * @return The parameters of this brach.
      */
-    public FileExtension(int t, String m) {
-        type = t;
-        mimetype = m;
+    public String[] getParams() {
+        return VOID_LIST;
     }
 
     /**
-     * <p>Retrieve the type.</p>
-     *
-     * @return The type.
+     * <p>Create a branch SWI.</p>
      */
-    public int getType() {
-        return type;
+    BranchSWI() {
+
     }
 
     /**
-     * <p>Retrieve the mime type.</p>
+     * <p>Create the info.
      *
-     * @return The mime type.
+     * @return The info.
      */
-    public String getMimeType() {
-        return mimetype;
+    public AbstractTracking createTracking() {
+        Tracking tracking = new Tracking();
+//        tracking.setLicense("");
+        tracking.setLicense("DIST");
+        return tracking;
     }
 
 }

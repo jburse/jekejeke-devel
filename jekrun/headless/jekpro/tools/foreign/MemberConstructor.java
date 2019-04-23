@@ -1,7 +1,6 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -140,7 +139,7 @@ final class MemberConstructor extends AbstractMember {
             default:
                 break;
         }
-        Object res = AutoClass.invokeNew(constructor, args, en);
+        Object res = AutoClass.invokeNew(constructor, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
@@ -152,7 +151,7 @@ final class MemberConstructor extends AbstractMember {
         Object[] help;
         boolean ext = d.getAndReset();
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm((help=((SkelCompound) temp).args)[
+                !en.unifyTerm((help = ((SkelCompound) temp).args)[
                                 help.length - 1], ref,
                         AbstractTerm.getSkel(res), d))
             return false;

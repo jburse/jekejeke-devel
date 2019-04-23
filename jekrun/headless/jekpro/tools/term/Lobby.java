@@ -9,8 +9,8 @@ import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.Capability;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.regex.ScannerError;
 
@@ -153,8 +153,8 @@ public final class Lobby {
         Capability[] res = new Capability[snapshot.length];
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            Capability capa = ((AbstractBranch) entry.key).capa;
-            if (!(capa instanceof Capability))
+            Capability capa = (Capability) ((AbstractBranch) entry.key).proxy;
+            if (capa == null)
                 throw new NullPointerException("capability missing");
             res[i] = capa;
         }
