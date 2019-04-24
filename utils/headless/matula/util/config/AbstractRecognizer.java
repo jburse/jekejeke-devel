@@ -2,6 +2,12 @@ package matula.util.config;
 
 import matula.util.data.MapEntry;
 import matula.util.data.MapTree;
+import matula.util.regex.ScannerError;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Properties;
 
 /**
  * <p>An abstract recognizer such as a knowledgebase.</p>
@@ -61,6 +67,27 @@ public abstract class AbstractRecognizer {
      */
     public abstract ClassLoader getLoader();
 
+    /**
+     * <p>Load binary properties.</p>
+     *
+     * @param prop The properties.
+     * @param in The input stream.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError  Problem reading.
+     */
+    public abstract void loadBinary(Properties prop, InputStream in)
+            throws IOException, ScannerError;
+
+    /**
+     * <p>Load text properties.</p>
+     *
+     * @param prop The properties.
+     * @param reader The reader.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError  Problem reading.
+     */
+    public abstract void loadText(Properties prop, Reader reader)
+            throws IOException, ScannerError;
 
     /*****************************************************************/
     /* File Extensions                                               */

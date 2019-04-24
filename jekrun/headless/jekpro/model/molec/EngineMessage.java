@@ -871,8 +871,8 @@ public final class EngineMessage extends Exception {
                     if (cache == null)
                         continue;
                     Properties prop = ForeignCache.getCached(cache, locstr);
-                    prop = ForeignCache.getLang(prop, start, key, locstr);
-                    if (prop != null)
+                    ForeignCache.getLang(prop, start, key, locstr);
+                    if (ForeignCache.isValid(prop))
                         res.addImport(prop);
                 }
             }

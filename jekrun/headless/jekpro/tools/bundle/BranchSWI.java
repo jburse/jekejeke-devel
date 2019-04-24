@@ -4,6 +4,7 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
+import matula.util.config.FileExtension;
 import matula.util.wire.LangProperties;
 
 import java.util.Locale;
@@ -98,6 +99,19 @@ final class BranchSWI extends AbstractBranch {
 //        tracking.setLicense("");
         tracking.setLicense("DIST");
         return tracking;
+    }
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @return The properties or null.
+     */
+    public Properties getDescrModel(Locale locale) {
+        String name = "jekpro/tools/bundle/pack";
+        ClassLoader loader = getClass().getClassLoader();
+        return LangProperties.getLangCheck(loader, name, locale,
+                RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
     }
 
     /**

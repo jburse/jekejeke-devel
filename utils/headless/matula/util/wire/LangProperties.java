@@ -1,7 +1,9 @@
 package matula.util.wire;
 
 import matula.comp.text.DefaultRecognizer;
+import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
+import matula.util.data.MapEntry;
 import matula.util.system.ForeignCache;
 
 import java.io.IOException;
@@ -48,8 +50,6 @@ public final class LangProperties {
     private static final HashMap<String, Properties> cache =
             new HashMap<String, Properties>();
 
-    private final static String EXT_PROP = ".properties";
-
     /*****************************************************************/
     /* Legacy API                                                    */
     /*****************************************************************/
@@ -64,6 +64,23 @@ public final class LangProperties {
      */
     public static Properties getLang(Class clazz, String name,
                                      Locale locale) {
+        return getLangCheck(clazz, name, locale,
+                DefaultRecognizer.DEFAULT, FileExtension.MASK_USES_RSCS);
+    }
+
+    /**
+     * <p>Cache and load encrypted language properties.</p>
+     *
+     * @param clazz  The class.
+     * @param name   The name.
+     * @param locale The locale.
+     * @param know   The recognizer.
+     * @param mask   The mask.
+     * @return The language properties, or null.
+     */
+    public static Properties getLangCheck(Class clazz, String name,
+                                          Locale locale, AbstractRecognizer know,
+                                          int mask) {
         if (clazz == null)
             throw new NullPointerException("clazz missing");
         if (name == null)
@@ -71,7 +88,7 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = getURL(clazz, name + EXT_PROP);
+        URL url = getURL(clazz, name, know, mask);
         if (url == null)
             return null;
 
@@ -81,26 +98,33 @@ public final class LangProperties {
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
-            return ForeignCache.getLang(prop, DefaultRecognizer.DEFAULT, adr, locstr);
+            ForeignCache.getLangCheck(prop, know, adr, locstr, mask);
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }
+        return (ForeignCache.isValid(prop) ? prop : null);
     }
 
     /**
      * <p>Retrieve the URL of a language property.</p>
      *
      * @param clazz The class.
-     * @param name The name of the language property.
+     * @param name  The name of the language property.
+     * @param know  The recognizer.
+     * @param mask  The mask.
      * @return The URL of the language property.
      */
-    private static URL getURL(Class clazz, String name) {
-        URL url = clazz.getResource(name + FileExtension.ENCRYPTION_MARK);
-        if (url!=null)
-            return url;
-        url= clazz.getResource(name);
-        if (url!=null)
-            return url;
+    private static URL getURL(Class clazz, String name,
+                              AbstractRecognizer know, int mask) {
+        MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<String, FileExtension> entry = snapshot[i];
+            if ((entry.value.getType() & mask) != 0) {
+                URL url = clazz.getResource(name + entry.key);
+                if (url != null)
+                    return url;
+            }
+        }
         return null;
     }
 
@@ -112,7 +136,24 @@ public final class LangProperties {
      * @param locale The locale.
      * @return The language properties, or null.
      */
-    public static Properties getLang(ClassLoader loader, String name, Locale locale) {
+    public static Properties getLang(ClassLoader loader, String name,
+                                     Locale locale) {
+        return getLangCheck(loader, name, locale,
+                DefaultRecognizer.DEFAULT, FileExtension.MASK_USES_RSCS);
+    }
+
+    /**
+     * <p>Cache and load encrypted language properties.</p>
+     *
+     * @param loader The class loader.
+     * @param name   The name.
+     * @param locale The locale.
+     * @param know   The recognizer.
+     * @return The language properties, or null.
+     */
+    public static Properties getLangCheck(ClassLoader loader, String name,
+                                          Locale locale, AbstractRecognizer know,
+                                          int mask) {
         if (loader == null)
             throw new NullPointerException("loader missing");
         if (name == null)
@@ -120,7 +161,7 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = getURL(loader, name + EXT_PROP);
+        URL url = getURL(loader, name, know, mask);
         if (url == null)
             return null;
 
@@ -130,26 +171,33 @@ public final class LangProperties {
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
-            return ForeignCache.getLang(prop, DefaultRecognizer.DEFAULT, adr, locstr);
+            ForeignCache.getLangCheck(prop, know, adr, locstr, mask);
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }
+        return (ForeignCache.isValid(prop) ? prop : null);
     }
 
     /**
      * <p>Retrieve the URL of a language property.</p>
      *
      * @param loader The loader.
-     * @param name The name of the language property.
+     * @param name   The name of the language property.
+     * @param know   The abstract recognizer.
+     * @param mask   The mask.
      * @return The URL of the language property.
      */
-    private static URL getURL(ClassLoader loader, String name) {
-        URL url = loader.getResource(name + FileExtension.ENCRYPTION_MARK);
-        if (url!=null)
-            return url;
-        url= loader.getResource(name);
-        if (url!=null)
-            return url;
+    private static URL getURL(ClassLoader loader, String name,
+                              AbstractRecognizer know, int mask) {
+        MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<String, FileExtension> entry = snapshot[i];
+            if ((entry.value.getType() & mask) != 0) {
+                URL url = loader.getResource(name + entry.key);
+                if (url != null)
+                    return url;
+            }
+        }
         return null;
     }
 

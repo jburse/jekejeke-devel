@@ -78,7 +78,8 @@ public final class ForeignLocale {
             return null;
         locstr = "_" + locstr;
         Properties prop = ForeignCache.getCached(cache, locstr);
-        return ForeignCache.getLang(prop, (Store) know.getStore(), pin, locstr);
+        ForeignCache.getLang(prop, (Store) know.getStore(), pin, locstr);
+        return (ForeignCache.isValid(prop) ? prop : null);
     }
 
     /**
@@ -256,7 +257,7 @@ public final class ForeignLocale {
      * @throws InterpreterMessage Capability not found.
      */
     public static Properties sysGetDescrModel(Interpreter inter,
-                                             String locstr, String clazz)
+                                              String locstr, String clazz)
             throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);
@@ -273,7 +274,7 @@ public final class ForeignLocale {
      * @throws InterpreterMessage Capability not found.
      */
     public static Properties sysGetDescrPlatform(Interpreter inter,
-                                              String locstr, String clazz)
+                                                 String locstr, String clazz)
             throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);

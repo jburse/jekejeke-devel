@@ -2,15 +2,18 @@ package matula.util.system;
 
 import derek.util.protect.LicenseError;
 import matula.util.config.AbstractRecognizer;
+import matula.util.config.FileExtension;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Properties;
 
 /**
+ * <p>This class provides a properties cache.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -76,48 +79,77 @@ public final class ForeignCache {
      * @param know   The recognizer.
      * @param adr    The URI.
      * @param locstr The locale prefixed by underscore.
-     * @return The language properties, or null.
      * @throws InterruptedIOException IO Interrupted.
      */
-    public static Properties getLang(Properties prop,
-                                     AbstractRecognizer know,
-                                     String adr, String locstr)
+    public static void getLang(Properties prop,
+                               AbstractRecognizer know,
+                               String adr, String locstr)
+            throws IOException {
+        getLangCheck(prop, know, adr, locstr, FileExtension.MASK_USES_RSCS);
+    }
+
+    /**
+     * <p>Cache and load language properties.</p>
+     *
+     * @param prop   The language properties.
+     * @param know   The recognizer.
+     * @param adr    The URI.
+     * @param locstr The locale prefixed by underscore.
+     * @param mask   The mask.
+     * @throws InterruptedIOException IO Interrupted.
+     */
+    public static void getLangCheck(Properties prop,
+                                    AbstractRecognizer know,
+                                    String adr, String locstr,
+                                    int mask)
             throws IOException {
         String state = prop.getProperty(ATTR_STATE);
-        if (state == null) {
-            adr = ForeignCache.findLocale(adr, locstr);
-            synchronized (prop) {
-                state = prop.getProperty(ATTR_STATE);
-                if (state == null) {
-                    if (adr != null) {
-                        try {
-                            ForeignCache.loadProperties(know, adr, prop);
-                            state = STATE_LOADED;
-                            prop.put(ATTR_STATE, state);
-                        } catch (LicenseError x) {
-                            state = STATE_FAILED;
-                            prop.put(ATTR_STATE, state);
-                        } catch (ScannerError x) {
-                            state = STATE_FAILED;
-                            prop.put(ATTR_STATE, state);
-                        } catch (IOException x) {
-                            if (OpenCheck.isInterrupt(x)) {
-                                throw x;
-                            } else {
-                                state = STATE_FAILED;
-                                prop.put(ATTR_STATE, state);
-                            }
-                        }
+        if (state != null)
+            return;
+        adr = ForeignCache.findLocale(adr, locstr);
+        synchronized (prop) {
+            state = prop.getProperty(ATTR_STATE);
+            if (state != null)
+                return;
+            if (adr != null) {
+                try {
+                    if ((mask & FileExtension.MASK_USES_RSCS) != 0) {
+                        ForeignCache.loadBinary(know, adr, prop);
+                    } else {
+                        ForeignCache.loadText(know, adr, prop);
+                    }
+                    state = STATE_LOADED;
+                    prop.put(ATTR_STATE, state);
+                } catch (LicenseError x) {
+                    state = STATE_FAILED;
+                    prop.put(ATTR_STATE, state);
+                } catch (IOException x) {
+                    if (OpenCheck.isInterrupt(x)) {
+                        throw x;
                     } else {
                         state = STATE_FAILED;
                         prop.put(ATTR_STATE, state);
                     }
+                } catch (ScannerError x) {
+                    state = STATE_FAILED;
+                    prop.put(ATTR_STATE, state);
                 }
+            } else {
+                state = STATE_FAILED;
+                prop.put(ATTR_STATE, state);
             }
         }
-        if (state.equals(STATE_LOADED))
-            return prop;
-        return null;
+    }
+
+    /**
+     * <p>Check whether the properties are valid.</p>
+     *
+     * @param prop The properties.
+     * @return True if the properties are valid, otherwise false.
+     */
+    public static boolean isValid(Properties prop) {
+        String state = prop.getProperty(ATTR_STATE);
+        return STATE_LOADED.equals(state);
     }
 
     /************************************************************/
@@ -155,27 +187,58 @@ public final class ForeignCache {
     }
 
     /**
-     * <p>Load properties.</p>
+     * <p>Load binary properties.</p>
      *
      * @param know The recogbizer.
      * @param adr  The URI.
      * @param prop The properties.
-     * @throws IOException  Problem reading.
      * @throws LicenseError Problem reading.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
      */
-    public static void loadProperties(AbstractRecognizer know,
-                                      String adr, Properties prop)
+    public static void loadBinary(AbstractRecognizer know,
+                                  String adr, Properties prop)
             throws LicenseError, IOException, ScannerError {
         OpenOpts opts = new OpenOpts();
         opts.setFlags(opts.getFlags() | OpenOpts.MASK_OPEN_BINR);
         InputStream in = (InputStream) opts.openRead(know, adr);
         try {
-            prop.load(in);
+            know.loadBinary(prop, in);
         } catch (IOException x) {
+            in.close();
+            throw x;
+        } catch (ScannerError x) {
             in.close();
             throw x;
         }
         in.close();
+    }
+
+    /**
+     * <p>Load binary properties.</p>
+     *
+     * @param know The recogbizer.
+     * @param adr  The URI.
+     * @param prop The properties.
+     * @throws LicenseError Problem reading.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
+     */
+    public static void loadText(AbstractRecognizer know,
+                                String adr, Properties prop)
+            throws LicenseError, IOException, ScannerError {
+        OpenOpts opts = new OpenOpts();
+        Reader reader = (Reader) opts.openRead(know, adr);
+        try {
+            know.loadText(prop, reader);
+        } catch (IOException x) {
+            reader.close();
+            throw x;
+        } catch (ScannerError x) {
+            reader.close();
+            throw x;
+        }
+        reader.close();
     }
 
 }
