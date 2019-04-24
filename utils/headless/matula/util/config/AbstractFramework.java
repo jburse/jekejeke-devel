@@ -41,6 +41,9 @@ public abstract class AbstractFramework {
     private AbstractActivator activator;
     private AbstractRuntime runtime;
 
+    public final static String PROP_PRODUCT_SERVER = "product.server";
+    public final static String PROP_PRODUCT_USERDIR = "product.userdir";
+
     /**
      * <p>Retrieve the activator.
      *

@@ -57,8 +57,6 @@ public abstract class AbstractBundle extends Check {
     public final static String PROP_PRODUCT_LANG = "product.lang";
     public final static String PROP_PRODUCT_PACK = "product.pack";
     public final static String PROP_PRODUCT_INST = "product.inst";
-    public final static String PROP_PRODUCT_USERDIR = "product.userdir";
-    public final static String PROP_PRODUCT_SERVER = "product.server";
 
     public static final String[] VOID_LIST = new String[0];
 
