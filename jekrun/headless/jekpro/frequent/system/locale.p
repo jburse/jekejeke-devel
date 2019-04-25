@@ -185,19 +185,37 @@ get_error_properties(Props) :-
       sysGetErrorProperties('Interpreter','String')).
 
 /**
- * get_description_properties(C, P):
- * get_description_properties(L, C, P):
+ * get_descr_model(C, P):
+ * get_descr_model(L, C, P):
  * The predicate unifies P with the description properties of the
  * given capability C. The ternary predicate allows specifying
  * a locale L.
  */
 % get_decription_properties(+Capability, -Props)
-:- public get_description_properties/2.
-get_description_properties(Capability, Props) :-
+:- public get_descr_model/2.
+get_descr_model(Capability, Props) :-
    current_prolog_flag(sys_locale, Locale),
-   get_description_properties(Locale, Capability, Props).
+   get_descr_model(Locale, Capability, Props).
 
-% get_description_properties(+Locale, +Capability, -Props)
-:- public get_description_properties/3.
-:- foreign(get_description_properties/3, 'ForeignLocale',
-      sysGetDescriptionProperties('Interpreter','String','String')).
+% get_descr_model(+Locale, +Capability, -Props)
+:- public get_descr_model/3.
+:- foreign(get_descr_model/3, 'ForeignLocale',
+      sysGetDescrModel('Interpreter','String','String')).
+
+/**
+ * get_descr_platform(C, P):
+ * get_descr_platform(L, C, P):
+ * The predicate unifies P with the description properties of the
+ * given capability C. The ternary predicate allows specifying
+ * a locale L.
+ */
+% get_decription_properties(+Capability, -Props)
+:- public get_descr_platform/2.
+get_descr_platform(Capability, Props) :-
+   current_prolog_flag(sys_locale, Locale),
+   get_descr_platform(Locale, Capability, Props).
+
+% get_descr_platform(+Locale, +Capability, -Props)
+:- public get_descr_platform/3.
+:- foreign(get_descr_platform/3, 'ForeignLocale',
+      sysGetDescrPlatform('Interpreter','String','String')).

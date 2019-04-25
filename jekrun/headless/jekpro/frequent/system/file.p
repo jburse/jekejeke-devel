@@ -332,3 +332,22 @@ getenv(Name, Value) :-
 
 :- private sys_current_env/1.
 :- foreign(sys_current_env/1, 'ForeignDirectory', sysCurrentEnv('CallOut')).
+
+/*****************************************************************/
+/* ZIP Files                                                     */
+/*****************************************************************/
+
+/**
+ * archive_file(F, P, N):
+ * Succeeds whenever N unifies with an entry
+ * for the prefix P in the archive F.
+ */
+% archive_file(+Atom, +Atom, -Atom)
+:- public archive_file/3.
+archive_file(Name, Prefix, Elem) :-
+   absolute_file_name(Name, Pin),
+   sys_archive_file(Pin, Prefix, Elem).
+
+:- private sys_archive_file/3.
+:- foreign(sys_archive_file/3, 'ForeignDirectory',
+      sysArchiveFile('CallOut','String','String')).

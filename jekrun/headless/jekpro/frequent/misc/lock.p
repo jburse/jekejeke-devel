@@ -63,6 +63,7 @@
 :- package(library(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(matula/util/misc)).
+:- use_package(foreign(java/util/concurrent/locks)).
 
 :- module(lock, []).
 
@@ -89,7 +90,7 @@
 % lock_acquire(+Lock)
 :- public lock_acquire/1.
 :- virtual lock_acquire/1.
-:- foreign(lock_acquire/1, 'AbstractLock', acquire).
+:- foreign(lock_acquire/1, 'Lock', lockInterruptibly).
 
 /**
  * lock_attempt(L):
@@ -99,7 +100,7 @@
 % lock_attempt(+Lock)
 :- public lock_attempt/1.
 :- virtual lock_attempt/1.
-:- foreign(lock_attempt/1, 'AbstractLock', attempt).
+:- foreign(lock_attempt/1, 'Lock', tryLock).
 
 /**
  * lock_attempt(L, T):
@@ -108,17 +109,16 @@
  */
 % lock_attempt(+Lock, +Integer)
 :- public lock_attempt/2.
-:- virtual lock_attempt/2.
-:- foreign(lock_attempt/2, 'AbstractLock', attempt(long)).
+:- foreign(lock_attempt/2, 'ForeignLock', sysTryLock('Lock',long)).
 
 /**
  * lock_release(L):
  * The predicate succeeds after unlocking the lock L.
  */
-% lock_release(+AbstractLock)
+% lock_release(+Lock)
 :- public lock_release/1.
 :- virtual lock_release/1.
-:- foreign(lock_release/1, 'AbstractLock', release).
+:- foreign(lock_release/1, 'Lock', unlock).
 
 /**
  * lock_new(P):
@@ -127,7 +127,7 @@
  */
 % lock_new(-ReadWrite)
 :- public lock_new/1.
-:- foreign_constructor(lock_new/1, 'Lock', new).
+:- foreign_constructor(lock_new/1, 'Locker', new).
 
 /**
  * nonescalable_new(P):
@@ -144,7 +144,7 @@
  */
 :- public get_read/2.
 :- virtual get_read/2.
-:- foreign(get_read/2, 'AbstractPair', getRead).
+:- foreign(get_read/2, 'ReadWriteLock', readLock).
 
 /**
  * get_write(P, W):
@@ -152,4 +152,4 @@
  */
 :- public get_write/2.
 :- virtual get_write/2.
-:- foreign(get_write/2, 'AbstractPair', getWrite).
+:- foreign(get_write/2, 'ReadWriteLock', writeLock).
