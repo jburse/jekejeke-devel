@@ -4,9 +4,12 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
+import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
+import matula.util.data.ListArray;
 import matula.util.wire.LangProperties;
 
+import java.io.IOException;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -86,7 +89,9 @@ final class BranchSWI extends AbstractBranch {
      * <p>Create a branch SWI.</p>
      */
     BranchSWI() {
-
+        setMainRoot("chat80-1.0/");
+//        setFlags(AbstractBundle.MASK_BNDL_NACT);
+        setArchiveRoots(new String[]{"chat80-1.0/"});
     }
 
     /**
@@ -105,11 +110,12 @@ final class BranchSWI extends AbstractBranch {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
+     * @param e      The enforced.
      * @return The properties or null.
      */
-    public Properties getDescrModel(Locale locale) {
-        String name = "jekpro/tools/bundle/pack";
-        ClassLoader loader = getClass().getClassLoader();
+    public Properties getDescrModel(Locale locale, Enforced e) {
+        ClassLoader loader = e.getRoot().getLoader();
+        String name = getMainRoot() + "pack";
         return LangProperties.getLangCheck(loader, name, locale,
                 RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
     }
@@ -125,9 +131,27 @@ final class BranchSWI extends AbstractBranch {
      */
     public Properties getDescrPlatform(Locale locale, Enforced e) {
         String aspect = e.getFramework().getRuntime().getAspect();
-        String name = "jekpro/swipl/" + aspect + "/description";
         ClassLoader loader = e.getRoot().getLoader();
+        String name = "jekpro/swipl/" + aspect + "/description";
         return LangProperties.getLang(loader, name, locale);
+    }
+
+    /**
+     * <p>Precompute the uris of a root.</p>
+     *
+     * @param res    The target list.
+     * @param root   The root.
+     * @param e      The enforced.
+     * @throws IOException Shit happens.
+     */
+    public void rootToAbsolute(ListArray<String> res, String root, Enforced e)
+            throws IOException {
+        ClassLoader loader = e.getRoot().getLoader();
+        if (root.equals(getMainRoot())) {
+            rootToAbsoluteCheck(res, root, loader, "pack.pl");
+        } else {
+            rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
+        }
     }
 
 }

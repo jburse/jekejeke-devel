@@ -261,7 +261,7 @@ public final class ForeignLocale {
             throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);
-        return capa.getDescrModel(locale);
+        return capa.getDescrModel(locale, inter.getKnowledgebase().getLobby());
     }
 
     /**

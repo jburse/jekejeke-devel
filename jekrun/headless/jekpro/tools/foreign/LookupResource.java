@@ -8,6 +8,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractTracking;
+import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
@@ -50,7 +51,6 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class LookupResource {
-    private final static String OP_ROOT = "root.propertiesx";
     private final static String OP_JAR_COLON = "jar:";
     private final static String OP_BANG_SLASH = "!/";
 
@@ -141,35 +141,6 @@ public final class LookupResource {
     /***************************************************************/
 
     /**
-     * <p>Precompute the uris of the roots.</p>
-     *
-     * @param roots  The roots.
-     * @param loader The loader.
-     * @return The uris.
-     * @throws IOException Shit happens.
-     */
-    public static String[][] rootsToAbsoluteURIs(String[] roots, ClassLoader loader)
-            throws IOException {
-        if (roots == null)
-            return null;
-        ListArray<String[]> res = new ListArray<String[]>();
-        for (int j = 0; j < roots.length; j++) {
-            ListArray<String> res2 = new ListArray<String>();
-            Enumeration<URL> urls = loader.getResources(roots[j] + LookupResource.OP_ROOT);
-            while (urls.hasMoreElements()) {
-                String uri = ForeignUri.sysCanonicalUri(urls.nextElement().toString());
-                res2.add(uri.substring(0, uri.length() - LookupResource.OP_ROOT.length()));
-            }
-            String[] uris2 = new String[res2.size()];
-            res2.toArray(uris2);
-            res.add(uris2);
-        }
-        String[][] uris = new String[res.size()][];
-        res.toArray(uris);
-        return uris;
-    }
-
-    /**
      * <p>Determine the branch for a path.</p>
      * <p>Relative paths are assumed to start in one of the archives.</p>
      * <p>Absolute paths are assumed to start from nowhere.</p>
@@ -219,17 +190,12 @@ public final class LookupResource {
             Tracking tracking = (Tracking) entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            String[] roots = branch.getArchiveRoots();
-            if (roots == null)
+            String[] uris = tracking.getArchiveURIs();
+            if (uris == null)
                 continue;
-            String[][] uris = tracking.getArchiveURIs();
-            for (int j = 0; j < roots.length; j++) {
-                String[] uris2 = uris[j];
-                for (int k = 0; k < uris2.length; k++) {
-                    if (path.startsWith(uris2[k]))
-                        return branch;
-                }
+            for (int k = 0; k < uris.length; k++) {
+                if (path.startsWith(uris[k]))
+                    return (AbstractBranch) entry.key;
             }
         }
 

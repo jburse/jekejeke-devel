@@ -4,10 +4,14 @@ import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Check;
 import matula.comp.sharik.Enforced;
+import matula.util.data.ListArray;
+import matula.util.system.ForeignUri;
 import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -175,9 +179,9 @@ public abstract class AbstractBundle extends Check {
      * @param locale The locale.
      * @return The properties or null.
      */
-    public Properties getDescrModel(Locale locale) {
+    public Properties getDescrModel(Locale locale, Enforced e) {
+        ClassLoader loader = e.getRoot().getLoader();
         String name = getMainRoot() + "model/builtin/description";
-        ClassLoader loader = getClass().getClassLoader();
         return LangProperties.getLang(loader, name, locale);
     }
 
@@ -189,10 +193,52 @@ public abstract class AbstractBundle extends Check {
      * @return The properties or null.
      */
     public Properties getDescrPlatform(Locale locale, Enforced e) {
+        ClassLoader loader = e.getRoot().getLoader();
         String aspect = e.getFramework().getRuntime().getAspect();
         String name = getMainRoot() + "platform/" + aspect + "/description";
-        ClassLoader loader = e.getRoot().getLoader();
         return LangProperties.getLang(loader, name, locale);
+    }
+
+    /**
+     * <p>Precompute the uris of a root.</p>
+     *
+     * @param res    The target list.
+     * @param root   The root.
+     * @param e      The enforced.
+     * @throws IOException Shit happens.
+     */
+    public void rootToAbsolute(ListArray<String> res, String root, Enforced e)
+            throws IOException {
+        ClassLoader loader = e.getRoot().getLoader();
+        String aspect = e.getFramework().getRuntime().getAspect();
+        if (root.equals(getMainRoot())) {
+            rootToAbsoluteCheck(res, root, loader, "model/builtin/description.propertiesx");
+            rootToAbsoluteCheck(res, root, loader, "platform/" + aspect + "/description.propertiesx");
+        } else {
+            rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
+        }
+    }
+
+    /**
+     * <p>Precompute the uris of a root.</p>
+     *
+     * @param res    The target list.
+     * @param root   The root.
+     * @param loader The loader.
+     * @param path   The well known path.
+     * @throws IOException Shit happens.
+     */
+    public void rootToAbsoluteCheck(ListArray<String> res, String root,
+                                    ClassLoader loader, String path)
+            throws IOException {
+        Enumeration<URL> urls = loader.getResources(root + path);
+        while (urls.hasMoreElements()) {
+            String uri = urls.nextElement().toString();
+            uri = ForeignUri.sysCanonicalUri(uri);
+            uri = uri.substring(0, uri.length() - path.length());
+            if (!res.contains(uri))
+                res.add(uri);
+        }
     }
 
 }

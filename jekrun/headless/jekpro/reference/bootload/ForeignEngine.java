@@ -14,6 +14,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractTracking;
@@ -280,21 +281,23 @@ public final class ForeignEngine {
      * @return The Prolog version.
      */
     public static String sysPrologVersion(Interpreter inter) {
-        Capability brand = inter.getKnowledgebase().getLobby().getToolkit().getBrandCapability();
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Capability brand = lobby.getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        return ForeignEngine.sysFamilyProduct(brand, locale);
+        return ForeignEngine.sysFamilyProduct(brand, lobby, locale);
     }
 
     /**
      * <p>Retrieve the family and product text.</p>
      *
      * @param cap    The capability.
+     * @param lobby  The lobby.
      * @param locale The locale.
      * @return The family and product.
      */
-    public static String sysFamilyProduct(Capability cap, Locale locale) {
-        Properties descr = cap.getDescrModel(locale);
+    public static String sysFamilyProduct(Capability cap, Lobby lobby, Locale locale) {
+        Properties descr = cap.getDescrModel(locale, lobby);
         String family = descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
         return family + ", " + ForeignEngine.sysProductRelease(descr, locale);
     }
@@ -302,7 +305,7 @@ public final class ForeignEngine {
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param descr The model properties.
+     * @param descr  The model properties.
      * @param locale The locale.
      * @return The product and release.
      */
@@ -332,10 +335,11 @@ public final class ForeignEngine {
      * @return The Prolog vendor.
      */
     public static String sysPrologVendor(Interpreter inter) {
-        Capability brand = inter.getKnowledgebase().getLobby().getToolkit().getBrandCapability();
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        Capability brand = lobby.getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        Properties descr = brand.getDescrModel(locale);
+        Properties descr = brand.getDescrModel(locale, lobby);
         return descr.getProperty(AbstractBundle.PROP_PRODUCT_COMPANY);
     }
 

@@ -206,10 +206,12 @@ public class Capability {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
+     * @param lobby  The lobby.
      * @return The properties.
      */
-    public Properties getDescrModel(Locale locale) {
-        return branch.getDescrModel(locale);
+    public Properties getDescrModel(Locale locale, Lobby lobby) {
+        Foyer foyer = (Foyer) lobby.getFoyer();
+        return branch.getDescrModel(locale, foyer);
     }
 
     /**
