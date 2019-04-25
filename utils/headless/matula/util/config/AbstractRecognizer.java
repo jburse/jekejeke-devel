@@ -1,5 +1,6 @@
 package matula.util.config;
 
+import derek.util.protect.LicenseError;
 import matula.util.data.MapEntry;
 import matula.util.data.MapTree;
 import matula.util.regex.ScannerError;
@@ -59,13 +60,6 @@ public abstract class AbstractRecognizer {
      * @return The parent.
      */
     public abstract AbstractRecognizer getParent();
-
-    /**
-     * <p>Retrieve the loader.</p>
-     *
-     * @return The loader.
-     */
-    public abstract ClassLoader getLoader();
 
     /**
      * <p>Load binary properties.</p>
@@ -141,5 +135,24 @@ public abstract class AbstractRecognizer {
         }
         return res;
     }
+
+    /*****************************************************************/
+    /* Class Loader                                                  */
+    /*****************************************************************/
+
+    /**
+     * <p>Retrieve the loader.</p>
+     *
+     * @return The loader.
+     */
+    public abstract ClassLoader getLoader();
+
+    /**
+     * <p>Take a snapshot of the class paths.</p>
+     *
+     * @return The class paths.
+     * @throws LicenseError Shit happens.
+     */
+    public abstract String[] snapshotClassPaths() throws LicenseError;
 
 }

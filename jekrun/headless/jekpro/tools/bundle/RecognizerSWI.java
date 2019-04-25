@@ -85,15 +85,6 @@ public final class RecognizerSWI extends AbstractRecognizer {
     }
 
     /**
-     * <p>Retrieve the loader.</p>
-     *
-     * @return The loader.
-     */
-    public ClassLoader getLoader() {
-        return null;
-    }
-
-    /**
      * <p>Load binary properties.</p>
      *
      * @param prop The properties.
@@ -178,6 +169,28 @@ public final class RecognizerSWI extends AbstractRecognizer {
         } else {
             prop.put(key, old + ", " + value);
         }
+    }
+
+    /*****************************************************************/
+    /* Class Loader                                                  */
+    /*****************************************************************/
+
+    /**
+     * <p>Retrieve the loader.</p>
+     *
+     * @return The loader.
+     */
+    public ClassLoader getLoader() {
+        return null;
+    }
+
+    /**
+     * <p>Take a snapshot of the class paths.</p>
+     *
+     * @return The class paths.
+     */
+    public String[] snapshotClassPaths() {
+        return null;
     }
 
 }

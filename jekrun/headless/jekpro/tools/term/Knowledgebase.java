@@ -1,5 +1,6 @@
 package jekpro.tools.term;
 
+import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
@@ -267,8 +268,8 @@ public class Knowledgebase {
             throws InterpreterMessage {
         try {
             return store.snapshotClassPaths();
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
         }
     }
 

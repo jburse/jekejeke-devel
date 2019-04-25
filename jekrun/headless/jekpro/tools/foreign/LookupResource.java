@@ -226,7 +226,12 @@ public final class LookupResource {
         }
 
         // check paths
-        String[] cps = store.snapshotClassPaths();
+        String[] cps;
+        try {
+            cps = store.snapshotClassPaths();
+        } catch (LicenseError x) {
+            throw new EngineMessage(EngineMessage.licenseError(x.getError()));
+        }
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
             if (cp.endsWith(CacheModule.OP_STRING_OS)) {
@@ -259,7 +264,12 @@ public final class LookupResource {
     public static boolean hasSourceFile(String path, Store store)
             throws EngineMessage {
         // check paths
-        String[] cps = store.snapshotClassPaths();
+        String[] cps;
+        try {
+            cps = store.snapshotClassPaths();
+        } catch (LicenseError x) {
+            throw new EngineMessage(EngineMessage.licenseError(x.getError()));
+        }
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
             if (cp.endsWith(CacheModule.OP_STRING_OS)) {

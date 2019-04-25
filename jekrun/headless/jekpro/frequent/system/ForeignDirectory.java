@@ -4,12 +4,15 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.config.AbstractBundle;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * <p>The foreign predicates for the module system/file.</p>
@@ -106,29 +109,35 @@ public final class ForeignDirectory {
     }
 
     /**
-     * <p>List the entries of a directory.</p>
+     * <p>Enumerate the entries of a directory.</p>
      *
      * @param co     The call out.
-     * @param uristr The file name.
+     * @param uristr The directory name.
      * @return The relative entries.
      * @throws InterpreterMessage Not file scheme.
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
             throws InterpreterMessage {
-        ArrayEnumeration<String> dc;
+        ArrayEnumeration<File> dc;
         if (co.getFirst()) {
             File f = new File(uriToFilePath(uristr));
-            String[] list = f.list();
-            dc = new ArrayEnumeration<String>(list != null ? list : AbstractBundle.VOID_LIST);
+            File[] list = f.listFiles();
+            if (list == null)
+                return null;
+            dc = new ArrayEnumeration<File>(list);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>) co.getData();
+            dc = (ArrayEnumeration<File>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
-        String res = dc.nextElement();
+        File f = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
-        return res;
+        if (f.isDirectory()) {
+            return f.getName() + "/";
+        } else {
+            return f.getName();
+        }
     }
 
     /**
@@ -235,6 +244,87 @@ public final class ForeignDirectory {
             return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /*****************************************************************/
+    /* ZIP Files                                                     */
+    /*****************************************************************/
+
+    /**
+     * <p>Enuerate the entries of an archive.</p>
+     *
+     * @param co     The call out.
+     * @param uristr The archive name.
+     * @param prefix The prefix filter.
+     * @return The relative entries.
+     * @throws IOException        Shit happens.
+     * @throws InterpreterMessage Not file scheme.
+     */
+    public static String sysArchiveFile(CallOut co, String uristr, String prefix)
+            throws InterpreterMessage, IOException {
+        ArrayEnumeration<String> dc;
+        if (co.getFirst()) {
+            File f = new File(uriToFilePath(uristr));
+            ZipInputStream zip = new ZipInputStream(new FileInputStream(f));
+            String[] list;
+            try {
+                list = listArchive(zip, prefix);
+            } catch (IOException x) {
+                zip.close();
+                throw x;
+            }
+            zip.close();
+            if (list == null)
+                return null;
+            dc = new ArrayEnumeration<String>(list);
+            co.setData(dc);
+        } else {
+            dc = (ArrayEnumeration<String>) co.getData();
+        }
+        if (!dc.hasMoreElements())
+            return null;
+        String res = dc.nextElement();
+        co.setRetry(dc.hasMoreElements());
+        return res;
+    }
+
+    /**
+     * <p>List the entries of an archive.</p>
+     *
+     * @param zip    The archive stream.
+     * @param prefix The prefix filter.
+     * @return The entries or null.
+     * @throws IOException Shit happens.
+     */
+    private static String[] listArchive(ZipInputStream zip, String prefix)
+            throws IOException {
+        ListArray<String> list = null;
+        ZipEntry e = zip.getNextEntry();
+        for (; e != null; e = zip.getNextEntry()) {
+            String name = e.getName();
+            if (name.length() == prefix.length())
+                continue;
+            if (!name.startsWith(prefix))
+                continue;
+            int k = name.indexOf('/', prefix.length());
+            if (k != -1) {
+                name = name.substring(prefix.length(), k + 1);
+            } else {
+                name = name.substring(prefix.length());
+            }
+            if (list == null) {
+                list = new ListArray<String>();
+                list.add(name);
+            } else {
+                if (!list.contains(name))
+                    list.add(name);
+            }
+        }
+        if (list == null)
+            return null;
+        String[] res = new String[list.size()];
+        list.toArray(res);
         return res;
     }
 

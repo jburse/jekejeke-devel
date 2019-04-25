@@ -410,10 +410,9 @@ public class Store extends AbstractRecognizer {
      * <p>Take a snapshot of the class paths.</p>
      *
      * @return The class paths.
-     * @throws EngineMessage Shit happens.
+     * @throws LicenseError Shit happens.
      */
-    public String[] snapshotClassPaths()
-            throws EngineMessage {
+    public String[] snapshotClassPaths() throws LicenseError {
         String[] res = cachepaths;
         if (res != null)
             return res;
@@ -424,11 +423,7 @@ public class Store extends AbstractRecognizer {
                 return res;
             ListArray<String> paths;
             ClassLoader stop = (parent != null ? parent.loader : null);
-            try {
-                paths = foyer.getFactory().getRuntime().getURLs(loader, stop, data);
-            } catch (LicenseError x) {
-                throw new EngineMessage(EngineMessage.licenseError(x.getError()));
-            }
+            paths = foyer.getFactory().getRuntime().getURLs(loader, stop, data);
             res = new String[paths.size()];
             paths.toArray(res);
             cachepaths = res;
