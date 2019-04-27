@@ -1,7 +1,7 @@
-package jekpro.tools.bundle;
+package matula.util.config;
 
 /**
- * <p>This class represents a discovered capability.</p>
+ * <p>This class represents a discovered path.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,28 +31,28 @@ package jekpro.tools.bundle;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class AirDropEntry {
-    private final String capa;
+public final class GestaltEntry {
+    private final String path;
     private final boolean dontask;
 
     /**
-     * <p>Create a capability entry.</p>
+     * <p>Create a path entry.</p>
      *
-     * @param c The capability name.
+     * @param c The path.
      * @param d The don't ask flag.
      */
-    public AirDropEntry(String c, boolean d) {
-        capa = c;
+    public GestaltEntry(String c, boolean d) {
+        path = c;
         dontask = d;
     }
 
     /**
-     * <p>Retrieve the capability name.</p>
+     * <p>Retrieve the path.</p>
      *
-     * @return The capability name.
+     * @return The path.
      */
-    public String getCapa() {
-        return capa;
+    public String getPath() {
+        return path;
     }
 
     /**

@@ -1,20 +1,14 @@
 package matula.util.swing;
 
 import derek.util.protect.LicenseError;
-import matula.util.data.ListArray;
 import matula.util.config.AbstractRuntime;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignDomain;
 import matula.util.system.ForeignUri;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.jar.Attributes;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 
 /**
  * <p>Swing specialization of an abstract runtime.</p>
@@ -49,8 +43,6 @@ import java.util.jar.Manifest;
  */
 public final class RuntimeHotspot extends AbstractRuntime {
     public static RuntimeHotspot DEFAULT = new RuntimeHotspot();
-
-    public static final String DIRECTORY_APK = "apk";
 
     /**
      * <p>Create an activator android.</p>
@@ -133,27 +125,6 @@ public final class RuntimeHotspot extends AbstractRuntime {
     /****************************************************************/
     /* Jar Manifest                                                 */
     /****************************************************************/
-
-    /**
-     * <p>Retrieve the manifest attributes for a file.</p>
-     *
-     * @param file The file.
-     * @return The manifest attributes.
-     */
-    public static Attributes getAttributes(File file) throws IOException {
-        FileInputStream in = new FileInputStream(file);
-        JarInputStream jr;
-        try {
-            jr = new JarInputStream(in);
-        } catch (IOException x) {
-            in.close();
-            throw x;
-        }
-        Manifest mf = jr.getManifest();
-        jr.close();
-        in.close();
-        return (mf != null ? mf.getMainAttributes() : null);
-    }
 
     /**
      * <p>Some testing.</p>

@@ -8,16 +8,12 @@ import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
 import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
-import matula.util.regex.ScannerError;
-import matula.util.system.ForeignCache;
 import matula.util.wire.LangProperties;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -58,59 +54,6 @@ public final class AirDrop {
 
     public final static String PLATFORM_DIR = "platform/";
     public final static String PLATFORM_FILE = "/description";
-
-    /*************************************************************/
-    /* Directory Property                                        */
-    /*************************************************************/
-
-    /**
-     * <p>Discover capabilities from directory properties.</p>
-     *
-     * @param e The enforced.
-     * @return The discovered capabilities.
-     */
-    public static ListArray<AirDropEntry> load(Enforced e)
-            throws IOException, LicenseError, ScannerError {
-        ClassLoader loader = e.getRoot().getLoader();
-        ListArray<AirDropEntry> slips = null;
-
-        Enumeration<URL> urls = loader.getResources("jekpub.platform.apk.propertiesx");
-        while (urls.hasMoreElements()) {
-            URL url = urls.nextElement();
-            Properties prop = new Properties();
-            ForeignCache.loadBinary(DefaultRecognizer.DEFAULT, url.toString(), prop);
-            slips = AirDrop.loadEntries(slips, prop);
-        }
-
-        return slips;
-    }
-
-    /**
-     * <p>Digest capabilities from directory property.</p>
-     *
-     * @param slips The entries.
-     * @param prop  The properties.
-     */
-    private static ListArray<AirDropEntry> loadEntries(ListArray<AirDropEntry> slips,
-                                                       Properties prop) {
-        String countstr = prop.getProperty("slip.count");
-        if (countstr == null)
-            return slips;
-        int count = Integer.parseInt(countstr);
-        for (int i = 0; i < count; i++) {
-            String cstr = prop.getProperty("slip." + i + ".capa");
-            String dstr = prop.getProperty("slip." + i + ".dontask");
-            if (cstr != null || dstr != null) {
-                String capa = (cstr != null ? cstr : "");
-                boolean dontask = "true".equals(dstr);
-                AirDropEntry pse = new AirDropEntry(capa, dontask);
-                if (slips == null)
-                    slips = new ListArray<AirDropEntry>();
-                slips.add(pse);
-            }
-        }
-        return slips;
-    }
 
     /*************************************************************/
     /* Known Paths                                               */

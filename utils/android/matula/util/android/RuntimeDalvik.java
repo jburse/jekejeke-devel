@@ -1,13 +1,11 @@
 package matula.util.android;
 
 import android.app.Application;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import derek.util.protect.LicenseError;
-import matula.util.data.ListArray;
 import matula.util.config.AbstractRuntime;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.net.MalformedURLException;
@@ -74,20 +72,8 @@ public final class RuntimeDalvik extends AbstractRuntime {
         String spec = ForeignUri.sysUriSpec(adr);
         String scheme = ForeignUri.sysSpecScheme(spec);
         String path = ForeignUri.sysSpecPath(spec);
-        if (ForeignUri.SCHEME_FILE.equals(scheme)) {
-            /* */
-        } else if (SCHEME_APK.equals(scheme)) {
-            PackageManager pm = ((Application) data).getPackageManager();
-            PackageInfo pi;
-            try {
-                pi = pm.getPackageInfo(path, 0);
-            } catch (PackageManager.NameNotFoundException x) {
-                throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
-            }
-            path = pi.applicationInfo.sourceDir;
-        } else {
+        if (!ForeignUri.SCHEME_FILE.equals(scheme))
             throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
-        }
         if (path.endsWith("/")) {
             return new ResidualClassLoader(new String[]{path}, parent);
         } else {
@@ -121,6 +107,7 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * <p>Retrieve the paths.</p>
      *
      * @param loader The loader.
+     * @param data   The application.
      * @return The paths.
      * @throws LicenseError License problem.
      */
@@ -149,27 +136,6 @@ public final class RuntimeDalvik extends AbstractRuntime {
         } else {
             return null;
         }
-    }
-
-    /****************************************************************/
-    /* Application Bundle                                           */
-    /****************************************************************/
-
-    /**
-     * <p>Retrieve a bundle for an application.</p>
-     *
-     * @param pm   The package manager.
-     * @param name The application name.
-     * @return The bundle.
-     */
-    public static Bundle getBundle(PackageManager pm, String name) {
-        ApplicationInfo ai = null;
-        try {
-            ai = pm.getApplicationInfo(name, PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException x) {
-            /* */
-        }
-        return (ai != null ? ai.metaData : null);
     }
 
 }
