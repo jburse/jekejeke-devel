@@ -252,8 +252,9 @@ public class Knowledgebase {
             throws InterpreterMessage {
         try {
             store.addClassPath(path);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.licenseError(x.getError()));
         }
     }
 
@@ -269,7 +270,8 @@ public class Knowledgebase {
         try {
             return store.snapshotClassPaths();
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(
+                    InterpreterMessage.licenseError(x.getError()));
         }
     }
 

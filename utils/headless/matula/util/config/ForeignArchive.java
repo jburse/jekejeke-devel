@@ -1,0 +1,149 @@
+package matula.util.config;
+
+import matula.util.data.ListArray;
+import matula.util.system.ForeignUri;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+/**
+ * More foreign predicates for the module system/file.
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
+ */
+public final class ForeignArchive {
+
+    /*****************************************************************/
+    /* OS Directores                                                 */
+    /*****************************************************************/
+
+    /**
+     * <p>List the entries of a directory.</p>
+     *
+     * @param list The target list.
+     * @param f    The file.
+     * @return The target list.
+     */
+    public static ListArray<String> listDirectory(ListArray<String> list,
+                                                  File f) {
+        File[] fs = f.listFiles();
+        if (fs == null)
+            return null;
+        for (int i = 0; i < fs.length; i++) {
+            f = fs[i];
+            String name;
+            if (f.isDirectory()) {
+                name = f.getName() + "/";
+            } else {
+                name = f.getName();
+            }
+            if (list == null) {
+                list = new ListArray<String>();
+                list.add(name);
+            } else {
+                if (!list.contains(name))
+                    list.add(name);
+            }
+        }
+        return list;
+    }
+
+    /*****************************************************************/
+    /* ZIP Files                                                     */
+    /*****************************************************************/
+
+    /**
+     * <p>List the entries of an archive.</p>
+     * <p>Will close and thas release the inflater.</p>
+     *
+     * @param list   The target list.
+     * @param in     The archive stream.
+     * @param prefix The prefix filter.
+     * @return The target list.
+     * @throws IOException Shit happens.
+     */
+    public static ListArray<String> listArchive(ListArray<String> list,
+                                                InputStream in, String prefix)
+            throws IOException {
+        ZipInputStream zip = new ZipInputStream(
+                new BufferedInputStream(in, 8192));
+        try {
+            ZipEntry e = zip.getNextEntry();
+            for (; e != null; e = zip.getNextEntry()) {
+                String name = e.getName();
+                if (name.length() == prefix.length())
+                    continue;
+                if (!name.startsWith(prefix))
+                    continue;
+                int k = name.indexOf('/', prefix.length());
+                if (k != -1) {
+                    name = name.substring(prefix.length(), k + 1);
+                } else {
+                    name = name.substring(prefix.length());
+                }
+                if (list == null) {
+                    list = new ListArray<String>();
+                    list.add(name);
+                } else {
+                    if (!list.contains(name))
+                        list.add(name);
+                }
+            }
+        } catch (IOException x) {
+            zip.close();
+            throw x;
+        }
+        zip.close();
+        return list;
+    }
+
+    /*****************************************************************/
+    /* URI Paths                                                     */
+    /*****************************************************************/
+
+    /**
+     * <p>Extract the file path from an uri.</p>
+     *
+     * @param adr The uri string.
+     * @return The file path or null.
+     */
+    public static String extractPath(String adr) {
+        String spec = ForeignUri.sysUriSpec(adr);
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        if (!ForeignUri.SCHEME_FILE.equals(scheme))
+            return null;
+        String path = ForeignUri.sysSpecPath(spec);
+        return path.replace('/', File.separatorChar);
+    }
+
+}

@@ -76,15 +76,6 @@ public final class RecognizerSWI extends AbstractRecognizer {
     }
 
     /**
-     * <p>Retrieve the parent.</p>
-     *
-     * @return The parent.
-     */
-    public AbstractRecognizer getParent() {
-        return null;
-    }
-
-    /**
      * <p>Load binary properties.</p>
      *
      * @param prop The properties.
@@ -185,12 +176,29 @@ public final class RecognizerSWI extends AbstractRecognizer {
     }
 
     /**
-     * <p>Take a snapshot of the class paths.</p>
+     * <p>Retrieve the parent.</p>
      *
-     * @return The class paths.
+     * @return The parent.
      */
-    public String[] snapshotClassPaths() {
+    public AbstractRecognizer getParent() {
         return null;
+    }
+
+    /**
+     * <p>Retrieve the base.</p>
+     *
+     * @return The base.
+     */
+    public String getBase() {
+        return null;
+    }
+
+    /**
+     * <p>Add a path.</p>
+     *
+     * @param path The path.
+     */
+    public void addClassPath(String path) {
     }
 
 }

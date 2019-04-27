@@ -1,7 +1,6 @@
 package jekpro.tools.bundle;
 
 import jekpro.tools.call.Capability;
-import jekpro.tools.proxy.CapabilityAPI;
 
 /**
  * <p>The capability facade for a SWI package.</p>
@@ -38,9 +37,11 @@ public final class CapabilitySWI extends Capability {
 
     /**
      * <p>Create the capability headless.</p>
+     *
+     * @param root The main root.
      */
-    public CapabilitySWI() {
-        super(new BranchSWI());
+    public CapabilitySWI(String root) {
+        super(new BranchSWI(root));
     }
 
 }

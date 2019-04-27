@@ -1,4 +1,4 @@
-package matula.util.config;
+package jekpro.tools.bundle;
 
 /**
  * <p>This class represents a discovered capability.</p>
@@ -62,6 +62,24 @@ public final class AirDropEntry {
      */
     public boolean getDontAsk() {
         return dontask;
+    }
+
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Returns a string representation of this air drop entry.</p>
+     *
+     * @return A string representation of this air drop entry.
+     */
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("capa=");
+        buf.append(capa);
+        buf.append(";dontask=");
+        buf.append(dontask);
+        return buf.toString();
     }
 
 }

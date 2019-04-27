@@ -1,8 +1,15 @@
 package jekpro.tools.call;
 
+import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.FlagFactory;
+import jekpro.tools.bundle.AirDrop;
+import jekpro.tools.term.Lobby;
+import matula.util.data.ListArray;
+
+import java.io.IOException;
 
 /**
  * This class represents the base for all toolkits. Each toolkit predefines
@@ -109,6 +116,28 @@ public abstract class Toolkit {
      */
     public final Object getFactory() {
         return factory;
+    }
+
+    /*********************************************************/
+    /* Airdrop Support                                       */
+    /*********************************************************/
+
+    /**
+     * <p>Init a list of paths.</p>
+     *
+     * @param lobby The lobby.
+     * @param cps The class paths.
+     */
+    public static void initPaths(Lobby lobby, ListArray<String> cps)
+            throws InterpreterMessage {
+        try {
+            AirDrop.initPaths((Foyer) lobby.getFoyer(), cps);
+        } catch (IOException x) {
+            throw InterpreterMessage.mapIOException(x);
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.licenseError(x.getError()));
+        }
     }
 
 }

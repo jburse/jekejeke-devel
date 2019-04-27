@@ -88,11 +88,10 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = getURL(clazz, name, know, mask);
-        if (url == null)
+        String adr = getURL(clazz, name, know, mask);
+        if (adr == null)
             return null;
 
-        String adr = url.toString();
         String locstr = "_" + locale;
         int k = adr.lastIndexOf('.');
         String key = adr.substring(0, k) + locstr + adr.substring(k);
@@ -114,7 +113,7 @@ public final class LangProperties {
      * @param mask  The mask.
      * @return The URL of the language property.
      */
-    private static URL getURL(Class clazz, String name,
+    private static String getURL(Class clazz, String name,
                               AbstractRecognizer know, int mask) {
         MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
         for (int i = 0; i < snapshot.length; i++) {
@@ -122,7 +121,7 @@ public final class LangProperties {
             if ((entry.value.getType() & mask) != 0) {
                 URL url = clazz.getResource(name + entry.key);
                 if (url != null)
-                    return url;
+                    return url.toString();
             }
         }
         return null;
@@ -161,11 +160,10 @@ public final class LangProperties {
         if (locale == null)
             throw new NullPointerException("locale missing");
 
-        URL url = getURL(loader, name, know, mask);
-        if (url == null)
+        String adr = getURL(loader, name, know, mask);
+        if (adr == null)
             return null;
 
-        String adr = url.toString();
         String locstr = "_" + locale;
         int k = adr.lastIndexOf('.');
         String key = adr.substring(0, k) + locstr + adr.substring(k);
@@ -187,7 +185,7 @@ public final class LangProperties {
      * @param mask   The mask.
      * @return The URL of the language property.
      */
-    private static URL getURL(ClassLoader loader, String name,
+    public static String getURL(ClassLoader loader, String name,
                               AbstractRecognizer know, int mask) {
         MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
         for (int i = 0; i < snapshot.length; i++) {
@@ -195,7 +193,7 @@ public final class LangProperties {
             if ((entry.value.getType() & mask) != 0) {
                 URL url = loader.getResource(name + entry.key);
                 if (url != null)
-                    return url;
+                    return url.toString();
             }
         }
         return null;

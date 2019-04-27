@@ -62,6 +62,9 @@ public abstract class AbstractBundle extends Check {
     public final static String PROP_PRODUCT_PACK = "product.pack";
     public final static String PROP_PRODUCT_INST = "product.inst";
 
+    public final static String PROP_SLIP_CAPA = "slip.capa";
+    public final static String PROP_SLIP_DONTASK = "slip.dontask";
+
     public static final String[] VOID_LIST = new String[0];
 
     private int flags;
@@ -127,6 +130,23 @@ public abstract class AbstractBundle extends Check {
             throws LicenseError, IOException;
 
     /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @return The properties or null.
+     */
+    public abstract Properties getDescrModel(Locale locale, Enforced e);
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @param e      The enforced.
+     * @return The properties or null.
+     */
+    public abstract Properties getDescrPlatform(Locale locale, Enforced e);
+
+    /**
      * <p>Retrieve the parameters of this branch.</p>
      *
      * @return The parameters of this brach.
@@ -167,78 +187,6 @@ public abstract class AbstractBundle extends Check {
                 return false;
         }
         return true;
-    }
-
-    /***************************************************************/
-    /* Default Services                                            */
-    /***************************************************************/
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @return The properties or null.
-     */
-    public Properties getDescrModel(Locale locale, Enforced e) {
-        ClassLoader loader = e.getRoot().getLoader();
-        String name = getMainRoot() + "model/builtin/description";
-        return LangProperties.getLang(loader, name, locale);
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param e      The enforced.
-     * @return The properties or null.
-     */
-    public Properties getDescrPlatform(Locale locale, Enforced e) {
-        ClassLoader loader = e.getRoot().getLoader();
-        String aspect = e.getFramework().getRuntime().getAspect();
-        String name = getMainRoot() + "platform/" + aspect + "/description";
-        return LangProperties.getLang(loader, name, locale);
-    }
-
-    /**
-     * <p>Precompute the uris of a root.</p>
-     *
-     * @param res    The target list.
-     * @param root   The root.
-     * @param e      The enforced.
-     * @throws IOException Shit happens.
-     */
-    public void rootToAbsolute(ListArray<String> res, String root, Enforced e)
-            throws IOException {
-        ClassLoader loader = e.getRoot().getLoader();
-        String aspect = e.getFramework().getRuntime().getAspect();
-        if (root.equals(getMainRoot())) {
-            rootToAbsoluteCheck(res, root, loader, "model/builtin/description.propertiesx");
-            rootToAbsoluteCheck(res, root, loader, "platform/" + aspect + "/description.propertiesx");
-        } else {
-            rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
-        }
-    }
-
-    /**
-     * <p>Precompute the uris of a root.</p>
-     *
-     * @param res    The target list.
-     * @param root   The root.
-     * @param loader The loader.
-     * @param path   The well known path.
-     * @throws IOException Shit happens.
-     */
-    public void rootToAbsoluteCheck(ListArray<String> res, String root,
-                                    ClassLoader loader, String path)
-            throws IOException {
-        Enumeration<URL> urls = loader.getResources(root + path);
-        while (urls.hasMoreElements()) {
-            String uri = urls.nextElement().toString();
-            uri = ForeignUri.sysCanonicalUri(uri);
-            uri = uri.substring(0, uri.length() - path.length());
-            if (!res.contains(uri))
-                res.add(uri);
-        }
     }
 
 }

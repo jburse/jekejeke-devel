@@ -56,8 +56,6 @@ import java.lang.reflect.Method;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Reflection extends AbstractReflection {
-    public final static String OP_DEFAULT = "DEFAULT";
-
     public final static AbstractReflection DEFAULT = new Reflection();
 
     /**
@@ -164,36 +162,19 @@ public final class Reflection extends AbstractReflection {
      */
     public AbstractBranch stringToBranch(String name, ClassLoader loader)
             throws EngineMessage, EngineException {
-        int i = name.indexOf('(');
-        Class clazz;
-        String[] params;
-        Class[] types;
-        if (i != -1) {
-            clazz = AbstractRuntime.stringToClass(name.substring(0, i), loader);
-            ListArray<String> list = new ListArray<String>();
-            int k = name.indexOf(i + 1, ',');
-            while (k != -1) {
-                list.add(name.substring(i + 1, k));
-                i = k;
-                k = name.indexOf(i + 1, ',');
-            }
-            k = name.indexOf(i + 1, ')');
-            if (k != name.length() - 1)
-                throw new IllegalArgumentException("parameter error");
-            list.add(name.substring(i + 1, k));
-            params = new String[list.size()];
-            list.toArray(params);
-            types = new Class[list.size()];
-            for (i = 0; i < types.length; i++)
-                types[i] = String.class;
-        } else {
-            clazz = AbstractRuntime.stringToClass(name, loader);
-            params = AbstractBundle.VOID_LIST;
-            types = SpecialForeign.VOID_TYPES;
-        }
+        Class clazz = AbstractRuntime.stringToClass(extractClass(name), loader);
         if (clazz == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CLASS, new SkelAtom(name)));
+        String[] params = extractParams(name);
+        Class[] types;
+        if (params.length != 0) {
+            types = new Class[params.length];
+            for (int i = 0; i < params.length; i++)
+                types[i] = String.class;
+        } else {
+            types = SpecialForeign.VOID_TYPES;
+        }
         Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, types);
         Object value = AutoClass.invokeNew(constr, params);
         if (!(value instanceof Capability))
@@ -258,5 +239,79 @@ public final class Reflection extends AbstractReflection {
         src.setBranch(LookupResource.absoluteURIstoRoots(key, store));
         return src;
     }
+
+    /**************************************************************/
+    /* Parameter Utilities                                        */
+    /**************************************************************/
+
+    /**
+     * <p>Extract the class.</p>
+     *
+     * @param name The capability.
+     * @return The class.
+     */
+    private static String extractClass(String name) {
+        int i = name.indexOf('(');
+        if (i != -1) {
+            return name.substring(0, i);
+        } else {
+            return name;
+        }
+    }
+
+    /**
+     * <p>Extract the parameters.</p>
+     *
+     * @param name The capability.
+     * @return The parameters.
+     * @throws EngineMessage Shit happens.
+     */
+    private static String[] extractParams(String name)
+            throws EngineMessage {
+        int i = name.indexOf('(');
+        if (i != -1) {
+            ListArray<String> list = new ListArray<String>();
+
+            int k = name.indexOf(',', i + 1);
+            while (k != -1) {
+                list.add(name.substring(i + 1, k));
+                i = k;
+                k = name.indexOf(',', i + 1);
+            }
+            k = name.indexOf(')', i + 1);
+            if (k != name.length() - 1)
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_PARAMETER_ERROR));
+            list.add(name.substring(i + 1, k));
+
+            String[] res = new String[list.size()];
+            list.toArray(res);
+            return res;
+        } else {
+            return AbstractBundle.VOID_LIST;
+        }
+    }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     * @throws EngineMessage Shit happens.
+     */
+    /*
+    public static void main(String[] args)
+            throws EngineMessage {
+        String name = "jekpro.tools.bundle.CapabilitySWI(chat80-1.0/)";
+        System.out.println("name=" + name);
+
+        String clazz = extractClass(name);
+        System.out.println("class=" + clazz);
+
+        String[] params = extractParams(name);
+        System.out.println("param.length=" + params.length);
+        for (int i = 0; i < params.length; i++)
+            System.out.println("param[" + i + "]=" + params[i]);
+    }
+    */
 
 }

@@ -4,7 +4,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
-import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.wire.LangProperties;
@@ -48,19 +47,19 @@ import java.util.Properties;
 /**
  * Obtained rights, copyright notice of SWI-Prolog 7.3.33 the
  * plweb-www GitHub package when we adopted SWI-Prolog icon.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *
+ * <p>
  * 2. Redistributions in binary form must reproduce the above copyright
  * notice, this list of conditions and the following disclaimer in
  * the documentation and/or other materials provided with the
  * distribution.
- *
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -82,16 +81,18 @@ final class BranchSWI extends AbstractBranch {
      * @return The parameters of this brach.
      */
     public String[] getParams() {
-        return VOID_LIST;
+        return getArchiveRoots();
     }
 
     /**
      * <p>Create a branch SWI.</p>
+     *
+     * @param root The main root.
      */
-    BranchSWI() {
-        setMainRoot("chat80-1.0/");
+    BranchSWI(String root) {
+        setMainRoot(root);
 //        setFlags(AbstractBundle.MASK_BNDL_NACT);
-        setArchiveRoots(new String[]{"chat80-1.0/"});
+        setArchiveRoots(new String[]{root});
     }
 
     /**
@@ -115,7 +116,7 @@ final class BranchSWI extends AbstractBranch {
      */
     public Properties getDescrModel(Locale locale, Enforced e) {
         ClassLoader loader = e.getRoot().getLoader();
-        String name = getMainRoot() + "pack";
+        String name = getMainRoot() + AirDrop.MODEL_SWI;
         return LangProperties.getLangCheck(loader, name, locale,
                 RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
     }
@@ -139,16 +140,16 @@ final class BranchSWI extends AbstractBranch {
     /**
      * <p>Precompute the uris of a root.</p>
      *
-     * @param res    The target list.
-     * @param root   The root.
-     * @param e      The enforced.
+     * @param res  The target list.
+     * @param root The root.
+     * @param e    The enforced.
      * @throws IOException Shit happens.
      */
     public void rootToAbsolute(ListArray<String> res, String root, Enforced e)
             throws IOException {
         ClassLoader loader = e.getRoot().getLoader();
         if (root.equals(getMainRoot())) {
-            rootToAbsoluteCheck(res, root, loader, "pack.pl");
+            rootToAbsoluteCheck(res, root, loader, AirDrop.MODEL_SWI + ".pl");
         } else {
             rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
         }

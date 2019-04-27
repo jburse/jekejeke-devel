@@ -55,19 +55,12 @@ public abstract class AbstractRecognizer {
     public abstract AbstractBundle pathToDecoder(String path);
 
     /**
-     * <p>Retrieve the parent.</p>
-     *
-     * @return The parent.
-     */
-    public abstract AbstractRecognizer getParent();
-
-    /**
      * <p>Load binary properties.</p>
      *
      * @param prop The properties.
-     * @param in The input stream.
+     * @param in   The input stream.
      * @throws IOException  Problem reading.
-     * @throws ScannerError  Problem reading.
+     * @throws ScannerError Problem reading.
      */
     public abstract void loadBinary(Properties prop, InputStream in)
             throws IOException, ScannerError;
@@ -75,10 +68,10 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Load text properties.</p>
      *
-     * @param prop The properties.
+     * @param prop   The properties.
      * @param reader The reader.
      * @throws IOException  Problem reading.
-     * @throws ScannerError  Problem reading.
+     * @throws ScannerError Problem reading.
      */
     public abstract void loadText(Properties prop, Reader reader)
             throws IOException, ScannerError;
@@ -90,7 +83,7 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Add a file extension.</p>
      *
-     * @param e The file extension.
+     * @param e  The file extension.
      * @param fe The type and mime..
      */
     public void addFileExtension(String e, FileExtension fe) {
@@ -148,11 +141,25 @@ public abstract class AbstractRecognizer {
     public abstract ClassLoader getLoader();
 
     /**
-     * <p>Take a snapshot of the class paths.</p>
+     * <p>Retrieve the parent.</p>
      *
-     * @return The class paths.
+     * @return The parent.
+     */
+    public abstract AbstractRecognizer getParent();
+
+    /**
+     * <p>Retrieve the base.</p>
+     *
+     * @return The base.
+     */
+    public abstract String getBase();
+
+    /**
+     * <p>Add a path.</p>
+     *
+     * @param path The path.
      * @throws LicenseError Shit happens.
      */
-    public abstract String[] snapshotClassPaths() throws LicenseError;
+    public abstract void addClassPath(String path) throws LicenseError;
 
 }
