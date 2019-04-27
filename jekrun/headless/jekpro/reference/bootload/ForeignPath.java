@@ -8,6 +8,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.LookupBase;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.Interpreter;
@@ -113,8 +114,8 @@ public final class ForeignPath {
     public static String sysFindWrite(Interpreter inter,
                                       String path)
             throws IOException {
-        Engine engine = (Engine) inter.getEngine();
-        return LookupBase.findWrite(path, engine);
+        Store store = (Store) inter.getKnowledgebase().getStore();
+        return LookupBase.findWrite(path, store);
     }
 
     /**

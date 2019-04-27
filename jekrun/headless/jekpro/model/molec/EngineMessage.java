@@ -203,6 +203,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_MALFORMED_URL = "malformed_url";
     public static final String OP_SYNTAX_RELATIVE_PATH = "relative_path";
     public static final String OP_SYNTAX_MALFORMED_PATH = "malformed_path";
+    public static final String OP_SYNTAX_PARAMETER_ERROR = "parameter_error";
 
     public static final String OP_SYNTAX_NOT_LOCALE = "not_locale";
     public static final String OP_SYNTAX_WRONG_PARENT = "wrong_parent";

@@ -4,15 +4,14 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
+import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
-import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * <p>The foreign predicates for the module system/file.</p>
@@ -60,7 +59,7 @@ public final class ForeignDirectory {
      */
     public static boolean sysCreateFile(String uristr)
             throws InterpreterMessage, IOException {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.createNewFile();
     }
 
@@ -73,7 +72,7 @@ public final class ForeignDirectory {
      */
     public static boolean sysDeleteFile(String uristr)
             throws InterpreterMessage {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.delete();
     }
 
@@ -86,8 +85,8 @@ public final class ForeignDirectory {
      */
     public static boolean sysRenameFile(String uristr1, String uristr2)
             throws InterpreterMessage {
-        File f1 = new File(ForeignDirectory.uriToFilePath(uristr1));
-        File f2 = new File(ForeignDirectory.uriToFilePath(uristr2));
+        File f1 = new File(ForeignDirectory.extractPathCheck(uristr1));
+        File f2 = new File(ForeignDirectory.extractPathCheck(uristr2));
         return f1.renameTo(f2);
     }
 
@@ -104,7 +103,7 @@ public final class ForeignDirectory {
      */
     public static boolean sysMakeDirectory(String uristr)
             throws InterpreterMessage {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.mkdir();
     }
 
@@ -118,26 +117,24 @@ public final class ForeignDirectory {
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
             throws InterpreterMessage {
-        ArrayEnumeration<File> dc;
+        ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            File f = new File(uriToFilePath(uristr));
-            File[] list = f.listFiles();
+            File f = new File(ForeignDirectory.extractPathCheck(uristr));
+            ListArray<String> list = ForeignArchive.listDirectory(null, f);
             if (list == null)
                 return null;
-            dc = new ArrayEnumeration<File>(list);
+            String[] res = new String[list.size()];
+            list.toArray(res);
+            dc = new ArrayEnumeration<String>(res);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<File>) co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
-        File f = dc.nextElement();
+        String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
-        if (f.isDirectory()) {
-            return f.getName() + "/";
-        } else {
-            return f.getName();
-        }
+        return res;
     }
 
     /**
@@ -149,7 +146,7 @@ public final class ForeignDirectory {
      */
     public static boolean sysIsFile(String uristr)
             throws InterpreterMessage {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.isFile();
     }
 
@@ -162,7 +159,7 @@ public final class ForeignDirectory {
      */
     public static boolean sysIsDirectory(String uristr)
             throws InterpreterMessage {
-        File f = new File(ForeignDirectory.uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.isDirectory();
     }
 
@@ -179,7 +176,7 @@ public final class ForeignDirectory {
      */
     public static long sysGetTimeFile(String uristr)
             throws InterpreterMessage {
-        File f = new File(uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.lastModified();
     }
 
@@ -193,30 +190,8 @@ public final class ForeignDirectory {
      */
     public static boolean sysSetTimeFile(String uristr, long date)
             throws InterpreterMessage {
-        File f = new File(uriToFilePath(uristr));
+        File f = new File(ForeignDirectory.extractPathCheck(uristr));
         return f.setLastModified(date);
-    }
-
-    /************************************************************************/
-    /* uri Helper                                                           */
-    /************************************************************************/
-
-    /**
-     * <p>Extract the file path from an uri and replace separator.</p>
-     *
-     * @param adr The uri string.
-     * @return The file path.
-     */
-    public static String uriToFilePath(String adr)
-            throws InterpreterMessage {
-        String spec = ForeignUri.sysUriSpec(adr);
-        String scheme = ForeignUri.sysSpecScheme(spec);
-        if (!ForeignUri.SCHEME_FILE.equals(scheme))
-            throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    InterpreterMessage.OP_PERMISSION_ACCESS,
-                    EngineMessage.OP_PERMISSION_SOURCE_SINK, adr));
-        String path = ForeignUri.sysSpecPath(spec);
-        return path.replace('/', File.separatorChar);
     }
 
     /*****************************************************************/
@@ -265,19 +240,14 @@ public final class ForeignDirectory {
             throws InterpreterMessage, IOException {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            File f = new File(uriToFilePath(uristr));
-            ZipInputStream zip = new ZipInputStream(new FileInputStream(f));
-            String[] list;
-            try {
-                list = listArchive(zip, prefix);
-            } catch (IOException x) {
-                zip.close();
-                throw x;
-            }
-            zip.close();
+            File f = new File(ForeignDirectory.extractPathCheck(uristr));
+            InputStream in = new FileInputStream(f);
+            ListArray<String> list = ForeignArchive.listArchive(null, in, prefix);
             if (list == null)
                 return null;
-            dc = new ArrayEnumeration<String>(list);
+            String[] res = new String[list.size()];
+            list.toArray(res);
+            dc = new ArrayEnumeration<String>(res);
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
@@ -289,43 +259,24 @@ public final class ForeignDirectory {
         return res;
     }
 
+    /************************************************************************/
+    /* URI Helper                                                           */
+    /************************************************************************/
+
     /**
-     * <p>List the entries of an archive.</p>
+     * <p>Extract the file path from an uri.</p>
      *
-     * @param zip    The archive stream.
-     * @param prefix The prefix filter.
-     * @return The entries or null.
-     * @throws IOException Shit happens.
+     * @param adr The uri string.
+     * @return The file path.
      */
-    private static String[] listArchive(ZipInputStream zip, String prefix)
-            throws IOException {
-        ListArray<String> list = null;
-        ZipEntry e = zip.getNextEntry();
-        for (; e != null; e = zip.getNextEntry()) {
-            String name = e.getName();
-            if (name.length() == prefix.length())
-                continue;
-            if (!name.startsWith(prefix))
-                continue;
-            int k = name.indexOf('/', prefix.length());
-            if (k != -1) {
-                name = name.substring(prefix.length(), k + 1);
-            } else {
-                name = name.substring(prefix.length());
-            }
-            if (list == null) {
-                list = new ListArray<String>();
-                list.add(name);
-            } else {
-                if (!list.contains(name))
-                    list.add(name);
-            }
-        }
-        if (list == null)
-            return null;
-        String[] res = new String[list.size()];
-        list.toArray(res);
-        return res;
+    public static String extractPathCheck(String adr)
+            throws InterpreterMessage {
+        String path = ForeignArchive.extractPath(adr);
+        if (path == null)
+            throw new InterpreterMessage(InterpreterMessage.permissionError(
+                    InterpreterMessage.OP_PERMISSION_ACCESS,
+                    EngineMessage.OP_PERMISSION_SOURCE_SINK, adr));
+        return path;
     }
 
 }

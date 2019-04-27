@@ -385,19 +385,15 @@ public class Store extends AbstractRecognizer {
      * <p>Add a path.</p>
      *
      * @param path The path.
-     * @throws EngineMessage Shit happens.
+     * @throws LicenseError Shit happens.
      */
     public void addClassPath(String path)
-            throws EngineMessage {
+            throws LicenseError {
         if (path == null)
             throw new NullPointerException("path missing");
         Object data = foyer.getApplication();
         synchronized (this) {
-            try {
-                loader = foyer.getFactory().getRuntime().addURL(loader, path, data);
-            } catch (LicenseError x) {
-                throw new EngineMessage(EngineMessage.licenseError(x.getError()));
-            }
+            loader = foyer.getFactory().getRuntime().addURL(loader, path, data);
             cachepaths = null;
         }
 

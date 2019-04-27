@@ -3,6 +3,7 @@ package jekpro.model.pretty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
+import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignFile;
@@ -52,15 +53,15 @@ public final class LookupBase {
      * <p>Find a write path.</p>
      *
      * @param path The path, in slash notation.
-     * @param en   The engine.
+     * @param know The abstract recognizer.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
     public static String findWrite(String path,
-                                   Engine en)
+                                   AbstractRecognizer know)
             throws IOException {
         if (ForeignUri.sysUriIsRelative(path)) {
-            String base = en.store.getBase();
+            String base = know.getBase();
             if (base == null)
                 throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
             /* make it absolute */
@@ -244,7 +245,8 @@ public final class LookupBase {
         if ((mask & ForeignPath.MASK_SUFX_TEXT) != 0) {
             Store store = src.getStore();
             do {
-                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
+                MapEntry<String, FileExtension>[] fixes
+                        = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_TEXT) != 0) {
@@ -263,7 +265,8 @@ public final class LookupBase {
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
             do {
-                MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
+                MapEntry<String, FileExtension>[] fixes
+                        = store.snapshotFileExtensions();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
@@ -296,7 +299,8 @@ public final class LookupBase {
         String query = ForeignUri.sysUriQuery(adr);
         String hash = ForeignUri.sysUriHash(adr);
 
-        return ForeignUri.sysUriMake(spec.substring(0, spec.length() - suffix.length()), query, hash);
+        return ForeignUri.sysUriMake(spec.substring(0, spec.length() -
+                suffix.length()), query, hash);
     }
 
 }
