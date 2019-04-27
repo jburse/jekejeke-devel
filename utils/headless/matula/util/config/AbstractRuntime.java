@@ -92,7 +92,7 @@ public abstract class AbstractRuntime {
      * @throws LicenseError License problem.
      */
     public abstract ClassLoader addURL(ClassLoader parent, String adr,
-                                       Object data)
+                                       ClassLoader stop, Object data)
             throws LicenseError;
 
     /**

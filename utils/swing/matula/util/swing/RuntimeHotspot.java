@@ -54,17 +54,18 @@ public final class RuntimeHotspot extends AbstractRuntime {
     /*******************************************************************/
     /* New API                                                         */
     /*******************************************************************/
-
     /**
      * <p>Extend a class loader by a given path.</p>
      *
      * @param parent The parent.
      * @param adr    The URL.
+     * @param stop   The stop loader.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public ClassLoader addURL(ClassLoader parent, String adr, Object data)
+    public ClassLoader addURL(ClassLoader parent, String adr,
+                              ClassLoader stop, Object data)
             throws LicenseError {
         adr = ForeignDomain.sysUriPuny(adr);
         adr = ForeignUri.sysUriEncode(adr);
@@ -74,19 +75,24 @@ public final class RuntimeHotspot extends AbstractRuntime {
         } catch (MalformedURLException x) {
             throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL, adr);
         }
-        return new URLClassLoader(new URL[]{url}, parent);
+        if (parent != stop && parent instanceof ExtensibleClassLoader) {
+            ((ExtensibleClassLoader) parent).addURL(url);
+            return parent;
+        } else {
+            return new ExtensibleClassLoader(new URL[]{url}, parent);
+        }
     }
 
     /**
      * <p>Retrieve the paths.</p>
      *
      * @param loader The loader.
-     * @param stop   The stop.
+     * @param stop   The stop loader.
      * @param data   The client data.
      * @return The paths.
      */
-    public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop,
-                                     Object data)
+    public ListArray<String> getURLs(ClassLoader loader,
+                                     ClassLoader stop, Object data)
             throws LicenseError {
         if (stop == loader)
             return new ListArray<String>();

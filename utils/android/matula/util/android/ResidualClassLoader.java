@@ -1,9 +1,13 @@
 package matula.util.android;
 
+import matula.util.config.ForeignArchive;
+import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -42,7 +46,8 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
-    private final String[] residuals;
+    private final ListArray<String> residuals = new ListArray<String>();
+    private String[] cacheres;
 
     /**
      * <p>Create an extensible class loader.</p>
@@ -52,7 +57,40 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
      */
     ResidualClassLoader(String[] r, ClassLoader p) {
         super(p);
-        residuals = r;
+        for (int i = 0; i < r.length; i++)
+            residuals.add(r[i]);
+    }
+
+    /**
+     * <p>Extend the extensible class loader.</p>
+     *
+     * @param r The residual path.
+     */
+    public void addPath(String r) {
+        synchronized (this) {
+            residuals.add(r);
+            cacheres = null;
+        }
+    }
+
+    /**
+     * <p>Retrieve a snapshot of the residual paths.</p>
+     *
+     * @return The snapshot.
+     */
+    private String[] snapshotPaths() {
+        String[] res = cacheres;
+        if (res != null)
+            return res;
+        synchronized (this) {
+            res = cacheres;
+            if (res != null)
+                return res;
+            res = new String[residuals.size()];
+            residuals.toArray(res);
+            cacheres = res;
+        }
+        return res;
     }
 
     /**
@@ -66,13 +104,34 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
         URL url = super.findResource(name);
         if (url != null)
             return url;
-        for (int i = 0; i < residuals.length; i++) {
-            File file = new File(residuals[i], name);
-            if (file.exists() && file.isFile() && file.canRead()) {
+        String[] paths = snapshotPaths();
+        for (int i = 0; i < paths.length; i++) {
+            String path = paths[i];
+            if (path.endsWith("/")) {
+                File file = new File(path, name);
+                if (file.exists() && file.isFile() && file.canRead()) {
+                    try {
+                        return new URL(ForeignUri.SCHEME_FILE, null, file.toString());
+                    } catch (MalformedURLException x) {
+                        throw new RuntimeException(x);
+                    }
+                }
+            } else {
+                File f = new File(path);
+                boolean found;
                 try {
-                    return new URL(ForeignUri.SCHEME_FILE, null, file.toString());
-                } catch (MalformedURLException x) {
+                    InputStream in = new FileInputStream(f);
+                    found = ForeignArchive.existsEntry(in, name);
+                } catch (IOException x) {
                     throw new RuntimeException(x);
+                }
+                if (found) {
+                    try {
+                        url = new URL(ForeignUri.SCHEME_FILE, null, f.toString());
+                        return new URL(ForeignUri.SCHEME_JAR, null, url.toString() + "!/" + name);
+                    } catch (MalformedURLException x) {
+                        throw new RuntimeException(x);
+                    }
                 }
             }
         }
@@ -90,18 +149,44 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
     protected Enumeration<URL> findResources(String name) throws IOException {
         Enumeration<URL> en = super.findResources(name);
         ArrayList<URL> res = null;
-        for (int i = 0; i < residuals.length; i++) {
-            File file = new File(residuals[i], name);
-            if (file.exists() && file.isFile() && file.canRead()) {
-                if (res == null) {
-                    res = new ArrayList<URL>();
-                    while (en.hasMoreElements())
-                        res.add(en.nextElement());
+        String[] paths = snapshotPaths();
+        for (int i = 0; i < paths.length; i++) {
+            String path = paths[i];
+            if (path.endsWith("/")) {
+                File file = new File(path, name);
+                if (file.exists() && file.isFile() && file.canRead()) {
+                    if (res == null) {
+                        res = new ArrayList<URL>();
+                        while (en.hasMoreElements())
+                            res.add(en.nextElement());
+                    }
+                    try {
+                        res.add(new URL(ForeignUri.SCHEME_FILE, null, file.toString()));
+                    } catch (MalformedURLException x) {
+                        throw new RuntimeException(x);
+                    }
                 }
+            } else {
+                File f = new File(path);
+                boolean found;
                 try {
-                    res.add(new URL(ForeignUri.SCHEME_FILE, null, file.toString()));
-                } catch (MalformedURLException x) {
+                    InputStream in = new FileInputStream(f);
+                    found = ForeignArchive.existsEntry(in, name);
+                } catch (IOException x) {
                     throw new RuntimeException(x);
+                }
+                if (found) {
+                    if (res == null) {
+                        res = new ArrayList<URL>();
+                        while (en.hasMoreElements())
+                            res.add(en.nextElement());
+                    }
+                    try {
+                        URL url = new URL(ForeignUri.SCHEME_FILE, null, f.toString());
+                        res.add(new URL(ForeignUri.SCHEME_JAR, null, url.toString() + "!/" + name));
+                    } catch (MalformedURLException x) {
+                        throw new RuntimeException(x);
+                    }
                 }
             }
         }
@@ -116,10 +201,11 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
      * @return The URLs.
      */
     public URL[] getURLs() {
-        URL[] res = new URL[residuals.length];
-        for (int i = 0; i < residuals.length; i++) {
+        String[] paths = snapshotPaths();
+        URL[] res = new URL[paths.length];
+        for (int i = 0; i < paths.length; i++) {
             try {
-                res[i] = new URL(ForeignUri.SCHEME_FILE, null, residuals[i]);
+                res[i] = new URL(ForeignUri.SCHEME_FILE, null, paths[i]);
             } catch (MalformedURLException x) {
                 throw new RuntimeException(x);
             }

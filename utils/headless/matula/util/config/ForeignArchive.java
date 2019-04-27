@@ -127,6 +127,32 @@ public final class ForeignArchive {
         return list;
     }
 
+
+    /**
+     * <p>Check whether an entry exists.</p>
+     *
+     * @param in The archive stream.
+     * @param name The entry name.
+     * @return True if the entry exist, otherwise false.
+     * @throws IOException Shit happens.
+     */
+    public static boolean existsEntry(InputStream in, String name)
+            throws IOException {
+        ZipInputStream zip = new ZipInputStream(
+                new BufferedInputStream(in, 8192));
+        boolean found=false;
+        try {
+            ZipEntry e = zip.getNextEntry();
+            for (; e != null && !found; e = zip.getNextEntry())
+                found = name.equals(e.getName());
+        } catch (IOException x) {
+            zip.close();
+            throw x;
+        }
+        zip.close();
+        return found;
+    }
+
     /*****************************************************************/
     /* URI Paths                                                     */
     /*****************************************************************/

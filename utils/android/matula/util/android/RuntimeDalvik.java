@@ -45,8 +45,6 @@ import java.net.URL;
 public final class RuntimeDalvik extends AbstractRuntime {
     public static RuntimeDalvik DEFAULT = new RuntimeDalvik();
 
-    public static final String SCHEME_APK = "apk";
-
     /**
      * <p>Create an activator android.</p>
      */
@@ -63,19 +61,26 @@ public final class RuntimeDalvik extends AbstractRuntime {
      *
      * @param parent The parent.
      * @param adr    The URL.
+     * @param stop   The stop loader.
      * @param data   The client data.
      * @return The new class loader.
      * @throws LicenseError License problem.
      */
-    public ClassLoader addURL(ClassLoader parent, String adr, Object data)
+    public ClassLoader addURL(ClassLoader parent, String adr,
+                              ClassLoader stop, Object data)
             throws LicenseError {
         String spec = ForeignUri.sysUriSpec(adr);
         String scheme = ForeignUri.sysSpecScheme(spec);
         String path = ForeignUri.sysSpecPath(spec);
         if (!ForeignUri.SCHEME_FILE.equals(scheme))
             throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
-        if (path.endsWith("/")) {
-            return new ResidualClassLoader(new String[]{path}, parent);
+        if (!path.endsWith(".apk")) {
+            if (parent != stop && parent instanceof ResidualClassLoader) {
+                ((ResidualClassLoader) parent).addPath(path);
+                return parent;
+            } else {
+                return new ResidualClassLoader(new String[]{path}, parent);
+            }
         } else {
             return new InspectClassLoader(path, parent);
         }
