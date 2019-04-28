@@ -72,51 +72,6 @@ import matula.util.wire.AbstractLivestock;
 public final class Controller {
     private final Supervisor visor;
 
-    /*******************************************************/
-    /* Signal Handling                                     */
-    /*******************************************************/
-
-    /**
-     * <p>Retrieve the signal.</p>
-     *
-     * @return The old signal, can be null.
-     */
-    public final InterpreterMessage getSignal() {
-        EngineMessage h = (EngineMessage) visor.signal;
-        return (h != null ? new InterpreterMessage(h) : null);
-    }
-
-    /**
-     * <p>Set the signal.</p>
-     *
-     * @param m The new signal, can be null.
-     * @return The old signal, can be null.
-     */
-    public final InterpreterMessage setSignal(InterpreterMessage m) {
-        EngineMessage h = (m != null ? (EngineMessage) m.getException() : null);
-        h = (EngineMessage) visor.setSignal(h);
-        return (h != null ? new InterpreterMessage(h) : null);
-    }
-
-    /**
-     * <p>Retrieve the interrupt mask.</p>
-     *
-     * @return The old interrupt mask.
-     */
-    public boolean getMask() {
-        return (visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0;
-    }
-
-    /**
-     * <p>Set the interrupt mask,</p>
-     *
-     * @param m The new interrupt mask.
-     * @return The old interrupt mask.
-     */
-    public boolean setMask(boolean m) {
-        return visor.setMask(m);
-    }
-
     /*****************************************************************/
     /* Inuse Livecycle                                               */
     /*****************************************************************/

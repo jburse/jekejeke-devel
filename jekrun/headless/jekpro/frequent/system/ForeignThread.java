@@ -186,11 +186,11 @@ public final class ForeignThread {
      */
     public static void sysThreadAbort(Thread t, AbstractTerm m)
             throws InterruptedException {
-        InterpreterMessage im = new InterpreterMessage(m);
+        EngineMessage h = (EngineMessage) new InterpreterMessage(m).getException();
         synchronized (t) {
-            while (contrGetSignal(t) != null)
+            while (AbstractLivestock.liveGetSignal(t) != null)
                 t.wait();
-            contrSetSignal(t, im);
+            AbstractLivestock.liveSetSignal(t, h);
         }
     }
 
@@ -202,10 +202,10 @@ public final class ForeignThread {
      * @param m The message.
      */
     public static boolean sysThreadDown(Thread t, AbstractTerm m) {
-        InterpreterMessage im = new InterpreterMessage(m);
+        EngineMessage h = (EngineMessage) new InterpreterMessage(m).getException();
         synchronized (t) {
-            if (contrGetSignal(t) == null) {
-                contrSetSignal(t, im);
+            if (AbstractLivestock.liveGetSignal(t) == null) {
+                AbstractLivestock.liveSetSignal(t, h);
                 return true;
             } else {
                 return false;
@@ -224,15 +224,15 @@ public final class ForeignThread {
      */
     public static boolean sysThreadDown(Thread t, AbstractTerm m, long sleep)
             throws InterruptedException {
-        InterpreterMessage im = new InterpreterMessage(m);
+        EngineMessage h = (EngineMessage) new InterpreterMessage(m).getException();
         long when = System.currentTimeMillis() + sleep;
         synchronized (t) {
-            while (contrGetSignal(t) != null & sleep > 0) {
+            while (AbstractLivestock.liveGetSignal(t) != null & sleep > 0) {
                 t.wait(sleep);
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                contrSetSignal(t, im);
+                AbstractLivestock.liveSetSignal(t, h);
                 return true;
             } else {
                 return false;
@@ -449,33 +449,6 @@ public final class ForeignThread {
     /****************************************************************/
     /* Controller Helper                                            */
     /****************************************************************/
-
-    /**
-     * <p>Retrieve the signal.</p>
-     *
-     * @param t The thread.
-     * @return The old signal, can be null.
-     */
-    private static InterpreterMessage contrGetSignal(Thread t) {
-        Controller contr = Controller.currentController(t);
-        if (contr == null)
-            return null;
-        return contr.getSignal();
-    }
-
-    /**
-     * <p>Set the signal.</p>
-     *
-     * @param t The thread.
-     * @param m The new signal, can be null.
-     * @return the old signal, can be null.
-     */
-    private static InterpreterMessage contrSetSignal(Thread t, InterpreterMessage m) {
-        Controller contr = Controller.currentController(t);
-        if (contr == null)
-            return null;
-        return contr.setSignal(m);
-    }
 
     /**
      * <p>Some testing.</p>

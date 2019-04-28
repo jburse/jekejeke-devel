@@ -94,16 +94,6 @@ public abstract class AbstractLivestock extends AbstractDomestic {
     /****************************************************************/
 
     /**
-     * <p>Peek the signal.</p>
-     *
-     * @return The signal.
-     */
-    public static Object sysThreadGet() {
-        Thread t = Thread.currentThread();
-        return liveGetSignal(t);
-    }
-
-    /**
      * <p>Clear the signal.</p>
      *
      * @return The old signal, can be null.
@@ -117,17 +107,6 @@ public abstract class AbstractLivestock extends AbstractDomestic {
         }
     }
 
-    /**
-     * <p>Set the interrupt mask.</p>
-     *
-     * @param m The new interrupt mask.
-     * @return The old interupt mask.
-     */
-    public static boolean sysThreadMask(boolean m) {
-        Thread t = Thread.currentThread();
-        return liveSetMask(t, m);
-    }
-
     /****************************************************************/
     /* Livestock Helper                                             */
     /****************************************************************/
@@ -138,7 +117,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param t The the thread.
      * @return The signal, can be null.
      */
-    private static Object liveGetSignal(Thread t) {
+    public static Object liveGetSignal(Thread t) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return null;
@@ -152,7 +131,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param m The new signal, can be null.
      * @return the old signal, can be null.
      */
-    private static Object liveSetSignal(Thread t, Object m) {
+    public static Object liveSetSignal(Thread t, Object m) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return null;
@@ -166,7 +145,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param m The new interrupt mask.
      * @return the old interrupt mask.
      */
-    private static boolean liveSetMask(Thread t, boolean m) {
+    public static boolean liveSetMask(Thread t, boolean m) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return false;
