@@ -8,10 +8,16 @@
  *
  * Example:
  * ?- directory_file('file:/C:/Program+Files/Java/', X).
- * X = 'jdk1.6.0_45' ;
- * X = 'jdk1.7.0_67' ;
- * X = 'jdk1.8.0_20' ;
+ * X = 'jdk1.6.0_45/' ;
+ * X = 'jdk1.7.0_67/' ;
+ * X = 'jdk1.8.0_20/' ;
  * Etc..
+ *
+ * The predicate directory_file/2 will enumerate direct sub directories
+ * and directly contained files. The predicate archive_file/3 will
+ * enumerate direct sub directories obtained from grouping file name
+ * segments and directly contained files. Both predicates will indicate
+ * a found sub directory by appending a slash (/).
  *
  * Currently only URIs of protocol “file:” are supported. But future
  * implementations might support further protocols such as “jar:” or
@@ -338,16 +344,30 @@ getenv(Name, Value) :-
 /*****************************************************************/
 
 /**
- * archive_file(F, P, N):
- * Succeeds whenever N unifies with an entry
+ * archive_file(F, P, S):
+ * Succeeds whenever S unifies with a segment
  * for the prefix P in the archive F.
  */
 % archive_file(+Atom, +Atom, -Atom)
 :- public archive_file/3.
-archive_file(Name, Prefix, Elem) :-
+archive_file(Name, Prefix, Segment) :-
    absolute_file_name(Name, Pin),
-   sys_archive_file(Pin, Prefix, Elem).
+   sys_archive_file(Pin, Prefix, Segment).
 
 :- private sys_archive_file/3.
 :- foreign(sys_archive_file/3, 'ForeignDirectory',
       sysArchiveFile('CallOut','String','String')).
+
+/**
+ * exists_entry(F, N):
+ * Succeeds when the entry N exists in the archive F.
+ */
+% exists_entry(+Atom, +Atom)
+:- public exists_entry/2.
+exists_entry(Name, Entry) :-
+   absolute_file_name(Name, Pin),
+   sys_exists_entry(Pin, Entry).
+
+:- private sys_exists_entry/2.
+:- foreign(sys_exists_entry/2, 'ForeignDirectory',
+      sysExistsEntry('String','String')).

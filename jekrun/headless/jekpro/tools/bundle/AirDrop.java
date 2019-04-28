@@ -1,8 +1,9 @@
 package jekpro.tools.bundle;
 
-import derek.util.protect.LicenseError;
 import jekpro.model.pretty.LookupBase;
-import matula.comp.sharik.Enforced;
+import jekpro.model.pretty.Store;
+import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.Lobby;
 import matula.comp.text.DefaultRecognizer;
 import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
@@ -62,34 +63,40 @@ public final class AirDrop {
     /**
      * <p>Discover capabilities from know paths.</p>
      *
-     * @param e   The enforced.
-     * @param cps The class paths.
+     * @param lobby The lobby.
+     * @param cps   The class paths.
      * @return The discovered capabilities.
+     * @throws InterpreterMessage Shit happens.
      */
-    public static ListArray<AirDropEntry> load(Enforced e, ListArray<String> cps)
-            throws IOException {
-        ListArray<String> roots = findRoots(e, cps);
-        if (roots == null)
-            return null;
-        return findKnown(e, roots);
+    public static ListArray<AirDropEntry> load(Lobby lobby, ListArray<String> cps)
+            throws InterpreterMessage {
+        try {
+            Store store = (Store) lobby.getRoot().getStore();
+            ListArray<String> roots = findRoots(store, cps);
+            if (roots == null)
+                return null;
+            return findKnown(store, roots);
+        } catch (IOException x) {
+            throw InterpreterMessage.mapIOException(x);
+        }
     }
 
     /**
      * <p>Find the candidate roots of the class path.</p>
      *
-     * @param e   The enforced.
-     * @param cps The class paths.
+     * @param store The store.
+     * @param cps   The class paths.
      * @return The condidate roots or null.
      * @throws IOException Shit happens.
      */
-    public static ListArray<String> findRoots(Enforced e, ListArray<String> cps)
+    private static ListArray<String> findRoots(Store store, ListArray<String> cps)
             throws IOException {
         ListArray<String> roots = null;
         for (int i = 0; i < cps.size(); i++) {
             String path = cps.get(i);
             if (path.startsWith("#"))
                 continue;
-            path = LookupBase.findWrite(path, e.getRoot());
+            path = LookupBase.findWrite(path, store);
             path = ForeignArchive.extractPath(path);
             if (path == null)
                 continue;
@@ -107,13 +114,14 @@ public final class AirDrop {
     }
 
     /**
-     * <p>Find the known paths from the candidate roots.</p></p>
+     * <p>Find the candidate capability from the candidate roots.</p></p>
      *
-     * @param e     The enforced.
+     * @param store The store.
      * @param roots The candidate roots.
+     * @return The candidate capability.
      */
-    public static ListArray<AirDropEntry> findKnown(Enforced e, ListArray<String> roots) {
-        ClassLoader loader = e.getRoot().getLoader();
+    private static ListArray<AirDropEntry> findKnown(Store store, ListArray<String> roots) {
+        ClassLoader loader = store.getLoader();
         ListArray<AirDropEntry> slips = null;
 
         for (int i = 0; i < roots.size(); i++) {
@@ -142,27 +150,6 @@ public final class AirDrop {
         }
 
         return slips;
-    }
-
-    /*************************************************************/
-    /* Load Utilties                                             */
-    /*************************************************************/
-
-    /**
-     * <p>Init a list of paths.</p>
-     *
-     * @param e   The enforced.
-     * @param cps The class paths.
-     */
-    public static void initPaths(Enforced e, ListArray<String> cps)
-            throws IOException, LicenseError {
-        for (int i = 0; i < cps.size(); i++) {
-            String path = cps.get(i);
-            if (path.startsWith("#"))
-                continue;
-            path = LookupBase.findWrite(path, e.getRoot());
-            e.getRoot().addClassPath(path);
-        }
     }
 
 }

@@ -53,15 +53,15 @@ public final class LookupBase {
      * <p>Find a write path.</p>
      *
      * @param path The path, in slash notation.
-     * @param know The abstract recognizer.
+     * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
     public static String findWrite(String path,
-                                   AbstractRecognizer know)
+                                   Store store)
             throws IOException {
         if (ForeignUri.sysUriIsRelative(path)) {
-            String base = know.getBase();
+            String base = store.getBase();
             if (base == null)
                 throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
             /* make it absolute */

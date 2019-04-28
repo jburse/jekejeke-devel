@@ -1,15 +1,11 @@
 package jekpro.tools.call;
 
-import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.FlagFactory;
-import jekpro.tools.bundle.AirDrop;
+import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import matula.util.data.ListArray;
-
-import java.io.IOException;
 
 /**
  * This class represents the base for all toolkits. Each toolkit predefines
@@ -125,18 +121,55 @@ public abstract class Toolkit {
     /**
      * <p>Init a list of paths.</p>
      *
-     * @param lobby The lobby.
-     * @param cps The class paths.
+     * @param inter The interpreter.
+     * @param cps   The class paths.
+     * @throws InterpreterMessage Shit happens.
      */
-    public static void initPaths(Lobby lobby, ListArray<String> cps)
-            throws InterpreterMessage {
-        try {
-            AirDrop.initPaths((Foyer) lobby.getFoyer(), cps);
-        } catch (IOException x) {
-            throw InterpreterMessage.mapIOException(x);
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getError()));
+    public static void initPaths(Interpreter inter, ListArray<String> cps)
+            throws InterpreterMessage, InterpreterException {
+        Knowledgebase know = inter.getKnowledgebase();
+        for (int i = 0; i < cps.size(); i++) {
+            String path = cps.get(i);
+            if (path.startsWith("#"))
+                continue;
+            try {
+                know.addClassPath(path);
+            } catch (InterpreterMessage y) {
+                InterpreterException x = new InterpreterException(y,
+                        InterpreterException.fetchStack(inter));
+                if (InterpreterException.systemConsultBreak(x, inter, false))
+                    break;
+            }
+        }
+    }
+
+    /**
+     * <p>Init a list of capabilities.</p>
+     *
+     * @param inter The call-in.
+     * @param capas The list.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void initCapas(Interpreter inter, ListArray<String> capas)
+            throws InterpreterException, InterpreterMessage {
+        Knowledgebase know = inter.getKnowledgebase();
+        for (int i = 0; i < capas.size(); i++) {
+            String name = capas.get(i);
+            if (name.startsWith("#"))
+                continue;
+            try {
+                Capability capa = know.stringToCapability(name);
+                capa.initCapability(inter, true);
+            } catch (InterpreterMessage y) {
+                InterpreterException x = new InterpreterException(y,
+                        InterpreterException.fetchStack(inter));
+                if (InterpreterException.systemConsultBreak(x, inter, false))
+                    break;
+            } catch (InterpreterException x) {
+                if (InterpreterException.systemConsultBreak(x, inter, false))
+                    break;
+            }
         }
     }
 

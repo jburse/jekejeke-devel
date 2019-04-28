@@ -16,6 +16,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
+import matula.util.wire.AbstractLivestock;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -237,35 +238,6 @@ public final class ForeignThread {
                 return false;
             }
         }
-    }
-
-    /****************************************************************/
-    /* Java Foreign Function Helper                                 */
-    /****************************************************************/
-
-    /**
-     * <p>Clear the signal.</p>
-     *
-     * @return The old signal, can be null.
-     */
-    public static InterpreterMessage sysThreadClear() {
-        Thread t = Thread.currentThread();
-        synchronized (t) {
-            InterpreterMessage m = contrSetSignal(t, null);
-            t.notifyAll();
-            return m;
-        }
-    }
-
-    /**
-     * <p>Set the interrupt mask.</p>
-     *
-     * @param m The new interrupt mask.
-     * @return the old interrupt mask.
-     */
-    public static boolean sysThreadMask(boolean m) {
-        Thread t = Thread.currentThread();
-        return contrSetMask(t, m);
     }
 
     /****************************************************************/
@@ -503,20 +475,6 @@ public final class ForeignThread {
         if (contr == null)
             return null;
         return contr.setSignal(m);
-    }
-
-    /**
-     * <p>Set the interrupt mask.</p>
-     *
-     * @param t The thread.
-     * @param m The new interrupt mask.
-     * @return the old interrupt mask.
-     */
-    private static boolean contrSetMask(Thread t, boolean m) {
-        Controller contr = Controller.currentController(t);
-        if (contr == null)
-            return false;
-        return contr.setMask(m);
     }
 
     /**

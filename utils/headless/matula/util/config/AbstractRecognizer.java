@@ -147,19 +147,4 @@ public abstract class AbstractRecognizer {
      */
     public abstract AbstractRecognizer getParent();
 
-    /**
-     * <p>Retrieve the base.</p>
-     *
-     * @return The base.
-     */
-    public abstract String getBase();
-
-    /**
-     * <p>Add a path.</p>
-     *
-     * @param path The path.
-     * @throws LicenseError Shit happens.
-     */
-    public abstract void addClassPath(String path) throws LicenseError;
-
 }

@@ -76,6 +76,8 @@ public final class SwingGestalt {
             base = list.get(i);
             if (base.endsWith("/"))
                 continue;
+            if (base.startsWith("."))
+                continue;
             File file2 = new File(file, base);
             Attributes at = SwingGestalt.getAttributes(file2);
             String dstr = (at != null ? at.getValue("dontask") : null);

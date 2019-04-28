@@ -393,7 +393,8 @@ public class Store extends AbstractRecognizer {
             throw new NullPointerException("path missing");
         Object data = foyer.getApplication();
         synchronized (this) {
-            loader = foyer.getFactory().getRuntime().addURL(loader, path, data);
+            ClassLoader stop = (parent != null ? parent.loader : null);
+            loader = foyer.getFactory().getRuntime().addURL(loader, path, stop, data);
             cachepaths = null;
         }
 

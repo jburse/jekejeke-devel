@@ -11,7 +11,6 @@ import jekpro.model.pretty.Store;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
-import matula.util.config.AbstractBundle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -104,7 +103,7 @@ public class Capability {
             return true;
         if (!(o instanceof Capability))
             return false;
-        return branch.equals(((Capability)o).branch);
+        return branch.equals(((Capability) o).branch);
     }
 
     /**
