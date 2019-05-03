@@ -6,9 +6,9 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.text.DefaultBundle;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRecognizer;
+import matula.util.config.DefaultBundle;
 import matula.util.config.FileExtension;
 import matula.util.regex.ScannerError;
 

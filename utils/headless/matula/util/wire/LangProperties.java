@@ -1,6 +1,6 @@
 package matula.util.wire;
 
-import matula.comp.text.DefaultRecognizer;
+import matula.util.config.DefaultRecognizer;
 import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
