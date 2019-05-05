@@ -413,26 +413,22 @@ public final class ForeignPath {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
+                type &= ~FileExtension.MASK_PCKG_LOAD;
+                type &= ~FileExtension.MASK_USES_SUFX;
                 switch (ForeignStream.atomToType(help)) {
                     case ForeignStream.TYPE_NONE:
-                        type &= ~FileExtension.MASK_USES_BNRY;
-                        type &= ~FileExtension.MASK_USES_TEXT;
-                        type &= ~FileExtension.MASK_USES_RSCS;
                         break;
                     case ForeignStream.TYPE_BINARY:
                         type |= FileExtension.MASK_USES_BNRY;
-                        type &= ~FileExtension.MASK_USES_TEXT;
-                        type &= ~FileExtension.MASK_USES_RSCS;
                         break;
                     case ForeignStream.TYPE_TEXT:
-                        type &= ~FileExtension.MASK_USES_BNRY;
                         type |= FileExtension.MASK_USES_TEXT;
-                        type &= ~FileExtension.MASK_USES_RSCS;
                         break;
                     case ForeignStream.TYPE_RESOURCE:
-                        type &= ~FileExtension.MASK_USES_BNRY;
-                        type &= ~FileExtension.MASK_USES_TEXT;
                         type |= FileExtension.MASK_USES_RSCS;
+                        break;
+                    case ForeignStream.TYPE_PACKAGE:
+                        type |= FileExtension.MASK_PCKG_LOAD;
                         break;
                     default:
                         throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -473,7 +469,11 @@ public final class ForeignPath {
             throw new InterpreterMessage(InterpreterMessage.typeError(
                     InterpreterMessage.OP_TYPE_LIST, opt));
         }
-        return new FileExtension(type, mime);
+        if (mime != null) {
+            return new FileExtension(type, mime);
+        } else {
+            return new FileExtension(type);
+        }
     }
 
     /**
@@ -532,6 +532,8 @@ public final class ForeignPath {
                 val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_TEXT);
             } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
                 val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_RESOURCE);
+            } else if ((fe.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
+                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_PACKAGE);
             } else {
                 throw new IllegalArgumentException("unkown uses");
             }

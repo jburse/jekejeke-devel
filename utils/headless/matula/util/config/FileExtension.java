@@ -38,21 +38,35 @@ package matula.util.config;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FileExtension {
+    /* prefix relationship flags */
+    public static final int MASK_PCKG_LOAD = 0x00000001;
+
     /* suffix relationship flags */
     public static final int MASK_USES_TEXT = 0x00000010;
     public static final int MASK_USES_BNRY = 0x00000020;
     public static final int MASK_USES_RSCS = 0x00000040;
 
+    /* encryption flag */
     public static final int MASK_DATA_ECRY = 0x00000100;
 
     /* combined suffix flags */
     public static final int MASK_USES_SUFX
-            = MASK_USES_TEXT | MASK_USES_BNRY | MASK_USES_RSCS;
+            = MASK_USES_TEXT | MASK_USES_RSCS | MASK_USES_BNRY;
 
     public final static String ENCRYPTION_MARK = "x";
 
-    private int type;
-    private String mimetype;
+    private final int type;
+    private final String mimetype;
+
+    /**
+     * <p>Create a new file extension object.</p>
+     *
+     * @param t The type.
+     */
+    public FileExtension(int t) {
+        type = t;
+        mimetype = null;
+    }
 
     /**
      * <p>Create a new file extension object.</p>
@@ -61,6 +75,8 @@ public final class FileExtension {
      * @param m The mimetype.
      */
     public FileExtension(int t, String m) {
+        if (m == null)
+            throw new NullPointerException("mimetype missing");
         type = t;
         mimetype = m;
     }

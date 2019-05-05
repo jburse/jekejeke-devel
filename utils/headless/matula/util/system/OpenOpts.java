@@ -632,11 +632,14 @@ public final class OpenOpts extends OpenDuplex {
      * @param know The recognizer.
      * @return The mime type or null.
      */
-    private static FileExtension getFileExtension(String spec, AbstractRecognizer know) {
+    private static FileExtension getFileExtension(String spec,
+                                                  AbstractRecognizer know) {
         do {
             MapEntry<String, FileExtension>[] exts = know.snapshotFileExtensions();
             for (int i = 0; i < exts.length; i++) {
                 MapEntry<String, FileExtension> ext = exts[i];
+                if ((ext.value.getType() & FileExtension.MASK_USES_SUFX) == 0)
+                    continue;
                 if (spec.endsWith(ext.key))
                     return ext.value;
             }

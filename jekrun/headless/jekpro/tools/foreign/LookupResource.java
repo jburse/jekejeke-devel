@@ -1,23 +1,19 @@
 package jekpro.tools.foreign;
 
 import derek.util.protect.LicenseError;
-import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractTracking;
-import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
 import matula.util.config.FileExtension;
-import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Enumeration;
 
 /**
  * <p>Concerned with the lookup of texts, escpecially Java resources</p>
@@ -64,11 +60,11 @@ public final class LookupResource {
      */
     public static String findResource(String relpath, Store store)
             throws IOException {
-        AbstractBranch branch = relativeURIstoRoots(relpath, store);
-        if (branch != null) {
-            String res = (String) store.foyer.getCanonCache(relpath);
+        MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
+        if (entry != null) {
+            String res = (String) ((Tracking)entry.value).getCanonCache(relpath);
             if (res != null)
-                return ("".equals(res) ? null : res);
+                return (Tracking.NOT_FOUND.equals(res) ? null : res);
         }
 
         URL url = store.loader.getResource(relpath);
@@ -76,12 +72,12 @@ public final class LookupResource {
         if (url != null) {
             res = ForeignUri.sysCanonicalUri(url.toString());
         } else {
-            res = "";
+            res = Tracking.NOT_FOUND;
         }
 
-        if (branch != null)
-            store.foyer.setCanonCache(relpath, res);
-        return ("".equals(res) ? null : res);
+        if (entry != null)
+            ((Tracking)entry.value).setCanonCache(relpath, res);
+        return (Tracking.NOT_FOUND.equals(res) ? null : res);
     }
 
     /**
@@ -136,68 +132,37 @@ public final class LookupResource {
         return null;
     }
 
-    /***************************************************************/
-    /* Archive URIs                                                */
-    /***************************************************************/
-
     /**
-     * <p>Determine the branch for a path.</p>
-     * <p>Relative paths are assumed to start in one of the archives.</p>
-     * <p>Absolute paths are assumed to start from nowhere.</p>
-     * <p>Only capabilities that are ok are considered.</p>
+     * <p>Find a path pack and suffix.</p>
      *
-     * @param path  The relative or absolute path.
-     * @param store The store.
-     * @return The branch, or null.
+     * @param path The path, in slash notation.
+     * @param src  The source, not null.
+     * @param mask The mask.
+     * @return The source key, or null.
+     * @throws IOException Shit happens.
      */
-    public static AbstractBranch relativeURIstoRoots(String path, Store store) {
-        /* for the capabilities */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            Tracking tracking = (Tracking) entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            String[] roots = branch.getArchiveRoots();
-            if (roots == null)
-                continue;
-            for (int j = 0; j < roots.length; j++) {
-                if (path.startsWith(roots[j]))
-                    return branch;
-            }
-        }
+    public static String findResourcePackSuffix(String path,
+                                                AbstractSource src,
+                                                int mask)
+            throws IOException {
 
-        // failure
-        return null;
-    }
+        String key = findResourceSuffix(path, src, mask);
+        if (key != null)
+            return key;
 
-    /**
-     * <p>Determine the branch for a path.</p>
-     * <p>Relative paths are assumed to start in one of the archives.</p>
-     * <p>Absolute paths are assumed to start from nowhere.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param path  The relative or absolute path.
-     * @param store The store.
-     * @return The branch, or null.
-     */
-    public static AbstractBranch absoluteURIstoRoots(String path, Store store) {
-        /* for the capabilities */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            Tracking tracking = (Tracking) entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            String[] uris = tracking.getArchiveURIs();
-            if (uris == null)
-                continue;
-            for (int k = 0; k < uris.length; k++) {
-                if (path.startsWith(uris[k]))
-                    return (AbstractBranch) entry.key;
+        Store store = src.getStore();
+        do {
+            MapEntry<String, FileExtension>[] fixes = store.snapshotFileExtensions();
+            for (int i = 0; i < fixes.length; i++) {
+                MapEntry<String, FileExtension> fix = fixes[i];
+                if ((fix.value.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
+                    key = findResourceSuffix(fix.key + path, src, mask);
+                    if (key != null)
+                        return key;
+                }
             }
-        }
+            store = store.parent;
+        } while (store != null);
 
         // failure
         return null;

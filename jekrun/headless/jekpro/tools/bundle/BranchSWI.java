@@ -1,6 +1,11 @@
 package jekpro.tools.bundle;
 
 import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Store;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
@@ -74,6 +79,7 @@ import java.util.Properties;
  * POSSIBILITY OF SUCH DAMAGE.
  */
 final class BranchSWI extends AbstractBranch {
+    private static final String PROLOG_DIR = "prolog/";
 
     /**
      * <p>Retrieve the parameters of this branch.</p>
@@ -149,10 +155,43 @@ final class BranchSWI extends AbstractBranch {
             throws IOException {
         ClassLoader loader = e.getRoot().getLoader();
         if (root.equals(getMainRoot())) {
-            rootToAbsoluteCheck(res, root, loader, AirDrop.MODEL_SWI + ".pl");
+            Tracking.rootToAbsoluteCheck(res, root, loader, AirDrop.MODEL_SWI + ".pl");
         } else {
-            rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
+            Tracking.rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
         }
+    }
+
+    /**
+     * <p>Init the store with this branch.</p>
+     *
+     * @param en     The engine.
+     * @param prompt The prompt flag.
+     * @param system The system flag.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public final void initBranch(Engine en,
+                                 boolean prompt, boolean system)
+            throws EngineMessage, EngineException {
+        super.initBranch(en, prompt, system);
+
+        Store root = (Store) en.store.foyer.getRoot();
+        root.addFileExtension(getMainRoot() + PROLOG_DIR, new FileExtension(FileExtension.MASK_PCKG_LOAD));
+    }
+
+    /**
+     * <p>Fini the store from this branch.</p>
+     *
+     * @param store  The store.
+     * @param system The system flag.
+     * @throws EngineMessage Shit happens.
+     */
+    public final void finiBranch(Store store, boolean system)
+            throws EngineMessage, EngineException {
+        Store root = (Store) store.foyer.getRoot();
+        root.removeFileExtension(getMainRoot() + PROLOG_DIR);
+
+        super.finiBranch(store, system);
     }
 
 }

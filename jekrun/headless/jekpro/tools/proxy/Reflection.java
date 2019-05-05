@@ -227,17 +227,18 @@ public final class Reflection extends AbstractReflection {
                 } else {
                     src = new AutoClass(key);
                 }
-                src.setBranch(LookupResource.relativeURIstoRoots(key, store));
+                src.setBranch(store.pathToDecoder(key));
                 return src;
             }
             AbstractSource src = new SourceLocal(key);
             if (Branch.OP_SYSTEM.equals(key))
                 src.setBranch(store.foyer.getFactory().getBrandBranch());
             return src;
+        } else {
+            AbstractSource src = new SourceLocal(key);
+            src.setBranch(store.pathToDecoder(key));
+            return src;
         }
-        AbstractSource src = new SourceLocal(key);
-        src.setBranch(LookupResource.absoluteURIstoRoots(key, store));
-        return src;
     }
 
     /**************************************************************/

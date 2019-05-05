@@ -1,12 +1,13 @@
 package jekpro.tools.foreign;
 
-import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CachePackage;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
+import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
@@ -53,11 +54,11 @@ public final class LookupBinary {
      * @return The class, or null.
      */
     public static Class keyToClass(String relpath, Store store) {
-        AbstractBranch branch = LookupResource.relativeURIstoRoots(relpath, store);
-        if (branch != null) {
-            Object obj = store.foyer.getCanonCache(relpath);
+        MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
+        if (entry != null) {
+            Object obj = ((Tracking)entry.value).getCanonCache(relpath);
             if (obj != null)
-                return ("".equals(obj) ? null : (Class) obj);
+                return (Tracking.NOT_FOUND.equals(obj) ? null : (Class) obj);
         }
 
         Object obj;
@@ -68,15 +69,15 @@ public final class LookupBinary {
             if (clazz != null) {
                 obj = clazz;
             } else {
-                obj = "";
+                obj = Tracking.NOT_FOUND;
             }
         } else {
-            obj = "";
+            obj = Tracking.NOT_FOUND;
         }
 
-        if (branch != null)
-            store.foyer.setCanonCache(relpath, obj);
-        return ("".equals(obj) ? null : (Class) obj);
+        if (entry != null)
+            ((Tracking)entry.value).setCanonCache(relpath, obj);
+        return (Tracking.NOT_FOUND.equals(obj) ? null : (Class) obj);
     }
 
     /**************************************************************/

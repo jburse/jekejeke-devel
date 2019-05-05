@@ -65,11 +65,13 @@ public final class ForeignStream {
     public final static String OP_TYPE_BINARY = "binary";
     public final static String OP_TYPE_TEXT = "text";
     public final static String OP_TYPE_RESOURCE = "resource";
+    public final static String OP_TYPE_PACKAGE = "package";
 
     public final static int TYPE_NONE = -1;
     public final static int TYPE_BINARY = 0;
     public final static int TYPE_TEXT = 1;
     public final static int TYPE_RESOURCE = 2;
+    public final static int TYPE_PACKAGE = 3;
 
     /* open options */
     public final static String OP_BOM = "bom";
@@ -670,8 +672,8 @@ public final class ForeignStream {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
-                       res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
-                       break;
+                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                        break;
                     case TYPE_TEXT:
                         res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
                         break;
@@ -747,6 +749,8 @@ public final class ForeignStream {
             return TYPE_TEXT;
         } else if (val.equals(OP_TYPE_RESOURCE)) {
             return TYPE_RESOURCE;
+        } else if (val.equals(OP_TYPE_PACKAGE)) {
+            return TYPE_PACKAGE;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

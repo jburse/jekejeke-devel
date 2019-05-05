@@ -6,6 +6,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Store;
+import matula.util.data.MapEntry;
 
 /**
  * <p>The internal implementation of the capability API.</p>
@@ -64,10 +66,17 @@ final class BranchAPI extends Branch {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public void initBranch(Engine en,
+    public final void initBranch(Engine en,
                            boolean prompt, boolean system)
             throws EngineMessage, EngineException {
         super.initBranch(en, prompt, system);
+
+        Store root = (Store) en.store.foyer.getRoot();
+        root.system.addFix("java/lang", AbstractSource.MASK_USES_FRGN);
+
+        root.system.addFix("jekpro/frequent", AbstractSource.MASK_USES_LIBR);
+        root.system.addFix("jekpro/reference", AbstractSource.MASK_USES_LIBR);
+        root.system.addFix("jekpro/platform", AbstractSource.MASK_USES_LIBR);
 
         loadSystem("jekpro/reference/reflect/foreign.p", en, new InterfaceInit() {
             public void init(AbstractSource scope, Engine en)
@@ -88,6 +97,25 @@ final class BranchAPI extends Branch {
 
         String aspect = en.store.foyer.getFactory().getRuntime().getAspect();
         loadSystem("jekpro/platform/" + aspect + "/stats.p", en);
+    }
+
+    /**
+     * <p>Fini the store from this branch.</p>
+     *
+     * @param store  The store.
+     * @param system The system flag.
+     * @throws EngineMessage Shit happens.
+     */
+    public final void finiBranch(Store store, boolean system)
+            throws EngineMessage, EngineException {
+        Store root = (Store) store.foyer.getRoot();
+        root.system.removeFix("java/lang", AbstractSource.MASK_USES_FRGN);
+
+        root.system.removeFix("jekpro/frequent", AbstractSource.MASK_USES_LIBR);
+        root.system.removeFix("jekpro/reference", AbstractSource.MASK_USES_LIBR);
+        root.system.removeFix("jekpro/platform", AbstractSource.MASK_USES_LIBR);
+
+        super.finiBranch(store, system);
     }
 
 }
