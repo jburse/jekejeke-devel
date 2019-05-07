@@ -9,7 +9,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.foreign.LookupResource;
+import jekpro.tools.foreign.Tracking;
+import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
@@ -136,13 +137,13 @@ public class Store extends AbstractRecognizer {
      * @return The branch, or null.
      */
     public final AbstractBundle pathToDecoder(String path) {
-        AbstractBranch branch;
+        MapEntry<AbstractBundle, AbstractTracking> entry;
         if (ForeignUri.sysUriIsRelative(path)) {
-            branch = LookupResource.relativeURIstoRoots(path, this);
+            entry = Tracking.relativeURIstoRoots(path, foyer);
         } else {
-            branch = LookupResource.absoluteURIstoRoots(path, this);
+            entry = Tracking.absoluteURIstoRoots(path, foyer);
         }
-        return branch;
+        return (entry != null ? entry.key : null);
     }
 
     /*****************************************************************/
@@ -399,7 +400,7 @@ public class Store extends AbstractRecognizer {
         }
 
         if (parent == null)
-            foyer.clearCanonCache();
+            Tracking.clearCanonCaches(foyer);
         foyer.notifyFixvers(this);
     }
 
@@ -441,7 +442,7 @@ public class Store extends AbstractRecognizer {
     public void addFileExtension(String e, FileExtension fe) {
         super.addFileExtension(e, fe);
         if (getParent() == null)
-            foyer.clearCanonCache();
+            Tracking.clearCanonCaches(foyer);
         foyer.notifyFixvers(this);
     }
 
@@ -453,7 +454,7 @@ public class Store extends AbstractRecognizer {
     public void removeFileExtension(String e) {
         super.removeFileExtension(e);
         if (getParent() == null)
-            foyer.clearCanonCache();
+            Tracking.clearCanonCaches(foyer);
         foyer.notifyFixvers(this);
     }
 
@@ -597,11 +598,13 @@ public class Store extends AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop   The properties.
-     * @param in The input stream.
-     * @throws IOException  Problem reading.
+     * @param prop The properties.
+     * @param in   The input stream.
+     * @param param The param or null.
+     * @throws IOException Problem reading.
      */
-    public void loadBinary(Properties prop, InputStream in)
+    public void loadBinary(Properties prop, InputStream in,
+                           Object param)
             throws IOException {
         prop.load(in);
     }
@@ -611,8 +614,10 @@ public class Store extends AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param reader The reader.
+     * @param param The param or null.
      */
-    public void loadText(Properties prop, Reader reader) {
+    public void loadText(Properties prop, Reader reader,
+                         Object param) {
         throw new IllegalArgumentException("not supported");
     }
 

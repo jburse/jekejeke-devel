@@ -50,9 +50,9 @@ public final class CacheModule extends AbstractCache {
     public final static char OP_CHAR_OS = '/';
     public final static String OP_STRING_OS = "/";
 
-    private static final int MASK_PRFX_FRGN = AbstractSource.MASK_PCKG_FRGN |
+    private static final int MASK_CACH_FRGN = AbstractSource.MASK_PCKG_FRGN |
             AbstractSource.MASK_USES_FRGN;
-    private static final int MASK_PRFX_LIBR = AbstractSource.MASK_PCKG_LIBR |
+    private static final int MASK_CACH_LIBR = AbstractSource.MASK_PCKG_LIBR |
             AbstractSource.MASK_USES_LIBR;
 
     String fun;
@@ -228,7 +228,7 @@ public final class CacheModule extends AbstractCache {
 
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
-            String key = LookupResource.findResourceSuffix(relpath, src, mask);
+            String key = LookupResource.findResourcePackSuffix(relpath, src, mask);
             if (key != null)
                 return relpath;
         }
@@ -247,9 +247,9 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                    if ((fix.value.intValue() & MASK_CACH_LIBR) != 0) {
                         String path2 = fix.key + OP_STRING_OS + relpath;
-                        String key = LookupResource.findResourceSuffix(path2, src, mask);
+                        String key = LookupResource.findResourcePackSuffix(path2, src, mask);
                         if (key != null)
                             return path2;
                     }
@@ -265,7 +265,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                    if ((fix.value.intValue() & MASK_CACH_FRGN) != 0) {
                         String path2 = fix.key + OP_STRING_OS + relpath;
                         String key = LookupBinary.findBinarySuffix(path2, src, mask);
                         if (key != null)
@@ -283,9 +283,9 @@ public final class CacheModule extends AbstractCache {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                if ((fix.value.intValue() & MASK_CACH_LIBR) != 0) {
                     String path2 = fix.key + OP_STRING_OS + relpath;
-                    String key = LookupResource.findResourceSuffix(path2, src, mask);
+                    String key = LookupResource.findResourcePackSuffix(path2, src, mask);
                     if (key != null)
                         return path2;
                 }
@@ -297,7 +297,7 @@ public final class CacheModule extends AbstractCache {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                if ((fix.value.intValue() & MASK_CACH_FRGN) != 0) {
                     String path2 = fix.key + OP_STRING_OS + relpath;
                     String key = LookupBinary.findBinarySuffix(path2, src, mask);
                     if (key != null)
@@ -372,7 +372,7 @@ public final class CacheModule extends AbstractCache {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                if ((fix.value.intValue() & MASK_CACH_FRGN) != 0) {
                     if (relpath.startsWith(fix.key) &&
                             relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
@@ -388,7 +388,7 @@ public final class CacheModule extends AbstractCache {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {
                 MapEntry<String, Integer> fix = fixes[i];
-                if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                if ((fix.value.intValue() & MASK_CACH_LIBR) != 0) {
                     if (relpath.startsWith(fix.key) &&
                             relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                         String path2 = relpath.substring(fix.key.length() + 1);
@@ -406,7 +406,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & MASK_PRFX_FRGN) != 0) {
+                    if ((fix.value.intValue() & MASK_CACH_FRGN) != 0) {
                         if (relpath.startsWith(fix.key) &&
                                 relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                             String path2 = relpath.substring(fix.key.length() + 1);
@@ -426,7 +426,7 @@ public final class CacheModule extends AbstractCache {
                 MapEntry<String, Integer>[] fixes = store.system.snapshotFixes();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
-                    if ((fix.value.intValue() & MASK_PRFX_LIBR) != 0) {
+                    if ((fix.value.intValue() & MASK_CACH_LIBR) != 0) {
                         if (relpath.startsWith(fix.key) &&
                                 relpath.startsWith(OP_STRING_OS, fix.key.length())) {
                             String path2 = relpath.substring(fix.key.length() + 1);

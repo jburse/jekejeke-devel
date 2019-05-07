@@ -117,6 +117,7 @@ public abstract class AbstractSource {
     /* prefix relationship flags */
     public final static int MASK_PCKG_LIBR = 0x00000001;
     public final static int MASK_PCKG_FRGN = 0x00000002;
+
     public final static int MASK_USES_LIBR = 0x00000004;
     public final static int MASK_USES_FRGN = 0x00000008;
 

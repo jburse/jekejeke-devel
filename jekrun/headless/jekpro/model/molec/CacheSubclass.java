@@ -364,7 +364,7 @@ public final class CacheSubclass extends AbstractCache {
         /* library .p */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (ForeignUri.sysUriIsRelative(path)) {
-                String key = LookupResource.findResourceSuffix(path, src, mask);
+                String key = LookupResource.findResourcePackSuffix(path, src, mask);
                 if (key != null)
                     return key;
             }

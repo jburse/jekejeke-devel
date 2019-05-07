@@ -1,7 +1,5 @@
 package matula.util.config;
 
-import matula.util.regex.ScannerError;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -66,21 +64,23 @@ public final class DefaultRecognizer extends AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param in The reader.
+     * @param param The param or null.
      * @throws IOException  Problem reading.
      */
-    public void loadBinary(Properties prop, InputStream in)
+    public void loadBinary(Properties prop, InputStream in,
+                           Object param)
             throws IOException {
         prop.load(in);
     }
 
     /**
      * <p>Load text properties.</p>
-     *
-     * @param prop   The properties.
+     *  @param prop   The properties.
      * @param reader The reader.
+     * @param param The param or null.
      */
-    public void loadText(Properties prop, Reader reader)
-            throws IOException, ScannerError {
+    public void loadText(Properties prop, Reader reader,
+                         Object param) {
         throw new IllegalArgumentException("not supported");
     }
 

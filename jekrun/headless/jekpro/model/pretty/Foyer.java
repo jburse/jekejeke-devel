@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -11,6 +12,7 @@ import jekpro.model.rope.Directive;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.foreign.Tracking;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -112,7 +114,6 @@ public class Foyer extends Enforced {
     //    private int gensym;
     private int hint;
 
-    private final CacheBounded<String, Object> canoncache = new CacheBounded<String, Object>();
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
 
@@ -419,46 +420,6 @@ public class Foyer extends Enforced {
      */
     public Operator createOperator(int t, String k) {
         return new Operator(t, k);
-    }
-
-    /**********************************************************/
-    /* Canon Cache                                            */
-    /**********************************************************/
-
-    /**
-     * <p>Retrieve the canon cache result.</p>
-     *
-     * @param path The path.
-     * @return The result.
-     */
-    public Object getCanonCache(String path) {
-        synchronized (this) {
-            return canoncache.get(path);
-        }
-    }
-
-    /**
-     * <p>Set the canon cache result.</p>
-     *
-     * @param path The path.
-     * @param res  The result.
-     */
-    public void setCanonCache(String path, Object res) {
-        if (res == null)
-            throw new NullPointerException("result missing");
-        synchronized (this) {
-            if (canoncache.get(path) == null)
-                canoncache.add(path, res);
-        }
-    }
-
-    /**
-     * <p>Clear the canon cache.</p>
-     */
-    public void clearCanonCache() {
-        synchronized (this) {
-            canoncache.clear();
-        }
     }
 
     /**********************************************************/

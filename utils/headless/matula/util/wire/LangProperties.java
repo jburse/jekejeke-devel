@@ -65,7 +65,7 @@ public final class LangProperties {
     public static Properties getLang(Class clazz, String name,
                                      Locale locale) {
         return getLangCheck(clazz, name, locale,
-                DefaultRecognizer.DEFAULT, FileExtension.MASK_USES_RSCS);
+                DefaultRecognizer.DEFAULT, null, FileExtension.MASK_USES_RSCS);
     }
 
     /**
@@ -75,12 +75,13 @@ public final class LangProperties {
      * @param name   The name.
      * @param locale The locale.
      * @param know   The recognizer.
+     * @param param The param or null.
      * @param mask   The mask.
      * @return The language properties, or null.
      */
     public static Properties getLangCheck(Class clazz, String name,
                                           Locale locale, AbstractRecognizer know,
-                                          int mask) {
+                                          Object param, int mask) {
         if (clazz == null)
             throw new NullPointerException("clazz missing");
         if (name == null)
@@ -97,7 +98,7 @@ public final class LangProperties {
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
-            ForeignCache.getLangCheck(prop, know, adr, locstr, mask);
+            ForeignCache.getPropCheck(prop, adr, locstr, know, param, mask);
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }
@@ -138,7 +139,7 @@ public final class LangProperties {
     public static Properties getLang(ClassLoader loader, String name,
                                      Locale locale) {
         return getLangCheck(loader, name, locale,
-                DefaultRecognizer.DEFAULT, FileExtension.MASK_USES_RSCS);
+                DefaultRecognizer.DEFAULT, null, FileExtension.MASK_USES_RSCS);
     }
 
     /**
@@ -148,11 +149,13 @@ public final class LangProperties {
      * @param name   The name.
      * @param locale The locale.
      * @param know   The recognizer.
+     * @param param The param or null.
+     * @param mask   The mask.
      * @return The language properties, or null.
      */
     public static Properties getLangCheck(ClassLoader loader, String name,
                                           Locale locale, AbstractRecognizer know,
-                                          int mask) {
+                                          Object param, int mask) {
         if (loader == null)
             throw new NullPointerException("loader missing");
         if (name == null)
@@ -169,7 +172,7 @@ public final class LangProperties {
         String key = adr.substring(0, k) + locstr + adr.substring(k);
         Properties prop = ForeignCache.getCached(cache, key);
         try {
-            ForeignCache.getLangCheck(prop, know, adr, locstr, mask);
+            ForeignCache.getPropCheck(prop, adr, locstr, know, param, mask);
         } catch (IOException x) {
             throw new RuntimeException("io exception", x);
         }

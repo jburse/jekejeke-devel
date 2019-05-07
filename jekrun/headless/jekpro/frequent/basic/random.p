@@ -159,8 +159,9 @@ random(M, N) :-
 
 /**
  * random_permutation(L, R):
- * The predicate succeeds in R with a random permutation of L
- * from the knowledgebase random number generator.
+ * random_permutation(G, L, R):
+ * The predicate succeeds in R with a random permutation of L.
+ * The ternary predicate allows specifying a random generator G.
  */
 % random_permutation(+List, -List)
 :- public random_permutation/2.
@@ -168,11 +169,6 @@ random_permutation(L, R) :-
    current_prolog_flag(sys_random, G),
    random_permutation(G, L, R).
 
-/**
- * random_permutation(G, L, R):
- * The predicate succeeds in R with a random permutation of L
- * from the random number generator G.
- */
 % random_permutation(+Random, +List, -List)
 :- public random_permutation/3.
 random_permutation(G, L, R) :-
@@ -197,3 +193,61 @@ add_random_keys(X, _, _) :-
 remove_keys([_-X|L], [X|R]) :-
    remove_keys(L, R).
 remove_keys([], []).
+
+/**
+ * randset(K, N, L):
+ * randset(G, K, N, L):
+ * The predicate succeeds in L with a ordered random set of K
+ * elements from the interval 1..N. The quarternary predicate
+ * allows specifying a random generator G.
+ */
+% randset(+Integer, +Integer, -List)
+:- public randset/3.
+randset(K, N, L) :-
+   current_prolog_flag(sys_random, G),
+   randset(G, K, N, L).
+
+% randset(+Random, +Integer, +Integer, -List)
+:- public randset/4.
+randset(G, K, N, L) :-
+   randset_build(K, G, N, [], L).
+
+% randset_build(+Integer, +Random, +Integer, +List, -List)
+:- private randset_build/5.
+randset_build(0, _, _, L, R) :- !,
+   R = L.
+randset_build(K, G, N, L, R) :-
+   random_next(G, N, Y),
+   X is Y+1,
+   adjust_element(X, L, H),
+   J is K-1,
+   M is N-1,
+   randset_build(J, G, M, H, R).
+
+% adjust_element(+Integer, +List, -List)
+:- private adjust_element/3.
+adjust_element(X, [Y|Z], L) :-
+   X < Y, !,
+   L = [X,Y|Z].
+adjust_element(X, [Y|Z], [Y|T]) :-
+   U is X+1,
+   adjust_element(U, Z, T).
+adjust_element(X, [], [X]).
+
+/**
+ * randseq(K, N, L):
+ * The predicate succeeds in L with a random permutation of K
+ * elements from the interval 1..N. The quarternary predicate
+ * allows specifying a random generator G.
+ */
+% randseq(+Integer, +Integer, -List)
+:- public randseq/3.
+randseq(K, N, L) :-
+   current_prolog_flag(sys_random, G),
+   randseq(G, K, N, L).
+
+% randseq(+Random, +Integer, +Integer, -List)
+:- public randseq/4.
+randseq(G, K, N, L) :-
+   randset(G, K, N, H),
+   random_permutation(G, H, L).

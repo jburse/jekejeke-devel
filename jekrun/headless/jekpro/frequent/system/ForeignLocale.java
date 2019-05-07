@@ -78,7 +78,7 @@ public final class ForeignLocale {
             return null;
         locstr = "_" + locstr;
         Properties prop = ForeignCache.getCached(cache, locstr);
-        ForeignCache.getLang(prop, (Store) know.getStore(), pin, locstr);
+        ForeignCache.getProp(prop, (Store) know.getStore(), pin, locstr);
         return (ForeignCache.isValid(prop) ? prop : null);
     }
 

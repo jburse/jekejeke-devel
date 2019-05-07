@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import matula.util.data.MapEntry;
 import matula.util.data.MapTree;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,12 +58,14 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop The properties.
-     * @param in   The input stream.
+     * @param prop   The properties.
+     * @param in     The input stream.
+     * @param param The param or null.
      * @throws IOException  Problem reading.
      * @throws ScannerError Problem reading.
      */
-    public abstract void loadBinary(Properties prop, InputStream in)
+    public abstract void loadBinary(Properties prop, InputStream in,
+                                    Object param)
             throws IOException, ScannerError;
 
     /**
@@ -70,11 +73,68 @@ public abstract class AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param reader The reader.
+     * @param param The param or null.
      * @throws IOException  Problem reading.
      * @throws ScannerError Problem reading.
      */
-    public abstract void loadText(Properties prop, Reader reader)
+    public abstract void loadText(Properties prop, Reader reader,
+                                  Object param)
             throws IOException, ScannerError;
+
+    /**
+     * <p>Load binary properties.</p>
+     *
+     * @param adr    The URI.
+     * @param prop   The properties.
+     * @param param The param or null.
+     * @throws LicenseError Problem reading.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
+     */
+    public void loadBinary(String adr, Properties prop,
+                           Object param)
+            throws LicenseError, IOException, ScannerError {
+        OpenOpts opts = new OpenOpts();
+        opts.setFlags(opts.getFlags() | OpenOpts.MASK_OPEN_BINR);
+        InputStream in = (InputStream) opts.openRead(this, adr);
+        try {
+            loadBinary(prop, in, param);
+        } catch (IOException x) {
+            in.close();
+            throw x;
+        } catch (ScannerError x) {
+            in.close();
+            throw x;
+        }
+        in.close();
+    }
+
+    /**
+     * <p>Load binary properties.</p>
+     *
+     * @param adr    The URI.
+     * @param prop   The properties.
+     * @param param The param or null.
+     * @throws LicenseError Problem reading.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
+     */
+    public void loadText(String adr, Properties prop,
+                         Object param)
+            throws LicenseError, IOException, ScannerError {
+        OpenOpts opts = new OpenOpts();
+        Reader reader = (Reader) opts.openRead(this, adr);
+        try {
+            loadText(prop, reader, param);
+        } catch (IOException x) {
+            reader.close();
+            throw x;
+        } catch (ScannerError x) {
+            reader.close();
+            throw x;
+        }
+        reader.close();
+    }
 
     /*****************************************************************/
     /* File Extensions                                               */

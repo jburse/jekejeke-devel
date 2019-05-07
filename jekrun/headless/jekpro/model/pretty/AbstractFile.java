@@ -5,9 +5,12 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.foreign.LookupResource;
+import jekpro.tools.foreign.Tracking;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
+import matula.util.data.MapEntry;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
 
@@ -290,7 +293,7 @@ public abstract class AbstractFile extends AbstractSource {
         } else {
             src = new FileText(key);
         }
-        src.setBranch(LookupResource.absoluteURIstoRoots(key, store));
+        src.setBranch(store.pathToDecoder(key));
         return src;
     }
 
