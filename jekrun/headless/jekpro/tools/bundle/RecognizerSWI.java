@@ -53,8 +53,11 @@ public final class RecognizerSWI extends AbstractRecognizer {
 
     public final static String OP_TITLE = "title";
     public final static String OP_VERSION = "version";
+
     public final static String OP_HOME = "home";
     public final static String OP_AUTHOR = "author";
+
+    public final static String OP_ICON = "icon";
 
     /**
      * <p>Create a default recognizer.</p>
@@ -78,10 +81,12 @@ public final class RecognizerSWI extends AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop The properties.
-     * @param in   The reader.
+     * @param prop  The properties.
+     * @param in    The reader.
+     * @param param The param or null.
      */
-    public void loadBinary(Properties prop, InputStream in) {
+    public void loadBinary(Properties prop, InputStream in,
+                           Object param) {
         throw new IllegalArgumentException("not supported");
     }
 
@@ -90,10 +95,29 @@ public final class RecognizerSWI extends AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param reader The reader.
+     * @param param  The param or null.
      * @throws IOException  Problem reading.
      * @throws ScannerError Problem reading.
      */
-    public void loadText(Properties prop, Reader reader)
+    public void loadText(Properties prop, Reader reader,
+                         Object param)
+            throws IOException, ScannerError {
+        if (param == null) {
+            loadTextPack(prop, reader);
+        } else {
+            loadTextIcon(prop, reader, param);
+        }
+    }
+
+    /**
+     * <p>Load text properties of a package slip.</p>
+     *
+     * @param prop   The properties.
+     * @param reader The reader.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
+     */
+    private static void loadTextPack(Properties prop, Reader reader)
             throws IOException, ScannerError {
         PrologReader rd = new PrologReader();
         rd.getScanner().setReader(reader);
@@ -103,7 +127,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 if (val instanceof SkelAtom &&
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
-                loadTextSkel(prop, val);
+                loadTextPackSkel(prop, val);
             } catch (EngineMessage x) {
                 throw new RuntimeException("shouldn't happen", x);
             } catch (EngineException x) {
@@ -118,7 +142,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
      * @param prop The properties.
      * @param obj  The attribute.
      */
-    private static void loadTextSkel(Properties prop, Object obj) {
+    private static void loadTextPackSkel(Properties prop, Object obj) {
         if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_TITLE)) {
@@ -162,6 +186,52 @@ public final class RecognizerSWI extends AbstractRecognizer {
         }
     }
 
+    /**
+     * <p>Load text properties of an icon slip.</p>
+     *
+     * @param prop   The properties.
+     * @param reader The reader.
+     * @param param  The param.
+     * @throws IOException  Problem reading.
+     * @throws ScannerError Problem reading.
+     */
+    private static void loadTextIcon(Properties prop, Reader reader,
+                                     Object param)
+            throws IOException, ScannerError {
+        PrologReader rd = new PrologReader();
+        rd.getScanner().setReader(reader);
+        for (; ; ) {
+            try {
+                Object val = rd.parseHeadStatement();
+                if (val instanceof SkelAtom &&
+                        ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
+                    break;
+                loadTextIconSkel(prop, val, param);
+            } catch (EngineMessage x) {
+                throw new RuntimeException("shouldn't happen", x);
+            } catch (EngineException x) {
+                throw new RuntimeException("shouldn't happen", x);
+            }
+        }
+    }
+
+    /**
+     * <p>Populate the properties with a SWI-Package attribute.</p>
+     *
+     * @param prop   The properties.
+     * @param obj    The attribute.
+     * @param param The param.
+     */
+    private static void loadTextIconSkel(Properties prop, Object obj, Object param) {
+        if (obj instanceof SkelCompound &&
+                ((SkelCompound) obj).args.length == 1 &&
+                ((SkelCompound) obj).sym.fun.equals(OP_ICON)) {
+            obj = ((SkelCompound) obj).args[0];
+            if (obj instanceof SkelAtom)
+                prop.put(AbstractBundle.PROP_CAPA_ICON, param + ((SkelAtom) obj).fun);
+        }
+    }
+
     /*****************************************************************/
     /* Class Loader                                                  */
     /*****************************************************************/
@@ -182,23 +252,6 @@ public final class RecognizerSWI extends AbstractRecognizer {
      */
     public AbstractRecognizer getParent() {
         return null;
-    }
-
-    /**
-     * <p>Retrieve the base.</p>
-     *
-     * @return The base.
-     */
-    public String getBase() {
-        return null;
-    }
-
-    /**
-     * <p>Add a path.</p>
-     *
-     * @param path The path.
-     */
-    public void addClassPath(String path) {
     }
 
 }

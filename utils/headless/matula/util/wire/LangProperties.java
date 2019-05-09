@@ -1,7 +1,7 @@
 package matula.util.wire;
 
-import matula.util.config.DefaultRecognizer;
 import matula.util.config.AbstractRecognizer;
+import matula.util.config.DefaultRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignCache;
@@ -75,7 +75,7 @@ public final class LangProperties {
      * @param name   The name.
      * @param locale The locale.
      * @param know   The recognizer.
-     * @param param The param or null.
+     * @param param  The param or null.
      * @param mask   The mask.
      * @return The language properties, or null.
      */
@@ -115,7 +115,7 @@ public final class LangProperties {
      * @return The URL of the language property.
      */
     private static String getURL(Class clazz, String name,
-                              AbstractRecognizer know, int mask) {
+                                 AbstractRecognizer know, int mask) {
         MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<String, FileExtension> entry = snapshot[i];
@@ -149,7 +149,7 @@ public final class LangProperties {
      * @param name   The name.
      * @param locale The locale.
      * @param know   The recognizer.
-     * @param param The param or null.
+     * @param param  The param or null.
      * @param mask   The mask.
      * @return The language properties, or null.
      */
@@ -189,7 +189,7 @@ public final class LangProperties {
      * @return The URL of the language property.
      */
     public static String getURL(ClassLoader loader, String name,
-                              AbstractRecognizer know, int mask) {
+                                AbstractRecognizer know, int mask) {
         MapEntry<String, FileExtension>[] snapshot = know.snapshotFileExtensions();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<String, FileExtension> entry = snapshot[i];

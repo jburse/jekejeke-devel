@@ -5,7 +5,6 @@ import jekpro.model.pretty.Store;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Lobby;
 import matula.util.config.AbstractBundle;
-import matula.util.config.DefaultRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
@@ -55,6 +54,7 @@ public final class AirDrop {
 
     public final static String PLATFORM_DIR = "platform/";
     public final static String PLATFORM_FILE = "/description";
+    public final static String PLATFORM_SWI = "icon";
 
     /*************************************************************/
     /* Known Paths                                               */
@@ -128,8 +128,7 @@ public final class AirDrop {
             String root = roots.get(i);
 
             String name = root + MODEL_DEFAULT;
-            Properties prop = LangProperties.getLangCheck(loader, name,
-                    Locale.getDefault(), DefaultRecognizer.DEFAULT, FileExtension.MASK_USES_RSCS);
+            Properties prop = LangProperties.getLang(loader, name, Locale.getDefault());
             if (prop != null) {
                 if (slips == null)
                     slips = new ListArray<AirDropEntry>();

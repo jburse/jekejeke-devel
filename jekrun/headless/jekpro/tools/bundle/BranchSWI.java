@@ -4,13 +4,13 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignCache;
 import matula.util.wire.LangProperties;
 
 import java.io.IOException;
@@ -124,7 +124,7 @@ final class BranchSWI extends AbstractBranch {
         ClassLoader loader = e.getRoot().getLoader();
         String name = getMainRoot() + AirDrop.MODEL_SWI;
         return LangProperties.getLangCheck(loader, name, locale,
-                RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
+                RecognizerSWI.DEFAULT, null, FileExtension.MASK_USES_TEXT);
     }
 
     /**
@@ -134,13 +134,13 @@ final class BranchSWI extends AbstractBranch {
      *
      * @param locale The locale.
      * @param e      The enforced.
-     * @return The properties or null.
+     * @return The properties.
      */
     public Properties getDescrPlatform(Locale locale, Enforced e) {
-        String aspect = e.getFramework().getRuntime().getAspect();
         ClassLoader loader = e.getRoot().getLoader();
-        String name = "jekpro/swipl/" + aspect + "/description";
-        return LangProperties.getLang(loader, name, locale);
+        String name = getMainRoot() + AirDrop.PLATFORM_SWI;
+        return LangProperties.getLangCheck(loader, name, locale,
+                RecognizerSWI.DEFAULT, getMainRoot(), FileExtension.MASK_USES_TEXT);
     }
 
     /**
@@ -176,7 +176,8 @@ final class BranchSWI extends AbstractBranch {
         super.initBranch(en, prompt, system);
 
         Store root = (Store) en.store.foyer.getRoot();
-        root.addFileExtension(getMainRoot() + PROLOG_DIR, new FileExtension(FileExtension.MASK_PCKG_LOAD));
+        root.addFileExtension(getMainRoot() + PROLOG_DIR,
+                new FileExtension(FileExtension.MASK_PCKG_LOAD));
     }
 
     /**
