@@ -152,10 +152,12 @@ public class Goal extends Intermediate {
      * @param dire The directive.
      * @param body The term list, or null.
      * @param en   The engine.
+     * @param cond The condition flag.
      */
-    private static Directive branchToInter(Directive dire, Object body, Engine en) {
+    private static Directive branchToInter(Directive dire, Object body,
+                                           Engine en, boolean cond) {
         Directive left = makeDirective(dire, en);
-        if (isCondition(body)) {
+        if (cond && isCondition(body)) {
             SkelCompound sc = (SkelCompound) body;
             left.bodyToInter(en.store.foyer.ATOM_SYS_BEGIN, en, false);
             left.bodyToInter(sc.args[0], en, false);
@@ -180,14 +182,14 @@ public class Goal extends Intermediate {
         SkelCompound back = null;
         do {
             SkelCompound sc = (SkelCompound) term;
-            Directive left = branchToInter(dire, sc.args[0], en);
+            Directive left = branchToInter(dire, sc.args[0], en, true);
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
             back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
             term = sc.args[1];
         } while (isDisjunction(term));
-        Object t = branchToInter(dire, term, en);
+        Object t = branchToInter(dire, term, en, false);
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
