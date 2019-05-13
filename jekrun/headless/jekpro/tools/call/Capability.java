@@ -18,21 +18,31 @@ import java.util.Locale;
 import java.util.Properties;
 
 /**
- * <p>This class represents the base for all capabilities. A capability can
- * be associated to a knowledge base and initialized via the method
- * initCapability(). A capability can be finalized and de-associated from a
- * knowledge base via the method finiCapability().
- * </p>
- * <p>A capability has certain properties, some do exist already when the
- * capability has not yet been associated and some are specific to the
- * association of the capability to a knowledge base. The properties can
- * be retrieved via the method getProperty().
- * </p>
- * <p>Capabilities govern resources. To access a resource inside a
- * capability the method prepareStream() has to be used. Further the
- * method getDescriptionProperties() allows retrieving the description
- * properties of this capability. The method might return different
- * properties for different locales.</p>
+ * This class represents the base for all capabilities. Capabilities
+ * are value objects that can have arbitrary string parameters. They
+ * should provide a constructor whose formal parameters correspond to
+ * the number of parameters. A capability can be associated to a
+ * knowledge base and initialized via the method initCapability().
+ * A capability can be finalized and deassociated from a knowledge
+ * base via the method finiCapability().
+ * <p/>
+ * A capability has certain properties, some do exist already when the
+ * capability has not yet been associated and some are specific to
+ * the association of the capability to a knowledge base. The
+ * properties can be retrieved via the method getProperty().
+ * Capabilities govern resources. To access a resource inside a
+ * capability the method prepareStream() has to be used. This
+ * method will return a decoding stream in case the resource
+ * was encoded.
+ * <p/>
+ * Further the method getDescrModel() and getDescrPlatform() allow
+ * retrieving the description properties of this capability. The
+ * method might return different properties for different locales.
+ * The Jekejeke Prolog implementation of capabilities expects
+ * Java properties files at some well-known location. The
+ * locations depend on the main root of the Jekejeke Prolog
+ * capability, and for the platform properties it also depends
+ * on the platform.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -62,7 +72,7 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Capability {
+public abstract class Capability {
     public final static String PROP_NEEDS_ACT = AbstractBranch.OP_NEEDS_ACT;
     public final static String PROP_ACT_STATUS = AbstractBranch.OP_ACT_STATUS;
     public final static String PROP_EXPIRATION_DATE = AbstractBranch.OP_EXPIRATION_DATE;

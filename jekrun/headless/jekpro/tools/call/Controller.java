@@ -17,22 +17,6 @@ import matula.util.wire.AbstractLivestock;
  * predicates of an interpreter. For an instrumented interpreter it
  * might also carry spy points and break points.
  * <p/>
- * Interactors running in a primary thread might be controlled by a
- * secondary thread. A signal can be issued from a controlling thread
- * by calling setSignal(m) where m is non-null. A signal is an error term
- * wrapped into a class InterpreterMessage instance. It can be consumed
- * by calling throw setSignal(null) after catching InterruptedException.
- * It should be also consumed after catching InterruptedIOException
- * but not after SocketTimeoutException.
- * <p/>
- * The controlled thread will only be interrupted when the conjunctive
- * condition of a signal and a interrupt mask is satisfied. The current
- * signal can be retrieved by the method getSignal(). The interrupt
- * mask can be retrieved by the method getMask(). The interrupt mask
- * can be changed by the method setMask(). Both methods setSignal() and
- * setMask() set and clear the interrupted bit depending on whether the
- * conjunctive condition is satisfied or not.
- * <p/>
  * The methods setInuse() and getInuse() can be used to set and retrieve
  * the interpreter object a controller is currently in use. Further the
  * methods setFence() and currentController() can be used to set and
@@ -40,6 +24,12 @@ import matula.util.wire.AbstractLivestock;
  * are automatically tracked by the call-in interactor, so that the
  * application programmer usually doesn't have to bother with
  * these methods.
+ * <p/>
+ * The controller also houses the threads local predicates. We provide
+ * statistics about them. The method getThreadLocalClauses() can
+ * be used to retrieve snapshot of the total number of clauses over
+ * all thread local predicates. This statistic is currently used
+ * by the memory threshold to decide which thread to abort.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
