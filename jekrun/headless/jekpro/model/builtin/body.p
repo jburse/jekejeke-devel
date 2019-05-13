@@ -88,6 +88,8 @@
    throw(error(existence_error(body,(:-)/1),_)).
 :- set_predicate_property((:-)/1, visible(public)).
 :- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
+:- sys_context_property(here, C),
+   set_predicate_property((:-)/1, sys_meta_predicate(C)).
 :- set_predicate_property((:-)/1, sys_rule).
 
 /**
@@ -100,6 +102,8 @@
    throw(error(existence_error(body,(:-)/2),_)).
 :- set_predicate_property((:-)/2, visible(public)).
 :- set_predicate_property((:-)/2, (meta_predicate (0:- -1))).
+:- sys_context_property(here, C),
+   set_predicate_property((:-)/2, sys_meta_predicate(C)).
 :- set_predicate_property((:-)/2, sys_rule).
 
 /**
@@ -108,11 +112,14 @@
  * arguments A and B are cut transparent.
  */
 % (+Goal, +Goal)
-A, B :- A, B.                                          % Proto
-:- set_predicate_property(','/2, (meta_predicate 0,0)).
-:- set_predicate_property(','/2, sys_body).
+:- sys_neutral_predicate(','/2).
 :- set_predicate_property(','/2, sys_nobarrier).
+A, B :- A, B.                                          % Proto
 :- set_predicate_property(','/2, visible(public)).
+:- set_predicate_property(','/2, (meta_predicate 0,0)).
+:- sys_context_property(here, C),
+   set_predicate_property(','/2, sys_meta_predicate(C)).
+:- set_predicate_property(','/2, sys_body).
 :- set_predicate_property(','/2, sys_notrace).
 
 /**
@@ -122,5 +129,23 @@ A, B :- A, B.                                          % Proto
  */
 % call(+Goal)
 :- special(call/1, 'SpecialBody', 0).
-:- set_predicate_property(call/1, (meta_predicate call(0))).
 :- set_predicate_property(call/1, visible(public)).
+:- set_predicate_property(call/1, (meta_predicate call(0))).
+:- sys_context_property(here, C),
+   set_predicate_property(call/1, sys_meta_predicate(C)).
+
+% sys_alter(+Directive, +Directive)
+:- special(sys_alter/2, 'SpecialBody', 1).
+:- set_predicate_property(sys_alter/2, visible(public)).
+
+% sys_guard(+Directive)
+:- special(sys_guard/1, 'SpecialBody', 2).
+:- set_predicate_property(sys_guard/1, visible(public)).
+
+% sys_begin
+:- special(sys_begin/0, 'SpecialBody', 3).
+:- set_predicate_property(sys_begin/0, visible(public)).
+
+% sys_commit
+:- special(sys_commit/0, 'SpecialBody', 4).
+:- set_predicate_property(sys_commit/0, visible(public)).

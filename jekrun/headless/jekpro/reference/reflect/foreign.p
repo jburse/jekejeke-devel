@@ -98,8 +98,6 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- set_source_property(system, use_package(foreign(java/lang))).
-
 :- sys_context_property(here, C),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
 :- sys_context_property(here, C),

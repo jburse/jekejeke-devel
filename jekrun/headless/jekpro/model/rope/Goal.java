@@ -137,36 +137,13 @@ public class Goal extends Intermediate {
         while (body != null) {
             Object term = bodyToGoal(body);
             if (term != null) {
-                if (isDisjunction(term))
+                if (isDisjunction(term) || isCondition(term))
                     term = disjunctionToAlternative(dire, term, en);
                 Goal goal = new Goal(term);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             }
             body = bodyToRest(body);
         }
-    }
-
-    /**
-     * <p>Convert a body to intermediate form.</p>
-     *
-     * @param dire The directive.
-     * @param body The term list, or null.
-     * @param en   The engine.
-     * @param cond The condition flag.
-     */
-    private static Directive branchToInter(Directive dire, Object body,
-                                           Engine en, boolean cond) {
-        Directive left = makeDirective(dire, en);
-        if (cond && isCondition(body)) {
-            SkelCompound sc = (SkelCompound) body;
-            left.bodyToInter(en.store.foyer.ATOM_SYS_BEGIN, en, false);
-            left.bodyToInter(sc.args[0], en, false);
-            left.bodyToInter(en.store.foyer.ATOM_SYS_COMMIT, en, false);
-            left.bodyToInter(sc.args[1], en, false);
-        } else {
-            left.bodyToInter(body, en, false);
-        }
-        return left;
     }
 
     /**
@@ -180,16 +157,28 @@ public class Goal extends Intermediate {
     public static Object disjunctionToAlternative(Directive dire,
                                                   Object term, Engine en) {
         SkelCompound back = null;
-        do {
+        while (isDisjunction(term)) {
             SkelCompound sc = (SkelCompound) term;
-            Directive left = branchToInter(dire, sc.args[0], en, true);
+            Object help = sc.args[0];
+            Directive left;
+            if (isCondition(help)) {
+                left = condToInter(dire, help, en);
+            } else {
+                left = goalToInter(dire, help, en);
+            }
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
             back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
             term = sc.args[1];
-        } while (isDisjunction(term));
-        Object t = branchToInter(dire, term, en, false);
+        }
+        Object t;
+        if (isCondition(term)) {
+            t = condToInter(dire, term, en);
+            t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
+        } else {
+            t = goalToInter(dire, term, en);
+        }
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
@@ -198,6 +187,38 @@ public class Goal extends Intermediate {
             back = jack;
         }
         return t;
+    }
+
+    /**
+     * <p>Convert a condition branch to intermediate form.</p>
+     *
+     * @param dire The directive.
+     * @param body The term list, or null.
+     * @param en   The engine.
+     */
+    private static Directive condToInter(Directive dire, Object body,
+                                         Engine en) {
+        Directive left = makeDirective(dire, en);
+        SkelCompound sc = (SkelCompound) body;
+        left.bodyToInter(en.store.foyer.ATOM_SYS_BEGIN, en, false);
+        left.bodyToInter(sc.args[0], en, false);
+        left.bodyToInter(en.store.foyer.ATOM_SYS_COMMIT, en, false);
+        left.bodyToInter(sc.args[1], en, false);
+        return left;
+    }
+
+    /**
+     * <p>Convert a goal to intermediate form.</p>
+     *
+     * @param dire The directive.
+     * @param body The term list, or null.
+     * @param en   The engine.
+     */
+    private static Directive goalToInter(Directive dire, Object body,
+                                         Engine en) {
+        Directive left = makeDirective(dire, en);
+        left.bodyToInter(body, en, false);
+        return left;
     }
 
     /**
@@ -232,7 +253,7 @@ public class Goal extends Intermediate {
      * @param term The term.
      * @return True if the term is an alterantive.
      */
-    private static boolean isCondition(Object term) {
+    public static boolean isCondition(Object term) {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONDITION)) {

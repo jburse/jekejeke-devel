@@ -43,8 +43,9 @@ import jekpro.tools.term.SkelCompound;
 public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_CALL = 0;
     private final static int SPECIAL_SYS_ALTER = 1;
-    private final static int SPECIAL_SYS_BEGIN = 2;
-    private final static int SPECIAL_SYS_COMMIT = 3;
+    private final static int SPECIAL_SYS_GUARD = 2;
+    private final static int SPECIAL_SYS_BEGIN = 3;
+    private final static int SPECIAL_SYS_COMMIT = 4;
 
     /**
      * <p>Create a body special.</p>
@@ -89,6 +90,13 @@ public final class SpecialBody extends AbstractSpecial {
             case SPECIAL_SYS_ALTER:
                 temp = ((SkelCompound) en.skel).args;
                 en.choices = new ChoiceAlter(en.choices, temp[1], en.contskel,
+                        en.contdisplay, en.bind);
+                en.number++;
+                en.contskel = (Directive) temp[0];
+                return true;
+            case SPECIAL_SYS_GUARD:
+                temp = ((SkelCompound) en.skel).args;
+                en.choices = new ChoiceAlter(en.choices, null, en.contskel,
                         en.contdisplay, en.bind);
                 en.number++;
                 en.contskel = (Directive) temp[0];

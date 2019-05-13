@@ -132,17 +132,7 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     public Object interToBody(Engine en) {
-        return interToBody(this, last, en);
-    }
-
-    /**
-     * <p>Convert the intermediate form into a term.</p>
-     *
-     * @param en The store.
-     * @return The vector.
-     */
-    public Object interToBranch(Engine en) {
-        return interToBranch(this, last, en);
+        return Directive.interToBody(this, last, en);
     }
 
     /**
@@ -154,14 +144,14 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     private static Object interToBody(Intermediate temp, Intermediate last,
-                                      Engine en) {
+                                     Engine en) {
         SkelCompound back = null;
         Object t = null;
         if (last != null) {
             do {
                 temp = temp.next;
                 Object left = temp.term;
-                if (isAlternative(left)) {
+                if (isAlternative(left) || isGuard(left)) {
                     left = alternativeToDisjunction(left, en);
                 } else if (isBegin(left) || isCommit(left)) {
                     continue;
@@ -188,23 +178,54 @@ public class Directive extends Intermediate {
     }
 
     /**
-     * <p>Convert the intermediate form into a term.</p>
-     * <p>Will split a sequence.</p>
+     * <p>Convert an alternative to a disjunction.</p>
      *
-     * @param temp The conversion start.
-     * @param last The conversion end.
-     * @param en   The store.
+     * @param term The alternative.
+     * @param en   The engine.
+     * @return The disjunction.
+     */
+    private static Object alternativeToDisjunction(Object term, Engine en) {
+        SkelCompound back = null;
+        while (isAlternative(term)) {
+            SkelCompound sc = (SkelCompound) term;
+            Object left = ((Directive) sc.args[0]).interToBranch(en);
+            Object[] args = new Object[2];
+            args[0] = left;
+            args[1] = back;
+            back = new SkelCompound(en.store.foyer.ATOM_SEMICOLON, args, null);
+            term = sc.args[1];
+        }
+        Object t;
+        if (isGuard(term)) {
+            SkelCompound sc = (SkelCompound) term;
+            t = ((Directive) sc.args[0]).interToBranch(en);
+        } else {
+            t = ((Directive) term).interToBody(en);
+        }
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back.var = SkelCompound.makeExtra(back.args);
+            t = back;
+            back = jack;
+        }
+        return t;
+    }
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     *
+     * @param en The store.
      * @return The vector.
      */
-    private static Object interToBranch(Intermediate temp, Intermediate last,
-                                        Engine en) {
-        if (last != null && isBegin(temp.next.term)) {
-            Intermediate split = findSplit(temp, last);
-            Object left = interToBody(temp, split, en);
+    private Object interToBranch(Engine en) {
+        if (last != null && isBegin(next.term)) {
+            Intermediate split = findSplit(this, last);
+            Object left = interToBody(this, split, en);
             Object right = interToBody(split, last, en);
             return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
         } else {
-            return interToBody(temp, last, en);
+            return interToBody(en);
         }
     }
 
@@ -228,35 +249,6 @@ public class Directive extends Intermediate {
     }
 
     /**
-     * <p>Convert an alternative to a disjunction.</p>
-     *
-     * @param term The alternative.
-     * @param en   The engine.
-     * @return The disjunction.
-     */
-    private static Object alternativeToDisjunction(Object term, Engine en) {
-        SkelCompound back = null;
-        do {
-            SkelCompound sc = (SkelCompound) term;
-            Object left = ((Directive) sc.args[0]).interToBranch(en);
-            Object[] args = new Object[2];
-            args[0] = left;
-            args[1] = back;
-            back = new SkelCompound(en.store.foyer.ATOM_SEMICOLON, args, null);
-            term = sc.args[1];
-        } while (isAlternative(term));
-        Object t = ((Directive) term).interToBranch(en);
-        while (back != null) {
-            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
-            back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
-            t = back;
-            back = jack;
-        }
-        return t;
-    }
-
-    /**
      * <p>Check whether the given term is an alternative.</p>
      *
      * @param term The term.
@@ -266,6 +258,22 @@ public class Directive extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isGuard(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
             return true;
         } else {
             return false;
@@ -316,14 +324,19 @@ public class Directive extends Intermediate {
         if (last == null) {
             next = inter;
         } else {
-            if (isAlternative(last.term)) {
-                Object term = last.term;
-                do {
+            Object term = last.term;
+            if (isAlternative(term) || isGuard(term)) {
+                while (isAlternative(term)) {
                     SkelCompound sc = (SkelCompound) term;
                     ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
                     term = sc.args[1];
-                } while (isAlternative(term));
-                ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
+                }
+                if (isGuard(term)) {
+                    SkelCompound sc = (SkelCompound) term;
+                    ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
+                } else {
+                    ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
+                }
             }
             last.next = inter;
             if ((mask & MASK_FIXUP_MARK) != 0) {

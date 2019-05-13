@@ -77,6 +77,7 @@ public class Foyer extends Enforced {
     public final static String OP_CONDITION = "->";
 
     public final static String OP_SYS_ALTER = "sys_alter";
+    public final static String OP_SYS_GUARD = "sys_guard";
     public final static String OP_SYS_BEGIN = "sys_begin";
     public final static String OP_SYS_COMMIT = "sys_commit";
 
@@ -139,6 +140,7 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_CONDITION;
 
     public SkelAtom ATOM_SYS_ALTER;
+    public SkelAtom ATOM_SYS_GUARD;
     public SkelAtom ATOM_SYS_BEGIN;
     public SkelAtom ATOM_SYS_COMMIT;
 
