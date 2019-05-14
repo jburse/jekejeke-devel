@@ -145,9 +145,9 @@ public final class ForeignUri {
                                       String rest) {
         name = encode(name, false, NEEDS_COMP, ENCODING_UTF8);
         if (!ForeignFile.STRING_EMPTY.equals(value))
-            name += "=" + encode(value, false, NEEDS_COMP, ENCODING_UTF8);
+            name += CHAR_EQ + encode(value, false, NEEDS_COMP, ENCODING_UTF8);
         if (!ForeignFile.STRING_EMPTY.equals(rest))
-            name += "&" + rest;
+            name += CHAR_AMP + rest;
         return name;
     }
 
@@ -388,9 +388,9 @@ public final class ForeignUri {
                                     String hash) {
         spec = encode(spec, false, NEEDS_SPEC, ENCODING_UTF8);
         if (!ForeignFile.STRING_EMPTY.equals(query))
-            spec += "?" + query;
+            spec += CHAR_ASK + query;
         if (!ForeignFile.STRING_EMPTY.equals(hash))
-            spec += "#" + encode(hash, false, NEEDS_HASH, ENCODING_UTF8);
+            spec += CHAR_HASH + encode(hash, false, NEEDS_HASH, ENCODING_UTF8);
         return spec;
     }
 

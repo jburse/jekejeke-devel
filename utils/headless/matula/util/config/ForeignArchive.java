@@ -42,6 +42,7 @@ import java.util.zip.ZipInputStream;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignArchive {
+    private final static char CHAR_PACK = '-';
 
     /*****************************************************************/
     /* OS Directores                                                 */
@@ -131,7 +132,7 @@ public final class ForeignArchive {
     /**
      * <p>Check whether an entry exists.</p>
      *
-     * @param in The archive stream.
+     * @param in   The archive stream.
      * @param name The entry name.
      * @return True if the entry exist, otherwise false.
      * @throws IOException Shit happens.
@@ -140,7 +141,7 @@ public final class ForeignArchive {
             throws IOException {
         ZipInputStream zip = new ZipInputStream(
                 new BufferedInputStream(in, 8192));
-        boolean found=false;
+        boolean found = false;
         try {
             ZipEntry e = zip.getNextEntry();
             for (; e != null && !found; e = zip.getNextEntry())
@@ -170,6 +171,55 @@ public final class ForeignArchive {
             return null;
         String path = ForeignUri.sysSpecPath(spec);
         return path.replace('/', File.separatorChar);
+    }
+
+    /******************************************************/
+    /* Package Name Helper                                */
+    /******************************************************/
+
+    /**
+     * <p>Retrieve the name of a package name.</p>
+     *
+     * @param p The package name.
+     * @return The name.
+     */
+    public static String sysPackName(String p) {
+        int k = p.lastIndexOf(CHAR_PACK);
+        if (k != -1) {
+            return p.substring(0, k);
+        } else {
+            return p;
+        }
+    }
+
+    /**
+     * <p>Retrieve the version of a package name.</p>
+     *
+     * @param p The package name.
+     * @return The version.
+     */
+    public static String sysPackVersion(String p) {
+        int k = p.lastIndexOf(CHAR_PACK);
+        if (k != -1) {
+            return p.substring(k + 1);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * <p>Create a package name from name and version.</p>
+     *
+     * @param n The name-
+     * @param v The version.
+     * @return The package name.
+     */
+    public static String sysPackMake(String n, String v) {
+        if (!"".equals(v)) {
+            return n + CHAR_PACK + v;
+        } else {
+            return n;
+        }
     }
 
 }
