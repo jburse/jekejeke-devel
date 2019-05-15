@@ -1,9 +1,8 @@
-package jekmin.model.minlog;
+package jekmin.model.builtin;
 
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import matula.util.data.MapHash;
@@ -40,9 +39,16 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FlagForward extends AbstractFlag<Engine> {
+    public static final MapHash<String, AbstractFlag<Engine>> DEFAULT
+            = new MapHash<String, AbstractFlag<Engine>>();
+
     final static String OP_FLAG_SYS_VERIFY = "sys_verify";
 
     private static final int FLAG_SYS_VERIFY = 0;
+
+    static {
+        DEFAULT.add(OP_FLAG_SYS_VERIFY, new FlagForward(FLAG_SYS_VERIFY));
+    }
 
     /**
      * <p>Create a flag.</p>
@@ -51,17 +57,6 @@ public final class FlagForward extends AbstractFlag<Engine> {
      */
     private FlagForward(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Define the prolog flags.</p>
-     *
-     * @return The prolog flags.
-     */
-    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
-        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
-        prologflags.add(OP_FLAG_SYS_VERIFY, new FlagForward(FLAG_SYS_VERIFY));
-        return prologflags;
     }
 
     /**
