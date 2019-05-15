@@ -1,6 +1,6 @@
 package jekdev.reference.debug;
 
-import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.builtin.SupervisorTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.system.SpecialMode;
@@ -352,28 +352,22 @@ public final class SpecialDefault extends AbstractSpecial {
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             throw en.fault;
         } catch (EngineMessage y) {
             EngineException x = new EngineException(y,
                     EngineException.fetchStack(en));
             en.contskel = r;
             en.contdisplay = u;
-            en.window = en.contdisplay;
             en.fault = x;
             en.cutChoices(snap);
-            en.window = null;
             throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
-        en.window = en.contdisplay;
         en.fault = null;
         en.cutChoices(snap);
-        en.window = null;
         if (en.fault != null)
             throw en.fault;
 

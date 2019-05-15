@@ -14,7 +14,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;

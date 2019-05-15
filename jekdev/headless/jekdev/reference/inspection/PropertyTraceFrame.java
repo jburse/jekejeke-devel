@@ -46,11 +46,19 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyTraceFrame extends AbstractProperty<StackElement> {
+    public final static MapHash<StoreKey, AbstractProperty<StackElement>> DEFAULT
+            = new MapHash<StoreKey, AbstractProperty<StackElement>>();
+
     public final static String OP_SYS_PARENT_FRAME = "sys_parent_frame";
     public final static String OP_SYS_CALL_GOAL = "sys_call_goal";
 
     private static final int PROP_SYS_PARENT_FRAME = 0;
     private static final int PROP_SYS_CALL_GOAL = 1;
+
+    static {
+        DEFAULT.add(new StoreKey(OP_SYS_PARENT_FRAME, 1), new PropertyTraceFrame(PROP_SYS_PARENT_FRAME));
+        DEFAULT.add(new StoreKey(OP_SYS_CALL_GOAL, 1), new PropertyTraceFrame(PROP_SYS_CALL_GOAL));
+    }
 
     /**
      * <p>Create a frame property.</p>
@@ -59,18 +67,6 @@ public final class PropertyTraceFrame extends AbstractProperty<StackElement> {
      */
     private PropertyTraceFrame(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Define the frame properties.</p>
-     *
-     * @return The frame properties.
-     */
-    public static MapHash<StoreKey, AbstractProperty<StackElement>> defineFrameProps() {
-        MapHash<StoreKey, AbstractProperty<StackElement>> frameprops = new MapHash<StoreKey, AbstractProperty<StackElement>>();
-        frameprops.add(new StoreKey(OP_SYS_PARENT_FRAME, 1), new PropertyTraceFrame(PROP_SYS_PARENT_FRAME));
-        frameprops.add(new StoreKey(OP_SYS_CALL_GOAL, 1), new PropertyTraceFrame(PROP_SYS_CALL_GOAL));
-        return frameprops;
     }
 
     /**

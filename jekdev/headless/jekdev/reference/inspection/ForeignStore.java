@@ -14,7 +14,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;

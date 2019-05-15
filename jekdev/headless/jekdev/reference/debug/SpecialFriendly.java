@@ -251,6 +251,8 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param ref  The display.
      * @param fp   The firendly printer.
      * @throws IOException IO error.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     private static void friendlyBody(Directive dire,
                                      Display ref,
@@ -260,43 +262,31 @@ public final class SpecialFriendly extends AbstractSpecial {
             return;
         Intermediate temp = fp.nextDirective(dire);
         for (; ; ) {
-            if (Directive.isAlternative(temp.term)) {
-                Object branch = temp.term;
-                Writer wr = fp.pw.getWriter();
-                do {
+            Object branch = temp.term;
+            if (Directive.isAlternative(branch) || Directive.isGuard(branch)) {
+                while (Directive.isAlternative(branch)) {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
+                    friendlyBranch(help, ref, fp, branch == temp.term);
+                    branch = sc.args[1];
+                }
+                if (Directive.isGuard(branch)) {
+                    SkelCompound sc = (SkelCompound) branch;
+                    Directive help = (Directive) sc.args[0];
+                    friendlyBranch(help, ref, fp, branch == temp.term);
+                } else {
+                    Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
-                    if (help.last != null && Directive.isBegin(help.next.term)) {
-                        if (branch == temp.term) {
-                            wr.write(SpecialFriendly.CODE_IF_FLOW);
-                        } else {
-                            wr.write(SpecialFriendly.CODE_ELSE_FLOW);
-                        }
-                    } else {
-                        if (branch == temp.term) {
-                            wr.write(SpecialFriendly.CODE_TRY_FLOW);
-                        } else {
-                            wr.write(SpecialFriendly.CODE_RETRY_FLOW);
-                        }
-                    }
+                    wr.write(SpecialFriendly.CODE_TRUST_FLOW);
                     wr.write('\n');
                     wr.flush();
                     fp.level++;
-                    friendlyBody(help, ref, fp);
+                    friendlyBody((Directive) branch, ref, fp);
                     fp.level--;
-                    branch = sc.args[1];
-                } while (Directive.isAlternative(branch));
-                fp.friendlyCount();
-                wr.write(SpecialFriendly.CODE_TRUST_FLOW);
-                wr.write('\n');
-                wr.flush();
-                fp.level++;
-                friendlyBody((Directive) branch, ref, fp);
-                fp.level--;
-            } else if (Directive.isBegin(temp.term)) {
+                }
+            } else if (Directive.isBegin(branch)) {
                 /* */
-            } else if (Directive.isCommit(temp.term)) {
+            } else if (Directive.isCommit(branch)) {
                 Writer wr = fp.pw.getWriter();
                 fp.friendlyCount();
                 wr.write(SpecialFriendly.CODE_THEN_FLOW);
@@ -319,7 +309,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     }
                 }
                 wr.write(' ');
-                fp.pw.unparseStatement(temp.term, ref);
+                fp.pw.unparseStatement(branch, ref);
                 wr.write('\n');
                 wr.flush();
             }
@@ -327,6 +317,43 @@ public final class SpecialFriendly extends AbstractSpecial {
                 break;
             temp = fp.nextGoal(temp);
         }
+    }
+
+    /**
+     * <p>Write out a goal list.</p>
+     *
+     * @param help The branch.
+     * @param ref  The display.
+     * @param fp   The firendly printer.
+     * @throws IOException IO error.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void friendlyBranch(Directive help,
+                                       Display ref,
+                                       FriendlyPrinter fp,
+                                       boolean first)
+            throws IOException, EngineException, EngineMessage {
+        Writer wr = fp.pw.getWriter();
+        fp.friendlyCount();
+        if (help.last != null && Directive.isBegin(help.next.term)) {
+            if (first) {
+                wr.write(SpecialFriendly.CODE_IF_FLOW);
+            } else {
+                wr.write(SpecialFriendly.CODE_ELSE_FLOW);
+            }
+        } else {
+            if (first) {
+                wr.write(SpecialFriendly.CODE_TRY_FLOW);
+            } else {
+                wr.write(SpecialFriendly.CODE_RETRY_FLOW);
+            }
+        }
+        wr.write('\n');
+        wr.flush();
+        fp.level++;
+        friendlyBody(help, ref, fp);
+        fp.level--;
     }
 
 }

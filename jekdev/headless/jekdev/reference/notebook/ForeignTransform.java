@@ -3,10 +3,11 @@ package jekdev.reference.notebook;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.format.AbstractDom;
-import matula.util.format.DomElement;
+import matula.text.format.AbstractDom;
+import matula.text.format.DomElement;
+import matula.text.format.XmlWriter;
+import matula.text.transform.*;
 import matula.util.regex.ScannerError;
-import matula.util.transform.*;
 
 import java.io.IOException;
 import java.io.Writer;

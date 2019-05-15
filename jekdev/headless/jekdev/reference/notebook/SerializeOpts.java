@@ -6,7 +6,7 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.format.AbstractDom;
+import matula.text.format.AbstractDom;
 
 /**
  * <p>Helper for the DOM options.</p>

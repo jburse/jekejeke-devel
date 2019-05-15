@@ -7,7 +7,6 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -17,9 +16,10 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractBundle;
+import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 
 /**
  * <p>This module provides built-ins for direct predicate access.</p>
@@ -145,7 +145,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                callableToProperties(en.skel, en.display, en);
+                callableToProperties2(AbstractTerm.createMolec(en.skel, en.display), en);
                 d = en.display;
                 multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -161,7 +161,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                callableToProperty(prop, en.skel, en.display, en);
+                callableToProperty2(AbstractTerm.createMolec(en.skel, en.display), prop, en);
                 d = en.display;
                 multi = d.getAndReset();
                 if (!en.unifyTerm(temp[2], ref, en.skel, d))
@@ -182,7 +182,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                addAtomProp(en.skel, en.display, t, d, en);
+                setAtomProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return true;
@@ -199,7 +199,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                removeAtomProp(en.skel, en.display, t, d, en);
+                resetAtomProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
                     return false;
                 return true;
@@ -217,28 +217,29 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Result is returned in skeleton and display.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param t2 The callable skeleton.
-     * @param d2 The callable display.
-     * @param en The engine.
+     * @param molec The molec.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void callableToProperties(Object t2, Display d2, Engine en)
-            throws EngineMessage {
+    private static void callableToProperties2(Object molec, Engine en)
+            throws EngineMessage, EngineException {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            StoreKey[] props = branch.listAtomProp();
-            for (int j = props.length - 1; j >= 0; j--) {
-                StoreKey prop = props[j];
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHash<StoreKey, AbstractProperty<Object>> props = branch.getAtomProps();
+            for (MapEntry<StoreKey, AbstractProperty<Object>> entry2 =
+                 (props != null ? props.getLastEntry() : null);
+                 entry2 != null; entry2 = props.predecessor(entry2)) {
+                AbstractProperty<Object> prop = entry2.value;
                 Object t = en.skel;
                 Display d = en.display;
-                Object[] vals = getPropCallable(prop, t2, d2, en);
+                Object[] vals = prop.getObjProps(molec, en);
                 en.skel = t;
                 en.display = d;
                 AbstractProperty.consArray(vals, en);
@@ -250,16 +251,16 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>Create a prolog list for the property of the given atom.</p>
      * <p>Result is returned in skeleton and display.</p>
      *
-     * @param prop The property.
-     * @param t2   The callable skeleton.
-     * @param d2   The callable display.
-     * @param en   The engine.
+     * @param molec The molec.
+     * @param sk    The property.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void callableToProperty(StoreKey prop, Object t2, Display d2,
-                                           Engine en)
-            throws EngineMessage {
-        Object[] vals = getPropCallable(prop, t2, d2, en);
+    private static void callableToProperty2(Object molec, StoreKey sk,
+                                            Engine en)
+            throws EngineMessage, EngineException {
+        AbstractProperty<Object> prop = SpecialProvable.findAtomProperty(sk, en);
+        Object[] vals = prop.getObjProps(molec, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         AbstractProperty.consArray(vals, en);
@@ -268,101 +269,74 @@ public final class SpecialProvable extends AbstractSpecial {
     /**
      * <p>Set a predicate property.</p>
      * <p>Throws a domain error for undefined flags.</p>
+     * <p>The result is return in skel and display of engine.</p>
      *
-     * @param t  The value skeleton.
+     * @param molec The molec.
+     * @param m  The value skeleton.
      * @param d  The value display.
-     * @param t2 The callable skeleton.
-     * @param d2 The callable display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void addAtomProp(Object t, Display d,
-                                    Object t2, Display d2, Engine en)
+    private static void setAtomProp(Object molec, Object m, Display d,
+                                    Engine en)
             throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractProperty.addValue(vals, AbstractTerm.createMolec(t, d));
-        setPropCallable(prop, t2, d2, vals, en);
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Object> prop = findAtomProperty(sk, en);
+        if (!prop.setObjProp(molec, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
     /**
      * <p>Reset a predicate property.</p>
      * <p>Throws a domain error for undefined flags.</p>
+     * <p>The result is return in skel and display of engine.</p>
      *
-     * @param t  The value skeleton.
+     * @param molec The molec.
+     * @param m  The value skeleton.
      * @param d  The value display.
-     * @param t2 The callable skeleton.
-     * @param d2 The callable display.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void removeAtomProp(Object t, Display d,
-                                       Object t2, Display d2, Engine en)
+    private static void resetAtomProp(Object molec, Object m, Display d,
+                                    Engine en)
             throws EngineMessage {
-        StoreKey prop = StackElement.callableToStoreKey(t);
-        Object[] vals = getPropCallable(prop, t2, d2, en);
-        vals = AbstractProperty.removeValue(vals, AbstractTerm.createMolec(t, d));
-        setPropCallable(prop, t2, d2, vals, en);
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Object> prop = findAtomProperty(sk, en);
+        if (!prop.resetObjProp(molec, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
     }
 
-    /***********************************************************************/
-    /* Low-Level Atom Property Access                                      */
-    /***********************************************************************/
-
     /**
-     * <p>Retrieve an atom property.</p>
-     * <p>Throws a domain error for undefined atom properties.</p>
+     * <p>Find an atom property.</p>
+     * <p>Throws a domain error for undefined display properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
      * @param sk The property.
-     * @param t2 The callable skeleton.
-     * @param d2 The callable display.
      * @param en The engine.
-     * @return The value.
+     * @return The operator property.
      * @throws EngineMessage Shit happens.
      */
-    public static Object[] getPropCallable(StoreKey sk, Object t2, Display d2,
-                                           Engine en)
+    public static AbstractProperty<Object> findAtomProperty(StoreKey sk,
+                                                            Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+                = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractBranch branch = (AbstractBranch) entry.key;
             AbstractTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            Object[] vals = branch.getCallableProp(sk, t2, d2, en);
-            if (vals != null)
-                return vals;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
-    }
-
-    /**
-     * <p>Set an atom property.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param sk   The property.
-     * @param t2   The callable skeleton.
-     * @param d2   The callable display.
-     * @param vals The values.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void setPropCallable(StoreKey sk, Object t2, Display d2,
-                                        Object[] vals, Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
             AbstractBranch branch = (AbstractBranch) entry.key;
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            if (branch.setCallableProp(sk, t2, d2, vals, en))
-                return;
+            MapHash<StoreKey, AbstractProperty<Object>> props = branch.getAtomProps();
+            AbstractProperty<Object> prop = (props != null ? props.get(sk) : null);
+            if (prop != null)
+                return prop;
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,

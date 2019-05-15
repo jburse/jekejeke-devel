@@ -1,6 +1,6 @@
 package jekdev.reference.system;
 
-import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.builtin.SupervisorTrace;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;

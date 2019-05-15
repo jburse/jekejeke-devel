@@ -1,14 +1,14 @@
 package jekdev.reference.system;
 
-import jekdev.model.bugger.GoalTrace;
-import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.builtin.SupervisorTrace;
 import jekdev.model.pretty.FoyerTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.debug.SpecialDefault;
+import jekpro.frequent.standard.ChoiceAtomic;
+import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
@@ -99,7 +99,7 @@ public final class SpecialMode extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                if (!SpecialMode.invokeIgnore(en))
+                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_IGNR))
                     return false;
                 return true;
             case SPECIAL_SYS_NOTRACE_CHK:
@@ -174,7 +174,8 @@ public final class SpecialMode extends AbstractSpecial {
                 en.skel = new SkelCompound(((FoyerTrace)
                         en.store.foyer).ATOM_TRACE_GOAL, portToAtom(port, en), val);
                 en.display = Display.DISPLAY_CONST;
-                if (!SpecialMode.invokeBoth(en))
+                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_VRFY |
+                        ChoiceAtomic.MASK_FLAGS_IGNR))
                     return false;
                 return true;
             case SPECIAL_SYS_CUT_CHK:
@@ -201,12 +202,24 @@ public final class SpecialMode extends AbstractSpecial {
                     return false;
                 return true;
             case SPECIAL_SYS_GOAL_CUT:
-                en.window = en.contdisplay;
+                /* backup continuation */
+                Intermediate r = en.contskel;
+                CallFrame u = en.contdisplay;
+
+                u2 = getPortDisplay(CODE_REDO, en);
+                r2 = getGoalSkel(CODE_REDO, u2);
+                u2 = u2.contdisplay;
+
+                en.contskel = r2;
+                en.contdisplay = u2;
                 en.fault = null;
                 en.cutChoices(en.number - 1);
-                en.window = null;
                 if (en.fault != null)
                     throw en.fault;
+
+                /* restore continuation */
+                en.contskel = r;
+                en.contdisplay = u;
                 return true;
             case SPECIAL_SYS_CLAUSE_CHK:
                 temp = ((SkelCompound) en.skel).args;
@@ -249,7 +262,7 @@ public final class SpecialMode extends AbstractSpecial {
                                         Intermediate r2, CallFrame u2) {
         if (!(choice instanceof ChoiceDefined))
             return false;
-        CallFrame u3 = ((ChoiceDefined) choice).newdisp.contdisplay;
+        CallFrame u3 = ((ChoiceDefined) choice).goaldisplay.contdisplay;
         if (u3 == null ||
                 u3.contdisplay != u2 ||
                 u3.contskel.next != r2)
@@ -268,135 +281,8 @@ public final class SpecialMode extends AbstractSpecial {
                                           CallFrame u2) {
         if (!(choice instanceof ChoiceDefined))
             return false;
-        if (((ChoiceDefined) choice).newdisp != u2)
+        if (((ChoiceDefined) choice).goaldisplay != u2)
             return false;
-        return true;
-    }
-
-    /**
-     * <p>Invoke a goal ignoring flag changes.</p>
-     * <p>The goal is passed via the skeleton and display of the engine</p>
-     *
-     * @param en The engine.
-     * @return True if the predicate succeeded, otherwise false
-     * @throws EngineException Shit happens.
-     */
-    private static boolean invokeBoth(Engine en)
-            throws EngineException {
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
-        boolean backignore = en.visor.setIgnore(false);
-        boolean backverify = en.visor.setVerify(false);
-        int snap = en.number;
-        try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
-            en.contskel = dire;
-            en.contdisplay = ref2;
-            if (!en.runLoop2(snap, true)) {
-                en.visor.setVerify(backverify);
-                en.visor.setIgnore(backignore);
-                return false;
-            }
-        } catch (EngineException x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.window = en.contdisplay;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.window = null;
-            en.visor.setVerify(backverify);
-            en.visor.setIgnore(backignore);
-            throw en.fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(en));
-            en.contskel = r;
-            en.contdisplay = u;
-            en.window = en.contdisplay;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.window = null;
-            en.visor.setVerify(backverify);
-            en.visor.setIgnore(backignore);
-            throw en.fault;
-        }
-        en.contskel = r;
-        en.contdisplay = u;
-        if (en.number != snap) {
-            /* create choice point */
-            en.choices = new ChoiceBoth(en.choices, snap, r, u);
-            en.number++;
-        }
-        en.visor.setVerify(backverify);
-        en.visor.setIgnore(backignore);
-        return true;
-    }
-
-    /**
-     * <p>Invoke a goal ignoring flag changes.</p>
-     * <p>The goal is passed via the skeleton and display of the engine</p>
-     *
-     * @param en The engine.
-     * @return True if the predicate succeeded, otherwise false
-     * @throws EngineException Shit happens.
-     */
-    private static boolean invokeIgnore(Engine en)
-            throws EngineException {
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
-        boolean backignore = en.visor.setIgnore(false);
-        int snap = en.number;
-        try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
-            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
-            en.contskel = dire;
-            en.contdisplay = ref2;
-            if (!en.runLoop2(snap, true)) {
-                en.visor.setIgnore(backignore);
-                return false;
-            }
-        } catch (EngineException x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.window = en.contdisplay;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.window = null;
-            en.visor.setIgnore(backignore);
-            throw en.fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(en));
-            en.contskel = r;
-            en.contdisplay = u;
-            en.window = en.contdisplay;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.window = null;
-            en.visor.setIgnore(backignore);
-            throw en.fault;
-        }
-        en.contskel = r;
-        en.contdisplay = u;
-        if (en.number != snap) {
-            /* create choice point */
-            en.choices = new ChoiceIgnore(en.choices, snap, r, u);
-            en.number++;
-        }
-        en.visor.setIgnore(backignore);
         return true;
     }
 
@@ -466,7 +352,7 @@ public final class SpecialMode extends AbstractSpecial {
             case CODE_REDO:
             case CODE_HEAD:
             case CODE_CHOP:
-                return ((Goal)u.contskel).back;
+                return ((Goal) u.contskel).back;
             default:
                 throw new IllegalArgumentException("illegal port");
         }

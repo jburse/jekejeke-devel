@@ -1,8 +1,8 @@
 package jekdev.model.pretty;
 
-import jekdev.model.bugger.ClauseTrace;
-import jekdev.model.bugger.DirectiveTrace;
-import jekdev.model.bugger.SupervisorTrace;
+import jekdev.model.builtin.ClauseTrace;
+import jekdev.model.builtin.DirectiveTrace;
+import jekdev.model.builtin.SupervisorTrace;
 import jekdev.reference.system.SpecialMode;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -46,7 +46,7 @@ import jekpro.tools.term.SkelAtom;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class FoyerTrace extends Foyer {
+public final class FoyerTrace extends Foyer {
     public final static String OP_SYS_IN = "sys_in";
     public final static String OP_SYS_OUT = "sys_out";
     public final static String OP_SYS_AT = "sys_at";
@@ -137,6 +137,7 @@ public abstract class FoyerTrace extends Foyer {
     public void finiFoyer(Store store)
             throws EngineMessage, EngineException {
         super.finiFoyer(store);
+
         ATOM_SYS_IN = null;
         ATOM_SYS_OUT = null;
         ATOM_SYS_AT = null;

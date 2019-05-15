@@ -4,9 +4,9 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.PositionKey;
-import matula.util.format.AbstractDom;
-import matula.util.format.AbstractReader;
-import matula.util.format.AbstractWriter;
+import matula.text.format.AbstractDom;
+import matula.text.format.AbstractReader;
+import matula.text.format.AbstractWriter;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 

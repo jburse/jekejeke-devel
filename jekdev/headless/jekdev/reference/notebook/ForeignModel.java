@@ -5,9 +5,9 @@ import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
-import matula.util.format.AbstractDom;
-import matula.util.format.DomElement;
-import matula.util.format.DomText;
+import matula.text.format.AbstractDom;
+import matula.text.format.DomElement;
+import matula.text.format.DomText;
 
 import java.math.BigInteger;
 

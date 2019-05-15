@@ -1,8 +1,8 @@
 package jekdev.reference.debug;
 
-import jekdev.model.bugger.ClauseTrace;
-import jekdev.model.bugger.DirectiveTrace;
-import jekdev.model.bugger.GoalTrace;
+import jekdev.model.builtin.ClauseTrace;
+import jekdev.model.builtin.DirectiveTrace;
+import jekdev.model.builtin.GoalTrace;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;

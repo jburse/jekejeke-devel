@@ -46,6 +46,9 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertyTraceStore extends AbstractProperty<Store> {
+    public final static MapHash<StoreKey, AbstractProperty<Store>> DEFAULT
+            = new MapHash<StoreKey, AbstractProperty<Store>>();
+
     private final static String OP_SYS_BREAK = "sys_break";
     private final static String OP_SYS_NAME = "sys_name";
     private final static String OP_SYS_PARENT = "sys_parent";
@@ -56,6 +59,13 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
     private static final int PROP_SYS_PARENT = 2;
     private static final int PROP_SYS_LASTMOD = 3;
 
+    static {
+        DEFAULT.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
+        DEFAULT.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
+        DEFAULT.add(new StoreKey(OP_SYS_PARENT, 1), new PropertyTraceStore(PROP_SYS_PARENT));
+        DEFAULT.add(new StoreKey(OP_SYS_LASTMOD, 1), new PropertyTraceStore(PROP_SYS_LASTMOD));
+    }
+
     /**
      * <p>Create a store property.</p>
      *
@@ -63,20 +73,6 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
      */
     private PropertyTraceStore(int i) {
         super(i);
-    }
-
-    /**
-     * <p>Define the store properties.</p>
-     *
-     * @return The store properties.
-     */
-    public static MapHash<StoreKey, AbstractProperty<Store>> defineStoreProps() {
-        MapHash<StoreKey, AbstractProperty<Store>> storeprops = new MapHash<StoreKey, AbstractProperty<Store>>();
-        storeprops.add(new StoreKey(OP_SYS_BREAK, 2), new PropertyTraceStore(PROP_SYS_BREAK));
-        storeprops.add(new StoreKey(OP_SYS_NAME, 1), new PropertyTraceStore(PROP_SYS_NAME));
-        storeprops.add(new StoreKey(OP_SYS_PARENT, 1), new PropertyTraceStore(PROP_SYS_PARENT));
-        storeprops.add(new StoreKey(OP_SYS_LASTMOD, 1), new PropertyTraceStore(PROP_SYS_LASTMOD));
-        return storeprops;
     }
 
     /**

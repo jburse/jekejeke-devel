@@ -124,10 +124,16 @@ public final class ForeignMemory {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                if (ForeignStream.atomToType(help)) {
-                    flags |= MASK_OPEN_BINR;
-                } else {
-                    flags &= ~MASK_OPEN_BINR;
+                switch (ForeignStream.atomToType(help)) {
+                    case ForeignStream.TYPE_BINARY:
+                        flags |= MASK_OPEN_BINR;
+                        break;
+                    case ForeignStream.TYPE_TEXT:
+                        flags &= ~MASK_OPEN_BINR;
+                        break;
+                    default:
+                        throw new InterpreterMessage(InterpreterMessage.domainError(
+                                InterpreterMessage.OP_DOMAIN_FLAG_VALUE, help));
                 }
             } else {
                 InterpreterMessage.checkInstantiated(temp);
