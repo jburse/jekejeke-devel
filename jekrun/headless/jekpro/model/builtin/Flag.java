@@ -50,11 +50,25 @@ public final class Flag extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
             = new MapHash<String, AbstractFlag<Engine>>();
 
+    private final static String OP_SYS_BODY_VARIABLE = "sys_body_variable";
+    private final static String OP_SYS_STACK_FRAME = "sys_stack_frame";
+    private final static String OP_SYS_HEAD_VARIABLE = "sys_head_variable";
+    private final static String OP_SYS_BODY_CONVERT = "sys_body_convert";
+    private final static String OP_SYS_CLAUSE_EXPAND = "sys_clause_expand";
+    private final static String OP_SYS_CLAUSE_INDEX = "sys_clause_index";
     public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
     public final static String OP_BACK_QUOTES = "back_quotes";
+    private final static String OP_MAX_CODE = "max_code";
+    private final static String OP_SYS_BREAK_LEVEL = "sys_break_level";
+    private final static String OP_SYS_LAST_PRED = "sys_last_pred";
     public final static String OP_SINGLE_QUOTES = "single_quotes";
     public final static String OP_SYS_ACT_STATUS = "sys_act_status";
+    private final static String OP_SYS_VARIABLES = "sys_variables";
+    private final static String OP_SYS_CHOICES = "sys_choices";
+    private final static String OP_SYS_RANDOM = "sys_random";
+    private final static String OP_SYS_TIMEOUT = "sys_timeout";
     public final static String OP_STYLE_CHECK = "style_check";
+    private final static String OP_DIALECT = "dialect";
 
     private static final int FLAG_SYS_BODY_VARIABLE = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
@@ -74,26 +88,28 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_RANDOM = 15;
     private static final int FLAG_SYS_TIMEOUT = 16;
     private static final int FLAG_STYLE_CHECK = 17;
+    private static final int FLAG_DIALECT = 18;
 
     static {
-        DEFAULT.add("sys_body_variable", new Flag(FLAG_SYS_BODY_VARIABLE));
-        DEFAULT.add("sys_stack_frame", new Flag(FLAG_SYS_STACK_FRAME));
-        DEFAULT.add("sys_head_variable", new Flag(FLAG_SYS_HEAD_VARIABLE));
-        DEFAULT.add("sys_body_convert", new Flag(FLAG_SYS_BODY_CONVERT));
-        DEFAULT.add("sys_clause_expand", new Flag(FLAG_SYS_CLAUSE_EXPAND));
-        DEFAULT.add("sys_clause_index", new Flag(FLAG_SYS_CLAUSE_INDEX));
+        DEFAULT.add(OP_SYS_BODY_VARIABLE, new Flag(FLAG_SYS_BODY_VARIABLE));
+        DEFAULT.add(OP_SYS_STACK_FRAME, new Flag(FLAG_SYS_STACK_FRAME));
+        DEFAULT.add(OP_SYS_HEAD_VARIABLE, new Flag(FLAG_SYS_HEAD_VARIABLE));
+        DEFAULT.add(OP_SYS_BODY_CONVERT, new Flag(FLAG_SYS_BODY_CONVERT));
+        DEFAULT.add(OP_SYS_CLAUSE_EXPAND, new Flag(FLAG_SYS_CLAUSE_EXPAND));
+        DEFAULT.add(OP_SYS_CLAUSE_INDEX, new Flag(FLAG_SYS_CLAUSE_INDEX));
         DEFAULT.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
         DEFAULT.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
-        DEFAULT.add("max_code", new Flag(FLAG_MAX_CODE));
-        DEFAULT.add("sys_break_level", new Flag(FLAG_SYS_BREAK_LEVEL));
-        DEFAULT.add("sys_last_pred", new Flag(FLAG_SYS_LAST_PRED));
+        DEFAULT.add(OP_MAX_CODE, new Flag(FLAG_MAX_CODE));
+        DEFAULT.add(OP_SYS_BREAK_LEVEL, new Flag(FLAG_SYS_BREAK_LEVEL));
+        DEFAULT.add(OP_SYS_LAST_PRED, new Flag(FLAG_SYS_LAST_PRED));
         DEFAULT.add(OP_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
         DEFAULT.add(OP_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
-        DEFAULT.add("sys_variables", new Flag(FLAG_SYS_VARIABLES));
-        DEFAULT.add("sys_choices", new Flag(FLAG_SYS_CHOICES));
-        DEFAULT.add("sys_random", new Flag(FLAG_SYS_RANDOM));
-        DEFAULT.add("sys_timeout", new Flag(FLAG_SYS_TIMEOUT));
-        DEFAULT.add("style_check", new Flag(FLAG_STYLE_CHECK));
+        DEFAULT.add(OP_SYS_VARIABLES, new Flag(FLAG_SYS_VARIABLES));
+        DEFAULT.add(OP_SYS_CHOICES, new Flag(FLAG_SYS_CHOICES));
+        DEFAULT.add(OP_SYS_RANDOM, new Flag(FLAG_SYS_RANDOM));
+        DEFAULT.add(OP_SYS_TIMEOUT, new Flag(FLAG_SYS_TIMEOUT));
+        DEFAULT.add(OP_STYLE_CHECK, new Flag(FLAG_STYLE_CHECK));
+        DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
     }
 
     /**
@@ -161,6 +177,8 @@ public final class Flag extends AbstractFlag<Engine> {
             case FLAG_STYLE_CHECK:
                 return AbstractFlag.switchToAtom((en.visor.peekStack().getBits() &
                         AbstractSource.MASK_SRC_NSTY) == 0);
+            case FLAG_DIALECT:
+                return en.store.foyer.ATOM_JEKEJEKE;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -276,6 +294,9 @@ public final class Flag extends AbstractFlag<Engine> {
                         en.visor.peekStack().setBit(AbstractSource.MASK_SRC_NSTY);
                     }
                     return true;
+                case FLAG_DIALECT:
+                    /* can't modify */
+                    return false;
                 default:
                     throw new IllegalArgumentException("illegal flag");
             }

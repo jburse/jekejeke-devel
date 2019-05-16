@@ -69,8 +69,9 @@ public class Foyer extends Enforced {
     public final static String OP_SUB = "-";
     public final static String OP_TRUE = "true";
     public final static String OP_EQUAL = "=";
-    public final static String OP_LESS = "<";
-    public final static String OP_GREATER = ">";
+    private final static String OP_LESS = "<";
+    private final static String OP_GREATER = ">";
+    private final static String OP_JEKEJEKE = "jekejeke";
     public final static String OP_SET = "{}";
     public final static String OP_UNIT = "()";
     public final static String OP_SEMICOLON = ";";
@@ -124,6 +125,7 @@ public class Foyer extends Enforced {
     public final SkelAtom ATOM_EQUAL = new SkelAtom(Foyer.OP_EQUAL);
     public final SkelAtom ATOM_LESS = new SkelAtom(Foyer.OP_LESS);
     public final SkelAtom ATOM_GREATER = new SkelAtom(Foyer.OP_GREATER);
+    public final SkelAtom ATOM_JEKEJEKE = new SkelAtom(Foyer.OP_JEKEJEKE);
 
     public final SkelCompound CELL_CONS = new SkelCompound(ATOM_CONS,
             SkelVar.valueOf(0), SkelVar.valueOf(1));
