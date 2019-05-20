@@ -436,6 +436,81 @@ public final class ForeignAtom {
         }
     }
 
+    /**
+     * <p>Parse a number in some base.</p>
+     *
+     * @param inter The interpreter.
+     * @param s     The string.
+     * @param radix The radix.
+     * @return The number.
+     * @throws InterpreterException Error and position.
+     */
+    public static Number sysAtomToInteger(Interpreter inter, String s, int radix)
+            throws InterpreterException {
+        Number num;
+        try {
+            int ch;
+            if (0 < s.length() && (ch = s.codePointAt(0)) == ScannerToken.SCAN_NEG) {
+                int pos = Character.charCount(ch);
+                num = toInteger(s.substring(pos), pos, MASK_NUMB_SIGN, radix);
+                num = EvaluableElem.neg(num);
+            } else {
+                num = toInteger(s, 0, MASK_NUMB_SIGN, radix);
+            }
+        } catch (ScannerError y) {
+            String line = ScannerError.linePosition(s, y.getErrorOffset());
+            InterpreterMessage x = new InterpreterMessage(
+                    InterpreterMessage.syntaxError(y.getMessage()));
+            throw new InterpreterException(x,
+                    InterpreterException.fetchPos(
+                            InterpreterException.fetchStack(inter), line, inter));
+        }
+        return num;
+    }
+
+    /**
+     * <p>Convert a string to a number in some base.</p>
+     *
+     * @param str    The string.
+     * @param radix The radix.
+     * @return The number.
+     * @throws ScannerError Error and position.
+     */
+    public static Number toInteger(String str, int offset, int mask, int radix)
+            throws ScannerError {
+        try {
+            String val = prepareUnderscore(0, str, offset, mask);
+            try {
+                return TermAtomic.normBigInteger(Long.parseLong(val, radix));
+            } catch (NumberFormatException x) {
+                return TermAtomic.normBigInteger(new BigInteger(str, radix));
+            }
+        } catch (ClassCastException x) {
+            throw new ScannerError(ERROR_SYNTAX_CHARACTER_MISSING, str.length() + offset);
+        } catch (ArithmeticException x) {
+            throw new ScannerError(ERROR_SYNTAX_NUMBER_OVERFLOW, str.length() + offset);
+        } catch (NumberFormatException x) {
+            throw new ScannerError(ERROR_SYNTAX_ILLEGAL_NUMBER, str.length() + offset);
+        }
+    }
+
+    /**
+     * <p>Convert a number to a string in some base.</p>
+     *
+     * @param num   The number.
+     * @param radix The radix.
+     * @return The string.
+     */
+    public static String sysIntegerToAtom(Number num, int radix) {
+        if (num instanceof Integer) {
+            return Integer.toString(num.intValue(), radix);
+        } else if (num instanceof BigInteger) {
+            return ((BigInteger)num).toString(radix);
+        } else {
+            throw new IllegalArgumentException("illegal number");
+        }
+    }
+
     /****************************************************************/
     /* Number Helpers                                               */
     /****************************************************************/

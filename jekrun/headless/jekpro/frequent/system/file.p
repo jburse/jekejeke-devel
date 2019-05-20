@@ -59,6 +59,7 @@
 :- use_package(foreign(jekpro/frequent/system)).
 :- use_package(foreign(jekpro/tools/call)).
 :- use_package(foreign(matula/util/system)).
+:- use_package(foreign(matula/util/config)).
 
 :- module(file, []).
 
@@ -371,3 +372,31 @@ exists_entry(Name, Entry) :-
 :- private sys_exists_entry/2.
 :- foreign(sys_exists_entry/2, 'ForeignDirectory',
       sysExistsEntry('String','String')).
+
+/**
+ * make_pack(N, V, P):
+ * If N or V is a variable then the predicate succeeds when N and V
+ * unify with the name and version of the package name P. Otherwise the
+ * predicate succeeds when P unifies with the constructed package name.
+ */
+% make_pack(+-Atom, +-Atom, -+Atom)
+:- public make_pack/3.
+make_pack(N, V, P) :-
+   (  var(N)
+   ;  var(V)), !,
+   sys_pack_name(P, N),
+   sys_pack_varsion(P, V).
+make_pack(N, V, P) :-
+   sys_pack_make(N, V, P).
+
+:- private sys_pack_name/2.
+:- foreign(sys_pack_name/2, 'ForeignArchive',
+      sysPackName('String')).
+
+:- private sys_pack_varsion/2.
+:- foreign(sys_pack_varsion/2, 'ForeignArchive',
+      sysPackVersion('String')).
+
+:- private sys_pack_make/3.
+:- foreign(sys_pack_make/3, 'ForeignArchive',
+      sysPackMake('String','String')).

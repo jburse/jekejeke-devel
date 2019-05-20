@@ -1,23 +1,21 @@
 /**
- * The predicates code_type/2 and char_type/2 can be used to classify
- * a character. The character classifier is configurable and plug-able.
- * To use a custom character classifier the predicates code_type/3
- * and char_type/3 can be used.
+ * The predicates code_class/2 and char_class/2 can be used to classify
+ * a character. The char-acter classifier is configurable and plug-able.
+ * To use a custom character classifier the predi-cates code_class/3 and
+ * char_class/3 can be used. The predicates code_digit/3 and char_digit/3
+ * can be used to classify and decode digits in a given base.
  *
  * Examples:
- * ?- char_type(a, X).
+ * ?- char_class(a, X).
  * X = lower
- * ?- char_type('A', X).
+ * ?- char_class('A', X).
  * X = upper
  *
  * The default character classifier uses the Prolog ISO core standard
  * classification for the ASCII range plus the Jekejeke Prolog specific
- * extension for Unicode that extends the range to the Unicode range.
- * Codes outside of the range are classified as invalid.
- *
- * The predicates code_lower/2 and code_upper/2 can be used for case
- * conversion of code points. The predicates downcase_atom/2 and upcase_atom/2
- * can be used for case conversion of atoms.
+ * extension for Unicode. The predicates code_lower/2 and code_upper/2
+ * can be used for case conversion of code points. The predicates
+ * downcase_atom/2 and upcase_atom/2 can be used for case conversion of atoms.
  *
  * Examples:
  * ?- pattern_match('foobarfoo','bar').
@@ -66,6 +64,7 @@
 :- use_package(library(matula/util/regex)).
 
 :- module(text, []).
+
 :- sys_load_resource(library(scanner)).
 :- sys_add_resource(library(scanner)).
 
@@ -74,60 +73,94 @@
 /******************************************************************/
 
 /**
- * char_type(C, N):
- * char_type(H, C, N):
+ * char_class(C, N):
+ * char_class(H, C, N):
  * The predicate succeeds for the name N of the Prolog classification
  * of the character C. The ternary predicate allows specifying a custom
  * classifier H. For a description of the classification names see the
  * API documentation.
  */
-:- public char_type/2.
-char_type(Char, Name) :-
+% code_class(+-Atom, -+Atom)
+:- public char_class/2.
+char_class(Char, Name) :-
    sys_get_iso_classifier(Handle),
-   char_code(Char, Code),
-   sys_code_type(Handle, Code, Type),
-   sys_type_name(Type, Name).
-:- public char_type/3.
-char_type(Handle, Char, Name) :-
-   char_code(Char, Code),
-   sys_code_type(Handle, Code, Type),
-   sys_type_name(Type, Name).
+   char_code(Char, CodePoint),
+   sys_code_class(Handle, CodePoint, Class),
+   sys_class_name(Class, Name).
+
+% code_class(+Handle, +-Atom, -+Atom)
+:- public char_class/3.
+char_class(Handle, Char, Name) :-
+   char_code(Char, CodePoint),
+   sys_code_class(Handle, CodePoint, Class),
+   sys_class_name(Class, Name).
 
 /**
- * code_type(C, N):
- * code_type(H, C, N):
+ * code_class(C, N):
+ * code_class(H, C, N):
  * The predicate succeeds for the name N of the Prolog classification
  * of the code point C. The ternary predicate allows specifying a custom
  * classifier H.
  */
-:- public code_type/2.
-code_type(CodePoint, Name) :-
+% code_class(+-Integer, -+Atom)
+:- public code_class/2.
+code_class(CodePoint, Name) :-
    sys_get_iso_classifier(Handle),
-   sys_code_type(Handle, CodePoint, Type),
-   sys_type_name(Type, Name).
-:- public code_type/3.
-code_type(Handle, CodePoint, Name) :-
-   sys_code_type(Handle, CodePoint, Type),
-   sys_type_name(Type, Name).
+   sys_code_class(Handle, CodePoint, Class),
+   sys_class_name(Class, Name).
 
-:- private sys_type_name/2.
-sys_type_name(0, white).
-sys_type_name(1, control).
-sys_type_name(2, inval).
-sys_type_name(3, solo).
-sys_type_name(4, score).
-sys_type_name(5, upper).
-sys_type_name(6, lower).
-sys_type_name(7, other).
-sys_type_name(8, digit).
-sys_type_name(9, graph).
+% code_class(+Handle, +-Integer, -+Atom)
+:- public code_class/3.
+code_class(Handle, CodePoint, Name) :-
+   sys_code_class(Handle, CodePoint, Class),
+   sys_class_name(Class, Name).
+
+:- private sys_class_name/2.
+sys_class_name(0, blank).
+sys_class_name(1, cntrl).
+sys_class_name(2, inval).
+sys_class_name(3, solo).
+sys_class_name(4, score).
+sys_class_name(5, upper).
+sys_class_name(6, lower).
+sys_class_name(7, other).
+sys_class_name(8, digit).
+sys_class_name(9, symbol).
 
 :- private sys_get_iso_classifier/1.
 :- foreign_getter(sys_get_iso_classifier/1, 'CodeType', 'ISO_CODETYPE').
 
-:- private sys_code_type/3.
-:- virtual sys_code_type/3.
-:- foreign(sys_code_type/3, 'CodeType', classOf(int)).
+:- private sys_code_class/3.
+:- virtual sys_code_class/3.
+:- foreign(sys_code_class/3, 'CodeType', classOf(int)).
+
+/**
+ * char_digit(C, R, V):
+ * The predicate succeeds in V with the numerical value of
+ * the digit C in the radix R.
+ */
+% char_digit(+Integer, +Integer, -Integer)
+:- public char_digit/3.
+char_digit(Char, Radix, Value) :-
+   char_code(Char, CodePoint),
+   sys_code_digit(CodePoint, Radix, W),
+   W \== -1,
+   Value = W.
+
+/**
+ * code_digit(C, R, V):
+ * The predicate succeeds in V with the numerical value of
+ * the digit C in the radix R.
+ */
+% code_digit(+Integer, +Integer, -Integer)
+:- public code_digit/3.
+code_digit(CodePoint, Radix, Value) :-
+   sys_code_digit(CodePoint, Radix, W),
+   W \== -1,
+   Value = W.
+
+:- public sys_code_digit/3.
+:- foreign(sys_code_digit/3, 'Character', digit(int,int)).
 
 /******************************************************************/
 /* Upper/Lower Case Conversion                                    */
@@ -137,6 +170,7 @@ sys_type_name(9, graph).
  * code_lower(C, D):
  * The predicate succeeds in D for the lower case of C.
  */
+% code_lower(+Integer, -Integer)
 :- public code_lower/2.
 :- foreign(code_lower/2, 'Character', toLowerCase(int)).
 
@@ -144,6 +178,7 @@ sys_type_name(9, graph).
  * code_upper(C, D):
  * The predicate succeeds in D for the upper case of C.
  */
+% code_upper(+Integer, -Integer)
 :- public code_upper/2.
 :- foreign(code_upper/2, 'Character', toUpperCase(int)).
 
@@ -151,6 +186,7 @@ sys_type_name(9, graph).
  * downcase_atom(A, B): [Prolog Commons Atom Utilities]
  * The predicate succeeds in B for the lower case of A.
  */
+% downcase_atom(+Atom, -Atom)
 :- public downcase_atom/2.
 :- virtual downcase_atom/2.
 :- foreign(downcase_atom/2, 'String', toLowerCase).
@@ -159,6 +195,7 @@ sys_type_name(9, graph).
  * upcase_atom(A, B): [Prolog Commons Atom Utilities]
  * The predicate succeeds in B for the upper case of A.
  */
+% upcase_atom(+Atom, -Atom)
 :- public upcase_atom/2.
 :- virtual upcase_atom/2.
 :- foreign(upcase_atom/2, 'String', toUpperCase).

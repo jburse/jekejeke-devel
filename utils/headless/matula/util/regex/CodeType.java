@@ -4,9 +4,9 @@ package matula.util.regex;
  * <p>Classify code points.</p>
  * <p>The following character classifications are used:</p>
  * <pre>
- *     whitespace -->  space_separator | line_separator | paragraph_separator
- *     control    -->  ~hints (control | format).
- *     invalid    -->  unassigned | surrogate | private_use | invalid.
+ *     space      -->  space_separator | line_separator | paragraph_separator
+ *     control    -->  ~hints ~invalids (control | format).
+ *     invalid    -->  unassigned | surrogate | private_use | invalids.
  *     solo       -->  start_punctuation | end_punctuation | initial_quote_punctuation |
  *                     final_quote_punctuation | delemiter | quote.
  *     underscore -->  connector_punctuation.
@@ -16,7 +16,7 @@ package matula.util.regex;
  *                     combining_spacing_mark | letter_number |
  *                     other_number | joiner | hints.
  *     digit      -->  decimal_digit_number.
- *     graphic    -->  ~delemiter ~quote ~invalid ~joiner (dash_punctuation |
+ *     symbol     -->  ~delemiter ~quote ~invalids ~joiner (dash_punctuation |
  *                     other_punctuation
  *                     math_symbol |
  *                     currency_symbol |
@@ -67,8 +67,8 @@ public final class CodeType {
     public static final char LINE_DOUBLE = '\"';
     public static final char LINE_BACK = '`';
 
-    public static final int SUB_CLASS_WHITESPACE = 0;
-    public static final int SUB_CLASS_CONTROL = 1;
+    public static final int SUB_CLASS_BLANK = 0;
+    public static final int SUB_CLASS_CNTRL = 1;
 
     public static final int SUB_CLASS_INVALID = 2;
     public static final int SUB_CLASS_SOLO = 3;
@@ -79,7 +79,7 @@ public final class CodeType {
     public static final int SUB_CLASS_OTHER = 7;
     public static final int SUB_CLASS_DIGIT = 8;
 
-    public static final int SUB_CLASS_GRAPHIC = 9;
+    public static final int SUB_CLASS_SYMBOL = 9;
 
     private String hints = "\u200C\u200D";
     private String delemiters = ",;!|";
@@ -252,7 +252,7 @@ public final class CodeType {
             case Character.SPACE_SEPARATOR:
             case Character.LINE_SEPARATOR:
             case Character.PARAGRAPH_SEPARATOR:
-                return CodeType.SUB_CLASS_WHITESPACE;
+                return CodeType.SUB_CLASS_BLANK;
             case Character.CONTROL:
             case Character.FORMAT:
                 if (hints.indexOf(cp) != -1) {
@@ -260,7 +260,7 @@ public final class CodeType {
                 } else if (invalids.indexOf(cp) != -1) {
                     return CodeType.SUB_CLASS_INVALID;
                 } else {
-                    return CodeType.SUB_CLASS_CONTROL;
+                    return CodeType.SUB_CLASS_CNTRL;
                 }
             case Character.UNASSIGNED:
             case Character.SURROGATE:
@@ -301,7 +301,7 @@ public final class CodeType {
                 } else if (joiners.indexOf(cp) != -1) {
                     return CodeType.SUB_CLASS_OTHER;
                 } else {
-                    return CodeType.SUB_CLASS_GRAPHIC;
+                    return CodeType.SUB_CLASS_SYMBOL;
                 }
         }
     }
@@ -314,8 +314,8 @@ public final class CodeType {
      */
     public boolean isLayout(int cp) {
         int subtype = classOf(cp);
-        return (subtype == CodeType.SUB_CLASS_WHITESPACE ||
-                subtype == CodeType.SUB_CLASS_CONTROL);
+        return (subtype == CodeType.SUB_CLASS_BLANK ||
+                subtype == CodeType.SUB_CLASS_CNTRL);
     }
 
     /**
@@ -348,8 +348,8 @@ public final class CodeType {
      * @param cp The code point.
      * @return True if the character is a graphic character, otherwise false.
      */
-    public boolean isGraphic(int cp) {
-        return classOf(cp) == CodeType.SUB_CLASS_GRAPHIC;
+    public boolean isSymbol(int cp) {
+        return classOf(cp) == CodeType.SUB_CLASS_SYMBOL;
     }
 
     /**

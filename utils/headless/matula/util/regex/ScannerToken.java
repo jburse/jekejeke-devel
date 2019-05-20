@@ -643,8 +643,8 @@ public final class ScannerToken {
         buf.setLength(0);
         while (ch != CodeType.LINE_EOF) {
             switch (delemiter.classOf(ch)) {
-                case CodeType.SUB_CLASS_WHITESPACE:
-                case CodeType.SUB_CLASS_CONTROL:
+                case CodeType.SUB_CLASS_BLANK:
+                case CodeType.SUB_CLASS_CNTRL:
                     nextFiller(false);
                     if ((flags & MASK_RTRN_LAYT) != 0)
                         return;
@@ -683,7 +683,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_DIGIT:
                     nextNumber();
                     return;
-                case CodeType.SUB_CLASS_GRAPHIC:
+                case CodeType.SUB_CLASS_SYMBOL:
                     lc = remark.getLineComment();
                     if (lc != null && startsWith(lc)) {
                         nextLineComment(false);
@@ -700,7 +700,7 @@ public final class ScannerToken {
                     }
                     buf.appendCodePoint(ch);
                     ch = sysGetCode(reader);
-                    while (ch != CodeType.LINE_EOF && delemiter.isGraphic(ch)) {
+                    while (ch != CodeType.LINE_EOF && delemiter.isSymbol(ch)) {
                         buf.appendCodePoint(ch);
                         ch = sysGetCode(reader);
                     }
@@ -758,8 +758,8 @@ public final class ScannerToken {
         buf.setLength(0);
         while (ch != CodeType.LINE_EOF) {
             switch (delemiter.classOf(ch)) {
-                case CodeType.SUB_CLASS_WHITESPACE:
-                case CodeType.SUB_CLASS_CONTROL:
+                case CodeType.SUB_CLASS_BLANK:
+                case CodeType.SUB_CLASS_CNTRL:
                     if (ch != CodeType.LINE_EOL) {
                         nextFiller(true);
                         if ((flags & MASK_RTRN_LAYT) != 0)
@@ -787,7 +787,7 @@ public final class ScannerToken {
                 case CodeType.SUB_CLASS_UPPER:
                 case CodeType.SUB_CLASS_OTHER:
                 case CodeType.SUB_CLASS_DIGIT:
-                case CodeType.SUB_CLASS_GRAPHIC:
+                case CodeType.SUB_CLASS_SYMBOL:
                     hint = 0;
                     data = buf.toString();
                     return;

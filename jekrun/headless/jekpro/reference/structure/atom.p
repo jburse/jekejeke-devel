@@ -380,6 +380,50 @@ number_codes(Number, Codes) :-
 :- foreign(sys_number_to_atom/3, 'ForeignAtom',
       sysNumberToAtom('Number',int)).
 
+/**
+ * integer_chars(X, R, Y):
+ * If Y is ground and Y is a character list then the predicate
+ * succeeds when X unifies with corresponding integer in
+ * base R. Otherwise if X is an integer then the predicate
+ * succeeds when Y unifies with the corresponding character list
+ * in base R.
+ */
+% integer_chars(+-Integer, +Integer, -+Chars)
+:- public integer_chars/3.
+integer_chars(Integer, Radix, Chars) :-
+   ground(Chars), !,
+   sys_list_to_atom(Chars, 0, Atom),
+   sys_atom_to_integer(Atom, Radix, Integer).
+integer_chars(Integer, Radix, Chars) :-
+   sys_integer_to_atom(Integer, Radix, Atom),
+   sys_atom_to_list(Atom, 0, Chars).
+
+/**
+ * integer_codes(X, R, Y):
+ * If Y is ground and Y is a code list then the predicate
+ * succeeds when X unifies with corresponding integer in
+ * base R. Otherwise if X is an integer then the predicate
+ * succeeds when Y unifies with the corresponding code list
+ * in base R.
+ */
+% integer_codes(+-Integer, +Integer, -+Codes)
+:- public integer_codes/3.
+integer_codes(Integer, Radix, Codes) :-
+   ground(Codes), !,
+   sys_list_to_atom(Codes, 1, Atom),
+   sys_atom_to_integer(Atom, Radix, Integer).
+integer_codes(Integer, Radix, Codes) :-
+   sys_integer_to_atom(Integer, Radix, Atom),
+   sys_atom_to_list(Atom, 1, Codes).
+
+:- private sys_atom_to_integer/3.
+:- foreign(sys_atom_to_integer/3, 'ForeignAtom',
+      sysAtomToInteger('Interpreter','String',int)).
+
+:- private sys_integer_to_atom/3.
+:- foreign(sys_integer_to_atom/3, 'ForeignAtom',
+      sysIntegerToAtom('Number',int)).
+
 /****************************************************************/
 /* 16-bit Word Helpers                                          */
 /****************************************************************/
@@ -667,20 +711,33 @@ atom_split2(Atom, Sep, [X|L]) :-
 atom_split2(Atom, _, [Atom]).
 
 /**
- * atom_numer(A, N): [Prolog Commons Atom Utilities]
+ * atom_number(A, N): [Prolog Commons Atom Utilities]
  * If A is a variable, then the predicate succeeds in A
  * with the number unparsing of N. Otherwise the predicate
  * succeeds in N with the number parsing of A.
  */
 % atom_number(+-Atom, -+Number)
 :- public atom_number/2.
-atom_number(A, N) :-
-   var(A), !,
-   number_codes(N, L),
-   atom_codes(A, L).
-atom_number(A, N) :-
-   atom_codes(A, L),
-   number_codes(N, L).
+atom_number(Atom, Number) :-
+   var(Atom), !,
+   sys_number_to_atom(Number, 1, Atom).
+atom_number(Atom, Number) :-
+   sys_atom_to_number(Atom, Number).
+
+/**
+ * atom_integer(A, R, N):
+ * If A is a variable, then the predicate succeeds in A
+ * with the integer unparsing of N in base R. Otherwise
+ * the predicate succeeds in N with the integer parsing
+ * of A in base R.
+ */
+% atom_integer(+-Atom, +Integer, -+Integer)
+:- public atom_integer/3.
+atom_integer(Atom, Radix, Integer) :-
+   var(Atom), !,
+   sys_integer_to_atom(Integer, Radix, Atom).
+atom_integer(Atom, Radix, Integer) :-
+   sys_atom_to_integer(Atom, Radix, Integer).
 
 /**
  * atom_block(A, B):
