@@ -57,6 +57,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
     public final static String OP_HOME = "home";
     public final static String OP_AUTHOR = "author";
 
+    public final static String OP_DATE = "date";
     public final static String OP_ICON = "icon";
 
     /**
@@ -218,12 +219,18 @@ public final class RecognizerSWI extends AbstractRecognizer {
     /**
      * <p>Populate the properties with a SWI-Package attribute.</p>
      *
-     * @param prop   The properties.
-     * @param obj    The attribute.
+     * @param prop  The properties.
+     * @param obj   The attribute.
      * @param param The param.
      */
     private static void loadTextIconSkel(Properties prop, Object obj, Object param) {
         if (obj instanceof SkelCompound &&
+                ((SkelCompound) obj).args.length == 1 &&
+                ((SkelCompound) obj).sym.fun.equals(OP_DATE)) {
+            obj = ((SkelCompound) obj).args[0];
+            if (obj instanceof SkelAtom)
+                prop.put(AbstractBundle.PROP_CAPA_DATE, ((SkelAtom) obj).fun);
+        } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_ICON)) {
             obj = ((SkelCompound) obj).args[0];

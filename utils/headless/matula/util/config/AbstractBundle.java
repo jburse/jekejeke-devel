@@ -49,9 +49,11 @@ import java.util.Properties;
 public abstract class AbstractBundle extends Check {
     public final static int MASK_BNDL_NACT = 0x00000001;
 
+    /* model specific */
     public final static String PROP_CAPA_FAMILY = "capa.family";
     public final static String PROP_CAPA_PRODUCT = "capa.product";
     public final static String PROP_CAPA_RELEASE = "capa.release";
+    /* platform specific */
     public final static String PROP_CAPA_DATE = "capa.date";
     public final static String PROP_CAPA_ICON = "capa.icon";
     public final static String PROP_CAPA_BIGICON = "capa.bigicon";

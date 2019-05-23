@@ -368,7 +368,7 @@ public class PrologReader {
                                 st.getTokenOffset());
                     }
                 } else {
-                    skel = readCompound((SkelAtom) skel);
+                    skel = readCompound(markFunc((SkelAtom) skel));
                     if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                         throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                                 st.getTokenOffset());
@@ -682,6 +682,16 @@ public class PrologReader {
             back = jack;
         } while (back != null);
         return t;
+    }
+
+    /**
+     * <p>Mark the functor.</p>
+     *
+     * @param sa The skel atom.
+     * @return The marked skel atom.
+     */
+    protected SkelAtom markFunc(SkelAtom sa) {
+        return sa;
     }
 
     /**

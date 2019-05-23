@@ -990,6 +990,16 @@ public class PrologWriter {
     }
 
     /**
+     * <p>Check whether the compound is unary.</p>
+     *
+     * @param sc The compound.
+     * @return True if unary, otherwise false.
+     */
+    protected boolean isUnary(SkelCompound sc) {
+        return sc.args.length == 1;
+    }
+
+    /**
      * <p>Check whether the compound is an index.</p>
      *
      * @param sc The compound.
@@ -1010,6 +1020,16 @@ public class PrologWriter {
         return sc.args.length >= 1 &&
                 sc.args.length <= 2 &&
                 sc.sym.fun.equals(Foyer.OP_STRUCT);
+    }
+
+    /**
+     * <p>Check whether the compound is binary.</p>
+     *
+     * @param sc The compound.
+     * @return True if binary, otherwise false.
+     */
+    protected boolean isBinary(SkelCompound sc) {
+        return sc.args.length == 2;
     }
 
     /*********************************************************************/
@@ -1338,7 +1358,7 @@ public class PrologWriter {
                 writeSet(sc, ref, mod, nsa);
                 return;
             }
-            if (sc.args.length == 1 || isIndex(sc) || isStruct(sc)) {
+            if (isUnary(sc) || isIndex(sc) || isStruct(sc)) {
                 Operator op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_PREFIX, engine);
                 if (op != null) {
@@ -1430,7 +1450,7 @@ public class PrologWriter {
                 append(PrologReader.OP_RBRACKET);
                 return;
             }
-            if (sc.args.length == 2) {
+            if (isBinary(sc)) {
                 Operator op = OperatorSearch.getOper(sc.sym.scope,
                         sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (op != null) {

@@ -187,6 +187,43 @@ public class PrologWriterAnno extends PrologWriter {
         }
     }
 
+    /**
+     * <p>Check whether the compound is unary.</p>
+     *
+     * @param sc The compound.
+     * @return True if unary, otherwise false.
+     */
+    protected final boolean isUnary(SkelCompound sc) {
+        if ((flags & FLAG_FILL) == 0)
+            return super.isUnary(sc);
+        int quote = (sc.sym instanceof SkelAtomAnno ? ((SkelAtomAnno) sc.sym).getHint() : 0);
+        switch (quote) {
+            case '(':
+                return false;
+            default:
+                return sc.args.length == 1;
+        }
+    }
+
+
+    /**
+     * <p>Check whether the compound is binary.</p>
+     *
+     * @param sc The compound.
+     * @return True if binary, otherwise false.
+     */
+    protected boolean isBinary(SkelCompound sc) {
+        if ((flags & FLAG_FILL) == 0)
+            return sc.args.length == 2;
+        int quote = (sc.sym instanceof SkelAtomAnno ? ((SkelAtomAnno) sc.sym).getHint() : 0);
+        switch (quote) {
+            case '(':
+                return false;
+            default:
+                return sc.args.length == 2;
+        }
+    }
+
     /*********************************************************************/
     /* Special Compounds                                                 */
     /*********************************************************************/

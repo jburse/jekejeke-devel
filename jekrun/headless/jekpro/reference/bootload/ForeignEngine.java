@@ -299,33 +299,35 @@ public final class ForeignEngine {
     public static String sysFamilyProduct(Capability cap, Lobby lobby, Locale locale) {
         Properties descr = cap.getDescrModel(locale, lobby);
         String family = descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
-        return family + ", " + ForeignEngine.sysProductRelease(descr, locale);
+        String product = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT);
+        String release = descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
+        return family + ", " + product + " " + release + sysDate(cap, lobby, locale);
     }
 
     /**
-     * <p>Retrieve the product and release text.</p>
+     * <p>Retrieve the date formatted.</p>
      *
-     * @param descr  The model properties.
+     * @param cap    The capability.
+     * @param lobby  The lobby.
      * @param locale The locale.
-     * @return The product and release.
+     * @return The date formatted or "".
      */
-    public static String sysProductRelease(Properties descr, Locale locale) {
-        String res = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT) + " " +
-                descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
-        String datestr = descr.getProperty(AbstractBundle.PROP_CAPA_DATE);
+    public static String sysDate(Capability cap, Lobby lobby, Locale locale) {
+        Properties descr = cap.getDescrPlatform(locale, lobby);
+        String datestr = (descr != null ? descr.getProperty(AbstractBundle.PROP_CAPA_DATE) : null);
         if (datestr != null) {
             try {
                 DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
                 Date date = df.parse(datestr);
                 df = DateFormat.getDateInstance(DateFormat.LONG, locale);
-                datestr = df.format(date);
-                return res + " (" + datestr + ")";
+                datestr = " (" + df.format(date) + ")";
             } catch (ParseException x) {
-                return res;
+                datestr = "";
             }
         } else {
-            return res;
+            datestr = "";
         }
+        return datestr;
     }
 
     /**
