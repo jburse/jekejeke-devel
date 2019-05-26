@@ -159,7 +159,7 @@ code_digit(CodePoint, Radix, Value) :-
    W \== -1,
    Value = W.
 
-:- public sys_code_digit/3.
+:- private sys_code_digit/3.
 :- foreign(sys_code_digit/3, 'Character', digit(int,int)).
 
 /******************************************************************/

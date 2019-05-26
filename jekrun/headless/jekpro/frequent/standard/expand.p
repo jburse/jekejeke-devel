@@ -98,8 +98,8 @@ unit :-
    throw(error(existence_error(body,unit/0),_)).
 
 :- public /\ /2.
-:- meta_predicate 0/\0.
-_ /\ _ :-
+:- meta_predicate /\(0,0).
+/\(_, _) :-
    throw(error(existence_error(body,/\ /2),_)).
 :- set_predicate_property(/\ /2, sys_rule).
 
@@ -165,7 +165,7 @@ expand_term(T, U) :-
 % expand_term_callable(+Callable, +Indicator, -Callable, -Goal)
 :- private expand_term_callable/4.
 expand_term_callable(G, I, H, U) :-
-   predicate_property(I, (meta_predicate P)), !,
+   predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
    sys_univ(G, [K|L]),
    sys_expand_term_args(R, L, S, U),
@@ -237,7 +237,7 @@ expand_goal(G, H) :-
 % expand_goal_callable(+Callable, +Indicator, -Callable, -Goal)
 :- private expand_goal_callable/4.
 expand_goal_callable(G, I, H, U) :-
-   predicate_property(I, (meta_predicate P)), !,
+   predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
    sys_univ(G, [K|L]),
    sys_expand_goal_args(R, L, S, U),
@@ -307,7 +307,7 @@ expand_rest(G, H) :-
 % expand_rest_callable(+Callable, +Indicator, -Callable, -Goal)
 :- private expand_rest_callable/4.
 expand_rest_callable(G, I, H, U) :-
-   predicate_property(I, (meta_function P)), !,
+   predicate_property(I, meta_function(P)), !,
    P =.. [_|R],
    G =.. [K|L],
    sys_expand_goal_args(R, L, S, U),

@@ -1072,15 +1072,29 @@ public class PrologWriter {
      * <p>Write a list.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param term The list skeleton.
-     * @param ref  The list display.
+     * @param sc  The list skeleton.
+     * @param ref The list display.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeList(Object term, Display ref,
-                             int indent)
+    protected void writeList(SkelCompound sc, Display ref,
+                             Object mod, SkelAtom nsa,
+                             int backshift, int backoffset, int backspez)
             throws IOException, EngineMessage, EngineException {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        appendLink(PrologReader.OP_LBRACKET, cp);
+        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        spez = getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
+        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
+        spez = getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        Object term = sc.args[1];
         for (; ; ) {
             if (engine != null) {
                 engine.skel = term;
@@ -1092,26 +1106,17 @@ public class PrologWriter {
             if (term instanceof SkelCompound &&
                     ((SkelCompound) term).args.length == 2 &&
                     ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONS)) {
-                SkelCompound sc = (SkelCompound) term;
-                CachePredicate cp = offsetToPredicate(term, null, null);
-                Object[] decl = predicateToMeta(cp);
+                sc = (SkelCompound) term;
+                cp = offsetToPredicate(term, null, null);
+                appendLink(",", cp);
                 if ((spez & SPEZ_META) != 0 &&
-                        (spez & SPEZ_EVAL) == 0 &&
-                        (flags & FLAG_NEWL) != 0) {
-                    appendLink(",", cp);
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                } else {
-                    appendLink(",", cp);
-                    if ((spez & SPEZ_META) != 0 &&
-                            (spez & SPEZ_EVAL) == 0)
-                        append(' ');
-                }
-                int backspez = spez;
-                int backoffset = offset;
-                int backshift = shift;
-                Object z = getArg(decl, backshift, backspez, cp);
+                        (spez & SPEZ_EVAL) == 0)
+                    append(' ');
+                decl = predicateToMeta(cp);
+                backspez = spez;
+                backoffset = offset;
+                backshift = shift;
+                z = getArg(decl, backshift, backspez, cp);
                 spez = getSpez(z);
                 offset = getOffset(z, backoffset);
                 shift = getShift(z);
@@ -1130,6 +1135,7 @@ public class PrologWriter {
                 break;
             }
         }
+        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1422,32 +1428,13 @@ public class PrologWriter {
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                int indent = -1;
-                if ((spez & SPEZ_META) != 0 &&
-                        (spez & SPEZ_EVAL) == 0 &&
-                        (flags & FLAG_NEWL) != 0) {
-                    indent = getTextOffset();
-                }
-                CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-                Object[] decl = predicateToMeta(cp);
-                appendLink(PrologReader.OP_LBRACKET, cp);
                 int backspez = spez;
                 int backoffset = offset;
                 int backshift = shift;
-                Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                spez = getSpez(z);
-                offset = getOffset(z, backoffset);
-                shift = getShift(z);
-                write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-                z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-                spez = getSpez(z);
-                offset = getOffset(z, backoffset);
-                shift = getShift(z);
-                writeList(sc.args[1], ref, indent);
+                writeList(sc, ref, mod, nsa, backshift, backoffset, backspez);
                 spez = backspez;
                 offset = backoffset;
                 shift = backshift;
-                append(PrologReader.OP_RBRACKET);
                 return;
             }
             if (isBinary(sc)) {

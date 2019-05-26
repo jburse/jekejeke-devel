@@ -227,7 +227,7 @@ rebuild_term(G, G).
 % rebuild_term_callable(+Callable, +Indicator, -Callable)
 :- private rebuild_term_callable/3.
 rebuild_term_callable(G, I, H) :-
-   predicate_property(I, (meta_predicate P)), !,
+   predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
    sys_univ(G, [K|L]),
    rebuild_term_args(R, L, S),
@@ -294,7 +294,7 @@ rebuild_goal(G, G).
 % rebuild_goal_callable(+Callable, +Indicator, -Callable)
 :- private rebuild_goal_callable/3.
 rebuild_goal_callable(G, I, H) :-
-   predicate_property(I, (meta_predicate P)), !,
+   predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
    sys_univ(G, [K|L]),
    rebuild_goal_args(R, L, S),
@@ -359,7 +359,7 @@ rebuild_rest(G, G).
 % rebuild_rest_callable(+Callable, +Indicator, -Callable)
 :- private rebuild_rest_callable/3.
 rebuild_rest_callable(G, I, H) :-
-   predicate_property(I, (meta_function P)), !,
+   predicate_property(I, meta_function(P)), !,
    P =.. [_|R],
    G =.. [K|L],
    rebuild_goal_args(R, L, S),
