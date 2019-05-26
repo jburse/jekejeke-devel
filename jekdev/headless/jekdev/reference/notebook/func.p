@@ -125,7 +125,7 @@
 :- op(50, xf, ()).
 
 :- public := /2.
-_ := _ :-
+:=(_, _) :-
    throw(error(existence_error(body,:= /2),_)).
 
 /**

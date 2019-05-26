@@ -77,8 +77,8 @@ notebook :-
  * the directive will show an internationalized no.
  */
 :- public (?-)/1.
-:- meta_predicate (?- -1).
-(?- _) :-
+:- meta_predicate ?-(-1).
+?-(_) :-
    throw(error(existence_error(body,(?-)/1),_)).
 
 :- private sys_show_all/1.
@@ -136,6 +136,7 @@ user:term_expansion(V, _) :-
 user:term_expansion(S, T) :-
    S = '.'(T), !,
    sys_get_variable_names(N),
-   write_term(S, [context(-1),quoted(true),variable_names(N),annotation((makedot|filler))]), flush_output.
-user:term_expansion((?- G), unit) :-
+   write_term(S, [context(-1),quoted(true),
+                    variable_names(N),annotation((makedot|filler))]), flush_output.
+user:term_expansion(?-(G), unit) :-
    sys_show_all(G).

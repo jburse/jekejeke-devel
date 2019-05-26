@@ -37,7 +37,7 @@
 
 :- package(library(jekdev/reference/notebook)).
 :- use_package(foreign(jekdev/reference/notebook)).
-:- use_package(foreign(matula/util/format)).
+:- use_package(foreign(matula/text/format)).
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(model, []).

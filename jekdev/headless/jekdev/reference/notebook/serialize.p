@@ -37,10 +37,10 @@
 :- package(library(jekdev/reference/notebook)).
 :- use_package(foreign(jekdev/reference/notebook)).
 :- use_package(foreign(matula/util/system)).
-:- use_package(foreign(matula/util/format)).
+:- use_package(foreign(matula/text/format)).
 :- use_package(foreign(java/io)).
 :- use_package(foreign(jekpro/tools/call)).
-:- use_package(library(matula/util/format)).
+:- use_package(library(matula/text/format)).
 
 :- module(serialize, []).
 :- use_module(library(notebook/model)).

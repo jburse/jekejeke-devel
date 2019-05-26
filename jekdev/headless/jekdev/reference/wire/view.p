@@ -124,7 +124,9 @@ meta_both(Thread, Headers) :-
 % make_header_all(+Integer, -List, +List)
 :- private make_header_all/3.
 make_header_all(0, Headers, Headers) :- !.
-make_header_all(Millis, ['Content-Type'-'text/html; charset=UTF-8','Last-Modified'-Formatted,'ETag'-Quoted|Rest], Rest) :-
+make_header_all(Millis, ['Content-Type'-'text/html; charset=UTF-8',
+                           'Last-Modified'-Formatted,
+                           'ETag'-Quoted|Rest], Rest) :-
    rfc1123_atom(Millis, Formatted),
    atom_number(Atom, Millis),
    atom_split(Quoted, '', ['"',Atom,'"']).

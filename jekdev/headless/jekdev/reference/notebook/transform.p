@@ -62,10 +62,10 @@
 
 :- package(library(jekdev/reference/notebook)).
 :- use_package(foreign(jekdev/reference/notebook)).
-:- use_package(foreign(matula/util/format)).
-:- use_package(foreign(matula/util/transform)).
+:- use_package(foreign(matula/text/format)).
+:- use_package(foreign(matula/text/transform)).
 :- use_package(foreign(java/io)).
-:- use_package(library(matula/util/transform)).
+:- use_package(library(matula/text/transform)).
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(transform, []).
