@@ -80,7 +80,7 @@
  */
 % forward +Indicators
 :- public (forward)/1.
-:- meta_predicate (forward 0).
+:- meta_predicate forward(0).
 forward L :-
    (discontiguous L),
    (sys_notrace L),
@@ -549,8 +549,8 @@ sys_plus(_) :-
  * delta computations.
  */
 :- public <= /2.
-:- meta_predicate (-1<= -1).
-(  _ <= _) :-
+:- meta_predicate <=(-1,-1).
+<=(_, _) :-
    throw(error(existence_error(body,<= /2),_)).
 
 user:term_expansion((  H <= B), (sys_plus(H) :-

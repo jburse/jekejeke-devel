@@ -130,9 +130,9 @@ len(X, Y) :-
 % -(+Matrice, -Matrice)
 :- override (-)/2.
 :- public (-)/2.
-X - Y :-
+-(X, Y) :-
    L is len(X),
-   Y is {-X[I]|between(1, L, I)}.
+   Y is {-(X[I])|between(1, L, I)}.
 
 /**
  * +(X, Y, Z):
@@ -202,7 +202,7 @@ sys_matrice_inv(X, R) :-
 :- private sys_matrice_step/3.
 sys_matrice_step(K, X, R) :-
    N is len(X),
-   user:(K =< N), !,
+   user: =<(K, N), !,
    L = K,
    P is 1/X[K,L],
    Y is {{V|between(1, N, J),
@@ -227,7 +227,7 @@ sys_matrice_step(_, X, X).
 :- public ^ /3.
 ^(X, Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    H is X^Z,
    sys_matrice_inv(H, R).
 ^(X, 0, R) :- !,
@@ -251,7 +251,7 @@ sys_matrice_step(_, X, X).
    R is H^2.
 
 /***********************************************************/
-/* CAS BindCount[] Hook                                        */
+/* CAS Display Hook                                        */
 /***********************************************************/
 
 /**
@@ -288,7 +288,7 @@ sys_portray_matrice([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),

@@ -250,7 +250,7 @@ true
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, X in S) :-
+residue:sys_current_eq(V, in(X,S)) :-
    sys_clause_hook(V, sys_hook_in, _),
    sys_freeze_var(V, X),
    sys_in(X, S, _).
@@ -259,7 +259,7 @@ residue:sys_current_eq(V, X in S) :-
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
 :- discontiguous residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(X in S, [G|L], L) :-
+residue:sys_unwrap_eq(in(X,S), [G|L], L) :-
    sys_pretty_in(S, [1*X], G).
 
 /**********************************************************/
@@ -1215,13 +1215,13 @@ sys_slash_range(A..., C.._, E...) :-
    E is (A+C-1)div C.
 sys_slash_range(A..., _..D, ..F) :-
    A =< 0, !,
-   F is - ((A-D-1)div-D).
+   F is -((A-D-1)div-D).
 sys_slash_range(A..., C..D, E...) :-
    C >= 0, !,
    E is max((A+D-1)div D,1).
 sys_slash_range(A..., C..D, ..F) :-
    D =< 0, !,
-   F is min(- ((A-C-1)div-C),-1).
+   F is min(-((A-C-1)div-C),-1).
 sys_slash_range(_..., _.._, ...) :- !.
 
 sys_slash_range(A..., ..D, ...) :-
@@ -1229,7 +1229,7 @@ sys_slash_range(A..., ..D, ...) :-
    D >= 0, !.
 sys_slash_range(A..., ..D, ..F) :-
    A =< 0, !,
-   F is - ((A-D-1)div-D).
+   F is -((A-D-1)div-D).
 sys_slash_range(_..., ..D, .. -1) :-
    D =< 0, !.
 sys_slash_range(_..., .._, ...) :- !.
@@ -1249,7 +1249,7 @@ sys_slash_range(..B, ..D, ...) :-
    D >= 0, !.
 sys_slash_range(..B, ..D, E...) :-
    B >= 0, !,
-   E is - (B div-D).
+   E is -(B div-D).
 sys_slash_range(.._, ..D, 1...) :-
    D =< 0, !.
 sys_slash_range(.._, .._, ...) :- !.
@@ -1261,19 +1261,19 @@ sys_slash_range(A..B, ..D, ...) :-
 sys_slash_range(A..B, ..D, R) :-
    B >= 0,
    A =< 0, !,
-   E is - (B div-D),
-   F is - ((A-D-1)div-D),
+   E is -(B div-D),
+   F is -((A-D-1)div-D),
    sys_make_range(E, F, R).
 sys_slash_range(A..B, ..D, R) :-
    A > 0,
    D =< 0, !,
    X is min(D,-1),
-   E is - (B div-X),
+   E is -(B div-X),
    sys_make_range(E, -1, R).
 sys_slash_range(A.._, ..D, R) :-
    D =< 0, !,
    X is min(D,-1),
-   F is - ((A-X-1)div-X),
+   F is -((A-X-1)div-X),
    sys_make_range(1, F, R).
 sys_slash_range(A..B, .._, X..B) :-
    A > 0, !,
@@ -1291,13 +1291,13 @@ sys_slash_range(..B, C.._, ..F) :-
    F is B div C.
 sys_slash_range(..B, _..D, E...) :-
    B >= 0, !,
-   E is - (B div-D).
+   E is -(B div-D).
 sys_slash_range(..B, C..D, ..F) :-
    C >= 0, !,
    F is min(B div D,-1).
 sys_slash_range(..B, C..D, E...) :-
    D =< 0, !,
-   E is max(- (B div-C),1).
+   E is max(-(B div-C),1).
 sys_slash_range(.._, _.._, ...) :- !.
 
 sys_slash_range(A..B, C..D, ...) :-
@@ -1315,8 +1315,8 @@ sys_slash_range(A..B, C.._, R) :-
 sys_slash_range(A..B, _..D, R) :-
    B >= 0,
    A =< 0, !,
-   E is - (B div-D),
-   F is - ((A-D-1)div-D),
+   E is -(B div-D),
+   F is -((A-D-1)div-D),
    sys_make_range(E, F, R).
 sys_slash_range(A..B, C..D, R) :-
    A > 0,
@@ -1335,14 +1335,14 @@ sys_slash_range(A..B, C..D, R) :-
    A > 0,
    D =< 0, !,
    X is min(D,-1),
-   E is - (B div-X),
-   F is min(- ((A-C-1)div-C),-1),
+   E is -(B div-X),
+   F is min(-((A-C-1)div-C),-1),
    sys_make_range(E, F, R).
 sys_slash_range(A..B, C..D, R) :-
    D =< 0, !,
    X is min(D,-1),
-   E is max(- (B div-C),1),
-   F is - ((A-X-1)div-X),
+   E is max(-(B div-C),1),
+   F is -((A-X-1)div-X),
    sys_make_range(E, F, R).
 sys_slash_range(A..B, _.._, X..B) :-
    A > 0, !,
@@ -1386,12 +1386,12 @@ sys_slash_range(A, ..C, R) :-
    A > 0,
    C =< 0, !,
    X is min(C,-1),
-   D is - (A div-X),
+   D is -(A div-X),
    sys_make_range(D, -1, R).
 sys_slash_range(A, ..C, R) :-
    C =< 0, !,
    X is min(C,-1),
-   E is - ((A-X-1)div-X),
+   E is -((A-X-1)div-X),
    sys_make_range(1, E, R).
 sys_slash_range(A, .._, X..A) :-
    A > 0, !,
@@ -1429,14 +1429,14 @@ sys_slash_range(A, B..C, R) :-
    A > 0,
    C =< 0, !,
    X is min(C,-1),
-   D is - (A div-X),
-   E is min(- ((A-B-1)div-B),-1),
+   D is -(A div-X),
+   E is min(-((A-B-1)div-B),-1),
    sys_make_range(D, E, R).
 sys_slash_range(A, B..C, R) :-
    C =< 0, !,
    X is min(C,-1),
-   D is max(- (A div-B),1),
-   E is - ((A-X-1)div-X),
+   D is max(-(A div-B),1),
+   E is -((A-X-1)div-X),
    sys_make_range(D, E, R).
 sys_slash_range(A, _.._, X..A) :-
    A > 0, !,

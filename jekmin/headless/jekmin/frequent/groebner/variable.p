@@ -68,7 +68,7 @@
 % -(+Variable, -Polynom)
 :- override (-)/2.
 :- public (-)/2.
-A - polynom(A,[1- -1]).
+-(A, polynom(A,[1- -1])).
 
 /**
  * +(P, Q, R):
@@ -170,13 +170,13 @@ A - polynom(A,[1- -1]).
 :- public ^ /3.
 ^(X, Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    R is (1/X)^Z.
 ^(X, Y, R) :-
    sys_make_poly([Y-1], X, R).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**

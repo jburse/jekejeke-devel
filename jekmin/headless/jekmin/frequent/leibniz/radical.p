@@ -79,7 +79,7 @@
 % -(+Radical, -Radical)
 :- override (-)/2.
 :- public (-)/2.
-radical(A,B) - radical(C,D) :-
+-(radical(A,B), radical(C,D)) :-
    C is -A,
    sys_radical_neg(B, D).
 
@@ -194,7 +194,7 @@ radical(A,B) - radical(C,D) :-
 :- public ^ /3.
 ^(P, Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
@@ -286,7 +286,7 @@ make_radical(X, R) :-
 % sys_radical_neg(+Map, -Map)
 :- private sys_radical_neg/2.
 sys_radical_neg([A-S|L], [A-T|R]) :-
-   user:S - T,
+   user: -(S, T),
    sys_radical_neg(L, R).
 sys_radical_neg([], []).
 
@@ -414,7 +414,7 @@ sys_radical_up([B-T|L], A, S, [H-J|R]) :-
 sys_radical_up([], _, _, []).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**
@@ -459,7 +459,7 @@ sys_radical_addition([], A, A).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),

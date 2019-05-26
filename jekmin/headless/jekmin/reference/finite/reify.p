@@ -469,7 +469,7 @@ true
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, X in S#\/D#=E) :-
+residue:sys_current_eq(V, in(X,S)#\/D#=E) :-
    sys_clause_hook(V, sys_hook_at, _),
    sys_freeze_var(V, X),
    sys_at(X, S, _, D, E).
@@ -478,7 +478,7 @@ residue:sys_current_eq(V, X in S#\/D#=E) :-
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
 :- discontiguous residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(X in S#\/P#=Q, [G#\/R#=Q|L], L) :- !,
+residue:sys_unwrap_eq(in(X,S)#\/P#=Q, [G#\/R#=Q|L], L) :- !,
    sys_pretty_in(S, [1*X], G),
    sys_melt_var(P, R).
 

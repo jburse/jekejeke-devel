@@ -72,8 +72,8 @@
 % -(+Integer, -Integer)
 :- override (-)/2.
 :- public (-)/2.
-X - Y :-
-   user:X - Y.
+-(X, Y) :-
+   user: -(X, Y).
 
 /**
  * +(P, Q, R):
@@ -178,7 +178,7 @@ X - Y :-
 :- public ^ /3.
 ^(X, Y, R) :-
    user:(Y < 0), !,
-   user:Y - J,
+   user: -(Y, J),
    user: ^(X, J, H),
    make_rational(1, H, R).
 ^(X, Y, Z) :-
@@ -202,7 +202,7 @@ sqrt(X, R) :-
    make_radical(X, R).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**
@@ -218,7 +218,7 @@ residue:sys_printable_value(X, _) :-
 residue:sys_printable_value(E, X) :-
    integer(E),
    user:(E < 0), !,
-   user:E - F,
+   user: -(E, F),
    X = -F.
 residue:sys_printable_value(E, X) :-
    integer(E), !,

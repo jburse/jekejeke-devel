@@ -72,8 +72,8 @@
 % -(+Rational, -Rational)
 :- override (-)/2.
 :- public (-)/2.
-rational(A,B) - rational(C,B) :-
-   user:A - C.
+-(rational(A,B), rational(C,B)) :-
+   user: -(A, C).
 
 /**
  * +(P, Q, R):
@@ -184,7 +184,7 @@ rational(A,B) - rational(C,B) :-
 :- public ^ /3.
 ^(rational(A,B), Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    user: ^(A, Z, H),
    user: ^(B, Z, J),
    new_rational(J, H, R).
@@ -232,18 +232,18 @@ make_rational(A, B, C) :-
 
 % new_rational(+Integer, +Integer, -Internal)
 new_rational(A, -1, B) :- !,
-   user:A - B.
+   user: -(A, B).
 new_rational(A, 1, R) :- !,
    R = A.
 new_rational(A, B, R) :-
    user:(B < 0), !,
-   user:A - C,
-   user:B - D,
+   user: -(A, C),
+   user: -(B, D),
    R = rational(C,D).
 new_rational(A, B, rational(A,B)).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**
@@ -264,7 +264,7 @@ residue:sys_printable_value(rational(A,B), X) :-
    sys_make_integer(H, R, B, X).
 residue:sys_printable_value(rational(A,B), X) :-
    user:(A < 0), !,
-   user:A - C,
+   user: -(A, C),
    X = -C/B.
 residue:sys_printable_value(rational(A,B), X) :- !,
    X = A/B.
@@ -273,8 +273,8 @@ residue:sys_printable_value(rational(A,B), X) :- !,
 :- private sys_make_integer/4.
 sys_make_integer(H, R, B, X) :-
    user:(H < 0), !,
-   user:H - K,
-   user:R - S,
+   user: -(H, K),
+   user: -(R, S),
    X = -K-S/B.
 sys_make_integer(H, R, B, X) :-
    X = H+R/B.
@@ -291,7 +291,7 @@ sys_make_integer(H, R, B, X) :-
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),

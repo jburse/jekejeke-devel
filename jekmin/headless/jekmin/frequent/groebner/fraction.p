@@ -78,7 +78,7 @@
 % -(+Fracton, -Fracton)
 :- override (-)/2.
 :- public (-)/2.
-fraction(A,B) - fraction(C,B) :-
+-(fraction(A,B), fraction(C,B)) :-
    C is -A.
 
 /**
@@ -186,7 +186,7 @@ fraction(A,B) - fraction(C,B) :-
 :- public ^ /3.
 ^(fraction(A,B), Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    new_fraction(B, A, H),
    R is H^Z.
 ^(_, 0, R) :- !,
@@ -467,7 +467,7 @@ sys_coeff_compare(O, [N-A], [N-B]) :- !,
 sys_coeff_compare(<, _, _).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**
@@ -523,7 +523,7 @@ sys_make_addition(K, fraction(R,B), F) :-
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),

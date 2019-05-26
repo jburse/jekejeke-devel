@@ -173,9 +173,9 @@ sys_max_vector([], R, R).
 % -(+Vector, -Vector)
 :- override (-)/2.
 :- public (-)/2.
-X - Y :-
+-(X, Y) :-
    L is len(X),
-   Y is {-X[I]|between(1, L, I)}.
+   Y is {-(X[I])|between(1, L, I)}.
 
 /**
  * +(X, Y, Z):
@@ -206,7 +206,7 @@ X - Y :-
    Z is {X[I]-Y[I]|between(1, L, I)}.
 
 /***********************************************************/
-/* CAS BindCount[] Hook                                        */
+/* CAS Display Hook                                        */
 /***********************************************************/
 
 /**
@@ -243,7 +243,7 @@ sys_portray_vector([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),

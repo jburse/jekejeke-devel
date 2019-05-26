@@ -72,7 +72,7 @@
 % -(+Polynom, -Internal)
 :- override (-)/2.
 :- public (-)/2.
-polynom(A,B) - R :-
+-(polynom(A,B), R) :-
    sys_poly_neg(B, H),
    sys_make_poly(H, A, R).
 
@@ -200,7 +200,7 @@ polynom(A,B) - R :-
 :- public ^ /3.
 ^(P, Y, R) :-
    user:(Y < 0), !,
-   user:Y - Z,
+   user: -(Y, Z),
    R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
@@ -309,7 +309,7 @@ sys_make_poly([0-A], _, R) :- !,
 sys_make_poly(B, A, polynom(A,B)).
 
 /*********************************************************************/
-/* CAS BindCount[] Hook                                                  */
+/* CAS Display Hook                                                  */
 /*********************************************************************/
 
 /**
@@ -431,7 +431,7 @@ sys_melt_list([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:(?is#(1)).
+:- meta_predicate generic:is(?,#(1)).
 generic:(X is E) :-
    var(E), !,
    sys_ensure_serno(E),
