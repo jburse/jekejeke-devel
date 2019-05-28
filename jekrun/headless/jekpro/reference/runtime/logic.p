@@ -86,7 +86,7 @@
  */
 % +Goal ; +Goal
 :- public ;/2.
-:- meta_predicate 0;0.
+:- meta_predicate ;(0,0).
 :- set_predicate_property(;/2, sys_body).
 :- set_predicate_property(;/2, sys_notrace).
 :- set_predicate_property(;/2, sys_nobarrier).
@@ -128,7 +128,7 @@ sys_soft_cond(_, _, C) :- C.                      % Proto
  */
 % +Goal -> +Goal
 :- public -> /2.
-:- meta_predicate 0->0.
+:- meta_predicate ->(0,0).
 :- set_predicate_property(-> /2, sys_body).
 :- set_predicate_property(-> /2, sys_notrace).
 :- set_predicate_property(-> /2, sys_nobarrier).
@@ -150,7 +150,7 @@ A -> B :-
  */
 % +Goal *-> +Goal
 :- public *-> /2.
-:- meta_predicate 0*->0.
+:- meta_predicate *->(0,0).
 :- set_predicate_property(*-> /2, sys_body).
 :- set_predicate_property(*-> /2, sys_notrace).
 :- set_predicate_property(*-> /2, sys_nobarrier).

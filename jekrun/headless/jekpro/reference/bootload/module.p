@@ -141,12 +141,12 @@ module(N, L) :-
    N = user, !,
    sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
-   (public L).
+   public(L).
 module(N, L) :-
    sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
-   (public L),
+   public(L),
    sys_get_key(C, K),
    sys_set_context_property(J, C, K),
    sys_check_key(J, C).
@@ -238,10 +238,10 @@ sys_add_resource(Path) :-
 % private +Indicators
 private [P|Q] :- !,
    sys_private(P),
-   (private Q).
+   private(Q).
 private P,Q :- !,
    sys_private(P),
-   (private Q).
+   private(Q).
 private [] :- !.
 private P :-
    sys_private(P).
@@ -276,10 +276,10 @@ sys_private(I) :-
 % public +Indicators
 public [P|Q] :- !,
    sys_public(P),
-   (public Q).
+   public(Q).
 public P,Q :- !,
    sys_public(P),
-   (public Q).
+   public(Q).
 public [] :- !.
 public P :-
    sys_public(P).
@@ -324,10 +324,10 @@ sys_public(I) :-
 % override(+Indicators)
 override [P|Q] :- !,
    sys_override(P),
-   (override Q).
+   override(Q).
 override P,Q :- !,
    sys_override(P),
-   (override Q).
+   override(Q).
 override [] :- !.
 override P :-
    sys_override(P).
@@ -354,7 +354,7 @@ sys_override(I) :-
    sys_make_indicator(J, _, I),
    sys_context_property(J, C),
    sys_neutral_predicate(I),
-   set_predicate_property(I, (override C)).
+   set_predicate_property(I, override(C)).
 :- set_predicate_property(sys_override/1, visible(private)).
 
 % first defined in special.p
@@ -366,11 +366,11 @@ sys_override(I) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator((public D), I) :-
+sys_declaration_indicator(public(D), I) :-
    sys_declaration_indicator(D, I).
-sys_declaration_indicator((private D), I) :-
+sys_declaration_indicator(private(D), I) :-
    sys_declaration_indicator(D, I).
-sys_declaration_indicator((override D), I) :-
+sys_declaration_indicator(override(D), I) :-
    sys_declaration_indicator(D, I).
 
 /********************************************************/

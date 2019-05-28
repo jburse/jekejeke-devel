@@ -146,7 +146,7 @@ sys_current_path(Path) :-
  */
 sys_current_file_extension(E, O) :-
    sys_get_file_extensions(L),
-   sys_member(E-O, L).
+   sys_member(-(E,O), L).
 :- set_predicate_property(sys_current_file_extension/2, visible(public)).
 
 :- foreign(sys_get_file_extensions/1, 'ForeignPath',

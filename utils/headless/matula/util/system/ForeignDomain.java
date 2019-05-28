@@ -234,15 +234,19 @@ public final class ForeignDomain {
             String authority = ForeignUri.sysSpecAuthority(spec);
             if (ForeignUri.SCHEME_JAR.equals(scheme)) {
                 String path = ForeignUri.sysSpecPath(spec);
-                int k = path.lastIndexOf("!/");
+                int k = path.lastIndexOf(ForeignUri.JAR_SEP);
                 if (k != -1) {
-                    spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
+                    spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                            authority, path.substring(0, k));
                     spec = ForeignDomain.sysUriPuny(spec);
-                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                            ForeignFile.STRING_EMPTY, spec + path.substring(k));
                 } else {
-                    spec = ForeignUri.sysSpecMake("", authority, path);
+                    spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                            authority, path);
                     spec = ForeignDomain.sysUriPuny(spec);
-                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                            ForeignFile.STRING_EMPTY, spec);
                 }
             } else {
                 String newauthority = sysDomainPuny(authority);
@@ -270,15 +274,19 @@ public final class ForeignDomain {
         String authority = ForeignUri.sysSpecAuthority(spec);
         if (ForeignUri.SCHEME_JAR.equals(scheme)) {
             String path = ForeignUri.sysSpecPath(spec);
-            int k = path.lastIndexOf("!/");
+            int k = path.lastIndexOf(ForeignUri.JAR_SEP);
             if (k != -1) {
-                spec = ForeignUri.sysSpecMake("", authority, path.substring(0, k));
+                spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                        authority, path.substring(0, k));
                 spec = ForeignDomain.sysUriUnpuny(spec);
-                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec + path.substring(k));
+                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                        ForeignFile.STRING_EMPTY, spec + path.substring(k));
             } else {
-                spec = ForeignUri.sysSpecMake("", authority, path);
+                spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                        authority, path);
                 spec = ForeignDomain.sysUriUnpuny(spec);
-                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR, "", spec);
+                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                        ForeignFile.STRING_EMPTY, spec);
             }
         } else {
             String newauthority = sysDomainUnpuny(authority);

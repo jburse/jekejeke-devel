@@ -110,7 +110,7 @@
 % once(+Goal)
 once(X) :- X, !.
 :- set_predicate_property(once/1, visible(public)).
-:- set_predicate_property(once/1, (meta_predicate once(0))).
+:- set_predicate_property(once/1, meta_predicate(once(0))).
 :- sys_context_property(here, C),
    set_predicate_property(once/1, sys_meta_predicate(C)).
 
@@ -123,7 +123,7 @@ once(X) :- X, !.
 \+ X :- X, !, fail.
 \+ _.
 :- set_predicate_property((\+)/1, visible(public)).
-:- set_predicate_property((\+)/1, (meta_predicate\+0)).
+:- set_predicate_property((\+)/1, meta_predicate(\+0)).
 :- sys_context_property(here, C),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
@@ -183,7 +183,7 @@ throw(B) :-
 catch(A, E, B) :-
    sys_trap(A, F, sys_handle_ball(F, E, B)).
 :- set_predicate_property(catch/3, visible(public)).
-:- set_predicate_property(catch/3, (meta_predicate catch(0,?,0))).
+:- set_predicate_property(catch/3, meta_predicate(catch(0,?,0))).
 :- sys_context_property(here, C),
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
@@ -200,7 +200,7 @@ sys_handle_ball(E, E, B) :- !,
 sys_handle_ball(F, _, _) :-
    sys_raise(F).
 :- set_predicate_property(sys_handle_ball/3, visible(private)).
-:- set_predicate_property(sys_handle_ball/3, (meta_predicate sys_handle_ball(?,?,0))).
+:- set_predicate_property(sys_handle_ball/3, meta_predicate(sys_handle_ball(?,?,0))).
 :- sys_context_property(here, C),
    set_predicate_property(sys_handle_ball/3, sys_meta_predicate(C)).
 
@@ -228,6 +228,6 @@ sys_reserved_ball(cause(E,_)) :-
 % sys_trap(+Goal, +Pattern, +Goal)
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
-:- set_predicate_property(sys_trap/3, (meta_predicate sys_trap(0,?,0))).
+:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0,?,0))).
 :- sys_context_property(here, C),
    set_predicate_property(sys_trap/3, sys_meta_predicate(C)).

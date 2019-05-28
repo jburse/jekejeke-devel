@@ -55,6 +55,8 @@ public final class ForeignUri {
     public final static String SCHEME_JAR = "jar";
     public final static String SCHEME_MAILTO = "mailto";
 
+    public final static String JAR_SEP = "!/";
+
     public final static String ENCODING_UTF8 = "UTF-8";
     public final static String SHOULDNT_HAPPEN = "shouldnt happen";
 
@@ -553,7 +555,7 @@ public final class ForeignUri {
         String authority = ForeignUri.sysSpecAuthority(spec);
         String path = ForeignUri.sysSpecPath(spec);
         if (SCHEME_JAR.equals(scheme)) {
-            int k = path.lastIndexOf("!/");
+            int k = path.lastIndexOf(ForeignUri.JAR_SEP);
             if (k != -1) {
                 spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path.substring(0, k));
                 spec = ForeignUri.sysCanonicalUri(spec);

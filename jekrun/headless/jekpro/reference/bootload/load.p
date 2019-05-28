@@ -131,17 +131,17 @@ unload_file(Path) :-
 [Path|_] :-
    var(Path),
    throw(error(instantiation_error,_)).
-[+ Path|Y] :- !,
+[+(Path)|Y] :- !,
    consult(Path),
    call(Y).
-[- Path|Y] :- !,
+[-(Path)|Y] :- !,
    unload_file(Path),
    call(Y).
 [Path|Y] :-
    ensure_loaded(Path),
    call(Y).
 :- set_predicate_property('.'/2, visible(public)).
-:- set_predicate_property('.'/2, (meta_predicate[0|0])).
+:- set_predicate_property('.'/2, meta_predicate([0|0])).
 :- sys_context_property(here, C),
    set_predicate_property('.'/2, sys_meta_predicate(C)).
 :- set_predicate_property('.'/2, sys_notrace).
@@ -227,10 +227,10 @@ include(Path) :-
 % discontiguous(+Indicators)
 discontiguous [P|Q] :- !,
    sys_discontiguous(P),
-   (discontiguous Q).
+   discontiguous(Q).
 discontiguous P,Q :- !,
    sys_discontiguous(P),
-   (discontiguous Q).
+   discontiguous(Q).
 discontiguous [] :- !.
 discontiguous P :-
    sys_discontiguous(P).
@@ -248,7 +248,7 @@ sys_discontiguous(I) :-
    sys_make_indicator(J, _, I),
    sys_context_property(J, C),
    sys_neutral_predicate(I),
-   set_predicate_property(I, (discontiguous C)).
+   set_predicate_property(I, discontiguous(C)).
 :- set_predicate_property(sys_discontiguous/1, visible(private)).
 
 /**
@@ -258,10 +258,10 @@ sys_discontiguous(I) :-
 % sys_notrace +Indicators
 sys_notrace [P|Q] :- !,
    sys_sys_notrace(P),
-   (sys_notrace Q).
+   sys_notrace(Q).
 sys_notrace P,Q :- !,
    sys_sys_notrace(P),
-   (sys_notrace Q).
+   sys_notrace(Q).
 sys_notrace [] :- !.
 sys_notrace P :-
    sys_sys_notrace(P).
@@ -287,10 +287,10 @@ sys_sys_notrace(I) :-
 % multifile(+Indicators)
 multifile [P|Q] :- !,
    sys_multifile(P),
-   (multifile Q).
+   multifile(Q).
 multifile P,Q :- !,
    sys_multifile(P),
-   (multifile Q).
+   multifile(Q).
 multifile [] :- !.
 multifile P :-
    sys_multifile(P).
@@ -328,11 +328,11 @@ sys_multifile(I) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator((discontiguous D), I) :-
+sys_declaration_indicator(discontiguous(D), I) :-
    sys_declaration_indicator(D, I).
-sys_declaration_indicator((sys_notrace D), I) :-
+sys_declaration_indicator(sys_notrace(D), I) :-
    sys_declaration_indicator(D, I).
-sys_declaration_indicator((multifile D), I) :-
+sys_declaration_indicator(multifile(D), I) :-
    sys_declaration_indicator(D, I).
 
 /***************************************************************/

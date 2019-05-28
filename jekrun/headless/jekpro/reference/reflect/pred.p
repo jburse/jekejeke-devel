@@ -86,10 +86,10 @@
 % static +Indicators
 static [P|Q] :- !,
    sys_static(P),
-   (static Q).
+   static(Q).
 static P,Q :- !,
    sys_static(P),
-   (static Q).
+   static(Q).
 static [] :- !.
 static P :-
    sys_static(P).
@@ -188,7 +188,7 @@ sys_predicate_property2(I, R) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator((static I), I).
+sys_declaration_indicator(static(I), I).
 
 /**
  * sys_make_indicator(F, A, I):
@@ -200,9 +200,9 @@ sys_make_indicator(F, A, I) :-
    var(F), !,
    sys_make_indicator2(I, F, A).
 sys_make_indicator(K, A, J) :-
-   K = M:F, !,
+   K = :(M,F), !,
    sys_make_indicator(F, A, I),
-   sys_replace_site(J, K, M:I).
+   sys_replace_site(J, K, :(M,I)).
 sys_make_indicator(F, A, F/A).
 :- set_predicate_property(sys_make_indicator/3, visible(public)).
 
@@ -211,9 +211,9 @@ sys_make_indicator2(I, _, _) :-
    var(I),
    throw(error(instantiation_error,_)).
 sys_make_indicator2(J, K, A) :-
-   J = M:I, !,
+   J = :(M,I), !,
    sys_make_indicator2(I, F, A),
-   sys_replace_site(K, J, M:F).
+   sys_replace_site(K, J, :(M,F)).
 sys_make_indicator2(F/A, G, B) :- !,
    F = G,
    A = B.

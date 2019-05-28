@@ -87,7 +87,7 @@
 (:- _) :-
    throw(error(existence_error(body,(:-)/1),_)).
 :- set_predicate_property((:-)/1, visible(public)).
-:- set_predicate_property((:-)/1, (meta_predicate (:- -1))).
+:- set_predicate_property((:-)/1, meta_predicate((:- -1))).
 :- sys_context_property(here, C),
    set_predicate_property((:-)/1, sys_meta_predicate(C)).
 :- set_predicate_property((:-)/1, sys_rule).
@@ -101,7 +101,7 @@
 (_ :- _) :-
    throw(error(existence_error(body,(:-)/2),_)).
 :- set_predicate_property((:-)/2, visible(public)).
-:- set_predicate_property((:-)/2, (meta_predicate (0:- -1))).
+:- set_predicate_property((:-)/2, meta_predicate((0:- -1))).
 :- sys_context_property(here, C),
    set_predicate_property((:-)/2, sys_meta_predicate(C)).
 :- set_predicate_property((:-)/2, sys_rule).
@@ -116,7 +116,7 @@
 :- set_predicate_property(','/2, sys_nobarrier).
 A, B :- A, B.                                          % Proto
 :- set_predicate_property(','/2, visible(public)).
-:- set_predicate_property(','/2, (meta_predicate 0,0)).
+:- set_predicate_property(','/2, meta_predicate((0,0))).
 :- sys_context_property(here, C),
    set_predicate_property(','/2, sys_meta_predicate(C)).
 :- set_predicate_property(','/2, sys_body).
@@ -130,7 +130,7 @@ A, B :- A, B.                                          % Proto
 % call(+Goal)
 :- special(call/1, 'SpecialBody', 0).
 :- set_predicate_property(call/1, visible(public)).
-:- set_predicate_property(call/1, (meta_predicate call(0))).
+:- set_predicate_property(call/1, meta_predicate(call(0))).
 :- sys_context_property(here, C),
    set_predicate_property(call/1, sys_meta_predicate(C)).
 

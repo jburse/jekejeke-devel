@@ -69,12 +69,12 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
-   set_source_property(C, use_package(foreign(jekpro/model/builtin))).
-:- sys_context_property(here, C),
-   reset_source_property(C, sys_source_visible(public)).
+:-(','(sys_context_property(here, C),
+      set_source_property(C, use_package(foreign(/(/(jekpro,model),builtin)))))).
+:-(','(sys_context_property(here, C),
+      reset_source_property(C, sys_source_visible(public)))).
 
-:- sys_op(1200, fx, :-).
+:-(sys_op(1200, fx, :-)).
 :- set_oper_property(prefix(:-), visible(public)).
 :- sys_op(1200, xfx, :-).
 :- set_oper_property(infix(:-), visible(public)).
@@ -117,10 +117,10 @@ special(I, C, K) :-
 % virtual +Indicators
 virtual [P|Q] :- !,
    sys_virtual(P),
-   (virtual Q).
+   virtual(Q).
 virtual P,Q :- !,
    sys_virtual(P),
-   (virtual Q).
+   virtual(Q).
 virtual [] :- !.
 virtual P :-
    sys_virtual(P).
@@ -164,5 +164,5 @@ sys_virtual(I) :-
 sys_declaration_indicator(special(I,_,_), I).
 sys_declaration_indicator(set_predicate_property(I,_), I).
 sys_declaration_indicator(reset_predicate_property(I,_), I).
-sys_declaration_indicator((virtual D), I) :-
+sys_declaration_indicator(virtual(D), I) :-
    sys_declaration_indicator(D, I).

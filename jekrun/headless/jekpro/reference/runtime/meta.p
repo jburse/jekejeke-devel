@@ -83,10 +83,10 @@
 :- public (meta_predicate)/1.
 meta_predicate [P|Q] :- !,
    sys_meta_predicate(P),
-   (meta_predicate Q).
+   meta_predicate(Q).
 meta_predicate P,Q :- !,
    sys_meta_predicate(P),
-   (meta_predicate Q).
+   meta_predicate(Q).
 meta_predicate [] :- !.
 meta_predicate P :-
    sys_meta_predicate(P).
@@ -108,7 +108,7 @@ sys_meta_predicate(P) :-
    predicate_property(I, full_name(N)),
    sys_univ(P, [_|L]),
    R =.. [N|L],
-   set_predicate_property(I, (meta_predicate R)),
+   set_predicate_property(I, meta_predicate(R)),
    set_predicate_property(I, sys_meta_predicate(C)).
 
 /**
@@ -120,10 +120,10 @@ sys_meta_predicate(P) :-
 :- public (meta_function)/1.
 meta_function [P|Q] :- !,
    sys_meta_function(P),
-   (meta_function Q).
+   meta_function(Q).
 meta_function P,Q :- !,
    sys_meta_function(P),
-   (meta_function Q).
+   meta_function(Q).
 meta_function [] :- !.
 meta_function P :-
    sys_meta_function(P).
@@ -145,16 +145,16 @@ sys_meta_function(P) :-
    predicate_property(I, full_name(N)),
    sys_univ(P, [_|L]),
    R =.. [N|L],
-   set_predicate_property(I, (meta_function R)),
+   set_predicate_property(I, meta_function(R)),
    set_predicate_property(I, sys_meta_function(C)).
 
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- public sys_declaration_indicator/2.
 :- multifile sys_declaration_indicator/2.
-sys_declaration_indicator((meta_predicate P), I) :-
+sys_declaration_indicator(meta_predicate(P), I) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I).
-sys_declaration_indicator((meta_function P), I) :-
+sys_declaration_indicator(meta_function(P), I) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I).

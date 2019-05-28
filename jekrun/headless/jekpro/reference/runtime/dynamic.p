@@ -92,10 +92,10 @@
 :- public (dynamic)/1.
 dynamic [P|Q] :- !,
    sys_dynamic(P),
-   (dynamic Q).
+   dynamic(Q).
 dynamic P,Q :- !,
    sys_dynamic(P),
-   (dynamic Q).
+   dynamic(Q).
 dynamic [] :- !.
 dynamic P :-
    sys_dynamic(P).
@@ -119,10 +119,10 @@ sys_dynamic(I) :-
 :- public (thread_local)/1.
 thread_local [P|Q] :- !,
    sys_thread_local(P),
-   (thread_local Q).
+   thread_local(Q).
 thread_local P,Q :- !,
    sys_thread_local(P),
-   (thread_local Q).
+   thread_local(Q).
 thread_local [] :- !.
 thread_local P :-
    sys_thread_local(P).
@@ -146,10 +146,10 @@ sys_thread_local(I) :-
 :- public (group_local)/1.
 group_local [P|Q] :- !,
    sys_group_local(P),
-   (group_local Q).
+   group_local(Q).
 group_local P,Q :- !,
    sys_group_local(P),
-   (group_local Q).
+   group_local(Q).
 group_local [] :- !.
 group_local P :-
    sys_group_local(P).
@@ -169,9 +169,9 @@ sys_group_local(I) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- public sys_declaration_indicator/2.
 :- multifile sys_declaration_indicator/2.
-sys_declaration_indicator((dynamic I), I).
-sys_declaration_indicator((thread_local I), I).
-sys_declaration_indicator((group_local I), I).
+sys_declaration_indicator(dynamic(I), I).
+sys_declaration_indicator(thread_local(I), I).
+sys_declaration_indicator(group_local(I), I).
 
 /**
  * clause(H, B): [ISO 8.8.1]

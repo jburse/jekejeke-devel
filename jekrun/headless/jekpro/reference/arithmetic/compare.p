@@ -81,7 +81,7 @@
  */
 % +Expr =:= +Expr
 :- public =:= /2.
-:- set_predicate_property(=:= /2, (meta_predicate#(1)=:= #(1))).
+:- set_predicate_property(=:= /2, meta_predicate(=:=(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(=:= /2, sys_meta_predicate(C)).
 :- special(=:= /2, 'SpecialCompare', 0).
@@ -92,7 +92,7 @@
  */
 % +Expr =\= +Expr
 :- public =\= /2.
-:- set_predicate_property(=\= /2, (meta_predicate#(1)=\= #(1))).
+:- set_predicate_property(=\= /2, meta_predicate(=\=(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(=\= /2, sys_meta_predicate(C)).
 :- special(=\= /2, 'SpecialCompare', 1).
@@ -103,7 +103,7 @@
  */
 % +Expr < +Expr
 :- public < /2.
-:- set_predicate_property(< /2, (meta_predicate#(1)< #(1))).
+:- set_predicate_property(< /2, meta_predicate(<(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(< /2, sys_meta_predicate(C)).
 :- special(< /2, 'SpecialCompare', 2).
@@ -114,7 +114,7 @@
  */
 % +Expr =< +Expr
 :- public =< /2.
-:- set_predicate_property(=< /2, (meta_predicate#(1)=< #(1))).
+:- set_predicate_property(=< /2, meta_predicate(=<(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(=< /2, sys_meta_predicate(C)).
 :- special(=< /2, 'SpecialCompare', 3).
@@ -125,7 +125,7 @@
  */
 % +Expr > +Expr
 :- public > /2.
-:- set_predicate_property(> /2, (meta_predicate#(1)> #(1))).
+:- set_predicate_property(> /2, meta_predicate(>(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(> /2, sys_meta_predicate(C)).
 :- special(> /2, 'SpecialCompare', 4).
@@ -136,7 +136,7 @@
  */
 % +Expr >= +Expr
 :- public >= /2.
-:- set_predicate_property(>= /2, (meta_predicate#(1)>= #(1))).
+:- set_predicate_property(>= /2, meta_predicate(>=(#(1),#(1)))).
 :- sys_context_property(here, C),
    set_predicate_property(>= /2, sys_meta_predicate(C)).
 :- special(>= /2, 'SpecialCompare', 5).

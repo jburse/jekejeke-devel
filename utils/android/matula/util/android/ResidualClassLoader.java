@@ -128,7 +128,8 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                 if (found) {
                     try {
                         url = new URL(ForeignUri.SCHEME_FILE, null, f.toString());
-                        return new URL(ForeignUri.SCHEME_JAR, null, url.toString() + "!/" + name);
+                        return new URL(ForeignUri.SCHEME_JAR, null, url.toString() +
+                                ForeignUri.JAR_SEP + name);
                     } catch (MalformedURLException x) {
                         throw new RuntimeException(x);
                     }
@@ -183,7 +184,8 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                     }
                     try {
                         URL url = new URL(ForeignUri.SCHEME_FILE, null, f.toString());
-                        res.add(new URL(ForeignUri.SCHEME_JAR, null, url.toString() + "!/" + name));
+                        res.add(new URL(ForeignUri.SCHEME_JAR, null, url.toString() +
+                                ForeignUri.JAR_SEP + name));
                     } catch (MalformedURLException x) {
                         throw new RuntimeException(x);
                     }
