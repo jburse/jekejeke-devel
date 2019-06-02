@@ -1,10 +1,12 @@
 package matula.util.misc;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>This class provides a unslotted and non-escalable read write pair.</p>
+ * <p>The class is implemented on top of the concurrent semaphore.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -34,9 +36,18 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Nonescalable implements ReadWriteLock {
+public final class Nonescalable extends Semaphore implements ReadWriteLock {
+    public static final int WRITE_PERMIT = 0x01000000;
+
     final NonescalableRead read = new NonescalableRead(this);
     final NonescalableWrite write = new NonescalableWrite(this);
+
+    /**
+     * <p>Create a non-esalable read write lock.</p>
+     */
+    public Nonescalable() {
+        super(WRITE_PERMIT);
+    }
 
     /**
      * <p>Retrieve the read lock.</p>

@@ -6,7 +6,6 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.Success;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;

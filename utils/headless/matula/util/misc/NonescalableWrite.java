@@ -36,7 +36,6 @@ import java.util.concurrent.locks.Lock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class NonescalableWrite implements Lock {
-    boolean locked;
     private final Nonescalable parent;
 
     /**
@@ -49,46 +48,36 @@ public final class NonescalableWrite implements Lock {
     }
 
     /**
-     * <p>Acquire the lock.</p>
-     * <p>Blocks if lock is already held.</p>
+     * <p>Acquire the write lock.</p>
+     * <p>Blocks if write lock is already held.</p>
      */
     public void lock() {
         throw new IllegalArgumentException("not supported");
     }
 
     /**
-     * <p>Acquire the lock.</p>
-     * <p>Blocks if lock is already held.</p>
+     * <p>Acquire the write lock.</p>
+     * <p>Blocks if write lock is already held.</p>
      *
      * @throws InterruptedException If the request was cancelled.
      */
     public void lockInterruptibly() throws InterruptedException {
-        synchronized (parent) {
-            while (parent.read.set != 0 || locked)
-                parent.wait();
-            locked = true;
-        }
+        parent.acquire(Nonescalable.WRITE_PERMIT);
     }
 
     /**
-     * <p>Attempt the lock.</p>
-     * <p>Fails if lock is already held.</p>
+     * <p>Attempt the write lock.</p>
+     * <p>Fails if write lock is already held.</p>
      *
-     * @return True if lock was acquired, or false otherwise.
+     * @return True if write lock was acquired, or false otherwise.
      */
     public boolean tryLock() {
-        synchronized (parent) {
-            if (parent.read.set == 0 && !locked) {
-                locked = true;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return parent.tryAcquire(Nonescalable.WRITE_PERMIT);
     }
 
     /**
      * <p>Acquire the write lock or time-out.</p>
+     * <p>Blocks if write lock is already held and while not time-out.</p>
      *
      * @param sleep The time-out.
      * @param tu    The time unit.
@@ -97,20 +86,7 @@ public final class NonescalableWrite implements Lock {
      */
     public boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException {
-        sleep = tu.toMillis(sleep);
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (parent) {
-            while ((parent.read.set != 0 || locked) && sleep > 0) {
-                parent.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                locked = true;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return parent.tryAcquire(Nonescalable.WRITE_PERMIT, sleep, tu);
     }
 
     /**
@@ -126,12 +102,7 @@ public final class NonescalableWrite implements Lock {
      * <p>Release the write lock.</p>
      */
     public void unlock() {
-        synchronized (parent) {
-            if (!locked)
-                throw new IllegalStateException("not_locked");
-            locked = false;
-            parent.notifyAll();
-        }
+        parent.release(Nonescalable.WRITE_PERMIT);
     }
 
 }

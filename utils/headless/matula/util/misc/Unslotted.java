@@ -1,11 +1,13 @@
 package matula.util.misc;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
  * <p>This class provides an unslotted mutex object.</p>
+ * <p>The class is implemented on top of the concurrent semaphore.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,8 +37,14 @@ import java.util.concurrent.locks.Lock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Unslotted implements Lock {
-    private boolean locked;
+public final class Unslotted extends Semaphore implements Lock {
+
+    /**
+     * <o>Create an unslotted mutex.</o>
+     */
+    public Unslotted() {
+        super(1);
+    }
 
     /**
      * <p>Acquire the lock.</p>
@@ -54,11 +62,7 @@ public final class Unslotted implements Lock {
      */
     public void lockInterruptibly()
             throws InterruptedException {
-        synchronized (this) {
-            while (locked)
-                this.wait();
-            locked = true;
-        }
+        acquire(1);
     }
 
     /**
@@ -68,18 +72,12 @@ public final class Unslotted implements Lock {
      * @return True if lock was acquired, or false otherwise.
      */
     public boolean tryLock() {
-        synchronized (this) {
-            if (!locked) {
-                locked = true;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return tryAcquire(1);
     }
 
     /**
      * <p>Acquire the lock or time-out.</p>
+     * <p>Blocks if lock is already held and while not time-out.</p>
      *
      * @param sleep The time-out.
      * @param tu    The time unit.
@@ -88,20 +86,7 @@ public final class Unslotted implements Lock {
      */
     public boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException {
-        sleep = tu.toMillis(sleep);
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (this) {
-            while (!locked && sleep > 0) {
-                this.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                locked = true;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return tryAcquire(1, sleep, tu);
     }
 
     /**
@@ -115,14 +100,11 @@ public final class Unslotted implements Lock {
 
     /**
      * <p>Release the lock.</p>
+     *
+     * @throws IllegalStateException If the lock was not yet acquired.
      */
     public void unlock() {
-        synchronized (this) {
-            if (!locked)
-                throw new IllegalStateException("not_locked");
-            locked = false;
-            this.notifyAll();
-        }
+        release(1);
     }
 
 }

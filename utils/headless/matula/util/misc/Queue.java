@@ -51,7 +51,7 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Queue<T> implements InterfacePipe<T> {
-    private final ListArray<Object> list;
+    private final ListArray<Object> list = new ListArray<Object>();
     private final int max;
 
     /**
@@ -62,7 +62,6 @@ public final class Queue<T> implements InterfacePipe<T> {
     public Queue(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
-        list = new ListArray<Object>();
         max = m;
     }
 

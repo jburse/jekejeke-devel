@@ -598,8 +598,8 @@ public class Store extends AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop The properties.
-     * @param in   The input stream.
+     * @param prop  The properties.
+     * @param in    The input stream.
      * @param param The param or null.
      * @throws IOException Problem reading.
      */
@@ -614,7 +614,7 @@ public class Store extends AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param reader The reader.
-     * @param param The param or null.
+     * @param param  The param or null.
      */
     public void loadText(Properties prop, Reader reader,
                          Object param) {

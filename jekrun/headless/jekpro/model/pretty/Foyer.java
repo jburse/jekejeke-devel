@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -12,16 +11,14 @@ import jekpro.model.rope.Directive;
 import jekpro.model.rope.Operator;
 import jekpro.model.rope.Resource;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.foreign.Tracking;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
+import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.system.CacheBounded;
 import matula.util.wire.Fence;
 import matula.util.wire.LivestockEvent;
 import matula.util.wire.LivestockEventClose;

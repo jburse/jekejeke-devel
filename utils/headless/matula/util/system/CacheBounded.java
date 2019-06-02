@@ -78,9 +78,11 @@ public final class CacheBounded<K, V> extends MapHashLink<K, V> {
      * @param f The entry.
      */
     public void putEntry(MapEntry<K, V> f) {
-        super.putEntry(f);
-        if (max < size)
+        if (max == 0)
+            return;
+        if (max <= size)
             removeEntry(getFirstEntry());
+        super.putEntry(f);
     }
 
     /**
@@ -92,7 +94,7 @@ public final class CacheBounded<K, V> extends MapHashLink<K, V> {
      */
     public MapEntry<K, V> getEntry(K key) {
         MapEntry<K, V> pair = super.getEntry(key);
-        if (pair != null) {
+        if (pair != null && pair != getLastEntry()) {
             removeEntry(pair);
             super.putEntry(pair);
         }

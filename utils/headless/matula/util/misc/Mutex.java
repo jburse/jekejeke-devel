@@ -86,6 +86,7 @@ public final class Mutex implements Lock {
 
     /**
      * <p>Acquire the lock or time-out.</p>
+     * <p>Blocks if lock is already held and while not time-out.</p>
      *
      * @param sleep The time-out.
      * @param tu    The time unit.

@@ -36,7 +36,6 @@ import java.util.concurrent.locks.Lock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class NonescalableRead implements Lock {
-    int set;
     private final Nonescalable parent;
 
     /**
@@ -49,46 +48,36 @@ public final class NonescalableRead implements Lock {
     }
 
     /**
-     * <p>Acquire the lock.</p>
-     * <p>Blocks if lock is already held.</p>
+     * <p>Acquire the read lock.</p>
+     * <p>Blocks if read lock is already held.</p>
      */
     public void lock() {
         throw new IllegalArgumentException("not supported");
     }
 
     /**
-     * <p>Acquire the lock.</p>
-     * <p>Blocks if lock is already held.</p>
+     * <p>Acquire the read lock.</p>
+     * <p>Blocks if read lock is already held.</p>
      *
      * @throws InterruptedException If the request was cancelled.
      */
     public void lockInterruptibly() throws InterruptedException {
-        synchronized (parent) {
-            while (parent.write.locked)
-                parent.wait();
-            set++;
-        }
+        parent.acquire(1);
     }
 
     /**
-     * <p>Attempt the lock.</p>
-     * <p>Fails if lock is already held.</p>
+     * <p>Attempt the read lock.</p>
+     * <p>Fails if read lock is already held.</p>
      *
-     * @return True if lock was acquired, or false otherwise.
+     * @return True if read lock was acquired, or false otherwise.
      */
     public boolean tryLock() {
-        synchronized (parent) {
-            if (!parent.write.locked) {
-                set++;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return parent.tryAcquire(1);
     }
 
     /**
      * <p>Acquire the read lock or time-out.</p>
+     * <p>Blocks if read lock is already held and while not time-out.</p>
      *
      * @param sleep The time-out.
      * @param tu    The time unit.
@@ -97,20 +86,7 @@ public final class NonescalableRead implements Lock {
      */
     public boolean tryLock(long sleep, TimeUnit tu)
             throws InterruptedException {
-        sleep = tu.toMillis(sleep);
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (parent) {
-            while (parent.write.locked && sleep > 0) {
-                parent.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                set++;
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return parent.tryAcquire(1, sleep, tu);
     }
 
     /**
@@ -124,16 +100,9 @@ public final class NonescalableRead implements Lock {
 
     /**
      * <p>Release a read lock.</p>
-     *
-     * @throws IllegalStateException If the write lock was not yet acquired.
      */
     public void unlock() throws IllegalStateException {
-        synchronized (parent) {
-            if (set == 0)
-                throw new IllegalStateException("not_locked");
-            set--;
-            parent.notifyAll();
-        }
+        parent.release(1);
     }
 
 }

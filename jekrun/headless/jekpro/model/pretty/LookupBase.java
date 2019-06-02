@@ -3,7 +3,6 @@ package jekpro.model.pretty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.bootload.ForeignPath;
-import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignFile;
@@ -52,7 +51,7 @@ public final class LookupBase {
     /**
      * <p>Find a write path.</p>
      *
-     * @param path The path, in slash notation.
+     * @param path  The path, in slash notation.
      * @param store The store.
      * @return The source key, or null.
      * @throws IOException Shit happens.
