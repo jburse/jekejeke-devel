@@ -56,8 +56,7 @@ public final class LookupBase {
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findWrite(String path,
-                                   Store store)
+    public static String findWrite(String path, Store store)
             throws IOException {
         if (ForeignUri.sysUriIsRelative(path)) {
             String base = store.getBase();
@@ -70,6 +69,28 @@ public final class LookupBase {
         path = ForeignUri.sysCanonicalUri(path);
 
         return path;
+    }
+
+    /**
+     * <p>Determine the relative variant of a write path.</p>
+     *
+     * @param path The absolute path.
+     * @param en   The engine or null.
+     * @return The relative variant, or null.
+     * @throws IOException Shit happens.
+     */
+    public static String unfindWrite(String path, Engine en)
+            throws IOException {
+        String base = en.store.getBase();
+        if (base == null)
+            throw new IOException(EngineMessage.OP_RESOURCE_BASEURL_MISSING);
+
+        String path2 = ForeignUri.sysUriRelative(base, path);
+        if (!path.equals(path2) && !ForeignFile.STRING_EMPTY.equals(path2))
+            return path2;
+
+        // failure
+        return null;
     }
 
     /***************************************************************/
@@ -85,8 +106,7 @@ public final class LookupBase {
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
-    public static String findRead(String path,
-                                  AbstractSource src,
+    public static String findRead(String path, AbstractSource src,
                                   Engine en)
             throws IOException {
         if (ForeignFile.STRING_EMPTY.equals(path))
@@ -123,7 +143,7 @@ public final class LookupBase {
     }
 
     /**
-     * <p>Determine the relative variant of a path.</p>
+     * <p>Determine the relative variant of a read path.</p>
      *
      * @param path The absolute path.
      * @param src  The call-site or null.
@@ -131,8 +151,7 @@ public final class LookupBase {
      * @return The relative variant, or null.
      * @throws IOException Shit happens.
      */
-    public static String unfindRead(String path,
-                                    AbstractSource src,
+    public static String unfindRead(String path, AbstractSource src,
                                     Engine en)
             throws IOException {
         String base;

@@ -166,35 +166,33 @@ sys_current_file_extension(E, O) :-
  */
 % absolute_file_name(+Slash, -Pin)
 absolute_file_name(Slash, Pin) :-
-   var(Slash), !,
-   sys_absolute_file_name2(Pin, Slash).
+   ground(Slash), !,
+   absolute_file_name2(Slash, Pin).
 absolute_file_name(Slash, Pin) :-
-   sys_absolute_file_name(Slash, Pin), !.
-absolute_file_name(library(Slash), _) :-
-   throw(error(existence_error(library,Slash),_)).
-absolute_file_name(foreign(Slash), _) :-
-   throw(error(existence_error(class,Slash),_)).
-absolute_file_name(verbatim(Slash), _) :-
-   throw(error(existence_error(verbatim,Slash),_)).
-absolute_file_name(Slash, _) :-
-   throw(error(existence_error(source_sink,Slash),_)).
+   sys_absolute_file_name2(Pin, Slash).
 :- set_predicate_property(absolute_file_name/2, visible(public)).
 
+% absolute_file_name2(+Slash, -Pin)
+absolute_file_name2(Slash, Pin) :-
+   sys_absolute_file_name(Slash, Pin), !.
+absolute_file_name2(Slash, _) :-
+   sys_absolute_file_error(Slash).
+:- set_predicate_property(absolute_file_name2/2, visible(private)).
+
 % absolute_file_name(+Slash, -Pin, +Opt)
-absolute_file_name(Slash, _, _) :-
-   var(Slash),
-   throw(error(instantiation_error,_)).
 absolute_file_name(Slash, Pin, Opt) :-
-   sys_absolute_file_name(Slash, Pin, Opt), !.
-absolute_file_name(library(Slash), _, _) :-
-   throw(error(existence_error(library,Slash),_)).
-absolute_file_name(foreign(Slash), _, _) :-
-   throw(error(existence_error(class,Slash),_)).
-absolute_file_name(verbatim(Slash), _, _) :-
-   throw(error(existence_error(verbatim,Slash),_)).
-absolute_file_name(Slash, _, _) :-
-   throw(error(existence_error(source_sink,Slash),_)).
+   ground(Slash), !,
+   absolute_file_name2(Slash, Pin, Opt).
+absolute_file_name(Slash, Pin, Opt) :-
+   sys_absolute_file_name2(Pin, Slash, Opt).
 :- set_predicate_property(absolute_file_name/3, visible(public)).
+
+% absolute_file_name2(+Slash, -Pin, +Opt)
+absolute_file_name2(Slash, Pin, Opt) :-
+   sys_absolute_file_name(Slash, Pin, Opt), !.
+absolute_file_name2(Slash, _, _) :-
+   sys_absolute_file_error(Slash).
+:- set_predicate_property(absolute_file_name2/3, visible(private)).
 
 /****************************************************************/
 /* File Probing                                                 */
@@ -297,9 +295,24 @@ sys_absolute_file_name4(Path, C, library(Slash)) :- !,
    sys_set_context_property(Slash, C, H).
 :- set_predicate_property(sys_absolute_file_name4/3, visible(private)).
 
+% sys_absolute_file_name2(+Pin, -Spec, +Opt)
+sys_absolute_file_name2(Pin, Slash, Opt) :-
+   sys_access_opt(Opt, read, read), !,
+   sys_absolute_file_name2(Pin, Slash).
+sys_absolute_file_name2(Pin, Slash, _) :-
+   sys_context_property(Pin, C),
+   sys_unfind_write(Pin, Path),
+   sys_path_to_atom(H, Path),
+   sys_set_context_property(Slash, C, H).
+:- set_predicate_property(sys_absolute_file_name2/3, visible(private)).
+
 :- foreign(sys_is_relative_uri/1, 'ForeignUri',
       sysUriIsRelative('String')).
 :- set_predicate_property(sys_is_relative_uri/1, visible(private)).
+
+:- foreign(sys_unfind_write/2, 'ForeignPath',
+      sysUnfindWrite('Interpreter','String')).
+:- set_predicate_property(sys_unfind_write/2, visible(private)).
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
       sysUnfindKey('Interpreter','String','TermAtomic','Object')).
@@ -321,11 +334,20 @@ sys_absolute_file_name4(Path, C, library(Slash)) :- !,
 % absolute_resource_name(+Slash, -Pin)
 absolute_resource_name(Slash, Pin) :-
    sys_absolute_resource_name(Slash, Pin), !.
-absolute_resource_name(library(Slash), _) :-
-   throw(error(existence_error(library,Slash),_)).
 absolute_resource_name(Slash, _) :-
-   throw(error(existence_error(source_sink,Slash),_)).
+   sys_absolute_file_error(Slash).
 :- set_predicate_property(absolute_resource_name/2, visible(public)).
+
+% sys_absolute_file_error(+Slash
+sys_absolute_file_error(library(Slash)) :-
+   throw(error(existence_error(library,Slash),_)).
+sys_absolute_file_error(foreign(Slash)) :-
+   throw(error(existence_error(class,Slash),_)).
+sys_absolute_file_error(verbatim(Slash)) :-
+   throw(error(existence_error(verbatim,Slash),_)).
+sys_absolute_file_error(Slash) :-
+   throw(error(existence_error(source_sink,Slash),_)).
+:- set_predicate_property(sys_absolute_file_error/1, visible(private)).
 
 /****************************************************************/
 /* Resource Probing                                             */
@@ -397,8 +419,9 @@ sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Path, ../Dir) :-
-   sub_atom(Path, 0, _, After, ../), !,
+   sub_atom(Path, 0, _, After, ../),
    last_sub_atom(Path, After, 0, X),
+   \+ X = '', !,
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Atom, Atom).
 :- set_predicate_property(sys_path_to_atom2/2, visible(private)).

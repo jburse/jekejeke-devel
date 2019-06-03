@@ -119,6 +119,24 @@ public final class ForeignPath {
     }
 
     /**
+     * <p>Unfind a write key according to the auto loader.</p>
+     *
+     * @param inter The interpreter.
+     * @param path  The prefixed path.
+     * @return The source key.
+     * @throws IOException IO Error.
+     */
+    public static String sysUnfindWrite(Interpreter inter,
+                                        String path)
+           throws IOException {
+        Engine engine = (Engine)inter.getEngine();
+        String res = LookupBase.unfindWrite(path, engine);
+        if (res != null)
+            return res;
+        return path;
+    }
+
+    /**
      * <p>Find a prefix according to the auto loader.</p>
      *
      * @param inter The interpreter.

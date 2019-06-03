@@ -358,8 +358,8 @@ public abstract class AbstractFile extends AbstractSource {
             return new SkelCompound(new SkelAtom(Foyer.OP_SLASH, scope),
                     osToSlashSkel(dir, file, null),
                     new SkelAtom(CacheModule.sepFile(fun)));
-        } else if (file && fun.startsWith(OP_DSLH)) {
-            dir = fun.substring(OP_DSLH.length());
+        } else if (file && fun.startsWith(OP_DSLH) &&
+                !"".equals(dir = fun.substring(OP_DSLH.length()))) {
             return new SkelCompound(new SkelAtom(OP_DSLH, scope),
                     osToSlashSkel(dir, file, null));
         } else {

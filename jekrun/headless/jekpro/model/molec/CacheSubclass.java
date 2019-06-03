@@ -441,10 +441,8 @@ public final class CacheSubclass extends AbstractCache {
      * @return The path without suffix.
      * @throws IOException Shit happens.
      */
-    private static Object unfindKeyParent(String path,
-                                          AbstractSource src,
-                                          int mask,
-                                          Engine en)
+    private static Object unfindKeyParent(String path, AbstractSource src,
+                                          int mask, Engine en)
             throws IOException, EngineMessage {
 
         /* special case */
