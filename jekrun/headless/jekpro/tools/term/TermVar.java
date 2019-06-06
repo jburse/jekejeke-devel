@@ -129,7 +129,11 @@ public final class TermVar extends AbstractTerm {
      */
     public int getValue(Interpreter inter) {
         Engine en = (inter != null ? (Engine) inter.getEngine() : null);
-        return skel.getValue(display, en);
+        if (en != null) {
+            return SkelVar.getValue(display, en) + skel.id;
+        } else {
+            return skel.id;
+        }
     }
 
     /**

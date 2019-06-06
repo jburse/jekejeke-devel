@@ -778,7 +778,12 @@ public class PrologWriter {
                     return;
                 }
             }
-            int k = sv.getValue(ref, engine);
+            int k;
+            if (engine != null) {
+                k = SkelVar.getValue(ref, engine) + sv.id;
+            } else {
+                k = sv.id;
+            }
             String t = SkelVar.sernoToString(k, true);
             safeSpace(t);
             append(t);

@@ -2,12 +2,9 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>The class provides a choice point for cleanup calls.</p>

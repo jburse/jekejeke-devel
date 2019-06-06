@@ -1,9 +1,11 @@
 package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 
 /**
- * <p>The class provides a serial number undo.</p>
+ * <p>The class provides a varmap number undo.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -34,53 +36,59 @@ import jekpro.model.inter.Engine;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class UndoSerno extends AbstractUndo {
-    private final BindUniv skel;
+    private final Display display;
 
     /**
-     * <p>Create a serno binder.</p>
+     * <p>Create a varmap undo.</p>
      *
-     * @param d The bind count.
+     * @param d The display.
      */
-    private UndoSerno(BindUniv d) {
-        skel = d;
+    private UndoSerno(Display d) {
+        display = d;
     }
 
     /**
-     * <p>Reset the serno.</p>
+     * <p>Reset the varmap.</p>
      *
      * @param en The engine.
      */
     public void unbind(Engine en) {
-        /* reset serno */
-        BindUniv bc = skel;
-        int k = bc.serno;
-        if (k == -1)
+        MapHash<Display, Integer> m = en.visor.varmap;
+        MapEntry<Display, Integer> e = m.getEntry(display);
+        if (e == null)
             throw new IllegalStateException("value missing");
-        bc.serno = -1;
-        en.serno = k;
+        m.removeEntry(e);
+        if (m.size() == 0) {
+            en.visor.varmap = null;
+        } else {
+            m.resize();
+        }
+        en.visor.serno -= display.bind.length;
 
         removeBind(en);
     }
 
     /**
-     * <p>Set a new serno.</p>
+     * <p>Set a new varmap.</p>
      *
      * @param d  The display.
      * @param en The engine.
-     * @return The new serno.
+     * @return The new varmap.
      */
-    public static int bindSerno(BindUniv d, Engine en) {
-        /* set serno */
-        if (d.serno != -1)
-            throw new IllegalStateException("cant override");
-        int k = en.serno;
-        d.serno = k;
-        en.serno = k + 1;
+    public static Integer bindVarmap(Display d, Engine en) {
+        MapHash<Display, Integer> m = en.visor.varmap;
+        if (m == null) {
+            m = new MapHash<Display, Integer>();
+            en.visor.varmap = m;
+        }
+        Integer val = Integer.valueOf(en.visor.serno);
+        m.add(d, val);
+        en.visor.serno += d.bind.length;
 
         UndoSerno bs = new UndoSerno(d);
         bs.addBind(en);
 
-        return k;
+        return val;
     }
 
 }

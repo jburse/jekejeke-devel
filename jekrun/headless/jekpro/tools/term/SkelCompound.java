@@ -34,7 +34,8 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SkelCompound extends AbstractSkel {
+public final class SkelCompound extends AbstractSkel
+        implements Comparable<SkelCompound> {
     public final SkelAtom sym;
     public final Object[] args;
     public Object var;
@@ -113,6 +114,16 @@ public final class SkelCompound extends AbstractSkel {
         if (!(o instanceof SkelCompound))
             return false;
         return AbstractSkel.equalSkel(this, o);
+    }
+
+    /**
+     * <p>Compare this compound to another compound.</p>
+     *
+     * @param o The other compound.
+     * @return <0 less, 0 equal, >0 greater
+     */
+    public int compareTo(SkelCompound o) {
+        return AbstractSkel.compareSkel(this, o);
     }
 
     /*****************************************************************/

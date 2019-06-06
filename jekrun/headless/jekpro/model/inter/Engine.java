@@ -6,13 +6,14 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.ListArray;
+
+import java.util.Comparator;
 
 /**
  * <p>The class provides an engine.</p>
@@ -45,14 +46,13 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Engine extends StackElement {
+public class Engine extends StackElement implements Comparator<Object> {
     public Object skel;
     public Display display;
     public Store store;
     public final Supervisor visor;
     public AbstractUndo bind;
     public AbstractChoice choices;
-    public int serno;
     public int number;
     public EngineCopy enginecopy;
     public EngineWrap enginewrap;
@@ -439,6 +439,90 @@ public class Engine extends StackElement {
         display = ew.last;
         ew.last = Display.DISPLAY_CONST;
         return ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0);
+    }
+
+    /*****************************************************************/
+    /* Lexical Comparison                                            */
+    /*****************************************************************/
+
+    /**
+     * <p>Compare two terms lexically.</p>
+     * <p>As a side effect will dynamically allocate display serial numbers.</p>
+     * <p>Teil recursive solution.</p>
+     * <p>Throws a runtime exception for uncomparable references.</p>
+     *
+     * @param alfa The skeleton of the first term.
+     * @param d1   The display of the first term.
+     * @param beta The skeleton of the second term.
+     * @param d2   The display of the second term.
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     */
+    public int compareTerm(Object alfa, Display d1,
+                           Object beta, Display d2)
+            throws ArithmeticException {
+        for (; ; ) {
+            BindUniv b1;
+            while (alfa instanceof SkelVar &&
+                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                alfa = b1.skel;
+                d1 = b1.display;
+            }
+            while (beta instanceof SkelVar &&
+                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
+                beta = b1.skel;
+                d2 = b1.display;
+            }
+            int i = SpecialLexical.cmpType(alfa);
+            int k = i - SpecialLexical.cmpType(beta);
+            if (k != 0) return k;
+            switch (i) {
+                case SpecialLexical.CMP_TYPE_VAR:
+                    i = SkelVar.getValue(d1, this) + ((SkelVar) alfa).id;
+                    k = SkelVar.getValue(d2, this) + ((SkelVar) beta).id;
+                    return i - k;
+                case SpecialLexical.CMP_TYPE_DECIMAL:
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_FLOAT:
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_INTEGER:
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_REF:
+                    if (alfa instanceof Comparable)
+                        return ((Comparable) alfa).compareTo(beta);
+                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
+                case SpecialLexical.CMP_TYPE_ATOM:
+                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
+                case SpecialLexical.CMP_TYPE_COMPOUND:
+                    Object[] t1 = ((SkelCompound) alfa).args;
+                    Object[] t2 = ((SkelCompound) beta).args;
+                    k = t1.length - t2.length;
+                    if (k != 0) return k;
+                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
+                    if (k != 0) return k;
+                    i = 0;
+                    for (; i < t1.length - 1; i++) {
+                        k = compareTerm(t1[i], d1, t2[i], d2);
+                        if (k != 0) return k;
+                    }
+                    alfa = t1[i];
+                    beta = t2[i];
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown type");
+            }
+        }
+    }
+
+    /**
+     * <p>Compare two objects.</p>
+     *
+     * @param o1 The first object.
+     * @param o2 The second object.
+     * @return <0 o1 < o2, 0 o1 = o2, >0 o1 > o2
+     */
+    public final int compare(Object o1, Object o2) {
+        return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
+                AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
     }
 
 }

@@ -3,7 +3,6 @@ package jekpro.frequent.standard;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;

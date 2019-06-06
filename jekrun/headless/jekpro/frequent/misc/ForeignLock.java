@@ -39,7 +39,7 @@ public final class ForeignLock {
     /**
      * <p>Perform a millisecond try lock.</p>
      *
-     * @param lock The lock.
+     * @param lock    The lock.
      * @param timeout The time-out.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.

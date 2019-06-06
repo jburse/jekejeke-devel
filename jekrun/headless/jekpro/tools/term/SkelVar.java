@@ -1,11 +1,9 @@
 package jekpro.tools.term;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.UndoSerno;
-import matula.util.wire.AbstractLivestock;
+import matula.util.data.MapHash;
 
 /**
  * <p>This class provides variable skeletons.</p>
@@ -126,37 +124,16 @@ public final class SkelVar extends AbstractSkel
     /**
      * <p>Retrieve the serial number of a variable.</p>
      *
-     * @param ref The display.
-     * @param en  The engine, or null.
+     * @param d  The display.
+     * @param en The engine, or null.
      * @return The serial number.
      */
-    public int getValue(Display ref, Engine en) {
-        if (en != null) {
-            BindUniv bc = ref.bind[id];
-            int i = bc.serno;
-            if (i == -1)
-                i = UndoSerno.bindSerno(bc, en);
-            return i;
-        } else {
-            return id;
-        }
-    }
-
-    /**
-     * <p>Retrieve the serial number of a variable.</p>
-     *
-     * @param ref The display.
-     * @return The serial number.
-     */
-    public int getValue(Display ref) {
-        BindUniv bc = ref.bind[id];
-        int i = bc.serno;
-        if (i == -1) {
-            Thread thread = Thread.currentThread();
-            Supervisor visor = (Supervisor) AbstractLivestock.currentLivestock(thread);
-            i = UndoSerno.bindSerno(bc, visor.inuse);
-        }
-        return i;
+    public static int getValue(Display d, Engine en) {
+        MapHash<Display, Integer> m = en.visor.varmap;
+        Integer val = (m != null ? m.get(d) : null);
+        if (val == null)
+            val = UndoSerno.bindVarmap(d, en);
+        return val.intValue();
     }
 
     /**

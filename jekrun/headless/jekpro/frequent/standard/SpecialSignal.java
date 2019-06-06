@@ -3,8 +3,10 @@ package jekpro.frequent.standard;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
@@ -108,8 +110,8 @@ public final class SpecialSignal extends AbstractSpecial {
      * <p>Invoke the term with the signal mask changed.</p>
      * <p>The term is passed via the skeleton and display of the engine</p>
      *
-     * @param en The engine.
-     *           @param mask The mask.
+     * @param en   The engine.
+     * @param mask The mask.
      * @return True if the predicate succeeded, otherwise false
      * @throws EngineException Shit happens.
      */

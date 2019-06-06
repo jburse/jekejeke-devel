@@ -1,6 +1,7 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -167,7 +168,7 @@ public final class Flag extends AbstractFlag<Engine> {
             case FLAG_SINGLE_QUOTES:
                 return ReadOpts.utilToAtom(en.visor.peekStack().utilsingle);
             case FLAG_SYS_VARIABLES:
-                return Integer.valueOf(en.serno);
+                return Integer.valueOf(en.visor.serno);
             case FLAG_SYS_CHOICES:
                 return Integer.valueOf(en.number);
             case FLAG_SYS_RANDOM:

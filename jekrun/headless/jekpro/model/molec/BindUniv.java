@@ -41,7 +41,6 @@ public class BindUniv extends AbstractUndo {
     public Object skel;
     public Display display;
     public int refs;
-    public int serno = -1;
 
     /**
      * <p>Restore state as desired and remove bind from the engine.</p>
@@ -110,17 +109,15 @@ public class BindUniv extends AbstractUndo {
 
     /**
      * <p>Bind this variable with a term.</p>
-     * <p>No occurs check is performed.</p>
-     * <p>Possibly an attribute variable hook is called.</p>
+     * <p>Can be overridden by sub classes.</p>
      *
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param d2 The variable display.
+     * @param t  The first term skeleton.
+     * @param d  The first term display.
+     * @param d2 The second term display.
      * @param en The engine.
      * @throws EngineException Shit happens.
      */
-    public boolean bindAttr(Object t, Display d, Display d2,
-                            Engine en)
+    public boolean bindAttr(Object t, Display d, Display d2, Engine en)
             throws EngineException {
         bindUniv(t, d, en);
         return true;
@@ -128,13 +125,12 @@ public class BindUniv extends AbstractUndo {
 
     /**
      * <p>Bind this variable with a term.</p>
-     * <p>No occurs check is performed.</p>
      *
      * @param t  The term to bind to.
      * @param d  The display of the term.
      * @param en The engine.
      */
-    public void bindUniv(Object t, Display d, Engine en) {
+    public final void bindUniv(Object t, Display d, Engine en) {
         /* bind variable */
         skel = t;
         display = d;
@@ -158,6 +154,16 @@ public class BindUniv extends AbstractUndo {
                 bc.refs++;
             }
         }
+    }
+
+    /**
+     * <p>Check whether the bind univ belongs to an attributed variable</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @return True if belongs to an attributed variable, otherwise false.
+     */
+    public boolean getAttr() {
+        return false;
     }
 
 }

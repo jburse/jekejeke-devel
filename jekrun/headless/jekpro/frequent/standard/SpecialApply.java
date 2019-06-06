@@ -2,8 +2,10 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.model.rope.Clause;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;

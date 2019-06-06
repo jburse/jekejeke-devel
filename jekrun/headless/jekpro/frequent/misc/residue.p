@@ -39,6 +39,8 @@
  */
 
 :- package(library(jekpro/frequent/misc)).
+:- use_package(foreign(jekpro/frequent/misc)).
+:- use_package(foreign(jekpro/tools/call)).
 
 :- module(residue, []).
 :- use_module(library(advanced/sets)).
@@ -71,7 +73,7 @@
 :- static sys_unwrap_eq/3.
 
 /***********************************************************/
-/* Constraint Selection Algorithm                          */
+/* Constraint Display Algorithm                          */
 /***********************************************************/
 
 /**
@@ -95,13 +97,6 @@ sys_follow_vars2(U, V, W, L, R) :-
    findall(K, sys_current_eq(U, K), J),
    sys_unwrap_eqs(J, K, []),
    sys_follow_eqs(K, [U|V], W, L, R).
-
-% sys_unwrap_eqs(+Goals, -Goals, +Goals)
-:- private sys_unwrap_eqs/3.
-sys_unwrap_eqs([G|L], I, O) :-
-   sys_unwrap_eq(G, I, H),
-   sys_unwrap_eqs(L, H, O).
-sys_unwrap_eqs([], L, L).
 
 /**
  * sys_follow_eqs(H, V, W, L, R):
@@ -152,6 +147,29 @@ call_residue(G, L) :-
    sys_term_eq_list(G, L).
 
 /***********************************************************/
+/* New Constraint Display API                              */
+/***********************************************************/
+
+/**
+ * sys_eq_list(L):
+ * The predicate unifies L with the list of constraints.
+ */
+% sys_eq_list(-Goals)
+:- public sys_eq_list/1.
+sys_eq_list(L) :-
+   findall(E, (  sys_residue_attr(V),
+                 sys_current_eq(V, E)), H),
+   sys_distinct(H, J),
+   sys_unwrap_eqs(J, L, []).
+
+% sys_unwrap_eqs(+Goals, -Goals, +Goals)
+:- private sys_unwrap_eqs/3.
+sys_unwrap_eqs([G|L], I, O) :-
+   sys_unwrap_eq(G, I, H),
+   sys_unwrap_eqs(L, H, O).
+sys_unwrap_eqs([], L, L).
+
+/***********************************************************/
 /* CAS Display Hook                                        */
 /***********************************************************/
 
@@ -183,3 +201,11 @@ printable(E, E).
 % surrogate_new(-Ref)
 :- public surrogate_new/1.
 :- foreign_constructor(surrogate_new/1, 'Object', new).
+
+/**
+ * sys_residue_attr(V):
+ * The predicate succeeds in V with the residue attributed variables.
+ */
+:- public sys_residue_attr/1.
+:- foreign(sys_residue_attr/1, 'ForeignResidue',
+      sysResidueAttr('CallOut','Interpreter')).

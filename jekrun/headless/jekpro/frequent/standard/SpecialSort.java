@@ -9,7 +9,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.EngineLexical;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -87,7 +86,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    SpecialSort.sort(SpecialLexical.DEFAULT, temp[0], ref, en);
+                    SpecialSort.sort(en, temp[0], ref, en);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -109,7 +108,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    SpecialSort.keySort(SpecialLexical.DEFAULT, temp[0], ref, en);
+                    SpecialSort.keySort(en, temp[0], ref, en);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -154,7 +153,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_LOCALE_SORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator<Object> cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    Comparator<Object> cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                     SpecialSort.sort(cmp, temp[1], ref, en);
                     d = en.display;
                     multi = d.getAndReset();
@@ -166,7 +165,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_LOCALE_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                     SpecialSort.keySort(cmp, temp[1], ref, en);
                     d = en.display;
                     multi = d.getAndReset();

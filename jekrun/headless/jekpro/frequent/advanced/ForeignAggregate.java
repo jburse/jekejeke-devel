@@ -60,10 +60,10 @@ public final class ForeignAggregate {
         Object m = AbstractTerm.getSkel(k);
         Display d = AbstractTerm.getDisplay(k);
         Engine en = (Engine) inter.getEngine();
-        Object val = AbstractSkel.copySkel(m, d, en);
-        MapEntry h = r.getEntry(val);
+        m = AbstractSkel.copySkel(m, d, en);
+        MapEntry h = r.getEntry(m);
         if (h == null) {
-            h = r.newEntry(val, null);
+            h = r.newEntry(m, null);
             r.putEntry(h);
         }
         return h;

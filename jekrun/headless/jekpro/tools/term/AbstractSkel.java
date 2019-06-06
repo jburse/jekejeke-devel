@@ -137,64 +137,6 @@ public abstract class AbstractSkel {
         return ref;
     }
 
-    /**********************************************************/
-    /* Skel Comparison                                        */
-    /**********************************************************/
-
-    /**
-     * <p>Compare two skeletons lexically.</p>
-     * <p>Teil recursive solution.</p>
-     * <p>Throws a runtime exception for uncomparable references.</p>
-     *
-     * @param alfa The skeleton of the first term.
-     * @param beta The skeleton of the second term.
-     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
-     * @see SpecialLexical#compareTerm
-     */
-    public static int compareSkel(Object alfa, Object beta)
-            throws ArithmeticException {
-        for (; ; ) {
-            int i = SpecialLexical.cmpType(alfa);
-            int k = i - SpecialLexical.cmpType(beta);
-            if (k != 0) return k;
-            switch (i) {
-                case SpecialLexical.CMP_TYPE_VAR:
-                    i = ((SkelVar) alfa).id;
-                    k = ((SkelVar) beta).id;
-                    return i - k;
-                case SpecialLexical.CMP_TYPE_DECIMAL:
-                    return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_FLOAT:
-                    return SpecialLexical.compareFloatLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_INTEGER:
-                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_REF:
-                    if (alfa instanceof Comparable)
-                        return ((Comparable) alfa).compareTo(beta);
-                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case SpecialLexical.CMP_TYPE_ATOM:
-                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case SpecialLexical.CMP_TYPE_COMPOUND:
-                    Object[] t1 = ((SkelCompound) alfa).args;
-                    Object[] t2 = ((SkelCompound) beta).args;
-                    k = t1.length - t2.length;
-                    if (k != 0) return k;
-                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
-                    if (k != 0) return k;
-                    i = 0;
-                    for (; i < t1.length - 1; i++) {
-                        k = compareSkel(t1[i], t2[i]);
-                        if (k != 0) return k;
-                    }
-                    alfa = t1[i];
-                    beta = t2[i];
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown type");
-            }
-        }
-    }
-
     /********************************************************************/
     /* Skel Hash                                                        */
     /********************************************************************/
@@ -254,6 +196,62 @@ public abstract class AbstractSkel {
             }
             alfa = t1[i];
             beta = t2[i];
+        }
+    }
+
+    /**********************************************************/
+    /* Skel Comparison                                        */
+    /**********************************************************/
+
+    /**
+     * <p>Compare two skeletons lexically.</p>
+     * <p>Teil recursive solution.</p>
+     * <p>Throws a runtime exception for uncomparable references.</p>
+     *
+     * @param alfa The skeleton of the first term.
+     * @param beta The skeleton of the second term.
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     * @see Engine#compareTerm
+     */
+    public static int compareSkel(Object alfa, Object beta)
+            throws ArithmeticException {
+        for (; ; ) {
+            int i = SpecialLexical.cmpType(alfa);
+            int k = i - SpecialLexical.cmpType(beta);
+            if (k != 0) return k;
+            switch (i) {
+                case SpecialLexical.CMP_TYPE_VAR:
+                    return ((SkelVar) alfa).compareTo(((SkelVar) beta));
+                case SpecialLexical.CMP_TYPE_DECIMAL:
+                    return SpecialLexical.compareDecimalLexical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_FLOAT:
+                    return SpecialLexical.compareFloatLexical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_INTEGER:
+                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
+                case SpecialLexical.CMP_TYPE_REF:
+                    if (alfa instanceof Comparable)
+                        return ((Comparable) alfa).compareTo(beta);
+                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
+                case SpecialLexical.CMP_TYPE_ATOM:
+                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
+                case SpecialLexical.CMP_TYPE_COMPOUND:
+                    Object[] t1 = ((SkelCompound) alfa).args;
+                    Object[] t2 = ((SkelCompound) beta).args;
+                    k = t1.length - t2.length;
+                    if (k != 0) return k;
+                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
+                    if (k != 0) return k;
+                    i = 0;
+                    for (; i < t1.length - 1; i++) {
+                        k = compareSkel(t1[i], t2[i]);
+                        if (k != 0) return k;
+                    }
+                    alfa = t1[i];
+                    beta = t2[i];
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown type");
+            }
         }
     }
 

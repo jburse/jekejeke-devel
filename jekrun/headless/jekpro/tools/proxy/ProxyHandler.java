@@ -1,6 +1,5 @@
 package jekpro.tools.proxy;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
@@ -217,15 +216,9 @@ public final class ProxyHandler implements InvocationHandler {
         ProxyState state = (ProxyState) Proxy.getInvocationHandler(proxy);
         if (idx < 0 || state.length() <= idx)
             throw new ArrayIndexOutOfBoundsException();
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
-        ec.vars = null;
-        Object m = ec.copyTerm(AbstractTerm.getSkel(data), AbstractTerm.getDisplay(data));
-        ec.vars = null;
-        state.set_at(idx, m);
+        Object val = AbstractSkel.copySkel(AbstractTerm.getSkel(data),
+                AbstractTerm.getDisplay(data), en);
+        state.set_at(idx, val);
     }
 
     /**

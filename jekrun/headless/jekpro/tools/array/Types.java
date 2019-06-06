@@ -451,10 +451,11 @@ public final class Types {
         } else if (x instanceof InterruptedException) {
             return (EngineMessage) AbstractLivestock.sysThreadClear();
         } else if (x instanceof ArithmeticException) {
-            String y = x.getMessage();
-            if ("/ by zero".equals(y))
-                y = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
-            return new EngineMessage(EngineMessage.evaluationError(y));
+            String message = x.getMessage();
+            if ("/ by zero".equals(message))
+                message = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
+            return new EngineMessage(EngineMessage.evaluationError(
+                    (message != null ? message : "")));
         } else if (x instanceof Exception) {
             String message = x.getMessage();
             return new EngineMessage(EngineMessage.representationError(
