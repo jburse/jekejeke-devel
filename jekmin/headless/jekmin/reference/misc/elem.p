@@ -93,6 +93,20 @@ lcm(0, _, R) :- !,
 lcm(X, Y, R) :-
    R is X//gcd(X,Y)*Y.
 
+/**
+ * modinv(B, M, R):
+ * The predicate succeeds in R with B^(-1) mod M.
+ */
+:- public modinv/3.
+:- special(modinv/3, 'SupplementElem', 2).
+
+/**
+ * modpow(B, E, M, R):
+ * The predicate succeeds in R with B^E mod M.
+ */
+:- public modpow/4.
+:- special(modpow/4, 'SupplementElem', 3).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sqrt Root
 

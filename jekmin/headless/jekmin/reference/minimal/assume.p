@@ -20,10 +20,6 @@
  * attribute variable for the duration of the continuation. The variant
  * sys_ensure_hook/3 does the same job during the execution of the given goal.
  *
- * The predicate sys_assume_cont/1 temporarily pushes the given goal on the
- * continuation queue. For more information on the continuation queue see
- * the module cont.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -138,55 +134,3 @@ withdrawz_ref([]) :- !.
 withdrawz_ref(R) :-
    sys_atomic((  erase_ref(R),
                  sys_unbind(recordz_ref(R)))).
-
-/***************************************************************/
-/* Attribute Variables                                         */
-/***************************************************************/
-
-/**
- * sys_ensure_hook(A, H, G):
- * The predicate temporarily ensures that the hook H is in the
- * hook list of the attribute variable A for the duration
- * of the goal G and succeeds whenever G succeeds.
- */
-% sys_ensure_hook(+Attr, +Closure, +Goal)
-:- public sys_ensure_hook/3.
-:- meta_predicate sys_ensure_hook(?,2,0).
-sys_ensure_hook(V, H, G) :-
-   sys_clause_hook(V, H, _), !,
-   call(G).
-sys_ensure_hook(V, H, G) :-
-   sys_compile_hook(V, H, K),
-   depositz_ref(K),
-   call(G),
-   withdrawz_ref(K).
-
-/**
- * sys_ensure_hook(A, H):
- * The predicate temporarily ensures that the hook H is in the
- * hook list of the attribute variable A for the duration
- * of the continuation.
- */
-% sys_ensure_hook(+Attr, +Closure)
-:- public sys_ensure_hook/2.
-:- meta_predicate sys_ensure_hook(?,2).
-sys_ensure_hook(V, H) :-
-   sys_clause_hook(V, H, _), !.
-sys_ensure_hook(V, H) :-
-   sys_compile_hook(V, H, K),
-   depositz_ref(K).
-
-/***************************************************************/
-/* Continuation Queue                                          */
-/***************************************************************/
-
-/**
- * sys_assume_cont(G):
- * The predicate temporarily pushes the goal G on the continuation queue.
- */
-% sys_assume_cont(+Term)
-:- public sys_assume_cont/1.
-:- meta_predicate sys_assume_cont(0).
-sys_assume_cont(G) :-
-   sys_atomic((  cont_push(G),
-                 sys_unbind(cont_pop))).

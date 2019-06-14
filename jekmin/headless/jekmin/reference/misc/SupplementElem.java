@@ -2,7 +2,6 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -47,6 +46,8 @@ import java.math.BigInteger;
 public final class SupplementElem extends AbstractSpecial {
     private final static int EVALUABLE_ULP = 0;
     private final static int EVALUABLE_GCD = 1;
+    private final static int EVALUABLE_MODINV = 2;
+    private final static int EVALUABLE_MODPOW = 3;
 
     /**
      * <p>Create an elementary evaluable.</p>
@@ -101,9 +102,50 @@ public final class SupplementElem extends AbstractSpecial {
                     en.skel = gcd(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
+                case EVALUABLE_MODINV:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = modinv(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_MODPOW:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.computeExpr(temp[2], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    Number gamma = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = intModPow(alfa, beta, gamma);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
-
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
@@ -195,6 +237,39 @@ public final class SupplementElem extends AbstractSpecial {
             }
         }
         return m << t;
+    }
+
+    /**
+     * <p>Return the modpow.</p>
+     *
+     * @param m The first number.
+     * @param n The second number.
+     * @return The modinv.
+     */
+    private static Number modinv(Number m, Number n) {
+        return TermAtomic.normBigInteger(
+                TermAtomic.widenBigInteger(m).modInverse(
+                        TermAtomic.widenBigInteger(n)));
+    }
+
+    /********************************************************************/
+    /* Additional Ternary Number Operations:                            */
+    /*      modpow/3: modpow()                                          */
+    /********************************************************************/
+
+    /**
+     * <p>Return the modpow.</p>
+     *
+     * @param m The first number.
+     * @param n The second number.
+     * @param k The third number.
+     * @return The modpow.
+     */
+    private static Number intModPow(Number m, Number n, Number k) {
+           return TermAtomic.normBigInteger(
+                    TermAtomic.widenBigInteger(m).modPow(
+                            TermAtomic.widenBigInteger(n),
+                            TermAtomic.widenBigInteger(k)));
     }
 
 }

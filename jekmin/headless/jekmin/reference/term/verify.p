@@ -69,6 +69,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(minimal/assume)).
 :- use_module(library(experiment/ref)).
+:- use_module(library(experiment/cont)).
 
 /**************************************************************/
 /* Trailed State                                              */

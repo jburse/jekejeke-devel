@@ -66,6 +66,7 @@
 :- use_module(library(misc/residue)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
+:- use_module(library(experiment/cont)).
 :- use_module(helper).
 :- use_module(intset).
 :- use_module(linform).

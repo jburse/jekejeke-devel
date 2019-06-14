@@ -68,6 +68,7 @@
 :- use_module(library(term/unify)).
 :- use_module(library(basic/lists)).
 :- use_module(library(basic/random)).
+:- use_module(library(experiment/trail)).
 
 /**
  * sat(A):
@@ -98,7 +99,7 @@ sat_post(T) :-
 % sat_add_vars(+List, +Fresh)
 :- private sat_add_vars/2.
 sat_add_vars([K|L], H) :-
-   var_map_back(K, A),
+   sys_melt_var(K, A),
    sat_add_var(A, K, H),
    sat_add_vars(L, H).
 sat_add_vars([], _).
@@ -130,14 +131,14 @@ sat_trivial(S, H) :-
 % sat_propagate(+Tree)
 :- private sat_propagate/1.
 sat_propagate(node3(X,_,_,zero)) :- !,
-   var_map_back(X, Y),
+   sys_melt_var(X, Y),
    Y = 1.
 sat_propagate(node3(X,_,zero,_)) :- !,
-   var_map_back(X, Y),
+   sys_melt_var(X, Y),
    Y = 0.
 sat_propagate(node3(X,_,node3(Y,_,A,zero),node3(Y,_,zero,A))) :- !,
-   var_map_back(X, Z),
-   var_map_back(Y, T),
+   sys_melt_var(X, Z),
+   sys_melt_var(Y, T),
    Z = T.
 sat_propagate(_).
 
@@ -380,7 +381,7 @@ sys_vars_list([], []).
 % sys_map_list(+List, -List)
 :- private sys_map_list/2.
 sys_map_list([A|L], [B|R]) :-
-   var_map_back(A, B),
+   sys_melt_var(A, B),
    sys_map_list(L, R).
 sys_map_list([], []).
 

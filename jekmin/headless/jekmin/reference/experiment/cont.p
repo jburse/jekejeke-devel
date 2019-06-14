@@ -47,22 +47,26 @@
 :- use_package(foreign(jekmin/reference/experiment)).
 
 :- module(cont, []).
+:- use_module(library(experiment/trail)).
 
 /**
- * cont_push(G):
- * The predicate pushes the goal G on the continuation queue.
+ * sys_assume_cont(G):
+ * The predicate temporarily pushes the goal G on the continuation queue.
  */
+% sys_assume_cont(+Term)
+:- public sys_assume_cont/1.
+:- meta_predicate sys_assume_cont(0).
+sys_assume_cont(G) :-
+   sys_atomic((  cont_push(G),
+                 sys_unbind(cont_pop))).
+
 % cont_push(+Term)
-:- public cont_push/1.
+:- private cont_push/1.
 :- meta_predicate cont_push(0).
 :- special(cont_push/1, 'SpecialCont', 0).
 
-/**
- * cont_pop:
- * The predicate pops a goal from the continuation queue.
- */
 % cont_pop
-:- public cont_pop/0.
+:- private cont_pop/0.
 :- special(cont_pop/0, 'SpecialCont', 1).
 
 /**

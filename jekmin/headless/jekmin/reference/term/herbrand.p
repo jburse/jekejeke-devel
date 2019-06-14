@@ -56,6 +56,7 @@
 :- use_module(library(misc/struc)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
+:- use_module(library(experiment/cont)).
 :- use_module(library(advanced/sets)).
 :- use_module(library(experiment/maps)).
 
@@ -73,7 +74,7 @@
 sys_hook_sto(V, T) :-
    term_variables(T, L),
    (  contains(V, L) -> fail
-   ;  sys_assume_hooks(L)).
+   ;  sys_ensure_stos(L)).
 
 /**
  * sys_hook_neq(S, V, _):
@@ -142,19 +143,23 @@ residue:sys_unwrap_eq(neq(S), [F|L], L) :-
 :- public sto/1.
 sto(T) :-
    term_variables(T, L),
-   sys_assume_hooks(L).
+   sys_ensure_stos(L).
 
-/**
- * sys_assume_hooks(L):
- * The predicate continues the subject to occurs check for the
- * variables in the list L.
- */
-% sys_assume_hooks(+Set)
-:- private sys_assume_hooks/1.
-sys_assume_hooks([X|Y]) :-
-   sys_ensure_hook(X, sys_hook_sto),
-   sys_assume_hooks(Y).
-sys_assume_hooks([]).
+% sys_ensure_stos(+List)
+:- private sys_ensure_stos/1.
+sys_ensure_stos([X|Y]) :-
+   sys_ensure_sto(X),
+   sys_ensure_stos(Y).
+sys_ensure_stos([]).
+
+% sys_ensure_stos(+Var)
+:- private sys_ensure_sto/1.
+sys_ensure_sto(V) :-
+   sys_clause_hook(V, sys_hook_sto, _), !.
+sys_ensure_sto(V) :-
+   sys_ensure_serno(V),
+   sys_compile_hook(V, sys_hook_sto, K),
+   depositz_ref(K).
 
 /**
  * neq(S, T):

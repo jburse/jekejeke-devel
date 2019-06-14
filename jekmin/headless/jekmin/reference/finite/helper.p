@@ -69,6 +69,15 @@ sys_melt_hook(X, H) :-
    sys_melt_var(X, A),
    sys_ensure_hook(A, H).
 
+% sys_ensure_hook(+Attr, +Closure)
+:- private sys_ensure_hook/2.
+:- meta_predicate sys_ensure_hook(?,2).
+sys_ensure_hook(V, H) :-
+   sys_clause_hook(V, H, _), !.
+sys_ensure_hook(V, H) :-
+   sys_compile_hook(V, H, K),
+   depositz_ref(K).
+
 /**
  * sys_fresh_var(X, B):
  * Give the variable X a serial number and wrap it into B.
