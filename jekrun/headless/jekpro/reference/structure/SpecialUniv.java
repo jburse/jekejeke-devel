@@ -501,32 +501,48 @@ public final class SpecialUniv extends AbstractSpecial {
                                             Engine en)
             throws EngineException {
         for (; ; ) {
-            en.skel = alfa;
-            en.display = d1;
-            en.deref();
-            alfa = en.skel;
-            d1 = en.display;
-            en.skel = beta;
-            en.display = d2;
-            en.deref();
-            beta = en.skel;
-            d2 = en.display;
             if (alfa instanceof SkelVar) {
-                if (beta instanceof SkelVar) {
-                    if (alfa == beta && d1 == d2)
-                        return true;
-                    if (hasVar(alfa, d1, (SkelVar) beta, d2))
-                        return false;
-                    return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, en);
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
                 }
-                if (hasVar(beta, d2, (SkelVar) alfa, d1))
-                    return false;
-                return d1.bind[((SkelVar) alfa).id].bindAttr(beta, d2, d1, en);
+                for (; ; ) {
+                    if (beta instanceof SkelVar) {
+                        // combined check and deref
+                        BindUniv b2;
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
+                            beta = b2.skel;
+                            d2 = b2.display;
+                            continue;
+                        }
+                        if (alfa == beta && d1 == d2)
+                            return true;
+                        if (hasVar(alfa, d1, beta, d2))
+                            return false;
+                        return b2.bindAttr(alfa, d1, en);
+                    }
+                    if (hasVar(beta, d2, alfa, d1))
+                        return false;
+                    return b1.bindAttr(beta, d2, en);
+                }
             }
-            if (beta instanceof SkelVar) {
-                if (hasVar(alfa, d1, (SkelVar) beta, d2))
-                    return false;
-                return d2.bind[((SkelVar) beta).id].bindAttr(alfa, d1, d2, en);
+            for (; ; ) {
+                // combined check and deref
+                if (beta instanceof SkelVar) {
+                    BindUniv b;
+                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = b.skel;
+                        d2 = b.display;
+                        continue;
+                    }
+                    if (hasVar(alfa, d1, beta, d2))
+                        return false;
+                    return b.bindAttr(alfa, d1, en);
+                }
+                break;
             }
             if (!(alfa instanceof SkelCompound))
                 return alfa.equals(beta);
@@ -560,7 +576,7 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param d2 The display of the variable.
      * @return True when the variable occurs in the term, false otherwise.
      */
-    private static boolean hasVar(Object m, Display d, SkelVar t, Display d2) {
+    private static boolean hasVar(Object m, Display d, Object t, Display d2) {
         for (; ; ) {
             Object var = EngineCopy.getVar(m);
             if (var == null)

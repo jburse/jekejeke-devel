@@ -1,9 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.UndoSerno;
-import matula.util.data.MapHash;
 
 /**
  * <p>This class provides variable skeletons.</p>
@@ -119,21 +116,6 @@ public final class SkelVar extends AbstractSkel
      */
     public int hashCode(Display d) {
         return d.hashCode() * 31 + hashCode();
-    }
-
-    /**
-     * <p>Retrieve the serial number of a variable.</p>
-     *
-     * @param d  The display.
-     * @param en The engine, or null.
-     * @return The serial number.
-     */
-    public static int getValue(Display d, Engine en) {
-        MapHash<Display, Integer> m = en.visor.varmap;
-        Integer val = (m != null ? m.get(d) : null);
-        if (val == null)
-            val = UndoSerno.bindVarmap(d, en);
-        return val.intValue();
     }
 
     /**

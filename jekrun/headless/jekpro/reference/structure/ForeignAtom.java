@@ -471,7 +471,7 @@ public final class ForeignAtom {
     /**
      * <p>Convert a string to a number in some base.</p>
      *
-     * @param str    The string.
+     * @param str   The string.
      * @param radix The radix.
      * @return The number.
      * @throws ScannerError Error and position.
@@ -505,7 +505,7 @@ public final class ForeignAtom {
         if (num instanceof Integer) {
             return Integer.toString(num.intValue(), radix);
         } else if (num instanceof BigInteger) {
-            return ((BigInteger)num).toString(radix);
+            return ((BigInteger) num).toString(radix);
         } else {
             throw new IllegalArgumentException("illegal number");
         }

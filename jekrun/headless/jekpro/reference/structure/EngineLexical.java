@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -47,32 +48,19 @@ import java.util.Locale;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class EngineLexical implements Comparator<Object> {
-    private static final EngineLexical DEFAULT = new EngineLexical(IgnoreCase.DEFAULT);
-
     private final Comparator<String> cmpstr;
+    private final Engine engine;
 
     /**
      * <p>Create a engine lexical.</p>
      *
      * @param c The comparator.
      */
-    private EngineLexical(Comparator<String> c) {
+    private EngineLexical(Comparator<String> c, Engine en) {
         if (c == null)
             throw new NullPointerException("comparator missing");
         cmpstr = c;
-    }
-
-    /**
-     * <p>Implementation of the comparator interface.</p>
-     *
-     * @param o1 The first molec.
-     * @param o2 The second molec.
-     * @return The comparison result.
-     */
-    public final int compare(Object o1, Object o2)
-            throws ArithmeticException {
-        return localeCompareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
-                AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
+        engine = en;
     }
 
     /**
@@ -97,18 +85,18 @@ public final class EngineLexical implements Comparator<Object> {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int i = SpecialLexical.cmpType(alfa);
             while (beta instanceof SkelVar &&
                     (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
+            int i = SpecialLexical.cmpType(alfa);
             int k = i - SpecialLexical.cmpType(beta);
             if (k != 0) return k;
             switch (i) {
                 case SpecialLexical.CMP_TYPE_VAR:
-                    i = ((SkelVar) alfa).getValue(d1);
-                    k = ((SkelVar) beta).getValue(d2);
+                    i = d1.bind[((SkelVar) alfa).id].getValue(engine);
+                    k = d2.bind[((SkelVar) beta).id].getValue(engine);
                     return i - k;
                 case SpecialLexical.CMP_TYPE_DECIMAL:
                     return SpecialLexical.compareDecimalLexical(alfa, beta);
@@ -146,21 +134,36 @@ public final class EngineLexical implements Comparator<Object> {
     /**
      * <p>Compute the collator from an atom.</p>
      *
-     * @param m The skeleton.
-     * @param d The display.
+     * @param m  The skeleton.
+     * @param d  The display.
+     * @param en The engine.
      * @return The collator.
      * @throws EngineMessage Shit happens.
      */
-    public static EngineLexical comparatorAtom(Object m, Display d)
+    public static EngineLexical comparatorAtom(Object m, Display d, Engine en)
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
+        Comparator<String> cmpstr;
         if ("IGNORE_CASE".equals(fun)) {
-            return DEFAULT;
+            cmpstr = IgnoreCase.DEFAULT;
         } else {
             Locale loc = LangProperties.stringToLocale(fun);
-            Comparator<String> cmpstr = (Comparator) Collator.getInstance(loc);
-            return new EngineLexical(cmpstr);
+            cmpstr = (Comparator) Collator.getInstance(loc);
         }
+        return new EngineLexical(cmpstr, en);
+    }
+
+    /**
+     * <p>Compare two objects.</p>
+     *
+     * @param o1 The first object.
+     * @param o2 The second object.
+     * @return <0 o1 < o2, 0 o1 = o2, >0 o1 > o2
+     */
+    public final int compare(Object o1, Object o2)
+            throws ArithmeticException {
+        return localeCompareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
+                AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
     }
 
 }

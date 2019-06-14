@@ -780,7 +780,7 @@ public class PrologWriter {
             }
             int k;
             if (engine != null) {
-                k = SkelVar.getValue(ref, engine) + sv.id;
+                k = ref.bind[sv.id].getValue(engine);
             } else {
                 k = sv.id;
             }

@@ -12,6 +12,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
+import matula.util.data.AbstractMap;
 import matula.util.data.MapHash;
 
 import java.util.Random;
@@ -168,7 +169,8 @@ public final class Flag extends AbstractFlag<Engine> {
             case FLAG_SINGLE_QUOTES:
                 return ReadOpts.utilToAtom(en.visor.peekStack().utilsingle);
             case FLAG_SYS_VARIABLES:
-                return Integer.valueOf(en.visor.serno);
+                AbstractMap<BindUniv, Integer> map = en.visor.varmap;
+                return Integer.valueOf((map != null ? map.size() : 0));
             case FLAG_SYS_CHOICES:
                 return Integer.valueOf(en.number);
             case FLAG_SYS_RANDOM:

@@ -11,8 +11,8 @@ import jekpro.model.rope.InterfaceRope;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.LivestockEvent;
 import matula.util.wire.LivestockEventClose;
@@ -65,8 +65,7 @@ public class Supervisor extends AbstractLivestock {
     public LoadOpts cond;
     public Object proxy;
     public Engine inuse;
-    public int serno;
-    public MapHash<Display, Integer> varmap;
+    public AbstractMap<BindUniv, Integer> varmap;
 
     /**
      * <p>Create a supervisor for a store.</p>

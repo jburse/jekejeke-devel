@@ -410,7 +410,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger((long) a.intValue() / u);
+                return TermAtomic.normBigInteger(a.intValue() / u);
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -477,7 +477,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 } else if ((v >= 0) && (u < 0)) {
                     return TermAtomic.normBigInteger(((long) v - u - 1) / u);
                 } else {
-                    return TermAtomic.normBigInteger((long) v / u);
+                    return TermAtomic.normBigInteger(v / u);
                 }
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
@@ -550,7 +550,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger((long) a.intValue() % u);
+                return TermAtomic.normBigInteger(a.intValue() % u);
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -604,14 +604,14 @@ public final class EvaluableRound extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
                 if ((v < 0) != (u < 0)) {
-                    long res = (long) v % u;
+                    long res = v % u;
                     if (res != 0) {
                         return TermAtomic.normBigInteger(res + u);
                     } else {
                         return Integer.valueOf(0);
                     }
                 } else {
-                    return TermAtomic.normBigInteger((long) v % u);
+                    return TermAtomic.normBigInteger(v % u);
                 }
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
@@ -701,6 +701,16 @@ public final class EvaluableRound extends AbstractSpecial {
         System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
         x=-19.0; y=-12.0;
         System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
+    }
+    */
+    /*
+    public static void main(String[] args) {
+        int x=Integer.MIN_VALUE;
+        int y=5;
+        System.out.println("x="+x+", y="+y+", x%y="+x%y);
+        System.out.println("x="+x+", y="+y+", x%y="+((long)x)%y);
+        System.out.println("x="+x+", y="+y+", x%y="+x/y);
+        System.out.println("x="+x+", y="+y+", x%y="+((long)x)/y);
     }
     */
 

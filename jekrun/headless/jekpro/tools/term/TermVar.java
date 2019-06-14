@@ -130,7 +130,7 @@ public final class TermVar extends AbstractTerm {
     public int getValue(Interpreter inter) {
         Engine en = (inter != null ? (Engine) inter.getEngine() : null);
         if (en != null) {
-            return SkelVar.getValue(display, en) + skel.id;
+            return display.bind[skel.id].getValue(en);
         } else {
             return skel.id;
         }
@@ -173,6 +173,27 @@ public final class TermVar extends AbstractTerm {
         }
         if (t != skel || d != display) {
             return AbstractTerm.createTermWrapped(t, d);
+        } else {
+            return this;
+        }
+    }
+
+    /**
+     * <p>Fully dereference this variable.</p>
+     *
+     * @return The dereferenced term.
+     */
+    public Object derefMolec() {
+        Object t = skel;
+        Display d = display;
+        BindUniv b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t != skel || d != display) {
+            return AbstractTerm.createMolec(t, d);
         } else {
             return this;
         }

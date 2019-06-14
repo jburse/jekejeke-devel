@@ -2,15 +2,11 @@ package jekpro.frequent.misc;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelVar;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
-import matula.util.data.SetHashLink;
+import jekpro.tools.term.TermVar;
+import matula.util.data.*;
 
 /**
  * <p>Provides the methods for the module misc/residue.</p>
@@ -55,7 +51,7 @@ public final class ForeignResidue {
         ArrayEnumeration<Object> dc;
         if (co.getFirst()) {
             Engine en = (Engine) inter.getEngine();
-            SetHashLink<Object> list = ForeignResidue.listResidueAttrs(en);
+            ListArray<Object> list = ForeignResidue.listResidueAttrs(en);
             if (list == null)
                 return null;
             Object[] res = new Object[list.size()];
@@ -78,29 +74,19 @@ public final class ForeignResidue {
      * @param en The engine.
      * @return The list or null.
      */
-    private static SetHashLink<Object> listResidueAttrs(Engine en) {
-        MapHash<Display, Integer> map = en.visor.varmap;
+    private static ListArray<Object> listResidueAttrs(Engine en) {
+        AbstractMap<BindUniv, Integer> map = en.visor.varmap;
         if (map == null)
             return null;
-        SetHashLink<Object> list = null;
-        for (MapEntry<Display, Integer> entry = map.getFirstEntry();
+        ListArray<Object> list = null;
+        for (MapEntry<BindUniv, Integer> entry = map.getFirstEntry();
              entry != null; entry = map.successor(entry)) {
-            BindUniv bc = entry.key.bind[0];
-            if (bc == null || !bc.getAttr())
+            TermVar var = entry.key.getAttr();
+            if (var == null)
                 continue;
-            en.skel = SkelVar.valueOf(0);
-            en.display = entry.key;
-            en.deref();
-            if (!(en.skel instanceof SkelVar))
-                continue;
-            Object key = AbstractTerm.createMolec(en.skel, en.display);
-            if (list == null) {
-                list = new SetHashLink<Object>();
-                list.add(key);
-            } else {
-                if (list.getKey(key) == null)
-                    list.add(key);
-            }
+            if (list == null)
+                list = new ListArray<Object>();
+            list.add(var);
         }
         return list;
     }

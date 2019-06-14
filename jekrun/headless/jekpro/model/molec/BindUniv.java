@@ -3,6 +3,9 @@ package jekpro.model.molec;
 import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
 import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.TermVar;
+import matula.util.data.AbstractMap;
+import matula.util.data.MapHash;
 
 /**
  * <p>This class provides a reference counted variable binder.</p>
@@ -113,11 +116,10 @@ public class BindUniv extends AbstractUndo {
      *
      * @param t  The first term skeleton.
      * @param d  The first term display.
-     * @param d2 The second term display.
      * @param en The engine.
      * @throws EngineException Shit happens.
      */
-    public boolean bindAttr(Object t, Display d, Display d2, Engine en)
+    public boolean bindAttr(Object t, Display d, Engine en)
             throws EngineException {
         bindUniv(t, d, en);
         return true;
@@ -157,13 +159,27 @@ public class BindUniv extends AbstractUndo {
     }
 
     /**
-     * <p>Check whether the bind univ belongs to an attributed variable</p>
+     * <p>Retrieve the attributed variable.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @return True if belongs to an attributed variable, otherwise false.
+     * @return The attributed variable or null.
      */
-    public boolean getAttr() {
-        return false;
+    public TermVar getAttr() {
+        return null;
+    }
+
+    /**
+     * <p>Retrieve the serial number of a variable.</p>
+     *
+     * @param en The engine, or null.
+     * @return The serial number.
+     */
+    public final int getValue(Engine en) {
+        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
+        Integer val = (m != null ? m.get(this) : null);
+        if (val == null)
+            val = UndoSerno.bindSerno(this, en);
+        return val.intValue();
     }
 
 }

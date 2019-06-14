@@ -145,8 +145,9 @@ public class Foyer extends Enforced {
 
     public Directive CLAUSE_CONT;
     public Directive CLAUSE_CALL;
-    public Directive CLAUSE_HOOK;
     public Directive CLAUSE_TRAN;
+
+    public Directive CLAUSE_HOOK;
 
     /**
      * <p>Retrieve the factory.</p>

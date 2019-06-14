@@ -1,8 +1,10 @@
 package jekpro.model.molec;
 
 import jekpro.model.inter.Engine;
+import matula.util.data.AbstractMap;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides a varmap number undo.</p>
@@ -36,15 +38,15 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class UndoSerno extends AbstractUndo {
-    private final Display display;
+    private final BindUniv univ;
 
     /**
      * <p>Create a varmap undo.</p>
      *
-     * @param d The display.
+     * @param bc The bind univ.
      */
-    private UndoSerno(Display d) {
-        display = d;
+    private UndoSerno(BindUniv bc) {
+        univ = bc;
     }
 
     /**
@@ -53,8 +55,8 @@ public final class UndoSerno extends AbstractUndo {
      * @param en The engine.
      */
     public void unbind(Engine en) {
-        MapHash<Display, Integer> m = en.visor.varmap;
-        MapEntry<Display, Integer> e = m.getEntry(display);
+        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
+        MapEntry<BindUniv, Integer> e = m.getEntry(univ);
         if (e == null)
             throw new IllegalStateException("value missing");
         m.removeEntry(e);
@@ -63,7 +65,6 @@ public final class UndoSerno extends AbstractUndo {
         } else {
             m.resize();
         }
-        en.visor.serno -= display.bind.length;
 
         removeBind(en);
     }
@@ -71,21 +72,20 @@ public final class UndoSerno extends AbstractUndo {
     /**
      * <p>Set a new varmap.</p>
      *
-     * @param d  The display.
+     * @param bc  The bind univ.
      * @param en The engine.
      * @return The new varmap.
      */
-    public static Integer bindVarmap(Display d, Engine en) {
-        MapHash<Display, Integer> m = en.visor.varmap;
+    public static Integer bindSerno(BindUniv bc, Engine en) {
+        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
         if (m == null) {
-            m = new MapHash<Display, Integer>();
+            m = new MapHashLink<BindUniv, Integer>();
             en.visor.varmap = m;
         }
-        Integer val = Integer.valueOf(en.visor.serno);
-        m.add(d, val);
-        en.visor.serno += d.bind.length;
+        Integer val = Integer.valueOf(m.size());
+        m.add(bc, val);
 
-        UndoSerno bs = new UndoSerno(d);
+        UndoSerno bs = new UndoSerno(bc);
         bs.addBind(en);
 
         return val;

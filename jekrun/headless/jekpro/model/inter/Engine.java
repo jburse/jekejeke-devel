@@ -120,9 +120,9 @@ public class Engine extends StackElement implements Comparator<Object> {
                         }
                         if (alfa == beta && d1 == d2)
                             return true;
-                        return b2.bindAttr(alfa, d1, d2, this);
+                        return b2.bindAttr(alfa, d1, this);
                     }
-                    return b1.bindAttr(beta, d2, d1, this);
+                    return b1.bindAttr(beta, d2, this);
                 }
             }
             for (; ; ) {
@@ -134,7 +134,7 @@ public class Engine extends StackElement implements Comparator<Object> {
                         d2 = b.display;
                         continue;
                     }
-                    return b.bindAttr(alfa, d1, d2, this);
+                    return b.bindAttr(alfa, d1, this);
                 }
                 break;
             }
@@ -477,8 +477,8 @@ public class Engine extends StackElement implements Comparator<Object> {
             if (k != 0) return k;
             switch (i) {
                 case SpecialLexical.CMP_TYPE_VAR:
-                    i = SkelVar.getValue(d1, this) + ((SkelVar) alfa).id;
-                    k = SkelVar.getValue(d2, this) + ((SkelVar) beta).id;
+                    i = d1.bind[((SkelVar) alfa).id].getValue(this);
+                    k = d2.bind[((SkelVar) beta).id].getValue(this);
                     return i - k;
                 case SpecialLexical.CMP_TYPE_DECIMAL:
                     return SpecialLexical.compareDecimalLexical(alfa, beta);

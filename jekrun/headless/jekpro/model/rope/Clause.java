@@ -3,6 +3,7 @@ package jekpro.model.rope;
 import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.term.AbstractSkel;

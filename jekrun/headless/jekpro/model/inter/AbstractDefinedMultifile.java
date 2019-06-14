@@ -211,6 +211,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
+        ref1.vars = clause.vars;
+
         if (ext)
             refhead.remTab(en);
         if (clause.size != 0)

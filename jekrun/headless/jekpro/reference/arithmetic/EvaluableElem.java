@@ -527,7 +527,7 @@ public final class EvaluableElem extends AbstractSpecial {
             } else {
                 int k = absBitlength(y);
                 if (k == 0 || 62 / k >= x) {
-                    return TermAtomic.normBigInteger(pow((long) y, x));
+                    return TermAtomic.normBigInteger(pow(y, x));
                 } else {
                     return TermAtomic.normBigInteger(
                             BigInteger.valueOf(m.intValue()).pow(x));

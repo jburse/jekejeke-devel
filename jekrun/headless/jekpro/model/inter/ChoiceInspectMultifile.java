@@ -142,6 +142,8 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
             if (en.fault != null)
                 throw en.fault;
         }
+        newdisp.vars = clause.vars;
+
         if (ext)
             refhead.remTab(en);
         if (clause.size != 0)

@@ -56,17 +56,17 @@ public final class WriteOpts {
     private final static String OP_NUMBERVARS = "numbervars";
     private final static String OP_IGNORE_MOD = "ignore_mod";
     final static String OP_PRIORITY = "priority";
-    private final static String OP_FORMAT = "format";
     private final static String OP_CONTEXT = "context";
-    final static String OP_PART = "part";
 
     private final static String OP_ANNO_MKDT = "makedot";
     private final static String OP_ANNO_FILL = "filler";
     private final static String OP_ANNO_HINT = "hint";
 
+    private final static String OP_FORMAT = "format";
     private final static String OP_FORMAT_NEWL = "newline";
     private final static String OP_FORMAT_NAVI = "navigation";
 
+    private final static String OP_PART = "part";
     private final static String OP_PART_CMMT = "comment";
     private final static String OP_PART_STMT = "statement";
 

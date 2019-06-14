@@ -6,15 +6,12 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Comparator;
 
 /**
  * <p>Provides built-in predicates for lexical comparison.</p>
@@ -48,14 +45,6 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLexical extends AbstractSpecial {
-    public final static Comparator<Object> DEFAULT = new Comparator<Object>() {
-        public int compare(Object o1, Object o2) {
-            return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
-                    AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
-        }
-    };
-
-
     private final static int SPECIAL_LEX_EQ = 0;
     private final static int SPECIAL_LEX_NQ = 1;
     private final static int SPECIAL_LEX_LS = 2;
@@ -118,43 +107,39 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_LEX_LS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref) >= 0)
+                    if (en.compareTerm(temp[0], ref, temp[1], ref) >= 0)
                         return false;
                     return true;
                 case SPECIAL_LEX_LQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref) > 0)
+                    if (en.compareTerm(temp[0], ref, temp[1], ref) > 0)
                         return false;
                     return true;
                 case SPECIAL_LEX_GR:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref) <= 0)
+                    if (en.compareTerm(temp[0], ref, temp[1], ref) <= 0)
                         return false;
                     return true;
                 case SPECIAL_LEX_GQ:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (SpecialLexical.compareTerm(temp[0], ref,
-                            temp[1], ref) < 0)
+                    if (en.compareTerm(temp[0], ref, temp[1], ref) < 0)
                         return false;
                     return true;
                 case SPECIAL_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Object witmolec = SpecialLexical.comparisonAtom(
-                            SpecialLexical.compareTerm(temp[1], ref, temp[2], ref), en);
+                            en.compareTerm(temp[1], ref, temp[2], ref), en);
                     if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
                         return false;
                     return true;
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    EngineLexical cmp = EngineLexical.comparatorAtom(temp[0], ref);
+                    EngineLexical cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
                     witmolec = SpecialLexical.comparisonAtom(
                             cmp.localeCompareTerm(temp[2], ref, temp[3], ref), en);
                     if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
@@ -208,12 +193,12 @@ public final class SpecialLexical extends AbstractSpecial {
                 alfa = b1.skel;
                 d1 = b1.display;
             }
-            int k = eqType(alfa);
             while (beta instanceof SkelVar &&
                     (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
                 beta = b1.skel;
                 d2 = b1.display;
             }
+            int k = eqType(alfa);
             if (k != eqType(beta))
                 return false;
             switch (k) {
@@ -230,7 +215,7 @@ public final class SpecialLexical extends AbstractSpecial {
                         return false;
                     int i = 0;
                     for (; i < t1.length - 1; i++) {
-                        if (!equalTerm(t1[i], d1, t2[i], d2))
+                        if (!SpecialLexical.equalTerm(t1[i], d1, t2[i], d2))
                             return false;
                     }
                     alfa = t1[i];
@@ -262,75 +247,6 @@ public final class SpecialLexical extends AbstractSpecial {
     /**********************************************************/
     /* Term Comparison                                        */
     /**********************************************************/
-
-    /**
-     * <p>Compare two terms lexically.</p>
-     * <p>As a side effect will dynamically allocate display serial numbers.</p>
-     * <p>Teil recursive solution.</p>
-     * <p>Throws a runtime exception for uncomparable references.</p>
-     *
-     * @param alfa The skeleton of the first term.
-     * @param d1   The display of the first term.
-     * @param beta The skeleton of the second term.
-     * @param d2   The display of the second term.
-     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
-     */
-    public static int compareTerm(Object alfa, Display d1,
-                                  Object beta, Display d2)
-            throws ArithmeticException {
-        for (; ; ) {
-            BindUniv b1;
-            while (alfa instanceof SkelVar &&
-                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                alfa = b1.skel;
-                d1 = b1.display;
-            }
-            int i = cmpType(alfa);
-            while (beta instanceof SkelVar &&
-                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
-                beta = b1.skel;
-                d2 = b1.display;
-            }
-            int k = i - cmpType(beta);
-            if (k != 0) return k;
-            switch (i) {
-                case CMP_TYPE_VAR:
-                    i = ((SkelVar) alfa).getValue(d1);
-                    k = ((SkelVar) beta).getValue(d2);
-                    return i - k;
-                case CMP_TYPE_DECIMAL:
-                    return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case CMP_TYPE_FLOAT:
-                    return SpecialLexical.compareFloatLexical(alfa, beta);
-                case CMP_TYPE_INTEGER:
-                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case CMP_TYPE_REF:
-                    if (alfa instanceof Comparable)
-                        return ((Comparable) alfa).compareTo(beta);
-                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case CMP_TYPE_ATOM:
-                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case CMP_TYPE_COMPOUND:
-                    Object[] t1 = ((SkelCompound) alfa).args;
-                    Object[] t2 = ((SkelCompound) beta).args;
-                    k = t1.length - t2.length;
-                    if (k != 0) return k;
-                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
-                    if (k != 0) return k;
-                    i = 0;
-                    for (; i < t1.length - 1; i++) {
-                        k = compareTerm(t1[i], d1, t2[i], d2);
-                        if (k != 0) return k;
-                    }
-                    alfa = t1[i];
-                    beta = t2[i];
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown type");
-            }
-        }
-    }
-
 
     /**
      * <p>Determine the compare type class of a prolog term. The
@@ -371,10 +287,12 @@ public final class SpecialLexical extends AbstractSpecial {
             } else {
                 return -1;
             }
-        } else if (!(beta instanceof Double)) {
-            return 1;
         } else {
-            return ((Double) alfa).compareTo((Double) beta);
+            if (!(beta instanceof Double)) {
+                return 1;
+            } else {
+                return ((Double) alfa).compareTo((Double) beta);
+            }
         }
     }
 
