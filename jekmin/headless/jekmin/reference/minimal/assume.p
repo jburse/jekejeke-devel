@@ -1,24 +1,19 @@
 /**
- * Clauses and attribute variable hooks are identified by their reference
- * data type. The predicates deposita_ref/1 respectively depositz_ref/1
- * will assume the given clause or hook for the duration of the
- * continuation, whereas the predicate withdrawa_ref/1 respectively
- * withdrawz_ref/1 will retire the given clause or hook for the duration
- * of the continuation.
+ * Clauses and attributed variable hooks are identified by their
+ * reference data type. Other mod-ules provide the creation of
+ * these objects, adding and removing these objects to and from their
+ * parent objects. This module provides trailed updates on these objects.
  *
  * Example:
- * hook(V, T) :-
- *    write('bind '), write(V),
- *    write(' to '), write(T), nl.
+ * ?- assumable_ref(foo(123), X), depositz_ref(X), foo(Y).
+ * X = 0r139b8d9f,
+ * Y = 123
+ * ?- foo(Y).
  *
- * ?- sys_ensure_hook(X, hook), X = 99.
- * bind _A to 99
- * X = 99.
- *
- * The predicate sys_ensure_hook/2 takes care of the compilation of a hook
- * into a hook reference in case the hook is not yet associated with an
- * attribute variable for the duration of the continuation. The variant
- * sys_ensure_hook/3 does the same job during the execution of the given goal.
+ * The predicates deposita_ref/1 respectively depositz_ref/1 will
+ * assume the given clause or hook for the duration of the continuation,
+ * whereas the predicate withdrawa_ref/1 respectively withdrawz_ref/1
+ * will retire the given clause or hook for the duration of the continuation.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
