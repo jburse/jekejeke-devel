@@ -1,12 +1,7 @@
 /**
  * This module allows accessing the continuation queue and the verify flag.
- * New goals can be pushed and popped from the continuation queue via the
- * predicates cont_push/1 and cont_pop/0. The predicate sys_ripple/1
- * allows disabling the verify flag during the execution of a goal.
- *
- * It is recommended to push a delayed goal by the predicate
- * sys_assume_cont/1 from the module assume. This predicate will
- * also place an undo handler on the trail that will pop the
+ * The predicate sys_assume_cont/1 will push a delayed goal. This predicate
+ * will also place an undo handler on the trail that will pop the
  * delayed goal upon backtracking.
  *
  * When the verify flag allows it the whole continuation queue is executed
