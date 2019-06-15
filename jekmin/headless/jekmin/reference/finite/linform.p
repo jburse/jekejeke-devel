@@ -279,8 +279,8 @@ sys_hook_lin(_, T) :-
 :- private sys_var_lin/3.
 
 /* Union Find */
-true
-<= phaseout_posted(sys_var_lin(_, _)).
+true <=
+   phaseout_posted(sys_var_lin(_, _)).
 
 % sys_const_lin(+Wrap, +Integer)
 % sys_const_lin(X, C) = X = C
@@ -289,8 +289,8 @@ true
 :- private sys_const_lin/3.
 
 /* Constant Elimination */
-true
-<= phaseout_posted(sys_const_lin(_, _)).
+true <=
+   phaseout_posted(sys_const_lin(_, _)).
 
 % sys_lin(+Prod, +Integer)
 % sys_lin(P, I) = P = I
@@ -309,75 +309,75 @@ true
 :- multifile sys_lin_agent/5.
 
 /* Create Surrogate */
-post(sys_lin_ref(R, L, T))
-<= phaseout_posted(sys_lin(L, T)),
+post(sys_lin_ref(R, L, T)) <=
+   phaseout_posted(sys_lin(L, T)),
    surrogate_new(R).
 
 /* Trivial Cases */
-fail
-<= phaseout_posted(sys_lin_ref(_, [], K)),
+fail <=
+   phaseout_posted(sys_lin_ref(_, [], K)),
    K \== 0, !.
-true
-<= phaseout_posted(sys_lin_ref(_, [], _)), !.
+true <=
+   phaseout_posted(sys_lin_ref(_, [], _)), !.
 /* Agent start */
-assumez(sys_lin_waits(X, R))
-<= posted(sys_lin_ref(R, L, _)),
+assumez(sys_lin_waits(X, R)) <=
+   posted(sys_lin_ref(R, L, _)),
    member(_*X, L).
-post(sys_lin_agent(R, X, [A*X|B], T))
-<= phaseout_posted(sys_lin_ref(R, [A*X|B], T)).
+post(sys_lin_agent(R, X, [A*X|B], T)) <=
+   phaseout_posted(sys_lin_ref(R, [A*X|B], T)).
 
 % sys_lin_remove(+Ref)
 % Remove helper
 :- private sys_lin_remove/2.
-true
-<= posted(sys_lin_remove(V)),
+true <=
+   posted(sys_lin_remove(V)),
    phaseout(sys_lin_waits(_, V)).
-true
-<= phaseout_posted(sys_lin_remove(_)).
+true <=
+   phaseout_posted(sys_lin_remove(_)).
 
 /* GCD Normalisation */
-fail
-<= phaseout_posted(sys_lin_agent(_, _, P, T)),
+fail <=
+   phaseout_posted(sys_lin_agent(_, _, P, T)),
    sys_gcd_prod(P, G),
    0 =\= T rem G, !.
-post(sys_lin_agent(V, X, R, H))
-<= phaseout_posted(sys_lin_agent(V, X, P, T)),
+post(sys_lin_agent(V, X, R, H)) <=
+   phaseout_posted(sys_lin_agent(V, X, P, T)),
    sys_gcd_prod(P, G), !,
    sys_div_prod(P, G, R),
    H is T//G.
-post(sys_lin_agent(V, X, R, H))
-<= phaseout_posted(sys_lin_agent(V, X, [A*X|B], T)),
+post(sys_lin_agent(V, X, R, H)) <=
+   phaseout_posted(sys_lin_agent(V, X, [A*X|B], T)),
    A < 0, !,
    sys_flip_prod([A*X|B], R),
    H is -T.
 /* Unification Trigger */
-sys_melt_const(X, A)
-<= phaseout_posted(sys_lin_agent(V, X, [1*X], A)), !,
+sys_melt_const(X, A) <=
+   phaseout_posted(sys_lin_agent(V, X, [1*X], A)), !,
    phaseout(sys_lin_waits(X, V)).
-sys_melt_join(Y, X)
-<= phaseout_posted(sys_lin_agent(V, X, [1*X,-1*Y], 0)), !,
+sys_melt_join(Y, X) <=
+   phaseout_posted(sys_lin_agent(V, X, [1*X,-1*Y], 0)), !,
    phaseout(sys_lin_waits(X, V)),
    phaseout(sys_lin_waits(Y, V)).
 /* Lin & Lin Intersection */
-fail
-<= phaseout_posted(sys_lin_agent(_, X, L, C)),
+fail <=
+   phaseout_posted(sys_lin_agent(_, X, L, C)),
    sys_lin_agent(_, X, L, D),
    C \== D, !.
-post(sys_lin_remove(V))
-<= phaseout_posted(sys_lin_agent(V, X, L, _)),
+post(sys_lin_remove(V)) <=
+   phaseout_posted(sys_lin_agent(V, X, L, _)),
    sys_lin_agent(_, X, L, _), !.
 /* Lin & Set Intersection */
-fail
-<= phaseout_posted(sys_lin_agent(_, X, L, C)),
+fail <=
+   phaseout_posted(sys_lin_agent(_, X, L, C)),
    sys_set_agent(_, X, L, S, _),
    \+ sys_elem_set(S, C), !.
-post(intset:sys_set_remove(V))
-<= posted(sys_lin_agent(_, X, L, _)),
+post(intset:sys_set_remove(V)) <=
+   posted(sys_lin_agent(_, X, L, _)),
    phaseout(sys_set_agent(V, X, L, _, _)).
 /* Union Find */
 post(sys_lin_remove(V)),
-post(sys_lin_ref(V, D, T))
-<= phaseout_posted(sys_lin_agent(V, _, L, T)),
+post(sys_lin_ref(V, D, T)) <=
+   phaseout_posted(sys_lin_agent(V, _, L, T)),
    sys_lin_waits(X, V),
    sys_bound_var(X),
    sys_melt_var(X, H),
@@ -386,8 +386,8 @@ post(sys_lin_ref(V, D, T))
    sys_pick_prod(B, X, L, E),
    sys_add_prod([B*Y], E, D).
 /* Constant Elimination */
-post(sys_lin_agent(V, Z, [A*Z|D], H))
-<= phaseout_posted(sys_lin_agent(V, _, L, T)),
+post(sys_lin_agent(V, Z, [A*Z|D], H)) <=
+   phaseout_posted(sys_lin_agent(V, _, L, T)),
    phaseout(sys_lin_waits(X, V)),
    sys_bound_var(X),
    sys_melt_var(X, C),
@@ -395,12 +395,12 @@ post(sys_lin_agent(V, Z, [A*Z|D], H))
    sys_pick_prod(B, X, L, [A*Z|D]),
    H is T-B*C.
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_lin)
-<= posted(sys_lin_agent(V, _, _, _)),
+sys_melt_hook(X, sys_hook_lin) <=
+   posted(sys_lin_agent(V, _, _, _)),
    sys_lin_waits(X, V).
 /* Set Diffusion, Directed, Bounds */
-post(intset:sys_in(X, L, U))
-<= posted(sys_lin_agent(_, _, [A*X|B], T)),
+post(intset:sys_in(X, L, U)) <=
+   posted(sys_lin_agent(_, _, [A*X|B], T)),
    sys_bound_poly(B, Q),
    sys_flip_range(Q, R),
    sys_add_range(R, T, S),
@@ -410,22 +410,22 @@ post(intset:sys_in(X, L, U))
       L = []).
 /* Variable Rename */
 post(sys_lin_remove(V)),
-post(sys_lin_ref(V, D, T))
-<= posted(sys_var_lin(X, Y)),
+post(sys_lin_ref(V, D, T)) <=
+   posted(sys_var_lin(X, Y)),
    sys_lin_waits(X, V),
    phaseout(sys_lin_agent(V, _, L, T)),
    sys_pick_prod(B, X, L, E),
    sys_add_prod([B*Y], E, D).
 /* Constant Backpropagation */
-post(sys_lin_agent(V, Z, [A*Z|D], H))
-<= posted(sys_const_lin(X, C)),
+post(sys_lin_agent(V, Z, [A*Z|D], H)) <=
+   posted(sys_const_lin(X, C)),
    phaseout(sys_lin_waits(X, V)),
    phaseout(sys_lin_agent(V, _, L, T)),
    sys_pick_prod(B, X, L, [A*Z|D]),
    H is T-B*C.
 /* Set Update, Directed, Bounds */
-post(intset:sys_in(X, L, U))
-<= posted(intset:sys_in(Y, _, E)),
+post(intset:sys_in(X, L, U)) <=
+   posted(intset:sys_in(Y, _, E)),
    E \== ...,
    sys_lin_waits(Y, V),
    sys_lin_agent(V, _, [A*X|B], T),
@@ -657,7 +657,7 @@ sys_pretty_in([I...], [A*X|B], E#>F) :-
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
 sys_pretty_in([I], [A*X|B], E#=F) :-
-   integer(I), !,                                             /* Guard Included */
+   integer(I), !,                                 /* Guard Included */
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, I, F).

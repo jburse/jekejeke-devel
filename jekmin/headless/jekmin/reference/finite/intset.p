@@ -174,8 +174,8 @@ sys_hook_in(_, T) :-
 :- private sys_var_in/3.
 
 /* Union Find */
-true
-<= phaseout_posted(sys_var_in(_, _)).
+true <=
+   phaseout_posted(sys_var_in(_, _)).
 
 % sys_const_in(+Wrap, +Integer)
 % sys_const_in(X, C) = X = C
@@ -184,8 +184,8 @@ true
 :- private sys_const_in/3.
 
 /* Constant Elimination */
-true
-<= phaseout_posted(sys_const_in(_, _)).
+true <=
+   phaseout_posted(sys_const_in(_, _)).
 
 % sys_in(+Wrap, +Set, +Bound)
 % sys_in(X,S,_) = X in S
@@ -194,56 +194,56 @@ true
 :- multifile sys_in/4.
 
 /* Trivial Cases */
-fail
-<= phaseout_posted(sys_in(_, [], _)), !.
-sys_melt_const(X, C)
-<= phaseout_posted(sys_in(X, [C], _)),
+fail <=
+   phaseout_posted(sys_in(_, [], _)), !.
+sys_melt_const(X, C) <=
+   phaseout_posted(sys_in(X, [C], _)),
    integer(C), !.
 /* In & In intersection */
-post(sys_in(X, W, R))
-<= phaseout_posted(sys_in(X, S, P)),
+post(sys_in(X, W, R)) <=
+   phaseout_posted(sys_in(X, S, P)),
    phaseout(sys_in(X, T, Q)),
    (  sys_inter_range(P, Q, R)
    -> sys_inter_set(S, T, W)
    ;  W = [],
       R = ...),
    W \== T, !.
-true
-<= phaseout_posted(sys_in(X, _, _)),
+true <=
+   phaseout_posted(sys_in(X, _, _)),
    sys_in(X, _, _), !.
 /* Union Find */
-post(sys_in(Y, T, S))
-<= phaseout_posted(sys_in(X, T, S)),
+post(sys_in(Y, T, S)) <=
+   phaseout_posted(sys_in(X, T, S)),
    sys_bound_var(X),
    sys_melt_var(X, H),
    var(H), !,
    sys_fresh_var(H, Y).
 /* Constant Elimination */
-fail
-<= phaseout_posted(sys_in(X, T, _)),
+fail <=
+   phaseout_posted(sys_in(X, T, _)),
    sys_bound_var(X),
    sys_melt_var(X, C),
    integer(C),
    \+ sys_elem_set(T, C), !.
-true
-<= phaseout_posted(sys_in(X, _, _)),
+true <=
+   phaseout_posted(sys_in(X, _, _)),
    sys_bound_var(X),
    sys_melt_var(X, C),
    integer(C), !.
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_in)
-<= posted(sys_in(X, _, _)).
+sys_melt_hook(X, sys_hook_in) <=
+   posted(sys_in(X, _, _)).
 /* Variable Rename */
-post(sys_in(Y, T, S))
-<= posted(sys_var_in(X, Y)),
+post(sys_in(Y, T, S)) <=
+   posted(sys_var_in(X, Y)),
    phaseout(sys_in(X, T, S)).
 /* Constant Backpropagation */
-fail
-<= posted(sys_const_in(X, H)),
+fail <=
+   posted(sys_const_in(X, H)),
    phaseout(sys_in(X, T, _)),
    \+ sys_elem_set(T, H).
-true
-<= posted(sys_const_in(X, H)),
+true <=
+   posted(sys_const_in(X, H)),
    phaseout(sys_in(X, T, _)),
    sys_elem_set(T, H).
 
@@ -288,8 +288,8 @@ sys_hook_set(_, T) :-
 :- private sys_var_set/3.
 
 /* Union Find */
-true
-<= phaseout_posted(sys_var_set(_, _)).
+true <=
+   phaseout_posted(sys_var_set(_, _)).
 
 % sys_const_set(+Wrap, +Integer)
 % sys_const_set(X, C) = X = C
@@ -298,8 +298,8 @@ true
 :- private sys_const_set/3.
 
 /* Constant Elimination */
-true
-<= phaseout_posted(sys_const_set(_, _)).
+true <=
+   phaseout_posted(sys_const_set(_, _)).
 
 % sys_set(+Prod, +Set)
 % sys_set(P, S) = P in S
@@ -318,98 +318,98 @@ true
 :- multifile sys_set_agent/6.
 
 /* Create Surrogate */
-post(sys_set_ref(V, L, S, T))
-<= phaseout_posted(sys_set(L, S)),
+post(sys_set_ref(V, L, S, T)) <=
+   phaseout_posted(sys_set(L, S)),
    surrogate_new(V),
    sys_bound_set(S, T).
 
 /* Trivial Cases */
-fail
-<= phaseout_posted(sys_set_ref(_, [], S, _)),
+fail <=
+   phaseout_posted(sys_set_ref(_, [], S, _)),
    \+ sys_elem_set(S, 0), !.
-true
-<= phaseout_posted(sys_set_ref(_, [], _, _)), !.
+true <=
+   phaseout_posted(sys_set_ref(_, [], _, _)), !.
 /* Agent start */
-assumez(sys_set_waits(X, V))
-<= posted(sys_set_ref(V, L, _, _)),
+assumez(sys_set_waits(X, V)) <=
+   posted(sys_set_ref(V, L, _, _)),
    member(_*X, L).
-post(sys_set_agent(V, X, [A*X|B], S, T))
-<= phaseout_posted(sys_set_ref(V, [A*X|B], S, T)).
+post(sys_set_agent(V, X, [A*X|B], S, T)) <=
+   phaseout_posted(sys_set_ref(V, [A*X|B], S, T)).
 
 % sys_set_remove(+Ref)
 % Remove helper
-true
-<= posted(sys_set_remove(V)),
+true <=
+   posted(sys_set_remove(V)),
    phaseout(sys_set_waits(_, V)).
-true
-<= phaseout_posted(sys_set_remove(_)).
+true <=
+   phaseout_posted(sys_set_remove(_)).
 
 % sys_set_move(+Ref)
 % Move helper
 :- private sys_set_move/1.
 :- thread_local sys_set_move/1.
 :- private sys_set_move/2.
-assumez(linform:sys_lin_waits(X, V))
-<= posted(sys_set_move(V)),
+assumez(linform:sys_lin_waits(X, V)) <=
+   posted(sys_set_move(V)),
    phaseout(sys_set_waits(X, V)).
-true
-<= phaseout_posted(sys_set_move(_)).
+true <=
+   phaseout_posted(sys_set_move(_)).
 
 /* Degenerate Sets */
-true
-<= phaseout_posted(sys_set_agent(_, _, _, [...], _)), !.
-fail
-<= phaseout_posted(sys_set_agent(_, _, _, [], _)), !.
+true <=
+   phaseout_posted(sys_set_agent(_, _, _, [...], _)), !.
+fail <=
+   phaseout_posted(sys_set_agent(_, _, _, [], _)), !.
 post(sys_set_move(V)),
-post(linform:sys_lin_agent(V, X, L, Y))
-<= phaseout_posted(sys_set_agent(V, X, L, [Y], _)),
+post(linform:sys_lin_agent(V, X, L, Y)) <=
+   phaseout_posted(sys_set_agent(V, X, L, [Y], _)),
    integer(Y), !.
 /* GCD Normalisation */
-fail
-<= phaseout_posted(sys_set_agent(_, _, P, _, U)),
+fail <=
+   phaseout_posted(sys_set_agent(_, _, P, _, U)),
    sys_gcd_prod(P, G),
    \+ sys_div_range(U, G, _), !.
-post(sys_set_agent(V, X, R, T, W))
-<= phaseout_posted(sys_set_agent(V, X, P, S, U)),
+post(sys_set_agent(V, X, R, T, W)) <=
+   phaseout_posted(sys_set_agent(V, X, P, S, U)),
    sys_gcd_prod(P, G), !,
    sys_div_prod(P, G, R),
    sys_div_set(S, G, T),
    sys_div_range(U, G, W).
-post(sys_set_agent(V, X, R, T, W))
-<= phaseout_posted(sys_set_agent(V, X, [A*X|B], S, U)),
+post(sys_set_agent(V, X, R, T, W)) <=
+   phaseout_posted(sys_set_agent(V, X, [A*X|B], S, U)),
    A < 0, !,
    sys_flip_prod([A*X|B], R),
    sys_flip_set(S, [], T),
    sys_flip_range(U, W).
 /* Simple Trigger */
-post(sys_in(X, S, T))
-<= phaseout_posted(sys_set_agent(V, X, [1*X], S, T)), !,
+post(sys_in(X, S, T)) <=
+   phaseout_posted(sys_set_agent(V, X, [1*X], S, T)), !,
    phaseout(sys_set_waits(X, V)).
 /* Set & Set Intersection */
 post(sys_set_remove(J)),
-post(sys_set_agent(K, X, L, W, R))
-<= phaseout_posted(sys_set_agent(J, X, L, S, P)),
+post(sys_set_agent(K, X, L, W, R)) <=
+   phaseout_posted(sys_set_agent(J, X, L, S, P)),
    phaseout(sys_set_agent(K, X, L, T, Q)),
    (  sys_inter_range(P, Q, R)
    -> sys_inter_set(S, T, W)
    ;  W = [],
       R = ...),
    W \== T, !.
-post(sys_set_remove(K))
-<= phaseout_posted(sys_set_agent(K, X, L, _, _)),
+post(sys_set_remove(K)) <=
+   phaseout_posted(sys_set_agent(K, X, L, _, _)),
    sys_set_agent(_, X, L, _, _), !.
 /* Set & Lin Intersection */
-fail
-<= phaseout_posted(sys_set_agent(_, X, L, S, _)),
+fail <=
+   phaseout_posted(sys_set_agent(_, X, L, S, _)),
    sys_lin_agent(_, X, L, C),
    \+ sys_elem_set(S, C), !.
-post(sys_set_remove(V))
-<= phaseout_posted(sys_set_agent(V, X, L, _, _)),
+post(sys_set_remove(V)) <=
+   phaseout_posted(sys_set_agent(V, X, L, _, _)),
    sys_lin_agent(_, X, L, _), !.
 /* Union Find */
 post(sys_set_remove(V)),
-post(sys_set_ref(V, D, S, T))
-<= phaseout_posted(sys_set_agent(V, _, L, S, T)),
+post(sys_set_ref(V, D, S, T)) <=
+   phaseout_posted(sys_set_agent(V, _, L, S, T)),
    sys_set_waits(X, V),
    sys_bound_var(X),
    sys_melt_var(X, H),
@@ -418,8 +418,8 @@ post(sys_set_ref(V, D, S, T))
    sys_pick_prod(B, X, L, E),
    sys_add_prod([B*Y], E, D).
 /* Constant Elimination */
-post(sys_set_agent(V, Z, [A*Z|D], W, U))
-<= phaseout_posted(sys_set_agent(V, _, L, S, T)),
+post(sys_set_agent(V, Z, [A*Z|D], W, U)) <=
+   phaseout_posted(sys_set_agent(V, _, L, S, T)),
    phaseout(sys_set_waits(X, V)),
    sys_bound_var(X),
    sys_melt_var(X, C),
@@ -429,16 +429,16 @@ post(sys_set_agent(V, Z, [A*Z|D], W, U))
    sys_add_set(S, H, W),
    sys_add_range(T, H, U).
 /* Hook Adding */
-sys_melt_hook(X, sys_hook_set)
-<= posted(sys_set_agent(V, _, _, _, _)),
+sys_melt_hook(X, sys_hook_set) <=
+   posted(sys_set_agent(V, _, _, _, _)),
    sys_set_waits(X, V).
 /* Redundancy Elimination */
 % sys_set_remove(V) <=
 %    &- sys_set_agent(V, _, B, S, _), sys_bound_poly(B, R),
 %    sys_inter_set(S, [R], W), W==[R], !.
 /* Set Diffusion, Directed, Bounds */
-post(sys_in(X, L, U))
-<= posted(sys_set_agent(_, _, [A*X|B], _, T)),
+post(sys_in(X, L, U)) <=
+   posted(sys_set_agent(_, _, [A*X|B], _, T)),
    T \== ...,
    sys_bound_poly(B, Q),
    sys_flip_range(Q, R),
@@ -449,15 +449,15 @@ post(sys_in(X, L, U))
       U = ...).
 /* Variable Rename */
 post(sys_set_remove(V)),
-post(sys_set_ref(V, D, S, T))
-<= posted(sys_var_set(X, Y)),
+post(sys_set_ref(V, D, S, T)) <=
+   posted(sys_var_set(X, Y)),
    sys_set_waits(X, V),
    phaseout(sys_set_agent(V, _, L, S, T)),
    sys_pick_prod(B, X, L, E),
    sys_add_prod([B*Y], E, D).
 /* Constant Backpropagation */
-post(sys_set_agent(V, Z, [A*Z|D], W, U))
-<= posted(sys_const_set(X, C)),
+post(sys_set_agent(V, Z, [A*Z|D], W, U)) <=
+   posted(sys_const_set(X, C)),
    phaseout(sys_set_waits(X, V)),
    phaseout(sys_set_agent(V, _, L, S, T)),
    sys_pick_prod(B, X, L, [A*Z|D]),
@@ -469,8 +469,8 @@ post(sys_set_agent(V, Z, [A*Z|D], W, U))
 %    sys_in(Y, _, E), E\==(...), sys_set_waits(Y, V), &- sys_set_agent(V, _, B, S, _),
 %    sys_pick_prod(C, Y, B, D), sys_rampup_poly(D, C, E, R), sys_inter_set(S, [R], W), W==[R].
 /* Set Update, Directed, Bounds */
-post(sys_in(X, L, U))
-<= posted(sys_in(Y, _, E)),
+post(sys_in(X, L, U)) <=
+   posted(sys_in(Y, _, E)),
    E \== ...,
    sys_set_waits(Y, V),
    sys_set_agent(V, _, [A*X|B], _, T),
