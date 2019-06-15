@@ -166,4 +166,3 @@ A *-> B :-
 :- public repeat/0.
 repeat.
 repeat :- repeat.
-

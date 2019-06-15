@@ -123,7 +123,7 @@ public class PrologWriterAnno extends PrologWriter {
             super.writeInfix(op, sa, cp, decl);
             return;
         }
-        if (op.getLevel()>Operator.LEVEL_MIDDLE &&
+        if (op.getLevel() > Operator.LEVEL_MIDDLE &&
                 (spez & SPEZ_META) != 0 &&
                 (spez & SPEZ_EVAL) == 0 &&
                 (flags & FLAG_NEWL) != 0) {
@@ -135,7 +135,7 @@ public class PrologWriterAnno extends PrologWriter {
                 appendLink(t, cp);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
                     append(' ');
-            } else if (op.getLevel() >= 1025 && !isLowr(decl)) {
+            } else if (op.getLevel() >= DISJ_LOW && op.getLevel() < 1125) {
                 if ((flags & FLAG_FILL) != 0) {
                     String[][] fillers = (sa instanceof SkelAtomAnno ?
                             ((SkelAtomAnno) sa).getFillers() : null);
@@ -243,8 +243,7 @@ public class PrologWriterAnno extends PrologWriter {
         }
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
         Object[] decl = predicateToMeta(cp);
-        int backindent = indent;
-        indent = getTextOffset() + SPACES;
+        int backtoff = getTextOffset() + SPACES;
         appendLink(PrologReader.OP_LBRACE, cp);
         int backspez = spez;
         int backoffset = offset;
@@ -258,7 +257,7 @@ public class PrologWriterAnno extends PrologWriter {
                 ((SkelAtomAnno) sa).getFillers() : null);
         if (hasEol(fillers != null ? fillers[0] : null)) {
             writeFiller(ENDLINE, fillers[0]);
-            for (int i = 0; i < indent; i++)
+            for (int i = 0; i < backtoff; i++)
                 append(' ');
         }
         write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
@@ -266,7 +265,6 @@ public class PrologWriterAnno extends PrologWriter {
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RBRACE);
-        indent = backindent;
     }
 
     /**

@@ -90,6 +90,9 @@ public class PrologWriter {
     private final static String noTermChs = "([{}])";
     private final static String noOperChs = ".,|";
 
+    protected final static int DISJ_LOW = 1025;
+    protected final static int DISJ_HIGH = 1125;
+
     final static int MASK_ATOM_OPER = 0x00000001;
 
     public Engine engine;
@@ -932,7 +935,7 @@ public class PrologWriter {
                 appendLink(t, cp);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
                     append(' ');
-            } else if (op.getLevel() >= 1025 && !isLowr(decl)) {
+            } else if (op.getLevel() >= DISJ_LOW && op.getLevel() < DISJ_HIGH) {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
@@ -1363,6 +1366,7 @@ public class PrologWriter {
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
+                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
@@ -1372,7 +1376,7 @@ public class PrologWriter {
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
-                    if (op.getLevel() > Operator.LEVEL_MIDDLE &&
+                    if (op.getLevel() >= DISJ_HIGH &&
                             (backspez & SPEZ_META) != 0 &&
                             (backspez & SPEZ_EVAL) == 0 &&
                             (flags & FLAG_NEWL) != 0) {
@@ -1385,17 +1389,12 @@ public class PrologWriter {
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     write(sc.args[0], ref, op.getLevel() - op.getRight(), null, null);
-                    if (op.getLevel() > Operator.LEVEL_MIDDLE &&
-                            (backspez & SPEZ_META) != 0 &&
-                            (backspez & SPEZ_EVAL) == 0 &&
-                            (flags & FLAG_NEWL) != 0) {
-                        indent -= SPACES;
-                    }
                     spez = backspez;
                     offset = backoffset;
                     shift = backshift;
                     if (needsParen(op, backspez, level))
                         append(PrologReader.OP_RPAREN);
+                    indent = backindent;
                     return;
                 }
                 op = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
@@ -1457,21 +1456,14 @@ public class PrologWriter {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
+                        append(PrologReader.OP_LPAREN);
                         if (op.getLevel() > Operator.LEVEL_MIDDLE &&
                                 (backspez & SPEZ_META) != 0 &&
                                 (backspez & SPEZ_EVAL) == 0 &&
                                 (flags & FLAG_NEWL) != 0) {
-                            if (op.getLevel() >= 1025 && !isLowr(decl)) {
-                                indent = getTextOffset() + SPACES;
-                                append(PrologReader.OP_LPAREN);
-                                for (int i = 1; i < SPACES; i++)
-                                    append(' ');
-                            } else {
-                                indent = getTextOffset();
-                                append(PrologReader.OP_LPAREN);
-                            }
-                        } else {
-                            append(PrologReader.OP_LPAREN);
+                            indent = getTextOffset() + SPACES - 1;
+                            for (int i = 0; i < SPACES - 1; i++)
+                                append(' ');
                         }
                     }
                     /* left operand */
@@ -1508,7 +1500,7 @@ public class PrologWriter {
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     int forwardspez = spez;
-                    if (op.getLevel() > Operator.LEVEL_MIDDLE && isLowr(decl) &&
+                    if (op.getLevel() >= DISJ_HIGH &&
                             (backspez & SPEZ_META) != 0 &&
                             (backspez & SPEZ_EVAL) == 0 &&
                             (flags & FLAG_NEWL) != 0) {
@@ -1610,26 +1602,6 @@ public class PrologWriter {
         if (!(op2.getLevel() > Operator.LEVEL_MIDDLE))
             return false;
         if (needsParen(op2, spez, op.getLevel() - op.getRight()))
-            return false;
-        return true;
-    }
-
-    /**
-     * <p>Check whether the meta predicate is lowr.</p>
-     *
-     * @param decl The declaration.
-     * @return True if the meta predicate is lowr, otherwise false.
-     */
-    public static boolean isLowr(Object[] decl) {
-        if (decl == null)
-            return false;
-        Object obj1 = decl[0];
-        if (!(obj1 instanceof Integer))
-            return false;
-        Object obj2 = decl[1];
-        if (!(obj2 instanceof Integer))
-            return false;
-        if (obj1.equals(obj2))
             return false;
         return true;
     }

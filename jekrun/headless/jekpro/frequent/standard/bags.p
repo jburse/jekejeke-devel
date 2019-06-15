@@ -191,8 +191,8 @@ sys_run_values_rest(P, _, [], P).
 :- public forall/2.
 :- meta_predicate forall(0,0).
 forall(A, B) :-
-   \+ (A,
-      \+ B).
+   \+ (  A,
+         \+ B).
 
 /**********************************************************/
 /* Copy Term                                              */

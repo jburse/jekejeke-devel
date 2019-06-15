@@ -157,8 +157,8 @@ call_residue(G, L) :-
 % sys_eq_list(-Goals)
 :- public sys_eq_list/1.
 sys_eq_list(L) :-
-   findall(E, (sys_residue_attr(V),
-              sys_current_eq(V, E)), H),
+   findall(E, (  sys_residue_attr(V),
+                 sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 

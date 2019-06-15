@@ -158,7 +158,7 @@ expand_term(G, N) :-
    \+ predicate_property(I, sys_noexpand), !,
    expand_term_callable(G, I, H, U),
    simplify_term(H, K),
-   simplify_term((K :- U), N).
+   simplify_term((  K :- U), N).
 expand_term(T, U) :-
    simplify_term(T, U).
 
@@ -181,7 +181,7 @@ sys_expand_term_args([], [], [], true).
 sys_expand_term_args([M|R], [A|L], [B|S], T) :-
    sys_expand_term_arg(M, A, B, P),
    sys_expand_term_args(R, L, S, Q),
-   simplify_goal((P, Q), T).
+   simplify_goal((  P, Q), T).
 
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_term_arg/4.
@@ -230,7 +230,7 @@ expand_goal(G, N) :-
    \+ predicate_property(I, sys_noexpand), !,
    expand_goal_callable(G, I, H, U),
    simplify_goal(H, K),
-   simplify_goal((U, K), N).
+   simplify_goal((  U, K), N).
 expand_goal(G, H) :-
    simplify_goal(G, H).
 
@@ -253,7 +253,7 @@ sys_expand_goal_args([], [], [], true).
 sys_expand_goal_args([M|R], [A|L], [B|S], T) :-
    sys_expand_goal_arg(M, A, B, P),
    sys_expand_goal_args(R, L, S, Q),
-   simplify_goal((P, Q), T).
+   simplify_goal((  P, Q), T).
 
 % sys_expand_goal_arg(+Mode, +Arg, -Arg, -Goal)
 :- private sys_expand_goal_arg/4.
@@ -324,4 +324,4 @@ sys_expand_rest_args([A|L], [B|S], T) :-
    expand_rest(A, H),
    sys_unpack_cond(H, B, P),
    sys_expand_rest_args(L, S, Q),
-   simplify_goal((P, Q), T).
+   simplify_goal((  P, Q), T).
