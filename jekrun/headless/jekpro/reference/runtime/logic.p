@@ -91,19 +91,10 @@
 :- set_predicate_property(;/2, sys_notrace).
 :- set_predicate_property(;/2, sys_nobarrier).
 A -> B; C :- sys_local_cut,
-   sys_cond(A, B, C).
+   (  A -> B; C).                                 % Proto
 A *-> B; C :- sys_local_cut,
    sys_soft_cond(A, B, C).
-A; _ :- A.                                        % Proto
-_; B :- B.                                        % Proto
-
-% sys_cond(+Goal, +Goal, +Goal)
-:- private sys_cond/3.
-:- meta_predicate sys_cond(0,0,0).
-:- set_predicate_property(sys_cond/3, sys_nobarrier).
-sys_cond(A, B, _) :-
-   sys_safe(A), sys_local_cut, B.                              % Proto
-sys_cond(_, _, C) :- C.                           % Proto
+A; B :- A; B.                                          % Proto
 
 % sys_soft_cond(+Goal, +Goal, +Goal)
 :- private sys_soft_cond/3.
@@ -112,14 +103,6 @@ sys_cond(_, _, C) :- C.                           % Proto
 sys_soft_cond(A, B, _) :-
    sys_safe(A), sys_soft_local_cut, B.                         % Proto
 sys_soft_cond(_, _, C) :- C.                      % Proto
-
-/**
- * sys_soft_local_cut:
- * The predicate marks the choice point of the direct parent, if there is any
- * at all, as non-redo able and then succeeds once.
- */
-:- private sys_soft_local_cut/0.
-:- special(sys_soft_local_cut/0, 'SpecialLogic', 1).
 
 /**
  * A -> B: [ISO 7.8.7]
@@ -132,16 +115,7 @@ sys_soft_cond(_, _, C) :- C.                      % Proto
 :- set_predicate_property(-> /2, sys_body).
 :- set_predicate_property(-> /2, sys_notrace).
 :- set_predicate_property(-> /2, sys_nobarrier).
-A -> B :-
-   sys_safe(A), sys_local_cut, B.                              % Proto
-
-/**
- * sys_local_cut:
- * The predicate removes pending choice points between the direct parent
- * goal invocation and this goal and then succeeds once.
- */
-:- private sys_local_cut/0.
-:- special(sys_local_cut/0, 'SpecialLogic', 0).
+A -> B :- A -> B.                                        % Proto
 
 /**
  * A *-> B:
@@ -156,6 +130,22 @@ A -> B :-
 :- set_predicate_property(*-> /2, sys_nobarrier).
 A *-> B :-
    sys_safe(A), B.                                % Proto
+
+/**
+ * sys_soft_local_cut:
+ * The predicate marks the choice point of the direct parent, if there is any
+ * at all, as non-redo able and then succeeds once.
+ */
+:- private sys_soft_local_cut/0.
+:- special(sys_soft_local_cut/0, 'SpecialLogic', 1).
+
+/**
+ * sys_local_cut:
+ * The predicate removes pending choice points between the direct parent
+ * goal invocation and this goal and then succeeds once.
+ */
+:- private sys_local_cut/0.
+:- special(sys_local_cut/0, 'SpecialLogic', 0).
 
 /**
  * sys_safe(A):

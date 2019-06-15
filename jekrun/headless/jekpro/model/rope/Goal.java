@@ -237,8 +237,6 @@ public class Goal extends Intermediate {
                     ((SkelCompound) term).args.length == 2 &&
                     ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
                 return false;
-            } else if (term instanceof SkelVar) {
-                return false;
             } else {
                 return true;
             }
