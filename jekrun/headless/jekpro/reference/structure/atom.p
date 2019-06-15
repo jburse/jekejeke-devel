@@ -208,7 +208,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
    var(Len),
-   var(Sub), !,                                             % not in sub_atom/4.
+   var(Sub), !,                                   % not in sub_atom/4.
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
    sys_atom_word_offset(Str, Count, Off1, Pos),
@@ -218,7 +218,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
    Len is Temp2-Off.
 sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off),
-   var(Sub), !,                                             % not in sub_atom/4.
+   var(Sub), !,                                   % not in sub_atom/4.
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
    sys_atom_word_offset(Str, Count, Off1, Pos),
@@ -227,7 +227,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :-
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
    sys_atom_word_count(Str, 0, Pos2, Off).
 sub_atom(Str, Off, Len, Off2, Sub) :-
-   var(Off), !,                                             % not in sub_atom/4.
+   var(Off), !,                                   % not in sub_atom/4.
    sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
@@ -635,7 +635,7 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Len),
    var(Off2),
-   var(Sub), !,                                             % not in last_sub_atom/4
+   var(Sub), !,                                   % not in last_sub_atom/4
    sys_atom_word_len(Str, Count),
    sys_atom_word_count(Str, 0, Count, Temp),
    sys_atom_word_offset(Str, 0, Off, Pos2),
@@ -645,7 +645,7 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-
    Off2 is Temp-Help.
 last_sub_atom(Str, Off, Len, Off2, Sub) :-
    var(Off2),
-   var(Sub), !,                                             % not in last_sub_atom/4
+   var(Sub), !,                                   % not in last_sub_atom/4
    sys_atom_word_offset(Str, 0, Off, Pos2),
    sys_atom_word_offset(Str, Pos2, Len, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),

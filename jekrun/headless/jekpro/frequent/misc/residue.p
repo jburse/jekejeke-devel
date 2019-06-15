@@ -157,8 +157,8 @@ call_residue(G, L) :-
 % sys_eq_list(-Goals)
 :- public sys_eq_list/1.
 sys_eq_list(L) :-
-   findall(E, (  sys_residue_attr(V),
-                 sys_current_eq(V, E)), H),
+   findall(E, (sys_residue_attr(V),
+              sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 
@@ -168,6 +168,17 @@ sys_unwrap_eqs([G|L], I, O) :-
    sys_unwrap_eq(G, I, H),
    sys_unwrap_eqs(L, H, O).
 sys_unwrap_eqs([], L, L).
+
+/**
+ * call_residue2(G, L):
+ * The predicate succeeds whenever the goal G succeeds. The predicate
+ * unifies L with the list of constraints, both shown and hidden.
+ */
+:- public call_residue2/2.
+:- meta_predicate call_residue2(0,?).
+call_residue2(G, L) :-
+   call(G),
+   sys_eq_list(L).
 
 /***********************************************************/
 /* CAS Display Hook                                        */

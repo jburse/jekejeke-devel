@@ -124,11 +124,11 @@ sys_apropos_table(library(stream/frequent)).
 sys_enum_apropos(N, row(I,E,T)) :-
    setup_call_cleanup(
       open_resource(N, S),
-      (  repeat,
-         (  read_line(S, L)
-         -> atom_split(L, '\t', U),
-            sys_split_line(U, H, E, T),
-            sys_split_indicator(H, I); !, fail)),
+      (repeat,
+      (  read_line(S, L)
+      -> atom_split(L, '\t', U),
+         sys_split_line(U, H, E, T),
+         sys_split_indicator(H, I); !, fail)),
       close(S)).
 
 % sys_split_line(+List, -Atom, -Atom)

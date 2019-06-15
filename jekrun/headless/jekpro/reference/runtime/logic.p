@@ -94,14 +94,14 @@ A -> B; C :- sys_local_cut,
    (  A -> B; C).                                 % Proto
 A *-> B; C :- sys_local_cut,
    sys_soft_cond(A, B, C).
-A; B :- A; B.                                          % Proto
+A; B :- A; B.                                     % Proto
 
 % sys_soft_cond(+Goal, +Goal, +Goal)
 :- private sys_soft_cond/3.
 :- meta_predicate sys_soft_cond(0,0,0).
 :- set_predicate_property(sys_soft_cond/3, sys_nobarrier).
 sys_soft_cond(A, B, _) :-
-   sys_safe(A), sys_soft_local_cut, B.                         % Proto
+   sys_safe(A), sys_soft_local_cut, B.            % Proto
 sys_soft_cond(_, _, C) :- C.                      % Proto
 
 /**
@@ -115,7 +115,7 @@ sys_soft_cond(_, _, C) :- C.                      % Proto
 :- set_predicate_property(-> /2, sys_body).
 :- set_predicate_property(-> /2, sys_notrace).
 :- set_predicate_property(-> /2, sys_nobarrier).
-A -> B :- A -> B.                                        % Proto
+A -> B :- A -> B.                                 % Proto
 
 /**
  * A *-> B:

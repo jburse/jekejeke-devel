@@ -121,7 +121,7 @@ balance(P, N) :-
    pipe_new(N, F),
    sys_group_clean(Z),
    sys_thread_init(Z, sys_put_all(I, G, F, N)),
-   horde2(Z, J, (  sys_take_all(I, F, 1), T), N).
+   horde2(Z, J, (sys_take_all(I, F, 1), T), N).
 
 /**
  * setup_balance(V1^..Vn^(S, G, T)):
@@ -147,8 +147,8 @@ setup_balance(Q, N) :-
    pipe_new(N, F),
    sys_group_clean(Z),
    sys_thread_init(Z, sys_put_all(I, G, F, N)),
-   horde2(Z, J, (  S,
-                   sys_take_all(I, F, 1), T), N).
+   horde2(Z, J, (S,
+                sys_take_all(I, F, 1), T), N).
 
 /**
  * submit(C, N):
@@ -233,8 +233,8 @@ sys_put_all2(_, _, _, _).
 :- private sys_group_clean/1.
 :- meta_predicate sys_group_clean(?).
 sys_group_clean(G) :-
-   sys_atomic((  group_new(G),
-                 sys_cleanup(sys_group_fini(G)))).
+   sys_atomic((group_new(G),
+              sys_cleanup(sys_group_fini(G)))).
 
 /**
  * sys_group_fini(G):

@@ -61,9 +61,6 @@ public class PrologWriter {
 
     public final static int SPACES = 3;
 
-    public final static int STANDALONE = 0;
-    public final static int ENDLINE = 50;
-
     public final static int FLAG_QUOT = 0x00000001;
     public final static int FLAG_NUMV = 0x00000002;
     public final static int FLAG_IGNO = 0x00000004;
@@ -88,9 +85,7 @@ public class PrologWriter {
 
     final static int SPEZ_FUNC = 0x00000100;
     final static int SPEZ_MINS = 0x00000200;
-
-    final static int SPEZ_ICUT = 0x00001000;
-    final static int SPEZ_ICAT = 0x00002000;
+    final static int SPEZ_ICUT = 0x00000400;
 
     private final static String noTermChs = "([{}])";
     private final static String noOperChs = ".,|";
@@ -111,9 +106,7 @@ public class PrologWriter {
     private byte utilback = ReadOpts.UTIL_ERROR;
     private byte utilsingle = ReadOpts.UTIL_ATOM;
     private AbstractSource source;
-
-    public PrologWriter() {
-    }
+    protected int indent;
 
     /**
      * <p>Set the engine.</p>
@@ -267,6 +260,26 @@ public class PrologWriter {
     public void setPrintMap(MapHashLink<Object, NamedDistance> v) {
         printmap = v;
     }
+
+
+    /**
+     * <p>Retrieve the indent.</p>
+     *
+     * @return The indent.
+     */
+    public int getIndent() {
+        return indent;
+    }
+
+    /**
+     * <p>Set the indent.</p>
+     *
+     * @param i The indent.
+     */
+    public void setIndent(int i) {
+        indent = i;
+    }
+
 
     /**
      * <p>Retrieve the source.</p>
@@ -489,7 +502,8 @@ public class PrologWriter {
      * @param s The string.
      * @throws IOException IO error.
      */
-    public void append(String s) throws IOException {
+    public void append(String s)
+            throws IOException {
         append(s, 0, s.length());
     }
 
@@ -499,7 +513,8 @@ public class PrologWriter {
      * @param ch The code point.
      * @throws IOException IO error.
      */
-    public void append(char ch) throws IOException {
+    public void append(char ch)
+            throws IOException {
         wr.write(ch);
         if (ch == CodeType.LINE_EOL) {
             toff = 0;
@@ -515,7 +530,8 @@ public class PrologWriter {
      * @param t The token.
      * @throws IOException IO error.
      */
-    final void safeSpace(String t) throws IOException {
+    final void safeSpace(String t)
+            throws IOException {
         int ch = (t.length() == 0 ? -1 : t.codePointAt(0));
         if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
                 !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
@@ -902,16 +918,9 @@ public class PrologWriter {
      * @throws EngineMessage Shit happens.
      */
     protected void writeInfix(Operator op, SkelAtom sa,
-                              CachePredicate cp,
-                              Object[] decl, int indent)
-            throws IOException, EngineMessage, EngineException {
-        /**
-         * - implication newln and indent.
-         * - conjunction newln and indent.
-         * - newln disjunction and indent
-         * - spacing.
-         */
-        if (isFunr(decl) && (isLowr(decl) || isNewr(decl)) &&
+                              CachePredicate cp, Object[] decl)
+            throws IOException, EngineException, EngineMessage {
+        if (op.getLevel() > Operator.LEVEL_MIDDLE &&
                 (spez & SPEZ_META) != 0 &&
                 (spez & SPEZ_EVAL) == 0 &&
                 (flags & FLAG_NEWL) != 0) {
@@ -942,8 +951,6 @@ public class PrologWriter {
                 for (int i = 0; i < indent; i++)
                     append(' ');
             }
-            if ((spez & SPEZ_ICAT) != 0)
-                setTextOffset(indent);
         } else {
             if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
                     (spez & SPEZ_META) != 0 &&
@@ -1241,31 +1248,12 @@ public class PrologWriter {
             if ((backspez & SPEZ_META) != 0 &&
                     (backspez & SPEZ_EVAL) == 0)
                 append(' ');
-            Object mod2;
-            SkelAtom nsa2;
-            if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, false, false, engine) : null);
-                nsa2 = sc.sym;
-            } else if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, true, false, engine) : null);
-                nsa2 = sc.sym;
-            } else {
-                mod2 = null;
-                nsa2 = null;
-            }
-            write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
+            write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         }
         append(PrologReader.OP_RBRACKET);
         spez = backspez;
         offset = backoffset;
         shift = backshift;
-
     }
 
     /**
@@ -1384,6 +1372,12 @@ public class PrologWriter {
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
+                    if (op.getLevel() > Operator.LEVEL_MIDDLE &&
+                            (backspez & SPEZ_META) != 0 &&
+                            (backspez & SPEZ_EVAL) == 0 &&
+                            (flags & FLAG_NEWL) != 0) {
+                        indent += SPACES;
+                    }
                     writePrefix(op, sc.sym, cp);
                     /* right operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
@@ -1391,6 +1385,12 @@ public class PrologWriter {
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     write(sc.args[0], ref, op.getLevel() - op.getRight(), null, null);
+                    if (op.getLevel() > Operator.LEVEL_MIDDLE &&
+                            (backspez & SPEZ_META) != 0 &&
+                            (backspez & SPEZ_EVAL) == 0 &&
+                            (flags & FLAG_NEWL) != 0) {
+                        indent -= SPACES;
+                    }
                     spez = backspez;
                     offset = backoffset;
                     shift = backshift;
@@ -1448,31 +1448,30 @@ public class PrologWriter {
                 if (op != null) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
+                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
-                    int indent = -1;
-                    if (isFunr(decl) && (isLowr(decl) || isNewr(decl)) &&
-                            (backspez & SPEZ_META) != 0 &&
-                            (backspez & SPEZ_EVAL) == 0 &&
-                            (flags & FLAG_NEWL) != 0) {
-                        indent = getTextOffset();
-                        if (isLowr(decl))
-                            indent += SPACES;
-                    }
                     if (needsParen(op, backspez, level)) {
                         if ((backspez & SPEZ_FUNC) != 0) {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
-                        append(PrologReader.OP_LPAREN);
-                        if (isFunr(decl) && (!isLowr(decl) && isNewr(decl)) &&
+                        if (op.getLevel() > Operator.LEVEL_MIDDLE &&
                                 (backspez & SPEZ_META) != 0 &&
                                 (backspez & SPEZ_EVAL) == 0 &&
                                 (flags & FLAG_NEWL) != 0) {
-                            indent += SPACES;
-                            for (int i = getTextOffset(); i < indent; i++)
-                                append(' ');
+                            if (op.getLevel() >= 1025 && !isLowr(decl)) {
+                                indent = getTextOffset() + SPACES;
+                                append(PrologReader.OP_LPAREN);
+                                for (int i = 1; i < SPACES; i++)
+                                    append(' ');
+                            } else {
+                                indent = getTextOffset();
+                                append(PrologReader.OP_LPAREN);
+                            }
+                        } else {
+                            append(PrologReader.OP_LPAREN);
                         }
                     }
                     /* left operand */
@@ -1503,22 +1502,25 @@ public class PrologWriter {
                         mod2 = null;
                         nsa2 = null;
                     }
+                    /* right operand */
                     z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
                     spez = (spez & SPEZ_OPLE) + getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     int forwardspez = spez;
-                    if (isSimple(sc.args[1], ref)) {
+                    if (op.getLevel() > Operator.LEVEL_MIDDLE && isLowr(decl) &&
+                            (backspez & SPEZ_META) != 0 &&
+                            (backspez & SPEZ_EVAL) == 0 &&
+                            (flags & FLAG_NEWL) != 0) {
+                        indent += SPACES;
+                    }
+                    if (isSimple(sc.args[1], ref) || isOperSimple(sc.args[1], ref, op)) {
                         spez = backspez;
                         spez |= SPEZ_ICUT;
-                        writeInfix(op, sc.sym, cp, decl, indent);
-                    } else if (isOperSimple(sc.args[1], ref, mod2, nsa2, op)) {
-                        spez = backspez;
-                        spez |= (SPEZ_ICUT | SPEZ_ICAT);
-                        writeInfix(op, sc.sym, cp, decl, indent);
+                        writeInfix(op, sc.sym, cp, decl);
                     } else {
                         spez = backspez;
-                        writeInfix(op, sc.sym, cp, decl, indent);
+                        writeInfix(op, sc.sym, cp, decl);
                     }
                     spez = forwardspez;
                     /* right operand */
@@ -1528,6 +1530,7 @@ public class PrologWriter {
                     shift = backshift;
                     if (needsParen(op, backspez, level))
                         append(PrologReader.OP_RPAREN);
+                    indent = backindent;
                     return;
                 }
             }
@@ -1578,14 +1581,12 @@ public class PrologWriter {
      *
      * @param term The argument skeleton.
      * @param ref  The argument display.
-     * @param mod  The module context, or null.
      * @param op   The operator.
      * @return True if the argument is a an oper and a simple, otherwise false.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
     private boolean isOperSimple(Object term, Display ref,
-                                 Object mod, SkelAtom nsa,
                                  Operator op)
             throws EngineMessage, EngineException {
         if (engine != null) {
@@ -1606,25 +1607,9 @@ public class PrologWriter {
                 Operator.TYPE_INFIX, engine);
         if (op2 == null)
             return false;
-        Object[] decl = predicateToMeta(offsetToPredicate(term, mod, nsa));
-        if (!isFunr(decl))
-            return false;
-        if (!isLowr(decl) && !isNewr(decl))
+        if (!(op2.getLevel() > Operator.LEVEL_MIDDLE))
             return false;
         if (needsParen(op2, spez, op.getLevel() - op.getRight()))
-            return false;
-        return true;
-    }
-
-    /**
-     * <p>Check whether the meta predicate is newr.</p>
-     *
-     * @param decl The declaration.
-     * @return True if the meta predicate is newr, otherwise false.
-     */
-    public static boolean isNewr(Object[] decl) {
-        Object obj1 = decl[0];
-        if (!(obj1 instanceof Integer))
             return false;
         return true;
     }
@@ -1636,6 +1621,8 @@ public class PrologWriter {
      * @return True if the meta predicate is lowr, otherwise false.
      */
     public static boolean isLowr(Object[] decl) {
+        if (decl == null)
+            return false;
         Object obj1 = decl[0];
         if (!(obj1 instanceof Integer))
             return false;
@@ -1643,18 +1630,6 @@ public class PrologWriter {
         if (!(obj2 instanceof Integer))
             return false;
         if (obj1.equals(obj2))
-            return false;
-        return true;
-    }
-
-    /**
-     * <p>Check whether the compound is a funr.</p>
-     *
-     * @param decl The declaration.
-     * @return True if the compound is a funr.
-     */
-    public boolean isFunr(Object[] decl) {
-        if (decl == null)
             return false;
         return true;
     }

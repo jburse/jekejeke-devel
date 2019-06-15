@@ -89,8 +89,7 @@ simplify_term(T, T).
 simp:term_simplification(_ /\ A, _) :-
    var(A), !, fail.
 simp:term_simplification(C /\ unit, C).
-simp:term_simplification(A /\
-                         (  B /\ C), J) :-
+simp:term_simplification(A /\ (B /\ C), J) :-
    simplify_term(A /\ B, H),
    simplify_term(H /\ C, J).
 simp:term_simplification(A /\ _, _) :-
@@ -101,7 +100,7 @@ simp:term_simplification(unit /\ C, C).
 term_simplification((A :- _), _) :-
    var(A), !, fail.
 term_simplification(((A :- B) :- C), (A :- H)) :-
-   simplify_goal((  C, B), H).
+   simplify_goal((C, B), H).
 term_simplification((_ :- A), _) :-
    var(A), !, fail.
 term_simplification((C :- true), C).
@@ -136,13 +135,13 @@ simplify_goal(G, G).
 
 /* Predefined goal implifications */
 /* (,)/2 flattening */
-goal_simplification((  A, _), _) :-
+goal_simplification((A, _), _) :-
    var(A), !, fail.
-goal_simplification((  true, C), C).
-goal_simplification((  _, A), _) :-
+goal_simplification((true, C), C).
+goal_simplification((_, A), _) :-
    var(A), !, fail.
-goal_simplification((  C, true), C).
-goal_simplification((  U, C), J) :-
+goal_simplification((C, true), C).
+goal_simplification((U, C), J) :-
    U = (A,B),
    sys_replace_site(P, U, (B,C)),
    simplify_goal(P, H),

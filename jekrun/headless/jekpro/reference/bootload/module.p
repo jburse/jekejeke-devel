@@ -305,8 +305,8 @@ sys_public(postfix(X)) :- !,
 sys_public(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
-   once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+   once((predicate_property(I, sys_usage(D)),
+        \+ C = D)),
    \+ predicate_property(I, sys_public(D)),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-

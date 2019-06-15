@@ -145,8 +145,8 @@ sys_get_name_or_eq_list(R, M) :-
 :- private sys_filter_variable_names/4.
 sys_filter_variable_names([X=Y|L], M, R, S) :-
    var(Y),
-   once((  sys_member(Z=T, M),
-           T == Y)),
+   once((sys_member(Z=T, M),
+        T == Y)),
    Z == X, !,
    sys_filter_variable_names(L, M, R, S).
 sys_filter_variable_names([X=Y|L], M, R, [X is Z|S]) :-

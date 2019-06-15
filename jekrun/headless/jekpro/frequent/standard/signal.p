@@ -115,8 +115,8 @@ call_cleanup(G, C) :-
 :- meta_predicate setup_call_cleanup(0,0,0).
 :- set_predicate_property(setup_call_cleanup/3, sys_notrace).
 setup_call_cleanup(A, G, C) :-
-   sys_atomic((  once(A),
-                 sys_cleanup(C))),
+   sys_atomic((once(A),
+              sys_cleanup(C))),
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
