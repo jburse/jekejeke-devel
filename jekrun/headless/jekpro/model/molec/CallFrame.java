@@ -46,15 +46,13 @@ public final class CallFrame extends StackElement {
      * <p>Create a new call frame.</p>
      *
      * @param d         The display.
-     * @param directive The directive.
      * @param en        The engine.
      */
-    public CallFrame(Display d, Directive directive, Engine en) {
+    public CallFrame(Display d, Engine en) {
         disp = d;
         contskel = en.contskel;
         contdisplay = en.contdisplay;
         number = en.number;
-        flags = directive.flags & Directive.MASK_DIRE_CALL;
     }
 
     /**
@@ -68,9 +66,9 @@ public final class CallFrame extends StackElement {
             if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = contdisplay;
                 if (u1.number >= number) {
-                    Display d1 = u1.disp;
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
                         if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                            Display d1 = u1.disp;
                             if (d1.bind.length > 0)
                                 d1.remTab(en);
                         }
@@ -100,24 +98,26 @@ public final class CallFrame extends StackElement {
             if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = en.contdisplay;
                 if (u1.number >= en.number) {
-                    Display d1 = u1.disp;
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
                         if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                            Display d1 = u1.disp;
                             if (d1.bind.length > 0)
                                 d1.remTab(en);
                         }
                         u1.flags |= Directive.MASK_DIRE_LTGC;
                     }
-                    int f2 = directive.flags & Directive.MASK_DIRE_CALL;
+                    int flags = directive.flags & Directive.MASK_DIRE_CALL;
                     if ((u1.flags & Directive.MASK_DIRE_NOBR) == 0)
-                        f2 &= ~Directive.MASK_DIRE_NOBR;
+                        flags &= ~Directive.MASK_DIRE_NOBR;
                     u1.disp = d;
-                    u1.flags = f2;
+                    u1.flags = flags;
                     return u1;
                 }
             }
         }
-        return new CallFrame(d, directive, en);
+        CallFrame u1 = new CallFrame(d, en);
+        u1.flags = directive.flags & Directive.MASK_DIRE_CALL;
+        return u1;
     }
 
 }

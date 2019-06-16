@@ -46,6 +46,8 @@ public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_SYS_GUARD = 2;
     private final static int SPECIAL_SYS_BEGIN = 3;
     private final static int SPECIAL_SYS_COMMIT = 4;
+    private final static int SPECIAL_SYS_SOFT_BEGIN = 5;
+    private final static int SPECIAL_SYS_SOFT_COMMIT = 6;
 
     /**
      * <p>Create a body special.</p>
@@ -113,6 +115,25 @@ public final class SpecialBody extends AbstractSpecial {
                 en.cutChoices(ref2.barrier - 1);
                 if (en.fault != null)
                     throw en.fault;
+                return true;
+            case SPECIAL_SYS_SOFT_BEGIN:
+                ref2 = en.contdisplay;
+                ref2 = new CallFrame(ref2.disp, en);
+                ref2.flags |= Directive.MASK_DIRE_NBDY;
+                en.contdisplay = ref2;
+                return true;
+            case SPECIAL_SYS_SOFT_COMMIT:
+                ref2 = en.contdisplay;
+                en.contdisplay = ref2.contdisplay;
+                if (ref2.number >= en.number) {
+                    en.fault = null;
+                    en.cutChoices(ref2.number - 1);
+                    if (en.fault != null)
+                        throw en.fault;
+                } else {
+                    ref2 = en.contdisplay;
+                    ref2.flags |= Directive.MASK_DIRE_SOFT;
+                }
                 return true;
             default:
                 throw new IllegalArgumentException(

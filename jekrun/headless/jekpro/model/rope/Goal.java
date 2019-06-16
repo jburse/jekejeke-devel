@@ -44,8 +44,6 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public static final String OP_SOFT_CONDITION = "*->";
-
     public final static int MASK_GOAL_NAKE = 0x00000100;
     public final static int MASK_GOAL_CEND = 0x00000200;
 
@@ -137,7 +135,7 @@ public class Goal extends Intermediate {
         while (body != null) {
             Object term = bodyToGoal(body);
             if (term != null) {
-                if (isDisjunction(term) || isCondition(term))
+                if (isDisjunction(term) || isCondition(term) || isSoftCondition(term))
                     term = disjunctionToAlternative(dire, term, en);
                 Goal goal = new Goal(term);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -163,6 +161,8 @@ public class Goal extends Intermediate {
             Directive left;
             if (isCondition(help)) {
                 left = condToInter(dire, help, en);
+            } else if (isSoftCondition(help)) {
+                left = softCondToInter(dire, help, en);
             } else {
                 left = goalToInter(dire, help, en);
             }
@@ -175,6 +175,9 @@ public class Goal extends Intermediate {
         Object t;
         if (isCondition(term)) {
             t = condToInter(dire, term, en);
+            t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
+        } else if (isSoftCondition(term)) {
+            t = softCondToInter(dire, term, en);
             t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
         } else {
             t = goalToInter(dire, term, en);
@@ -208,6 +211,24 @@ public class Goal extends Intermediate {
     }
 
     /**
+     * <p>Convert a condition branch to intermediate form.</p>
+     *
+     * @param dire The directive.
+     * @param body The term list, or null.
+     * @param en   The engine.
+     */
+    private static Directive softCondToInter(Directive dire, Object body,
+                                             Engine en) {
+        Directive left = makeDirective(dire, en);
+        SkelCompound sc = (SkelCompound) body;
+        left.bodyToInter(en.store.foyer.ATOM_SYS_SOFT_BEGIN, en, false);
+        left.bodyToInter(sc.args[0], en, false);
+        left.bodyToInter(en.store.foyer.ATOM_SYS_SOFT_COMMIT, en, false);
+        left.bodyToInter(sc.args[1], en, false);
+        return left;
+    }
+
+    /**
      * <p>Convert a goal to intermediate form.</p>
      *
      * @param dire The directive.
@@ -231,15 +252,7 @@ public class Goal extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_SEMICOLON)) {
-            SkelCompound sc = (SkelCompound) term;
-            term = sc.args[0];
-            if (term instanceof SkelCompound &&
-                    ((SkelCompound) term).args.length == 2 &&
-                    ((SkelCompound) term).sym.fun.equals(OP_SOFT_CONDITION)) {
-                return false;
-            } else {
-                return true;
-            }
+            return true;
         } else {
             return false;
         }
@@ -255,6 +268,22 @@ public class Goal extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONDITION)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isSoftCondition(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SOFT_CONDITION)) {
             return true;
         } else {
             return false;

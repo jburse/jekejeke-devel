@@ -50,10 +50,14 @@ public class Directive extends Intermediate {
 
     public final static int MASK_DIRE_LTGC = 0x00000100;
     public final static int MASK_DIRE_MORE = 0x00000200;
+    public final static int MASK_DIRE_SOFT = 0x00000400;
+
+    public final static int MASK_DIRE_PUSH = MASK_DIRE_NOBR |
+            MASK_DIRE_NBDY | MASK_DIRE_NLST;
 
     public final static int MASK_DIRE_CALL = MASK_DIRE_NOBR |
             MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST |
-            MASK_DIRE_LTGC | MASK_DIRE_MORE;
+            MASK_DIRE_LTGC | MASK_DIRE_MORE | MASK_DIRE_SOFT;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;
@@ -144,7 +148,7 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     private static Object interToBody(Intermediate temp, Intermediate last,
-                                     Engine en) {
+                                      Engine en) {
         SkelCompound back = null;
         Object t = null;
         if (last != null) {
@@ -153,7 +157,9 @@ public class Directive extends Intermediate {
                 Object left = temp.term;
                 if (isAlternative(left) || isGuard(left)) {
                     left = alternativeToDisjunction(left, en);
-                } else if (isBegin(left) || isCommit(left)) {
+                } else if (isBegin(left) || isSoftBegin(left)) {
+                    continue;
+                } else if (isCommit(left) || isSoftCommit(left)) {
                     continue;
                 }
                 if (t != null) {
@@ -224,6 +230,11 @@ public class Directive extends Intermediate {
             Object left = interToBody(this, split, en);
             Object right = interToBody(split, last, en);
             return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
+        } else if (last != null && isSoftBegin(next.term)) {
+            Intermediate split = findSoftSplit(this, last);
+            Object left = interToBody(this, split, en);
+            Object right = interToBody(split, last, en);
+            return new SkelCompound(en.store.foyer.ATOM_SOFT_CONDITION, left, right);
         } else {
             return interToBody(en);
         }
@@ -242,6 +253,25 @@ public class Directive extends Intermediate {
                 Intermediate back = temp;
                 temp = back.next;
                 if (isCommit(temp.term))
+                    return back;
+            } while (temp != last);
+        }
+        return null;
+    }
+
+    /**
+     * <p>Find the split inside a sequence.</p>
+     *
+     * @param temp The conversion start.
+     * @param last The conversion end.
+     * @return The split, or null.
+     */
+    private static Intermediate findSoftSplit(Intermediate temp, Intermediate last) {
+        if (last != null) {
+            do {
+                Intermediate back = temp;
+                temp = back.next;
+                if (isSoftCommit(temp.term))
                     return back;
             } while (temp != last);
         }
@@ -304,6 +334,36 @@ public class Directive extends Intermediate {
     public static boolean isCommit(Object term) {
         if (term instanceof SkelAtom &&
                 ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isSoftBegin(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a commit.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a commit.
+     */
+    public static boolean isSoftCommit(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
             return true;
         } else {
             return false;

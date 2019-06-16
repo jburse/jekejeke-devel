@@ -306,7 +306,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         d2.vars = clause.vars;
 
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2, clause, en);
+            CallFrame dc = new CallFrame(d2, en);
+            dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);

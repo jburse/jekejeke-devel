@@ -70,10 +70,9 @@ public abstract class AbstractChoice {
      * <p>The new current exception is returned via the engine fault.</p>
      * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
-     * @param n  The cut level.
      * @param en The engine.
      */
-    public abstract void moniCut(int n, Engine en);
+    public abstract void moniCut(Engine en);
 
     /**
      * <p>Replay the success.</p>

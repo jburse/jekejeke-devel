@@ -44,6 +44,7 @@ public final class ChoiceAlter extends AbstractChoice {
     protected Object at;
     protected final Intermediate goalskel;
     protected final AbstractUndo mark;
+    public int flags;
     public int barrier = -2;
 
     /**
@@ -61,6 +62,12 @@ public final class ChoiceAlter extends AbstractChoice {
         goalskel = r;
         mark = m;
         at = a;
+
+        /* store and reset soft commit condition */
+        if ((u.flags & Directive.MASK_DIRE_SOFT) != 0) {
+            flags |= Directive.MASK_DIRE_SOFT;
+            u.flags &= ~Directive.MASK_DIRE_SOFT;
+        }
     }
 
     /**
@@ -83,17 +90,33 @@ public final class ChoiceAlter extends AbstractChoice {
             barrier = -2;
         }
 
+        if (at == null ||
+                (goaldisplay.flags & Directive.MASK_DIRE_SOFT) != 0) {
+            /* undo soft commit condition */
+            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+                goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
+            } else {
+                goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
+            }
+            return false;
+        }
+
         /* undo bindings */
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         en.fault = null;
         en.releaseBind(mark);
-        if (en.fault != null)
+        if (en.fault != null) {
+            /* undo soft commit condition */
+            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+                goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
+            } else {
+                goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
+            }
             throw en.fault;
+        }
 
-        if (at == null) {
-            return false;
-        } else if (Directive.isAlternative(at)) {
+        if (Directive.isAlternative(at)) {
             SkelCompound sc = (SkelCompound) at;
             at = sc.args[1];
             /* reuse choice point */
@@ -111,6 +134,12 @@ public final class ChoiceAlter extends AbstractChoice {
             return true;
         } else {
             en.contskel = (Directive) at;
+            /* undo soft commit condition */
+            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+                goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
+            } else {
+                goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
+            }
             return true;
         }
     }
@@ -121,10 +150,9 @@ public final class ChoiceAlter extends AbstractChoice {
      * <p>The new current exception is returned via the engine fault.</p>
      * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
-     * @param n  The cut level.
      * @param en The engine.
      */
-    public final void moniCut(int n, Engine en) {
+    public final void moniCut(Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;
@@ -133,6 +161,13 @@ public final class ChoiceAlter extends AbstractChoice {
         if (barrier != -2) {
             goaldisplay.barrier = barrier;
             barrier = -2;
+        }
+
+        /* undo soft commit condition */
+        if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+            goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
+        } else {
+            goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
         }
     }
 

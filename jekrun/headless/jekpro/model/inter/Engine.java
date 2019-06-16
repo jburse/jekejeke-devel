@@ -217,7 +217,7 @@ public class Engine extends StackElement implements Comparator<Object> {
         while (n < number) {
             AbstractChoice choice = choices;
 
-            choice.moniCut(n, this);
+            choice.moniCut(this);
             choice.replayNext(this);
         }
     }

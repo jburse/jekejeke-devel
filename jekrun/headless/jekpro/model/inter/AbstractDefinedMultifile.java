@@ -117,7 +117,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         }
 
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2, clause, en);
+            CallFrame dc = new CallFrame(d2, en);
+            dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefinedMultifile(en.choices, at, list, dc, mark);
