@@ -1461,9 +1461,13 @@ public class PrologWriter {
                                 (backspez & SPEZ_META) != 0 &&
                                 (backspez & SPEZ_EVAL) == 0 &&
                                 (flags & FLAG_NEWL) != 0) {
-                            indent = getTextOffset() + SPACES - 1;
-                            for (int i = 0; i < SPACES - 1; i++)
-                                append(' ');
+                            if (op.getLevel() >= DISJ_HIGH) {
+                                indent = getTextOffset() - 1;
+                            } else {
+                                indent = getTextOffset() + SPACES - 1;
+                                for (int i = 0; i < SPACES - 1; i++)
+                                    append(' ');
+                            }
                         }
                     }
                     /* left operand */

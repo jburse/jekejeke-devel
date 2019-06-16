@@ -97,10 +97,9 @@ final class ChoiceCleanup extends AbstractChoice {
      * <p>The current exception is passed via the engine fault.</p>
      * <p>The new current exception is returned via the engine skel and display.</p>
      *
-     * @param n  The cut level.
      * @param en The engine.
      */
-    public final void moniCut(int n, Engine en) {
+    public final void moniCut(Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;

@@ -130,7 +130,7 @@
 clause_ref(C, _) :-
    var(C),
    throw(error(instantiation_error,_)).
-clause_ref((  H :- B), R) :- !,
+clause_ref((H :- B), R) :- !,
    clause_ref(H, B, R).
 clause_ref(H, R) :-
    clause_ref(H, true, R).

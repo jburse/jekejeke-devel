@@ -97,13 +97,13 @@ simp:term_simplification(A /\ _, _) :-
 simp:term_simplification(unit /\ C, C).
 
 /* (:-)/2 flattening */
-term_simplification((  A :- _), _) :-
+term_simplification((A :- _), _) :-
    var(A), !, fail.
-term_simplification((  (  A :- B) :- C), (  A :- H)) :-
+term_simplification(((A :- B) :- C), (A :- H)) :-
    simplify_goal((  C, B), H).
-term_simplification((  _ :- A), _) :-
+term_simplification((_ :- A), _) :-
    var(A), !, fail.
-term_simplification((  C :- true), C).
+term_simplification((C :- true), C).
 
 /*******************************************************/
 /* Goal Simplify                                       */

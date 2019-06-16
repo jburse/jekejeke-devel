@@ -158,7 +158,7 @@ expand_term(G, N) :-
    \+ predicate_property(I, sys_noexpand), !,
    expand_term_callable(G, I, H, U),
    simplify_term(H, K),
-   simplify_term((  K :- U), N).
+   simplify_term((K :- U), N).
 expand_term(T, U) :-
    simplify_term(T, U).
 

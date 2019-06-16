@@ -4,7 +4,6 @@ import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.arithmetic.EvaluableElem;
@@ -161,10 +160,9 @@ final class ChoiceArith extends AbstractChoice {
      * <p>The new current exception is returned via the engine fault.</p>
      * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
-     * @param n  The cut level.
      * @param en The engine.
      */
-    public void moniCut(int n, Engine en) {
+    public void moniCut(Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;

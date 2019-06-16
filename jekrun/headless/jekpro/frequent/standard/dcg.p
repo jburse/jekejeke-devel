@@ -398,13 +398,13 @@ user:term_expansion(phrase(P, I, O), Q) :-
 -->(_, _) :-
    throw(error(existence_error(body,--> /2),_)).
 
-user:term_expansion((  P --> _), _) :-
+user:term_expansion((P --> _), _) :-
    sys_var(P),
    throw(error(instantiation_error,_)).
-user:term_expansion((  P, B --> C),
-        (  phrase(P, I, O) :-
-              sys_phrase(C, I, H),
-              phrase(B, O, H))).
-user:term_expansion((  P --> B),
-        (  phrase(P, I, O) :-
-              sys_phrase(B, I, O))).
+user:term_expansion((P, B --> C),
+        (phrase(P, I, O) :-
+           sys_phrase(C, I, H),
+           phrase(B, O, H))).
+user:term_expansion((P --> B),
+        (phrase(P, I, O) :-
+           sys_phrase(B, I, O))).
