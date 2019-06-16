@@ -68,10 +68,9 @@ public final class SpecialControl extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineException {
         switch (id) {
             case SPECIAL_FAIL:
                 return false;
@@ -79,18 +78,16 @@ public final class SpecialControl extends AbstractSpecial {
                 return true;
             case SPECIAL_CUT:
                 CallFrame ref2 = en.contdisplay;
-                while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
-                        ref2.barrier == -1)
+                while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0)
                     ref2 = ref2.contdisplay;
-                int level = (ref2.barrier != -1 ? ref2.barrier : ref2.number);
+                int level = ref2.number;
                 if (level < en.number) {
                     /* backup continuation */
                     Intermediate r = en.contskel;
                     ref2 = en.contdisplay;
                     CallFrame u = ref2;
 
-                    while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0 &&
-                            ref2.barrier == -1) {
+                    while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0) {
                         en.fault = null;
                         en.cutChoices(ref2.number);
                         if (en.fault != null)

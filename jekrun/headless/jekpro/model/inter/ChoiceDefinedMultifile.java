@@ -67,11 +67,6 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         en.choices = next;
         en.number--;
 
-        /* end of cursor */
-        if (at == list.length ||
-                (goaldisplay.flags & Clause.MASK_CLAUSE_SOFT) != 0)
-            return false;
-
         /* undo bindings */
         en.contskel = goaldisplay.contskel;
         en.contdisplay = goaldisplay.contdisplay;

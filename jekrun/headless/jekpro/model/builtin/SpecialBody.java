@@ -106,13 +106,17 @@ public final class SpecialBody extends AbstractSpecial {
             case SPECIAL_SYS_BEGIN:
                 ChoiceAlter cp = (ChoiceAlter) en.choices;
                 ref2 = en.contdisplay;
-                cp.barrier = ref2.barrier;
-                ref2.barrier = en.number;
+                if ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0) {
+                    cp.flags |= Directive.MASK_DIRE_BACK;
+                    ref2.flags &= ~Directive.MASK_DIRE_NOBR;
+                }
+                cp.number = ref2.number;
+                ref2.number = en.number;
                 return true;
             case SPECIAL_SYS_COMMIT:
                 ref2 = en.contdisplay;
                 en.fault = null;
-                en.cutChoices(ref2.barrier - 1);
+                en.cutChoices(ref2.number - 1);
                 if (en.fault != null)
                     throw en.fault;
                 return true;

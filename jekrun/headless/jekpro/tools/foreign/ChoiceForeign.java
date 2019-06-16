@@ -156,10 +156,9 @@ final class ChoiceForeign extends AbstractChoice {
      * <p>The new current exception is returned via the engine fault.</p>
      * <p>The current contskel and contdisplay of the engine is not changed.</p>
      *
-     * @param n  The cut level.
      * @param en The engine.
      */
-    public final void moniCut(int n, Engine en) {
+    public final void moniCut(Engine en) {
         /* remove choice point */
         en.choices = next;
         en.number--;

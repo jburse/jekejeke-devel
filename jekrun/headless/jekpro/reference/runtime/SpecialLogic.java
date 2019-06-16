@@ -42,8 +42,6 @@ import jekpro.tools.term.SkelCompound;
  */
 public final class SpecialLogic extends AbstractSpecial {
     private final static int SPECIAL_SYS_LOCAL_CUT = 0;
-    private final static int SPECIAL_SYS_SOFT_LOCAL_CUT = 1;
-    private final static int SPECIAL_SYS_SAFE = 2;
 
     /**
      * <p>Create a logic special.</p>
@@ -76,34 +74,6 @@ public final class SpecialLogic extends AbstractSpecial {
                         throw en.fault;
                     en.contdisplay = ref2.getFrame(en);
                 }
-                return true;
-            case SPECIAL_SYS_SOFT_LOCAL_CUT:
-                ref2 = en.contdisplay;
-                if ((((ref2.flags & Directive.MASK_DIRE_MORE) != 0) ?
-                        ref2.number + 1 : ref2.number) >= en.number) {
-                    if (ref2.number < en.number) {
-                        en.fault = null;
-                        en.cutChoices(ref2.number);
-                        if (en.fault != null)
-                            throw en.fault;
-                        en.contdisplay = ref2.getFrame(en);
-                    }
-                } else {
-                    ref2.flags |= Clause.MASK_CLAUSE_SOFT;
-                }
-                return true;
-            case SPECIAL_SYS_SAFE:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
-                d2.bind[0].bindUniv(en.skel, en.display, en);
-                ref2 = CallFrame.getFrame(d2, dire, en);
-                en.contskel = dire;
-                en.contdisplay = ref2;
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

@@ -45,7 +45,7 @@ public final class ChoiceAlter extends AbstractChoice {
     protected final Intermediate goalskel;
     protected final AbstractUndo mark;
     public int flags;
-    public int barrier = -2;
+    public int number = -1;
 
     /**
      * <p>Create an abstract choice inspect.</p>
@@ -85,10 +85,15 @@ public final class ChoiceAlter extends AbstractChoice {
         en.number--;
 
         /* undo begin condition */
-        if (barrier != -2) {
-            goaldisplay.barrier = barrier;
-            barrier = -2;
+        if ((flags & Directive.MASK_DIRE_BACK) != 0) {
+            goaldisplay.flags |= Directive.MASK_DIRE_NOBR;
+            flags &= ~Directive.MASK_DIRE_BACK;
         }
+        if (number != -1) {
+            goaldisplay.number = number;
+            number = -1;
+        }
+
 
         if (at == null ||
                 (goaldisplay.flags & Directive.MASK_DIRE_SOFT) != 0) {
@@ -158,10 +163,15 @@ public final class ChoiceAlter extends AbstractChoice {
         en.number--;
 
         /* undo begin condition */
-        if (barrier != -2) {
-            goaldisplay.barrier = barrier;
-            barrier = -2;
+        if ((flags & Directive.MASK_DIRE_BACK) != 0) {
+            goaldisplay.flags |= Directive.MASK_DIRE_NOBR;
+            flags &= ~Directive.MASK_DIRE_BACK;
         }
+        if (number != -1) {
+            goaldisplay.number = number;
+            number = -1;
+        }
+
 
         /* undo soft commit condition */
         if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
