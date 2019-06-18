@@ -76,10 +76,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
             AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
 
-    public final static int MASK_DEFI_COMP = MASK_DEFI_NOBR |
-            MASK_DEFI_CALL | MASK_DEFI_NBCV | MASK_DEFI_NIST |
-            MASK_DEFI_NBDY | MASK_DEFI_NHED;
-
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
     public final static int OPT_CHCK_DEFN = 0x00000001;
@@ -326,6 +322,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
@@ -335,6 +333,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;

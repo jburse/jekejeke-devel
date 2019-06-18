@@ -831,20 +831,21 @@ public final class SpecialLoad extends AbstractSpecial {
             SpecialLoad.flushWriter(pw.getWriter());
             return ref;
         }
-        AbstractUndo mark = en.bind;
-        int snap = en.number;
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
         int size = SupervisorCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
-        Display dc = AbstractSkel.createDisplay(t);
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
+                Directive.MASK_DIRE_LTGC, en);
+        dire.bodyToInterSkel(t, en, true);
+
+        AbstractUndo mark = en.bind;
+        int snap = en.number;
+        Display d2 = new Display(size + 1);
         try {
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(1);
-            d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
@@ -876,12 +877,12 @@ public final class SpecialLoad extends AbstractSpecial {
             if (en.fault != null)
                 throw en.fault;
             EngineVars ev = new EngineVars();
-            ev.singsOf(res, dc);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, dc, en);
+            ev.singsOf(res, d2);
+            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, d2, en);
             print = SpecialVars.numberVars(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
-            pw.unparseStatement(t, dc);
+            pw.unparseStatement(t, d2);
             SpecialLoad.flushWriter(pw.getWriter());
         } catch (EngineMessage y) {
             en.fault = new EngineException(y, EngineException.fetchStack(en));
@@ -896,7 +897,7 @@ public final class SpecialLoad extends AbstractSpecial {
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;
-        return dc;
+        return d2;
     }
 
     /**

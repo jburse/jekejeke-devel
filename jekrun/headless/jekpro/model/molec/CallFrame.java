@@ -67,11 +67,9 @@ public final class CallFrame extends StackElement {
                 CallFrame u1 = contdisplay;
                 if (u1.number >= number) {
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                        if ((u1.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
-                            Display d1 = u1.disp;
-                            if (d1.bind.length > 0)
-                                d1.remTab(en);
-                        }
+                        Display d1 = u1.disp;
+                        if (d1.bind.length > 0)
+                            d1.remTab(en);
                         u1.flags |= Directive.MASK_DIRE_LTGC;
                     }
                     if ((u1.flags & AbstractDefined.MASK_DEFI_NOBR) == 0)
@@ -99,11 +97,9 @@ public final class CallFrame extends StackElement {
                 CallFrame u1 = en.contdisplay;
                 if (u1.number >= en.number) {
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                        if ((u1.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
-                            Display d1 = u1.disp;
-                            if (d1.bind.length > 0)
-                                d1.remTab(en);
-                        }
+                        Display d1 = u1.disp;
+                        if (d1.bind.length > 0)
+                            d1.remTab(en);
                         u1.flags |= Directive.MASK_DIRE_LTGC;
                     }
                     int flags = directive.flags & Directive.MASK_DIRE_CALL;

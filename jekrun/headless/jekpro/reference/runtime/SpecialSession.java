@@ -313,7 +313,7 @@ public final class SpecialSession extends AbstractSpecial {
                     break;
                 PreClause pre = expandGoalAndWrap(rd, val, en);
                 Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
-                        AbstractDefined.MASK_DEFI_NBDY, en);
+                        Directive.MASK_DIRE_LTGC, en);
                 int size = SupervisorCopy.displaySize(pre.molec);
                 dire.bodyToInterSkel(pre.molec, en, true);
 
@@ -431,27 +431,25 @@ public final class SpecialSession extends AbstractSpecial {
             return pre;
         }
 
-        /* expand term */
-        AbstractUndo mark = en.bind;
-
+        /* expand goal */
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
         Object body = new SkelCompound(new SkelAtom("expand_goal",
                 en.store.getRootSystem()), t, var);
         Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
-                AbstractDefined.MASK_DEFI_NBDY, en);
+                Directive.MASK_DIRE_LTGC, en);
         int size = SupervisorCopy.displaySize(body);
         dire.bodyToInterSkel(body, en, true);
 
+        AbstractUndo mark = en.bind;
         int snap = en.number;
         Display backref = en.visor.query;
-        CallFrame ref;
+        Display d2 = new Display(size);
         try {
-            Display d2 = new Display(size);
             d2.vars = rd.getVars();
             en.visor.query = d2;
-            ref = CallFrame.getFrame(d2, dire, en);
+            CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
             if (!en.runLoop2(snap, true))
@@ -483,11 +481,9 @@ public final class SpecialSession extends AbstractSpecial {
         en.fault = null;
         en.cutChoices(snap);
         en.visor.query = backref;
-        t = var;
-        Display d = ref.disp;
         PreClause pre = null;
         if (en.fault == null)
-            pre = copyGoalVarsAndWrap(rd.getVars(), t, d, en);
+            pre = copyGoalVarsAndWrap(rd.getVars(), var, d2, en);
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;

@@ -118,7 +118,8 @@ public class ChoiceDefined extends AbstractChoice {
         d2.vars = clause.vars;
 
         if (at != list.length) {
-            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -127,7 +128,8 @@ public class ChoiceDefined extends AbstractChoice {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = goaldisplay.getFrame(en);
-            dc.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
             en.contdisplay = dc;

@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -285,7 +285,7 @@ public final class TermCompound extends AbstractTerm {
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
-            if (EngineCopy.getVar(t) != null) {
+            if (SupervisorCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
                 if (last == Display.DISPLAY_CONST) {
                     last = d;
@@ -321,7 +321,7 @@ public final class TermCompound extends AbstractTerm {
                 continue;
             /* common lane */
             Object t = AbstractTerm.getSkel(obj);
-            if (EngineCopy.getVar(t) != null) {
+            if (SupervisorCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
@@ -363,7 +363,7 @@ public final class TermCompound extends AbstractTerm {
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
             Object t = AbstractTerm.getSkel(obj);
-            if (multi && EngineCopy.getVar(t) != null) {
+            if (multi && SupervisorCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;

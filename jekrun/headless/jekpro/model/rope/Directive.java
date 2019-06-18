@@ -46,11 +46,14 @@ public class Directive extends Intermediate {
     public final static int MASK_DIRE_LTGC = 0x00000002;
     public final static int MASK_DIRE_SOFT = 0x00000004;
 
-    public final static int MASK_DIRE_PUSH = AbstractDefined.MASK_DEFI_NBDY |
+    public final static int MASK_DIRE_PUSH = MASK_DIRE_LTGC |
             AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
 
     public final static int MASK_DIRE_CALL = MASK_DIRE_MORE |
-            MASK_DIRE_LTGC | MASK_DIRE_SOFT | AbstractDefined.MASK_DEFI_COMP;
+            MASK_DIRE_LTGC | MASK_DIRE_SOFT | AbstractDefined.MASK_DEFI_NOBR |
+            AbstractDefined.MASK_DEFI_CALL | AbstractDefined.MASK_DEFI_NBCV |
+            AbstractDefined.MASK_DEFI_NIST | AbstractDefined.MASK_DEFI_NBDY |
+            AbstractDefined.MASK_DEFI_NHED;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;
@@ -69,7 +72,7 @@ public class Directive extends Intermediate {
      * @param copt The directive option flags.
      */
     public Directive(int copt) {
-        flags = copt & AbstractDefined.MASK_DEFI_COMP;
+        flags = copt & Directive.MASK_DIRE_CALL;
     }
 
     /**

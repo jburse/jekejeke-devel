@@ -43,7 +43,6 @@ import jekpro.tools.term.SkelCompound;
  */
 public final class SpecialLogic extends AbstractSpecial {
     private final static int SPECIAL_SYS_LOCAL_CUT = 0;
-    private final static int SPECIAL_SYS_WRAP = 1;
 
     /**
      * <p>Create a logic special.</p>
@@ -76,21 +75,6 @@ public final class SpecialLogic extends AbstractSpecial {
                         throw en.fault;
                     en.contdisplay = ref2.getFrame(en);
                 }
-                return true;
-            case SPECIAL_SYS_WRAP:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                Directive dire = SupervisorCall.callGoal(0, en);
-                Display d2 = en.display;
-                SupervisorCall ew = en.visor.getCall();
-                boolean multi = ((ew.flags & SupervisorCall.MASK_CALL_MLTI) != 0);
-                if (!en.unifyTerm(temp[1], ref, dire.interToBody(en), d2))
-                    return false;
-                if (multi)
-                    d2.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

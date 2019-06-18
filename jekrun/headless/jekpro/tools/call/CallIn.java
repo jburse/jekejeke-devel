@@ -1,5 +1,7 @@
 package jekpro.tools.call;
 
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
@@ -350,13 +352,9 @@ public final class CallIn {
         mark = en.bind;
         snap = en.number;
         try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d2 = en.display;
+
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;

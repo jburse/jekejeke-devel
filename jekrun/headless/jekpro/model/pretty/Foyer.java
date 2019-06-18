@@ -149,8 +149,6 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SYS_SOFT_COMMIT;
     public SkelAtom ATOM_CALL;
 
-    public Directive CLAUSE_CONT;
-    public Directive CLAUSE_CALL;
     public Directive CLAUSE_TRAN;
 
     public Directive CLAUSE_HOOK;

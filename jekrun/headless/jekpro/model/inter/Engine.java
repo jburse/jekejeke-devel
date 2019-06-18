@@ -239,21 +239,12 @@ public class Engine extends StackElement implements Comparator<Object> {
      * <p>And prepend the goals to the current continuation.</p>
      */
     public final void retireCont()
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         ListArray<BindUniv> list = UndoCont.bindCont(this);
         createComma(list, this);
-        Display d2 = display;
-        boolean ext = d2.getAndReset();
 
-        boolean multi = SupervisorWrap.wrapGoal(this);
-        if (multi && ext)
-            d2.remTab(this);
-        Display ref = display;
-        Directive dire = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(1);
-        d3.bind[0].bindUniv(skel, ref, this);
-        if (multi || ext)
-            ref.remTab(this);
+        Directive dire = SupervisorCall.callGoal2(0, this);
+        Display d3 = display;
 
         CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
         contskel = dire;
@@ -362,16 +353,6 @@ public class Engine extends StackElement implements Comparator<Object> {
         try {
             Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, this);
             Display d2 = display;
-
-/*
-            boolean multi = SupervisorWrap.wrapGoal(this);
-            Display ref = display;
-            Directive dire = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(1);
-            d2.bind[0].bindUniv(skel, ref, this);
-            if (multi)
-                ref.remTab(this);
-*/
 
             CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
             contskel = dire;

@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import matula.util.data.ListArray;
 
 /**
@@ -80,7 +80,7 @@ public final class SkelCompound extends AbstractSkel
         Object var = null;
         ListArray<SkelVar> vec = null;
         for (int i = 0; i < a.length; i++) {
-            Object newvar = EngineCopy.getVar(a[i]);
+            Object newvar = SupervisorCopy.getVar(a[i]);
             if (newvar == null)
                 continue;
             if (var == null) {

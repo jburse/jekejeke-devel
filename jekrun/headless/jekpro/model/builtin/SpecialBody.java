@@ -80,15 +80,7 @@ public final class SpecialBody extends AbstractSpecial {
 
                 Directive dire = SupervisorCall.callGoal(0, en);
                 Display d2 = en.display;
-/*
-                boolean multi = SupervisorWrap.wrapGoal(en);
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(1);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
-*/
+
                 CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
