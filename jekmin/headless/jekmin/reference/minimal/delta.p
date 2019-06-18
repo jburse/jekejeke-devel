@@ -553,41 +553,41 @@ sys_plus(_) :-
 <=(_, _) :-
    throw(error(existence_error(body,<= /2),_)).
 
-user:term_expansion((  H <= B), (  sys_plus(H) :-
-                                      sys_new(B))).
+user:term_expansion((H <= B), (sys_plus(H) :-
+                                 sys_new(B))).
 
 % The usual blocking
-simp:term_simplification((  _ :- A, _), _) :-
+simp:term_simplification((_ :- A, _), _) :-
    var(A), !, fail.
 
 % Or Distribution
-simp:term_simplification((  A :- D; E), J) :-
+simp:term_simplification((A :- D; E), J) :-
    (  sys_special(D)
    ;  sys_special(E)),
-   simplify_term((  A :- D), U),
-   simplify_term((  A :- E), H),
+   simplify_term((A :- D), U),
+   simplify_term((A :- E), H),
    simplify_term(U /\ H, J).
 
 % Detect Keep & Minus and Drop & Minus Combination
-simp:term_simplification((  sys_plus(B) :-
-                               sys_keep(D, Q)),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  E :- H)) :-
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D, Q)),
+        (:- discontiguous I) /\ (:- sys_notrace I) /\ (E :- H)) :-
    sys_replace_site(G, D, sys_eq(M,sys_delta(B,[]))),
    simplify_goal((  Q, G), H),
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_drop(D, Q)),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  E :- H)) :-
+simp:term_simplification((sys_plus(B) :-
+                            sys_drop(D, Q)),
+        (:- discontiguous I) /\ (:- sys_notrace I) /\ (E :- H)) :-
    sys_replace_site(G, D, sys_eq(M,sys_nabla(B,[]))),
    simplify_goal((  Q, G), H),
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_keep(D, Q), P),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  F :- N)) :-
+simp:term_simplification((sys_plus(B) :-
+                            sys_keep(D, Q), P),
+        (:- discontiguous I) /\ (:- sys_notrace I) /\ (F :- N)) :-
    sys_minus(P, [], R, E),
    sys_replace_site(G, D, sys_eq(M,sys_delta(B,R))),
    simplify_goal((  Q, E), O),
@@ -595,9 +595,9 @@ simp:term_simplification((  sys_plus(B) :-
    sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_drop(D, Q), P),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  F :- N)) :-
+simp:term_simplification((sys_plus(B) :-
+                            sys_drop(D, Q), P),
+        (:- discontiguous I) /\ (:- sys_notrace I) /\ (F :- N)) :-
    sys_minus(P, [], R, E),
    sys_replace_site(G, D, sys_eq(M,sys_nabla(B,R))),
    simplify_goal((  Q, E), O),

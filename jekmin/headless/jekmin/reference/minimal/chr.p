@@ -80,10 +80,10 @@
 _ ==> _ :-
    throw(error(existence_error(body,==> /2),_)).
 
-user:term_expansion((  H ==> G | B), (  body_post(B) <=
-                                           head_posted(H), G)).
-user:term_expansion((  H ==> B), (  body_post(B) <=
-                                       head_posted(H))).
+user:term_expansion((H ==> G | B), (body_post(B) <=
+                                      head_posted(H), G)).
+user:term_expansion((H ==> B), (body_post(B) <=
+                                  head_posted(H))).
 
 :- private head_phaseout_posted/1.
 :- meta_predicate head_phaseout_posted(0).
@@ -99,16 +99,16 @@ head_phaseout_posted(_) :-
 _ <=> _ :-
    throw(error(existence_error(body,<=> /2),_)).
 
-user:term_expansion((  H \ J <=> G | B), (  body_post(B) <=
-                                               head_posted(H),
-                                               head_phaseout_posted(J), G)).
-user:term_expansion((  H \ J <=> B), (  body_post(B) <=
-                                           head_posted(H),
-                                           head_phaseout_posted(J))).
-user:term_expansion((  J <=> G | B), (  body_post(B) <=
-                                           head_phaseout_posted(J), G)).
-user:term_expansion((  J <=> B), (  body_post(B) <=
-                                       head_phaseout_posted(J))).
+user:term_expansion((H \ J <=> G | B), (body_post(B) <=
+                                          head_posted(H),
+                                          head_phaseout_posted(J), G)).
+user:term_expansion((H \ J <=> B), (body_post(B) <=
+                                      head_posted(H),
+                                      head_phaseout_posted(J))).
+user:term_expansion((J <=> G | B), (body_post(B) <=
+                                      head_phaseout_posted(J), G)).
+user:term_expansion((J <=> B), (body_post(B) <=
+                                  head_phaseout_posted(J))).
 
 % user:goal_expansion(+Goal, -Goal)
 :- public user:goal_expansion/2.

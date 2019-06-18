@@ -294,11 +294,11 @@ sys_chart_expansion(U, I, O, (  P, Q)) :-
  */
 :- public ==: /2.
 :- meta_predicate (-3==: -3).
-(  _ ==: _) :-
+(_ ==: _) :-
    throw(error(existence_error(body,==: /2),_)).
 
-user:term_expansion((  P ==: A), (  chart_post(P, I, O) <=
-                                       chart_posted(A, I, O))).
+user:term_expansion((P ==: A), (chart_post(P, I, O) <=
+                                  chart_posted(A, I, O))).
 
 /**
  * chart_post(H, I, O):
