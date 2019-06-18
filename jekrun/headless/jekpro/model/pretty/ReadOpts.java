@@ -1,6 +1,6 @@
 package jekpro.model.pretty;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -357,7 +357,7 @@ public final class ReadOpts {
      */
     private static Object termToList(Object val, Store store) {
         Object end = store.foyer.ATOM_NIL;
-        Object var = EngineCopy.getVar(val);
+        Object var = SupervisorCopy.getVar(val);
         if (var == null)
             return end;
         if (var instanceof SkelVar) {

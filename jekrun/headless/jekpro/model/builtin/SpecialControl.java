@@ -2,6 +2,8 @@ package jekpro.model.builtin;
 
 import jekpro.frequent.standard.ChoiceAtomic;
 import jekpro.frequent.standard.SpecialSignal;
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -78,7 +80,7 @@ public final class SpecialControl extends AbstractSpecial {
                 return true;
             case SPECIAL_CUT:
                 CallFrame ref2 = en.contdisplay;
-                while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0)
+                while ((ref2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0)
                     ref2 = ref2.contdisplay;
                 int level = ref2.number;
                 if (level < en.number) {
@@ -87,7 +89,7 @@ public final class SpecialControl extends AbstractSpecial {
                     ref2 = en.contdisplay;
                     CallFrame u = ref2;
 
-                    while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0) {
+                    while ((ref2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0) {
                         en.fault = null;
                         en.cutChoices(ref2.number);
                         if (en.fault != null)
@@ -146,13 +148,19 @@ public final class SpecialControl extends AbstractSpecial {
         AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
-            boolean multi = en.wrapGoal();
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d2 = en.display;
+
+/*
+            boolean multi = SupervisorWrap.wrapGoal(en);
             Display ref = en.display;
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            Display d2 = new Display(1);
             d2.bind[0].bindUniv(en.skel, ref, en);
             if (multi)
                 ref.remTab(en);
+*/
+
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;

@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -289,7 +289,7 @@ public final class SpecialVars extends AbstractSpecial {
                                       Engine en)
             throws EngineException {
         for (; ; ) {
-            Object var = EngineCopy.getVar(m);
+            Object var = SupervisorCopy.getVar(m);
             if (var == null)
                 return val;
             SkelVar v;
@@ -522,7 +522,7 @@ public final class SpecialVars extends AbstractSpecial {
              (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
             Object t = AbstractTerm.getSkel(entry.key);
-            if (EngineCopy.getVar(t) != null) {
+            if (SupervisorCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(entry.key);
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
@@ -543,7 +543,7 @@ public final class SpecialVars extends AbstractSpecial {
              entry != null; entry = mvs.successor(entry)) {
             Object t = AbstractTerm.getSkel(entry.key);
             Object val;
-            if (multi && EngineCopy.getVar(t) != null) {
+            if (multi && SupervisorCopy.getVar(t) != null) {
                 Display d = AbstractTerm.getDisplay(entry.key);
                 SkelVar var = SkelVar.valueOf(countvar);
                 countvar++;

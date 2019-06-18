@@ -132,7 +132,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }

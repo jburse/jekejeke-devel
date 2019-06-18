@@ -1,14 +1,13 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
@@ -98,7 +97,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 boolean multi = ref.getAndReset();
                 Directive dire = en.store.foyer.CLAUSE_TRAN;
-                Display d3 = new Display(dire.size);
+                Display d3 = new Display(1);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
@@ -123,7 +122,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 ref = en.display;
                 multi = ref.getAndReset();
                 dire = en.store.foyer.CLAUSE_TRAN;
-                d3 = new Display(dire.size);
+                d3 = new Display(1);
                 d3.bind[0].bindUniv(en.skel, ref, en);
                 if (multi)
                     ref.remTab(en);
@@ -675,7 +674,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = d2;
             }
             en.deref();
-            if (EngineCopy.getVar(en.skel) != null) {
+            if (SupervisorCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -729,7 +728,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = d2;
             }
             en.deref();
-            if (multi && EngineCopy.getVar(en.skel) != null) {
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d4.bind[sv.id].bindUniv(en.skel, en.display, en);

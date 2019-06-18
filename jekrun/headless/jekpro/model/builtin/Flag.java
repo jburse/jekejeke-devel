@@ -55,7 +55,6 @@ public final class Flag extends AbstractFlag<Engine> {
     private final static String OP_SYS_BODY_VARIABLE = "sys_body_variable";
     private final static String OP_SYS_STACK_FRAME = "sys_stack_frame";
     private final static String OP_SYS_HEAD_VARIABLE = "sys_head_variable";
-    private final static String OP_SYS_BODY_CONVERT = "sys_body_convert";
     private final static String OP_SYS_CLAUSE_EXPAND = "sys_clause_expand";
     private final static String OP_SYS_CLAUSE_INDEX = "sys_clause_index";
     public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
@@ -75,28 +74,26 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_BODY_VARIABLE = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
     private static final int FLAG_SYS_HEAD_VARIABLE = 2;
-    private static final int FLAG_SYS_BODY_CONVERT = 3;
-    private static final int FLAG_SYS_CLAUSE_EXPAND = 4;
-    private static final int FLAG_SYS_CLAUSE_INDEX = 5;
-    private static final int FLAG_DOUBLE_QUOTES = 6;
-    private static final int FLAG_BACK_QUOTES = 7;
-    private static final int FLAG_MAX_CODE = 8;
-    private static final int FLAG_SYS_BREAK_LEVEL = 9;
-    private static final int FLAG_SYS_LAST_PRED = 10;
-    private static final int FLAG_SYS_ACT_STATUS = 11;
-    private static final int FLAG_SINGLE_QUOTES = 12;
-    private static final int FLAG_SYS_VARIABLES = 13;
-    private static final int FLAG_SYS_CHOICES = 14;
-    private static final int FLAG_SYS_RANDOM = 15;
-    private static final int FLAG_SYS_TIMEOUT = 16;
-    private static final int FLAG_STYLE_CHECK = 17;
-    private static final int FLAG_DIALECT = 18;
+    private static final int FLAG_SYS_CLAUSE_EXPAND = 3;
+    private static final int FLAG_SYS_CLAUSE_INDEX = 4;
+    private static final int FLAG_DOUBLE_QUOTES = 5;
+    private static final int FLAG_BACK_QUOTES = 6;
+    private static final int FLAG_MAX_CODE = 7;
+    private static final int FLAG_SYS_BREAK_LEVEL = 8;
+    private static final int FLAG_SYS_LAST_PRED = 9;
+    private static final int FLAG_SYS_ACT_STATUS = 10;
+    private static final int FLAG_SINGLE_QUOTES = 11;
+    private static final int FLAG_SYS_VARIABLES = 12;
+    private static final int FLAG_SYS_CHOICES = 13;
+    private static final int FLAG_SYS_RANDOM = 14;
+    private static final int FLAG_SYS_TIMEOUT = 15;
+    private static final int FLAG_STYLE_CHECK = 16;
+    private static final int FLAG_DIALECT = 17;
 
     static {
         DEFAULT.add(OP_SYS_BODY_VARIABLE, new Flag(FLAG_SYS_BODY_VARIABLE));
         DEFAULT.add(OP_SYS_STACK_FRAME, new Flag(FLAG_SYS_STACK_FRAME));
         DEFAULT.add(OP_SYS_HEAD_VARIABLE, new Flag(FLAG_SYS_HEAD_VARIABLE));
-        DEFAULT.add(OP_SYS_BODY_CONVERT, new Flag(FLAG_SYS_BODY_CONVERT));
         DEFAULT.add(OP_SYS_CLAUSE_EXPAND, new Flag(FLAG_SYS_CLAUSE_EXPAND));
         DEFAULT.add(OP_SYS_CLAUSE_INDEX, new Flag(FLAG_SYS_CLAUSE_INDEX));
         DEFAULT.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
@@ -136,13 +133,10 @@ public final class Flag extends AbstractFlag<Engine> {
                         Foyer.MASK_FOYER_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
-                        Foyer.MASK_FOYER_NLST) == 0);
+                        Foyer.MASK_FOYER_NSTK) == 0);
             case FLAG_SYS_HEAD_VARIABLE:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_NHED) == 0);
-            case FLAG_SYS_BODY_CONVERT:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
-                        Foyer.MASK_FOYER_NBCV) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_CEXP) != 0);
@@ -209,9 +203,9 @@ public final class Flag extends AbstractFlag<Engine> {
                     return true;
                 case FLAG_SYS_STACK_FRAME:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NLST);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NSTK);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_NLST);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NSTK);
                     }
                     return true;
                 case FLAG_SYS_HEAD_VARIABLE:
@@ -219,13 +213,6 @@ public final class Flag extends AbstractFlag<Engine> {
                         en.store.foyer.resetBit(Foyer.MASK_FOYER_NHED);
                     } else {
                         en.store.foyer.setBit(Foyer.MASK_FOYER_NHED);
-                    }
-                    return true;
-                case FLAG_SYS_BODY_CONVERT:
-                    if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NBCV);
-                    } else {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_NBCV);
                     }
                     return true;
                 case FLAG_SYS_CLAUSE_EXPAND:

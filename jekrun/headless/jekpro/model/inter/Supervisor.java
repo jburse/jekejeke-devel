@@ -1,9 +1,12 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.SupervisorWrap;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
@@ -66,6 +69,9 @@ public class Supervisor extends AbstractLivestock {
     public Object proxy;
     public Engine inuse;
     public AbstractMap<BindUniv, Integer> varmap;
+    private SupervisorCopy copy;
+    protected SupervisorCall call;
+    private SupervisorWrap wrap;
 
     /**
      * <p>Create a supervisor for a store.</p>
@@ -79,6 +85,55 @@ public class Supervisor extends AbstractLivestock {
         curinput = foyer.getFactory().toolinput;
         curoutput = foyer.getFactory().tooloutput;
         curerror = foyer.getFactory().toolerror;
+    }
+
+    /**
+     * <p>Retrieve a supervisor copy service object.</p>
+     *
+     * @return The supervisor copy service object.
+     */
+    public final SupervisorCopy getCopy() {
+        SupervisorCopy ec = copy;
+        if (ec == null) {
+            ec = new SupervisorCopy();
+            copy = ec;
+        }
+        return ec;
+    }
+
+    /**
+     * <p>Retrieve a supervisor call service object.</p>
+     *
+     * @return The supervisor call service object.
+     */
+    public SupervisorCall getCall() {
+        SupervisorCall ec = call;
+        if (ec == null) {
+            ec = new SupervisorCall();
+            call = ec;
+        }
+        return ec;
+    }
+
+    /**
+     * <p>Retrieve a supervisor wrap service object.</p>
+     *
+     * @return The supervisor wrap service object.
+     */
+    public SupervisorWrap getWrap() {
+        SupervisorWrap ec = wrap;
+        if (ec == null) {
+            ec = new SupervisorWrap();
+            wrap = ec;
+        }
+        return ec;
+    }
+
+    /**
+     * <p>Clear the supervisor wrap service object cache.</p>
+     */
+    public void clearWrap() {
+        wrap = null;
     }
 
     /***************************************************************/

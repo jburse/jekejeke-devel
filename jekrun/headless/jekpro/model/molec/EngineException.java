@@ -1,6 +1,6 @@
 package jekpro.model.molec;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
@@ -85,7 +85,7 @@ public final class EngineException extends Exception {
      * @param m The exception skeleton.
      */
     public EngineException(Object m) {
-        if (EngineCopy.getVar(m) != null)
+        if (SupervisorCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -97,7 +97,7 @@ public final class EngineException extends Exception {
      * @param d The exception display.
      */
     public EngineException(Object t, Display d) {
-        EngineCopy ec = new EngineCopy();
+        SupervisorCopy ec = new SupervisorCopy();
         template = ec.copyTerm(t, d);
     }
 
@@ -117,7 +117,7 @@ public final class EngineException extends Exception {
      * @param ctx The back trace.
      */
     public EngineException(EngineMessage msg, Object ctx) {
-        if (EngineCopy.getVar(ctx) != null)
+        if (SupervisorCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(OP_ERROR), msg.getTemplate(), ctx);
         initCause(msg);
@@ -131,7 +131,7 @@ public final class EngineException extends Exception {
      * @param type The type functor.
      */
     public EngineException(EngineMessage msg, Object ctx, String type) {
-        if (EngineCopy.getVar(ctx) != null)
+        if (SupervisorCopy.getVar(ctx) != null)
             throw new IllegalArgumentException("needs display");
         template = new SkelCompound(new SkelAtom(type), msg.getTemplate(), ctx);
         initCause(msg);
@@ -149,7 +149,7 @@ public final class EngineException extends Exception {
      * @param e2 The second engine exception.
      */
     public EngineException(EngineException e1, EngineException e2) {
-        EngineCopy eb = new EngineCopy();
+        SupervisorCopy eb = new SupervisorCopy();
         /* unpack cause chain */
         ListArray<Object> list = new ListArray<Object>();
         Object m = e1.getTemplate();

@@ -1,6 +1,7 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.AbstractChoice;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.CallFrame;
@@ -41,6 +42,9 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ChoiceAlter extends AbstractChoice {
+    public final static int MASK_CALT_BACK = 0x00000001;
+    public final static int MASK_CALT_SOFT = 0x00000002;
+
     protected Object at;
     protected final Intermediate goalskel;
     protected final AbstractUndo mark;
@@ -65,7 +69,7 @@ public final class ChoiceAlter extends AbstractChoice {
 
         /* store and reset soft commit condition */
         if ((u.flags & Directive.MASK_DIRE_SOFT) != 0) {
-            flags |= Directive.MASK_DIRE_SOFT;
+            flags |= MASK_CALT_SOFT;
             u.flags &= ~Directive.MASK_DIRE_SOFT;
         }
     }
@@ -85,20 +89,19 @@ public final class ChoiceAlter extends AbstractChoice {
         en.number--;
 
         /* undo begin condition */
-        if ((flags & Directive.MASK_DIRE_BACK) != 0) {
-            goaldisplay.flags |= Directive.MASK_DIRE_NOBR;
-            flags &= ~Directive.MASK_DIRE_BACK;
-        }
         if (number != -1) {
+            if ((flags & MASK_CALT_BACK) != 0) {
+                goaldisplay.flags |= AbstractDefined.MASK_DEFI_NOBR;
+                flags &= ~MASK_CALT_BACK;
+            }
             goaldisplay.number = number;
             number = -1;
         }
 
-
         if (at == null ||
                 (goaldisplay.flags & Directive.MASK_DIRE_SOFT) != 0) {
             /* undo soft commit condition */
-            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+            if ((flags & MASK_CALT_SOFT) != 0) {
                 goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
             } else {
                 goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
@@ -113,7 +116,7 @@ public final class ChoiceAlter extends AbstractChoice {
         en.releaseBind(mark);
         if (en.fault != null) {
             /* undo soft commit condition */
-            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+            if ((flags & MASK_CALT_SOFT) != 0) {
                 goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
             } else {
                 goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
@@ -140,7 +143,7 @@ public final class ChoiceAlter extends AbstractChoice {
         } else {
             en.contskel = (Directive) at;
             /* undo soft commit condition */
-            if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+            if ((flags & MASK_CALT_SOFT) != 0) {
                 goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
             } else {
                 goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;
@@ -163,18 +166,17 @@ public final class ChoiceAlter extends AbstractChoice {
         en.number--;
 
         /* undo begin condition */
-        if ((flags & Directive.MASK_DIRE_BACK) != 0) {
-            goaldisplay.flags |= Directive.MASK_DIRE_NOBR;
-            flags &= ~Directive.MASK_DIRE_BACK;
-        }
         if (number != -1) {
+            if ((flags & MASK_CALT_BACK) != 0) {
+                goaldisplay.flags |= AbstractDefined.MASK_DEFI_NOBR;
+                flags &= ~MASK_CALT_BACK;
+            }
             goaldisplay.number = number;
             number = -1;
         }
 
-
         /* undo soft commit condition */
-        if ((flags & Directive.MASK_DIRE_SOFT) != 0) {
+        if ((flags & MASK_CALT_SOFT) != 0) {
             goaldisplay.flags |= Directive.MASK_DIRE_SOFT;
         } else {
             goaldisplay.flags &= ~Directive.MASK_DIRE_SOFT;

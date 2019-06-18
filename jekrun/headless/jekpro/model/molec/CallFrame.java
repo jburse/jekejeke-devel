@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.rope.Directive;
@@ -61,20 +62,20 @@ public final class CallFrame extends StackElement {
      * @return The new or old frame.
      */
     public final CallFrame getFrame(Engine en) {
-        if ((flags & Directive.MASK_DIRE_NLST) == 0) {
+        if ((flags & AbstractDefined.MASK_DEFI_NSTK) == 0) {
             if ((contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = contdisplay;
                 if (u1.number >= number) {
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                        if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                        if ((u1.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
                             Display d1 = u1.disp;
                             if (d1.bind.length > 0)
                                 d1.remTab(en);
                         }
                         u1.flags |= Directive.MASK_DIRE_LTGC;
                     }
-                    if ((u1.flags & Directive.MASK_DIRE_NOBR) == 0)
-                        flags &= ~Directive.MASK_DIRE_NOBR;
+                    if ((u1.flags & AbstractDefined.MASK_DEFI_NOBR) == 0)
+                        flags &= ~AbstractDefined.MASK_DEFI_NOBR;
                     u1.disp = disp;
                     u1.flags = flags;
                     return u1;
@@ -93,12 +94,12 @@ public final class CallFrame extends StackElement {
      * @return The new or old frame.
      */
     public static CallFrame getFrame(Display d, Directive directive, Engine en) {
-        if ((directive.flags & Directive.MASK_DIRE_NLST) == 0) {
+        if ((directive.flags & AbstractDefined.MASK_DEFI_NSTK) == 0) {
             if ((en.contskel.flags & Goal.MASK_GOAL_CEND) != 0) {
                 CallFrame u1 = en.contdisplay;
                 if (u1.number >= en.number) {
                     if ((u1.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                        if ((u1.flags & Directive.MASK_DIRE_NBDY) == 0) {
+                        if ((u1.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
                             Display d1 = u1.disp;
                             if (d1.bind.length > 0)
                                 d1.remTab(en);
@@ -106,8 +107,8 @@ public final class CallFrame extends StackElement {
                         u1.flags |= Directive.MASK_DIRE_LTGC;
                     }
                     int flags = directive.flags & Directive.MASK_DIRE_CALL;
-                    if ((u1.flags & Directive.MASK_DIRE_NOBR) == 0)
-                        flags &= ~Directive.MASK_DIRE_NOBR;
+                    if ((u1.flags & AbstractDefined.MASK_DEFI_NOBR) == 0)
+                        flags &= ~AbstractDefined.MASK_DEFI_NOBR;
                     u1.disp = d;
                     u1.flags = flags;
                     return u1;

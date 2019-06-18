@@ -1,6 +1,6 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
@@ -286,8 +286,7 @@ public final class SpecialSession extends AbstractSpecial {
             try {
                 SpecialSession.promptQuery(en);
                 int flags = 0;
-                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
-                        (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
+                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
                     flags |= PrologReader.FLAG_NEWV;
                 rd.setFlags(flags);
                 rd.setSource(en.visor.peekStack());
@@ -313,11 +312,10 @@ public final class SpecialSession extends AbstractSpecial {
                         ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
                     break;
                 PreClause pre = expandGoalAndWrap(rd, val, en);
-                Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_NBDY |
-                        AbstractDefined.MASK_DEFI_NLST |
-                        AbstractDefined.MASK_DEFI_STOP, en);
-                dire.size = EngineCopy.displaySize(pre.molec);
-                dire.bodyToInter(pre.molec, en, true);
+                Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
+                        AbstractDefined.MASK_DEFI_NBDY, en);
+                int size = SupervisorCopy.displaySize(pre.molec);
+                dire.bodyToInterSkel(pre.molec, en, true);
 
                 Intermediate r = en.contskel;
                 CallFrame u = en.contdisplay;
@@ -325,7 +323,7 @@ public final class SpecialSession extends AbstractSpecial {
                 int snap = en.number;
                 Display backref = en.visor.query;
                 try {
-                    Display d2 = new Display(dire.size);
+                    Display d2 = new Display(size);
                     d2.vars = pre.vars;
                     en.visor.query = d2;
                     CallFrame ref = CallFrame.getFrame(d2, dire, en);
@@ -421,12 +419,12 @@ public final class SpecialSession extends AbstractSpecial {
      * @param en The engine.
      * @return The expanded term.
      * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
                                                Engine en)
-            throws EngineException {
-        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
-                (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
+            throws EngineException, EngineMessage {
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             PreClause pre = new PreClause();
             pre.molec = t;
             pre.vars = rd.getVars();
@@ -435,82 +433,61 @@ public final class SpecialSession extends AbstractSpecial {
 
         /* expand term */
         AbstractUndo mark = en.bind;
-        Display d;
-        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
-            d = AbstractSkel.createDisplay(t);
-            en.fault = null;
-        } else {
-            Intermediate r = en.contskel;
-            CallFrame u = en.contdisplay;
-            SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
-            Object body = new SkelCompound(new SkelAtom("expand_goal",
-                    en.store.getRootSystem()), t, var);
-            Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_NBDY |
-                    AbstractDefined.MASK_DEFI_NLST |
-                    AbstractDefined.MASK_DEFI_STOP, en);
-            dire.size = EngineCopy.displaySize(body);
-            dire.bodyToInter(body, en, true);
 
-            int snap = en.number;
-            Display backref = en.visor.query;
-            CallFrame ref;
-            try {
-                Display d2 = new Display(dire.size);
-                d2.vars = rd.getVars();
-                en.visor.query = d2;
-                ref = CallFrame.getFrame(d2, dire, en);
-                en.contskel = dire;
-                en.contdisplay = ref;
-                if (!en.runLoop2(snap, true))
-                    throw new EngineMessage(EngineMessage.syntaxError(
-                            EngineMessage.OP_SYNTAX_EXPAND_FAILED));
-            } catch (EngineException x) {
-                en.contskel = r;
-                en.contdisplay = u;
-                en.fault = x;
-                en.cutChoices(snap);
-                en.releaseBind(mark);
-                en.visor.query = backref;
-                throw en.fault;
-            } catch (EngineMessage y) {
-                Reader lr = rd.getScanner().getReader();
-                PositionKey pos = PositionKey.createPos(lr);
-                EngineException x = new EngineException(y, EngineException.fetchLoc(
-                        EngineException.fetchStack(en), pos, en));
-                en.contskel = r;
-                en.contdisplay = u;
-                en.fault = x;
-                en.cutChoices(snap);
-                en.releaseBind(mark);
-                en.visor.query = backref;
-                throw en.fault;
-            }
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
+        SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
+        Object body = new SkelCompound(new SkelAtom("expand_goal",
+                en.store.getRootSystem()), t, var);
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
+                AbstractDefined.MASK_DEFI_NBDY, en);
+        int size = SupervisorCopy.displaySize(body);
+        dire.bodyToInterSkel(body, en, true);
+
+        int snap = en.number;
+        Display backref = en.visor.query;
+        CallFrame ref;
+        try {
+            Display d2 = new Display(size);
+            d2.vars = rd.getVars();
+            en.visor.query = d2;
+            ref = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
+            en.contdisplay = ref;
+            if (!en.runLoop2(snap, true))
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_EXPAND_FAILED));
+        } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
-            en.fault = null;
+            en.fault = x;
             en.cutChoices(snap);
+            en.releaseBind(mark);
             en.visor.query = backref;
-            t = var;
-            d = ref.disp;
-        }
-        PreClause pre;
-        try {
-            if (en.fault != null)
-                throw en.fault;
-            pre = copyGoalVarsAndWrap(rd.getVars(), t, d, en);
+            throw en.fault;
         } catch (EngineMessage y) {
             Reader lr = rd.getScanner().getReader();
             PositionKey pos = PositionKey.createPos(lr);
-            en.fault = new EngineException(y, EngineException.fetchLoc(
+            EngineException x = new EngineException(y, EngineException.fetchLoc(
                     EngineException.fetchStack(en), pos, en));
-            en.releaseBind(mark);
-            throw en.fault;
-        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
             en.fault = x;
+            en.cutChoices(snap);
             en.releaseBind(mark);
+            en.visor.query = backref;
             throw en.fault;
         }
+        en.contskel = r;
+        en.contdisplay = u;
         en.fault = null;
+        en.cutChoices(snap);
+        en.visor.query = backref;
+        t = var;
+        Display d = ref.disp;
+        PreClause pre = null;
+        if (en.fault == null)
+            pre = copyGoalVarsAndWrap(rd.getVars(), t, d, en);
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;
@@ -525,29 +502,17 @@ public final class SpecialSession extends AbstractSpecial {
      * @param d     The term display.
      * @param en    The engine.
      * @return The new clause.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
     private static PreClause copyGoalVarsAndWrap(MapHashLink<String, SkelVar> assoc,
                                                  Object t, Display d,
-                                                 Engine en)
-            throws EngineMessage, EngineException {
+                                                 Engine en) {
         PreClause pre = new PreClause();
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0) {
-            t = ec.copyRest(t, d);
-        } else {
-            t = ec.copyGoalAndWrap(t, d, en);
-        }
+        pre.molec = ec.copyRest(t, d);
         MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(assoc, d, en);
         pre.vars = FileText.copyVars(ec.vars, print);
-        pre.molec = t;
         ec.vars = null;
         return pre;
     }

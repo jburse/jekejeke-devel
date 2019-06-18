@@ -1,7 +1,7 @@
 package jekpro.model.molec;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -263,7 +263,7 @@ public final class EngineMessage extends Exception {
      * @param m The message skeleton.
      */
     public EngineMessage(Object m) {
-        if (EngineCopy.getVar(m) != null)
+        if (SupervisorCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -275,7 +275,7 @@ public final class EngineMessage extends Exception {
      * @param d The message display.
      */
     public EngineMessage(Object t, Display d) {
-        EngineCopy ec = new EngineCopy();
+        SupervisorCopy ec = new SupervisorCopy();
         template = ec.copyTerm(t, d);
     }
 

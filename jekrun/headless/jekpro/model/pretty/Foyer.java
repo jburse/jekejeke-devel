@@ -81,18 +81,18 @@ public class Foyer extends Enforced {
     public final static String OP_SYS_COMMIT = "sys_commit";
     public final static String OP_SYS_SOFT_BEGIN = "sys_soft_begin";
     public final static String OP_SYS_SOFT_COMMIT = "sys_soft_commit";
+    public final static String OP_CALL = "call";
 
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
 
     public final static int MASK_FOYER_NIST = 0x00000010;
-    public final static int MASK_FOYER_NBCV = 0x00000040;
-    public final static int MASK_FOYER_CEXP = 0x00000080;
+    public final static int MASK_FOYER_CEXP = 0x00000020;
+    public final static int MASK_FOYER_NIDX = 0x00000040;
 
     public final static int MASK_FOYER_NBDY = 0x00000100;
-    public final static int MASK_FOYER_NLST = 0x00000200;
+    public final static int MASK_FOYER_NSTK = 0x00000200;
     public final static int MASK_FOYER_NHED = 0x00000400;
-    public final static int MASK_FOYER_NIDX = 0x00000800;
 
     public final static int MASK_FOYER_SMRY = 0x00001000;
     public final static int MASK_FOYER_DTLS = 0x00002000;
@@ -134,7 +134,6 @@ public class Foyer extends Enforced {
 
     public SkelCompound CELL_COMMA;
 
-    public SkelAtom ATOM_CALL;
     public SkelAtom ATOM_COMMA;
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
@@ -148,6 +147,7 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SYS_COMMIT;
     public SkelAtom ATOM_SYS_SOFT_BEGIN;
     public SkelAtom ATOM_SYS_SOFT_COMMIT;
+    public SkelAtom ATOM_CALL;
 
     public Directive CLAUSE_CONT;
     public Directive CLAUSE_CALL;

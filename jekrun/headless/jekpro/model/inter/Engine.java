@@ -1,7 +1,7 @@
 package jekpro.model.inter;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.frequent.standard.SpecialFind;
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
@@ -54,8 +54,6 @@ public class Engine extends StackElement implements Comparator<Object> {
     public AbstractUndo bind;
     public AbstractChoice choices;
     public int number;
-    public EngineCopy enginecopy;
-    public EngineWrap enginewrap;
     public Object proxy;
     public EngineException fault;
 
@@ -246,15 +244,17 @@ public class Engine extends StackElement implements Comparator<Object> {
         createComma(list, this);
         Display d2 = display;
         boolean ext = d2.getAndReset();
-        boolean multi = wrapGoal();
+
+        boolean multi = SupervisorWrap.wrapGoal(this);
         if (multi && ext)
             d2.remTab(this);
         Display ref = display;
         Directive dire = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(dire.size);
+        Display d3 = new Display(1);
         d3.bind[0].bindUniv(skel, ref, this);
         if (multi || ext)
             ref.remTab(this);
+
         CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
         contskel = dire;
         contdisplay = ref2;
@@ -360,13 +360,19 @@ public class Engine extends StackElement implements Comparator<Object> {
         AbstractUndo mark = bind;
         int snap = number;
         try {
-            boolean multi = wrapGoal();
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, this);
+            Display d2 = display;
+
+/*
+            boolean multi = SupervisorWrap.wrapGoal(this);
             Display ref = display;
             Directive dire = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            Display d2 = new Display(1);
             d2.bind[0].bindUniv(skel, ref, this);
             if (multi)
                 ref.remTab(this);
+*/
+
             CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
             contskel = dire;
             contdisplay = ref2;
@@ -403,42 +409,6 @@ public class Engine extends StackElement implements Comparator<Object> {
         visor.setIgnore(backignore);
         if (fault != null)
             throw fault;
-    }
-
-    /**
-     * <p>Prepare a term for execution.</p>
-     * <p>Goal is updated in the skel and the display of this engine.</p>
-     *
-     * @return True if new display is returned, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public final boolean wrapGoal()
-            throws EngineException, EngineMessage {
-        Object t = skel;
-        Display d = display;
-        EngineMessage.checkInstantiated(t);
-        EngineWrap ew = enginewrap;
-        if (ew == null) {
-            ew = new EngineWrap();
-            enginewrap = ew;
-        }
-        ew.countvar = 0;
-        ew.flags = 0;
-        ew.last = Display.DISPLAY_CONST;
-        ew.countGoal(t, d, this);
-        if ((ew.flags & EngineWrap.MASK_WRAP_CHNG) == 0) {
-            skel = t;
-            display = d;
-            return false;
-        }
-        if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = new Display(ew.countvar);
-        ew.countvar = 0;
-        skel = ew.replaceGoalAndWrap(t, d, this);
-        display = ew.last;
-        ew.last = Display.DISPLAY_CONST;
-        return ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0);
     }
 
     /*****************************************************************/

@@ -65,6 +65,7 @@ public final class Predicate {
     public final static int MASK_PRED_VSPR = 0x00000100;
     public final static int MASK_PRED_VSPU = 0x00000200;
     public final static int MASK_PRED_NOBR = 0x00000400;
+    public final static int MASK_PRED_NBCV = 0x00000800;
 
     /* combine masks */
     public final static int MASK_PRED_VISI = MASK_PRED_VSPR | MASK_PRED_VSPU;

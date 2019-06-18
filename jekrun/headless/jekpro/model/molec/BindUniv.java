@@ -1,11 +1,10 @@
 package jekpro.model.molec;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
 import matula.util.data.AbstractMap;
-import matula.util.data.MapHash;
 
 /**
  * <p>This class provides a reference counted variable binder.</p>
@@ -73,7 +72,7 @@ public class BindUniv extends AbstractUndo {
             bc.skel = null;
             bc.display = null;
 
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 break;
             BindUniv[] b = d.bind;
@@ -138,7 +137,7 @@ public class BindUniv extends AbstractUndo {
         display = d;
         addBind(en);
 
-        Object var = EngineCopy.getVar(t);
+        Object var = SupervisorCopy.getVar(t);
         if (var == null)
             return;
 

@@ -360,8 +360,7 @@ public abstract class AbstractSource {
                     flags |= PrologWriter.FLAG_FILL;
                 if ((src.getBits() & AbstractSource.MASK_SRC_MKDT) != 0)
                     flags |= PrologWriter.FLAG_MKDT;
-                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
-                        (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
+                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
                     flags |= PrologReader.FLAG_NEWV;
                 if (rd == null ||
                         (rd.getFlags() & PrologWriter.FLAG_FILL) !=

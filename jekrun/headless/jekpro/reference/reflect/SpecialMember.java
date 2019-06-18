@@ -1,6 +1,6 @@
 package jekpro.reference.reflect;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
@@ -197,7 +197,7 @@ public final class SpecialMember extends AbstractSpecial {
      */
     private static boolean isGround(Object t, Display d) {
         for (; ; ) {
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 return true;
             SkelVar v;

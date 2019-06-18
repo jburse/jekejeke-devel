@@ -84,8 +84,7 @@ public final class CacheSubclass extends AbstractCache {
         LoadOpts opts = new LoadOpts();
         opts.setFlags(opts.getFlags() | LoadOpts.MASK_LOAD_COND);
         opts.setFlags(opts.getFlags() | LoadForce.MASK_LOAD_AUTO);
-        en.enginecopy = null;
-        en.enginewrap = null;
+        en.visor.clearWrap();
         mod = mod.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
         String key;
         try {

@@ -1,7 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.experiment.SpecialRef;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
@@ -62,13 +62,23 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_ASSE =
             MASK_DEFI_DYNA | MASK_DEFI_THLC | MASK_DEFI_GRLC;
 
-    /* clause compilation */
-    public final static int MASK_DEFI_STOP = 0x00000100;
-    public final static int MASK_DEFI_NIST = 0x00000200;
+    /* predicate compilation */
+    public final static int MASK_DEFI_NOBR = 0x00000100;
+    public final static int MASK_DEFI_STOP = 0x00000200;
+    public final static int MASK_DEFI_NBCV = 0x00000400;
+    public final static int MASK_DEFI_NIST = 0x00000800;
 
     public final static int MASK_DEFI_NBDY = 0x00001000;
     public final static int MASK_DEFI_NLST = 0x00002000;
     public final static int MASK_DEFI_NHED = 0x00004000;
+    public final static int MASK_DEFI_NSTK = 0x00008000;
+
+    public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
+            AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
+
+    public final static int MASK_DEFI_COMP = MASK_DEFI_NOBR |
+            MASK_DEFI_CALL | MASK_DEFI_NBCV | MASK_DEFI_NIST |
+            MASK_DEFI_NBDY | MASK_DEFI_NHED;
 
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
@@ -108,8 +118,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
     AbstractDefined(int flags) {
         if ((flags & Foyer.MASK_FOYER_NBDY) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NBDY;
-        if ((flags & Foyer.MASK_FOYER_NLST) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NLST;
+        if ((flags & Foyer.MASK_FOYER_NSTK) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NSTK;
         if ((flags & Foyer.MASK_FOYER_NHED) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NHED;
         if ((flags & Foyer.MASK_FOYER_NIST) != 0)
@@ -144,7 +154,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_STAT;
             pick.del = del;
         }
@@ -179,7 +191,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_DYNA;
             pick.del = del;
         }
@@ -211,7 +225,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_THLC;
             pick.del = del;
         }
@@ -243,7 +259,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_GRLC;
             pick.del = del;
         }
@@ -321,7 +339,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }
@@ -459,14 +477,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
+        Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
             MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[1], ref, en);

@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -103,7 +104,7 @@ public final class Optimization {
      * @return The helper.
      */
     static Optimization[] createHelper(Object molec) {
-        Object var = EngineCopy.getVar(molec);
+        Object var = SupervisorCopy.getVar(molec);
         if (var == null)
             return VAR_VOID;
         Optimization[] helper;
@@ -138,7 +139,7 @@ public final class Optimization {
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
                 ov.minarg = i;
-                if ((clause.flags & Clause.MASK_CLAUSE_NHED) != 0)
+                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) != 0)
                     ov.flags |= MASK_VAR_HSTR;
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
@@ -168,7 +169,7 @@ public final class Optimization {
      * @param helper The helper.
      */
     static void setBody(Object m, Optimization[] helper) {
-        Object var = EngineCopy.getVar(m);
+        Object var = SupervisorCopy.getVar(m);
         if (var == null)
             return;
         if (var instanceof SkelVar) {

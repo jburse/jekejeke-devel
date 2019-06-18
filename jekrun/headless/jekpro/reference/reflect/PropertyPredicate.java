@@ -75,6 +75,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_ARITHMETIC = "sys_arithmetic";
     private final static String OP_AUTOMATIC = "automatic";
     private final static String OP_SYS_NOBARRIER = "sys_nobarrier";
+    private final static String OP_SYS_PROTO = "sys_proto";
 
     private final static String OP_SYS_NOEXPAND = "sys_noexpand";
     private final static String OP_SYS_NOMACRO = "sys_nomacro";
@@ -116,27 +117,28 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public final static int PROP_SYS_ARITHMETIC = 14;
     public final static int PROP_AUTOMATIC = 15;
     public final static int PROP_SYS_NOBARRIER = 16;
+    public final static int PROP_SYS_PROTO = 17;
 
-    public final static int PROP_SYS_NOEXPAND = 17;
-    public final static int PROP_SYS_NOMACRO = 18;
-    public final static int PROP_SYS_BODY = 19;
-    public final static int PROP_SYS_RULE = 20;
-    public final static int PROP_SYS_NOTRACE = 21;
+    public final static int PROP_SYS_NOEXPAND = 18;
+    public final static int PROP_SYS_NOMACRO = 19;
+    public final static int PROP_SYS_BODY = 20;
+    public final static int PROP_SYS_RULE = 21;
+    public final static int PROP_SYS_NOTRACE = 22;
 
-    public final static int PROP_META_PREDICATE = 22;
-    public final static int PROP_META_FUNCTION = 23;
+    public final static int PROP_META_PREDICATE = 23;
+    public final static int PROP_META_FUNCTION = 24;
 
-    public final static int PROP_BUILT_IN = 24;
-    public final static int PROP_STATIC = 25;
-    public final static int PROP_DYNAMIC = 26;
-    public final static int PROP_THREAD_LOCAL = 27;
-    public final static int PROP_GROUP_LOCAL = 28;
+    public final static int PROP_BUILT_IN = 25;
+    public final static int PROP_STATIC = 26;
+    public final static int PROP_DYNAMIC = 27;
+    public final static int PROP_THREAD_LOCAL = 28;
+    public final static int PROP_GROUP_LOCAL = 29;
 
-    public final static int PROP_FULL_NAME = 29;
-    public final static int PROP_SYS_USAGE = 30;
-    public final static int PROP_SYS_NOBODY = 31;
-    public final static int PROP_SYS_NOSTACK = 32;
-    public final static int PROP_SYS_NOHEAD = 33;
+    public final static int PROP_FULL_NAME = 30;
+    public final static int PROP_SYS_USAGE = 31;
+    public final static int PROP_SYS_NOBODY = 32;
+    public final static int PROP_SYS_NOSTACK = 33;
+    public final static int PROP_SYS_NOHEAD = 34;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -166,6 +168,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_SYS_ARITHMETIC, 0), new PropertyPredicate(PROP_SYS_ARITHMETIC));
         DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
         DEFAULT.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_PROTO, 0), new PropertyPredicate(PROP_SYS_PROTO,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
 
         DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND,
@@ -228,10 +232,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      * @param pick The predicate.
      * @param en   The engine.
      * @return The predicate properties.
-     * @throws EngineMessage Shit happens.
      */
-    public Object[] getObjProps(Predicate pick, Engine en)
-            throws EngineMessage {
+    public Object[] getObjProps(Predicate pick, Engine en) {
         switch (id) {
             case PROP_VISIBLE:
                 int flags = pick.getBits();
@@ -355,6 +357,12 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_PROTO:
+                if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_PROTO)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
 
             case PROP_SYS_NOEXPAND:
                 if ((pick.getBits() & Predicate.MASK_PRED_NOEX) != 0) {
@@ -461,7 +469,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 if ((fun instanceof AbstractDefined) &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NLST) != 0) {
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NSTK) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOSTACK)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
@@ -580,6 +588,9 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOBARRIER:
                 pick.setBit(Predicate.MASK_PRED_NOBR);
                 return true;
+            case PROP_SYS_PROTO:
+                pick.setBit(Predicate.MASK_PRED_NBCV);
+                return true;
 
             case PROP_SYS_NOEXPAND:
                 pick.setBit(Predicate.MASK_PRED_NOEX);
@@ -636,7 +647,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NLST;
+                fun.subflags |= AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
@@ -747,6 +758,9 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOBARRIER:
                 pick.resetBit(Predicate.MASK_PRED_NOBR);
                 return true;
+            case PROP_SYS_PROTO:
+                pick.resetBit(Predicate.MASK_PRED_NBCV);
+                return true;
 
             case PROP_SYS_NOEXPAND:
                 pick.resetBit(Predicate.MASK_PRED_NOEX);
@@ -801,7 +815,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NLST;
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;

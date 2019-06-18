@@ -1,7 +1,7 @@
 package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.*;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
@@ -819,7 +819,7 @@ public final class SpecialLoad extends AbstractSpecial {
                                      Engine en, int flags)
             throws EngineException, EngineMessage {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 ||
-                ((flags & MASK_SHOW_NRBD) != 0)) {
+                (flags & MASK_SHOW_NRBD) != 0) {
             Display ref = AbstractSkel.createDisplay(t);
             EngineVars ev = new EngineVars();
             ev.singsOf(t, ref);
@@ -833,7 +833,7 @@ public final class SpecialLoad extends AbstractSpecial {
         }
         AbstractUndo mark = en.bind;
         int snap = en.number;
-        int size = EngineCopy.displaySize(t);
+        int size = SupervisorCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
@@ -843,7 +843,7 @@ public final class SpecialLoad extends AbstractSpecial {
         CallFrame u = en.contdisplay;
         try {
             Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
+            Display d2 = new Display(1);
             d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;

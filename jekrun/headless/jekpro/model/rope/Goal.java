@@ -7,6 +7,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -44,8 +45,13 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public final static int MASK_GOAL_NAKE = 0x00000100;
-    public final static int MASK_GOAL_CEND = 0x00000200;
+    public final static int MASK_GOAL_NAKE = 0x00000010;
+    public final static int MASK_GOAL_CEND = 0x00000020;
+
+    public final static int TYPE_ALTR_DISJ = 0;
+    public final static int TYPE_ALTR_COND = 1;
+    public final static int TYPE_ALTR_SOFT = 2;
+    public final static int TYPE_ALTR_NONE = 3;
 
     public Intermediate back;
 
@@ -54,12 +60,13 @@ public class Goal extends Intermediate {
      *
      * @param t The term.
      */
-    public Goal(Object t) {
+    public Goal(Object t) throws EngineMessage {
+        if (!(t instanceof AbstractSkel))
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
         term = t;
-        int f3 = 0;
         if (t instanceof SkelVar)
-            f3 |= Goal.MASK_GOAL_NAKE;
-        flags = f3;
+            flags = Goal.MASK_GOAL_NAKE;
     }
 
     /**
@@ -121,66 +128,81 @@ public class Goal extends Intermediate {
     }
 
     /**************************************************************/
-    /* Convert to Intermediate Form                               */
+    /* Skel Compilation                                           */
     /**************************************************************/
 
     /**
      * <p>Convert a body to intermediate form.</p>
      *
      * @param dire The directive.
-     * @param body The term list, or null.
+     * @param b    The body skeleton.
      * @param en   The engine.
+     * @throws EngineMessage Shit happens.
      */
-    static void bodyToInter(Directive dire, Object body, Engine en) {
-        while (body != null) {
-            Object term = bodyToGoal(body);
-            if (term != null) {
-                if (isDisjunction(term) || isCondition(term) || isSoftCondition(term))
-                    term = disjunctionToAlternative(dire, term, en);
-                Goal goal = new Goal(term);
-                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+    static void bodyToInterSkel(Directive dire, Object b, Engine en)
+            throws EngineMessage {
+        do {
+            Object t = bodyToGoalSkel(b);
+            if (t != null) {
+                if (alterType(t) != TYPE_ALTR_NONE) {
+                    t = disjToAlterSkel(dire, t, en);
+                    Goal goal = new Goal(t);
+                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                } else if (Directive.controlType(t) != Directive.TYPE_CTRL_NONE) {
+                    Goal goal = new Goal(t);
+                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                } else {
+                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
+                        t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                    Goal goal = new Goal(t);
+                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                }
             }
-            body = bodyToRest(body);
-        }
+            b = bodyToRestSkel(b);
+        } while (b != null);
     }
 
     /**
      * <p>Convert a disjunction to an alternative.</p>
      *
      * @param dire The directive.
-     * @param term The disjunction.
+     * @param t    The disjunction skeleton.
      * @param en   The engine.
      * @return The alternative.
+     * @throws EngineMessage Shit happens.
      */
-    public static Object disjunctionToAlternative(Directive dire,
-                                                  Object term, Engine en) {
+    public static Object disjToAlterSkel(Directive dire,
+                                         Object t, Engine en)
+            throws EngineMessage {
         SkelCompound back = null;
-        while (isDisjunction(term)) {
-            SkelCompound sc = (SkelCompound) term;
-            Object help = sc.args[0];
+        int type = alterType(t);
+        while (type == TYPE_ALTR_DISJ) {
+            SkelCompound sc = (SkelCompound) t;
+            Object b = sc.args[0];
             Directive left;
-            if (isCondition(help)) {
-                left = condToInter(dire, help, en);
-            } else if (isSoftCondition(help)) {
-                left = softCondToInter(dire, help, en);
+            type = alterType(b);
+            if (type == TYPE_ALTR_COND) {
+                left = condToInterSkel(dire, b, en);
+            } else if (type == TYPE_ALTR_SOFT) {
+                left = softCondToInterSkel(dire, b, en);
             } else {
-                left = goalToInter(dire, help, en);
+                left = goalToInterSkel(dire, b, en);
             }
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
             back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
-            term = sc.args[1];
+            t = sc.args[1];
+            type = alterType(t);
         }
-        Object t;
-        if (isCondition(term)) {
-            t = condToInter(dire, term, en);
+        if (type == TYPE_ALTR_COND) {
+            t = condToInterSkel(dire, t, en);
             t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
-        } else if (isSoftCondition(term)) {
-            t = softCondToInter(dire, term, en);
+        } else if (type == TYPE_ALTR_SOFT) {
+            t = softCondToInterSkel(dire, t, en);
             t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
         } else {
-            t = goalToInter(dire, term, en);
+            t = goalToInterSkel(dire, t, en);
         }
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
@@ -196,35 +218,39 @@ public class Goal extends Intermediate {
      * <p>Convert a condition branch to intermediate form.</p>
      *
      * @param dire The directive.
-     * @param body The term list, or null.
+     * @param b    The condition skeleton.
      * @param en   The engine.
+     * @throws EngineMessage Shit happens.
      */
-    private static Directive condToInter(Directive dire, Object body,
-                                         Engine en) {
-        Directive left = makeDirective(dire, en);
-        SkelCompound sc = (SkelCompound) body;
-        left.bodyToInter(en.store.foyer.ATOM_SYS_BEGIN, en, false);
-        left.bodyToInter(sc.args[0], en, false);
-        left.bodyToInter(en.store.foyer.ATOM_SYS_COMMIT, en, false);
-        left.bodyToInter(sc.args[1], en, false);
+    private static Directive condToInterSkel(Directive dire, Object b,
+                                             Engine en)
+            throws EngineMessage {
+        Directive left = Directive.createDirective(dire.flags, en);
+        SkelCompound sc = (SkelCompound) b;
+        left.bodyToInterSkel(en.store.foyer.ATOM_SYS_BEGIN, en, false);
+        left.bodyToInterSkel(sc.args[0], en, false);
+        left.bodyToInterSkel(en.store.foyer.ATOM_SYS_COMMIT, en, false);
+        left.bodyToInterSkel(sc.args[1], en, false);
         return left;
     }
 
     /**
-     * <p>Convert a condition branch to intermediate form.</p>
+     * <p>Convert a soft condition branch to intermediate form.</p>
      *
      * @param dire The directive.
-     * @param body The term list, or null.
+     * @param b    The condition skeleton.
      * @param en   The engine.
+     * @throws EngineMessage Shit happens.
      */
-    private static Directive softCondToInter(Directive dire, Object body,
-                                             Engine en) {
-        Directive left = makeDirective(dire, en);
-        SkelCompound sc = (SkelCompound) body;
-        left.bodyToInter(en.store.foyer.ATOM_SYS_SOFT_BEGIN, en, false);
-        left.bodyToInter(sc.args[0], en, false);
-        left.bodyToInter(en.store.foyer.ATOM_SYS_SOFT_COMMIT, en, false);
-        left.bodyToInter(sc.args[1], en, false);
+    private static Directive softCondToInterSkel(Directive dire, Object b,
+                                                 Engine en)
+            throws EngineMessage {
+        Directive left = Directive.createDirective(dire.flags, en);
+        SkelCompound sc = (SkelCompound) b;
+        left.bodyToInterSkel(en.store.foyer.ATOM_SYS_SOFT_BEGIN, en, false);
+        left.bodyToInterSkel(sc.args[0], en, false);
+        left.bodyToInterSkel(en.store.foyer.ATOM_SYS_SOFT_COMMIT, en, false);
+        left.bodyToInterSkel(sc.args[1], en, false);
         return left;
     }
 
@@ -232,128 +258,84 @@ public class Goal extends Intermediate {
      * <p>Convert a goal to intermediate form.</p>
      *
      * @param dire The directive.
-     * @param body The term list, or null.
+     * @param b    The body skeleton.
      * @param en   The engine.
+     * @throws EngineMessage Shit happens.
      */
-    private static Directive goalToInter(Directive dire, Object body,
-                                         Engine en) {
-        Directive left = makeDirective(dire, en);
-        left.bodyToInter(body, en, false);
+    private static Directive goalToInterSkel(Directive dire, Object b,
+                                             Engine en)
+            throws EngineMessage {
+        Directive left = Directive.createDirective(dire.flags, en);
+        left.bodyToInterSkel(b, en, false);
         return left;
     }
 
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isDisjunction(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SEMICOLON)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isCondition(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONDITION)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isSoftCondition(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SOFT_CONDITION)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /**************************************************************/
-    /* Conversion Utilities                                       */
+    /* Skel Utilities                                             */
     /**************************************************************/
+
+    /**
+     * <p>Determine the alter type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The alter type.
+     */
+    public static int alterType(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SEMICOLON)) {
+            return TYPE_ALTR_DISJ;
+        } else if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONDITION)) {
+            return TYPE_ALTR_COND;
+        } else if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SOFT_CONDITION)) {
+            return TYPE_ALTR_SOFT;
+        } else {
+            return TYPE_ALTR_NONE;
+        }
+    }
 
     /**
      * <p>Convert a body to a goal.</p>
      *
-     * @param term The body.
-     * @return The goal.
+     * @param t The body skeleton.
+     * @return The goal skeleton.
      */
-    public static Object bodyToGoal(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
-            SkelCompound sc = (SkelCompound) term;
+    public static Object bodyToGoalSkel(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) t;
             return sc.args[0];
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_TRUE)) {
+        } else if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
             return null;
         } else {
-            return term;
+            return t;
         }
     }
 
     /**
      * <p>Convert a body to a rest.</p>
      *
-     * @param term The body.
-     * @return The rest.
+     * @param t The body skeleton.
+     * @return The rest skeleton.
      */
-    public static Object bodyToRest(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_COMMA)) {
-            SkelCompound sc = (SkelCompound) term;
+    public static Object bodyToRestSkel(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) t;
             return sc.args[1];
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_TRUE)) {
+        } else if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
             return null;
         } else {
             return null;
         }
-    }
-
-    /**
-     * <p>Create a new directive with same flags.</p>
-     *
-     * @param dire The directive.
-     * @param en   The engine.
-     * @return The new directive.
-     */
-    private static Directive makeDirective(Directive dire, Engine en) {
-        int copt = 0;
-        if ((dire.flags & Directive.MASK_DIRE_NLST) != 0)
-            copt |= AbstractDefined.MASK_DEFI_NLST;
-        if ((dire.flags & Directive.MASK_DIRE_STOP) != 0)
-            copt |= AbstractDefined.MASK_DEFI_STOP;
-        if ((dire.flags & Directive.MASK_DIRE_NBDY) != 0)
-            copt |= AbstractDefined.MASK_DEFI_NBDY;
-        if ((dire.flags & Directive.MASK_DIRE_NOBR) != 0)
-            copt |= AbstractDelegate.MASK_DELE_NOBR;
-        if ((dire.flags & Directive.MASK_DIRE_NIST) != 0)
-            copt |= AbstractDefined.MASK_DEFI_NIST;
-        return Directive.createDirective(copt, en);
     }
 
 }

@@ -1,7 +1,7 @@
 package jekpro.frequent.experiment;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractDefined;
@@ -221,14 +221,10 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
+        Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
             MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[2], ref, en);

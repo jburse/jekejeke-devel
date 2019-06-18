@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -221,7 +221,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (EngineCopy.getVar(en.skel) != null) {
+            if (SupervisorCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -272,7 +272,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 en.skel = t;
                 en.display = d;
             }
-            if (multi && EngineCopy.getVar(en.skel) != null) {
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d4.bind[sv.id].bindUniv(en.skel, en.display, en);
@@ -398,7 +398,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (EngineCopy.getVar(en.skel) != null) {
+            if (SupervisorCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -458,7 +458,7 @@ public final class SpecialUniv extends AbstractSpecial {
             en.skel = sc.args[0];
             en.display = d;
             en.deref();
-            if (multi && EngineCopy.getVar(en.skel) != null) {
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d2.bind[sv.id].bindUniv(en.skel, en.display, en);
@@ -578,7 +578,7 @@ public final class SpecialUniv extends AbstractSpecial {
      */
     private static boolean hasVar(Object m, Display d, Object t, Display d2) {
         for (; ; ) {
-            Object var = EngineCopy.getVar(m);
+            Object var = SupervisorCopy.getVar(m);
             if (var == null)
                 return false;
             SkelVar v;

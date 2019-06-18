@@ -1,7 +1,7 @@
 package jekpro.model.molec;
 
-import jekpro.frequent.standard.EngineCopy;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -37,13 +37,45 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class EngineWrap {
+public final class SupervisorWrap {
     public final static int MASK_WRAP_MLTI = 0x00000001;
     public final static int MASK_WRAP_CHNG = 0x00000002;
 
     public int countvar;
     public Display last;
     public int flags;
+
+    /**
+     * <p>Prepare a term for execution.</p>
+     * <p>Goal is updated in the skel and the display of this engine.</p>
+     *
+     * @return True if new display is returned, otherwise false.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    public static boolean wrapGoal(Engine en)
+            throws EngineException, EngineMessage {
+        Object t = en.skel;
+        Display d = en.display;
+        EngineMessage.checkInstantiated(t);
+        SupervisorWrap ew = en.visor.getWrap();
+        ew.countvar = 0;
+        ew.flags = 0;
+        ew.last = Display.DISPLAY_CONST;
+        ew.countGoal(t, d, en);
+        if ((ew.flags & SupervisorWrap.MASK_WRAP_CHNG) == 0) {
+            en.skel = t;
+            en.display = d;
+            return false;
+        }
+        if ((ew.flags & SupervisorWrap.MASK_WRAP_MLTI) != 0)
+            ew.last = new Display(ew.countvar);
+        ew.countvar = 0;
+        en.skel = ew.replaceGoalAndWrap(t, d, en);
+        en.display = ew.last;
+        ew.last = Display.DISPLAY_CONST;
+        return ((ew.flags & SupervisorWrap.MASK_WRAP_MLTI) != 0);
+    }
 
     /**************************************************************************/
     /* Body Conversion Count                                                  */
@@ -79,20 +111,20 @@ public final class EngineWrap {
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
                 CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
-                Object[] decl = EngineCopy.metaPredicateBody(cp);
+                Object[] decl = metaPredicateBody(cp);
                 if (decl != null) {
                     for (int i = 0; i < sc.args.length - 1; i++) {
-                        if (EngineCopy.argZero(decl, i)) {
+                        if (argZero(decl, i)) {
                             countGoal(sc.args[i], d, en);
-                        } else if (EngineCopy.argMinusOne(decl, i)) {
+                        } else if (argMinusOne(decl, i)) {
                             countTerm(sc.args[i], d, en);
                         } else {
                             countRest(sc.args[i], d);
                         }
                     }
-                    if (EngineCopy.argZero(decl, sc.args.length - 1)) {
+                    if (argZero(decl, sc.args.length - 1)) {
                         t = sc.args[sc.args.length - 1];
-                    } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
+                    } else if (argMinusOne(decl, sc.args.length - 1)) {
                         countTerm(sc.args[sc.args.length - 1], d, en);
                         break;
                     } else {
@@ -150,20 +182,20 @@ public final class EngineWrap {
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
                 CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
-                Object[] decl = EngineCopy.metaPredicateRule(cp);
+                Object[] decl = metaPredicateRule(cp);
                 if (decl != null) {
                     for (int i = 0; i < sc.args.length - 1; i++) {
-                        if (EngineCopy.argZero(decl, i)) {
+                        if (argZero(decl, i)) {
                             countTerm(sc.args[i], d, en);
-                        } else if (EngineCopy.argMinusOne(decl, i)) {
+                        } else if (argMinusOne(decl, i)) {
                             countGoal(sc.args[i], d, en);
                         } else {
                             countRest(sc.args[i], d);
                         }
                     }
-                    if (EngineCopy.argZero(decl, sc.args.length - 1)) {
+                    if (argZero(decl, sc.args.length - 1)) {
                         t = sc.args[sc.args.length - 1];
-                    } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
+                    } else if (argMinusOne(decl, sc.args.length - 1)) {
                         countGoal(sc.args[sc.args.length - 1], d, en);
                         break;
                     } else {
@@ -278,23 +310,23 @@ public final class EngineWrap {
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
                 CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
-                Object[] decl = EngineCopy.metaPredicateBody(cp);
+                Object[] decl = metaPredicateBody(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
-                        if (EngineCopy.argZero(decl, i)) {
+                        if (argZero(decl, i)) {
                             args[i] = replaceGoalAndWrap(sc.args[i], d, en);
-                        } else if (EngineCopy.argMinusOne(decl, i)) {
+                        } else if (argMinusOne(decl, i)) {
                             args[i] = replaceTermAndWrap(sc.args[i], d, en);
                         } else {
                             args[i] = replaceRest(sc.args[i], d, en);
                         }
                     }
-                    if (EngineCopy.argZero(decl, sc.args.length - 1)) {
+                    if (argZero(decl, sc.args.length - 1)) {
                         args[sc.args.length - 1] = back;
                         back = new SkelCompound(sc.sym, args, null);
                         t = sc.args[sc.args.length - 1];
-                    } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
+                    } else if (argMinusOne(decl, sc.args.length - 1)) {
                         args[sc.args.length - 1] = replaceTermAndWrap(sc.args[sc.args.length - 1], d, en);
                         t = new SkelCompound(sc.sym, args);
                         break;
@@ -360,23 +392,23 @@ public final class EngineWrap {
             } else if (t instanceof SkelCompound) {
                 SkelCompound sc = (SkelCompound) t;
                 CachePredicate cp = CachePredicate.getPredicate(sc.sym, sc.args.length, en);
-                Object[] decl = EngineCopy.metaPredicateRule(cp);
+                Object[] decl = metaPredicateRule(cp);
                 if (decl != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++) {
-                        if (EngineCopy.argZero(decl, i)) {
+                        if (argZero(decl, i)) {
                             args[i] = replaceTermAndWrap(sc.args[i], d, en);
-                        } else if (EngineCopy.argMinusOne(decl, i)) {
+                        } else if (argMinusOne(decl, i)) {
                             args[i] = replaceGoalAndWrap(sc.args[i], d, en);
                         } else {
                             args[i] = replaceRest(sc.args[i], d, en);
                         }
                     }
-                    if (EngineCopy.argZero(decl, sc.args.length - 1)) {
+                    if (argZero(decl, sc.args.length - 1)) {
                         args[sc.args.length - 1] = back;
                         back = new SkelCompound(sc.sym, args, null);
                         t = sc.args[sc.args.length - 1];
-                    } else if (EngineCopy.argMinusOne(decl, sc.args.length - 1)) {
+                    } else if (argMinusOne(decl, sc.args.length - 1)) {
                         args[sc.args.length - 1] = replaceGoalAndWrap(sc.args[sc.args.length - 1], d, en);
                         t = new SkelCompound(sc.sym, args);
                         break;
@@ -450,6 +482,70 @@ public final class EngineWrap {
             }
         }
         return t;
+    }
+
+    /*******************************************************/
+    /* Body Conversion Helper                              */
+    /*******************************************************/
+
+    /**
+     * <p>Retrieve the meta specifiers of a body predicate.</p>
+     *
+     * @param cp The cache predicate.
+     * @return The meta spezifiers, or null.
+     */
+    private static Object[] metaPredicateBody(CachePredicate cp) {
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return null;
+        Predicate pick = cp.pick;
+        if ((pick.getBits() & Predicate.MASK_PRED_BODY) == 0)
+            return null;
+        Object t = pick.meta_predicate;
+        return (t != null ? ((SkelCompound) t).args : null);
+    }
+
+    /**
+     * <p>Retrieve the meta specifiers of a rule predicate.</p>
+     *
+     * @param cp The cache predicate.
+     * @return The meta spezifiers, or null.
+     */
+    private static Object[] metaPredicateRule(CachePredicate cp) {
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return null;
+        Predicate pick = cp.pick;
+        if ((pick.getBits() & Predicate.MASK_PRED_RULE) == 0)
+            return null;
+        Object t = pick.meta_predicate;
+        return (t != null ? ((SkelCompound) t).args : null);
+    }
+
+    /**
+     * <p>Check whether the argument is a exactly 0.</p>
+     *
+     * @param args The meta declaration.
+     * @param k    The index.
+     * @return The argument spez.
+     */
+    private static boolean argZero(Object[] args, int k) {
+        Object obj = args[k];
+        if (!(obj instanceof Integer))
+            return false;
+        return ((Integer) obj).intValue() == 0;
+    }
+
+    /**
+     * <p>Check whether the argument is a exactly -1.</p>
+     *
+     * @param args The meta declaration.
+     * @param k    The index.
+     * @return The argument spez.
+     */
+    private static boolean argMinusOne(Object[] args, int k) {
+        Object obj = args[k];
+        if (!(obj instanceof Integer))
+            return false;
+        return ((Integer) obj).intValue() == -1;
     }
 
 }
