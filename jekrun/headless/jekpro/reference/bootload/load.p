@@ -141,9 +141,6 @@ unload_file(Path) :-
    ensure_loaded(Path),
    call(Y).
 :- set_predicate_property('.'/2, visible(public)).
-:- set_predicate_property('.'/2, meta_predicate([0|0])).
-:- sys_context_property(here, C),
-   set_predicate_property('.'/2, sys_meta_predicate(C)).
 :- set_predicate_property('.'/2, sys_notrace).
 
 [].

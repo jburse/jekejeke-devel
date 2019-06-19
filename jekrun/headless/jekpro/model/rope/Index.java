@@ -67,7 +67,7 @@ final class Index {
      * @return The indexing value, or null.
      */
     static Object indexValue(int at, Clause clause) {
-        SkelCompound tc = (SkelCompound) clause.term;
+        SkelCompound tc = (SkelCompound) clause.head;
         Object term = tc.args[at];
         if (term instanceof SkelVar) {
             return getGuard(clause.next, term);

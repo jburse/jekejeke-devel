@@ -101,7 +101,7 @@ public class ChoiceDefined extends AbstractChoice {
             d2.setSize(clause.sizerule);
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.intargs, en))
                 break;
 

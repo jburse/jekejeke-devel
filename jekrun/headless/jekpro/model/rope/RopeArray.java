@@ -118,7 +118,7 @@ public final class RopeArray
     public int getLengthScope(Engine en) {
         int len = 0;
         for (int i = 0; i < size(); i++) {
-            SkelAtom sa = StackElement.callableToName(get(i).term);
+            SkelAtom sa = StackElement.callableToName(get(i).head);
             if (Clause.ancestorSource(sa.scope, en))
                 len++;
         }

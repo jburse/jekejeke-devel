@@ -124,9 +124,9 @@ class ChoiceInspect extends AbstractChoice {
         for (; ; ) {
             clause = list[at++];
             newdisp.setSize(clause.size);
-            if (!(clause.term instanceof SkelCompound) ||
+            if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.term).args, newdisp, en)) {
+                            ((SkelCompound) clause.head).args, newdisp, en)) {
                 Object end = clause.interToBody(en);
                 if (en.unifyTerm(temp[1], d, end, newdisp)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {

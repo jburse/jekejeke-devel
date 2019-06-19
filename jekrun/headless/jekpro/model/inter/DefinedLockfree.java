@@ -70,7 +70,7 @@ final class DefinedLockfree extends AbstractDefined {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
-            SkelAtom sa = StackElement.callableToName(clause.term);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (scope == sa.scope)
                 retractClause(clause, null);
         }

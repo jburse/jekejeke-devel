@@ -111,7 +111,7 @@ public class StackElement {
         } else if (r instanceof Clause) {
             callGoal(u.contskel, u.contdisplay, en);
             Clause clause = (Clause) r;
-            SkelAtom sa = StackElement.callableToName(clause.term);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             en.skel = StackElement.callableFromName(en.skel, sa);
         } else {
             en.skel = null;
