@@ -62,7 +62,7 @@ public final class LookupResource {
             throws IOException {
         MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
         if (entry != null) {
-            String res = (String) ((Tracking)entry.value).getCanonCache(relpath);
+            String res = (String) ((Tracking) entry.value).getCanonCache(relpath);
             if (res != null)
                 return (Tracking.NOT_FOUND.equals(res) ? null : res);
         }
@@ -76,7 +76,7 @@ public final class LookupResource {
         }
 
         if (entry != null)
-            ((Tracking)entry.value).setCanonCache(relpath, res);
+            ((Tracking) entry.value).setCanonCache(relpath, res);
         return (Tracking.NOT_FOUND.equals(res) ? null : res);
     }
 

@@ -91,18 +91,9 @@ public final class SpecialApply extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
-                d = en.display;
-                boolean ext = d.getAndReset();
 
-                multi = SupervisorWrap.wrapGoal(en);
-                if (multi && ext)
-                    d.remTab(en);
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(1);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi || ext)
-                    ref.remTab(en);
+                Directive dire = SupervisorCall.callGoal2(0, en);
+                Display d2 = en.display;
 
                 CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;

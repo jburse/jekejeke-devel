@@ -166,7 +166,7 @@ public class Directive extends Intermediate {
         if (last != null) {
             do {
                 temp = temp.next;
-                Object left = temp.term;
+                Object left = ((Goal) temp).term;
                 if (isAlternative(left) || isGuard(left)) {
                     left = alternativeToDisjunction(left, en);
                 } else if (controlType(left) != TYPE_CTRL_NONE) {
@@ -236,7 +236,7 @@ public class Directive extends Intermediate {
      */
     private Object interToBranch(Engine en) {
         int type = TYPE_CTRL_NONE;
-        if (last != null && (type = controlType(next.term)) == TYPE_CTRL_BEGN) {
+        if (last != null && (type = controlType(((Goal) next).term)) == TYPE_CTRL_BEGN) {
             Intermediate split = findSplit(this, last);
             Object left = interToBody(this, split, en);
             Object right = interToBody(split, last, en);
@@ -263,7 +263,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (controlType(temp.term) == TYPE_CTRL_CMMT)
+                if (controlType(((Goal) temp).term) == TYPE_CTRL_CMMT)
                     return back;
             } while (temp != last);
         }
@@ -282,7 +282,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (controlType(temp.term) == TYPE_CTRL_SCMT)
+                if (controlType(((Goal) temp).term) == TYPE_CTRL_SCMT)
                     return back;
             } while (temp != last);
         }
@@ -359,7 +359,7 @@ public class Directive extends Intermediate {
         if (last == null) {
             next = inter;
         } else {
-            Object term = last.term;
+            Object term = ((Goal) last).term;
             if (isAlternative(term) || isGuard(term)) {
                 while (isAlternative(term)) {
                     SkelCompound sc = (SkelCompound) term;

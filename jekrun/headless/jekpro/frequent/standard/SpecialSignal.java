@@ -4,7 +4,10 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CallFrame;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
@@ -87,16 +90,6 @@ public final class SpecialSignal extends AbstractSpecial {
                 Directive dire = SupervisorCall.callGoal(0, en);
                 Display d2 = en.display;
 
-/*
-                boolean multi = SupervisorWrap.wrapGoal(en);
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CALL;
-                Display d2 = new Display(1);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
-*/
-
                 boolean mask = (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0;
                 boolean verify = (en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0;
                 Intermediate r = en.contskel;
@@ -127,16 +120,6 @@ public final class SpecialSignal extends AbstractSpecial {
         try {
             Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
             Display d2 = en.display;
-
-/*
-            boolean multi = SupervisorWrap.wrapGoal(en);
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(1);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
-*/
 
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;

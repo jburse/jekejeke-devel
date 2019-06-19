@@ -76,7 +76,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             throw en.fault;
 
         Intermediate ir = goaldisplay.contskel;
-        Object t = ir.term;
+        Object t = ((Goal) ir).term;
         Display d = goaldisplay.contdisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */

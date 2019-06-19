@@ -138,15 +138,15 @@ simplify_goal(G, G).
 goal_simplification((  A, _), _) :-
    var(A), !, fail.
 goal_simplification((  true, C), C).
-goal_simplification((  _, A), _) :-
-   var(A), !, fail.
-goal_simplification((  C, true), C).
 goal_simplification((  U, C), J) :-
    U = (A,B),
    sys_replace_site(P, U, (B,C)),
    simplify_goal(P, H),
    sys_replace_site(Q, U, (A,H)),
    simplify_goal(Q, J).
+goal_simplification((  _, A), _) :-
+   var(A), !, fail.
+goal_simplification((  C, true), C).
 
 /* (;)/2 flattening */
 goal_simplification((  A; _), _) :-

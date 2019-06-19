@@ -108,7 +108,6 @@
    set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialQuali', 0).
 :- set_predicate_property(: /2, sys_notrace).
-% :- set_predicate_property((:)/2, sys_body).
 
 /**
  * R::C:

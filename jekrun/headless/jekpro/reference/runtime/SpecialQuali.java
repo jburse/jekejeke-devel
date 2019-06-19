@@ -1,7 +1,9 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -94,13 +96,10 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelAtom mod = modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
-                ref = en.display;
-                boolean multi = ref.getAndReset();
-                Directive dire = en.store.foyer.CLAUSE_TRAN;
-                Display d3 = new Display(1);
-                d3.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+
+                Directive dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                Display d3 = en.display;
+
                 CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
@@ -119,13 +118,10 @@ public final class SpecialQuali extends AbstractSpecial {
                 mod = objToAtom(obj, recv, d2, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
-                ref = en.display;
-                multi = ref.getAndReset();
-                dire = en.store.foyer.CLAUSE_TRAN;
-                d3 = new Display(1);
-                d3.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+
+                dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                d3 = en.display;
+
                 ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;

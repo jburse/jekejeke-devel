@@ -54,7 +54,7 @@ final class ChoiceArith extends AbstractChoice {
      *
      * @param n The next choice.
      * @param m The mark.
-     *          @param i The function code.
+     * @param i The function code.
      */
     ChoiceArith(AbstractChoice n,
                 Number c, Intermediate r, CallFrame u,
@@ -90,7 +90,7 @@ final class ChoiceArith extends AbstractChoice {
             throw en.fault;
 
         Intermediate ir = goalskel;
-        Object t = ir.term;
+        Object t = ((Goal) ir).term;
         Display d = goaldisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */

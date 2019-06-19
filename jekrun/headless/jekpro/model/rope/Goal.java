@@ -53,6 +53,7 @@ public class Goal extends Intermediate {
     public final static int TYPE_ALTR_SOFT = 2;
     public final static int TYPE_ALTR_NONE = 3;
 
+    public Object term;
     public Intermediate back;
 
     /**
@@ -82,10 +83,12 @@ public class Goal extends Intermediate {
         if (en.visor.signal != null &&
                 (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0)
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
+
         /* current term */
         CallFrame u = en.contdisplay;
         Object alfa = term;
         Display d1 = u.disp;
+
         if ((flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
             BindUniv b;

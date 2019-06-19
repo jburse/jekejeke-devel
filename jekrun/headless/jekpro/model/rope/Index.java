@@ -103,7 +103,7 @@ final class Index {
      */
     private static Object getGuard(Intermediate list, Object sv) {
         while (list instanceof Goal) {
-            Object molec = list.term;
+            Object molec = ((Goal) list).term;
             if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 1 &&
                     ((SkelCompound) molec).sym.fun.equals(Index.OP_VAR)) {

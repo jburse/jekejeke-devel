@@ -150,15 +150,7 @@ public final class SpecialFind extends AbstractSpecial {
         try {
             Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
             Display d3 = en.display;
-/*
-            boolean multi = SupervisorWrap.wrapGoal(en);
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d3 = new Display(1);
-            d3.bind[0].bindUniv(en.skel, en.display, en);
-            if (multi)
-                ref.remTab(en);
-*/
+
             CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;

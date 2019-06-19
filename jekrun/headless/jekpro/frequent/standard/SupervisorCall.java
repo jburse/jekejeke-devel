@@ -2,6 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
@@ -51,7 +52,7 @@ public class SupervisorCall {
      * <p>Prepare a term for execution.</p>
      *
      * @param copt The directive options.
-     * @param en The engine.
+     * @param en   The engine.
      * @return The new directive.
      * @throws EngineMessage Shit happens.
      */
@@ -64,7 +65,7 @@ public class SupervisorCall {
         ew.countvar = 0;
         ew.flags = 0;
         ew.last = Display.DISPLAY_CONST;
-        ew.countBody(t, d, en);
+        ew.countBody(t, d);
         Directive dire;
         if ((ew.flags & SupervisorCall.MASK_CALL_MLTI) != 0) {
             ew.last = new Display(ew.countvar);
@@ -74,8 +75,47 @@ public class SupervisorCall {
         }
         ew.countvar = 0;
         dire.bodyToInter(t, d, en, true);
-        en.display=ew.last;
-        ew.last=Display.DISPLAY_CONST;
+        en.display = ew.last;
+        ew.last = Display.DISPLAY_CONST;
+        return dire;
+    }
+
+    /**
+     * <p>Prepare a term for execution.</p>
+     *
+     * @param copt The directive options.
+     * @param en   The engine.
+     * @return The new directive.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Directive callGoal2(int copt, Engine en)
+            throws EngineMessage {
+        Object t = en.skel;
+        Display d = en.display;
+        boolean ext = d.getAndReset();
+        EngineMessage.checkInstantiated(t);
+        SupervisorCall ew = en.visor.getCall();
+        ew.countvar = 0;
+        if (ext) {
+            ew.flags = SupervisorCall.MASK_CALL_MLTI;
+        } else {
+            ew.flags = 0;
+        }
+        ew.last = Display.DISPLAY_CONST;
+        ew.countBody(t, d);
+        Directive dire;
+        if ((ew.flags & SupervisorCall.MASK_CALL_MLTI) != 0) {
+            ew.last = new Display(ew.countvar);
+            dire = Directive.createDirective(copt, en);
+        } else {
+            dire = Directive.createDirective(copt | Directive.MASK_DIRE_PUSH, en);
+        }
+        ew.countvar = 0;
+        dire.bodyToInter(t, d, en, true);
+        if (ext)
+            d.remTab(en);
+        en.display = ew.last;
+        ew.last = Display.DISPLAY_CONST;
         return dire;
     }
 
@@ -86,26 +126,27 @@ public class SupervisorCall {
     /**
      * <p>Count the variables of a body.</p>
      *
-     * @param b  The body skeleton.
-     * @param c  The body display.
-     * @param en The engine.
+     * @param b The body skeleton.
+     * @param c The body display.
      */
-    public void countBody(Object b, Display c, Engine en) {
-        en.skel = b;
-        en.display = c;
-        en.deref();
-        b = en.skel;
-        c = en.display;
+    public void countBody(Object b, Display c) {
+        BindUniv bc;
+        while (b instanceof SkelVar &&
+                (bc = c.bind[((SkelVar) b).id]).display != null) {
+            b = bc.skel;
+            c = bc.display;
+        }
         do {
             Object t = Goal.bodyToGoalSkel(b);
             if (t != null) {
-                en.skel = t;
-                en.display = c;
-                en.deref();
-                t = en.skel;
-                Display d = en.display;
+                Display d = c;
+                while (t instanceof SkelVar &&
+                        (bc = d.bind[((SkelVar) t).id]).display != null) {
+                    t = bc.skel;
+                    d = bc.display;
+                }
                 if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
-                    countDisj(t, d, en);
+                    countDisj(t, d);
                 } else {
                     if (SupervisorCopy.getVar(t) != null) {
                         countvar++;
@@ -119,11 +160,11 @@ public class SupervisorCall {
             }
             b = Goal.bodyToRestSkel(b);
             if (b != null) {
-                en.skel = b;
-                en.display = c;
-                en.deref();
-                b = en.skel;
-                c = en.display;
+                while (b instanceof SkelVar &&
+                        (bc = c.bind[((SkelVar) b).id]).display != null) {
+                    b = bc.skel;
+                    c = bc.display;
+                }
             }
         } while (b != null);
     }
@@ -131,50 +172,52 @@ public class SupervisorCall {
     /**
      * <p>Count the variables of a disjunction.</p>
      *
-     * @param t  The disjunction skeleton.
-     * @param d  The disjunction display.
-     * @param en The engine.
+     * @param t The disjunction skeleton.
+     * @param d The disjunction display.
      */
-    public void countDisj(Object t, Display d, Engine en) {
+    public void countDisj(Object t, Display d) {
         int type = Goal.alterType(t);
         while (type == Goal.TYPE_ALTR_DISJ) {
             SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[0];
-            en.display = d;
-            en.deref();
-            Object b = en.skel;
-            Display c = en.display;
+            Object b = sc.args[0];
+            Display c = d;
+            BindUniv bc;
+            while (b instanceof SkelVar &&
+                    (bc = c.bind[((SkelVar) b).id]).display != null) {
+                b = bc.skel;
+                c = bc.display;
+            }
             type = Goal.alterType(b);
             if (type == Goal.TYPE_ALTR_COND || type == Goal.TYPE_ALTR_SOFT) {
-                countCond(b, c, en);
+                countCond(b, c);
             } else {
-                countBody(b, c, en);
+                countBody(b, c);
             }
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            t = en.skel;
-            d = en.display;
+            t = sc.args[1];
+            while (t instanceof SkelVar &&
+                    (bc = d.bind[((SkelVar) t).id]).display != null) {
+                t = bc.skel;
+                d = bc.display;
+            }
             type = Goal.alterType(t);
         }
         if (type == Goal.TYPE_ALTR_COND || type == Goal.TYPE_ALTR_SOFT) {
-            countCond(t, d, en);
+            countCond(t, d);
         } else {
-            countBody(t, d, en);
+            countBody(t, d);
         }
     }
 
     /**
      * <p>Count the variables of a condition.</p>
      *
-     * @param b  The condition skeleton.
-     * @param c  The condition display.
-     * @param en The engine.
+     * @param b The condition skeleton.
+     * @param c The condition display.
      */
-    public void countCond(Object b, Display c, Engine en) {
+    public void countCond(Object b, Display c) {
         SkelCompound sc = (SkelCompound) b;
-        countBody(sc.args[0], c, en);
-        countBody(sc.args[1], c, en);
+        countBody(sc.args[0], c);
+        countBody(sc.args[1], c);
     }
 
     /**************************************************************/
@@ -193,19 +236,21 @@ public class SupervisorCall {
     public final void bodyToInter(Directive dire, Object b,
                                   Display c, Engine en)
             throws EngineMessage {
-        en.skel = b;
-        en.display = c;
-        en.deref();
-        b = en.skel;
-        c = en.display;
+        BindUniv bc;
+        while (b instanceof SkelVar &&
+                (bc = c.bind[((SkelVar) b).id]).display != null) {
+            b = bc.skel;
+            c = bc.display;
+        }
         do {
             Object t = Goal.bodyToGoalSkel(b);
             if (t != null) {
-                en.skel = t;
-                en.display = c;
-                en.deref();
-                t = en.skel;
-                Display d = en.display;
+                Display d = c;
+                while (t instanceof SkelVar &&
+                        (bc = d.bind[((SkelVar) t).id]).display != null) {
+                    t = bc.skel;
+                    d = bc.display;
+                }
                 if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
                     t = disjToAlter(dire, t, d, en);
                     Goal goal = new Goal(t);
@@ -214,8 +259,9 @@ public class SupervisorCall {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
-                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
+                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar) {
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                    }
                     if ((flags & MASK_CALL_MLTI) != 0 && SupervisorCopy.getVar(t) != null) {
                         SkelVar sv = SkelVar.valueOf(countvar);
                         countvar++;
@@ -228,11 +274,11 @@ public class SupervisorCall {
             }
             b = Goal.bodyToRestSkel(b);
             if (b != null) {
-                en.skel = b;
-                en.display = c;
-                en.deref();
-                b = en.skel;
-                c = en.display;
+                while (b instanceof SkelVar &&
+                        (bc = c.bind[((SkelVar) b).id]).display != null) {
+                    b = bc.skel;
+                    c = bc.display;
+                }
             }
         } while (b != null);
     }
@@ -254,11 +300,14 @@ public class SupervisorCall {
         int type = Goal.alterType(t);
         while (type == Goal.TYPE_ALTR_DISJ) {
             SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[0];
-            en.display = d;
-            en.deref();
-            Object b = en.skel;
-            Display c = en.display;
+            Object b = sc.args[0];
+            Display c = d;
+            BindUniv bc;
+            while (b instanceof SkelVar &&
+                    (bc = c.bind[((SkelVar) b).id]).display != null) {
+                b = bc.skel;
+                c = bc.display;
+            }
             Directive left;
             type = Goal.alterType(b);
             if (type == Goal.TYPE_ALTR_COND) {
@@ -272,11 +321,12 @@ public class SupervisorCall {
             args[0] = left;
             args[1] = back;
             back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
-            en.skel = sc.args[1];
-            en.display = d;
-            en.deref();
-            t = en.skel;
-            d = en.display;
+            t = sc.args[1];
+            while (t instanceof SkelVar &&
+                    (bc = d.bind[((SkelVar) t).id]).display != null) {
+                t = bc.skel;
+                d = bc.display;
+            }
             type = Goal.alterType(t);
         }
         if (type == Goal.TYPE_ALTR_COND) {

@@ -104,7 +104,7 @@ public class StackElement {
      */
     public static void callGoal(Intermediate r, CallFrame u, Engine en) {
         if (r instanceof Goal) {
-            en.skel = r.term;
+            en.skel = ((Goal) r).term;
             en.display = u.disp;
             if ((r.flags & Goal.MASK_GOAL_NAKE) != 0)
                 en.deref();

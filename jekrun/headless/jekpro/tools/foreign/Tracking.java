@@ -3,7 +3,6 @@ package jekpro.tools.foreign;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
@@ -125,7 +124,7 @@ public final class Tracking extends AbstractTracking {
                 continue;
             if (!(tracking instanceof Tracking))
                 continue;
-            ((Tracking)tracking).clearCanonCache();
+            ((Tracking) tracking).clearCanonCache();
         }
     }
 
@@ -174,7 +173,7 @@ public final class Tracking extends AbstractTracking {
             AbstractBundle bundle = entry.key;
             if (!(bundle instanceof AbstractBranch))
                 continue;
-            String[] roots = ((AbstractBranch)bundle).getArchiveRoots();
+            String[] roots = ((AbstractBranch) bundle).getArchiveRoots();
             if (roots == null)
                 continue;
             for (int j = 0; j < roots.length; j++) {
@@ -205,7 +204,7 @@ public final class Tracking extends AbstractTracking {
                 continue;
             if (!(tracking instanceof Tracking))
                 continue;
-            String[] uris = ((Tracking)tracking).getArchiveURIs();
+            String[] uris = ((Tracking) tracking).getArchiveURIs();
             if (uris == null)
                 continue;
             for (int k = 0; k < uris.length; k++) {

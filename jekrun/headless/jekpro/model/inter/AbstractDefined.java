@@ -75,6 +75,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
             AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
+    public final static int MASK_DEFI_TRAN = AbstractDefined.MASK_DEFI_NOBR |
+            AbstractDefined.MASK_DEFI_NBCV;
 
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
@@ -366,10 +368,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
-            if (n >= 0) {
-                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
-                    return false;
-            } else if (n == Optimization.UNIFY_TERM) {
+            if (n == Optimization.UNIFY_TERM) {
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
                     return false;
             } else if (n == Optimization.UNIFY_VAR) {
@@ -383,6 +382,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 }
                 bc = ref2.bind[((SkelVar) t2[i]).id];
                 bc.bindUniv(alfa, d1, en);
+            } else if (n != Optimization.UNIFY_SKIP) {
+                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
+                    return false;
             }
         }
         return true;
