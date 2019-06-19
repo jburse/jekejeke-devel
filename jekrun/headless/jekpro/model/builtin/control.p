@@ -83,6 +83,7 @@
 
 /**
  * true: [ISO 7.8.1]
+ * otherwise:
  * The predicate succeeds once.
  */
 % true
