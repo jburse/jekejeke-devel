@@ -14,9 +14,9 @@
  *
  * The subject to occurs check has to be initially called with
  * an acyclic term, but it will subsequently assure the subject to
- * occurs check as required. For a variable the subject to
- * occurs check is always checked before some inequality
- * constraint is checked against the same variable.
+ * occurs check as required. The subject to occurs check is ordered
+ * so that it is always checked before some inequality constraint
+ * is checked against the same variable.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -112,17 +112,9 @@ dif(X, Y, M) :-
    sys_freeze_var(W, S),
    W = G,
    sys_listeners_difs(G, L),
-   sys_assume_hooks(L, sys_hook_dif(S)).
+   sys_serno_hooks(L, sys_hook_dif(S), N),
+   depositz_ref(N).
 dif(_, _, _).
-
-% sys_assume_hooks(+Set, +Closure)
-:- private sys_assume_hooks/2.
-sys_assume_hooks([V|L], H) :-
-   sys_ensure_serno(V),
-   sys_compile_hook(V, H, K),
-   depositz_ref(K),
-   sys_assume_hooks(L, H).
-sys_assume_hooks([], _).
 
 /******************************************************/
 /* Inequality Reduction                               */
