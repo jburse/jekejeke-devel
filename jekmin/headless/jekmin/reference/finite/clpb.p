@@ -430,8 +430,8 @@ sys_expr_list(L, _) :-
 /**
  * weighted_maximum(W, L, O):
  * The predicate succeeds in O with the maximum of the weighted
- * sum from the values L and the weights W, and the succeeds for all
- * corresponding labelings of L.
+ * sum from the values L and the weights W, and then succeeds
+ * for all corresponding labelings of L.
  */
 % weighted_maximum(+list, +List, -Number)
 :- public weighted_maximum/3.
@@ -439,7 +439,7 @@ weighted_maximum(W, L, O) :-
    sys_start_minimum(W, 0, K),
    sys_start_maximum(W, 0, M),
    sys_find_maximum(W, L, K, M, O),
-   sys_inclusive_labeling(W, L, O, M, 0).
+   sys_inclusive_labeling(W, L, O, M).
 
 % sys_find_maximum(+List, +List, +Number, +Number, -Number)
 :- private sys_find_maximum/5.
@@ -469,21 +469,20 @@ sys_exclusive_labeling([], [], _, _, S, S) :- !.
 sys_inclusive_labeling(_, L, _, _, _, _) :-
    throw(error(type_error(list,L),_)).
 
-% sys_inclusive_labeling(+List, +List, +Number, +Number, +Number)
-:- private sys_inclusive_labeling/5.
-sys_inclusive_labeling(_, L, _, _, _) :-
+% sys_inclusive_labeling(+List, +List, +Number, +Number)
+:- private sys_inclusive_labeling/4.
+sys_inclusive_labeling(_, L, _, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-sys_inclusive_labeling([V|W], [B|L], K, M, S) :- !,
+sys_inclusive_labeling([V|W], [B|L], K, M) :- !,
    sys_sat_value(B),
-   H is S+B*V,
    (  V =< 0
    -> N is M+B*V
    ;  N is M-(1-B)*V),
    K =< N,
-   sys_inclusive_labeling(W, L, K, N, H).
-sys_inclusive_labeling([], [], _, _, _) :- !.
-sys_inclusive_labeling(_, L, _, _, _) :-
+   sys_inclusive_labeling(W, L, K, N).
+sys_inclusive_labeling([], [], _, _) :- !.
+sys_inclusive_labeling(_, L, _, _) :-
    throw(error(type_error(list,L),_)).
 
 /**
