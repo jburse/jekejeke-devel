@@ -84,6 +84,7 @@ put_attr(V, K, W) :-
    del_attr(V, K),
    sys_freeze_var(H, F),
    H = wrap(W),
+   sys_ensure_serno(V),
    sys_compile_hook(V, attr(K, F), R),
    depositz_ref(R).
 

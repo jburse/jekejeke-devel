@@ -483,36 +483,18 @@ expr_vars(node3(_,W,_,_), W).
  */
 % var_map_new(+Variable, -Index)
 var_map_new(X, R) :-
-   get_attr(X, tree, Y), !,
+   sys_clause_hook(X, sys_hook_var(Y), _), !,
    R = Y.
 var_map_new(X, R) :-
    sys_ensure_serno(X),
    sys_freeze_var(X, Y),
-   put_attr(X, tree, Y),
+   sys_compile_hook(X, sys_hook_var(Y), K),
+   depositz_ref(K),
    R = Y.
 
-/*****************************************************************/
-/* Unify Hook                                                    */
-/*****************************************************************/
-
 /**
- * attr_unify_hook(A, W):
- * The predicate is called when a varable with attribute
- * term A got the value W assigned.
+ * sys_hook_var(R, V, T):
  */
-% attr_unify_hook(+Attr, +Term)
-:- public attr_unify_hook/2.
-attr_unify_hook(_, _).
-
-/*****************************************************************/
-/* Goals Hook                                                   */
-/*****************************************************************/
-
-/**
- * attribute_goals(V, I, O):
- * The predicate is called when the goal list I of
- * the variable V is required. The list should end in O.
- */
-% attribute_goals(+Variable, -List, +List)
-:- public attribute_goals/3.
-attribute_goals(_, R, R).
+% sys_hook_var(+Ref, +Var, +Term)
+:- private sys_hook_var/3.
+sys_hook_var(_, _, _).

@@ -86,6 +86,7 @@ put_atts(V, K, W) :-
    del_atts(V, K),
    sys_freeze_var(H, F),
    H = wrap(W),
+   sys_ensure_serno(V),
    sys_compile_hook(V, atts(K, F), R),
    depositz_ref(R).
 

@@ -241,6 +241,8 @@ sat_assign(T, U, W, S) :-
 attribute_goals(A, R, S) :-
    get_attr(A, clpb, sat_ref(K,F)),
    sat_goals(F, K, R, S).
+attribute_goals(A, S, S) :-
+   get_attr(A, clpb, sat_root(_)).
 
 /**
  * sat_goals(F, K, I, O):
@@ -268,51 +270,14 @@ sat_goals([], _, R, R).
 % labeling(+List)
 :- public labeling/1.
 labeling(L) :-
-   sys_plan_list(L, R),
-   sys_labeling(R).
-
-% sys_labeling(+List)
-:- private sys_labeling/1.
-sys_labeling([B|L]) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+labeling([B|L]) :- !,
    sys_sat_value(B),
-   sys_labeling(L).
-sys_labeling([]).
-
-/**
- * random_labeling(L):
- * The predicate randomly labels the variables in L.
- */
-% random_labeling(+List)
-:- public random_labeling/1.
-random_labeling(L) :-
-   sys_plan_list(L, R),
-   sys_random_labeling(R).
-
-% sys_random_labeling(+List)
-:- private sys_random_labeling/1.
-sys_random_labeling([B|L]) :-
-   sys_random_sat_value(B),
-   sys_random_labeling(L).
-sys_random_labeling([]).
-
-/**
- * sat_count(L, N):
- * The predicate silently labels the variables in L and
- * succeeds in N with the count of the solutions.
- */
-% sat_count(+List, -Integer)
-:- public sat_count/2.
-sat_count(L, N) :-
-   sys_plan_list(L, R),
-   sys_sat_count(R, N).
-
-% sys_sat_count(+List, -Integer)
-:- private sys_sat_count/2.
-sys_sat_count([B|L], N) :-
-   findall(M, (  sys_sat_value(B),
-                 sys_sat_count(L, M)), R),
-   sys_sat_sum(R, N).
-sys_sat_count([], 1).
+   labeling(L).
+labeling([]) :- !.
+labeling(L) :-
+   throw(error(type_error(list,L),_)).
 
 /**
  * sys_sat_value(B):
@@ -324,10 +289,27 @@ sys_sat_value(0).
 sys_sat_value(1).
 
 /**
+ * random_labeling(L):
+ * The predicate randomly labels the variables in L.
+ */
+% random_labeling(+List)
+:- public random_labeling/1.
+random_labeling(L) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+random_labeling([B|L]) :- !,
+   sys_random_sat_value(B),
+   random_labeling(L).
+random_labeling([]) :- !.
+random_labeling(L, _) :-
+   throw(error(type_error(list,L),_)).
+
+/**
  * sys_random_sat_value(B):
  * The predicate succeeds in B with a random sat value.
  */
 % sys_random_sat_value(-Boolean)
+:- private sys_random_sat_value/1.
 sys_random_sat_value(B) :-
    var(B), !,
    findall(C, sys_sat_value(C), L),
@@ -335,6 +317,25 @@ sys_random_sat_value(B) :-
    member(B, R).
 sys_random_sat_value(B) :-
    sys_sat_value(B).
+
+/**
+ * sat_count(L, N):
+ * The predicate silently labels the variables in L and
+ * succeeds in N with the count of the solutions.
+ */
+% sat_count(+List, -Integer)
+:- public sat_count/2.
+sat_count(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sat_count([B|L], N) :- !,
+   findall(M, (  sys_sat_value(B),
+                 sat_count(L, M)), R),
+   sys_sat_sum(R, N).
+sat_count([], N) :- !,
+   N = 1.
+sat_count(L, _) :-
+   throw(error(type_error(list,L),_)).
 
 /**
  * sys_sat_sum(L, N):
@@ -346,44 +347,6 @@ sys_sat_sum([M|L], N) :- !,
    sys_sat_sum(L, H),
    N is M+H.
 sys_sat_sum([], 0).
-
-/*****************************************************************/
-/* Plan List                                                     */
-/*****************************************************************/
-
-% sys_plan_list(+List, -List)
-:- private sys_plan_list/2.
-sys_plan_list(L, R) :-
-   sys_expr_list(L, H),
-   sys_vars_list(H, J),
-   sys_map_list(J, R).
-
-% sys_expr_list(+List, -List)
-:- private sys_expr_list/2.
-sys_expr_list(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-sys_expr_list([A|L], [T|R]) :- !,
-   expr_tree(A, T),
-   sys_expr_list(L, R).
-sys_expr_list([], []) :- !.
-sys_expr_list(L, _) :-
-   throw(error(type_error(list,L),_)).
-
-% sys_vars_list(+List, -List)
-:- private sys_vars_list/2.
-sys_vars_list([A|L], W) :-
-   expr_vars(A, U),
-   sys_vars_list(L, V),
-   vars_union(U, V, W).
-sys_vars_list([], []).
-
-% sys_map_list(+List, -List)
-:- private sys_map_list/2.
-sys_map_list([A|L], [B|R]) :-
-   sys_melt_var(A, B),
-   sys_map_list(L, R).
-sys_map_list([], []).
 
 /*****************************************************************/
 /* Cardinality Constraint                                        */
@@ -447,3 +410,108 @@ sys_exactly_base(N, M, [X|L]) :-
    H is N-1,
    X = zero,
    sys_exactly_base(H, M, L).
+
+% sys_expr_list(+List, -List)
+:- private sys_expr_list/2.
+sys_expr_list(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sys_expr_list([A|L], [T|R]) :- !,
+   expr_tree(A, T),
+   sys_expr_list(L, R).
+sys_expr_list([], []) :- !.
+sys_expr_list(L, _) :-
+   throw(error(type_error(list,L),_)).
+
+/*****************************************************************/
+/* Weighted Maximum                                              */
+/*****************************************************************/
+
+/**
+ * weighted_maximum(W, L, O):
+ * The predicate succeeds in O with the maximum of the weighted
+ * sum from the values L and the weights W, and the succeeds for all
+ * corresponding labelings of L.
+ */
+% weighted_maximum(+list, +List, -Number)
+:- public weighted_maximum/3.
+weighted_maximum(W, L, O) :-
+   sys_start_minimum(W, 0, K),
+   sys_start_maximum(W, 0, M),
+   sys_find_maximum(W, L, K, M, O),
+   sys_inclusive_labeling(W, L, O, M, 0).
+
+% sys_find_maximum(+List, +List, +Number, +Number, -Number)
+:- private sys_find_maximum/5.
+sys_find_maximum(W, L, K, M, O) :-
+   catch((  K < M,
+            sys_exclusive_labeling(W, L, K, M, 0, P),
+            throw(sys_new_bound(P))),
+      sys_new_bound(P),
+      true), !,
+   sys_find_maximum(W, L, P, M, O).
+sys_find_maximum(_, _, K, _, K).
+
+% sys_exclusive_labeling(+List, +List, +Number, +Number, +Number, -Number)
+:- private sys_exclusive_labeling/6.
+sys_exclusive_labeling(_, L, _, _, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sys_exclusive_labeling([V|W], [B|L], K, M, S, T) :- !,
+   sys_sat_value(B),
+   H is S+B*V,
+   (  V =< 0
+   -> N is M+B*V
+   ;  N is M-(1-B)*V),
+   K < N,
+   sys_exclusive_labeling(W, L, K, N, H, T).
+sys_exclusive_labeling([], [], _, _, S, S) :- !.
+sys_inclusive_labeling(_, L, _, _, _, _) :-
+   throw(error(type_error(list,L),_)).
+
+% sys_inclusive_labeling(+List, +List, +Number, +Number, +Number)
+:- private sys_inclusive_labeling/5.
+sys_inclusive_labeling(_, L, _, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sys_inclusive_labeling([V|W], [B|L], K, M, S) :- !,
+   sys_sat_value(B),
+   H is S+B*V,
+   (  V =< 0
+   -> N is M+B*V
+   ;  N is M-(1-B)*V),
+   K =< N,
+   sys_inclusive_labeling(W, L, K, N, H).
+sys_inclusive_labeling([], [], _, _, _) :- !.
+sys_inclusive_labeling(_, L, _, _, _) :-
+   throw(error(type_error(list,L),_)).
+
+/**
+ * sys_start_minimum(L, S, T):
+ * The predicate succeeds in T with the sum of the
+ * negative weights in the list L plus the number S.
+ */
+% sys_start_minimum(+List, +Number, -Number)
+:- private sys_start_minimum/3.
+sys_start_minimum([X|L], S, T) :-
+   X =< 0, !,
+   H is S+X,
+   sys_start_minimum(L, H, T).
+sys_start_minimum([_|L], S, T) :-
+   sys_start_minimum(L, S, T).
+sys_start_minimum([], S, S).
+
+/**
+ * sys_start_maximum(L, S, T):
+ * The predicate succeeds in T with the sum of the
+ * negative weights in the list L plus the number S.
+ */
+% sys_start_maximum(+List, +Number, -Number)
+:- private sys_start_maximum/3.
+sys_start_maximum([X|L], S, T) :-
+   X > 0, !,
+   H is S+X,
+   sys_start_maximum(L, H, T).
+sys_start_maximum([_|L], S, T) :-
+   sys_start_maximum(L, S, T).
+sys_start_maximum([], S, S).
