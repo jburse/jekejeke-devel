@@ -319,22 +319,22 @@ sys_random_sat_value(B) :-
    sys_sat_value(B).
 
 /**
- * sat_count(L, N):
+ * count(L, N):
  * The predicate silently labels the variables in L and
  * succeeds in N with the count of the solutions.
  */
-% sat_count(+List, -Integer)
-:- public sat_count/2.
-sat_count(L, _) :-
+% count(+List, -Integer)
+:- public count/2.
+count(L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-sat_count([B|L], N) :- !,
+count([B|L], N) :- !,
    findall(M, (  sys_sat_value(B),
-                 sat_count(L, M)), R),
+                 count(L, M)), R),
    sys_sat_sum(R, N).
-sat_count([], N) :- !,
+count([], N) :- !,
    N = 1.
-sat_count(L, _) :-
+count(L, _) :-
    throw(error(type_error(list,L),_)).
 
 /**
@@ -347,81 +347,6 @@ sys_sat_sum([M|L], N) :- !,
    sys_sat_sum(L, H),
    N is M+H.
 sys_sat_sum([], 0).
-
-/*****************************************************************/
-/* Cardinality Constraint                                        */
-/*****************************************************************/
-
-/**
- * card(N, L):
- * If N is an integer and L is an expression list then the constraint
- * that the number of true expressions amounts exactly to N is posted.
- */
-% card(+Integer, +List)
-:- public card/2.
-card(N, _) :-
-   var(N),
-   throw(error(instantiation_error,_)).
-card(N, _) :-
-   \+ integer(N),
-   throw(error(type_error(integer,N),_)).
-card(N, _) :-
-   N < 0, !, fail.
-card(N, L) :-
-   length(L, M),
-   M < N, !, fail.
-card(N, L) :-
-   sys_expr_list(L, H),
-   sys_exactly(H, N, N, [S]),
-   sat_post(S).
-
-% sys_exactly(+List, +Integer, +Integer, -List)
-:- private sys_exactly/4.
-sys_exactly([X|L], N, 0, R) :- !,
-   sys_exactly(L, N, 0, S),
-   sys_exactly_same(S, X, R).
-sys_exactly([X|L], N, M, R) :-
-   H is M-1,
-   sys_exactly(L, N, H, S),
-   sys_exactly_less(S, X, R).
-sys_exactly([], N, M, L) :-
-   sys_exactly_base(N, M, L).
-
-% sys_exactly_same(+List, +Term, -List)
-:- private sys_exactly_same/3.
-sys_exactly_same([A,B|L], Z, [C|R]) :- !,
-   tree_ite(B, A, Z, C),
-   sys_exactly_same([B|L], Z, R).
-sys_exactly_same([A], Z, [B]) :-
-   tree_ite(zero, A, Z, B).
-
-% sys_exactly_less(+List, +Term, -List)
-:- private sys_exactly_less/3.
-sys_exactly_less([A,B|L], Z, [C|R]) :- !,
-   tree_ite(B, A, Z, C),
-   sys_exactly_less([B|L], Z, R).
-sys_exactly_less([_], _, []).
-
-% sys_exactly_base(+Integer, +Integer, -List)
-:- private sys_exactly_base/3.
-sys_exactly_base(0, _, [X]) :- !,
-   X = one.
-sys_exactly_base(N, M, [X|L]) :-
-   H is N-1,
-   X = zero,
-   sys_exactly_base(H, M, L).
-
-% sys_expr_list(+List, -List)
-:- private sys_expr_list/2.
-sys_expr_list(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-sys_expr_list([A|L], [T|R]) :- !,
-   expr_tree(A, T),
-   sys_expr_list(L, R).
-sys_expr_list([], []) :- !.
-sys_expr_list(L, _) :-
-   throw(error(type_error(list,L),_)).
 
 /*****************************************************************/
 /* Weighted Maximum                                              */

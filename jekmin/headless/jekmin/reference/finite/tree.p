@@ -188,6 +188,15 @@ expr_tree(X^A, R) :- !,
    var_map_new(X, Y),
    expr_tree(A, P),
    tree_exists(P, Y, R).
+/**
+ * card(P, L):
+ * If P is a integer/integer-integer list and L is an expression list then
+ * the cardinality constraint card(P, L) is also an expression.
+ */
+expr_tree(card(P,L), R) :- !,
+   sys_expr_list(L, H),
+   tree_card(P, H, J),
+   tree_list(J, zero, R).
 expr_tree(E, _) :-
    throw(error(type_error(sat_expr,E),_)).
 
@@ -472,6 +481,118 @@ expr_vars(zero, R) :- !,
 expr_vars(one, R) :- !,
    R = [].
 expr_vars(node3(_,W,_,_), W).
+
+/*****************************************************************/
+/* List Arguments                                                */
+/*****************************************************************/
+
+/**
+ * tree(L, S, T):
+ * The predicate succeeds in T with the disjunction of
+ * the tree S with the trees of the list L.
+ */
+% tree_list(+List, +Tree, -Tree)
+:- private tree_list/3.
+tree_list([A|L], S, T) :-
+   tree_or(S, A, H),
+   tree_list(L, H, T).
+tree_list([], T, T).
+
+/**
+ * sys_expr_list(L, R).
+ * The predicate succeeds in R with the list of trees
+ * for the list of expressions L.
+ */
+% sys_expr_list(+List, -List)
+:- private sys_expr_list/2.
+sys_expr_list(L, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
+sys_expr_list([A|L], [T|R]) :- !,
+   expr_tree(A, T),
+   sys_expr_list(L, R).
+sys_expr_list([], []) :- !.
+sys_expr_list(L, _) :-
+   throw(error(type_error(list,L),_)).
+
+/*****************************************************************/
+/* Cardinality Constraint                                        */
+/*****************************************************************/
+
+% tree_card(+List, +List, -List)
+:- private tree_card/3.
+tree_card(P, _, _) :-
+   var(P),
+   throw(error(instantiation_error,_)).
+tree_card([N-M|P], L, [A|B]) :- !,
+   H is max(0,N),
+   length(L, K),
+   J is min(K,M),
+   tree_range(H, J, L, A),
+   tree_card(P, L, B).
+tree_card([N|P], L, [A|B]) :- !,
+   tree_point(N, L, A),
+   tree_card(P, L, B).
+tree_card([], _, []) :- !.
+tree_card(P, _, _) :-
+   throw(error(type_error(list,P),_)).
+
+% tree_point(+Integer, +List, -Tree)
+:- private tree_point/3.
+tree_point(N, _, X) :-
+   N < 0, !,
+   X = zero.
+tree_point(N, L, X) :-
+   length(L, M),
+   M < N, !,
+   X = zero.
+tree_point(N, L, S) :-
+   sys_exactly(L, N, N, [S]).
+
+% tree_range(+Integer, +Integer, +List, -Tree)
+:- private tree_range/4.
+tree_range(N, M, _, X) :-
+   M < N, !,
+   X = zero.
+tree_range(N, M, L, S) :-
+   sys_exactly(L, M, N, H),
+   tree_list(H, zero, S).
+
+% sys_exactly(+List, +Integer, +Integer, -List)
+:- private sys_exactly/4.
+sys_exactly([X|L], N, 0, R) :- !,
+   sys_exactly(L, N, 0, S),
+   sys_exactly_same(S, X, R).
+sys_exactly([X|L], N, M, R) :-
+   H is M-1,
+   sys_exactly(L, N, H, S),
+   sys_exactly_less(S, X, R).
+sys_exactly([], N, _, L) :-
+   sys_exactly_base(N, L).
+
+% sys_exactly_same(+List, +Term, -List)
+:- private sys_exactly_same/3.
+sys_exactly_same([A,B|L], Z, [C|R]) :- !,
+   tree_ite(B, A, Z, C),
+   sys_exactly_same([B|L], Z, R).
+sys_exactly_same([A], Z, [B]) :-
+   tree_ite(zero, A, Z, B).
+
+% sys_exactly_less(+List, +Term, -List)
+:- private sys_exactly_less/3.
+sys_exactly_less([A,B|L], Z, [C|R]) :- !,
+   tree_ite(B, A, Z, C),
+   sys_exactly_less([B|L], Z, R).
+sys_exactly_less([_], _, []).
+
+% sys_exactly_base(+Integer, -List)
+:- private sys_exactly_base/2.
+sys_exactly_base(0, [X]) :- !,
+   X = one.
+sys_exactly_base(N, [X|L]) :-
+   H is N-1,
+   X = zero,
+   sys_exactly_base(H, L).
 
 /*****************************************************************/
 /* Variable Lookup                                               */
