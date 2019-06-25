@@ -61,6 +61,22 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+/**
+ * Implementation note for BDD constraint solving. A unify hook is
+ * used, so that during forward checking new unifications can be
+ * posted leading to new forward checking:
+ *
+ * - Each Boolean variable has an attribute of the form:
+ *     clpb:bdd_ref(+Ref, +List)
+ * where Ref is the frozen variable and List is a list of fresh
+ * and shared variables representing BDDs. The List gets updated
+ * during model setup and during forward checking.
+ *
+ * - Each variable representing a BDD has an attribute of the form:
+ *     clpb:bdd_root(+BDD)
+ * where BDD is the binary decision diagram. The BDD gets
+ * updated during forward checking.
+ */
 :- package(library(jekmin/reference/finite)).
 :- module(clpb, []).
 
@@ -69,6 +85,7 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(basic/random)).
 :- use_module(library(experiment/trail)).
+:- use_module(library(advanced/sets)).
 
 /**
  * sat(A):
@@ -104,13 +121,13 @@ sat_add_vars([K|L], H) :-
    sat_add_vars(L, H).
 sat_add_vars([], _).
 
-% sat_add_var(+Var, +Integer, +Fresh)
+% sat_add_var(+Var, +Ref, +Fresh)
 :- private sat_add_var/3.
 sat_add_var(A, K, H) :-
-   get_attr(A, clpb, sat_ref(K,F)), !,
-   put_attr(A, clpb, sat_ref(K,[H|F])).
+   get_attr(A, clpb, bdd_ref(K,F)), !,
+   put_attr(A, clpb, bdd_ref(K,[H|F])).
 sat_add_var(A, K, H) :-
-   put_attr(A, clpb, sat_ref(K,[H])).
+   put_attr(A, clpb, bdd_ref(K,[H])).
 
 /**
  * sat_trivial(S, H):
@@ -122,7 +139,7 @@ sat_trivial(one, H) :- !,
    del_attr(H, clpb).
 sat_trivial(zero, _) :- !, fail.
 sat_trivial(S, H) :-
-   put_attr(H, clpb, sat_root(S)).
+   put_attr(H, clpb, bdd_root(S)).
 
 /**
  * sat_propagate(S):
@@ -130,13 +147,13 @@ sat_trivial(S, H) :-
  */
 % sat_propagate(+Tree)
 :- private sat_propagate/1.
-sat_propagate(node3(X,_,_,zero)) :- !,
+sat_propagate(node(X,_,_,zero)) :- !,
    sys_melt_var(X, Y),
    Y = 1.
-sat_propagate(node3(X,_,zero,_)) :- !,
+sat_propagate(node(X,_,zero,_)) :- !,
    sys_melt_var(X, Y),
    Y = 0.
-sat_propagate(node3(X,_,node3(Y,_,A,zero),node3(Y,_,zero,A))) :- !,
+sat_propagate(node(X,_,node(Y,_,A,zero),node(Y,_,zero,A))) :- !,
    sys_melt_var(X, Z),
    sys_melt_var(Y, T),
    Z = T.
@@ -154,55 +171,33 @@ sat_propagate(_).
 % attr_unify_hook(+Attr, +Term)
 :- public attr_unify_hook/2.
 :- override attr_unify_hook/2.
-attr_unify_hook(sat_ref(K,F), W) :-
+attr_unify_hook(bdd_ref(K,F), W) :-
    var(W),
-   get_attr(W, clpb, sat_ref(I,G)), !,
-   sat_union(F, G, E),
-   put_attr(W, clpb, sat_ref(I,E)),
-   sat_unify(G, K, node3(I,[I],one,zero)).
-attr_unify_hook(sat_ref(K,F), W) :-
+   get_attr(W, clpb, bdd_ref(I,G)), !,
+   union(F, G, E),
+   put_attr(W, clpb, bdd_ref(I,E)),
+   sat_unify(G, K, node(I,[I],one,zero)).
+attr_unify_hook(bdd_ref(K,F), W) :-
    var(W), !,
    var_map_new(W, I),
-   put_attr(W, clpb, sat_ref(I,F)),
-   sat_unify(F, K, node3(I,[I],one,zero)).
-attr_unify_hook(sat_ref(K,F), 0) :- !,
+   put_attr(W, clpb, bdd_ref(I,F)),
+   sat_unify(F, K, node(I,[I],one,zero)).
+attr_unify_hook(bdd_ref(K,F), 0) :- !,
    sat_unify(F, K, zero).
-attr_unify_hook(sat_ref(K,F), 1) :- !,
+attr_unify_hook(bdd_ref(K,F), 1) :- !,
    sat_unify(F, K, one).
-attr_unify_hook(sat_ref(_,_), W) :-
+attr_unify_hook(bdd_ref(_,_), W) :-
    throw(error(type_error(sat_value,W),_)).
-
-/**
- * sat_union(F, G, R):
- * The predicate succeeds in R with the union of the roots F and G.
- */
-:- private sat_union/3.
-sat_union([X|F], G, E) :-
-   sat_contains(X, G), !,
-   sat_union(F, G, E).
-sat_union([X|F], G, [X|E]) :-
-   sat_union(F, G, E).
-sat_union([], G, G).
-
-/**
- * sat_contains(X, G):
- * The predicate if G contains the root X.
- */
-:- private sat_contains/2.
-sat_contains(X, [Y|_]) :-
-   X == Y, !.
-sat_contains(X, [_|G]) :-
-   sat_contains(X, G).
 
 /**
  * set_unify(F, K, W):
  * The predicate is called when a reference list
  * F got the constant value W assigned.
  */
-% sat_unify(+List, +Index, +Tree)
+% sat_unify(+List, +Ref, +Tree)
 :- private sat_unify/3.
 sat_unify([H|F], K, W) :-
-   get_attr(H, clpb, sat_root(T)), !,
+   get_attr(H, clpb, bdd_root(T)), !,
    sat_assign(T, K, W, S),
    sat_trivial(S, H),
    sat_unify(F, K, W),
@@ -222,7 +217,7 @@ sat_assign(T, U, one, S) :- !,
 sat_assign(T, U, zero, S) :- !,
    tree_zero(T, U, S).
 sat_assign(T, U, W, S) :-
-   tree_equiv(node3(U,[U],one,zero), W, P),
+   tree_equiv(node(U,[U],one,zero), W, P),
    tree_and(T, P, Q),
    tree_exists(Q, U, S).
 
@@ -239,10 +234,10 @@ sat_assign(T, U, W, S) :-
 :- public attribute_goals/3.
 :- override attribute_goals/3.
 attribute_goals(A, R, S) :-
-   get_attr(A, clpb, sat_ref(K,F)),
+   get_attr(A, clpb, bdd_ref(K,F)),
    sat_goals(F, K, R, S).
 attribute_goals(A, S, S) :-
-   get_attr(A, clpb, sat_root(_)).
+   get_attr(A, clpb, bdd_root(_)).
 
 /**
  * sat_goals(F, K, I, O):
@@ -252,8 +247,8 @@ attribute_goals(A, S, S) :-
 % sat_goals(+List, +Index, -List, +List)
 :- private sat_goals/4.
 sat_goals([H|F], K, [sat(E)|R], S) :-
-   get_attr(H, clpb, sat_root(node3(K,W,C,D))), !,
-   expr_pretty(node3(K,W,C,D), E),
+   get_attr(H, clpb, bdd_root(node(K,W,C,D))), !,
+   expr_pretty(node(K,W,C,D), E),
    sat_goals(F, K, R, S).
 sat_goals([_|F], K, R, S) :-
    sat_goals(F, K, R, S).
@@ -360,82 +355,85 @@ sys_sat_sum([], 0).
  */
 % weighted_maximum(+list, +List, -Number)
 :- public weighted_maximum/3.
-weighted_maximum(W, L, O) :-
-   sys_start_minimum(W, 0, K),
-   sys_start_maximum(W, 0, M),
-   sys_find_maximum(W, L, K, M, O),
-   sys_inclusive_labeling(W, L, O, M).
+weighted_maximum(R, L, O) :-
+   sys_start_minimum(R, 0, K),
+   sys_start_maximum(R, 0, M),
+   sys_find_maximum(R, L, K, M, O),
+   U is M-O,
+   0 =< U,
+   sys_inclusive_labeling(R, L, U).
 
 % sys_find_maximum(+List, +List, +Number, +Number, -Number)
 :- private sys_find_maximum/5.
-sys_find_maximum(W, L, K, M, O) :-
-   catch((  K < M,
-            sys_exclusive_labeling(W, L, K, M, 0, P),
+sys_find_maximum(R, L, K, M, O) :-
+   U is M-K,
+   0 < U,
+   catch((  sys_exclusive_labeling(R, L, U, 0, P),
             throw(sys_new_bound(P))),
       sys_new_bound(P),
       true), !,
-   sys_find_maximum(W, L, P, M, O).
+   sys_find_maximum(R, L, P, M, O).
 sys_find_maximum(_, _, K, _, K).
 
-% sys_exclusive_labeling(+List, +List, +Number, +Number, +Number, -Number)
-:- private sys_exclusive_labeling/6.
-sys_exclusive_labeling(_, L, _, _, _, _) :-
+% sys_exclusive_labeling(+List, +List, +Number, +Number, -Number)
+:- private sys_exclusive_labeling/5.
+sys_exclusive_labeling(_, L, _, _, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-sys_exclusive_labeling([V|W], [B|L], K, M, S, T) :- !,
-   sys_sat_value(B),
+sys_exclusive_labeling([V|R], [B|L], U, S, T) :- !,
+   sys_random_sat_value(B),
    H is S+B*V,
    (  V =< 0
-   -> N is M+B*V
-   ;  N is M-(1-B)*V),
-   K < N,
-   sys_exclusive_labeling(W, L, K, N, H, T).
-sys_exclusive_labeling([], [], _, _, S, S) :- !.
-sys_inclusive_labeling(_, L, _, _, _, _) :-
+   -> W is U+B*V
+   ;  W is U-(1-B)*V),
+   0 < W,
+   sys_exclusive_labeling(R, L, W, H, T).
+sys_exclusive_labeling([], [], _, S, S) :- !.
+sys_inclusive_labeling(_, L, _, _, _) :-
    throw(error(type_error(list,L),_)).
 
-% sys_inclusive_labeling(+List, +List, +Number, +Number)
-:- private sys_inclusive_labeling/4.
-sys_inclusive_labeling(_, L, _, _) :-
+% sys_inclusive_labeling(+List, +List, +Number)
+:- private sys_inclusive_labeling/3.
+sys_inclusive_labeling(_, L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
-sys_inclusive_labeling([V|W], [B|L], K, M) :- !,
+sys_inclusive_labeling([V|R], [B|L], U) :- !,
    sys_sat_value(B),
    (  V =< 0
-   -> N is M+B*V
-   ;  N is M-(1-B)*V),
-   K =< N,
-   sys_inclusive_labeling(W, L, K, N).
-sys_inclusive_labeling([], [], _, _) :- !.
-sys_inclusive_labeling(_, L, _, _) :-
+   -> W is U+B*V
+   ;  W is U-(1-B)*V),
+   0 =< W,
+   sys_inclusive_labeling(R, L, W).
+sys_inclusive_labeling([], [], _) :- !.
+sys_inclusive_labeling(_, L, _) :-
    throw(error(type_error(list,L),_)).
 
 /**
- * sys_start_minimum(L, S, T):
+ * sys_start_minimum(R, S, T):
  * The predicate succeeds in T with the sum of the
- * negative weights in the list L plus the number S.
+ * negative weights in the list R plus the number S.
  */
 % sys_start_minimum(+List, +Number, -Number)
 :- private sys_start_minimum/3.
-sys_start_minimum([X|L], S, T) :-
-   X =< 0, !,
-   H is S+X,
-   sys_start_minimum(L, H, T).
-sys_start_minimum([_|L], S, T) :-
-   sys_start_minimum(L, S, T).
+sys_start_minimum([V|R], S, T) :-
+   V =< 0, !,
+   H is S+V,
+   sys_start_minimum(R, H, T).
+sys_start_minimum([_|R], S, T) :-
+   sys_start_minimum(R, S, T).
 sys_start_minimum([], S, S).
 
 /**
- * sys_start_maximum(L, S, T):
+ * sys_start_maximum(R, S, T):
  * The predicate succeeds in T with the sum of the
- * negative weights in the list L plus the number S.
+ * negative weights in the list R plus the number S.
  */
 % sys_start_maximum(+List, +Number, -Number)
 :- private sys_start_maximum/3.
-sys_start_maximum([X|L], S, T) :-
-   X > 0, !,
-   H is S+X,
-   sys_start_maximum(L, H, T).
-sys_start_maximum([_|L], S, T) :-
-   sys_start_maximum(L, S, T).
+sys_start_maximum([V|R], S, T) :-
+   V > 0, !,
+   H is S+V,
+   sys_start_maximum(R, H, T).
+sys_start_maximum([_|R], S, T) :-
+   sys_start_maximum(R, S, T).
 sys_start_maximum([], S, S).

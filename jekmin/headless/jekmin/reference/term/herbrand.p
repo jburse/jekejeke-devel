@@ -102,94 +102,98 @@ sys_ensure_sto(V) :-
 % dif(+Term, +Term)
 :- public dif/2.
 dif(X, Y) :-
-   dif(X, Y, []).
-
-% dif(+Term, +Term, +Map)
-:- private dif/3.
-dif(X, Y, M) :-
-   sys_reduce_dif(X, Y, M, [], G), !,
+   sys_reduce_dif(X, Y, [], G), !,
    G \== [],
    sys_freeze_var(W, S),
-   W = G,
-   sys_listeners_difs(G, L),
+   W = sys_data_dif(N,G),
+   sys_listeners_difs(G, R),
+   term_variables(R, L),
    sys_serno_hooks(L, sys_hook_dif(S), N),
    depositz_ref(N).
-dif(_, _, _).
+dif(_, _).
+
+/**
+ * sys_listeners_difs(G, L):
+ */
+% sys_listeners_difs(+Map, -Set)
+:- private sys_listeners_difs/2.
+sys_listeners_difs([X-Y|G], [X,Y|L]) :-
+   var(Y), !,
+   sys_listeners_difs(G, L).
+sys_listeners_difs([X-_|G], [X|L]) :-
+   sys_listeners_difs(G, L).
+sys_listeners_difs([], []).
 
 /******************************************************/
 /* Inequality Reduction                               */
 /******************************************************/
 
 /**
- * sys_reduce_dif(S, T, M, L, R):
+ * sys_reduce_dif(S, T, L, R):
  * The predicate derefs the terms S and T and then checks for
  * inequality and establishes residual pairs R as an extension
- * of the residual pairs L, taking into account the map M.
+ * of the residual pairs L.
  */
-% sys_reduce_dif(+Term, +Term, +Map, +Map, -Map).
-:- private sys_reduce_dif/5.
-sys_reduce_dif(S, T, M, L, R) :-
-   sys_deref_term(S, M, L, A),
-   sys_deref_term(T, M, L, B),
-   sys_reduce_uninst(A, B, M, L, R).
+% sys_reduce_dif(+Term, +Term, +Map, -Map).
+:- private sys_reduce_dif/4.
+sys_reduce_dif(S, T, L, R) :-
+   sys_deref_term(S, L, A),
+   sys_deref_term(T, L, B),
+   sys_reduce_uninst(A, B, L, R).
 
 /**
- * sys_deref_term(S, M, L, T):
+ * sys_deref_term(S, L, T):
  * The predicate succeeds with the deref T of the term S
- * in the map L, taking into account the map M.
+ * in the map L.
  */
-% sys_deref_term(+Term, +Map, +Map, -Term)
-:- private sys_deref_term/4.
-sys_deref_term(X, M, L, T) :-
-   var(X),
-   get(M, X, S), !,
-   sys_deref_term(S, M, L, T).
-sys_deref_term(X, M, L, T) :-
+% sys_deref_term(+Term, +Map, -Term)
+:- private sys_deref_term/3.
+sys_deref_term(X, L, T) :-
    var(X),
    get(L, X, S), !,
-   sys_deref_term(S, M, L, T).
-sys_deref_term(S, _, _, S).
+   sys_deref_term(S, L, T).
+sys_deref_term(S, _, S).
 
 /**
- * sys_reduce_uninst(S, T, M, L, R):
+ * sys_reduce_uninst(S, T, L, R):
  * The predicate checks the terms S and T for inequality and
  * establishes residual pairs R as an extension of the
- * residual pairs L, taking into account the map M.
+ * residual pairs L.
  */
-% sys_reduce_uninst(+Term, +Term, +Map, +Map, -Map).
-:- private sys_reduce_uninst/5.
-sys_reduce_uninst(X, Y, _, L, R) :-
+% sys_reduce_uninst(+Term, +Term, +Map, -Map).
+:- private sys_reduce_uninst/4.
+sys_reduce_uninst(X, Y, L, R) :-
    var(X),
    var(Y),
    X == Y, !,
    R = L.
-sys_reduce_uninst(X, T, _, L, R) :-
+sys_reduce_uninst(X, T, L, R) :-
    var(X), !,
    put(L, X, T, R).
-sys_reduce_uninst(T, X, _, L, R) :-
+sys_reduce_uninst(T, X, L, R) :-
    var(X), !,
    put(L, X, T, R).
-sys_reduce_uninst(S, T, _, _, _) :-
+sys_reduce_uninst(S, T, _, _) :-
    functor(S, F, N),
    functor(T, G, M),
    F/N \== G/M, !, fail.
-sys_reduce_uninst(S, T, M, L, R) :-
+sys_reduce_uninst(S, T, L, R) :-
    S =.. [_|F],
    T =.. [_|G],
-   sys_reduce_difs(F, G, M, L, R).
+   sys_reduce_difs(F, G, L, R).
 
 /**
- * sys_reduce_difs(S, T, M, L, R):
+ * sys_reduce_difs(S, T, L, R):
  * The predicate checks the lists S and T for inequality and
  * establishes residual pairs R as an extension of the residual
  * pairs R, taking into account the map M.
  */
 % sys_reduce_difs(+List, +List, +Map, +Map, -Map)
-:- private sys_reduce_difs/5.
-sys_reduce_difs([S|F], [T|G], M, L, R) :-
-   sys_reduce_dif(S, T, M, L, H),
-   sys_reduce_difs(F, G, M, H, R).
-sys_reduce_difs([], [], _, L, L).
+:- private sys_reduce_difs/4.
+sys_reduce_difs([S|F], [T|G], L, R) :-
+   sys_reduce_dif(S, T, L, H),
+   sys_reduce_difs(F, G, H, R).
+sys_reduce_difs([], [], L, L).
 
 /********************************************************/
 /* Attribute Hooks                                      */
@@ -208,37 +212,15 @@ sys_hook_sto(V, T) :-
    ;  sys_ensure_stos(L)).
 
 /**
- * sys_hook_dif(S, V, _):
+ * sys_hook_dif(S, V, T):
  */
 % sys_hook_dif(+Warp, +Var, +Term)
 :- private sys_hook_dif/3.
-sys_hook_dif(S, V, T) :-
-   sys_melt_var(S, G),
-   sys_listeners_difs(G, L),
-   sys_retire_hooks(L, sys_hook_dif(S)),
+sys_hook_dif(S, _, _) :-
+   sys_melt_var(S, sys_data_dif(L,G)),
+   withdrawz_ref(L),
    sys_make_dif(G, P, Q),
-   dif(P, Q, [V-T]).
-
-% sys_retire_hooks(+Set, +Term)
-:- private sys_retire_hooks/2.
-:- meta_predicate sys_retire_hooks(?,2).
-sys_retire_hooks([V|L], H) :-
-   sys_clause_hook(V, H, K),
-   withdrawz_ref(K),
-   sys_retire_hooks(L, H).
-sys_retire_hooks([], _).
-
-/**
- * sys_listeners_difs(G, L):
- */
-% sys_listeners_difs(+Map, -Set)
-:- private sys_listeners_difs/2.
-sys_listeners_difs([X-Y|G], [X,Y|L]) :-
-   var(Y), !,
-   sys_listeners_difs(G, L).
-sys_listeners_difs([X-_|G], [X|L]) :-
-   sys_listeners_difs(G, L).
-sys_listeners_difs([], []).
+   sys_assume_cont(dif(P, Q)).
 
 /********************************************************/
 /* Constraint Projection                                */
@@ -269,7 +251,7 @@ residue:sys_current_eq(V, dif(S)) :-
 residue:sys_unwrap_eq(sto(K), [sto(V)|L], L) :-
    sys_melt_var(K, V).
 residue:sys_unwrap_eq(dif(S), [dif(P,Q)|L], L) :-
-   sys_melt_var(S, G),
+   sys_melt_var(S, sys_data_dif(_,G)),
    sys_make_dif(G, P, Q).
 
 /**

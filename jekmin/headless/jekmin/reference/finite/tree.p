@@ -57,6 +57,24 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+/**
+ * Implementation note for pseudo boolean constraint solving. A
+ * verify hook is used, since no new unification result from
+ * forward checking only success or failure.
+ *
+ * - Each Boolean variable has an attribute of the form:
+ *     tree:pseudo_ref(+Ref, +Map)
+ * where Ref is the frozen variable and Map is a map from
+ * fresh and shared variables representing a watcher to the
+ * variable weight. The Map gets updated during model setup
+ * and during forward checking.
+ *
+ *- Each variable representing a watcher has an attribute of the form:
+ *     tree:pseudo_root(+Comparator,+Current)
+ * Where Current is the estimated maximum subtracted by the
+ * comparator value and Comparator is the comparator. The current
+ * gets updated during forward checking.
+ */
 :- package(library(jekmin/reference/finite)).
 :- module(tree, []).
 
@@ -66,6 +84,7 @@
 :- use_module(library(minimal/assume)).
 :- use_module(library(experiment/ref)).
 :- use_module(library(experiment/attr)).
+:- use_module(library(advanced/ordsets)).
 
 :- public infix(#).
 :- op(500, yfx, #).
@@ -89,7 +108,7 @@
 expr_tree(X, R) :-
    var(X), !,
    var_map_new(X, Y),
-   R = node3(Y,[Y],one,zero).
+   R = node(Y,[Y],one,zero).
 /**
  * 0 (SAT):
  * 1 (SAT):
@@ -209,7 +228,7 @@ expr_pretty(zero, R) :- !,
    R = 0.
 expr_pretty(one, R) :- !,
    R = 1.
-expr_pretty(node3(X,_,A,B), R) :-
+expr_pretty(node(X,_,A,B), R) :-
    sys_melt_var(X, Y),
    expr_pretty(A, C),
    expr_pretty(B, D),
@@ -229,7 +248,7 @@ tree_not(zero, R) :- !,
    R = one.
 tree_not(one, R) :- !,
    R = zero.
-tree_not(node3(X,W,A,B), node3(X,W,C,D)) :-
+tree_not(node(X,W,A,B), node(X,W,C,D)) :-
    tree_not(A, C),
    tree_not(B, D).
 
@@ -246,17 +265,18 @@ tree_and(one, A, R) :- !,
    R = A.
 tree_and(A, one, R) :- !,
    R = A.
-tree_and(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
+tree_and(node(X,_,A,B), node(Y,_,C,D), R) :-
+   X == Y, !,
    tree_and(A, C, E),
    tree_and(B, D, F),
    tree_make(E, F, X, R).
-tree_and(node3(X,_,A,B), N, R) :-
-   N = node3(Y,_,_,_),
+tree_and(node(X,_,A,B), N, R) :-
+   N = node(Y,_,_,_),
    X @< Y, !,
    tree_and(A, N, E),
    tree_and(B, N, F),
    tree_make(E, F, X, R).
-tree_and(N, node3(Y,_,C,D), R) :-
+tree_and(N, node(Y,_,C,D), R) :-
    tree_and(N, C, E),
    tree_and(N, D, F),
    tree_make(E, F, Y, R).
@@ -275,17 +295,18 @@ tree_or(zero, A, R) :- !,
    R = A.
 tree_or(A, zero, R) :- !,
    R = A.
-tree_or(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
+tree_or(node(X,_,A,B), node(Y,_,C,D), R) :-
+   X == Y, !,
    tree_or(A, C, E),
    tree_or(B, D, F),
    tree_make(E, F, X, R).
-tree_or(node3(X,_,A,B), N, R) :-
-   N = node3(Y,_,_,_),
+tree_or(node(X,_,A,B), N, R) :-
+   N = node(Y,_,_,_),
    X @< Y, !,
    tree_or(A, N, E),
    tree_or(B, N, F),
    tree_make(E, F, X, R).
-tree_or(N, node3(Y,_,C,D), R) :-
+tree_or(N, node(Y,_,C,D), R) :-
    tree_or(N, C, E),
    tree_or(N, D, F),
    tree_make(E, F, Y, R).
@@ -304,17 +325,18 @@ tree_imply(one, A, R) :- !,
    R = A.
 tree_imply(_, one, R) :- !,
    R = one.
-tree_imply(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
+tree_imply(node(X,_,A,B), node(Y,_,C,D), R) :-
+   X == Y, !,
    tree_imply(A, C, E),
    tree_imply(B, D, F),
    tree_make(E, F, X, R).
-tree_imply(node3(X,_,A,B), N, R) :-
-   N = node3(Y,_,_,_),
+tree_imply(node(X,_,A,B), N, R) :-
+   N = node(Y,_,_,_),
    X @< Y, !,
    tree_imply(A, N, E),
    tree_imply(B, N, F),
    tree_make(E, F, X, R).
-tree_imply(N, node3(Y,_,C,D), R) :-
+tree_imply(N, node(Y,_,C,D), R) :-
    tree_imply(N, C, E),
    tree_imply(N, D, F),
    tree_make(E, F, Y, R).
@@ -332,17 +354,18 @@ tree_equiv(zero, A, R) :- !,
    tree_not(A, R).
 tree_equiv(A, zero, R) :- !,
    tree_not(A, R).
-tree_equiv(node3(X,_,A,B), node3(X,_,C,D), R) :- !,
+tree_equiv(node(X,_,A,B), node(Y,_,C,D), R) :-
+   X == Y, !,
    tree_equiv(A, C, E),
    tree_equiv(B, D, F),
    tree_make(E, F, X, R).
-tree_equiv(node3(X,_,A,B), N, R) :-
-   N = node3(Y,_,_,_),
+tree_equiv(node(X,_,A,B), N, R) :-
+   N = node(Y,_,_,_),
    X @< Y, !,
    tree_equiv(A, N, E),
    tree_equiv(B, N, F),
    tree_make(E, F, X, R).
-tree_equiv(N, node3(Y,_,C,D), R) :-
+tree_equiv(N, node(Y,_,C,D), R) :-
    tree_equiv(N, C, E),
    tree_equiv(N, D, F),
    tree_make(E, F, Y, R).
@@ -388,9 +411,10 @@ tree_exists(zero, _, R) :- !,
    R = zero.
 tree_exists(one, _, R) :- !,
    R = one.
-tree_exists(node3(X,_,A,B), X, R) :- !,
+tree_exists(node(X,_,A,B), Y, R) :-
+   X == Y, !,
    tree_or(A, B, R).
-tree_exists(node3(Y,_,A,B), X, R) :-
+tree_exists(node(Y,_,A,B), X, R) :-
    Y @< X, !,
    tree_exists(A, X, C),
    tree_exists(B, X, D),
@@ -406,9 +430,10 @@ tree_one(zero, _, R) :- !,
    R = zero.
 tree_one(one, _, R) :- !,
    R = one.
-tree_one(node3(X,_,A,_), X, R) :- !,
+tree_one(node(X,_,A,_), Y, R) :-
+   X == Y, !,
    R = A.
-tree_one(node3(Y,_,A,B), X, R) :-
+tree_one(node(Y,_,A,B), X, R) :-
    Y @< X, !,
    tree_one(A, X, C),
    tree_one(B, X, D),
@@ -424,9 +449,10 @@ tree_zero(zero, _, R) :- !,
    R = zero.
 tree_zero(one, _, R) :- !,
    R = one.
-tree_zero(node3(X,_,_,B), X, R) :- !,
+tree_zero(node(X,_,_,B), Y, R) :-
+   X == Y, !,
    R = B.
-tree_zero(node3(Y,_,A,B), X, R) :-
+tree_zero(node(Y,_,A,B), X, R) :-
    Y @< X, !,
    tree_zero(A, X, C),
    tree_zero(B, X, D),
@@ -445,29 +471,10 @@ tree_zero(N, _, N).
 :- private tree_make/4.
 tree_make(A, A, _, R) :- !,
    R = A.
-tree_make(A, B, X, node3(X,[X|W],A,B)) :-
+tree_make(A, B, X, node(X,[X|W],A,B)) :-
    expr_vars(A, U),
    expr_vars(B, V),
-   vars_union(U, V, W).
-
-/**
- * vars_union(U, V, W):
- * The predicate succeeds in W with the union of the variables U and V.
- */
-% vars_union(+List, +List, -List)
-vars_union([], X, R) :- !,
-   R = X.
-vars_union(X, [], R) :- !,
-   R = X.
-vars_union([X|L], [X|M], R) :- !,
-   vars_union(L, M, S),
-   R = [X|S].
-vars_union([X|L], [Y|M], R) :-
-   X @< Y, !,
-   vars_union(L, [Y|M], S),
-   R = [X|S].
-vars_union(L, [Y|M], [Y|S]) :-
-   vars_union(L, M, S).
+   ord_union(U, V, W).
 
 /**
  * expr_vars(T, L):
@@ -480,7 +487,7 @@ expr_vars(zero, R) :- !,
    R = [].
 expr_vars(one, R) :- !,
    R = [].
-expr_vars(node3(_,W,_,_), W).
+expr_vars(node(_,W,_,_), W).
 
 /*****************************************************************/
 /* List Arguments                                                */
@@ -593,6 +600,19 @@ sys_exactly_base(N, [X|L]) :-
    H is N-1,
    X = zero,
    sys_exactly_base(H, L).
+
+/*****************************************************************/
+/* Pseudo Booleans                                               */
+/*****************************************************************/
+
+/**
+ * pseudo(R, L, C, K):
+ * The predicate succeeds in a new pseudo boolean constraint
+ * with weights R, variables L, comparator C and value K.
+ */
+% pseudo(+List, +List, +Atom, +Number)
+:- public pseudo/4.
+pseudo(_, _, _, _) :- true.
 
 /*****************************************************************/
 /* Variable Lookup                                               */
