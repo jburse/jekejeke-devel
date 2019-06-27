@@ -88,7 +88,7 @@ put_atts(V, K, W) :-
    H = wrap(W),
    sys_ensure_serno(V),
    sys_compile_hook(V, atts(K, F), R),
-   depositz_ref(R).
+   deposita_ref(R).
 
 /**
  * get_atts(V, K, W):
@@ -117,7 +117,7 @@ del_atts(_, _) :-
 :- private del_atts2/2.
 del_atts2(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
-   withdrawz_ref(R).
+   withdrawa_ref(R).
 del_atts2(_, _).
 
 /**************************************************************/
@@ -133,9 +133,9 @@ del_atts2(_, _).
  */
 % atts(+Key, +Ref, +Var, +Term)
 :- private atts/4.
-atts(K, _, V, T) :-
-   K:verify_attributes(V, T, G),
-   sys_assume_cont(G).
+atts(K, F, _, T) :-
+   sys_melt_var(F, wrap(W)),
+   K:verify_attributes(W, T).
 
 /**
  * sys_current_eq(V, H):

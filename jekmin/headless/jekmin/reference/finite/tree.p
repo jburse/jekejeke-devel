@@ -63,17 +63,17 @@
  * forward checking only success or failure.
  *
  * - Each Boolean variable has an attribute of the form:
- *     tree:pseudo_ref(+Ref, +Map)
- * where Ref is the frozen variable and Map is a map from
- * fresh and shared variables representing a watcher to the
- * variable weight. The Map gets updated during model setup
- * and during forward checking.
+ *     tree:watch_ref(+Map)
+ * where Map is a map from fresh and shared variables representing
+ * a watcher to the variable weight. The Map gets updated
+ * during model setup and during forward checking.
  *
  *- Each variable representing a watcher has an attribute of the form:
- *     tree:pseudo_root(+Comparator,+Current)
- * Where Current is the estimated maximum subtracted by the
- * comparator value and Comparator is the comparator. The current
- * gets updated during forward checking.
+ *     tree:watch_root(+Maximum, +Vars, +Comparator, +Value)
+ * Where Maximum is the estimated maximum, where Vars are the
+ * variables and where Comparator is the comparator and where
+ * Value is the compared value.
+ * The Maximum and the Value gets updated during forward checking.
  */
 :- package(library(jekmin/reference/finite)).
 :- module(tree, []).
@@ -85,6 +85,9 @@
 :- use_module(library(experiment/ref)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(advanced/ordsets)).
+:- use_module(library(experiment/ordmaps)).
+:- use_module(library(experiment/maps)).
+:- use_module(library(term/verify)).
 
 :- public infix(#).
 :- op(500, yfx, #).
@@ -612,7 +615,151 @@ sys_exactly_base(N, [X|L]) :-
  */
 % pseudo(+List, +List, +Atom, +Number)
 :- public pseudo/4.
-pseudo(_, _, _, _) :- true.
+pseudo(R, L, C, K) :-
+   term_variables(L, Z),
+   watch_add_vars(R, L, H, 0, V, 0, J),
+   U is K-V,
+   call(C, J, U),
+   put_atts(H, tree, watch_root(J,Z,C,U)).
+
+% pseudo_two(+Number, +Number, +Var, +Vars, +Atom)
+pseudo_two(U, J, H, Z, C) :-
+   call(C, J, U),
+   put_atts(H, tree, watch_root(J,Z,C,U)).
+
+/**
+ * watch_add_vars(R, L, H, S, T, P, Q):
+ * The predicate succeeds in adding watchers to the fresh
+ * and shared variable H, and returns in T the number S
+ * plus the partial weighted sum, and returns in Q the
+ * number P plus the estimated maximum.
+ */
+% watch_add_vars(+List, +List, +Var, +Number, -Number, +Number, -Number)
+watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
+   var(B),
+   get_atts(B, tree, watch_ref(F)), !,
+   map_include(V, H, F, G, P, J),
+   put_atts(B, tree, watch_ref(G)),
+   watch_add_vars(R, L, H, S, T, J, Q).
+watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
+   var(B), !,
+   put_atts(B, tree, watch_ref([H-V])),
+   map_addition(P, V, J),
+   watch_add_vars(R, L, H, S, T, J, Q).
+watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
+   expr_value(B),
+   J is S+B*V,
+   watch_add_vars(R, L, H, J, T, P, Q).
+watch_add_vars([], [], _, S, S, P, P).
+
+% map_include(+Number, +Var, +Map, -Map, +Number, -Number)
+:- private map_include/6.
+map_include(V, H, F, G, S, T) :-
+   get(F, H, W), !,
+   map_subtract(S, W, K),
+   J is V+W,
+   map_addition(K, J, T),
+   put(F, H, J, G).
+map_include(V, H, F, [H-V|F], S, T) :-
+   map_addition(S, V, T).
+
+% expr_value(+Boolean)
+expr_value(0).
+expr_value(1).
+
+/*****************************************************************/
+/* Verify Hook                                                   */
+/*****************************************************************/
+
+/**
+ * verify_attributes(A, W):
+ * The predicate is called when a varable with attribute
+ * term A got the value W assigned.
+ */
+% verify_attributes(+Attr, +Term)
+:- public verify_attributes/2.
+:- override verify_attributes/2.
+verify_attributes(watch_ref(F), W) :-
+   var(W),
+   get_atts(W, tree, watch_ref(G)), !,
+   map_union(F, G, E),
+   put_atts(W, tree, watch_ref(E)).
+verify_attributes(watch_ref(F), W) :-
+   var(W), !,
+   put_atts(W, tree, watch_ref(F)).
+verify_attributes(watch_ref(F), 0) :- !,
+   watch_unify(F, 0).
+verify_attributes(watch_ref(F), 1) :- !,
+   watch_unify(F, 1).
+verify_attributes(watch_ref(_,_), W) :-
+   throw(error(type_error(sat_value,W),_)).
+
+% watch_unify(+Map, +Boolean)
+:- private watch_unify/2.
+watch_unify([H-V|F], B) :-
+   get_atts(H, tree, watch_root(J,Z,C,U)),
+   W is U-B*V,
+   map_subtract(J, V, K),
+   call(C, K, W),
+   put_atts(H, tree, watch_root(K,Z,C,W)),
+   watch_unify(F, B).
+watch_unify([], _).
+
+% map_union(+Map, +Map, -Map)
+:- private map_union/3.
+map_union([H-V|L], M, R) :-
+   get(M, H, W), !,
+   get_atts(H, tree, watch_root(J,Z,C,U)),
+   map_subtract(J, V, P),
+   map_subtract(P, W, Q),
+   S is V+W,
+   map_addition(Q, S, K),
+   call(C, K, U),
+   put_atts(H, tree, watch_root(K,Z,C,U)),
+   put(M, H, S, N),
+   map_union(L, N, R).
+map_union([H-V|L], M, [H-V|R]) :-
+   map_union(L, M, R).
+map_union([], M, M).
+
+:- private map_subtract/3.
+map_subtract(U, V, U) :-
+   V =< 0, !.
+map_subtract(U, V, W) :-
+   W is U-V.
+
+:- private map_addition/3.
+map_addition(U, V, U) :-
+   V =< 0, !.
+map_addition(U, V, W) :-
+   W is U+V.
+
+/*****************************************************************/
+/* Portraying the Attributes                                     */
+/*****************************************************************/
+
+/**
+ * portray_attributes(V, I, O):
+ * The predicate is called when the goal list I of
+ * the variable V is required. The list should end in O.
+ */
+% portray_attributes(+Variable, -List, +List)
+:- public portray_attributes/3.
+:- override portray_attributes/3.
+portray_attributes(A, S, S) :-
+   get_atts(A, tree, watch_ref(_)).
+portray_attributes(A, [pseudo(R,L,C,U)|S], S) :-
+   get_atts(A, tree, watch_root(_,Z,C,U)),
+   term_variables(Z, L),
+   watch_get_weights(L, A, R).
+
+% watch_get_weights(+List, +Var, -List)
+:- private watch_get_weights/3.
+watch_get_weights([B|L], H, [V|R]) :-
+   get_atts(B, tree, watch_ref(M)),
+   get(M, H, V),
+   watch_get_weights(L, H, R).
+watch_get_weights([], _, []).
 
 /*****************************************************************/
 /* Variable Lookup                                               */

@@ -105,28 +105,29 @@ sat(A) :-
 :- private sat_post/1.
 sat_post(T) :-
    expr_vars(T, L),
-   sat_add_vars(L, H),
+   bdd_add_vars(L, H),
    sat_trivial(T, H),
    sat_propagate(T).
 
 /**
- * sat_add_vars(M, V):
- * Posit references to the variable V in the list M.
+ * bdd_add_vars(L, H):
+ * The predicate succeeds in adding references from the variables
+ * in the list L to the fresh and shared variable H.
  */
-% sat_add_vars(+List, +Fresh)
-:- private sat_add_vars/2.
-sat_add_vars([K|L], H) :-
+% bdd_add_vars(+List, +Var)
+:- private bdd_add_vars/2.
+bdd_add_vars([K|L], H) :-
    sys_melt_var(K, A),
-   sat_add_var(A, K, H),
-   sat_add_vars(L, H).
-sat_add_vars([], _).
+   bdd_add_var(A, K, H),
+   bdd_add_vars(L, H).
+bdd_add_vars([], _).
 
-% sat_add_var(+Var, +Ref, +Fresh)
-:- private sat_add_var/3.
-sat_add_var(A, K, H) :-
+% bdd_add_var(+Var, +Ref, +Var)
+:- private bdd_add_var/3.
+bdd_add_var(A, K, H) :-
    get_attr(A, clpb, bdd_ref(K,F)), !,
    put_attr(A, clpb, bdd_ref(K,[H|F])).
-sat_add_var(A, K, H) :-
+bdd_add_var(A, K, H) :-
    put_attr(A, clpb, bdd_ref(K,[H])).
 
 /**
@@ -176,16 +177,16 @@ attr_unify_hook(bdd_ref(K,F), W) :-
    get_attr(W, clpb, bdd_ref(I,G)), !,
    union(F, G, E),
    put_attr(W, clpb, bdd_ref(I,E)),
-   sat_unify(G, K, node(I,[I],one,zero)).
+   bdd_unify(G, K, node(I,[I],one,zero)).
 attr_unify_hook(bdd_ref(K,F), W) :-
    var(W), !,
    var_map_new(W, I),
    put_attr(W, clpb, bdd_ref(I,F)),
-   sat_unify(F, K, node(I,[I],one,zero)).
+   bdd_unify(F, K, node(I,[I],one,zero)).
 attr_unify_hook(bdd_ref(K,F), 0) :- !,
-   sat_unify(F, K, zero).
+   bdd_unify(F, K, zero).
 attr_unify_hook(bdd_ref(K,F), 1) :- !,
-   sat_unify(F, K, one).
+   bdd_unify(F, K, one).
 attr_unify_hook(bdd_ref(_,_), W) :-
    throw(error(type_error(sat_value,W),_)).
 
@@ -194,17 +195,17 @@ attr_unify_hook(bdd_ref(_,_), W) :-
  * The predicate is called when a reference list
  * F got the constant value W assigned.
  */
-% sat_unify(+List, +Ref, +Tree)
-:- private sat_unify/3.
-sat_unify([H|F], K, W) :-
+% bdd_unify(+List, +Ref, +Tree)
+:- private bdd_unify/3.
+bdd_unify([H|F], K, W) :-
    get_attr(H, clpb, bdd_root(T)), !,
    sat_assign(T, K, W, S),
    sat_trivial(S, H),
-   sat_unify(F, K, W),
+   bdd_unify(F, K, W),
    sat_propagate(S).
-sat_unify([_|F], K, W) :-
-   sat_unify(F, K, W).
-sat_unify([], _, _).
+bdd_unify([_|F], K, W) :-
+   bdd_unify(F, K, W).
+bdd_unify([], _, _).
 
 /**
  * sat_assign(T, U, W, S):
@@ -233,26 +234,11 @@ sat_assign(T, U, W, S) :-
 % attribute_goals(+Variable, -List, +List)
 :- public attribute_goals/3.
 :- override attribute_goals/3.
-attribute_goals(A, R, S) :-
-   get_attr(A, clpb, bdd_ref(K,F)),
-   sat_goals(F, K, R, S).
 attribute_goals(A, S, S) :-
-   get_attr(A, clpb, bdd_root(_)).
-
-/**
- * sat_goals(F, K, I, O):
- * The predicate succeeds with the goal list I
- * of the reference list F. This list should end in O.
- */
-% sat_goals(+List, +Index, -List, +List)
-:- private sat_goals/4.
-sat_goals([H|F], K, [sat(E)|R], S) :-
-   get_attr(H, clpb, bdd_root(node(K,W,C,D))), !,
-   expr_pretty(node(K,W,C,D), E),
-   sat_goals(F, K, R, S).
-sat_goals([_|F], K, R, S) :-
-   sat_goals(F, K, R, S).
-sat_goals([], _, R, R).
+   get_attr(A, clpb, bdd_ref(_,_)).
+attribute_goals(A, [sat(E)|S], S) :-
+   get_attr(A, clpb, bdd_root(T)),
+   expr_pretty(T, E).
 
 /*****************************************************************/
 /* Labeling & Counting                                           */
@@ -268,20 +254,11 @@ labeling(L) :-
    var(L),
    throw(error(instantiation_error,_)).
 labeling([B|L]) :- !,
-   sys_sat_value(B),
+   expr_value(B),
    labeling(L).
 labeling([]) :- !.
 labeling(L) :-
    throw(error(type_error(list,L),_)).
-
-/**
- * sys_sat_value(B):
- * The predicate succeeds in B with a sat value.
- */
-% sys_sat_value(-Boolean)
-:- private sys_sat_value/1.
-sys_sat_value(0).
-sys_sat_value(1).
 
 /**
  * random_labeling(L):
@@ -307,11 +284,11 @@ random_labeling(L, _) :-
 :- private sys_random_sat_value/1.
 sys_random_sat_value(B) :-
    var(B), !,
-   findall(C, sys_sat_value(C), L),
+   findall(C, expr_value(C), L),
    random_permutation(L, R),
    member(B, R).
 sys_random_sat_value(B) :-
-   sys_sat_value(B).
+   expr_value(B).
 
 /**
  * count(L, N):
@@ -324,7 +301,7 @@ count(L, _) :-
    var(L),
    throw(error(instantiation_error,_)).
 count([B|L], N) :- !,
-   findall(M, (  sys_sat_value(B),
+   findall(M, (  expr_value(B),
                  count(L, M)), R),
    sys_sat_sum(R, N).
 count([], N) :- !,
@@ -356,84 +333,44 @@ sys_sat_sum([], 0).
 % weighted_maximum(+list, +List, -Number)
 :- public weighted_maximum/3.
 weighted_maximum(R, L, O) :-
-   sys_start_minimum(R, 0, K),
-   sys_start_maximum(R, 0, M),
-   sys_find_maximum(R, L, K, M, O),
-   U is M-O,
-   0 =< U,
-   sys_inclusive_labeling(R, L, U).
+   sys_find_start(R, L, K),
+   term_variables(L, Z),
+   watch_add_vars(R, L, H, 0, V, 0, J),
+   sys_find_maximum(V, J, H, R, L, Z, K, O),
+   U is O-V,
+   pseudo_two(U, J, H, Z, >=),
+   labeling(L).
 
-% sys_find_maximum(+List, +List, +Number, +Number, -Number)
-:- private sys_find_maximum/5.
-sys_find_maximum(R, L, K, M, O) :-
-   U is M-K,
-   0 < U,
-   catch((  sys_exclusive_labeling(R, L, U, 0, P),
+% sys_find_start(+List, +List, -Number)
+:- private sys_find_start/3.
+sys_find_start(R, L, K) :-
+   catch((  random_labeling(L),
+            sys_stop_value(R, L, 0, K),
+            throw(sys_start_bound(K))),
+      sys_start_bound(K),
+      true).
+
+% sys_find_maximum(+Number, +Number, +Var, +List, +List, +Vars, +Number, -Number)
+:- private sys_find_maximum/8.
+sys_find_maximum(V, J, H, R, L, Z, K, O) :-
+   catch((  U is K-V,
+            pseudo_two(U, J, H, Z, >),
+            random_labeling(L),
+            sys_stop_value(R, L, 0, P),
             throw(sys_new_bound(P))),
       sys_new_bound(P),
       true), !,
-   sys_find_maximum(R, L, P, M, O).
-sys_find_maximum(_, _, K, _, K).
+   sys_find_maximum(V, J, H, R, L, Z, P, O).
+sys_find_maximum(_, _, _, _, _, _, K, K).
 
-% sys_exclusive_labeling(+List, +List, +Number, +Number, -Number)
-:- private sys_exclusive_labeling/5.
-sys_exclusive_labeling(_, L, _, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-sys_exclusive_labeling([V|R], [B|L], U, S, T) :- !,
-   sys_random_sat_value(B),
+/**
+ * sys_stop_value(R, L, S, T):
+ * The predicate succeeds in T with the scalar product
+ * of the weight R and the values L plus the number S.
+ */
+% sys_stop_value(+List, +List, +Number, -Number)
+:- private sys_stop_value/4.
+sys_stop_value([V|R], [B|L], S, T) :-
    H is S+B*V,
-   (  V =< 0
-   -> W is U+B*V
-   ;  W is U-(1-B)*V),
-   0 < W,
-   sys_exclusive_labeling(R, L, W, H, T).
-sys_exclusive_labeling([], [], _, S, S) :- !.
-sys_inclusive_labeling(_, L, _, _, _) :-
-   throw(error(type_error(list,L),_)).
-
-% sys_inclusive_labeling(+List, +List, +Number)
-:- private sys_inclusive_labeling/3.
-sys_inclusive_labeling(_, L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-sys_inclusive_labeling([V|R], [B|L], U) :- !,
-   sys_sat_value(B),
-   (  V =< 0
-   -> W is U+B*V
-   ;  W is U-(1-B)*V),
-   0 =< W,
-   sys_inclusive_labeling(R, L, W).
-sys_inclusive_labeling([], [], _) :- !.
-sys_inclusive_labeling(_, L, _) :-
-   throw(error(type_error(list,L),_)).
-
-/**
- * sys_start_minimum(R, S, T):
- * The predicate succeeds in T with the sum of the
- * negative weights in the list R plus the number S.
- */
-% sys_start_minimum(+List, +Number, -Number)
-:- private sys_start_minimum/3.
-sys_start_minimum([V|R], S, T) :-
-   V =< 0, !,
-   H is S+V,
-   sys_start_minimum(R, H, T).
-sys_start_minimum([_|R], S, T) :-
-   sys_start_minimum(R, S, T).
-sys_start_minimum([], S, S).
-
-/**
- * sys_start_maximum(R, S, T):
- * The predicate succeeds in T with the sum of the
- * negative weights in the list R plus the number S.
- */
-% sys_start_maximum(+List, +Number, -Number)
-:- private sys_start_maximum/3.
-sys_start_maximum([V|R], S, T) :-
-   V > 0, !,
-   H is S+V,
-   sys_start_maximum(R, H, T).
-sys_start_maximum([_|R], S, T) :-
-   sys_start_maximum(R, S, T).
-sys_start_maximum([], S, S).
+   sys_stop_value(R, L, H, T).
+sys_stop_value([], [], S, S).
