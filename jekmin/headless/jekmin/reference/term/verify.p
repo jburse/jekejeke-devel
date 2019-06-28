@@ -8,8 +8,8 @@
  *
  * Examples:
  * ?- [user].
- * foo:verify_attributes(V, _, true) :-
- *     get_atts(V, foo, L), write('L='), write(L), nl.
+ * foo:verify_attributes(L, _) :-
+ *     write('L='), write(L), nl.
  * ^D
  * Yes
  * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), [X,Y]=[1,2].
@@ -18,12 +18,11 @@
  * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), X=Y.
  * L=[_A,_B]
  *
- * The verify hook verify_attributes/3 has to be declared inside
- * the module of the key. The hook is called before the variable
- * has been instantiated and it should return a goal which gets
- * scheduled. The hook is allowed to fail or succeed, but it is
- * called only once. If the hook fails the surrounding unification
- * will also fail.
+ * The verify hook verify_attributes/2 has to be declared inside the
+ * module of the key. The hook is called before the variable has
+ * been instantiated and receive the attribute value in its first
+ * argument. The hook is allowed to fail or succeed, but it is called
+ * only once. If the hook fails the surrounding unification will also fail.
  *
  * The goals hook portray_attributes/3 has to be optionally declared
  * inside the module of the key. When needed the hook is called

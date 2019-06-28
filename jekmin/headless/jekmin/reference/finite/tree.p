@@ -1,24 +1,28 @@
 /**
  * The SAT solver allows denoting Boolean value expressions. These
  * expressions can contain native Prolog variables. Boolean expressions
- * are posted to the SAT solver via the predicate sat/1. Internally
- * the SAT constraint is normalized into a BDD tree. The resulting
- * BDD tree is automatically shown by the top-level:
+ * constraints are posted to the SAT solver via the predicate sat/1.
+ * Internally the SAT constraint is normalized into a BDD tree. The
+ * resulting BDD tree is automatically shown by the top-level:
  *
  * Example:
  * ?- sat(X#Y).
  * sat((X->(Y->0;1);Y->1;0))
  *
  * BDD tree reductions and attribute variable hooks guard the interaction
- * between SAT con-straints. Currently the following inference rule sets
- * have been implemented for Boolean value expressions:
+ * between SAT constraints. Interval arithmetic is used in reducing
+ * pseudo Boolean constraints. Currently the following inference rules
+ * have been implemented for Boolean expressions constraints and
+ * pseudo Boolean constraints:
  *
- * * Forward Checking
+ * * Unit Propagation
+ * * Alias Propagation
  *
- * The forward checking consists of the two inference rules constant
- * elimination and constant back propagation. Where permitted SAT
- * constraints are replaced by native Prolog unification. It is also
- * allowed mixing native Prolog unification =/2 with SAT constraints:
+ * Unit propagation and alias propagation provide forward checking since
+ * they might lead to fail-ure of subsequent constraints. Where permitted
+ * Boolean expression constraints are replaced by native Prolog
+ * unification =/2, thus leading to further forward checking. It is also
+ * allowed mixing native Prolog unification =/2 with constraints.
  *
  * Examples:
  * ?- X=Y, sat(X+Y).
@@ -609,25 +613,6 @@ sys_exactly_base(N, [X|L]) :-
 /*****************************************************************/
 
 /**
- * pseudo(R, L, C, K):
- * The predicate succeeds in a new pseudo boolean constraint
- * with weights R, variables L, comparator C and value K.
- */
-% pseudo(+List, +List, +Atom, +Number)
-:- public pseudo/4.
-pseudo(R, L, C, K) :-
-   term_variables(L, Z),
-   watch_add_vars(R, L, H, 0, V, 0, J),
-   U is K-V,
-   call(C, J, U),
-   put_atts(H, tree, watch_root(J,Z,C,U)).
-
-% pseudo_two(+Number, +Number, +Var, +Vars, +Atom)
-pseudo_two(U, J, H, Z, C) :-
-   call(C, J, U),
-   put_atts(H, tree, watch_root(J,Z,C,U)).
-
-/**
  * watch_add_vars(R, L, H, S, T, P, Q):
  * The predicate succeeds in adding watchers to the fresh
  * and shared variable H, and returns in T the number S
@@ -671,6 +656,10 @@ map_include(V, H, F, [H-V|F], S, T) :-
 % expr_value(+Boolean)
 expr_value(0).
 expr_value(1).
+
+% expr_value_reverse(+Boolean)
+expr_value_reverse(1).
+expr_value_reverse(0).
 
 /*****************************************************************/
 /* Verify Hook                                                   */
