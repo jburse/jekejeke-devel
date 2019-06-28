@@ -635,6 +635,9 @@ pseudo_two(U, J, H, Z, C) :-
  * number P plus the estimated maximum.
  */
 % watch_add_vars(+List, +List, +Var, +Number, -Number, +Number, -Number)
+watch_add_vars(_, L, _, _, _, _, _) :-
+   var(L),
+   throw(error(instantiation_error,_)).
 watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
    var(B),
    get_atts(B, tree, watch_ref(F)), !,
@@ -646,11 +649,13 @@ watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
    put_atts(B, tree, watch_ref([H-V])),
    map_addition(P, V, J),
    watch_add_vars(R, L, H, S, T, J, Q).
-watch_add_vars([V|R], [B|L], H, S, T, P, Q) :-
+watch_add_vars([V|R], [B|L], H, S, T, P, Q) :- !,
    expr_value(B),
    J is S+B*V,
    watch_add_vars(R, L, H, J, T, P, Q).
-watch_add_vars([], [], _, S, S, P, P).
+watch_add_vars([], [], _, S, S, P, P) :- !.
+watch_add_vars(_, L, _, _, _, _, _) :-
+   throw(error(type_error(list,L),_)).
 
 % map_include(+Number, +Var, +Map, -Map, +Number, -Number)
 :- private map_include/6.
@@ -751,7 +756,10 @@ portray_attributes(A, S, S) :-
 portray_attributes(A, [pseudo(R,L,C,U)|S], S) :-
    get_atts(A, tree, watch_root(_,Z,C,U)),
    term_variables(Z, L),
+   L \== [], !,
    watch_get_weights(L, A, R).
+portray_attributes(A, S, S) :-
+   get_atts(A, tree, watch_root(_,_,_,_)).
 
 % watch_get_weights(+List, +Var, -List)
 :- private watch_get_weights/3.

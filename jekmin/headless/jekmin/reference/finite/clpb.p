@@ -273,7 +273,7 @@ random_labeling([B|L]) :- !,
    sys_random_sat_value(B),
    random_labeling(L).
 random_labeling([]) :- !.
-random_labeling(L, _) :-
+random_labeling(L) :-
    throw(error(type_error(list,L),_)).
 
 /**
