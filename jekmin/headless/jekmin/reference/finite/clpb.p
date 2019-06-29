@@ -347,36 +347,36 @@ pseudo(R, L, C, K) :-
 % weighted_maximum(+list, +List, -Number)
 :- public weighted_maximum/3.
 weighted_maximum(R, L, O) :-
-   sys_find_start(R, L, K),
+   sat_find_start(R, L, K),
    watch_add_vars(R, L, H, 0, V, 0, J),
-   sys_find_maximum(V, J, H, R, L, K, O),
+   sat_find_maximum(V, J, H, R, L, K, O),
    U is O-V,
    call(>=, J, U),
    put_atts(H, tree, watch_root(J,L,>=,U)),
    labeling(L).
 
-% sys_find_start(+List, +List, -Number)
-:- private sys_find_start/3.
-sys_find_start(R, L, K) :-
+% sat_find_start(+List, +List, -Number)
+:- private sat_find_start/3.
+sat_find_start(R, L, K) :-
    catch((  random_labeling(L),
-            sys_weighted_sum(R, L, 0, K),
-            throw(sys_start_bound(K))),
-      sys_start_bound(K),
+            sys_weighted_sum(R, L, 0, F),
+            throw(sat_start_bound(F))),
+      sat_start_bound(K),
       true).
 
-% sys_find_maximum(+Number, +Number, +Var, +List, +List, +Number, -Number)
-:- private sys_find_maximum/7.
-sys_find_maximum(V, J, H, R, L, K, O) :-
+% sat_find_maximum(+Number, +Number, +Var, +List, +List, +Number, -Number)
+:- private sat_find_maximum/7.
+sat_find_maximum(V, J, H, R, L, K, O) :-
    catch((  U is K-V,
             call(>, J, U),
             put_atts(H, tree, watch_root(J,L,>,U)),
             random_labeling(L),
-            sys_weighted_sum(R, L, 0, P),
-            throw(sys_new_bound(P))),
-      sys_new_bound(P),
+            sys_weighted_sum(R, L, 0, F),
+            throw(sat_new_bound(F))),
+      sat_new_bound(P),
       true), !,
-   sys_find_maximum(V, J, H, R, L, P, O).
-sys_find_maximum(_, _, _, _, _, K, K).
+   sat_find_maximum(V, J, H, R, L, P, O).
+sat_find_maximum(_, _, _, _, _, K, K).
 
 /**
  * sys_weighted_sum(R, L, S, T):

@@ -76,7 +76,6 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-% :- package(library(ordered)).
 :- package(library(jekmin/reference/finite)).
 
 :- module(enum, []).
@@ -366,3 +365,39 @@ sys_card_range(_..., ...) :- !.
 sys_card_range(A..B, C) :- !,
    C is B-A+1.
 sys_card_range(_, 1).
+
+/**********************************************************/
+/* Optimization Problems                                  */
+/**********************************************************/
+
+/**
+ * labeling(O, L):
+ * The predicate succeeds in solving the optimization problem O,
+ * and then succeeds for all corresponding labelings of L.
+ */
+% labeling(+Var, +List)
+:- public labeling/2.
+labeling(F, L) :-
+   fd_find_start(L, F, K),
+   fd_find_maximum(L, F, K, O),
+   F #>= O,
+   label(L).
+
+% fd_find_start(+List, +Var, -Number)
+:- private fd_find_start/3.
+fd_find_start(L, F, K) :-
+   catch((  random_label(L),
+            throw(fd_start_bound(F))),
+      fd_start_bound(K),
+      true).
+
+% fd_find_maximum(+List, +Var, +Number, -Number)
+:- private fd_find_maximum/4.
+fd_find_maximum(L, F, K, O) :-
+   catch((  F #> K,
+            random_label(L),
+            throw(fd_new_bound(F))),
+      fd_new_bound(P),
+      true), !,
+   fd_find_maximum(L, F, P, O).
+fd_find_maximum(_, _, K, K).

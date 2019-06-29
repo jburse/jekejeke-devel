@@ -92,7 +92,6 @@
  *     Prod = [Integer * Atom | Prod] | [].
  */
 
-% :- package(library(ordered)).
 :- package(library(jekmin/reference/finite)).
 :- use_package(library(jekpro/frequent/misc)).
 
