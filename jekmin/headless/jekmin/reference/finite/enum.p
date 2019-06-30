@@ -371,13 +371,13 @@ sys_card_range(_, 1).
 /**********************************************************/
 
 /**
- * labeling(O, L):
+ * maximum(L, O):
  * The predicate succeeds in solving the optimization problem O,
  * and then succeeds for all corresponding labelings of L.
  */
-% labeling(+Var, +List)
-:- public labeling/2.
-labeling(F, L) :-
+% maximum(+List, +Expr)
+:- public maximum/2.
+maximum(L, F) :-
    fd_find_start(L, F, K),
    fd_find_maximum(L, F, K, O),
    F #>= O,
