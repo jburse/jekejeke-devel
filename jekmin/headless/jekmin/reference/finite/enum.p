@@ -19,7 +19,7 @@
  * of solving techniques. We provide the following solving techniques
  * along domain ranges when there is an attempt to label multiple
  * variables at once. The predicate for this search is label/1. The
- * predicate maximum/2 repeatedly restarts search to find a maximum:
+ * predicate label_maximum/2 repeatedly restarts search to find a maximum:
  *
  * * Brute Infinite Search
  * * Heuristic Finite Search
