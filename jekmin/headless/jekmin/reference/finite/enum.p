@@ -18,10 +18,12 @@
  * As a convenience the finite domain solver provides a couple
  * of solving techniques. We provide the following solving techniques
  * along domain ranges when there is an attempt to label multiple
- * variables at once. The predicate for this search is label/1:
+ * variables at once. The predicate for this search is label/1. The
+ * predicate maximum/2 repeatedly restarts search to find a maximum:
  *
  * * Brute Infinite Search
  * * Heuristic Finite Search
+ * * Branch and Bound Restart
  *
  * Infinite domains are filtered out first and then cantor paired. For
  * finite domains we have im-plemented a search strategy, which
@@ -43,9 +45,9 @@
  *
  * The predicates indomain/1 and label/1 have randomized equivalents
  * random_indomain/1 and random_label/1. For a full enumeration the
- * randomized versions would be slower, more memory intensive and
- * not give a random sequence, but they are still helpful in picking
- * a first random solution.
+ * randomized versions would be slower, more memory intensive and not
+ * give a random sequence, but they are still helpful in picking a first
+ * random solution and are used as part of the maximization predicate.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -371,13 +373,14 @@ sys_card_range(_, 1).
 /**********************************************************/
 
 /**
- * maximum(L, O):
- * The predicate succeeds in solving the optimization problem O,
- * and then succeeds for all corresponding labelings of L.
+ * label_maximum([V1, .., Vn], O):
+ * The predicate succeeds maximizing the objective function O,
+ * and then succeeds for all corresponding labelings of the
+ * variables V1, .., Vn.
  */
-% maximum(+List, +Expr)
-:- public maximum/2.
-maximum(L, F) :-
+% label_maximum(+List, +Expr)
+:- public label_maximum/2.
+label_maximum(L, F) :-
    fd_find_start(L, F, K),
    fd_find_maximum(L, F, K, O),
    F #>= O,
