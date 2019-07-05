@@ -133,7 +133,7 @@ sys_show_vars :-
 :- public sys_get_name_or_eq_list/2.
 sys_get_name_or_eq_list(R, M) :-
    sys_get_raw_variables(N),
-   sys_term_eq_list(N, L),
+   sys_eq_list(L),
    sys_filter_variable_names(N, M, L, R).
 
 /**
@@ -204,7 +204,10 @@ sys_show_name_or_eq(X = T, M) :- !,
    write(' = '),
    sys_show_value(T, M).
 sys_show_name_or_eq(T, M) :-
+   acyclic_term(T), !,
    write_term(T, [context(0),quoted(true),variable_names(M)]).
+sys_show_name_or_eq(_, _) :-
+   write('<cyclic term>').
 
 :- private sys_show_value/2.
 sys_show_value(T, M) :-

@@ -45,8 +45,8 @@ public final class CallFrame extends StackElement {
     /**
      * <p>Create a new call frame.</p>
      *
-     * @param d         The display.
-     * @param en        The engine.
+     * @param d  The display.
+     * @param en The engine.
      */
     public CallFrame(Display d, Engine en) {
         disp = d;

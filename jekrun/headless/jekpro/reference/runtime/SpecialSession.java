@@ -329,6 +329,7 @@ public final class SpecialSession extends AbstractSpecial {
                     CallFrame ref = CallFrame.getFrame(d2, dire, en);
                     en.contskel = dire;
                     en.contdisplay = ref;
+
                     boolean found = en.runLoop2(snap, true);
                     if (!found)
                         failFeedback(en);
@@ -419,7 +420,7 @@ public final class SpecialSession extends AbstractSpecial {
      * @param en The engine.
      * @return The expanded term.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
                                                Engine en)
@@ -483,7 +484,7 @@ public final class SpecialSession extends AbstractSpecial {
         en.visor.query = backref;
         PreClause pre = null;
         if (en.fault == null)
-            pre = copyGoalVarsAndWrap(rd.getVars(), var, d2, en);
+            pre = copyGoalVars(rd.getVars(), var, d2, en);
         en.releaseBind(mark);
         if (en.fault != null)
             throw en.fault;
@@ -499,9 +500,9 @@ public final class SpecialSession extends AbstractSpecial {
      * @param en    The engine.
      * @return The new clause.
      */
-    private static PreClause copyGoalVarsAndWrap(MapHashLink<String, SkelVar> assoc,
-                                                 Object t, Display d,
-                                                 Engine en) {
+    private static PreClause copyGoalVars(MapHashLink<String, SkelVar> assoc,
+                                          Object t, Display d,
+                                          Engine en) {
         PreClause pre = new PreClause();
         SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;

@@ -1,6 +1,5 @@
 package jekpro.model.inter;
 
-import jekpro.frequent.standard.SpecialFind;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
@@ -241,33 +240,18 @@ public class Engine extends StackElement implements Comparator<Object> {
     public final void retireCont()
             throws EngineMessage {
         ListArray<BindUniv> list = UndoCont.bindCont(this);
-        createComma(list, this);
+        for (int i = list.size() - 1; i >= 0; i--) {
+            BindUniv bc = list.get(i);
+            skel = bc.skel;
+            display = bc.display;
+            deref();
 
-        Directive dire = SupervisorCall.callGoal2(0, this);
-        Display d3 = display;
+            Directive dire = SupervisorCall.callGoal(0, this);
+            Display d3 = display;
 
-        CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
-        contskel = dire;
-        contdisplay = ref2;
-    }
-
-    /**
-     * <p>Create the comma list.</p>
-     * <p>Result is returned in skel and display of the engine.</p>
-     *
-     * @param temp The list of solutions or null.
-     * @param en   The engine.
-     */
-    private static void createComma(ListArray<BindUniv> temp, Engine en) {
-        BindUniv val = temp.get(temp.size() - 1);
-        en.skel = val.skel;
-        en.display = val.display;
-        for (int i = temp.size() - 2; i >= 0; i--) {
-            Object t = en.skel;
-            Display d = en.display;
-            val = temp.get(i);
-            SpecialFind.pairValue(en.store.foyer.CELL_COMMA,
-                    val.skel, val.display, t, d, en);
+            CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
+            contskel = dire;
+            contdisplay = ref2;
         }
     }
 

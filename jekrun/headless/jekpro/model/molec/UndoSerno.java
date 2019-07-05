@@ -3,7 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -72,7 +71,7 @@ public final class UndoSerno extends AbstractUndo {
     /**
      * <p>Set a new varmap.</p>
      *
-     * @param bc  The bind univ.
+     * @param bc The bind univ.
      * @param en The engine.
      * @return The new varmap.
      */

@@ -1,14 +1,10 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Directive;
-import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>Provides built-in predicates for logic predicates.</p>

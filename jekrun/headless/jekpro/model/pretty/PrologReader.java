@@ -60,7 +60,6 @@ public class PrologReader {
     public final static String OP_ANON = "_";
     public final static String OP_EOF = "";
     public final static String OP_EOLN = "\n";
-    public final static String OP_PERIOD = ".";
     public final static String OP_COMMA = ",";
     public final static String OP_BAR = "|";
     public final static String OP_LPAREN = "(";

@@ -62,9 +62,9 @@
 % ord_contains(+Elem, +OrdSet)
 :- public ord_contains/2.
 ord_contains(X, [Y|_]) :-
-   X @< Y, !, fail.
-ord_contains(X, [Y|_]) :-
    X == Y, !.
+ord_contains(X, [Y|_]) :-
+   X @< Y, !, fail.
 ord_contains(X, [_|Y]) :-
    ord_contains(X, Y).
 
@@ -74,12 +74,12 @@ ord_contains(X, [_|Y]) :-
  */
 % ord_difference(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_difference/3.
-ord_difference([X|Y], [Z|T], [X|R]) :-
-   X @< Z, !,
-   ord_difference(Y, [Z|T], R).
 ord_difference([X|Y], [Z|T], R) :-
    X == Z, !,
    ord_difference(Y, T, R).
+ord_difference([X|Y], [Z|T], [X|R]) :-
+   X @< Z, !,
+   ord_difference(Y, [Z|T], R).
 ord_difference([X|Y], [_|T], R) :-
    ord_difference([X|Y], T, R).
 ord_difference([], _, []) :- !.
@@ -91,12 +91,12 @@ ord_difference(X, [], X).
  */
 % ord_intersection(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_intersection/3.
-ord_intersection([X|Y], [Z|T], R) :-
-   X @< Z, !,
-   ord_intersection(Y, [Z|T], R).
 ord_intersection([X|Y], [Z|T], [X|R]) :-
    X == Z, !,
    ord_intersection(Y, T, R).
+ord_intersection([X|Y], [Z|T], R) :-
+   X @< Z, !,
+   ord_intersection(Y, [Z|T], R).
 ord_intersection([X|Y], [_|T], R) :-
    ord_intersection([X|Y], T, R).
 ord_intersection([], _, []) :- !.
@@ -109,11 +109,11 @@ ord_intersection(_, [], []).
 % ord_union(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_union/3.
 ord_union([X|Y], [Z|T], [X|R]) :-
-   X @< Z, !,
-   ord_union(Y, [Z|T], R).
-ord_union([X|Y], [Z|T], [X|R]) :-
    X == Z, !,
    ord_union(Y, T, R).
+ord_union([X|Y], [Z|T], [X|R]) :-
+   X @< Z, !,
+   ord_union(Y, [Z|T], R).
 ord_union([X|Y], [Z|T], [Z|R]) :-
    ord_union([X|Y], T, R).
 ord_union([], X, X) :- !.
@@ -125,11 +125,11 @@ ord_union(X, [], X).
  */
 % ord_subset(+OrdSet, +OrdSet)
 :- public ord_subset/2.
-ord_subset([X|_], [Z|_]) :-
-   X @< Z, !, fail.
 ord_subset([X|Y], [Z|T]) :-
    X == Z, !,
    ord_subset(Y, T).
+ord_subset([X|_], [Z|_]) :-
+   X @< Z, !, fail.
 ord_subset([X|Y], [_|T]) :-
    ord_subset([X|Y], T).
 ord_subset([], _).

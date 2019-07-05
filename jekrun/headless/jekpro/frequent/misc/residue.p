@@ -47,7 +47,7 @@
 :- use_module(library(misc/residue)).
 
 /***********************************************************/
-/* Constraints Retrieval Hooks                             */
+/* New Constraint Display API                              */
 /***********************************************************/
 
 /**
@@ -72,84 +72,6 @@
 :- multifile sys_unwrap_eq/3.
 :- static sys_unwrap_eq/3.
 
-/***********************************************************/
-/* Constraint Display Algorithm                          */
-/***********************************************************/
-
-/**
- * sys_follow_vars(H, V, W, L, R):
- * Succeeds with the equations R with variables unwrapped related
- * to the variables H and extending the equations L, and the visited
- * variables V extending the visited variables W.
- */
-% sys_follow_vars(+Vars, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_vars/5.
-sys_follow_vars([U|H], V, W, L, R) :-
-   sys_follow_vars(H, V, Z, L, M),
-   sys_follow_vars2(U, Z, W, M, R).
-sys_follow_vars([], V, V, L, L).
-
-% sys_follow_vars2(+Var, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_vars2/5.
-sys_follow_vars2(U, V, V, L, L) :-
-   contains(U, V), !.
-sys_follow_vars2(U, V, W, L, R) :-
-   findall(K, sys_current_eq(U, K), J),
-   sys_unwrap_eqs(J, K, []),
-   sys_follow_eqs(K, [U|V], W, L, R).
-
-/**
- * sys_follow_eqs(H, V, W, L, R):
- * Succeeds with the equations R with variables unwrapped related
- * to the equations H and extending the equations L, and the visited
- * variables V extending the visited variables W.
- */
-% sys_follow_eqs(+Goals, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_eqs/5.
-sys_follow_eqs([G|H], V, W, L, R) :-
-   sys_follow_eqs(H, V, Z, L, M),
-   sys_follow_eqs2(G, Z, W, M, R).
-sys_follow_eqs([], V, V, L, L).
-
-% sys_follow_eqs2(Goal, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_eqs2/5.
-sys_follow_eqs2(G, V, V, L, L) :-
-   contains(G, L), !.
-sys_follow_eqs2(G, V, W, L, R) :-
-   safe_term_variables(G, U),
-   sys_follow_vars(U, V, W, [G|L], R).
-
-/***********************************************************/
-/* Consraint Selection API                                 */
-/***********************************************************/
-
-/**
- * sys_term_eq_list(T, L):
- * The predicate unifies L with the list of constraints that
- * depend directly or indirectly on the variables of T.
- */
-% sys_term_eq_list(+Term, -Goals)
-:- public sys_term_eq_list/2.
-sys_term_eq_list(T, L) :-
-   safe_term_variables(T, H),
-   sys_follow_vars(H, [], _, [], L).
-
-/**
- * call_residue(G, L):
- * The predicate succeeds whenever the goal G succeeds. The predicate
- * unifies L with the list of constraints that depend directly or
- * indirectly on the variables of G.
- */
-:- public call_residue/2.
-:- meta_predicate call_residue(0,?).
-call_residue(G, L) :-
-   call(G),
-   sys_term_eq_list(G, L).
-
-/***********************************************************/
-/* New Constraint Display API                              */
-/***********************************************************/
-
 /**
  * sys_eq_list(L):
  * The predicate unifies L with the list of constraints.
@@ -170,13 +92,13 @@ sys_unwrap_eqs([G|L], I, O) :-
 sys_unwrap_eqs([], L, L).
 
 /**
- * call_residue2(G, L):
+ * call_residue(G, L):
  * The predicate succeeds whenever the goal G succeeds. The predicate
  * unifies L with the list of constraints, both shown and hidden.
  */
-:- public call_residue2/2.
-:- meta_predicate call_residue2(0,?).
-call_residue2(G, L) :-
+:- public call_residue/2.
+:- meta_predicate call_residue(0,?).
+call_residue(G, L) :-
    call(G),
    sys_eq_list(L).
 
