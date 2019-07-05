@@ -41,6 +41,7 @@
 :- module(diagnose, []).
 :- use_module(library(stream/console)).
 :- use_module(library(inspection/frame)).
+:- use_module(library(inspection/provable)).
 :- use_module(runner).
 
 /*************************************************************/
@@ -91,7 +92,7 @@ list_result_predicate_data(Suite) :-
    write('\t'),
    write(Nok),
    write('\t'),
-   write(Fun/Arity), nl, fail.
+   writeq(Fun/Arity), nl, fail.
 list_result_predicate_data(_).
 
 /*************************************************************/
@@ -101,7 +102,8 @@ list_result_predicate_data(_).
 % list_result(+Atom, +Integer, +Atom)
 :- private list_result/3.
 list_result(Fun, Arity, Suite) :-
-   write('Ok\tNok\tCase\tBody'), nl,
+   write('Ok\tNok\tCase'), nl,
+   write('Body'), nl,
    list_result_data(Fun, Arity, Suite),
    result_predicate(Fun, Arity, Suite, Ok-Nok),
    write(Ok),
@@ -117,8 +119,8 @@ list_result_data(Fun, Arity, Suite) :-
    write('\t'),
    write(Nok),
    write('\t'),
-   write(Case),
-   write('\t'),
+   write(Case), nl,
+   write('\t\t'),
    list_test_case_data(Fun, Arity, Suite, Case), nl, fail.
 list_result_data(_, _, _).
 
@@ -126,7 +128,8 @@ list_result_data(_, _, _).
 :- private list_test_case_data/4.
 list_test_case_data(Fun, Arity, Suite, Case) :-
    rule_ref(case(Fun, Arity, Suite, Case), Body, _),
-   write_term(Body, [quoted(true),context(-1)]),
+   callable_property(Body, sys_variable_names(N)),
+   write_term(Body, [quoted(true),context(0),variable_names(N)]),
    write('. '), fail.
 list_test_case_data(_, _, _, _).
 

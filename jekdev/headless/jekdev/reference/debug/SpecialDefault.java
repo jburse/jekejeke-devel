@@ -6,10 +6,7 @@ import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.system.SpecialMode;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Predicate;
-import jekpro.model.inter.StackElement;
+import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Directive;
@@ -321,28 +318,30 @@ public final class SpecialDefault extends AbstractSpecial {
                                  Engine en)
             throws EngineMessage, EngineException {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
-            /* write port and goal */
+            /* write goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            Display d2 = en.visor.query;
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
+            Display d3 = en.visor.query;
+            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d3.vars, d3, en);
             pw.setPrintMap(print);
             pw.unparseStatement(t, d);
             return;
         }
-        Display dc = new Display(2);
+        Display d2 = new Display(2);
+        d2.bind[0].bindUniv(t, d, en);
+
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
         SkelVar var1 = SkelVar.valueOf(0);
         SkelVar var3 = SkelVar.valueOf(1);
-        dc.bind[0].bindUniv(t, d, en);
-        int snap = en.number;
         t = new SkelCompound(new SkelAtom("rebuild_goal"), var1, var3);
         t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.system),
                 new SkelAtom("experiment/simp"), t);
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
+                Directive.MASK_DIRE_LTGC, en);
+        dire.bodyToInterSkel(t, en, true);
+
+        int snap = en.number;
         try {
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(t, dc, en);
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
@@ -371,19 +370,12 @@ public final class SpecialDefault extends AbstractSpecial {
         if (en.fault != null)
             throw en.fault;
 
-        /* decode goal */
-        en.display = dc;
-        en.skel = var3;
-        en.deref();
-        t = en.skel;
-        d = en.display;
-
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        Display d2 = en.visor.query;
-        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d2.vars, d2, en);
+        Display d3 = en.visor.query;
+        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d3.vars, d3, en);
         pw.setPrintMap(print);
-        pw.unparseStatement(t, d);
+        pw.unparseStatement(SkelVar.valueOf(0), d2);
     }
 
     /******************************************************************/

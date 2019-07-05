@@ -145,9 +145,9 @@ public final class ForeignBase {
     /**
      * <p>Determine the provable hash.</p>
      *
-     * @param inter     The interpreter.
+     * @param inter    The interpreter.
      * @param provable The provable indicator.
-     * @param source    The source.
+     * @param source   The source.
      * @return The provable hash.
      * @throws InterpreterMessage Shit happens
      */
@@ -156,8 +156,10 @@ public final class ForeignBase {
             throws InterpreterMessage {
         try {
             Engine engine = (Engine) inter.getEngine();
-            Predicate pick = derefAndCastProvable(AbstractTerm.getSkel(provable),
+            Predicate pick = SpecialPred.indicatorToProvable(AbstractTerm.getSkel(provable),
                     AbstractTerm.getDisplay(provable), engine);
+            if (pick == null)
+                return null;
             AbstractSource src = derefAndCastSource(source, engine);
             Object t = SpecialModel.provableToColonSkel(pick, src);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
@@ -169,9 +171,9 @@ public final class ForeignBase {
     /**
      * <p>Determine the syntax hash.</p>
      *
-     * @param inter     The interpreter.
+     * @param inter  The interpreter.
      * @param syntax The syntax indicator.
-     * @param source    The source.
+     * @param source The source.
      * @return The provable hash.
      * @throws InterpreterMessage Shit happens
      */
@@ -183,10 +185,10 @@ public final class ForeignBase {
             Operator oper = derefAndCastSyntax(AbstractTerm.getSkel(syntax),
                     AbstractTerm.getDisplay(syntax), engine);
             AbstractSource src = derefAndCastSource(source, engine);
-            Object t= SpecialModel.syntaxToColonSkel(oper, src);
+            Object t = SpecialModel.syntaxToColonSkel(oper, src);
             t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
-        }catch (EngineMessage x) {
+        } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
     }
@@ -213,27 +215,11 @@ public final class ForeignBase {
     }
 
     /**
-     * <p>Deref and cast a provable.</p>
-     *
-     * @param m The provable skeleton.
-     * @param d The provable display.
-     * @param en     The engine.
-     * @return The provable.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Predicate derefAndCastProvable(Object m, Display d, Engine en)
-            throws EngineMessage {
-        Predicate pick = SpecialPred.indicatorToProvable(m, d, en);
-        Predicate.checkExistentProvable(pick, m, d);
-        return pick;
-    }
-
-    /**
      * <p>Deref and cast a syntax.</p>
      *
-     * @param m The syntax skeleton.
-     * @param d The syntax display.
-     * @param en     The engine.
+     * @param m  The syntax skeleton.
+     * @param d  The syntax display.
+     * @param en The engine.
      * @return The syntax.
      * @throws EngineMessage Shit happens.
      */

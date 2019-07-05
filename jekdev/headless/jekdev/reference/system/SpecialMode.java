@@ -9,7 +9,6 @@ import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
@@ -244,7 +243,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if there are previous choice points, otherwise false.
      */
     private static boolean isCutChoice(int num, CallFrame u2) {
-        while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0)
+        while ((u2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0)
             u2 = u2.contdisplay;
         if (u2.number >= num)
             return false;
