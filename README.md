@@ -1,6 +1,6 @@
 # What is this?
 
-[![release badge](https://img.shields.io/badge/release-v1.3.7-green.svg)](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.7)
+[![release badge](https://img.shields.io/badge/release-v1.3.8-green.svg)](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.8)
 
 This repository contains Prolog text excerpts from
 the Jekejeke Prolog source. Here and then you might
