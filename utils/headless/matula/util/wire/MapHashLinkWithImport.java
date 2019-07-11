@@ -1,5 +1,6 @@
 package matula.util.wire;
 
+import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -36,14 +37,14 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class MapHashLinkWithImport<K, V> extends MapHashLink<K, V> {
-    private ListArray<MapHashLink<K, V>> imports = new ListArray<MapHashLink<K, V>>();
+    private ListArray<AbstractMap<K, V>> imports = new ListArray<AbstractMap<K, V>>();
 
     /**
      * <p>Add an import.</p>
      *
      * @param map The import.
      */
-    public void addImport(MapHashLink<K, V> map) {
+    public void addImport(AbstractMap<K, V> map) {
         if (map == null)
             throw new NullPointerException("map missing");
         imports.add(map);
@@ -54,8 +55,20 @@ public final class MapHashLinkWithImport<K, V> extends MapHashLink<K, V> {
      *
      * @return The imports.
      */
-    public ListArray<MapHashLink<K, V>> getImports() {
+    public ListArray<AbstractMap<K, V>> getImports() {
         return imports;
+    }
+
+    /**
+     * <p>Retrieve total size.</p>
+     *
+     * @return The total size.
+     */
+    public int totalSize() {
+        int totalsize = size();
+        for (int i = 0; i < imports.size(); i++)
+            totalsize += imports.get(i).totalSize();
+        return totalsize;
     }
 
     /**

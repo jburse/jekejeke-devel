@@ -8,7 +8,10 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Directive;
+import jekpro.model.rope.Intermediate;
+import jekpro.model.rope.LoadOpts;
+import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
@@ -59,7 +62,7 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSession extends AbstractSpecial {
-    private final static int SPECIAL_BREAK = 1;
+    private final static int SPECIAL_SYS_SESSION = 1;
     private final static int SPECIAL_SYS_QUOTED_VAR = 2;
     private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 3;
 
@@ -86,27 +89,17 @@ public final class SpecialSession extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_BREAK:
-                /* increase level */
+            case SPECIAL_SYS_SESSION:
                 en.visor.breaklevel++;
                 try {
                     SpecialSession.sessionTerminal(en);
                 } catch (EngineMessage x) {
-                    /* decrease level */
-                    if (en.visor.breaklevel == 0)
-                        LoadForce.undoNonEmptyStack(en);
                     en.visor.breaklevel--;
                     throw x;
                 } catch (EngineException x) {
-                    /* decrease level */
-                    if (en.visor.breaklevel == 0)
-                        LoadForce.undoNonEmptyStack(en);
                     en.visor.breaklevel--;
                     throw x;
                 }
-                /* decrease level */
-                if (en.visor.breaklevel == 0)
-                    LoadForce.undoNonEmptyStack(en);
                 en.visor.breaklevel--;
                 return true;
             case SPECIAL_SYS_QUOTED_VAR:
@@ -334,7 +327,7 @@ public final class SpecialSession extends AbstractSpecial {
                     if (!found)
                         failFeedback(en);
                     while (found) {
-                        en.skel = new SkelAtom("sys_show_vars");
+                        en.skel = new SkelCompound(new SkelAtom("sys_show_vars"), mark);
                         en.display = Display.DISPLAY_CONST;
                         en.contskel = r;
                         en.contdisplay = u;

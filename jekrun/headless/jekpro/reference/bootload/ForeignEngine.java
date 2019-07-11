@@ -391,4 +391,15 @@ public final class ForeignEngine {
         return (src != null ? new TermAtomic(src.getPathAtom()) : null);
     }
 
+    /**
+     * <p>Retrieve the size of the module stack.</p>
+     *
+     * @param inter The interpreter.
+     * @return The size of the module stack.
+     */
+    public static int sysCountStack(Interpreter inter) {
+        Engine engine = (Engine) inter.getEngine();
+        return engine.visor.countStack();
+    }
+
 }

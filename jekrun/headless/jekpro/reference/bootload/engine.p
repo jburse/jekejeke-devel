@@ -147,6 +147,17 @@ end_module :-
    sys_module_action(D, [action(end_module),sys_link(sys_auto_load)]),
    set_prolog_flag(sys_last_pred, null).
 
+/**
+ * end_all_modules:
+ * The predicates ends all current typein modules.
+ */
+% end_all_modules
+:- public end_all_modules/0.
+end_all_modules :-
+   sys_count_stack(C),
+   >=(C, 2), !, end_module, end_all_modules.
+end_all_modules.
+
 :- private sys_module_action/2.
 :- foreign(sys_module_action/2, 'ForeignEngine',
       sysModuleAction('Interpreter','TermAtomic','Object')).
@@ -154,3 +165,7 @@ end_module :-
 :- private sys_peek_stack/1.
 :- foreign(sys_peek_stack/1, 'ForeignEngine',
       sysPeekStack('Interpreter')).
+
+:- private sys_count_stack/1.
+:- foreign(sys_count_stack/1, 'ForeignEngine',
+      sysCountStack('Interpreter')).

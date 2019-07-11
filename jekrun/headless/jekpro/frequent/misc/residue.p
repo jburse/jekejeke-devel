@@ -1,13 +1,20 @@
 /**
  * By default the top-level shows the current unification equations.
- * An extension can show arbitrary constraints. It can do so by
- * defining further clauses for the multi-file predicates
- * sys_current_eq/2 and sys_unwrap_eq/3.
+ * An extension can show arbi-trary constraints. It can do so by
+ * efining further clauses for the multi-file predicates sys_current_eq/2
+ * and sys_unwrap_eq/3. The constraints for some attributed variables
+ * can then be retrieved by the predicate sys_eq_list/2.
  *
- * The constraints that are related directly or indirectly to a term
- * can be retrieved by the predicate sys_term_eq_list/2. As a further
- * convenience the predicate call_residue/2 allows calling a goal and
- * retrieving the related constraints for each success.
+ * The predicate call_residue_var/2 can be used to determine the attributed
+ * variables that were freshly introduced while executing a goal. As
+ * a convenience, the predicate call_residue/2 will return the constraints
+ * of these variables. The later predicate is useful for writing test
+ * cases for uses of attributed variables.
+ *
+ * Terms that are directly instantiated to a variable can be customized
+ * by the multi-file predicate sys_printable_value/2 and queried by the
+ * predicate printable/2. The former predicate should fail if there is
+ * no custom form and the later predicate will then return the original.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -41,13 +48,14 @@
 :- package(library(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/model/molec)).
 
 :- module(residue, []).
 :- use_module(library(advanced/sets)).
 :- use_module(library(misc/residue)).
 
 /***********************************************************/
-/* New Constraint Display API                              */
+/* Constraint Display API                                  */
 /***********************************************************/
 
 /**
@@ -73,13 +81,14 @@
 :- static sys_unwrap_eq/3.
 
 /**
- * sys_eq_list(L):
- * The predicate unifies L with the list of constraints.
+ * sys_eq_list(K, L):
+ * The predicate unifies L with the list of constraints
+ * for the attributed variables K.
  */
-% sys_eq_list(-Goals)
-:- public sys_eq_list/1.
-sys_eq_list(L) :-
-   findall(E, (  sys_residue_attr(V),
+% sys_eq_list(+List, -Goals)
+:- public sys_eq_list/2.
+sys_eq_list(K, L) :-
+   findall(E, (  sys_member(V, K),
                  sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
@@ -91,16 +100,42 @@ sys_unwrap_eqs([G|L], I, O) :-
    sys_unwrap_eqs(L, H, O).
 sys_unwrap_eqs([], L, L).
 
+/***********************************************************/
+/* Constraint Retrieval API                                */
+/***********************************************************/
+
+/**
+ * call_residue_vars(G, L):
+ * The predicate succeeds whenever the goal G succeeds and unifies L
+ * with the newly introduced attributed variables.
+ */
+:- public call_residue_vars/2.
+:- meta_predicate call_residue_vars(0,?).
+call_residue_vars(G, L) :-
+   sys_current_mark(M),
+   call(G),
+   sys_mark_attrs(M, L).
+
+% sys_current_mark(-Undo)
+:- public sys_current_mark/1.
+:- foreign(sys_current_mark/1, 'ForeignResidue',
+      sysCurrentMark('Interpreter')).
+
+% sys_mark_attrs(+Undo, -List)
+:- public sys_mark_attrs/2.
+:- foreign(sys_mark_attrs/2, 'ForeignResidue',
+      sysMarkAttrs('Interpreter','AbstractUndo')).
+
 /**
  * call_residue(G, L):
- * The predicate succeeds whenever the goal G succeeds. The predicate
- * unifies L with the list of constraints, both shown and hidden.
+ * The predicate succeeds whenever the goal G succeeds and unifies L
+ * with the constraints of the newly introduced attributed variables.
  */
 :- public call_residue/2.
 :- meta_predicate call_residue(0,?).
 call_residue(G, L) :-
-   call(G),
-   sys_eq_list(L).
+   call_residue_vars(G, K),
+   sys_eq_list(K, L).
 
 /***********************************************************/
 /* CAS Display Hook                                        */
@@ -135,10 +170,3 @@ printable(E, E).
 :- public surrogate_new/1.
 :- foreign_constructor(surrogate_new/1, 'Object', new).
 
-/**
- * sys_residue_attr(V):
- * The predicate succeeds in V with the residue attributed variables.
- */
-:- public sys_residue_attr/1.
-:- foreign(sys_residue_attr/1, 'ForeignResidue',
-      sysResidueAttr('CallOut','Interpreter')).

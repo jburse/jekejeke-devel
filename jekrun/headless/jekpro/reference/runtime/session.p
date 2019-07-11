@@ -98,43 +98,50 @@ close :-
  */
 % prolog
 :- public prolog/0.
-prolog :- break.
+prolog :-
+   call_cleanup(sys_session, end_all_modules).
 :- set_predicate_property(prolog/0, sys_notrace).
 
+% break
 :- public break/0.
-:- special(break/0, 'SpecialSession', 1).
-:- set_predicate_property(break/0, sys_notrace).
+break :- sys_session.
+:- set_predicate_property(prolog/0, sys_notrace).
+
+% sys_session
+:- private sys_session/0.
+:- special(sys_session/0, 'SpecialSession', 1).
 
 /***********************************************************/
 /* Display Variable Instantiations & Constraints           */
 /***********************************************************/
 
 /**
- * sys_show_vars:
+ * sys_show_vars(M):
  * Will show all variable instantiations and constraints related to
  * the current query or directive. Called by the interpreter for
  * each successful query.
  */
-% sys_show_vars
-:- public sys_show_vars/0.
-sys_show_vars :-
-   sys_get_variable_names(M),
-   sys_get_name_or_eq_list(R, M),
-   sys_show_name_or_eq_list(R, M).
-:- set_predicate_property(sys_show_vars/0, sys_notrace).
+% sys_show_vars(+Mark)
+:- public sys_show_vars/1.
+sys_show_vars(M) :-
+   sys_get_variable_names(N),
+   sys_get_name_or_eq_list(M, R, N),
+   sys_show_name_or_eq_list(R, N).
+:- set_predicate_property(sys_show_vars/1, sys_notrace).
 
 /**
- * sys_get_name_or_eq_list(R, M):
+ * sys_get_name_or_eq_list(M, R, N):
  * Will retrieve all variable instantiations and constraints related
  * to the current query or directive. Called by the interpreter for
- * notebook queries, where M are the variable names.
+ * notebook queries, where N are the variable names.
  */
-% sys_get_name_or_eq_list(-List, +List)
-:- public sys_get_name_or_eq_list/2.
-sys_get_name_or_eq_list(R, M) :-
-   sys_get_raw_variables(N),
-   sys_eq_list(L),
-   sys_filter_variable_names(N, M, L, R).
+% sys_get_name_or_eq_list(+Mark, -List, +List)
+:- private sys_get_name_or_eq_list/3.
+sys_get_name_or_eq_list(M, R, N) :-
+   sys_get_raw_variables(H),
+   sys_mark_attrs(M, K),
+   sys_eq_list(K, L),
+   sys_filter_variable_names(H, N, L, R).
 
 /**
  * sys_filter_variable_names(L, M, R, S):
