@@ -8,6 +8,7 @@ import jekpro.model.inter.LocalBlocking;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
@@ -75,6 +76,7 @@ public class Store extends AbstractRecognizer {
     public ListArray<LocalBlocking> privates;
     public String name;
     public Object belongsto;
+    public int flags;
 
     /* For autonumbering anonymous stores. */
     private static int storeInitNumber;
@@ -619,6 +621,21 @@ public class Store extends AbstractRecognizer {
     public void loadText(Properties prop, Reader reader,
                          Object param) {
         throw new IllegalArgumentException("not supported");
+    }
+
+    /***************************************************************/
+    /* Prompt Handling                                             */
+    /***************************************************************/
+
+    /**
+     * <p>Set the debug mode.</p>
+     *
+     * @param m The mode.
+     */
+    public void setPrompt(int m) {
+        synchronized (this) {
+            flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
+        }
     }
 
 }

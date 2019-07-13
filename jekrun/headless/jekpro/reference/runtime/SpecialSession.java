@@ -2,6 +2,7 @@ package jekpro.reference.runtime;
 
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.stream.ForeignConsole;
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
@@ -66,6 +67,12 @@ public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_SYS_QUOTED_VAR = 2;
     private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 3;
 
+    public final static int MASK_MODE_PRMT = 0x0000F000;
+
+    public final static int MASK_PRMT_PROF = 0x00000000;
+    public final static int MASK_PRMT_PCUT = 0x00001000;
+    public final static int MASK_PRMT_PRON = 0x00002000;
+
     /**
      * <p>Create a session special.</p>
      *
@@ -119,111 +126,6 @@ public final class SpecialSession extends AbstractSpecial {
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
-        }
-    }
-
-    /**
-     * <p>Ask the end-user for the session action.</p>
-     *
-     * @param en The engine.
-     * @return The debugger action.
-     * @throws EngineMessage Shit happens.
-     */
-    private static String askSessionAction(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            wr.write(" ");
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-        obj = en.visor.curinput;
-        PrologReader.checkTextRead(obj);
-        Reader lr = (Reader) obj;
-        try {
-            return ForeignConsole.readLine(lr);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOProblem(x);
-        }
-    }
-
-    /**
-     * <p>Feedback for deterministic success.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void detFeedback(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>Feedback for failure.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void failFeedback(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            Locale locale = en.store.foyer.locale;
-            Properties resources = LangProperties.getLang(
-                    SpecialSession.class, "runtime", locale);
-            wr.write(resources.getProperty("query.no"));
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>CallFrame the help text.</p>
-     *
-     * @param lr The reader.
-     * @param en The engine trace.
-     * @throws EngineException Shit happens.
-     */
-    private static void helpText(Reader lr,
-                                 Engine en)
-            throws EngineException {
-        try {
-            Object obj = en.visor.curoutput;
-            LoadOpts.checkTextWrite(obj);
-            Writer wr = (Writer) obj;
-            try {
-                Locale locale = en.store.foyer.locale;
-                Properties resources = LangProperties.getLang(
-                        SpecialSession.class, "runtime", locale);
-                wr.write(resources.getProperty("query.continue"));
-                wr.write('\n');
-                wr.write('\n');
-                wr.flush();
-            } catch (IOException x) {
-                throw EngineMessage.mapIOException(x);
-            }
-        } catch (EngineMessage x) {
-            PositionKey pos = PositionKey.createPos(lr);
-            EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(
-                            EngineException.fetchStack(en), pos, en));
-            en.display = null;
-            throw y;
         }
     }
 
@@ -327,36 +229,15 @@ public final class SpecialSession extends AbstractSpecial {
                     if (!found)
                         failFeedback(en);
                     while (found) {
-                        en.skel = new SkelCompound(new SkelAtom("sys_show_vars"), mark);
-                        en.display = Display.DISPLAY_CONST;
-                        en.contskel = r;
-                        en.contdisplay = u;
-                        en.invokeChecked();
                         if (en.number != snap) {
-                            String action = askSessionAction(en);
-                            if (action == null) {
-                                throw new EngineMessage(EngineMessage.systemError(
-                                        EngineMessage.OP_SYSTEM_USER_EXIT));
-                            } else if (";".equals(action)) {
+                            found = sysAnswerPrompt(mark, r, u, en);
+                            if (found) {
                                 found = en.runLoop2(snap, false);
                                 if (!found)
                                     failFeedback(en);
-                            } else if ("?".equals(action)) {
-                                helpText(lr, en);
-                            } else {
-                                try {
-                                    if (parseAction(action, en)) {
-                                        en.contskel = r;
-                                        en.contdisplay = u;
-                                        en.invokeChecked();
-                                    } else {
-                                        found = false;
-                                    }
-                                } catch (EngineException x) {
-                                    systemSessionBreak(x, en);
-                                }
                             }
                         } else {
+                            answerMark(mark, r, u, en);
                             detFeedback(en);
                             found = false;
                         }
@@ -402,6 +283,174 @@ public final class SpecialSession extends AbstractSpecial {
             }
         }
     }
+
+    /**
+     * <p>Display answer and prompt.</p>
+     *
+     * @param mark The mark.
+     * @param r    The continuation skel.
+     * @param u    The continuation display.
+     * @param en   The engine.
+     * @return True for more answers, otherwise false.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    private static boolean sysAnswerPrompt(AbstractUndo mark,
+                                           Intermediate r, CallFrame u, Engine en)
+            throws EngineException, EngineMessage {
+        en.store.setPrompt(SpecialSession.MASK_PRMT_PROF);
+        do {
+            answerMark(mark, r, u, en);
+            String action = askSessionAction(en);
+            if (action == null) {
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_USER_EXIT));
+            } else if ("?".equals(action)) {
+                helpText(en);
+            } else if (";".equals(action)) {
+                en.store.setPrompt(SpecialSession.MASK_PRMT_PRON);
+            } else {
+                try {
+                    if (parseAction(action, en)) {
+                        en.contskel = r;
+                        en.contdisplay = u;
+                        en.invokeChecked();
+                    } else {
+                        en.store.setPrompt(SpecialSession.MASK_PRMT_PCUT);
+                    }
+                } catch (EngineException x) {
+                    systemSessionBreak(x, en);
+                }
+            }
+        } while ((en.store.flags &
+                SpecialSession.MASK_MODE_PRMT) == SpecialSession.MASK_PRMT_PROF);
+        boolean res = (en.store.flags &
+                SpecialSession.MASK_MODE_PRMT) == SpecialSession.MASK_PRMT_PRON;
+        en.store.setPrompt(SpecialSession.MASK_PRMT_PROF);
+        return res;
+    }
+
+    /****************************************************************/
+    /* Display Current Answer                                       */
+    /****************************************************************/
+
+    /**
+     * <p>Display answer</p>
+     *
+     * @param mark The mark.
+     * @param r    The continuation skel.
+     * @param u    The continuation display.
+     * @param en   The engine.
+     * @throws EngineException Shit happens.
+     */
+    private static void answerMark(AbstractUndo mark,
+                                   Intermediate r, CallFrame u, Engine en)
+            throws EngineException {
+        en.skel = new SkelCompound(new SkelAtom("sys_show_vars"), mark);
+        en.display = Display.DISPLAY_CONST;
+        en.contskel = r;
+        en.contdisplay = u;
+        en.invokeChecked();
+    }
+
+    /**
+     * <p>Feedback for deterministic success.</p>
+     *
+     * @param en The engine trace.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void detFeedback(Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        try {
+            wr.write('\n');
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>CallFrame the help text.</p>
+     *
+     * @param en The engine trace.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void helpText(Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        try {
+            Locale locale = en.store.foyer.locale;
+            Properties resources = LangProperties.getLang(
+                    SpecialSession.class, "runtime", locale);
+            wr.write(resources.getProperty("query.continue"));
+            wr.write('\n');
+            wr.write('\n');
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
+     * <p>Feedback for failure.</p>
+     *
+     * @param en The engine trace.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void failFeedback(Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        try {
+            Locale locale = en.store.foyer.locale;
+            Properties resources = LangProperties.getLang(
+                    SpecialSession.class, "runtime", locale);
+            wr.write(resources.getProperty("query.no"));
+            wr.write('\n');
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /******************************************************************/
+    /* Ask End-User                                                   */
+    /******************************************************************/
+
+    /**
+     * <p>Ask the end-user for the session action.</p>
+     *
+     * @param en The engine.
+     * @return The debugger action.
+     * @throws EngineMessage Shit happens.
+     */
+    private static String askSessionAction(Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+
+        obj = en.visor.curinput;
+        PrologReader.checkTextRead(obj);
+        Reader lr = (Reader) obj;
+        try {
+            wr.write(" ");
+            wr.flush();
+            return ForeignConsole.readLine(lr);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOProblem(x);
+        }
+    }
+
+    /****************************************************************/
+    /* Goal Expansion                                               */
+    /****************************************************************/
 
     /**
      * <p>Expand and wrap the given term.</p>
@@ -501,7 +550,7 @@ public final class SpecialSession extends AbstractSpecial {
         ec.vars = null;
         ec.flags = 0;
         pre.molec = ec.copyRest(t, d);
-        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(assoc, d, en);
+        MapHashLink<Object, String> print = SpecialVars.hashToMap(assoc, d, en);
         pre.vars = FileText.copyVars(ec.vars, print);
         ec.vars = null;
         return pre;

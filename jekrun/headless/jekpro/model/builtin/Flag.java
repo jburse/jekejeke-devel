@@ -153,18 +153,14 @@ public final class Flag extends AbstractFlag<Engine> {
                 return Integer.valueOf(en.visor.breaklevel);
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
-                if (sk == null) {
-                    return AbstractFlag.OP_NULL;
-                } else {
-                    return StoreKey.storeKeyToSkel(sk);
-                }
+                return (sk != null ? StoreKey.storeKeyToSkel(sk) : AbstractFlag.OP_NULL);
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.foyer.getError());
             case FLAG_SINGLE_QUOTES:
                 return ReadOpts.utilToAtom(en.visor.peekStack().utilsingle);
             case FLAG_SYS_VARIABLES:
                 AbstractMap<BindUniv, Integer> map = en.visor.varmap;
-                return Integer.valueOf((map != null ? map.size() : 0));
+                return Integer.valueOf(map.totalSize());
             case FLAG_SYS_CHOICES:
                 return Integer.valueOf(en.number);
             case FLAG_SYS_RANDOM:

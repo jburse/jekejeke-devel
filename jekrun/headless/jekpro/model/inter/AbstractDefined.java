@@ -485,7 +485,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[1], ref, en);
+            MapHashLink<Object, String> printmap =
+                    SpecialRef.decodeAssertOptions(temp[1], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;

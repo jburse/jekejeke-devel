@@ -174,8 +174,8 @@ public class BindUniv extends AbstractUndo {
      * @return The serial number.
      */
     public final int getValue(Engine en) {
-        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
-        Integer val = (m != null ? m.get(this) : null);
+        AbstractMap<BindUniv, Integer> map = en.visor.varmap;
+        Integer val = map.get(this);
         if (val == null)
             val = UndoSerno.bindSerno(this, en);
         return val.intValue();

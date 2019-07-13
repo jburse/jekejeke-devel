@@ -227,7 +227,8 @@ public final class SpecialRef extends AbstractSpecial {
         Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[2], ref, en);
+            MapHashLink<Object, String> printmap =
+                    SpecialRef.decodeAssertOptions(temp[2], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;
@@ -411,10 +412,10 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, Display d,
+    public static MapHashLink<Object, String> decodeAssertOptions(Object t, Display d,
                                                                          Engine en)
             throws EngineMessage {
-        MapHashLink<Object, NamedDistance> vars = null;
+        MapHashLink<Object, String> vars = null;
         en.skel = t;
         en.display = d;
         en.deref();

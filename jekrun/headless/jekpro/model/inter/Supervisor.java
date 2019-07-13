@@ -15,6 +15,8 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
+import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.LivestockEvent;
 import matula.util.wire.LivestockEventClose;
@@ -67,7 +69,7 @@ public class Supervisor extends AbstractLivestock {
     public LoadOpts cond;
     public Object proxy;
     public Engine inuse;
-    public AbstractMap<BindUniv, Integer> varmap;
+    public AbstractMap<BindUniv, Integer> varmap = new MapHash<BindUniv, Integer>();
     private SupervisorCopy copy;
     protected SupervisorCall call;
 
@@ -218,6 +220,17 @@ public class Supervisor extends AbstractLivestock {
         if (modstack == null)
             return null;
         return modstack.get(modstack.size() - 1);
+    }
+
+    /**
+     * <p>Retrieve the size of the stack.</p>
+     *
+     * @return The size.
+     */
+    public int countStack() {
+        if (modstack==null)
+            return 0;
+        return modstack.size();
     }
 
     /****************************************************************/

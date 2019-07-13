@@ -823,7 +823,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Display ref = AbstractSkel.createDisplay(t);
             EngineVars ev = new EngineVars();
             ev.singsOf(t, ref);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, ref, en);
+            MapHashLink<Object, String> print = SpecialVars.hashToMap(vars, ref, en);
             print = SpecialVars.numberVars(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
@@ -878,7 +878,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 throw en.fault;
             EngineVars ev = new EngineVars();
             ev.singsOf(res, d2);
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(vars, d2, en);
+            MapHashLink<Object, String> print = SpecialVars.hashToMap(vars, d2, en);
             print = SpecialVars.numberVars(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);

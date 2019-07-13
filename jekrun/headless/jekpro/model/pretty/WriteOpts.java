@@ -89,7 +89,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<Object, NamedDistance> printmap;
+    public MapHashLink<Object, String> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -483,11 +483,11 @@ public final class WriteOpts {
         if (printmap == null)
             return;
         PrologWriter pw = new PrologWriter();
-        for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<Object, String> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
-            if (pw.variableNeedsQuotes(entry.value.getName()))
+            if (pw.variableNeedsQuotes(entry.value))
                 throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value.getName())));
+                        EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value)));
         }
     }
 
