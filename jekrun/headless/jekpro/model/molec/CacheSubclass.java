@@ -112,8 +112,8 @@ public final class CacheSubclass extends AbstractCache {
         MapEntry<AbstractSource, Integer>[] deps2;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             String s = base.getFullName();
             if (Branch.OP_USER.equals(s))
@@ -155,8 +155,8 @@ public final class CacheSubclass extends AbstractCache {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (Branch.OP_USER.equals(s))

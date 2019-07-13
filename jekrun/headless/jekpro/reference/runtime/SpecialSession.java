@@ -582,25 +582,11 @@ public final class SpecialSession extends AbstractSpecial {
                                             Engine en)
             throws EngineMessage, EngineException {
         EngineMessage m;
-        Object t;
         boolean res;
         if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
-                (t = m.messageType(EngineMessage.OP_SYSTEM_ERROR)) != null) {
-            if (t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_MEMORY_THRESHOLD)) {
-                ex.printStackTrace(en);
-                res = false;
-            } else if (t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT)) {
-                ex.printStackTrace(en);
-                res = false;
-            } else if (t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_TIMELIMIT_EXCEEDED)) {
-                ex.printStackTrace(en);
-                res = false;
-            } else {
-                res = SpecialLoad.systemConsultBreak(ex, en, false);
-            }
+                (m.messageType(EngineMessage.OP_LIMIT_ERROR)) != null) {
+            ex.printStackTrace(en);
+            res = false;
         } else {
             res = SpecialLoad.systemConsultBreak(ex, en, false);
         }

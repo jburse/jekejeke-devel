@@ -67,7 +67,7 @@
 % abort
 :- public abort/0.
 abort :-
-   throw(error(system_error(user_abort),_)).
+   throw(error(limit_error(user_abort),_)).
 :- set_predicate_property(abort/0, sys_notrace).
 
 /**

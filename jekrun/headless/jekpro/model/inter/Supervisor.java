@@ -155,7 +155,7 @@ public class Supervisor extends AbstractLivestock {
             AbstractTerm userClose = InterpreterMessage.systemError(EngineMessage.OP_SYSTEM_USER_CLOSE);
             ForeignThread.sysThreadAbort(t, userClose);
         } else if (e instanceof LivestockEventMemory) {
-            AbstractTerm memoryThreshold = InterpreterMessage.systemError(EngineMessage.OP_SYSTEM_MEMORY_THRESHOLD);
+            AbstractTerm memoryThreshold = InterpreterMessage.limitError(EngineMessage.OP_LIMIT_MEMORY_THRESHOLD);
             ForeignThread.sysThreadAbort(t, memoryThreshold);
         }
     }

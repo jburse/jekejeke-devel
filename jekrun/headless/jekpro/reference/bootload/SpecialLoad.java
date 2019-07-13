@@ -755,13 +755,7 @@ public final class SpecialLoad extends AbstractSpecial {
         boolean res;
         if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
                 (t = m.messageType(EngineMessage.OP_SYSTEM_ERROR)) != null) {
-            if (t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_USER_ABORT)) {
-                EngineException rest = ex.causeChainRest();
-                if (rest != null)
-                    rest.printStackTrace(en);
-                res = false;
-            } else if (!rec && t instanceof SkelAtom &&
+            if (!rec && t instanceof SkelAtom &&
                     ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_USER_EXIT)) {
                 EngineException rest = ex.causeChainRest();
                 if (rest != null)

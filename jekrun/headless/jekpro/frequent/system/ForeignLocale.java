@@ -200,36 +200,6 @@ public final class ForeignLocale {
     }
 
     /****************************************************************/
-    /* Exception Utilities                                          */
-    /****************************************************************/
-
-    /**
-     * <p>Format a term from properties.</p>
-     *
-     * @param inter  The interpreter.
-     * @param locstr The locale.
-     * @param obj    The properties.
-     * @param term   The message term.
-     * @return The formatted term.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public static String sysErrorMake(Interpreter inter, String locstr,
-                                      Properties obj, Object term)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            Locale locale = LangProperties.stringToLocale(locstr);
-            Engine en = (Engine) inter.getEngine();
-            return EngineException.errorMake(AbstractTerm.getSkel(term),
-                    AbstractTerm.getDisplay(term), locale, obj, en);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-    }
-
-    /****************************************************************/
     /* Known Properties                                             */
     /****************************************************************/
 

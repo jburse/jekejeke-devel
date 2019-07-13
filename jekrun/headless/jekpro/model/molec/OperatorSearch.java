@@ -95,8 +95,8 @@ public final class OperatorSearch {
         String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             /* find name%oper */
             s = base.getFullName();
@@ -148,8 +148,8 @@ public final class OperatorSearch {
         }
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             String s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
@@ -191,8 +191,8 @@ public final class OperatorSearch {
         String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             s = base.getFullName();
             deps2 = base.snapshotDeps();
@@ -272,8 +272,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
@@ -321,8 +321,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
@@ -369,8 +369,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
