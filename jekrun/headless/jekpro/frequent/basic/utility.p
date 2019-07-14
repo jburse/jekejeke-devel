@@ -77,7 +77,7 @@ apropos(_).
 % sys_apropos_keys
 :- private sys_apropos_keys/0.
 sys_apropos_keys :-
-   sys_get_lang(info, P),
+   get_properties(info, P),
    sys_apropos_key(K),
    message_make(P, apropos_key(K), M),
    write(M), fail.
@@ -86,7 +86,7 @@ sys_apropos_keys :- nl.
 % sys_apropos_values(+Row)
 :- private sys_apropos_values/1.
 sys_apropos_values(A) :-
-   sys_get_lang(info, P),
+   get_properties(info, P),
    sys_apropos_key(K),
    sys_apropos_value(A, K, V),
    message_make(P, apropos_value(K,V), M),

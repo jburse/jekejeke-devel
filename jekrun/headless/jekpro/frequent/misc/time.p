@@ -137,7 +137,7 @@ time_out(G, T) :-
 time_out_loop :-
    time_out_queue(A), repeat,
    alarm_next(A, I),
-   thread_abort(I, system_error(timelimit_exceeded)), fail.
+   thread_abort(I, limit_error(timelimit_exceeded)), fail.
 
 :- thread_new(time_out_loop, I),
    thread_start(I).

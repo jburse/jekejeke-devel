@@ -67,7 +67,7 @@
 % abort
 :- public abort/0.
 abort :-
-   throw(error(limit_error(user_abort),_)).
+   throw(error(system_error(user_abort),_)).
 :- set_predicate_property(abort/0, sys_notrace).
 
 /**
@@ -171,7 +171,7 @@ sys_filter_variable_names([], _, L, L).
 % sys_show_name_or_eq_list(+List, +List)
 :- public sys_show_name_or_eq_list/2.
 sys_show_name_or_eq_list([], _) :-
-   sys_get_lang(runtime, P),
+   get_properties(runtime, P),
    get_property(P, 'query.yes', V),
    write(V).
 sys_show_name_or_eq_list([X,Y|Z], M) :- !,
@@ -188,7 +188,7 @@ sys_show_name_or_eq_list([X], M) :-
 % sys_show_no
 :- public sys_show_no/0.
 sys_show_no :-
-   sys_get_lang(runtime, P),
+   get_properties(runtime, P),
    get_property(P, 'query.no', V),
    write(V).
 

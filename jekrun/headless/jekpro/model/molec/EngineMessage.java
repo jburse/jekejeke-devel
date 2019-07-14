@@ -184,12 +184,12 @@ public final class EngineMessage extends Exception {
     public static final String OP_PERMISSION_MULTIFILE = "multifile";
 
     public static final String OP_SYSTEM_ERROR = "system_error"; /* ISO */
+    public static final String OP_SYSTEM_USER_ABORT = "user_abort";
     public static final String OP_SYSTEM_USER_EXIT = "user_exit";
     public static final String OP_SYSTEM_USER_CLOSE = "user_close";
     public static final String OP_SYSTEM_READ_PROBLEM = "read_problem";
 
     public static final String OP_LIMIT_ERROR = "limit_error";
-    public static final String OP_LIMIT_USER_ABORT = "user_abort";
     public static final String OP_LIMIT_MEMORY_THRESHOLD = "memory_threshold";
     public static final String OP_LIMIT_DEADLOCK_TIMEOUT = "deadlock_timeout";
     public static final String OP_LIMIT_TIMELIMIT_EXCEEDED = "timelimit_exceeded";

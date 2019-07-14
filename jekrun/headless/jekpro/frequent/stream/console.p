@@ -5,11 +5,10 @@
  * read_line_max/[2,3]. The former does an unbounded read
  * the later does a bounded read.
  *
- * The second part consist Quintus Prolog inspired formatted
- * output predicates. Among the formatted output there are
- * currently the predicates format/[2,3], print_message/[1,2]
- * print_error/[1,2] and print_stack_trace/[1,2]. The formatting
- * is based on the Java Formatter class.
+ * Since the line read predicates work with a text stream and
+ * does not fully consume a line, so that it can cater for different
+ * line formats with CR LF, LF or CR termination, we introduced further
+ * predicates read_punch/[1,2] and read_punch_max/[2,3].
  *
  * Example:
  * ?- format('res=%20d',[123123123]), nl.
@@ -19,10 +18,15 @@
  * res=           123123123.1230
  * Yes
  *
- * Since the line read predicates work with a text stream and does
- * not fully consume a line, so that it can cater for different line
- * formats with CR LF, LF or CR termination, we introduced further
- * predicates read_punch/[1,2] and read_punch_max/[2,3].
+ * The second part consist Quintus Prolog inspired formatted output
+ * predicates. Among the for-matted output there are currently the
+ * predicates format/[2,3] with the difference that it currently
+ * only supports the Java formatting format.
+ *
+ * Finally the predicates error_make/[2,3] can be used to retrieve
+ * the message of a Prolog excep-tion term. Further the predicates
+ * print_stack_trace/[2,3] allows sending the message and the context
+ * of a Prolog exception term to a stream.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -201,83 +205,55 @@ format(AliasOrStream, Format, Arguments) :-
    write(AliasOrStream, Atom).
 
 /**
- * print_message(M):
- * print_message(T, M):
- * The predicate formats the message term M according to the
- * error properties of the knowledge base and the current locale,
- * and writes it to the current output. The binary predicate
- * allows specifying a text stream T.
- */
-% print_message(+Term)
-:- public print_message/1.
-print_message(Message) :-
-   get_error_properties(Props),
-   message_make(Props, Message, Atom),
-   write(Atom).
-
-% print_message(+AliasOrStream, +Term)
-:- public print_message/2.
-print_message(AliasOrStream, Message) :-
-   get_error_properties(Props),
-   message_make(Props, Message, Atom),
-   write(AliasOrStream, Atom).
-
-/**
- * print_error(E):
- * print_error(T, E):
+ * error_make(E, S):
+ * error_make(L, E, S):
  * The predicate formats the error term E without its context
- * according to the error properties of the knowledge base and
- * the current locale, and writes it to the current error. The
- * binary predicate allows specifying a text stream T.
+ * unifies the result with S. The quaternary predicate allows
+ * specifying a locale L.
  */
-% print_error(+Term)
-:- public print_error/1.
-print_error(Error) :-
-   current_prolog_flag(sys_cur_error, Stream),
-   get_error_properties(Props),
-   error_make(Props, Error, Atom),
-   write(Stream, Atom),
-   nl(Stream).
+% error_make(+Term, -Atom)
+:- public error_make/2.
+error_make(Term, Atom) :-
+   current_prolog_flag(sys_locale, Locale),
+   error_make(Locale, Term, Atom).
 
-% print_error(+AliasOrStream, +Term)
-:- public print_error/2.
-print_error(AliasOrStream, Error) :-
-   get_error_properties(Props),
-   error_make(Props, Error, Atom),
-   write(AliasOrStream, Atom),
-   nl(AliasOrStream).
+% error_make(+Atom, +Term, -Atom)
+:- public error_make/3.
+error_make(Locale, Term, Atom) :-
+   get_error_properties(Locale, Props),
+   sys_error_make(Term, Locale, Props, Atom).
+
+% sys_error_make(+Term, +Atom, +Props, -Atom)
+:- private sys_error_make/4.
+:- foreign(sys_error_make/4, 'ForeignConsole',
+      sysErrorMake('Interpreter','Object','String','Properties')).
 
 /**
- * print_stack_trace(E):
  * print_stack_trace(T, E):
- * The predicate formats the error term E with its context according
- * to the error properties of the knowledge base and the current
- * locale, and writes it to the current error. The binary predicate
- * allows specifying a text stream T.
+ * print_stack_trace(L, T, E):
+ * The predicate formats the error term E with the context to
+ * the output stream T. The quaternary predicate allows
+ * specifying a locale L.
  */
-% print_stack_trace(+Term)
-:- public print_stack_trace/1.
-print_stack_trace(Error) :-
-   current_prolog_flag(sys_cur_error, Stream),
-   current_prolog_flag(sys_locale, Locale),
-   get_error_properties(Props),
-   sys_print_stack_trace(Stream, Error, Locale, Props).
-
 % print_stack_trace(+AliasOrStream, +Term)
 :- public print_stack_trace/2.
 print_stack_trace(Alias, Error) :-
+   current_prolog_flag(sys_locale, Locale),
+   print_stack_trace(Locale, Alias, Error).
+
+% print_stack_trace(+Atom, +AliasOrStream, +Term)
+:- public print_stack_trace/3.
+print_stack_trace(Locale, Alias, Error) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   current_prolog_flag(sys_locale, Locale),
-   get_error_properties(Props),
+   get_error_properties(Locale, Props),
    sys_print_stack_trace(Stream, Error, Locale, Props).
-print_stack_trace(Stream, Error) :-
-   current_prolog_flag(sys_locale, Locale),
-   get_error_properties(Props),
+print_stack_trace(Locale, Stream, Error) :-
+   get_error_properties(Locale, Props),
    sys_print_stack_trace(Stream, Error, Locale, Props).
 
+% sys_print_stack_trace(+Writer, +Term, +Atom, +Props)
 :- private sys_print_stack_trace/4.
 :- foreign(sys_print_stack_trace/4, 'ForeignConsole',
       sysPrintStackTrace('Interpreter','Writer','Object',
          'String','Properties')).
-
