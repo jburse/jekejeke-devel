@@ -5,9 +5,7 @@ import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
 
 /**
  * The value object for the module stats.
@@ -43,7 +41,7 @@ public final class TimeRecord {
     private final static String[] OP_STATISTICS = {
             ForeignStatistics.OP_STATISTIC_UPTIME,
             ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_BOTH,
+            ForeignStatistics.OP_STATISTIC_TIME,
             ForeignStatistics.OP_STATISTIC_WALL};
 
     /**
@@ -59,7 +57,7 @@ public final class TimeRecord {
         gctime = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_GCTIME);
         both = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_BOTH);
+                ForeignStatistics.OP_STATISTIC_TIME);
     }
 
     /**
@@ -75,7 +73,7 @@ public final class TimeRecord {
         gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
         both = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_BOTH), both);
+                ForeignStatistics.OP_STATISTIC_TIME), both);
     }
 
     /**
@@ -128,7 +126,7 @@ public final class TimeRecord {
             return uptime;
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_BOTH.equals(name)) {
+        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
             return both;
         } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
             return ForeignStatistics.sysGetStat(inter,

@@ -42,10 +42,10 @@ public final class ForeignStatistics {
     private final static String OP_STATISTIC_FREE = "free";
     final static String OP_STATISTIC_UPTIME = "uptime";
     final static String OP_STATISTIC_GCTIME = "gctime";
-    final static String OP_STATISTIC_TIME = "time";
     final static String OP_STATISTIC_WALL = "wall";
-    final static String OP_STATISTIC_MANAGE = "manage";
-    final static String OP_STATISTIC_BOTH = "both";
+    final static String OP_STATISTIC_TIME = "time";
+    final static String OP_STATISTIC_TIME_SELF = "time_self";
+    final static String OP_STATISTIC_TIME_MANAGED = "time_managed";
 
     private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
 
@@ -55,7 +55,7 @@ public final class ForeignStatistics {
             OP_STATISTIC_FREE,
             OP_STATISTIC_UPTIME,
             OP_STATISTIC_GCTIME,
-            OP_STATISTIC_BOTH,
+            OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
 
     private final static String[] OP_STATISTICS_WEB = {
@@ -152,7 +152,7 @@ public final class ForeignStatistics {
                         return null;
                     }
             }
-        } else if (OP_STATISTIC_TIME.equals(name)) {
+        } else if (OP_STATISTIC_TIME_SELF.equals(name)) {
             int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
             switch (hint) {
                 case Foyer.HINT_WEB:
@@ -168,12 +168,12 @@ public final class ForeignStatistics {
             }
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
-        } else if (OP_STATISTIC_MANAGE.equals(name)) {
+        } else if (OP_STATISTIC_TIME_MANAGED.equals(name)) {
             Supervisor s = (Supervisor) inter.getController().getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
-        } else if (OP_STATISTIC_BOTH.equals(name)) {
-            return add((Number) sysGetStat(inter, OP_STATISTIC_TIME),
-                    (Number) sysGetStat(inter, OP_STATISTIC_MANAGE));
+        } else if (OP_STATISTIC_TIME.equals(name)) {
+            return add((Number) sysGetStat(inter, OP_STATISTIC_TIME_SELF),
+                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_MANAGED));
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
