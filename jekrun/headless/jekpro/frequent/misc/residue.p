@@ -2,8 +2,7 @@
  * By default the top-level shows the current unification equations.
  * An extension can show arbi-trary constraints. It can do so by
  * efining further clauses for the multi-file predicates sys_current_eq/2
- * and sys_unwrap_eq/3. The constraints for some attributed variables
- * can then be retrieved by the predicate sys_eq_list/2.
+ * and sys_unwrap_eq/3.
  *
  * The predicate call_residue_var/2 can be used to determine the attributed
  * variables that were freshly introduced while executing a goal. As
@@ -54,10 +53,6 @@
 :- use_module(library(advanced/sets)).
 :- use_module(library(misc/residue)).
 
-/***********************************************************/
-/* Constraint Display API                                  */
-/***********************************************************/
-
 /**
  * sys_current_eq(V, H):
  * The predicate succeeds for each equation H with variables
@@ -79,26 +74,6 @@
 :- public sys_unwrap_eq/3.
 :- multifile sys_unwrap_eq/3.
 :- static sys_unwrap_eq/3.
-
-/**
- * sys_eq_list(K, L):
- * The predicate unifies L with the list of constraints
- * for the attributed variables K.
- */
-% sys_eq_list(+List, -Goals)
-:- public sys_eq_list/2.
-sys_eq_list(K, L) :-
-   findall(E, (  sys_member(V, K),
-                 sys_current_eq(V, E)), H),
-   sys_distinct(H, J),
-   sys_unwrap_eqs(J, L, []).
-
-% sys_unwrap_eqs(+Goals, -Goals, +Goals)
-:- private sys_unwrap_eqs/3.
-sys_unwrap_eqs([G|L], I, O) :-
-   sys_unwrap_eq(G, I, H),
-   sys_unwrap_eqs(L, H, O).
-sys_unwrap_eqs([], L, L).
 
 /***********************************************************/
 /* Constraint Retrieval API                                */
@@ -136,6 +111,26 @@ call_residue_vars(G, L) :-
 call_residue(G, L) :-
    call_residue_vars(G, K),
    sys_eq_list(K, L).
+
+/**
+ * sys_eq_list(K, L):
+ * The predicate unifies L with the list of constraints
+ * for the attributed variables K.
+ */
+% sys_eq_list(+List, -Goals)
+:- private sys_eq_list/2.
+sys_eq_list(K, L) :-
+   findall(E, (  sys_member(V, K),
+                 sys_current_eq(V, E)), H),
+   sys_distinct(H, J),
+   sys_unwrap_eqs(J, L, []).
+
+% sys_unwrap_eqs(+Goals, -Goals, +Goals)
+:- private sys_unwrap_eqs/3.
+sys_unwrap_eqs([G|L], I, O) :-
+   sys_unwrap_eq(G, I, H),
+   sys_unwrap_eqs(L, H, O).
+sys_unwrap_eqs([], L, L).
 
 /***********************************************************/
 /* CAS Display Hook                                        */

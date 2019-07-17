@@ -6,7 +6,11 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.Lobby;
+import matula.util.wire.ManagedGroup;
+import matula.util.wire.ManagedThread;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing
@@ -76,7 +80,7 @@ import jekpro.tools.term.AbstractTerm;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class CallIn {
+public final class CallIn implements Runnable {
     private AbstractUndo mark;
     private int snap;
     private int state;
@@ -519,6 +523,99 @@ public final class CallIn {
         if (en.fault != null)
             return new InterpreterException(en.fault);
         return null;
+    }
+
+    /*************************************************************/
+    /* Runnable Interface                                        */
+    /*************************************************************/
+
+    /**
+     * <p>Run a callin.</p>
+     */
+    public void run() {
+        startManagedMeasure(inter.getKnowledgebase().getLobby());
+        try {
+            try {
+                next().close();
+            } catch (InterpreterMessage y) {
+                InterpreterException x = new InterpreterException(y,
+                        InterpreterException.fetchStack(getInter()));
+                systemDeathBreak(getInter(), x);
+            } catch (InterpreterException x) {
+                systemDeathBreak(getInter(), x);
+            }
+        } catch (ThreadDeath x) {
+            /* */
+        } catch (Throwable x) {
+            x.printStackTrace();
+        }
+        endManagedMeasure(inter.getKnowledgebase().getLobby());
+    }
+
+    /**
+     * <p>Show the death exception.</p>
+     *
+     * @param inter The interpreter.
+     * @param x     The death exception.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void systemDeathBreak(Interpreter inter, InterpreterException x)
+            throws InterpreterMessage, InterpreterException {
+        InterpreterMessage m;
+        if ((m = x.exceptionType("error")) != null &&
+                m.messageType("system_error") != null) {
+            InterpreterException rest = x.causeChainRest();
+            if (rest != null)
+                rest.printStackTrace(inter);
+        } else {
+            x.printStackTrace(inter);
+        }
+    }
+
+    /************************************************************/
+    /* Managed Measure                                          */
+    /************************************************************/
+
+    /**
+     * <p>Start the group measurement.</p>
+     *
+     * @param lobby The lobby.
+     */
+    private static void startManagedMeasure(Lobby lobby) {
+        ManagedThread t = getManagedParent();
+        if (t == null)
+            return;
+        AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
+        t.addMillis(-factory.getRuntime().currentThreadCpuMillis());
+    }
+
+    /**
+     * <p>End the group measurement.</p>
+     *
+     * @param lobby The lobby.
+     */
+    private static void endManagedMeasure(Lobby lobby) {
+        ManagedThread t = getManagedParent();
+        if (t == null)
+            return;
+        AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
+        t.addMillis(factory.getRuntime().currentThreadCpuMillis());
+    }
+
+    /**
+     * <p>Retrieve the thread parent.</p>
+     *
+     * @return The thread parent.
+     */
+    private static ManagedThread getManagedParent() {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        if (!(tg instanceof ManagedGroup))
+            return null;
+        Thread t = ((ManagedGroup) tg).getOwner();
+        if (!(t instanceof ManagedThread))
+            return null;
+        return (ManagedThread) t;
     }
 
 }

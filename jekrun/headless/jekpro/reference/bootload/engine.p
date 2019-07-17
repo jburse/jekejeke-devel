@@ -158,6 +158,15 @@ end_all_modules :-
    >=(C, 2), !, end_module, end_all_modules.
 end_all_modules.
 
+/**
+ * top_module(M):
+ * The predicate succeeds in M with the top module.
+ */
+:- public top_module/1.
+top_module(N) :-
+   sys_peek_stack(D),
+   absolute_file_name(verbatim(N), D).
+
 :- private sys_module_action/2.
 :- foreign(sys_module_action/2, 'ForeignEngine',
       sysModuleAction('Interpreter','TermAtomic','Object')).

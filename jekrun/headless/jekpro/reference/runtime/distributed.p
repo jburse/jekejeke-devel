@@ -205,7 +205,7 @@ sys_take_all2(T, Q) :- repeat,
 sys_put_all(T, G, Q, N) :-
    sys_trap(sys_put_all2(T, G, Q, N),
       E,
-      (  E = error(system_error(user_close),_)
+      (  sys_error_type(E, system_error(_))
       -> sys_raise(E)
       ;  pipe_put(Q, ball(E)))).
 

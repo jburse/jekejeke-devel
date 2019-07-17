@@ -3,6 +3,7 @@ package matula.util.android;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.SystemClock;
 import derek.util.protect.LicenseError;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
@@ -141,6 +142,19 @@ public final class RuntimeDalvik extends AbstractRuntime {
         } else {
             return null;
         }
+    }
+
+    /********************************************************************/
+    /* Thread Properties                                                */
+    /********************************************************************/
+
+    /**
+     * <p>The thread cpu time in milliseconds.</p>
+     *
+     * @return The thread cpu time in milliseconds.
+     */
+    public long currentThreadCpuMillis() {
+        return SystemClock.currentThreadTimeMillis();
     }
 
 }

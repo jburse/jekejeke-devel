@@ -36,6 +36,17 @@ public final class Unbounded<T> implements InterfacePipe<T> {
     private final ListArray<Object> list = new ListArray<Object>();
 
     /**
+     * <p>Dequeue an element.</p>
+     *
+     * @return The element.
+     */
+    private T dequeue() {
+        T t = (T) list.get(0);
+        list.remove(0);
+        return t;
+    }
+
+    /**
      * <p>Post an object.</p>
      *
      * @param t The object, not null.
@@ -45,7 +56,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
             throw new NullPointerException("null_element");
         synchronized (this) {
             list.add(t);
-            this.notifyAll();
+            this.notify();
         }
     }
 
@@ -61,9 +72,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
         synchronized (this) {
             while (list.size() == 0)
                 this.wait();
-            T t = (T)list.get(0);
-            list.remove(0);
-            return t;
+            return dequeue();
         }
     }
 
@@ -76,9 +85,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
     public T poll() {
         synchronized (this) {
             if (list.size() != 0) {
-                T t = (T)list.get(0);
-                list.remove(0);
-                return t;
+                return dequeue();
             } else {
                 return null;
             }
@@ -101,9 +108,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                T t = (T)list.get(0);
-                list.remove(0);
-                return t;
+                return dequeue();
             } else {
                 return null;
             }

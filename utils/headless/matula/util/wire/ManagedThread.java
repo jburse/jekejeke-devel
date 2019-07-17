@@ -1,7 +1,7 @@
 package matula.util.wire;
 
 /**
- * <p>This class provides a managed group.</p>
+ * <p>This class provides a managed thread.</p>
  * </p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,33 +31,45 @@ package matula.util.wire;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ManagedGroup extends ThreadGroup {
-    private final Thread owner;
+public final class ManagedThread extends Thread {
+    private long mills;
 
-    /* For autonumbering anonymous groups. */
-    private static int groupInitNumber;
-
-    private static synchronized int nextGroupNum() {
-        return groupInitNumber++;
+    /**
+     * <p>Create a managed thread.</p>
+     *
+     * @param run The runnable.
+     */
+    public ManagedThread(Runnable run) {
+        super(run);
     }
 
     /**
-     * Creates a new thread group.
-     *
-     * @param o The owner.
+     * <p>Create a managed thread.</p>
+     * @param tg The thread group.
+     * @param run The runnable.
      */
-    public ManagedGroup(Thread o) {
-        super("Group-" + nextGroupNum());
-        owner = o;
+    public ManagedThread(ThreadGroup tg, Runnable run) {
+        super(tg, run);
     }
 
     /**
-     * <p>Retrieve the owner.</p>
+     * <p>Retrieve the children thread cpu.</p>
      *
-     * @return The owner.
+     * @return The the children thread cpu.
      */
-    public Thread getOwner() {
-        return owner;
+    public long getMillis() {
+        return mills;
+    }
+
+    /**
+     * <p>Add the children thread cpu.</p>
+     *
+     * @param c The children thread cpu.
+     */
+    public void addMillis(long c) {
+        synchronized (this) {
+            mills += c;
+        }
     }
 
 }

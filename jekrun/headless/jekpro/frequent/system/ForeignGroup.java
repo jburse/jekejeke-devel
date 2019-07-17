@@ -2,7 +2,6 @@ package jekpro.frequent.system;
 
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.data.ListArray;
@@ -45,12 +44,12 @@ import matula.util.wire.ManagedGroup;
 public final class ForeignGroup {
     private final static String OP_SYS_GROUP_NAME = "sys_group_name";
     private final static String OP_SYS_GROUP_GROUP = "sys_group_group";
-    private final static String OP_SYS_GROUP_STORE = "sys_group_store";
+    private final static String OP_SYS_GROUP_THREAD = "sys_group_thread";
 
     private final static String[] OP_PROPS = {
             OP_SYS_GROUP_NAME,
             OP_SYS_GROUP_GROUP,
-            OP_SYS_GROUP_STORE};
+            OP_SYS_GROUP_THREAD};
 
     /****************************************************************/
     /* Group Creation                                               */
@@ -59,12 +58,11 @@ public final class ForeignGroup {
     /**
      * <p>Create a new annoymous thread group.</p>
      *
-     * @param inter The interpreter.
      * @return The new annonymous trhead group.
      */
-    public static ThreadGroup sysGroupNew(Interpreter inter) {
-        Store store = (Store) inter.getKnowledgebase().getStore();
-        ThreadGroup tg = new ManagedGroup(store);
+    public static ThreadGroup sysGroupNew() {
+        Thread t = Thread.currentThread();
+        ThreadGroup tg = new ManagedGroup(t);
         tg.setDaemon(true);
         return tg;
     }
@@ -81,11 +79,9 @@ public final class ForeignGroup {
     public static Thread sysThreadNew(Interpreter inter, ThreadGroup tg, AbstractTerm t)
             throws InterpreterMessage, InterpreterException {
         Object obj = AbstractTerm.copyMolec(inter, t);
-        final Interpreter inter2 = ForeignThread.makeInterpreter(inter);
-        final CallIn callin = inter2.iterator(obj);
-        Thread thread = new Thread(tg, ForeignThread.makeRunnable(callin, inter2));
-        inter2.getController().setFence(thread);
-        return thread;
+        Interpreter inter2 = ForeignThread.makeInterpreter(inter);
+        CallIn callin = inter2.iterator(obj);
+        return new Thread(tg, callin);
     }
 
     /****************************************************************/
@@ -224,9 +220,9 @@ public final class ForeignGroup {
         } else if (OP_SYS_GROUP_GROUP.equals(name)) {
             ThreadGroup val = tg.getParent();
             return (val != null ? val : AbstractFlag.OP_NULL);
-        } else if (OP_SYS_GROUP_STORE.equals(name)) {
-            Object val = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
-            return (val != null ? ((Store) val).proxy : AbstractFlag.OP_NULL);
+        } else if (OP_SYS_GROUP_THREAD.equals(name)) {
+            Thread t = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
+            return (t != null ? t : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

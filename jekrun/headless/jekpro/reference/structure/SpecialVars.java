@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.SpecialFind;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
@@ -56,9 +57,8 @@ public final class SpecialVars extends AbstractSpecial {
     private final static int SPECIAL_SYS_GOAL_GLOBALS = 3;
     private final static int SPECIAL_NUMBERVARS = 4;
     private final static int SPECIAL_SYS_NUMBER_VARIABLES = 5;
-    private final static int SPECIAL_SYS_GET_VARIABLE_NAMES = 6;
-    private final static int SPECIAL_ACYCLIC_TERM = 7;
-    private final static int SPECIAL_SAFE_TERM_VARIABLES = 8;
+    private final static int SPECIAL_ACYCLIC_TERM = 6;
+    private final static int SPECIAL_SAFE_TERM_VARIABLES = 7;
 
     /**
      * <p>Create a vars special.</p>
@@ -156,19 +156,6 @@ public final class SpecialVars extends AbstractSpecial {
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[3], ref, en.skel, d))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
-                case SPECIAL_SYS_GET_VARIABLE_NAMES:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    Display d2 = en.visor.query;
-                    MapHashLink<Object, String> print = SpecialVars.hashToMap(d2.vars, d2, en);
-                    mapToAssoc(print, en);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[0], ref, en.skel, d))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -513,49 +500,24 @@ public final class SpecialVars extends AbstractSpecial {
      */
     public static void mapToAssoc(MapHashLink<Object, String> mvs,
                                   Engine en) {
-        int countvar = 0;
-        Display last = Display.DISPLAY_CONST;
-        boolean multi = false;
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
         for (MapEntry<Object, String> entry =
              (mvs != null ? mvs.getFirstEntry() : null);
              entry != null; entry = mvs.successor(entry)) {
-            Object t = AbstractTerm.getSkel(entry.key);
-            if (SupervisorCopy.getVar(t) != null) {
-                Display d = AbstractTerm.getDisplay(entry.key);
-                countvar++;
-                if (last == Display.DISPLAY_CONST) {
-                    last = d;
-                } else if (last != d) {
-                    multi = true;
-                }
-            }
+            Object elem2 = entry.key;
+            Object val2 = AbstractTerm.getSkel(elem2);
+            Display ref2 = AbstractTerm.getDisplay(elem2);
+            Object t4 = en.skel;
+            Display d2 = en.display;
+            SpecialFind.pairValue(en.store.foyer.CELL_EQUAL,
+                    new SkelAtom(entry.value), Display.DISPLAY_CONST,
+                    val2, ref2, en);
+            val2 = en.skel;
+            ref2 = en.display;
+            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    val2, ref2, t4, d2, en);
         }
-        if (multi) {
-            last = new Display(countvar);
-            last.vars = Display.VARS_MARKER;
-        }
-        countvar = 0;
-        Object m = en.store.foyer.ATOM_NIL;
-        for (MapEntry<Object, String> entry =
-             (mvs != null ? mvs.getFirstEntry() : null);
-             entry != null; entry = mvs.successor(entry)) {
-            Object t = AbstractTerm.getSkel(entry.key);
-            Object val;
-            if (multi && SupervisorCopy.getVar(t) != null) {
-                Display d = AbstractTerm.getDisplay(entry.key);
-                SkelVar var = SkelVar.valueOf(countvar);
-                countvar++;
-                last.bind[var.id].bindUniv(t, d, en);
-                val = var;
-            } else {
-                val = t;
-            }
-            val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
-                    new SkelAtom(entry.value), val);
-            m = new SkelCompound(en.store.foyer.ATOM_CONS, val, m);
-        }
-        en.skel = m;
-        en.display = last;
     }
 
     /**

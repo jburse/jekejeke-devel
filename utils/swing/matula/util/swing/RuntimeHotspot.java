@@ -6,6 +6,8 @@ import matula.util.data.ListArray;
 import matula.util.system.ForeignDomain;
 import matula.util.system.ForeignUri;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -54,6 +56,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
     /*******************************************************************/
     /* New API                                                         */
     /*******************************************************************/
+
     /**
      * <p>Extend a class loader by a given path.</p>
      *
@@ -128,9 +131,27 @@ public final class RuntimeHotspot extends AbstractRuntime {
         }
     }
 
-    /****************************************************************/
-    /* Jar Manifest                                                 */
-    /****************************************************************/
+    /********************************************************************/
+    /* Thread Properties                                                */
+    /********************************************************************/
+
+    /**
+     * <p>The thread cpu time in milliseconds.</p>
+     *
+     * @return The thread cpu time in milliseconds.
+     */
+    public long currentThreadCpuMillis() {
+        ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+        if (tb.isCurrentThreadCpuTimeSupported()) {
+            return tb.getCurrentThreadCpuTime() / 1000000L;
+        } else {
+            return -1;
+        }
+    }
+
+    /********************************************************************/
+    /* Jar Manifest                                                     */
+    /********************************************************************/
 
     /**
      * <p>Some testing.</p>

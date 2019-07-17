@@ -214,4 +214,15 @@ public abstract class AbstractRuntime {
         }
     }
 
+    /********************************************************************/
+    /* Thread Properties                                                */
+    /********************************************************************/
+
+    /**
+     * <p>The thread cpu time in milliseconds.</p>
+     *
+     * @return The thread cpu time in milliseconds.
+     */
+    public abstract long currentThreadCpuMillis();
+
 }

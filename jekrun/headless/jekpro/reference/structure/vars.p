@@ -135,22 +135,13 @@ term_variables(X, L) :-
 % already defined in member
 
 /**
- * sys_get_variable_names(L):
- * The predicate succeeds in L with the current variable names
- * from the top-level query excluding non-variables and duplicates.
- */
-% sys_get_variable_names(-VariableNames)
-:- public sys_get_variable_names/1.
-:- special(sys_get_variable_names/1, 'SpecialVars', 6).
-
-/**
  * acyclic_term(X): [TC2 8.3.11]
  * The predicate succeeds when X is an acyclic term, i.e. contains
  * no cycles.
  */
 % acyclic_term(+Term)
 :- public acyclic_term/1.
-:- special(acyclic_term/1, 'SpecialVars', 7).
+:- special(acyclic_term/1, 'SpecialVars', 6).
 
 /**
  * safe_term_variables(X, L):
@@ -166,4 +157,4 @@ safe_term_variables(X, L) :-
 
 % safe_term_variables(+Term, -List, +List)
 :- public safe_term_variables/3.
-:- special(safe_term_variables/3, 'SpecialVars', 8).
+:- special(safe_term_variables/3, 'SpecialVars', 7).

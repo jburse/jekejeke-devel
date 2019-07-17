@@ -1,35 +1,19 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.standard.SupervisorCopy;
-import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.builtin.Branch;
-import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
-import jekpro.model.rope.Directive;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.LoadOpts;
-import jekpro.model.rope.PreClause;
-import jekpro.reference.bootload.SpecialLoad;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.regex.ScannerError;
-import matula.util.system.ConnectionReader;
-import matula.util.system.OpenOpts;
-import matula.util.wire.LangProperties;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>Provides built-in predicates for sessions.</p>
@@ -63,15 +47,15 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSession extends AbstractSpecial {
-    private final static int SPECIAL_SYS_SESSION = 1;
-    private final static int SPECIAL_SYS_QUOTED_VAR = 2;
-    private final static int SPECIAL_SYS_GET_RAW_VARIABLES = 3;
+    private final static int SPECIAL_SYS_QUOTED_VAR = 0;
 
     public final static int MASK_MODE_PRMT = 0x0000F000;
 
     public final static int MASK_PRMT_PROF = 0x00000000;
     public final static int MASK_PRMT_PCUT = 0x00001000;
     public final static int MASK_PRMT_PRON = 0x00002000;
+
+    public final static String OP_SHOW_CUT = "show_cut";
 
     /**
      * <p>Create a session special.</p>
@@ -96,19 +80,6 @@ public final class SpecialSession extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_SESSION:
-                en.visor.breaklevel++;
-                try {
-                    SpecialSession.sessionTerminal(en);
-                } catch (EngineMessage x) {
-                    en.visor.breaklevel--;
-                    throw x;
-                } catch (EngineException x) {
-                    en.visor.breaklevel--;
-                    throw x;
-                }
-                en.visor.breaklevel--;
-                return true;
             case SPECIAL_SYS_QUOTED_VAR:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
@@ -116,550 +87,9 @@ public final class SpecialSession extends AbstractSpecial {
                 if (!en.unifyTerm(temp[1], ref, sysQuoteVar(fun, en), Display.DISPLAY_CONST))
                     return false;
                 return true;
-            case SPECIAL_SYS_GET_RAW_VARIABLES:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Display d = en.visor.query;
-                en.skel = SpecialSession.hashToRawAssoc(d.vars, d, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, d))
-                    return false;
-                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
-    }
-
-    /**
-     * <p>Prompt for the query.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void promptQuery(Engine en)
-            throws EngineMessage, EngineException {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            if (en.visor.breaklevel != 0) {
-                wr.write("[");
-                wr.write(Integer.toString(en.visor.breaklevel));
-                wr.write("] ");
-            }
-            AbstractSource src = en.visor.peekStack();
-            String s = src.getFullName();
-            if (!Branch.OP_USER.equals(s)) {
-                wr.write("(");
-                Object res = SpecialDynamic.moduleToSlashSkel(s, en.store.user);
-                PrologWriter.toString(res, Display.DISPLAY_CONST, wr, 0, en);
-                wr.write(") ");
-            }
-            wr.write("?- ");
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>Prolog top level.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static void sessionTerminal(Engine en)
-            throws EngineException, EngineMessage {
-        Object obj = en.visor.curinput;
-        PrologReader.checkTextRead(obj);
-        Reader lr = (Reader) obj;
-
-        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        rd.getScanner().setReader(lr);
-        rd.setEngineRaw(en);
-        for (; ; ) {
-            try {
-                SpecialSession.promptQuery(en);
-                int flags = 0;
-                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
-                    flags |= PrologReader.FLAG_NEWV;
-                rd.setFlags(flags);
-                rd.setSource(en.visor.peekStack());
-                Object val;
-                try {
-                    try {
-                        val = rd.parseHeadStatement();
-                    } catch (ScannerError y) {
-                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
-                        rd.parseTailError(y);
-                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
-                        PositionKey pos = PositionKey.createPos(lr);
-                        throw new EngineException(x,
-                                EngineException.fetchPos(EngineException.fetchLoc(
-                                        EngineException.fetchStack(en),
-                                        pos, en), line, en)
-                        );
-                    }
-                } catch (IOException y) {
-                    throw EngineMessage.mapIOProblem(y);
-                }
-                if (val instanceof SkelAtom &&
-                        ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
-                    break;
-                PreClause pre = expandGoalAndWrap(rd, val, en);
-                Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
-                        Directive.MASK_DIRE_LTGC, en);
-                int size = SupervisorCopy.displaySize(pre.molec);
-                dire.bodyToInterSkel(pre.molec, en, true);
-
-                Intermediate r = en.contskel;
-                CallFrame u = en.contdisplay;
-                AbstractUndo mark = en.bind;
-                int snap = en.number;
-                Display backref = en.visor.query;
-                try {
-                    Display d2 = new Display(size);
-                    d2.vars = pre.vars;
-                    en.visor.query = d2;
-                    CallFrame ref = CallFrame.getFrame(d2, dire, en);
-                    en.contskel = dire;
-                    en.contdisplay = ref;
-
-                    boolean found = en.runLoop2(snap, true);
-                    if (!found)
-                        failFeedback(en);
-                    while (found) {
-                        if (en.number != snap) {
-                            found = sysAnswerPrompt(mark, r, u, en);
-                            if (found) {
-                                found = en.runLoop2(snap, false);
-                                if (!found)
-                                    failFeedback(en);
-                            }
-                        } else {
-                            answerMark(mark, r, u, en);
-                            detFeedback(en);
-                            found = false;
-                        }
-                    }
-                } catch (EngineException x) {
-                    en.contskel = r;
-                    en.contdisplay = u;
-                    en.fault = x;
-                    en.cutChoices(snap);
-                    en.releaseBind(mark);
-                    en.visor.query = backref;
-                    throw en.fault;
-                } catch (EngineMessage y) {
-                    PositionKey pos = PositionKey.createPos(lr);
-                    EngineException x = new EngineException(y,
-                            EngineException.fetchLoc(
-                                    EngineException.fetchStack(en), pos, en));
-                    en.contskel = r;
-                    en.contdisplay = u;
-                    en.fault = x;
-                    en.cutChoices(snap);
-                    en.releaseBind(mark);
-                    en.visor.query = backref;
-                    throw en.fault;
-                }
-                en.contskel = r;
-                en.contdisplay = u;
-                en.fault = null;
-                en.cutChoices(snap);
-                en.releaseBind(mark);
-                en.visor.query = backref;
-                if (en.fault != null)
-                    throw en.fault;
-            } catch (EngineMessage x) {
-                PositionKey pos = PositionKey.createPos(lr);
-                EngineException y = new EngineException(x, EngineException.fetchLoc(
-                        EngineException.fetchStack(en), pos, en));
-                if (systemQueryBreak(y, en))
-                    break;
-            } catch (EngineException x) {
-                if (systemQueryBreak(x, en))
-                    break;
-            }
-        }
-    }
-
-    /**
-     * <p>Display answer and prompt.</p>
-     *
-     * @param mark The mark.
-     * @param r    The continuation skel.
-     * @param u    The continuation display.
-     * @param en   The engine.
-     * @return True for more answers, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    private static boolean sysAnswerPrompt(AbstractUndo mark,
-                                           Intermediate r, CallFrame u, Engine en)
-            throws EngineException, EngineMessage {
-        en.store.setPrompt(SpecialSession.MASK_PRMT_PROF);
-        do {
-            answerMark(mark, r, u, en);
-            String action = askSessionAction(en);
-            if (action == null) {
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_USER_EXIT));
-            } else if ("?".equals(action)) {
-                helpText(en);
-            } else if (";".equals(action)) {
-                en.store.setPrompt(SpecialSession.MASK_PRMT_PRON);
-            } else {
-                try {
-                    if (parseAction(action, en)) {
-                        en.contskel = r;
-                        en.contdisplay = u;
-                        en.invokeChecked();
-                    } else {
-                        en.store.setPrompt(SpecialSession.MASK_PRMT_PCUT);
-                    }
-                } catch (EngineException x) {
-                    systemSessionBreak(x, en);
-                }
-            }
-        } while ((en.store.flags &
-                SpecialSession.MASK_MODE_PRMT) == SpecialSession.MASK_PRMT_PROF);
-        boolean res = (en.store.flags &
-                SpecialSession.MASK_MODE_PRMT) == SpecialSession.MASK_PRMT_PRON;
-        en.store.setPrompt(SpecialSession.MASK_PRMT_PROF);
-        return res;
-    }
-
-    /****************************************************************/
-    /* Display Current Answer                                       */
-    /****************************************************************/
-
-    /**
-     * <p>Display answer</p>
-     *
-     * @param mark The mark.
-     * @param r    The continuation skel.
-     * @param u    The continuation display.
-     * @param en   The engine.
-     * @throws EngineException Shit happens.
-     */
-    private static void answerMark(AbstractUndo mark,
-                                   Intermediate r, CallFrame u, Engine en)
-            throws EngineException {
-        en.skel = new SkelCompound(new SkelAtom("sys_show_vars"), mark);
-        en.display = Display.DISPLAY_CONST;
-        en.contskel = r;
-        en.contdisplay = u;
-        en.invokeChecked();
-    }
-
-    /**
-     * <p>Feedback for deterministic success.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void detFeedback(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>CallFrame the help text.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void helpText(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            Locale locale = en.store.foyer.locale;
-            Properties resources = LangProperties.getLang(
-                    SpecialSession.class, "runtime", locale);
-            wr.write(resources.getProperty("query.continue"));
-            wr.write('\n');
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
-     * <p>Feedback for failure.</p>
-     *
-     * @param en The engine trace.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void failFeedback(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-        try {
-            Locale locale = en.store.foyer.locale;
-            Properties resources = LangProperties.getLang(
-                    SpecialSession.class, "runtime", locale);
-            wr.write(resources.getProperty("query.no"));
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /******************************************************************/
-    /* Ask End-User                                                   */
-    /******************************************************************/
-
-    /**
-     * <p>Ask the end-user for the session action.</p>
-     *
-     * @param en The engine.
-     * @return The debugger action.
-     * @throws EngineMessage Shit happens.
-     */
-    private static String askSessionAction(Engine en)
-            throws EngineMessage {
-        Object obj = en.visor.curoutput;
-        LoadOpts.checkTextWrite(obj);
-        Writer wr = (Writer) obj;
-
-        obj = en.visor.curinput;
-        PrologReader.checkTextRead(obj);
-        Reader lr = (Reader) obj;
-        try {
-            wr.write(" ");
-            wr.flush();
-            return ForeignConsole.readLine(lr);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOProblem(x);
-        }
-    }
-
-    /****************************************************************/
-    /* Goal Expansion                                               */
-    /****************************************************************/
-
-    /**
-     * <p>Expand and wrap the given term.</p>
-     * <p>The variables are passed via the Prolog reader.</p>
-     * <p>The variables are returned via the Prolog reader.</p>
-     *
-     * @param rd The prolog reader.
-     * @param t  The directive skel.
-     * @param en The engine.
-     * @return The expanded term.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    private static PreClause expandGoalAndWrap(PrologReader rd, Object t,
-                                               Engine en)
-            throws EngineException, EngineMessage {
-        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
-            PreClause pre = new PreClause();
-            pre.molec = t;
-            pre.vars = rd.getVars();
-            return pre;
-        }
-
-        /* expand goal */
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
-        SkelVar var = rd.atomToVariable(PrologReader.OP_ANON);
-        Object body = new SkelCompound(new SkelAtom("expand_goal",
-                en.store.getRootSystem()), t, var);
-        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
-                Directive.MASK_DIRE_LTGC, en);
-        int size = SupervisorCopy.displaySize(body);
-        dire.bodyToInterSkel(body, en, true);
-
-        AbstractUndo mark = en.bind;
-        int snap = en.number;
-        Display backref = en.visor.query;
-        Display d2 = new Display(size);
-        try {
-            d2.vars = rd.getVars();
-            en.visor.query = d2;
-            CallFrame ref = CallFrame.getFrame(d2, dire, en);
-            en.contskel = dire;
-            en.contdisplay = ref;
-            if (!en.runLoop2(snap, true))
-                throw new EngineMessage(EngineMessage.syntaxError(
-                        EngineMessage.OP_SYNTAX_EXPAND_FAILED));
-        } catch (EngineException x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.releaseBind(mark);
-            en.visor.query = backref;
-            throw en.fault;
-        } catch (EngineMessage y) {
-            Reader lr = rd.getScanner().getReader();
-            PositionKey pos = PositionKey.createPos(lr);
-            EngineException x = new EngineException(y, EngineException.fetchLoc(
-                    EngineException.fetchStack(en), pos, en));
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.releaseBind(mark);
-            en.visor.query = backref;
-            throw en.fault;
-        }
-        en.contskel = r;
-        en.contdisplay = u;
-        en.fault = null;
-        en.cutChoices(snap);
-        en.visor.query = backref;
-        PreClause pre = null;
-        if (en.fault == null)
-            pre = copyGoalVars(rd.getVars(), var, d2, en);
-        en.releaseBind(mark);
-        if (en.fault != null)
-            throw en.fault;
-        return pre;
-    }
-
-    /**
-     * <p>Copy and wrap a term from a term.</p>
-     *
-     * @param assoc The vars skeleton.
-     * @param t     The term skeleton.
-     * @param d     The term display.
-     * @param en    The engine.
-     * @return The new clause.
-     */
-    private static PreClause copyGoalVars(MapHashLink<String, SkelVar> assoc,
-                                          Object t, Display d,
-                                          Engine en) {
-        PreClause pre = new PreClause();
-        SupervisorCopy ec = en.visor.getCopy();
-        ec.vars = null;
-        ec.flags = 0;
-        pre.molec = ec.copyRest(t, d);
-        MapHashLink<Object, String> print = SpecialVars.hashToMap(assoc, d, en);
-        pre.vars = FileText.copyVars(ec.vars, print);
-        ec.vars = null;
-        return pre;
-    }
-
-    /**********************************************************/
-    /* Exception Handling                                     */
-    /**********************************************************/
-
-    /**
-     * <p>Handle system exceptions in a top-level loop.</p>
-     * <p>Will do the following:</p>
-     * <ul>
-     * <li><b>system_error(user_abort):</b> Print chain rest, do not break.</li>
-     * <li><b>system_error(user_exit):</b> Print chain rest, do break.</li>
-     * <li><b>system_error(memory_threshold):</b> Print exception, do not break.</li>
-     * <li><b>system_error(import_deadlock):</b> Print exception, do not break.</li>
-     * <li><b>system_error(_):</b> Re throw exception.</li>
-     * <li><b>_:</b> Print exception, do not break.</li>
-     * </ul>
-     *
-     * @param ex The exception.
-     * @param en The engine.
-     * @return True if break, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static boolean systemQueryBreak(EngineException ex,
-                                            Engine en)
-            throws EngineMessage, EngineException {
-        EngineMessage m;
-        boolean res;
-        if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
-                (m.messageType(EngineMessage.OP_LIMIT_ERROR)) != null) {
-            ex.printStackTrace(en);
-            res = false;
-        } else {
-            res = SpecialLoad.systemConsultBreak(ex, en, false);
-        }
-        return res;
-    }
-
-    /**
-     * <p>Pass system exceptions, otherwise display only message.</p>
-     *
-     * @param ex The exception.
-     * @param en The engine.
-     * @throws EngineException Shit happens.
-     */
-    public static void systemSessionBreak(EngineException ex,
-                                          Engine en)
-            throws EngineMessage, EngineException {
-        EngineMessage m;
-        if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
-                m.messageType(EngineMessage.OP_SYSTEM_ERROR) != null) {
-            throw ex;
-        } else {
-            Object obj = en.visor.curerror;
-            LoadOpts.checkTextWrite(obj);
-            Writer wr = (Writer) obj;
-            try {
-                wr.write(ex.getMessage(en));
-                wr.write('\n');
-                wr.flush();
-            } catch (IOException x) {
-                throw EngineMessage.mapIOException(x);
-            }
-        }
-    }
-
-    /**
-     * <p>Parse the action.</p>
-     *
-     * @param action The action.
-     * @param en     The engine.
-     * @return True if a action was parsed, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    public static boolean parseAction(String action,
-                                      Engine en)
-            throws EngineMessage, EngineException {
-        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        ConnectionReader cr = new ConnectionReader(new StringReader(action));
-        cr.setLineNumber(1);
-        rd.getScanner().setReader(cr);
-        rd.setSource(en.visor.peekStack());
-        rd.setEngineRaw(en);
-        Object val;
-        try {
-            try {
-                val = rd.parseHeadStatement();
-            } catch (ScannerError y) {
-                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getErrorOffset());
-                rd.parseTailError(y);
-                EngineMessage x = new EngineMessage(
-                        EngineMessage.syntaxError(y.getMessage()));
-                throw new EngineException(x,
-                        EngineException.fetchPos(
-                                EngineException.fetchStack(en), line, en));
-            }
-        } catch (IOException y) {
-            throw EngineMessage.mapIOException(y);
-        }
-        if (val instanceof SkelAtom &&
-                ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
-            return false;
-        en.skel = val;
-        en.display = AbstractSkel.createDisplay(val);
-        return true;
     }
 
     /********************************************************************/
@@ -704,6 +134,51 @@ public final class SpecialSession extends AbstractSpecial {
             end = new SkelCompound(en.store.foyer.ATOM_CONS, val, end);
         }
         return end;
+    }
+
+    /*******************************************************************/
+    /* Prompt Conversion                                               */
+    /*******************************************************************/
+
+    /**
+     * <p>Convert a prompt mode to an atom.</p>
+     *
+     * @param m The prompt mode.
+     * @return The atom.
+     */
+    public static Object promptToAtom(int m) {
+        switch (m) {
+            case SpecialSession.MASK_PRMT_PROF:
+                return new SkelAtom(AbstractFlag.OP_OFF);
+            case SpecialSession.MASK_PRMT_PCUT:
+                return new SkelAtom(OP_SHOW_CUT);
+            case SpecialSession.MASK_PRMT_PRON:
+                return new SkelAtom(AbstractFlag.OP_ON);
+            default:
+                throw new IllegalArgumentException("illegal mode");
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a prompt mode.</p>
+     *
+     * @param t The atom skeleton.
+     * @param d The atom display.
+     * @return The prompt mode.
+     */
+    public static int atomToPrompt(Object t, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(t, d);
+        if (fun.equals(AbstractFlag.OP_OFF)) {
+            return SpecialSession.MASK_PRMT_PROF;
+        } else if (fun.equals(OP_SHOW_CUT)) {
+            return SpecialSession.MASK_PRMT_PCUT;
+        } else if (fun.equals(AbstractFlag.OP_ON)) {
+            return SpecialSession.MASK_PRMT_PRON;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    "prompt_mode", t), d);
+        }
     }
 
 }
