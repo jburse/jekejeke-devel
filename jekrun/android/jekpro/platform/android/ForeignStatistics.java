@@ -2,10 +2,8 @@ package jekpro.platform.android;
 
 import android.os.Debug;
 import android.os.SystemClock;
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Controller;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.model.inter.Supervisor;
+import jekpro.tools.call.*;
 import jekpro.tools.term.TermAtomic;
 
 import java.lang.reflect.InvocationTargetException;
@@ -45,6 +43,9 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_GCTIME = "gctime";
     final static String OP_STATISTIC_TIME = "time";
     final static String OP_STATISTIC_WALL = "wall";
+    final static String OP_STATISTIC_MANAGE = "manage";
+    final static String OP_STATISTIC_BOTH = "both";
+
     private static Method getRuntimeStat;
 
     private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
@@ -55,7 +56,7 @@ public final class ForeignStatistics {
             OP_STATISTIC_FREE,
             OP_STATISTIC_UPTIME,
             OP_STATISTIC_GCTIME,
-            OP_STATISTIC_TIME,
+            OP_STATISTIC_BOTH,
             OP_STATISTIC_WALL};
 
     private final static String[] OP_THREAD_STATISTICS = {
@@ -99,11 +100,12 @@ public final class ForeignStatistics {
      * <p>Retrieve a statistic.</p>
      * <p>Android version.</p>
      *
+     * @param inter The interpreter.
      * @param name The statistics name.
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetStat(String name) throws InterpreterMessage {
+    public static Object sysGetStat(Interpreter inter, String name) throws InterpreterMessage {
         if (OP_STATISTIC_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
         } else if (OP_STATISTIC_USED.equals(name)) {
@@ -134,9 +136,35 @@ public final class ForeignStatistics {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
+        } else if (OP_STATISTIC_MANAGE.equals(name)) {
+            Supervisor s = (Supervisor) inter.getController().getVisor();
+            return TermAtomic.normBigInteger(s.getMillis());
+        } else if (OP_STATISTIC_BOTH.equals(name)) {
+            return add((Number) sysGetStat(inter, OP_STATISTIC_TIME),
+                    (Number) sysGetStat(inter, OP_STATISTIC_MANAGE));
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
+        }
+    }
+
+    /**
+     * <p>Add a term integer to another term integer.</p>
+     * <p>Uses long addition, if both are not null.</p>
+     *
+     * @param i1 The first term integer, or null.
+     * @param i2 The second term integer, or null.
+     * @return The result term integer, or null.
+     */
+    private static Number add(Number i1, Number i2) {
+        if (i1 != null) {
+            if (i2 != null) {
+                return TermAtomic.normBigInteger(i1.longValue() + i2.longValue());
+            } else {
+                return i1;
+            }
+        } else {
+            return i2;
         }
     }
 

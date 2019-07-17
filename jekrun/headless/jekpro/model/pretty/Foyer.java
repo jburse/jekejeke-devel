@@ -131,6 +131,8 @@ public class Foyer extends Enforced {
             SkelVar.valueOf(0), SkelVar.valueOf(1));
     public final SkelCompound CELL_SUB = new SkelCompound(ATOM_SUB,
             SkelVar.valueOf(0), SkelVar.valueOf(1));
+    public final SkelCompound CELL_EQUAL = new SkelCompound(ATOM_EQUAL,
+            SkelVar.valueOf(0), SkelVar.valueOf(1));
 
     public SkelCompound CELL_COMMA;
 

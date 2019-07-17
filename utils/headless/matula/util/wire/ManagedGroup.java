@@ -32,7 +32,7 @@ package matula.util.wire;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ManagedGroup extends ThreadGroup {
-    private final Thread owner;
+    private final AbstractLivestock owner;
 
     /* For autonumbering anonymous groups. */
     private static int groupInitNumber;
@@ -46,7 +46,7 @@ public final class ManagedGroup extends ThreadGroup {
      *
      * @param o The owner.
      */
-    public ManagedGroup(Thread o) {
+    public ManagedGroup(AbstractLivestock o) {
         super("Group-" + nextGroupNum());
         owner = o;
     }
@@ -56,7 +56,7 @@ public final class ManagedGroup extends ThreadGroup {
      *
      * @return The owner.
      */
-    public Thread getOwner() {
+    public AbstractLivestock getOwner() {
         return owner;
     }
 

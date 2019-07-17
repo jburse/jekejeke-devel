@@ -1,6 +1,7 @@
 package jekpro.frequent.system;
 
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
@@ -58,11 +59,12 @@ public final class ForeignGroup {
     /**
      * <p>Create a new annoymous thread group.</p>
      *
+     * @param inter The interpreter.
      * @return The new annonymous trhead group.
      */
-    public static ThreadGroup sysGroupNew() {
-        Thread t = Thread.currentThread();
-        ThreadGroup tg = new ManagedGroup(t);
+    public static ThreadGroup sysGroupNew(Interpreter inter) {
+        Supervisor s = (Supervisor) inter.getController().getVisor();
+        ThreadGroup tg = new ManagedGroup(s);
         tg.setDaemon(true);
         return tg;
     }
@@ -221,8 +223,8 @@ public final class ForeignGroup {
             ThreadGroup val = tg.getParent();
             return (val != null ? val : AbstractFlag.OP_NULL);
         } else if (OP_SYS_GROUP_THREAD.equals(name)) {
-            Thread t = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
-            return (t != null ? t : AbstractFlag.OP_NULL);
+            AbstractLivestock t = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
+            return (t != null ? t.thread : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

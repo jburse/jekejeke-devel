@@ -3,6 +3,7 @@ package jekpro.platform.android;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
@@ -37,36 +38,44 @@ import jekpro.tools.term.TermCompound;
 public final class TimeRecord {
     private Number uptime;
     private Number gctime;
-    private Number time;
+    private Number both;
 
     private final static String[] OP_STATISTICS = {
             ForeignStatistics.OP_STATISTIC_UPTIME,
             ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
+            ForeignStatistics.OP_STATISTIC_BOTH,
             ForeignStatistics.OP_STATISTIC_WALL};
 
     /**
      * <p>Start time record measurement.</p>
      *
+     * @param inter The interpreter.
      * @throws InterpreterMessage Shit happens.
      */
-    public void start()
+    public void start(Interpreter inter)
             throws InterpreterMessage {
-        uptime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME);
-        time = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME);
+        uptime = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_UPTIME);
+        gctime = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_GCTIME);
+        both = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_BOTH);
     }
 
     /**
      * <p>End time record measurement.</p>
      *
+     * @param inter The interpreter.
      * @throws InterpreterMessage Shit happens.
      */
-    public void end()
+    public void end(Interpreter inter)
             throws InterpreterMessage {
-        uptime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
-        gctime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
-        time = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME), time);
+        uptime = subtract((Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
+        gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
+        both = subtract((Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_BOTH), both);
     }
 
     /**
@@ -109,19 +118,21 @@ public final class TimeRecord {
     /**
      * <p>Retrieve a time record statistic.</p>
      *
+     * @param inter The interpreter.
      * @param name The name.
      * @return The value, or null.
      * @throws InterpreterMessage Shit happens.
      */
-    public Object getStat(String name) throws InterpreterMessage {
+    public Object getStat(Interpreter inter, String name) throws InterpreterMessage {
         if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
             return uptime;
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
-            return time;
+        } else if (ForeignStatistics.OP_STATISTIC_BOTH.equals(name)) {
+            return both;
         } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
-            return ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_WALL);
+            return ForeignStatistics.sysGetStat(inter,
+                    ForeignStatistics.OP_STATISTIC_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));

@@ -34,12 +34,12 @@ import jekpro.tools.term.TermAtomic;
 public final class TimeRecord {
     private Number uptime;
     private Number gctime;
-    private Number time;
+    private Number both;
 
     private final static String[] OP_STATISTICS = {
             ForeignStatistics.OP_STATISTIC_UPTIME,
             ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
+            ForeignStatistics.OP_STATISTIC_BOTH,
             ForeignStatistics.OP_STATISTIC_WALL};
 
     private final static String[] OP_STATISTICS_WEB = {
@@ -59,8 +59,8 @@ public final class TimeRecord {
                 ForeignStatistics.OP_STATISTIC_UPTIME);
         gctime = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_GCTIME);
-        time = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME);
+        both = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_BOTH);
     }
 
     /**
@@ -76,8 +76,8 @@ public final class TimeRecord {
                 ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
         gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
-        time = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME), time);
+        both = subtract((Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_BOTH), both);
     }
 
     /**
@@ -143,10 +143,11 @@ public final class TimeRecord {
             return uptime;
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
-            return time;
+        } else if (ForeignStatistics.OP_STATISTIC_BOTH.equals(name)) {
+            return both;
         } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
-            return ForeignStatistics.sysGetStat(inter, ForeignStatistics.OP_STATISTIC_WALL);
+            return ForeignStatistics.sysGetStat(inter,
+                    ForeignStatistics.OP_STATISTIC_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));

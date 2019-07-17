@@ -11,6 +11,7 @@ import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
+import matula.util.data.MapHashLink;
 
 import java.util.Comparator;
 

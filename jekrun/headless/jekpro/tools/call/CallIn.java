@@ -9,8 +9,8 @@ import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Lobby;
+import matula.util.wire.AbstractLivestock;
 import matula.util.wire.ManagedGroup;
-import matula.util.wire.ManagedThread;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing
@@ -583,7 +583,7 @@ public final class CallIn implements Runnable {
      * @param lobby The lobby.
      */
     private static void startManagedMeasure(Lobby lobby) {
-        ManagedThread t = getManagedParent();
+        AbstractLivestock t = getManagedParent();
         if (t == null)
             return;
         AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
@@ -596,7 +596,7 @@ public final class CallIn implements Runnable {
      * @param lobby The lobby.
      */
     private static void endManagedMeasure(Lobby lobby) {
-        ManagedThread t = getManagedParent();
+        AbstractLivestock t = getManagedParent();
         if (t == null)
             return;
         AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
@@ -608,14 +608,11 @@ public final class CallIn implements Runnable {
      *
      * @return The thread parent.
      */
-    private static ManagedThread getManagedParent() {
+    private static AbstractLivestock getManagedParent() {
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
         if (!(tg instanceof ManagedGroup))
             return null;
-        Thread t = ((ManagedGroup) tg).getOwner();
-        if (!(t instanceof ManagedThread))
-            return null;
-        return (ManagedThread) t;
+        return ((ManagedGroup) tg).getOwner();
     }
 
 }

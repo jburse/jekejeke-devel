@@ -11,6 +11,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.data.AbstractMap;
@@ -62,9 +63,8 @@ public class Supervisor extends AbstractLivestock {
     public Object curerror;
     public ListArray<LocalLockfree> privates;
     public Object attachedto;
-    public int breaklevel = -1;
+    public int breaklevel = 0;
     public ListArray<AbstractSource> modstack;
-    public Display query;
     public StoreKey lastsk;
     public LoadOpts cond;
     public Object proxy;
@@ -72,6 +72,7 @@ public class Supervisor extends AbstractLivestock {
     public AbstractMap<BindUniv, Integer> varmap = new MapHash<BindUniv, Integer>();
     private SupervisorCopy copy;
     protected SupervisorCall call;
+    public Object printmap;
 
     /**
      * <p>Create a supervisor for a store.</p>
@@ -85,6 +86,8 @@ public class Supervisor extends AbstractLivestock {
         curinput = foyer.getFactory().toolinput;
         curoutput = foyer.getFactory().tooloutput;
         curerror = foyer.getFactory().toolerror;
+
+        printmap = foyer.ATOM_NIL;
     }
 
     /**
@@ -272,6 +275,18 @@ public class Supervisor extends AbstractLivestock {
      */
     public boolean setIgnore(boolean f) {
         return false;
+    }
+
+
+    /**
+     * <p>Set the engine debug mode.</p>
+     *
+     * @param m The debug mode.
+     */
+    public void setThreadPrompt(int m) {
+        synchronized (this) {
+            flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
+        }
     }
 
 }

@@ -88,7 +88,7 @@ statistics(K, V) :-
 % statistics
 :- public statistics/0.
 statistics :-
-   sys_get_lang(gestalt, P),
+   get_properties(gestalt, P),
    statistics(K, V),
    sys_convert_stat(K, V, W),
    message_make(P, statistics(K,W), M),
@@ -146,7 +146,7 @@ sys_time_redo(T) :-
 :- private sys_show_time_record/1.
 sys_show_time_record(T) :-
    sys_end_time_record(T),
-   sys_get_lang(gestalt, P),
+   get_properties(gestalt, P),
    sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
    message_make(P, time(K,W), M),

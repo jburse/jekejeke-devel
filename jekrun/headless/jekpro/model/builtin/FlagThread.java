@@ -1,7 +1,12 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
+import jekpro.reference.runtime.SpecialSession;
+import jekpro.tools.call.Controller;
+import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
 /**
@@ -42,15 +47,18 @@ public final class FlagThread extends AbstractFlag<Thread> {
     public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
     public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";
     public final static String OP_FLAG_SYS_THREAD_GROUP = "sys_thread_group";
+    public final static String OP_FLAG_SYS_TPROMPT = "sys_tprompt";
 
     private static final int FLAG_SYS_THREAD_NAME = 0;
     private static final int FLAG_SYS_THREAD_STATE = 1;
     private static final int FLAG_SYS_THREAD_GROUP = 2;
+    private static final int FLAG_SYS_TPROMPT = 3;
 
     static {
         DEFAULT.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
         DEFAULT.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
         DEFAULT.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
+        DEFAULT.add(OP_FLAG_SYS_TPROMPT, new FlagThread(FLAG_SYS_TPROMPT));
     }
 
     /**
@@ -77,6 +85,12 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 return t.getState().name();
             case FLAG_SYS_THREAD_GROUP:
                 return t.getThreadGroup();
+            case FLAG_SYS_TPROMPT:
+                Controller contr = Controller.currentController(t);
+                if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                Supervisor s = (Supervisor) contr.getVisor();
+                return SpecialSession.promptToAtom(s.flags & SpecialSession.MASK_MODE_PRMT);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -90,9 +104,11 @@ public final class FlagThread extends AbstractFlag<Thread> {
      * @param d  The value display.
      * @param en The engine.
      * @return True if flag could be changed, otherwise false.
+     * @throws EngineMessage Shit happens.
      */
     public boolean setObjFlag(Thread t, Object m, Display d,
-                              Engine en) {
+                              Engine en)
+            throws EngineMessage {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
                 /* can't modify */
@@ -103,6 +119,13 @@ public final class FlagThread extends AbstractFlag<Thread> {
             case FLAG_SYS_THREAD_GROUP:
                 /* can't modify */
                 return false;
+            case FLAG_SYS_TPROMPT:
+                Controller contr = Controller.currentController(t);
+                if (contr == null) return true;
+
+                Supervisor s = (Supervisor) contr.getVisor();
+                s.setThreadPrompt(SpecialSession.atomToPrompt(m, d));
+                return true;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }

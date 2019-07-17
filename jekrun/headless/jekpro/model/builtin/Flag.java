@@ -9,7 +9,9 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.util.data.AbstractMap;
@@ -61,6 +63,7 @@ public final class Flag extends AbstractFlag<Engine> {
     public final static String OP_BACK_QUOTES = "back_quotes";
     private final static String OP_MAX_CODE = "max_code";
     private final static String OP_SYS_BREAK_LEVEL = "sys_break_level";
+    private final static String OP_SYS_PRINT_MAP = "sys_print_map";
     private final static String OP_SYS_LAST_PRED = "sys_last_pred";
     public final static String OP_SINGLE_QUOTES = "single_quotes";
     public final static String OP_SYS_ACT_STATUS = "sys_act_status";
@@ -80,15 +83,16 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_BACK_QUOTES = 6;
     private static final int FLAG_MAX_CODE = 7;
     private static final int FLAG_SYS_BREAK_LEVEL = 8;
-    private static final int FLAG_SYS_LAST_PRED = 9;
-    private static final int FLAG_SYS_ACT_STATUS = 10;
-    private static final int FLAG_SINGLE_QUOTES = 11;
-    private static final int FLAG_SYS_VARIABLES = 12;
-    private static final int FLAG_SYS_CHOICES = 13;
-    private static final int FLAG_SYS_RANDOM = 14;
-    private static final int FLAG_SYS_TIMEOUT = 15;
-    private static final int FLAG_STYLE_CHECK = 16;
-    private static final int FLAG_DIALECT = 17;
+    private static final int FLAG_SYS_PRINT_MAP = 9;
+    private static final int FLAG_SYS_LAST_PRED = 10;
+    private static final int FLAG_SYS_ACT_STATUS = 11;
+    private static final int FLAG_SINGLE_QUOTES = 12;
+    private static final int FLAG_SYS_VARIABLES = 13;
+    private static final int FLAG_SYS_CHOICES = 14;
+    private static final int FLAG_SYS_RANDOM = 15;
+    private static final int FLAG_SYS_TIMEOUT = 16;
+    private static final int FLAG_STYLE_CHECK = 17;
+    private static final int FLAG_DIALECT = 18;
 
     static {
         DEFAULT.add(OP_SYS_BODY_VARIABLE, new Flag(FLAG_SYS_BODY_VARIABLE));
@@ -100,6 +104,7 @@ public final class Flag extends AbstractFlag<Engine> {
         DEFAULT.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
         DEFAULT.add(OP_MAX_CODE, new Flag(FLAG_MAX_CODE));
         DEFAULT.add(OP_SYS_BREAK_LEVEL, new Flag(FLAG_SYS_BREAK_LEVEL));
+        DEFAULT.add(OP_SYS_PRINT_MAP, new Flag(FLAG_SYS_PRINT_MAP));
         DEFAULT.add(OP_SYS_LAST_PRED, new Flag(FLAG_SYS_LAST_PRED));
         DEFAULT.add(OP_SYS_ACT_STATUS, new Flag(FLAG_SYS_ACT_STATUS));
         DEFAULT.add(OP_SINGLE_QUOTES, new Flag(FLAG_SINGLE_QUOTES));
@@ -151,6 +156,8 @@ public final class Flag extends AbstractFlag<Engine> {
                 return Integer.valueOf(Character.MAX_CODE_POINT);
             case FLAG_SYS_BREAK_LEVEL:
                 return Integer.valueOf(en.visor.breaklevel);
+            case FLAG_SYS_PRINT_MAP:
+                return en.visor.printmap;
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
                 return (sk != null ? StoreKey.storeKeyToSkel(sk) : AbstractFlag.OP_NULL);
@@ -235,8 +242,15 @@ public final class Flag extends AbstractFlag<Engine> {
                     /* can't modify */
                     return false;
                 case FLAG_SYS_BREAK_LEVEL:
-                    /* can't modify */
-                    return false;
+                    Number num = SpecialEval.derefAndCastInteger(m, d);
+                    en.visor.breaklevel = SpecialEval.castIntValue(num);
+                    return true;
+                case FLAG_SYS_PRINT_MAP:
+                    en.skel = m;
+                    en.display = d;
+                    en.deref();
+                    en.visor.printmap = AbstractTerm.createMolec(en.skel, en.display);
+                    return true;
                 case FLAG_SYS_LAST_PRED:
                     en.skel = m;
                     en.display = d;
@@ -270,7 +284,7 @@ public final class Flag extends AbstractFlag<Engine> {
                     }
                     return true;
                 case FLAG_SYS_TIMEOUT:
-                    Number num = SpecialEval.derefAndCastInteger(m, d);
+                    num = SpecialEval.derefAndCastInteger(m, d);
                     en.store.foyer.timeout = SpecialEval.castLongValue(num);
                     return true;
                 case FLAG_STYLE_CHECK:
