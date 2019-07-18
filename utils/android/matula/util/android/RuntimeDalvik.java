@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import derek.util.protect.LicenseError;
+import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
@@ -151,9 +152,10 @@ public final class RuntimeDalvik extends AbstractRuntime {
     /**
      * <p>The thread cpu time in milliseconds.</p>
      *
+     * @param enforced The enforced.
      * @return The thread cpu time in milliseconds.
      */
-    public long currentThreadCpuMillis() {
+    public long currentThreadCpuMillis(Enforced enforced) {
         return SystemClock.currentThreadTimeMillis();
     }
 

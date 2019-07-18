@@ -3,7 +3,9 @@ package jekpro.tools.call;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.array.AbstractFactory;
@@ -533,7 +535,7 @@ public final class CallIn implements Runnable {
      * <p>Run a callin.</p>
      */
     public void run() {
-        startManagedMeasure(inter.getKnowledgebase().getLobby());
+        startManagedMeasure(inter);
         try {
             try {
                 next().close();
@@ -549,7 +551,7 @@ public final class CallIn implements Runnable {
         } catch (Throwable x) {
             x.printStackTrace();
         }
-        endManagedMeasure(inter.getKnowledgebase().getLobby());
+        endManagedMeasure(inter);
     }
 
     /**
@@ -580,27 +582,32 @@ public final class CallIn implements Runnable {
     /**
      * <p>Start the group measurement.</p>
      *
-     * @param lobby The lobby.
+     * @param inter The interpreter.
      */
-    private static void startManagedMeasure(Lobby lobby) {
+    private static void startManagedMeasure(Interpreter inter) {
         AbstractLivestock t = getManagedParent();
         if (t == null)
             return;
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
-        t.addMillis(-factory.getRuntime().currentThreadCpuMillis());
+        Foyer foyer = (Foyer) lobby.getFoyer();
+        t.addMillis(-factory.getRuntime().currentThreadCpuMillis(foyer));
     }
 
     /**
      * <p>End the group measurement.</p>
      *
-     * @param lobby The lobby.
+     * @param inter The interpreter.
      */
-    private static void endManagedMeasure(Lobby lobby) {
+    private static void endManagedMeasure(Interpreter inter) {
         AbstractLivestock t = getManagedParent();
         if (t == null)
             return;
+        Lobby lobby = inter.getKnowledgebase().getLobby();
         AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
-        t.addMillis(factory.getRuntime().currentThreadCpuMillis());
+        Foyer foyer = (Foyer) lobby.getFoyer();
+        Supervisor s = (Supervisor) inter.getController().getVisor();
+        t.addMillis(factory.getRuntime().currentThreadCpuMillis(foyer) + s.getMillis());
     }
 
     /**

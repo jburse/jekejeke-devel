@@ -100,10 +100,6 @@ public class Foyer extends Enforced {
     public final static int IO_TERM = 0;
     public final static int IO_ANNO = 1;
 
-    public static final int HINT_CMD = 1;
-    public static final int HINT_GUI = 2;
-    public static final int HINT_WEB = 3;
-
     private final ListArray<Integer> hole = new ListArray<Integer>();
     private int nextseqid;
     public Object goodfor;
@@ -113,8 +109,6 @@ public class Foyer extends Enforced {
     public long timeout = 30000; /* half minute */
     public Random random = new Random();
     private int flags;
-    //    private int gensym;
-    private int hint;
 
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
@@ -525,28 +519,6 @@ public class Foyer extends Enforced {
                 source.importvers = o;
             }
         }
-    }
-
-    /***********************************************************/
-    /* Advanced Configuration                                  */
-    /***********************************************************/
-
-    /**
-     * <p>Retrieve the hint.</p>
-     *
-     * @return The hint.
-     */
-    public int getHint() {
-        return hint;
-    }
-
-    /**
-     * <p>Set the hint.</p>
-     *
-     * @param h The hint.
-     */
-    public final void setHint(int h) {
-        hint = h;
     }
 
 }

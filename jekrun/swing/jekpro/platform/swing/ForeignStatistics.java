@@ -1,9 +1,11 @@
 package jekpro.platform.swing;
 
+import jekpro.frequent.system.ForeignGroup;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.TermAtomic;
+import matula.util.wire.ManagedGroup;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -42,10 +44,11 @@ public final class ForeignStatistics {
     private final static String OP_STATISTIC_FREE = "free";
     final static String OP_STATISTIC_UPTIME = "uptime";
     final static String OP_STATISTIC_GCTIME = "gctime";
-    final static String OP_STATISTIC_WALL = "wall";
     final static String OP_STATISTIC_TIME = "time";
     final static String OP_STATISTIC_TIME_SELF = "time_self";
     final static String OP_STATISTIC_TIME_MANAGED = "time_managed";
+    final static String OP_STATISTIC_TIME_SNAPSHOT = "time_snapshot";
+    final static String OP_STATISTIC_WALL = "wall";
 
     private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
 
@@ -152,6 +155,10 @@ public final class ForeignStatistics {
                         return null;
                     }
             }
+        } else if (OP_STATISTIC_TIME.equals(name)) {
+            return add(add((Number) sysGetStat(inter, OP_STATISTIC_TIME_SELF),
+                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_MANAGED)),
+                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_SNAPSHOT));
         } else if (OP_STATISTIC_TIME_SELF.equals(name)) {
             int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
             switch (hint) {
@@ -166,14 +173,25 @@ public final class ForeignStatistics {
                         return null;
                     }
             }
-        } else if (OP_STATISTIC_WALL.equals(name)) {
-            return TermAtomic.normBigInteger(System.currentTimeMillis());
         } else if (OP_STATISTIC_TIME_MANAGED.equals(name)) {
             Supervisor s = (Supervisor) inter.getController().getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
-        } else if (OP_STATISTIC_TIME.equals(name)) {
-            return add((Number) sysGetStat(inter, OP_STATISTIC_TIME_SELF),
-                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_MANAGED));
+        } else if (OP_STATISTIC_TIME_SNAPSHOT.equals(name)) {
+            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            switch (hint) {
+                case Foyer.HINT_WEB:
+                    return null;
+                default:
+                    ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+                    if (tb.isThreadCpuTimeSupported()) {
+                        long cputime = snapshotThread(inter) / 1000000L;
+                        return TermAtomic.normBigInteger(cputime);
+                    } else {
+                        return null;
+                    }
+            }
+        } else if (OP_STATISTIC_WALL.equals(name)) {
+            return TermAtomic.normBigInteger(System.currentTimeMillis());
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
@@ -198,6 +216,56 @@ public final class ForeignStatistics {
         } else {
             return i2;
         }
+    }
+
+    /**
+     * <p>Compute the thread cpu time snapshot</p>
+     *
+     * @param inter The interpreter.
+     * @return The thread cpu time snapshot.
+     */
+    private static long snapshotThread(Interpreter inter) {
+        long nano = 0;
+        Supervisor s = (Supervisor) inter.getController().getVisor();
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
+        for (int i = 0; i < tgs.length; i++) {
+            tg = tgs[i];
+            if (!(tg instanceof ManagedGroup))
+                continue;
+            if (s != ((ManagedGroup) tg).getOwner())
+                continue;
+            nano += snapshotGroup(tg);
+        }
+        return nano;
+    }
+
+    /**
+     * <p>Compute the thread cpu time snapshot</p>
+     *
+     * @param tg The thread group.
+     * @return The thread cpu time snapshot.
+     */
+    private static long snapshotGroup(ThreadGroup tg) {
+        long nano = 0;
+        for (; ; ) {
+            Thread[] threads = ForeignGroup.snapshotThreadsOfGroup(tg);
+            for (int i = 0; i < threads.length; i++) {
+                long id = threads[i].getId();
+                ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+                nano += tb.getThreadCpuTime(id);
+            }
+            ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
+            if (tgs.length > 0) {
+                int i = 0;
+                for (; i < tgs.length - 1; i++)
+                    nano += snapshotGroup(tgs[i]);
+                tg = tgs[i];
+            } else {
+                break;
+            }
+        }
+        return nano;
     }
 
     /*********************************************************************/

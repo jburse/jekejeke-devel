@@ -1,6 +1,7 @@
 package matula.util.config;
 
 import derek.util.protect.LicenseError;
+import matula.comp.sharik.Enforced;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
@@ -221,8 +222,9 @@ public abstract class AbstractRuntime {
     /**
      * <p>The thread cpu time in milliseconds.</p>
      *
+     * @param enforced The enforced.
      * @return The thread cpu time in milliseconds.
      */
-    public abstract long currentThreadCpuMillis();
+    public abstract long currentThreadCpuMillis(Enforced enforced);
 
 }

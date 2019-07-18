@@ -130,7 +130,7 @@ public final class ForeignGroup {
      * @param tg The thread group.
      * @return The snapshot of the threads of the thread group.
      */
-    private static Thread[] snapshotThreadsOfGroup(ThreadGroup tg) {
+    public static Thread[] snapshotThreadsOfGroup(ThreadGroup tg) {
         Thread[] threads = new Thread[4];
         int num = tg.enumerate(threads, false);
         while (num == threads.length) {
@@ -170,7 +170,7 @@ public final class ForeignGroup {
      * @param tg The thread group.
      * @return The snapshot of the groups of the thread group.
      */
-    private static ThreadGroup[] snapshotGroupsOfGroup(ThreadGroup tg) {
+    public static ThreadGroup[] snapshotGroupsOfGroup(ThreadGroup tg) {
         ThreadGroup[] groups = new ThreadGroup[4];
         int num = tg.enumerate(groups, false);
         while (num == groups.length) {
