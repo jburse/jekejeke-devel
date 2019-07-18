@@ -34,7 +34,11 @@ import jekpro.tools.term.TermAtomic;
 public final class TimeRecord {
     private Number uptime;
     private Number gctime;
-    private Number both;
+    private Number time;
+
+    private Number uptime1;
+    private Number gctime1;
+    private Number time1;
 
     private final static String[] OP_STATISTICS = {
             ForeignStatistics.OP_STATISTIC_UPTIME,
@@ -47,19 +51,19 @@ public final class TimeRecord {
             ForeignStatistics.OP_STATISTIC_WALL};
 
     /**
-     * <p>Start time record measurement.</p>
+     * <p>Create a time record.</p>
      *
      * @param inter The interpreter.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void start(Interpreter inter)
+    public TimeRecord(Interpreter inter)
             throws InterpreterMessage, InterpreterException {
-        uptime = (Number) ForeignStatistics.sysGetStat(inter,
+        uptime1 = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime = (Number) ForeignStatistics.sysGetStat(inter,
+        gctime1 = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_GCTIME);
-        both = (Number) ForeignStatistics.sysGetStat(inter,
+        time1 = (Number) ForeignStatistics.sysGetStat(inter,
                 ForeignStatistics.OP_STATISTIC_TIME);
     }
 
@@ -67,17 +71,25 @@ public final class TimeRecord {
      * <p>End time record measurement.</p>
      *
      * @param inter The interpreter.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void end(Interpreter inter)
+    public void sysMeasure(Interpreter inter)
             throws InterpreterMessage, InterpreterException {
-        uptime = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
-        gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
-        both = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME), both);
+        uptime = uptime1;
+        gctime = gctime1;
+        time = time1;
+
+        uptime1 = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_UPTIME);
+        gctime1 = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_GCTIME);
+        time1 = (Number) ForeignStatistics.sysGetStat(inter,
+                ForeignStatistics.OP_STATISTIC_TIME);
+
+        uptime = subtract(uptime1, uptime);
+        gctime = subtract(gctime1, gctime);
+        time = subtract(time1, time);
     }
 
     /**
@@ -102,7 +114,7 @@ public final class TimeRecord {
      * @param inter The interpreter.
      * @param co    The call out.
      * @return The statistics key.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public static String sysCurrentStat(Interpreter inter, CallOut co)
@@ -144,7 +156,7 @@ public final class TimeRecord {
         } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
             return gctime;
         } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
-            return both;
+            return time;
         } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
             return ForeignStatistics.sysGetStat(inter,
                     ForeignStatistics.OP_STATISTIC_WALL);

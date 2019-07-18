@@ -117,26 +117,19 @@ sys_convert_stat(_, X, X).
 :- public time/1.
 :- meta_predicate time(0).
 time(G) :-
-   sys_make_time_record(T),
+   sys_new_time_record(T),
    sys_time_call(T),
    current_prolog_flag(sys_choices, X), G,
    current_prolog_flag(sys_choices, Y),
-   (  X =:= Y
-   -> sys_show_time_record(T), !
-   ;  sys_time_redo(T)).
+   (  X =:= Y -> !; true),
+   sys_show_time_record(T).
 :- set_predicate_property(time/1, sys_notrace).
 
 % sys_time_call(+Record)
 :- private sys_time_call/1.
+sys_time_call(_).
 sys_time_call(T) :-
-   sys_start_time_record(T)
-;  sys_show_time_record(T), fail.
-
-% sys_time_redo(+Record)
-:- private sys_time_redo/1.
-sys_time_redo(T) :-
-   sys_show_time_record(T)
-;  sys_start_time_record(T), fail.
+   sys_show_time_record(T), fail.
 
 /****************************************************************/
 /* Time Record Access & Modification                            */
@@ -145,7 +138,7 @@ sys_time_redo(T) :-
 % sys_show_time_record(+TimeRecord)
 :- private sys_show_time_record/1.
 sys_show_time_record(T) :-
-   sys_end_time_record(T),
+   sys_measure_time_record(T),
    get_properties(gestalt, P),
    sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
@@ -162,19 +155,14 @@ sys_current_record_stat(T, K, V) :-
 sys_current_record_stat(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
-% sys_make_time_record(-Record)
-:- private sys_make_time_record/1.
-:- foreign_constructor(sys_make_time_record/1, 'TimeRecord', new).
+% sys_new_time_record(-Record)
+:- private sys_new_time_record/1.
+:- foreign_constructor(sys_new_time_record/1, 'TimeRecord', new('Interpreter')).
 
-% sys_start_time_record(+Record)
-:- private sys_start_time_record/1.
-:- virtual sys_start_time_record/1.
-:- foreign(sys_start_time_record/1, 'TimeRecord', start('Interpreter')).
-
-% sys_end_time_record(+Record)
-:- private sys_end_time_record/1.
-:- virtual sys_end_time_record/1.
-:- foreign(sys_end_time_record/1, 'TimeRecord', end('Interpreter')).
+% sys_measure_time_record(+Record)
+:- private sys_measure_time_record/1.
+:- virtual sys_measure_time_record/1.
+:- foreign(sys_measure_time_record/1, 'TimeRecord', sysMeasure('Interpreter')).
 
 % sys_current_record_stat(-Atom)
 :- private sys_current_record_stat/1.

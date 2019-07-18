@@ -591,7 +591,8 @@ public final class CallIn implements Runnable {
         Lobby lobby = inter.getKnowledgebase().getLobby();
         AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
         Foyer foyer = (Foyer) lobby.getFoyer();
-        t.addMillis(-factory.getRuntime().currentThreadCpuMillis(foyer));
+        Supervisor s = (Supervisor) inter.getController().getVisor();
+        t.addMillis(- factory.getRuntime().currentThreadCpuMillis(foyer) - s.getMillis());
     }
 
     /**

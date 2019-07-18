@@ -6,6 +6,20 @@
  * of the time performance of a goal is facilitated by the
  * predicate time/1.
  *
+ * Example:
+ * ?- statistics.
+ * Max Memory             512,753,664 Bytes
+ * Used Memory             68,568,872 Bytes
+ * Free Memory            444,184,792 Bytes
+ * Uptime                      5,293 Millis
+ * GC Time                        12 Millis
+ * Thread Cpu Time             1,000 Millis
+ * Current Time           02/13/18 15:20:08
+ *
+ * Since Jekejeke Prolog is a multi-threaded interpreter, we also provide
+ * statistics for the threads in the JVM. The predicate thread_statistics/3
+ * returns some key figures concerning the given thread.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -36,30 +50,34 @@
 :- module(user, []).
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
-:- use_module(library(system/shell)).
-:- sys_load_resource(gestalt).
+:- use_module(library(system/zone)).
+:- use_module(library(system/thread)).
+:- sys_load_resource('gestalt').
+
+/*********************************************************************/
+/* Statistics                                                        */
+/*********************************************************************/
 
 /**
  * statistics(K, V):
- * The predicate succeeds for the values V of the keys K. The following
- * keys are returned by the predicate. For a list of keys see the API
- * documentation.
+ * The predicate succeeds for the values V of the keys K. The
+ * following keys are returned by the predicate. For a list of
+ * keys see the API documentation.
  */
 % statistics(+Atom, -Atomic)
 :- public statistics/2.
-statistics(K, V) :-
-   ground(K), !,
-   sys_get_stat(K, V).
-statistics(K, V) :-
+statistics(K, V) :- var(K), !,
    sys_current_stat(K),
    sys_get_stat(K, V).
-
-:- private sys_get_stat/2.
-:- foreign(sys_get_stat/2, 'ForeignStatistics',
-      sysGetStat('String')).
+statistics(K, V) :-
+   sys_get_stat(K, V).
 
 :- private sys_current_stat/1.
 :- foreign(sys_current_stat/1, 'ForeignStatistics', sysCurrentStat('CallOut')).
+
+:- private sys_get_stat/2.
+:- foreign(sys_get_stat/2, 'ForeignStatistics',
+      sysGetStat('Interpreter', 'String')).
 
 /**
  * statistics:
@@ -68,19 +86,24 @@ statistics(K, V) :-
 % statistics
 :- public statistics/0.
 statistics :-
-   statistics(X, H),
-   sys_convert(X, H, Y),
-   sys_get_lang(gestalt, P),
-   message_make(P, statistics(X,Y), M),
-   ttywrite(M), ttynl, fail.
+   get_properties('gestalt', P),
+   statistics(K, V),
+   sys_convert_stat(K, V, W),
+   message_make(P, statistics(K,W), M),
+   write(M), nl,
+   fail.
 statistics.
 :- set_predicate_property(statistics/0, sys_notrace).
 
-% sys_convert(+Atom, +Value, -Value)
-:- private sys_convert/3.
-sys_convert(wall, X, Y) :- !,
+% sys_convert_stat(+Atom, +Value, -Value)
+:- private sys_convert_stat/3.
+sys_convert_stat(wall, X, Y) :- !,
    get_time(X, Y).
-sys_convert(_, X, X).
+sys_convert_stat(_, X, X).
+
+/*********************************************************************/
+/* Time                                                              */
+/*********************************************************************/
 
 /**
  * time(A):
@@ -91,52 +114,92 @@ sys_convert(_, X, X).
  */
 % time(+Goal)
 :- public time/1.
+:- meta_predicate time(0).
 time(G) :-
-   sys_make_time_record(T),
-   (  sys_start_time_record(T)
-   ;  sys_time_record(T), fail), G,
-   (  sys_time_record(T)
-   ;  sys_start_time_record(T), fail).
+   sys_new_time_record(T),
+   sys_time_call(T),
+   current_prolog_flag(sys_choices, X),
+   G,
+   current_prolog_flag(sys_choices, Y),
+   (X =:= Y -> !; true),
+   sys_show_time_record(T).
 :- set_predicate_property(time/1, sys_notrace).
 
-% sys_time_record(+TimeRecord)
-:- private sys_time_record/1.
-sys_time_record(T) :-
-   sys_end_time_record(T),
-   sys_time_record(T, X, H),
-   sys_convert(X, H, Y),
-   sys_get_lang(gestalt, P),
-   message_make(P, time(X,Y), M),
-   ttywrite(M), fail.
-sys_time_record(_) :- ttynl.
+% sys_time_call(+Record)
+:- private sys_time_call/1.
+sys_time_call(_).
+sys_time_call(T) :-
+   sys_show_time_record(T),
+   fail.
 
-% sys_time_record(+TimeRecord, +Atom, -Atomic)
-:- private sys_time_record/3.
-sys_time_record(T, K, V) :-
-   ground(K), !,
+/****************************************************************/
+/* Time Record Access & Modification                            */
+/****************************************************************/
+
+% sys_show_time_record(+TimeRecord)
+:- private sys_show_time_record/1.
+sys_show_time_record(T) :-
+   sys_measure_time_record(T),
+   get_properties('gestalt', P),
+   sys_current_record_stat(T, K, V),
+   sys_convert_stat(K, V, W),
+   message_make(P, time(K,W), M),
+   write(M), fail.
+sys_show_time_record(_) :-
+   nl.
+
+% sys_current_record_stat(+TimeRecord, +Atom, -Atomic)
+:- private sys_current_record_stat/3.
+sys_current_record_stat(T, K, V) :- var(K), !,
+   sys_current_record_stat(K),
    sys_get_record_stat(T, K, V).
-sys_time_record(T, K, V) :-
-   sys_list_record_stats(L),
-   sys_member(K, L),
+sys_current_record_stat(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
-:- private sys_make_time_record/1.
-:- foreign_constructor(sys_make_time_record/1, 'TimeRecord', new).
+% sys_new_time_record(-Record)
+:- private sys_new_time_record/1.
+:- foreign_constructor(sys_new_time_record/1, 'TimeRecord', new('Interpreter')).
 
-:- private sys_start_time_record/1.
-:- virtual sys_start_time_record/1.
-:- foreign(sys_start_time_record/1, 'TimeRecord', start).
+% sys_measure_time_record(+Record)
+:- private sys_measure_time_record/1.
+:- virtual sys_measure_time_record/1.
+:- foreign(sys_measure_time_record/1, 'TimeRecord', sysMeasure('Interpreter')).
 
-:- private sys_end_time_record/1.
-:- virtual sys_end_time_record/1.
-:- foreign(sys_end_time_record/1, 'TimeRecord', end).
+% sys_current_record_stat(-Atom)
+:- private sys_current_record_stat/1.
+:- foreign(sys_current_record_stat/1, 'TimeRecord', sysCurrentStat('CallOut')).
 
-:- private sys_list_record_stats/1.
-:- foreign(sys_list_record_stats/1, 'TimeRecord', sysListRecordStats).
-
+% sys_get_record_stat(+Record, +Atom, -Atomic)
 :- private sys_get_record_stat/3.
 :- virtual sys_get_record_stat/3.
-:- foreign(sys_get_record_stat/3, 'TimeRecord', getStat('String')).
+:- foreign(sys_get_record_stat/3, 'TimeRecord',
+      getStat('Interpreter', 'String')).
+
+/*********************************************************************/
+/* Thread Statistics                                                 */
+/*********************************************************************/
+
+/**
+ * thread_statistics(T, K, V):
+ * The predicate succeeds for the values V of the keys K concerning the
+ * thread T. The following keys are returned by the predicate. For
+ * a list of keys see the API documentation.
+ */
+% thread_statistics(+Thread, +Atom, -Atomic)
+:- public thread_statistics/3.
+thread_statistics(T, K, V) :- var(K), !,
+   sys_current_thread_stat(K),
+   sys_get_thread_stat(T, K, V).
+thread_statistics(T, K, V) :-
+   sys_get_thread_stat(T, K, V).
+
+:- private sys_current_thread_stat/1.
+:- foreign(sys_current_thread_stat/1, 'ForeignStatistics',
+           sysCurrentThreadStat('CallOut')).
+
+:- private sys_get_thread_stat/3.
+:- foreign(sys_get_thread_stat/3, 'ForeignStatistics',
+           sysGetThreadStat('Thread', 'String')).
 
 /***********************************************************/
 /* Apropos Utility                                         */

@@ -184,7 +184,7 @@ public final class ForeignStatistics {
                 default:
                     ThreadMXBean tb = ManagementFactory.getThreadMXBean();
                     if (tb.isThreadCpuTimeSupported()) {
-                        long cputime = snapshotThread(inter) / 1000000L;
+                        long cputime = snapshotThread(inter);
                         return TermAtomic.normBigInteger(cputime);
                     } else {
                         return null;
@@ -225,7 +225,7 @@ public final class ForeignStatistics {
      * @return The thread cpu time snapshot.
      */
     private static long snapshotThread(Interpreter inter) {
-        long nano = 0;
+        long millis = 0;
         Supervisor s = (Supervisor) inter.getController().getVisor();
         ThreadGroup tg = Thread.currentThread().getThreadGroup();
         ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
@@ -235,9 +235,9 @@ public final class ForeignStatistics {
                 continue;
             if (s != ((ManagedGroup) tg).getOwner())
                 continue;
-            nano += snapshotGroup(tg);
+            millis += snapshotGroup(tg);
         }
-        return nano;
+        return millis;
     }
 
     /**
@@ -247,25 +247,33 @@ public final class ForeignStatistics {
      * @return The thread cpu time snapshot.
      */
     private static long snapshotGroup(ThreadGroup tg) {
-        long nano = 0;
+        long millis = 0;
         for (; ; ) {
             Thread[] threads = ForeignGroup.snapshotThreadsOfGroup(tg);
             for (int i = 0; i < threads.length; i++) {
-                long id = threads[i].getId();
+                Thread thread = threads[i];
+                Controller controller = Controller.currentController(thread);
+                long id = thread.getId();
                 ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-                nano += tb.getThreadCpuTime(id);
+                long cputime = tb.getThreadCpuTime(id) / 1000000L;
+                if (controller != null) {
+                    Supervisor s = (Supervisor) controller.getVisor();
+                    millis += cputime + s.getMillis();
+                } else {
+                    millis += cputime;
+                }
             }
             ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
             if (tgs.length > 0) {
                 int i = 0;
                 for (; i < tgs.length - 1; i++)
-                    nano += snapshotGroup(tgs[i]);
+                    millis += snapshotGroup(tgs[i]);
                 tg = tgs[i];
             } else {
                 break;
             }
         }
-        return nano;
+        return millis;
     }
 
     /*********************************************************************/
