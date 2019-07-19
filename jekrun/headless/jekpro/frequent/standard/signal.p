@@ -62,17 +62,6 @@
 :- module(user, []).
 
 /**
- * sys_cleanup(A):
- * The predicate creates a choice point and succeeds once. The goal
- * A is called upon redo or when the choice point is removed.
- */
-% sys_cleanup(+Goal)
-:- public sys_cleanup/1.
-:- meta_predicate sys_cleanup(0).
-:- set_predicate_property(sys_cleanup/1, sys_notrace).
-:- special(sys_cleanup/1, 'SpecialSignal', 1).
-
-/**
  * call_cleanup(B, C):
  * The predicate succeeds whenever B succeeds. Additionally the
  * clean-up C is called when B fails or deterministically succeeds.
@@ -89,17 +78,6 @@ call_cleanup(G, C) :-
    call(G),
    current_prolog_flag(sys_choices, Y),
    (  X =:= Y, !; true).
-
-/**
- * sys_atomic(A):
- * The predicate succeeds whenever A succeeds. The goal A is
- * invoked with the signal mask temporarily set to off.
- */
-% sys_atomic(+Goal)
-:- public sys_atomic/1.
-:- meta_predicate sys_atomic(0).
-:- set_predicate_property(sys_atomic/1, sys_notrace).
-:- special(sys_atomic/1, 'SpecialSignal', 0).
 
 /**
  * setup_call_cleanup(A, B, C):
@@ -121,3 +99,36 @@ setup_call_cleanup(A, G, C) :-
    call(G),
    current_prolog_flag(sys_choices, Y),
    (  X =:= Y, !; true).
+
+/**
+ * sys_cleanup(A):
+ * The predicate creates a choice point and succeeds once. The goal
+ * A is called upon redo or when the choice point is removed.
+ */
+% sys_cleanup(+Goal)
+:- public sys_cleanup/1.
+:- meta_predicate sys_cleanup(0).
+:- set_predicate_property(sys_cleanup/1, sys_notrace).
+:- special(sys_cleanup/1, 'SpecialSignal', 0).
+
+/**
+ * sys_atomic(A):
+ * The predicate succeeds whenever A succeeds. The goal A is
+ * invoked with the signal mask temporarily set to off.
+ */
+% sys_atomic(+Goal)
+:- public sys_atomic/1.
+:- meta_predicate sys_atomic(0).
+:- set_predicate_property(sys_atomic/1, sys_notrace).
+:- special(sys_atomic/1, 'SpecialSignal', 1).
+
+/**
+ * sys_ignore(A):
+ * The predicate succeeds whenever A succeeds. The goal A is
+ * invoked with the mode cloak temporarily set to on.
+ */
+% sys_ignore(+Goal)
+:- public sys_ignore/1.
+:- meta_predicate sys_ignore(0).
+:- special(sys_ignore/1, 'SpecialSignal', 2).
+:- set_predicate_property(sys_ignore/1, sys_notrace).

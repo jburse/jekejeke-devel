@@ -316,67 +316,6 @@ public class Engine extends StackElement implements Comparator<Object> {
         fun.moniEvaluate(this);
     }
 
-    /****************************************************************************/
-    /* Execution Helpers                                                        */
-    /****************************************************************************/
-
-    /**
-     * <p>Search the given term once and close it.</p>
-     * <p>Throw a warning when it fails.</p>
-     * <p>The term is passed via skel and display.</p>
-     *
-     * @throws EngineException Shit happens.
-     */
-    public final void invokeChecked()
-            throws EngineException {
-        Intermediate r = contskel;
-        CallFrame u = contdisplay;
-        boolean backignore = visor.setIgnore(false);
-        boolean backverify = visor.setVerify(false);
-        AbstractUndo mark = bind;
-        int snap = number;
-        try {
-            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, this);
-            Display d2 = display;
-
-            CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
-            contskel = dire;
-            contdisplay = ref2;
-            if (!runLoop2(snap, true))
-                throw new EngineMessage(EngineMessage.syntaxError(
-                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
-        } catch (EngineException x) {
-            contskel = r;
-            contdisplay = u;
-            fault = x;
-            cutChoices(snap);
-            releaseBind(mark);
-            visor.setVerify(backverify);
-            visor.setIgnore(backignore);
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(this));
-            contskel = r;
-            contdisplay = u;
-            fault = x;
-            cutChoices(snap);
-            releaseBind(mark);
-            visor.setVerify(backverify);
-            visor.setIgnore(backignore);
-            throw fault;
-        }
-        contskel = r;
-        contdisplay = u;
-        fault = null;
-        cutChoices(snap);
-        releaseBind(mark);
-        visor.setVerify(backverify);
-        visor.setIgnore(backignore);
-        if (fault != null)
-            throw fault;
-    }
-
     /*****************************************************************/
     /* Lexical Comparison                                            */
     /*****************************************************************/

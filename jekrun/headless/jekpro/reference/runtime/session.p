@@ -61,6 +61,7 @@
 :- use_module(library(system/locale)).
 :- use_module(library(stream/console)).
 :- use_module(library(misc/residue)).
+:- use_module(library(system/thread)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/
@@ -187,23 +188,38 @@ sys_answer(_, _) :-
 % sys_answer_ask(+Assoc, +List)
 :- private sys_answer_ask/2.
 sys_answer_ask(N, R) :- repeat,
-   sys_trap(sys_answer_show(N, R, L), E,
+   sys_trap(sys_answer_prompt(N, R, Response), E,
       (  sys_error_type(E, system_error(_))
       -> sys_raise(E)
       ;  sys_error_message(E), fail)), !,
-   L == ''.
+   Response == answer_cut.
+
+% sys_answer_prompt(+Assoc, +List, -Atom)
+:- private sys_answer_prompt/3.
+sys_answer_prompt(N, R, Response) :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tprompt, Prompt),
+   setup_call_cleanup(
+      set_thread_flag(Thread, sys_tprompt, on),
+      sys_answer_show(N, R, Response),
+      set_thread_flag(Thread, sys_tprompt, Prompt)).
 
 % sys_answer_show(+Assoc, +List, -Atom)
 :- private sys_answer_show/3.
-sys_answer_show(N, R, L) :-
+sys_answer_show(N, R, Response) :-
    sys_filter_show(N, R),
    write(' '), flush_output,
    (  read_line(L) -> true; exit),
-   (  L == ; -> true
-   ;  L == '' -> true
-   ;  L == ? -> sys_answer_help, fail
+   thread_current(Thread),
+   (  L == ;
+   -> set_thread_flag(Thread, sys_tprompt, off)
+   ;  L == ''
+   -> set_thread_flag(Thread, sys_tprompt, answer_cut)
+   ;  L == ? -> sys_answer_help
    ;  term_atom(G, L, [terminator(period)]),
-      once(G), fail).
+      once(sys_ignore(G))),
+   current_thread_flag(Thread, sys_tprompt, Response),
+   Response \== on.
 
 % sys_answer_help
 :- private sys_answer_help/0.
@@ -229,7 +245,7 @@ sys_error_stack(E) :-
    print_stack_trace(T, E).
 
 % sys_error_message(+Term)
-:- public sys_error_message/1.
+:- private sys_error_message/1.
 sys_error_message(E) :-
    current_error(T),
    error_make(E, S),

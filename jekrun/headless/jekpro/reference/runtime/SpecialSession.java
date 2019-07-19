@@ -8,7 +8,6 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -53,9 +52,11 @@ public final class SpecialSession extends AbstractSpecial {
 
     public final static int MASK_PRMT_PROF = 0x00000000;
     public final static int MASK_PRMT_PCUT = 0x00001000;
-    public final static int MASK_PRMT_PRON = 0x00002000;
+    public final static int MASK_PRMT_PDBG = 0x00002000;
+    public final static int MASK_PRMT_PRON = 0x00003000;
 
-    public final static String OP_SHOW_CUT = "show_cut";
+    public final static String OP_ANSWER_CUT = "answer_cut";
+    public final static String OP_ASK_DEBUG = "ask_debug";
 
     /**
      * <p>Create a session special.</p>
@@ -151,7 +152,9 @@ public final class SpecialSession extends AbstractSpecial {
             case SpecialSession.MASK_PRMT_PROF:
                 return new SkelAtom(AbstractFlag.OP_OFF);
             case SpecialSession.MASK_PRMT_PCUT:
-                return new SkelAtom(OP_SHOW_CUT);
+                return new SkelAtom(OP_ANSWER_CUT);
+            case SpecialSession.MASK_PRMT_PDBG:
+                return new SkelAtom(OP_ASK_DEBUG);
             case SpecialSession.MASK_PRMT_PRON:
                 return new SkelAtom(AbstractFlag.OP_ON);
             default:
@@ -171,8 +174,10 @@ public final class SpecialSession extends AbstractSpecial {
         String fun = SpecialUniv.derefAndCastString(t, d);
         if (fun.equals(AbstractFlag.OP_OFF)) {
             return SpecialSession.MASK_PRMT_PROF;
-        } else if (fun.equals(OP_SHOW_CUT)) {
+        } else if (fun.equals(OP_ANSWER_CUT)) {
             return SpecialSession.MASK_PRMT_PCUT;
+        } else if (fun.equals(OP_ASK_DEBUG)) {
+            return SpecialSession.MASK_PRMT_PDBG;
         } else if (fun.equals(AbstractFlag.OP_ON)) {
             return SpecialSession.MASK_PRMT_PRON;
         } else {
