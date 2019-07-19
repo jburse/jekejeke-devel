@@ -72,19 +72,22 @@
 :- use_module(library(system/thread)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/store)).
+:- use_module(library(system/attach)).
 
 /***********************************************************************/
 /* Debugging Mode                                                      */
 /***********************************************************************/
 
 /**
- * debug:
- * The predicate switches to the on mode.
+ * nodebug:
+ * The predicate switches to the off mode.
  */
-:- public debug/0.
-debug :-
-   set_prolog_flag(debug, on).
-:- set_predicate_property(debug/0, sys_notrace).
+:- public nodebug/0.
+nodebug :-
+   set_prolog_flag(debug, off),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tprompt, off).
+:- set_predicate_property(nodebug/0, sys_notrace).
 
 /**
  * trace:
@@ -92,7 +95,9 @@ debug :-
  */
 :- public trace/0.
 trace :-
-   set_prolog_flag(debug, step_in).
+   set_prolog_flag(debug, step_in),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tprompt, off).
 :- set_predicate_property(trace/0, sys_notrace).
 
 /**
@@ -101,26 +106,32 @@ trace :-
  */
 :- public skip/0.
 skip :-
-   set_prolog_flag(debug, step_over).
+   set_prolog_flag(debug, step_over),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tprompt, off).
 :- set_predicate_property(skip/0, sys_notrace).
 
 /**
- * out:
+ * up:
  * The predicate switches to the step out mode.
  */
-:- public out/0.
-out :-
-   set_prolog_flag(debug, step_out).
-:- set_predicate_property(out/0, sys_notrace).
+:- public up/0.
+up :-
+   set_prolog_flag(debug, step_out),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tprompt, off).
+:- set_predicate_property(up/0, sys_notrace).
 
 /**
- * nodebug:
- * The predicate switches to the off mode.
+ * debug:
+ * The predicate switches to the on mode.
  */
-:- public nodebug/0.
-nodebug :-
-   set_prolog_flag(debug, off).
-:- set_predicate_property(nodebug/0, sys_notrace).
+:- public debug/0.
+debug :-
+   set_prolog_flag(debug, on),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tprompt, off).
+:- set_predicate_property(debug/0, sys_notrace).
 
 /**
  * visible(L):

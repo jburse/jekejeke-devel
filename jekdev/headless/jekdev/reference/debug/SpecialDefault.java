@@ -4,6 +4,7 @@ import jekdev.model.builtin.SupervisorTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.system.SpecialMode;
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.*;
@@ -19,15 +20,17 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
+import matula.util.system.ConnectionReader;
+import matula.util.system.OpenOpts;
 import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.Locale;
 import java.util.Properties;
@@ -77,6 +80,19 @@ public final class SpecialDefault extends AbstractSpecial {
     private final static int SPECIAL_SYS_TRACE = 5;
     private final static int SPECIAL_SYS_TRACE_PROMPT = 6;
 
+    public final static int MASK_MODE_DEBG = 0x00000F00;
+    public final static int MASK_MODE_LESH = 0x00FF0000;
+    public final static int MASK_MODE_VIBL = 0xFF000000;
+
+    public final static int MASK_DEBG_NOFL = 0x00000010;
+
+    public final static int MASK_DEBG_DBOF = 0x00000000;
+    public final static int MASK_DEBG_STIN = 0x00000100;
+    public final static int MASK_DEBG_STVR = 0x00000200;
+    public final static int MASK_DEBG_STOT = 0x00000300;
+    public final static int MASK_DEBG_DBON = 0x00000400;
+    public final static int MASK_DEBG_INHR = 0x00000F00;
+
     public final static int MASK_PORT_CALL = 0x00000001;
     public final static int MASK_PORT_EXIT = 0x00000002;
     public final static int MASK_PORT_REDO = 0x00000004;
@@ -84,18 +100,6 @@ public final class SpecialDefault extends AbstractSpecial {
     public final static int MASK_PORT_HEAD = 0x00000010;
     public final static int MASK_PORT_CHOP = 0x00000020;
     public final static int MASK_PORT_MASK = 0x0000000F;
-
-    public final static int MASK_MODE_DEBG = 0x0000FF00;
-    public final static int MASK_MODE_LESH = 0x00FF0000;
-    public final static int MASK_MODE_VIBL = 0xFF000000;
-
-    public final static int MASK_DEBG_NOFL = 0x00000010;
-    public final static int MASK_DEBG_INHR = 0x0000FF00;
-    public final static int MASK_DEBG_DBOF = 0x00000000;
-    public final static int MASK_DEBG_STIN = 0x00000100;
-    public final static int MASK_DEBG_STVR = 0x00000200;
-    public final static int MASK_DEBG_STOT = 0x00000300;
-    public final static int MASK_DEBG_DBON = 0x00000400;
 
     /**
      * <p>Create a default debugger special.</p>
@@ -204,6 +208,132 @@ public final class SpecialDefault extends AbstractSpecial {
         return res;
     }
 
+    /**
+     * <p>Check whether the frame is a notrace.</p>
+     *
+     * @param frame The frame.
+     * @param en    The engine.
+     * @return True if the frame is notrace, otherwise false.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    private static boolean sysNotraceFrame(StackElement frame, Engine en)
+            throws EngineException, EngineMessage {
+        StackElement.callGoal(frame.contskel, frame.contdisplay, en);
+        CachePredicate cp = StackElement.callableToPredicate(en.skel, en);
+        if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0 &&
+                (cp.pick.getBits() & Predicate.MASK_PRED_NOTR) != 0)
+            return true;
+        return false;
+    }
+
+    /**
+     * <p>Check whether the port is leashed.</p>
+     *
+     * @param port The port.
+     * @param en   The engine.
+     * @return True if the port is leashed, otherwise false.
+     */
+    private static boolean sysLeashedPort(int port, Engine en) {
+        int tflags = en.visor.flags & SpecialDefault.MASK_MODE_LESH;
+        int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_LESH;
+        return SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 16, port);
+    }
+
+    /**************************************************************/
+    /* Perform Action                                             */
+    /**************************************************************/
+
+    /**
+     * <p>Display the port.</p>
+     *
+     * @param port  The port id.
+     * @param frame The frame.
+     * @param en    The engine trace.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void sysTrace(int port, StackElement frame,
+                                 Engine en)
+            throws EngineMessage, EngineException {
+        int depth = calcDepth(frame, en);
+        traceGoal(port, frame, depth, en);
+        dontAsk(en);
+        doContinue(port, frame, en);
+    }
+
+    /**
+     * <p>Display the port and prompt and prompt.</p>
+     *
+     * @param port  The port id.
+     * @param frame The frame.
+     * @param en    The engine trace.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void sysTracePrompt(int port, StackElement frame,
+                                       Engine en)
+            throws EngineMessage, EngineException {
+        int depth = SpecialDefault.calcDepth(frame, en);
+        int back = (en.visor.flags & SpecialSession.MASK_MODE_PRMT);
+        en.visor.setThreadPrompt(SpecialSession.MASK_PRMT_PDBG);
+        do {
+            SpecialDefault.traceGoal(port, frame, depth, en);
+            String action = SpecialDefault.askDebugAction(en);
+            if (action == null) {
+                throw new EngineMessage(EngineMessage.systemError(
+                        EngineMessage.OP_SYSTEM_USER_EXIT));
+            } else if ("?".equals(action)) {
+                SpecialDefault.helpText(en);
+            } else {
+                try {
+                    if (SpecialDefault.parseAction(action, en)) {
+                        SpecialDefault.invokeChecked(en);
+                    } else {
+                        en.visor.setThreadPrompt(SpecialSession.MASK_PRMT_PROF);
+                    }
+                } catch (EngineException x) {
+                    SpecialDefault.systemSessionBreak(x, en);
+                }
+            }
+        } while ((en.visor.flags & SpecialSession.MASK_MODE_PRMT)
+                == SpecialSession.MASK_PRMT_PDBG);
+        en.visor.setThreadPrompt(back);
+        SpecialDefault.doContinue(port, frame, en);
+    }
+
+    /**
+     * <p>Continue debugging in previous mode.</p>
+     *
+     * @param port  The port.
+     * @param en    The engine.
+     * @param frame The frame.
+     */
+    private static void doContinue(int port, StackElement frame,
+                                   Engine en)
+            throws EngineMessage, EngineException {
+        int tflags = en.visor.flags & MASK_MODE_DEBG;
+        int flags = ((StoreTrace)en.store).flags & MASK_MODE_DEBG;
+        switch (tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) {
+            case MASK_DEBG_DBOF:
+            case MASK_DEBG_STIN:
+                break;
+            case MASK_DEBG_STVR:
+                if (port == SpecialMode.CODE_CALL || port == SpecialMode.CODE_REDO)
+                    ((SupervisorTrace) en.visor).setSkipFrame(frame);
+                break;
+            case MASK_DEBG_STOT:
+                StackElement dc = StackElement.skipNoTrace(frame.contdisplay, en);
+                if (dc != null)
+                    ((SupervisorTrace) en.visor).setSkipFrame(dc);
+                break;
+            case MASK_DEBG_DBON:
+                break;
+            default:
+                throw new IllegalArgumentException("illegal mode");
+        }
+    }
+
     /****************************************************************/
     /* Display Current Goal                                         */
     /****************************************************************/
@@ -246,7 +376,7 @@ public final class SpecialDefault extends AbstractSpecial {
         Writer wr = (Writer) obj;
         try {
             int tflags = en.visor.flags & MASK_MODE_DEBG;
-            int flags = ((StoreTrace) en.store).flags & MASK_MODE_DEBG;
+            int flags = ((StoreTrace)en.store).flags & MASK_MODE_DEBG;
             switch (tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) {
                 case MASK_DEBG_DBOF:
                     wr.write("- ");
@@ -320,9 +450,10 @@ public final class SpecialDefault extends AbstractSpecial {
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0) {
             /* write goal */
             showPort(pw, SpecialMode.portToAtom(port, en), en);
-            Display d3 = en.visor.query;
-            MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d3.vars, d3, en);
-            pw.setPrintMap(print);
+            Object val = AbstractTerm.getSkel(en.visor.printmap);
+            Display ref = AbstractTerm.getDisplay(en.visor.printmap);
+            MapHashLink<Object, String> printmap = SpecialVars.assocToMap(val, ref, en);
+            pw.setPrintMap(printmap);
             pw.unparseStatement(t, d);
             return;
         }
@@ -372,15 +503,58 @@ public final class SpecialDefault extends AbstractSpecial {
 
         /* write goal */
         showPort(pw, SpecialMode.portToAtom(port, en), en);
-        Display d3 = en.visor.query;
-        MapHashLink<Object, NamedDistance> print = SpecialVars.hashToMap(d3.vars, d3, en);
-        pw.setPrintMap(print);
+        Object val = AbstractTerm.getSkel(en.visor.printmap);
+        Display ref = AbstractTerm.getDisplay(en.visor.printmap);
+        MapHashLink<Object, String> printmap = SpecialVars.assocToMap(val, ref, en);
+        pw.setPrintMap(printmap);
         pw.unparseStatement(SkelVar.valueOf(0), d2);
     }
 
     /******************************************************************/
     /* Ask End-User                                                   */
     /******************************************************************/
+
+
+    /**
+     * <p>Parse the action.</p>
+     *
+     * @param action The action.
+     * @param en     The engine.
+     * @return True if a action was parsed, otherwise false.
+     * @throws EngineException Shit happens.
+     */
+    private static boolean parseAction(String action,
+                                       Engine en)
+            throws EngineMessage, EngineException {
+        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
+        ConnectionReader cr = new ConnectionReader(new StringReader(action));
+        cr.setLineNumber(1);
+        rd.getScanner().setReader(cr);
+        rd.setSource(en.visor.peekStack());
+        rd.setEngineRaw(en);
+        Object val;
+        try {
+            try {
+                val = rd.parseHeadStatement();
+            } catch (ScannerError y) {
+                String line = ScannerError.linePosition(OpenOpts.getLine(cr), y.getErrorOffset());
+                rd.parseTailError(y);
+                EngineMessage x = new EngineMessage(
+                        EngineMessage.syntaxError(y.getMessage()));
+                throw new EngineException(x,
+                        EngineException.fetchPos(
+                                EngineException.fetchStack(en), line, en));
+            }
+        } catch (IOException y) {
+            throw EngineMessage.mapIOException(y);
+        }
+        if (val instanceof SkelAtom &&
+                ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
+            return false;
+        en.skel = val;
+        en.display = AbstractSkel.createDisplay(val);
+        return true;
+    }
 
     /**
      * <p>Don't ask the end-user, only new line flush the output.</p>
@@ -407,7 +581,8 @@ public final class SpecialDefault extends AbstractSpecial {
         Writer wr = (Writer) obj;
         try {
             Locale locale = en.store.foyer.locale;
-            Properties resources = LangProperties.getLang(SpecialDefault.class, "debug", locale);
+            Properties resources = LangProperties.getLang(
+                    SpecialDefault.class, "debug", locale);
             wr.write(resources.getProperty("debug.continue"));
             wr.write('\n');
             wr.write('\n');
@@ -442,127 +617,36 @@ public final class SpecialDefault extends AbstractSpecial {
         }
     }
 
-    /**************************************************************/
-    /* Perform Action                                             */
-    /**************************************************************/
+    /******************************************************************/
+    /* Error Display                                                  */
+    /******************************************************************/
 
     /**
-     * <p>Continue debugging in previous mode.</p>
+     * <p>Pass system exceptions, otherwise display only message.</p>
      *
-     * @param port  The port.
-     * @param en    The engine.
-     * @param frame The frame.
-     */
-    private static void doContinue(int port, StackElement frame,
-                                   Engine en)
-            throws EngineMessage, EngineException {
-        int tflags = en.visor.flags & MASK_MODE_DEBG;
-        int flags = ((StoreTrace) en.store).flags & MASK_MODE_DEBG;
-        switch (tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) {
-            case MASK_DEBG_DBOF:
-            case MASK_DEBG_STIN:
-                break;
-            case MASK_DEBG_STVR:
-                if (port == SpecialMode.CODE_CALL || port == SpecialMode.CODE_REDO)
-                    ((SupervisorTrace) en.visor).setSkipFrame(frame);
-                break;
-            case MASK_DEBG_STOT:
-                StackElement dc = StackElement.skipNoTrace(frame.contdisplay, en);
-                if (dc != null)
-                    ((SupervisorTrace) en.visor).setSkipFrame(dc);
-                break;
-            case MASK_DEBG_DBON:
-                break;
-            default:
-                throw new IllegalArgumentException("illegal mode");
-        }
-    }
-
-    /**
-     * <p>Check whether the frame is a notrace.</p>
-     *
-     * @param frame The frame.
-     * @param en    The engine.
-     * @return True if the frame is notrace, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    private static boolean sysNotraceFrame(StackElement frame, Engine en)
-            throws EngineException, EngineMessage {
-        StackElement.callGoal(frame.contskel, frame.contdisplay, en);
-        CachePredicate cp = StackElement.callableToPredicate(en.skel, en);
-        if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0 &&
-                (cp.pick.getBits() & Predicate.MASK_PRED_NOTR) != 0)
-            return true;
-        return false;
-    }
-
-    /**
-     * <p>Check whether the port is leashed.</p>
-     *
-     * @param port The port.
-     * @param en   The engine.
-     * @return True if the port is leashed, otherwise false.
-     */
-    private static boolean sysLeashedPort(int port, Engine en) {
-        int tflags = en.visor.flags & SpecialDefault.MASK_MODE_LESH;
-        int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_LESH;
-        return SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 16, port);
-    }
-
-    /**
-     * <p>Display the port.</p>
-     *
-     * @param port  The port id.
-     * @param frame The frame.
-     * @param en    The engine trace.
-     * @throws EngineMessage   Shit happens.
+     * @param ex The exception.
+     * @param en The engine.
      * @throws EngineException Shit happens.
      */
-    private static void sysTrace(int port, StackElement frame,
-                                 Engine en)
+    private static void systemSessionBreak(EngineException ex,
+                                           Engine en)
             throws EngineMessage, EngineException {
-        int depth = calcDepth(frame, en);
-        traceGoal(port, frame, depth, en);
-        dontAsk(en);
-        doContinue(port, frame, en);
-    }
-
-    /**
-     * <p>Display the port and prompt.</p>
-     *
-     * @param port  The port id.
-     * @param frame The frame.
-     * @param en    The engine trace.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static void sysTracePrompt(int port, StackElement frame,
-                                       Engine en)
-            throws EngineMessage, EngineException {
-        int depth = calcDepth(frame, en);
-        boolean found = true;
-        while (found) {
-            traceGoal(port, frame, depth, en);
-            String action = askDebugAction(en);
-            if (action == null) {
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_USER_EXIT));
-            } else if ("?".equals(action)) {
-                helpText(en);
-            } else {
-                try {
-                    if (SpecialSession.parseAction(action, en)) {
-                        en.invokeChecked();
-                    } else {
-                        found = false;
-                    }
-                } catch (EngineException x) {
-                    SpecialSession.systemSessionBreak(x, en);
-                }
+        EngineMessage m;
+        if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
+                m.messageType(EngineMessage.OP_SYSTEM_ERROR) != null) {
+            throw ex;
+        } else {
+            Object obj = en.visor.curerror;
+            LoadOpts.checkTextWrite(obj);
+            Writer wr = (Writer) obj;
+            try {
+                wr.write(ex.getMessage(en));
+                wr.write('\n');
+                wr.flush();
+            } catch (IOException x) {
+                throw EngineMessage.mapIOException(x);
             }
         }
-        doContinue(port, frame, en);
     }
 
     /*******************************************************************/
@@ -596,6 +680,10 @@ public final class SpecialDefault extends AbstractSpecial {
 
     /**
      * <p>Convert an atom to a debug mode.</p>
+     *
+     * @param t The atom skeleton.
+     * @param d The atom display.
+     * @return The debug mode.
      */
     public static int atomToMode(Object t, Display d)
             throws EngineMessage {
@@ -701,6 +789,67 @@ public final class SpecialDefault extends AbstractSpecial {
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
         return flags;
+    }
+
+    /****************************************************************************/
+    /* Execution Helpers                                                        */
+    /****************************************************************************/
+
+    /**
+     * <p>Search the given term once and close it.</p>
+     * <p>Throw a warning when it fails.</p>
+     * <p>The term is passed via skel and display.</p>
+     *
+     * @throws EngineException Shit happens.
+     */
+    private static void invokeChecked(Engine en)
+            throws EngineException {
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
+        boolean backignore = en.visor.setIgnore(false);
+        boolean backverify = en.visor.setVerify(false);
+        AbstractUndo mark = en.bind;
+        int snap = en.number;
+        try {
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d2 = en.display;
+
+            CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
+            en.contdisplay = ref2;
+            if (!en.runLoop2(snap, true))
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en. releaseBind(mark);
+            en.visor.setVerify(backverify);
+            en.visor.setIgnore(backignore);
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            en.visor.setVerify(backverify);
+            en.visor.setIgnore(backignore);
+            throw en.fault;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.fault = null;
+        en.cutChoices(snap);
+        en.releaseBind(mark);
+        en.visor.setVerify(backverify);
+        en.visor.setIgnore(backignore);
+        if (en.fault != null)
+            throw en.fault;
     }
 
 }

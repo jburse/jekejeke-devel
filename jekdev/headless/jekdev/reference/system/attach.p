@@ -90,14 +90,14 @@ tskip :-
 :- set_predicate_property(tskip/0, sys_notrace).
 
 /**
- * tout:
+ * tup:
  * The predicate switches the engine to the step out mode.
  */
-:- public tout/0.
-tout :-
+:- public tup/0.
+tup :-
    thread_current(Thread),
    set_thread_flag(Thread, sys_tdebug, step_out).
-:- set_predicate_property(tout/0, sys_notrace).
+:- set_predicate_property(tup/0, sys_notrace).
 
 /**
  * tnodebug:
@@ -126,7 +126,7 @@ tleash(Name) :-
    set_prolog_flag(sys_tleash, Flags).
 tleash(Flags) :-
    set_prolog_flag(sys_tleash, Flags).
-:- set_predicate_property(leash/1, sys_notrace).
+:- set_predicate_property(tleash/1, sys_notrace).
 
 /**
  * tvisible(L):
@@ -145,7 +145,7 @@ tvisible(Name) :-
    set_prolog_flag(sys_tvisible, Flags).
 tvisible(Flags) :-
    set_prolog_flag(sys_tvisible, Flags).
-:- set_predicate_property(visible/1, sys_notrace).
+:- set_predicate_property(tvisible/1, sys_notrace).
 
 /***********************************************************************/
 /* Thread Spy & Break Points                                           */
@@ -187,7 +187,7 @@ tdebugging_tdebug(inherit, tclear).
 tdebugging_tdebug(on, tdebug).
 tdebugging_tdebug(step_in, ttrace).
 tdebugging_tdebug(step_over, tskip).
-tdebugging_tdebug(step_out, tout).
+tdebugging_tdebug(step_out, tup).
 tdebugging_tdebug(off, tnodebug).
 
 /**

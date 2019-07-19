@@ -94,11 +94,11 @@ report_end_html(Y) :-
 % html_functor_type(+Integer)
 html_functor_type(A) :-
    A < 0, !,
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'result.item.eval', V1),
    html_escape(V1).
 html_functor_type(_) :-
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'result.item.pred', V1),
    html_escape(V1).
 

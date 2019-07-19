@@ -69,7 +69,7 @@ summary_batch(C) :-
 summary_batch(C) :-
    write('Generating '),
    write('.'), nl,
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'summary.summary.title', V),
    setup_call_cleanup(report_begin_html('06_summary.html', V, Y),
       html_page(C),
@@ -82,7 +82,7 @@ html_page(true) :- !,
    get_time(T),
    format_atom('%1$tF %1$tT', [T], TStr),
    write(TStr),
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'summary.cover_and_result.h1', V1),
    write('''>'),
    html_escape(V1),
@@ -92,7 +92,7 @@ html_page(_) :-
    get_time(T),
    format_atom('%1$tF %1$tT', [T], TStr),
    write(TStr),
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'summary.result.h1', V1),
    write('''>'),
    html_escape(V1),
@@ -105,7 +105,7 @@ html_page(_) :-
 % html_result_list
 :- private html_result_list/0.
 html_result_list :-
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'summary.result.h2', V1),
    write('<h2>'),
    html_escape(V1),
@@ -163,7 +163,7 @@ html_result_member.
 % html_cover_list
 :- private html_cover_list/0.
 html_cover_list :-
-   sys_get_lang(testing, P),
+   get_properties(testing, P),
    get_property(P, 'summary.cover.h2', V1),
    write('<h2>'),
    html_escape(V1),
