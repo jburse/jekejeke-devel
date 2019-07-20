@@ -535,7 +535,6 @@ public final class CallIn implements Runnable {
      * <p>Run a callin.</p>
      */
     public void run() {
-        startManagedMeasure(inter);
         try {
             try {
                 next().close();
@@ -551,7 +550,6 @@ public final class CallIn implements Runnable {
         } catch (Throwable x) {
             x.printStackTrace();
         }
-        endManagedMeasure(inter);
     }
 
     /**
@@ -573,54 +571,6 @@ public final class CallIn implements Runnable {
         } else {
             x.printStackTrace(inter);
         }
-    }
-
-    /************************************************************/
-    /* Managed Measure                                          */
-    /************************************************************/
-
-    /**
-     * <p>Start the group measurement.</p>
-     *
-     * @param inter The interpreter.
-     */
-    private static void startManagedMeasure(Interpreter inter) {
-        AbstractLivestock t = getManagedParent();
-        if (t == null)
-            return;
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
-        Foyer foyer = (Foyer) lobby.getFoyer();
-        Supervisor s = (Supervisor) inter.getController().getVisor();
-        t.addMillis(- factory.getRuntime().currentThreadCpuMillis(foyer) - s.getMillis());
-    }
-
-    /**
-     * <p>End the group measurement.</p>
-     *
-     * @param inter The interpreter.
-     */
-    private static void endManagedMeasure(Interpreter inter) {
-        AbstractLivestock t = getManagedParent();
-        if (t == null)
-            return;
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        AbstractFactory factory = (AbstractFactory) lobby.getToolkit().getFactory();
-        Foyer foyer = (Foyer) lobby.getFoyer();
-        Supervisor s = (Supervisor) inter.getController().getVisor();
-        t.addMillis(factory.getRuntime().currentThreadCpuMillis(foyer) + s.getMillis());
-    }
-
-    /**
-     * <p>Retrieve the thread parent.</p>
-     *
-     * @return The thread parent.
-     */
-    private static AbstractLivestock getManagedParent() {
-        ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        if (!(tg instanceof ManagedGroup))
-            return null;
-        return ((ManagedGroup) tg).getOwner();
     }
 
 }

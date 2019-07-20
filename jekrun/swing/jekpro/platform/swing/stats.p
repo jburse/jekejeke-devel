@@ -13,12 +13,14 @@
  * Free Memory            444,184,792 Bytes
  * Uptime                      5,293 Millis
  * GC Time                        12 Millis
- * Thread Cpu Time             1,000 Millis
+ * Threads Time                1,000 Millis
  * Current Time           02/13/18 15:20:08
  *
- * Since Jekejeke Prolog is a multi-threaded interpreter, we also provide
- * statistics for the threads in the JVM. The predicate thread_statistics/3
- * returns some key figures concerning the given thread.
+ * The threads managed by a thread are determined from the thread
+ * groups owned by the thread. The managed time is determined from
+ * managed threads that are already dead, where-as the snapshot time is
+ * determined from managed threads that are still alive. The CPU time
+ * is determined from summing the thread, managed and snapshot CPU time.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -81,6 +83,7 @@ statistics(K, V) :-
       sysCurrentStat('Interpreter','CallOut')).
 
 % sys_get_stat(+Atom, -Term)
+:- private sys_get_stat/2.
 sys_get_stat(time, V) :- !,
    sys_get_stat(sys_time_self, Self),
    sys_get_stat(sys_time_managed, Managed),
@@ -259,3 +262,12 @@ thread_statistics(T, K, V) :-
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
 sys_apropos_table(library(swing/platform)).
+
+/****************************************************************/
+/* Thread Managed                                               */
+/****************************************************************/
+
+% sys_managed_add(+Thread, +Integer)
+:- public sys_managed_add/2.
+:- foreign(sys_managed_add/2, 'ForeignStatistics',
+      sysManagedAdd('Thread','Number')).

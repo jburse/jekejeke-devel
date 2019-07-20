@@ -59,12 +59,10 @@ public final class ForeignGroup {
     /**
      * <p>Create a new annoymous thread group.</p>
      *
-     * @param inter The interpreter.
-     * @return The new annonymous trhead group.
+     * @return The new annonymous thread group.
      */
-    public static ThreadGroup sysGroupNew(Interpreter inter) {
-        Supervisor s = (Supervisor) inter.getController().getVisor();
-        ThreadGroup tg = new ManagedGroup(s);
+    public static ThreadGroup sysGroupNew() {
+        ThreadGroup tg = new ManagedGroup(Thread.currentThread());
         tg.setDaemon(true);
         return tg;
     }
@@ -223,8 +221,8 @@ public final class ForeignGroup {
             ThreadGroup val = tg.getParent();
             return (val != null ? val : AbstractFlag.OP_NULL);
         } else if (OP_SYS_GROUP_THREAD.equals(name)) {
-            AbstractLivestock t = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
-            return (t != null ? t.thread : AbstractFlag.OP_NULL);
+            Thread val = (tg instanceof ManagedGroup ? ((ManagedGroup) tg).getOwner() : null);
+            return (val != null ? val : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));

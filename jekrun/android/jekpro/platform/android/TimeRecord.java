@@ -1,7 +1,10 @@
 package jekpro.platform.android;
 
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.call.*;
+import jekpro.tools.call.ArrayEnumeration;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 
 /**
@@ -40,17 +43,17 @@ public final class TimeRecord {
     private Number time1;
 
     private final static String[] OP_STATISTICS = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_GCTIME,
+            ForeignStatistics.OP_TIME,
+            ForeignStatistics.OP_WALL};
 
     /**
      * <p>Create a time record.</p>
      *
-     * @param u     The up time.
-     * @param g     The gc time.
-     * @param t     The threads time.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
     public TimeRecord(Number u, Number g, Number t) {
         uptime1 = u;
@@ -61,10 +64,11 @@ public final class TimeRecord {
     /**
      * <p>End time record measurement.</p>
      *
-     * @param u     The up time.
-     * @param g     The gc time.
-     * @param t     The threads time.
-time     */
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
+     *          time
+     */
     public void sysMeasure(Number u, Number g, Number t) {
         uptime = uptime1;
         gctime = gctime1;
@@ -107,7 +111,7 @@ time     */
             dc = new ArrayEnumeration<String>(OP_STATISTICS);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>)co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
@@ -120,21 +124,21 @@ time     */
      * <p>Retrieve a time record statistic.</p>
      *
      * @param inter The interpreter.
-     * @param name The name.
+     * @param name  The name.
      * @return The value, or null.
      * @throws InterpreterMessage Shit happens.
      */
     public Object getStat(Interpreter inter, String name)
             throws InterpreterMessage {
-        if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
+        if (ForeignStatistics.OP_UPTIME.equals(name)) {
             return uptime;
-        } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
+        } else if (ForeignStatistics.OP_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
+        } else if (ForeignStatistics.OP_TIME.equals(name)) {
             return time;
-        } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
+        } else if (ForeignStatistics.OP_WALL.equals(name)) {
             return ForeignStatistics.sysGetStat(inter,
-                    ForeignStatistics.OP_STATISTIC_WALL);
+                    ForeignStatistics.OP_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));

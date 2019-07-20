@@ -158,7 +158,7 @@ setup_balance(Q, N) :-
 :- public submit/2.
 :- meta_predicate submit(0,?).
 submit(Goal, Name) :-
-   thread_new(Goal, Thread),
+   thread_new(sys_managed_call(Goal), Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    thread_start(Thread).
 
@@ -271,7 +271,7 @@ sys_thread_fini(Thread) :-
 :- private sys_thread_init/2.
 :- meta_predicate sys_thread_init(?,0).
 sys_thread_init(Group, Goal) :-
-   thread_new(Group, Goal, Thread),
+   thread_new(Group, sys_managed_call(Goal), Thread),
    thread_start(Thread).
 
 /**
@@ -288,3 +288,39 @@ sys_thread_inits(Group, Goal, N) :-
    sys_thread_init(Group, Goal),
    M is N-1,
    sys_thread_inits(Group, Goal, M).
+
+/****************************************************************/
+/* Thread Managed                                               */
+/****************************************************************/
+
+% sys_managed_call(+Goal)
+:- private sys_managed_call/1.
+:- meta_predicate sys_managed_call(0).
+sys_managed_call(G) :-
+   setup_call_cleanup(sys_managed_start, G, sys_managed_end).
+
+% sys_managed_start
+:- private sys_managed_start/0.
+sys_managed_start :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_group, Group),
+   current_group_flag(Group, sys_group_thread, Thread2),
+   Thread2 \== null, !,
+   statistics(sys_time_self, T1),
+   statistics(sys_time_managed, T2),
+   T is -T1-T2,
+   sys_managed_add(Thread2, T).
+sys_managed_start.
+
+% sys_managed_end
+:- private sys_managed_end/0.
+sys_managed_end :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_thread_group, Group),
+   current_group_flag(Group, sys_group_thread, Thread2),
+   Thread2 \== null, !,
+   statistics(sys_time_self, T1),
+   statistics(sys_time_managed, T2),
+   T is T1+T2,
+   sys_managed_add(Thread2, T).
+sys_managed_end.

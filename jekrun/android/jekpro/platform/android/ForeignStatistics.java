@@ -36,26 +36,25 @@ import java.lang.reflect.Method;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignStatistics {
-    private final static String OP_STATISTIC_MAX = "max";
-    private final static String OP_STATISTIC_USED = "used";
-    private final static String OP_STATISTIC_FREE = "free";
-    final static String OP_STATISTIC_UPTIME = "uptime";
-    final static String OP_STATISTIC_GCTIME = "gctime";
-    final static String OP_STATISTIC_TIME = "time";
-    final static String OP_STATISTIC_SYS_TIME_SELF = "sys_time_self";
-    final static String OP_STATISTIC_SYS_TIME_MANAGED = "sys_time_managed";
-    final static String OP_STATISTIC_WALL = "wall";
+    private final static String OP_MAX = "max";
+    private final static String OP_USED = "used";
+    private final static String OP_FREE = "free";
+    final static String OP_UPTIME = "uptime";
+    final static String OP_GCTIME = "gctime";
+    final static String OP_TIME = "time";
+    final static String OP_SYS_TIME_SELF = "sys_time_self";
+    final static String OP_WALL = "wall";
 
     private static Method getRuntimeStat;
 
     private final static String[] OP_STATISTICS = {
-            OP_STATISTIC_MAX,
-            OP_STATISTIC_USED,
-            OP_STATISTIC_FREE,
-            OP_STATISTIC_UPTIME,
-            OP_STATISTIC_GCTIME,
-            OP_STATISTIC_TIME,
-            OP_STATISTIC_WALL};
+            OP_MAX,
+            OP_USED,
+            OP_FREE,
+            OP_UPTIME,
+            OP_GCTIME,
+            OP_TIME,
+            OP_WALL};
 
     private final static String OP_SYS_LOCAL_CLAUSES = "sys_local_clauses";
     private final static String OP_SYS_TIME_MANAGED = "sys_time_managed";
@@ -103,21 +102,21 @@ public final class ForeignStatistics {
      * <p>Android version.</p>
      *
      * @param inter The interpreter.
-     * @param name The statistics name.
+     * @param name  The statistics name.
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
     public static Object sysGetStat(Interpreter inter, String name) throws InterpreterMessage {
-        if (OP_STATISTIC_MAX.equals(name)) {
+        if (OP_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
-        } else if (OP_STATISTIC_USED.equals(name)) {
+        } else if (OP_USED.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().totalMemory() -
                     Runtime.getRuntime().freeMemory());
-        } else if (OP_STATISTIC_FREE.equals(name)) {
+        } else if (OP_FREE.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().freeMemory());
-        } else if (OP_STATISTIC_UPTIME.equals(name)) {
+        } else if (OP_UPTIME.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.uptimeMillis());
-        } else if (OP_STATISTIC_GCTIME.equals(name)) {
+        } else if (OP_GCTIME.equals(name)) {
             if (getRuntimeStat == null)
                 return null;
             String gctimestr;
@@ -134,12 +133,12 @@ public final class ForeignStatistics {
             } else {
                 return null;
             }
-        } else if (OP_STATISTIC_SYS_TIME_SELF.equals(name)) {
+        } else if (OP_SYS_TIME_SELF.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
-        } else if (OP_STATISTIC_SYS_TIME_MANAGED.equals(name)) {
+        } else if (OP_SYS_TIME_MANAGED.equals(name)) {
             Supervisor s = (Supervisor) inter.getController().getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
-        } else if (OP_STATISTIC_WALL.equals(name)) {
+        } else if (OP_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -220,6 +219,24 @@ public final class ForeignStatistics {
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_flag", name));
+        }
+    }
+
+    /****************************************************************/
+    /* Thread Managed                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Add CPU time to managed.</p>
+     *
+     * @param t The thread.
+     * @param n The CPU time.
+     */
+    public static void sysManagedAdd(Thread t, Number n) {
+        Controller contr = Controller.currentController(t);
+        if (contr != null) {
+            Supervisor s = (Supervisor) contr.getVisor();
+            s.addMillis(n.longValue());
         }
     }
 

@@ -41,21 +41,21 @@ public final class TimeRecord {
     private Number time1;
 
     private final static String[] OP_STATISTICS = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_GCTIME,
+            ForeignStatistics.OP_TIME,
+            ForeignStatistics.OP_WALL};
 
     private final static String[] OP_STATISTICS_WEB = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_WALL};
 
     /**
      * <p>Create a time record.</p>
      *
-     * @param u     The up time.
-     * @param g     The gc time.
-     * @param t     The threads time.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
     public TimeRecord(Number u, Number g, Number t) {
         uptime1 = u;
@@ -66,9 +66,9 @@ public final class TimeRecord {
     /**
      * <p>End time record measurement.</p>
      *
-     * @param u     The up time.
-     * @param g     The gc time.
-     * @param t     The threads time.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
     public void sysMeasure(Number u, Number g, Number t) {
         uptime = uptime1;
@@ -143,15 +143,15 @@ public final class TimeRecord {
      */
     public Object getStat(Interpreter inter, String name)
             throws InterpreterMessage, InterpreterException {
-        if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
+        if (ForeignStatistics.OP_UPTIME.equals(name)) {
             return uptime;
-        } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
+        } else if (ForeignStatistics.OP_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
+        } else if (ForeignStatistics.OP_TIME.equals(name)) {
             return time;
-        } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
+        } else if (ForeignStatistics.OP_WALL.equals(name)) {
             return ForeignStatistics.sysGetStat(inter,
-                    ForeignStatistics.OP_STATISTIC_WALL);
+                    ForeignStatistics.OP_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));
