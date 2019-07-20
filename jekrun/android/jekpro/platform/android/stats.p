@@ -52,6 +52,8 @@
 :- use_module(library(system/locale)).
 :- use_module(library(system/zone)).
 :- use_module(library(system/thread)).
+:- use_module(library(advanced/aggregate)).
+:- use_module(library(system/group)).
 :- sys_load_resource('gestalt').
 
 /*********************************************************************/
@@ -72,12 +74,46 @@ statistics(K, V) :- var(K), !,
 statistics(K, V) :-
    sys_get_stat(K, V).
 
+% sys_current_stat(-Atom)
 :- private sys_current_stat/1.
 :- foreign(sys_current_stat/1, 'ForeignStatistics', sysCurrentStat('CallOut')).
 
+% sys_get_stat(+Atom, -Term)
 :- private sys_get_stat/2.
-:- foreign(sys_get_stat/2, 'ForeignStatistics',
+sys_get_stat(time, V) :- !,
+   sys_get_stat(sys_time_self, Self),
+   sys_get_stat(sys_time_managed, Managed),
+   sys_get_stat(sys_time_snapshot, Snapshot),
+   V is Self+Managed+Snapshot.
+sys_get_stat(sys_time_snapshot, V) :- !,
+   thread_current(Thread),
+   sys_snapshot_thread(Thread, V).
+sys_get_stat(K, V) :-
+   sys_sys_get_stat(K, V).
+
+:- private sys_sys_get_stat/2.
+:- foreign(sys_sys_get_stat/2, 'ForeignStatistics',
       sysGetStat('Interpreter', 'String')).
+
+% sys_snapshot_thread(+Thread, -Integer)
+:- private sys_snapshot_thread/2.
+sys_snapshot_thread(Thread, V) :-
+   current_thread_flag(Thread, sys_thread_group, Group),
+   aggregate_all(sum(T),
+        (current_group(Group, Group2),
+         current_group_flag(Group2, sys_group_thread, Thread),
+         sys_snapshot_group(Group2, T)), V).
+
+% sys_snapshot_group(+Group, -Integer)
+:- private sys_snapshot_group/2.
+sys_snapshot_group(Group, V) :-
+   aggregate_all(sum(T),
+       (current_thread(Group, Thread),
+        thread_statistics(Thread, sys_time_managed, T)), V1),
+   aggregate_all(sum(T),
+       (current_group(Group, Group2),
+        sys_snapshot_group(Group2, T)), V2),
+   V is V1+V2.
 
 /**
  * statistics:
@@ -116,7 +152,10 @@ sys_convert_stat(_, X, X).
 :- public time/1.
 :- meta_predicate time(0).
 time(G) :-
-   sys_new_time_record(T),
+   statistics(uptime, Uptime),
+   statistics(gctime, Gctime),
+   statistics(time, Time),
+   sys_new_time_record(Uptime, Gctime, Time, T),
    sys_time_call(T),
    current_prolog_flag(sys_choices, X),
    G,
@@ -139,7 +178,10 @@ sys_time_call(T) :-
 % sys_show_time_record(+TimeRecord)
 :- private sys_show_time_record/1.
 sys_show_time_record(T) :-
-   sys_measure_time_record(T),
+   statistics(uptime, Uptime),
+   statistics(gctime, Gctime),
+   statistics(time, Time),
+   sys_measure_time_record(T, Uptime, Gctime, Time),
    get_properties('gestalt', P),
    sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
@@ -156,14 +198,16 @@ sys_current_record_stat(T, K, V) :- var(K), !,
 sys_current_record_stat(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
-% sys_new_time_record(-Record)
-:- private sys_new_time_record/1.
-:- foreign_constructor(sys_new_time_record/1, 'TimeRecord', new('Interpreter')).
+% sys_new_time_record(+Integer, +Integer, +Integer, -TimeRecord)
+:- private sys_new_time_record/4.
+:- foreign_constructor(sys_new_time_record/4, 'TimeRecord',
+      new('Number', 'Number', 'Number')).
 
-% sys_measure_time_record(+Record)
-:- private sys_measure_time_record/1.
-:- virtual sys_measure_time_record/1.
-:- foreign(sys_measure_time_record/1, 'TimeRecord', sysMeasure('Interpreter')).
+% sys_measure_time_record(+Record, +Integer, +Integer, +Integer)
+:- private sys_measure_time_record/4.
+:- virtual sys_measure_time_record/4.
+:- foreign(sys_measure_time_record/4, 'TimeRecord',
+      sysMeasure('Number', 'Number', 'Number')).
 
 % sys_current_record_stat(-Atom)
 :- private sys_current_record_stat/1.

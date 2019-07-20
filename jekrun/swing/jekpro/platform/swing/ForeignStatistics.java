@@ -45,12 +45,9 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_UPTIME = "uptime";
     final static String OP_STATISTIC_GCTIME = "gctime";
     final static String OP_STATISTIC_TIME = "time";
-    final static String OP_STATISTIC_TIME_SELF = "time_self";
-    final static String OP_STATISTIC_TIME_MANAGED = "time_managed";
-    final static String OP_STATISTIC_TIME_SNAPSHOT = "time_snapshot";
+    final static String OP_STATISTIC_SYS_TIME_SELF = "sys_time_self";
+    final static String OP_STATISTIC_SYS_TIME_MANAGED = "sys_time_managed";
     final static String OP_STATISTIC_WALL = "wall";
-
-    private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
 
     private final static String[] OP_STATISTICS = {
             OP_STATISTIC_MAX,
@@ -65,8 +62,14 @@ public final class ForeignStatistics {
             OP_STATISTIC_UPTIME,
             OP_STATISTIC_WALL};
 
+    private final static String OP_SYS_LOCAL_CLAUSES = "sys_local_clauses";
+    private final static String OP_SYS_TIME_SELF = "sys_time_self";
+    private final static String OP_SYS_TIME_MANAGED = "sys_time_managed";
+
     private final static String[] OP_THREAD_STATISTICS = {
-            OP_SYS_THREAD_LOCAL_CLAUSES};
+            OP_SYS_LOCAL_CLAUSES,
+            OP_SYS_TIME_SELF,
+            OP_SYS_TIME_MANAGED};
 
     /*********************************************************************/
     /* Statistics                                                        */
@@ -155,41 +158,23 @@ public final class ForeignStatistics {
                         return null;
                     }
             }
-        } else if (OP_STATISTIC_TIME.equals(name)) {
-            return add(add((Number) sysGetStat(inter, OP_STATISTIC_TIME_SELF),
-                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_MANAGED)),
-                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_SNAPSHOT));
-        } else if (OP_STATISTIC_TIME_SELF.equals(name)) {
+        } else if (OP_STATISTIC_SYS_TIME_SELF.equals(name)) {
             int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
             switch (hint) {
                 case Foyer.HINT_WEB:
-                    return null;
+                    return Integer.valueOf(0);
                 default:
                     ThreadMXBean tb = ManagementFactory.getThreadMXBean();
                     if (tb.isCurrentThreadCpuTimeSupported()) {
                         long cputime = tb.getCurrentThreadCpuTime() / 1000000L;
                         return TermAtomic.normBigInteger(cputime);
                     } else {
-                        return null;
+                        return Integer.valueOf(0);
                     }
             }
-        } else if (OP_STATISTIC_TIME_MANAGED.equals(name)) {
+        } else if (OP_STATISTIC_SYS_TIME_MANAGED.equals(name)) {
             Supervisor s = (Supervisor) inter.getController().getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
-        } else if (OP_STATISTIC_TIME_SNAPSHOT.equals(name)) {
-            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
-                    return null;
-                default:
-                    ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-                    if (tb.isThreadCpuTimeSupported()) {
-                        long cputime = snapshotThread(inter);
-                        return TermAtomic.normBigInteger(cputime);
-                    } else {
-                        return null;
-                    }
-            }
         } else if (OP_STATISTIC_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
         } else {
@@ -216,64 +201,6 @@ public final class ForeignStatistics {
         } else {
             return i2;
         }
-    }
-
-    /**
-     * <p>Compute the thread cpu time snapshot</p>
-     *
-     * @param inter The interpreter.
-     * @return The thread cpu time snapshot.
-     */
-    private static long snapshotThread(Interpreter inter) {
-        long millis = 0;
-        Supervisor s = (Supervisor) inter.getController().getVisor();
-        ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
-        for (int i = 0; i < tgs.length; i++) {
-            tg = tgs[i];
-            if (!(tg instanceof ManagedGroup))
-                continue;
-            if (s != ((ManagedGroup) tg).getOwner())
-                continue;
-            millis += snapshotGroup(tg);
-        }
-        return millis;
-    }
-
-    /**
-     * <p>Compute the thread cpu time snapshot</p>
-     *
-     * @param tg The thread group.
-     * @return The thread cpu time snapshot.
-     */
-    private static long snapshotGroup(ThreadGroup tg) {
-        long millis = 0;
-        for (; ; ) {
-            Thread[] threads = ForeignGroup.snapshotThreadsOfGroup(tg);
-            for (int i = 0; i < threads.length; i++) {
-                Thread thread = threads[i];
-                Controller controller = Controller.currentController(thread);
-                long id = thread.getId();
-                ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-                long cputime = tb.getThreadCpuTime(id) / 1000000L;
-                if (controller != null) {
-                    Supervisor s = (Supervisor) controller.getVisor();
-                    millis += cputime + s.getMillis();
-                } else {
-                    millis += cputime;
-                }
-            }
-            ThreadGroup[] tgs = ForeignGroup.snapshotGroupsOfGroup(tg);
-            if (tgs.length > 0) {
-                int i = 0;
-                for (; i < tgs.length - 1; i++)
-                    millis += snapshotGroup(tgs[i]);
-                tg = tgs[i];
-            } else {
-                break;
-            }
-        }
-        return millis;
     }
 
     /*********************************************************************/
@@ -310,13 +237,30 @@ public final class ForeignStatistics {
      */
     public static Object sysGetThreadStat(Thread t, String name)
             throws InterpreterMessage {
-        if (OP_SYS_THREAD_LOCAL_CLAUSES.equals(name)) {
+        if (OP_SYS_LOCAL_CLAUSES.equals(name)) {
             Controller contr = Controller.currentController(t);
             if (contr != null) {
                 long total = contr.getThreadLocalClauses();
                 return TermAtomic.normBigInteger(total);
             } else {
-                return null;
+                return Integer.valueOf(0);
+            }
+        } else if (OP_SYS_TIME_SELF.equals(name)) {
+            ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+            if (tb.isThreadCpuTimeSupported()) {
+                long id = t.getId();
+                long cputime = tb.getThreadCpuTime(id) / 1000000L;
+                return TermAtomic.normBigInteger(cputime);
+            } else {
+                return Integer.valueOf(0);
+            }
+        } else if (OP_SYS_TIME_MANAGED.equals(name)) {
+            Controller contr = Controller.currentController(t);
+            if (contr != null) {
+                Supervisor s = (Supervisor) contr.getVisor();
+                return TermAtomic.normBigInteger(s.getMillis());
+            } else {
+                return Integer.valueOf(0);
             }
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(

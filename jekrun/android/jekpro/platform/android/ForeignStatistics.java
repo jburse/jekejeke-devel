@@ -42,13 +42,11 @@ public final class ForeignStatistics {
     final static String OP_STATISTIC_UPTIME = "uptime";
     final static String OP_STATISTIC_GCTIME = "gctime";
     final static String OP_STATISTIC_TIME = "time";
-    final static String OP_STATISTIC_TIME_SELF = "time_self";
-    final static String OP_STATISTIC_TIME_MANAGED = "time_managed";
+    final static String OP_STATISTIC_SYS_TIME_SELF = "sys_time_self";
+    final static String OP_STATISTIC_SYS_TIME_MANAGED = "sys_time_managed";
     final static String OP_STATISTIC_WALL = "wall";
 
     private static Method getRuntimeStat;
-
-    private final static String OP_SYS_THREAD_LOCAL_CLAUSES = "sys_thread_local_clauses";
 
     private final static String[] OP_STATISTICS = {
             OP_STATISTIC_MAX,
@@ -59,8 +57,12 @@ public final class ForeignStatistics {
             OP_STATISTIC_TIME,
             OP_STATISTIC_WALL};
 
+    private final static String OP_SYS_LOCAL_CLAUSES = "sys_local_clauses";
+    private final static String OP_SYS_TIME_MANAGED = "sys_time_managed";
+
     private final static String[] OP_THREAD_STATISTICS = {
-            OP_SYS_THREAD_LOCAL_CLAUSES};
+            OP_SYS_LOCAL_CLAUSES,
+            OP_SYS_TIME_MANAGED};
 
     static {
         try {
@@ -132,12 +134,9 @@ public final class ForeignStatistics {
             } else {
                 return null;
             }
-        } else if (OP_STATISTIC_TIME.equals(name)) {
-            return add((Number) sysGetStat(inter, OP_STATISTIC_TIME_SELF),
-                    (Number) sysGetStat(inter, OP_STATISTIC_TIME_MANAGED));
-        } else if (OP_STATISTIC_TIME_SELF.equals(name)) {
+        } else if (OP_STATISTIC_SYS_TIME_SELF.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
-        } else if (OP_STATISTIC_TIME_MANAGED.equals(name)) {
+        } else if (OP_STATISTIC_SYS_TIME_MANAGED.equals(name)) {
             Supervisor s = (Supervisor) inter.getController().getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
         } else if (OP_STATISTIC_WALL.equals(name)) {
@@ -202,13 +201,21 @@ public final class ForeignStatistics {
      */
     public static Object sysGetThreadStat(Thread t, String name)
             throws InterpreterMessage {
-        if (OP_SYS_THREAD_LOCAL_CLAUSES.equals(name)) {
+        if (OP_SYS_LOCAL_CLAUSES.equals(name)) {
             Controller contr = Controller.currentController(t);
             if (contr != null) {
                 long total = contr.getThreadLocalClauses();
                 return TermAtomic.normBigInteger(total);
             } else {
-                return null;
+                return Integer.valueOf(0);
+            }
+        } else if (OP_SYS_TIME_MANAGED.equals(name)) {
+            Controller contr = Controller.currentController(t);
+            if (contr != null) {
+                Supervisor s = (Supervisor) contr.getVisor();
+                return TermAtomic.normBigInteger(s.getMillis());
+            } else {
+                return Integer.valueOf(0);
             }
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(

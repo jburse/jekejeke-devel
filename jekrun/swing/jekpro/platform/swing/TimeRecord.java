@@ -53,39 +53,31 @@ public final class TimeRecord {
     /**
      * <p>Create a time record.</p>
      *
-     * @param inter The interpreter.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
+     * @param u     The up time.
+     * @param g     The gc time.
+     * @param t     The threads time.
      */
-    public TimeRecord(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        uptime1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_GCTIME);
-        time1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME);
+    public TimeRecord(Number u, Number g, Number t) {
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
     }
 
     /**
      * <p>End time record measurement.</p>
      *
-     * @param inter The interpreter.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
+     * @param u     The up time.
+     * @param g     The gc time.
+     * @param t     The threads time.
      */
-    public void sysMeasure(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
+    public void sysMeasure(Number u, Number g, Number t) {
         uptime = uptime1;
         gctime = gctime1;
         time = time1;
 
-        uptime1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_GCTIME);
-        time1 = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME);
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
 
         uptime = subtract(uptime1, uptime);
         gctime = subtract(gctime1, gctime);

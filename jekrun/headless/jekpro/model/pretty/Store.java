@@ -76,7 +76,6 @@ public class Store extends AbstractRecognizer {
     public ListArray<LocalBlocking> privates;
     public String name;
     public Object belongsto;
-    public int flags;
 
     /* For autonumbering anonymous stores. */
     private static int storeInitNumber;
@@ -621,21 +620,6 @@ public class Store extends AbstractRecognizer {
     public void loadText(Properties prop, Reader reader,
                          Object param) {
         throw new IllegalArgumentException("not supported");
-    }
-
-    /***************************************************************/
-    /* Prompt Handling                                             */
-    /***************************************************************/
-
-    /**
-     * <p>Set the debug mode.</p>
-     *
-     * @param m The mode.
-     */
-    public void setPrompt(int m) {
-        synchronized (this) {
-            flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
-        }
     }
 
 }
