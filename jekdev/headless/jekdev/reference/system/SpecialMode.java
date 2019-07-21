@@ -128,10 +128,12 @@ public final class SpecialMode extends AbstractSpecial {
                     case SpecialDefault.MASK_DEBG_STVR:
                     case SpecialDefault.MASK_DEBG_STOT:
                         SupervisorTrace visortrace = (SupervisorTrace) en.visor;
-                        StackElement frame = visortrace.getSkipFrame();
-                        if (frame != null && frame.contskel == r2 &&
-                                frame.contdisplay == u2) {
-                            visortrace.setSkipFrame(null);
+                        StackElement frame = visortrace.skipframe;
+                        if (frame == null) {
+                            break;
+                        } else if (frame.contskel == r2 &&
+                                    frame.contdisplay == u2) {
+                            visortrace.skipframe = null;
                             break;
                         }
                         return true;

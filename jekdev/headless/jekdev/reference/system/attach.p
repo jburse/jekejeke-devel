@@ -123,9 +123,11 @@ tleash(Name) :-
    throw(error(instantiation_error,_)).
 tleash(Name) :-
    sys_name_flags(Name, Flags), !,
-   set_prolog_flag(sys_tleash, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tleash, Flags).
 tleash(Flags) :-
-   set_prolog_flag(sys_tleash, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tleash, Flags).
 :- set_predicate_property(tleash/1, sys_notrace).
 
 /**
@@ -142,9 +144,11 @@ tvisible(Name) :-
    throw(error(instantiation_error,_)).
 tvisible(Name) :-
    sys_name_flags(Name, Flags), !,
-   set_prolog_flag(sys_tvisible, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tvisible, Flags).
 tvisible(Flags) :-
-   set_prolog_flag(sys_tvisible, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tvisible, Flags).
 :- set_predicate_property(tvisible/1, sys_notrace).
 
 /***********************************************************************/
@@ -164,12 +168,14 @@ tdebugging :-
    write_term((:-C), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
-   current_prolog_flag(sys_tvisible, X),
-   write_term((:-tvisible(X)), [context(0)]),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tleash, X),
+   write_term((:-tleash(X)), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
-   current_prolog_flag(sys_tleash, X),
-   write_term((:-tleash(X)), [context(0)]),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tvisible, X),
+   write_term((:-tvisible(X)), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
    tspying(X),

@@ -69,10 +69,13 @@
 
 :- use_module(library(inspection/provable)).
 :- use_module(library(stream/console)).
+:- use_module(library(system/locale)).
 :- use_module(library(system/thread)).
+:- use_module(library(experiment/simp)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/store)).
 :- use_module(library(system/attach)).
+:- sys_load_resource(debug).
 
 /***********************************************************************/
 /* Debugging Mode                                                      */
@@ -265,3 +268,147 @@ breaking(P, L) :-
    current_thread_flag(Thread, sys_thread_store, Store),
    store_property(Store, sys_break(Q,L)),
    absolute_file_name(P, Q).
+
+/***********************************************************************/
+/* Debugging Prompt                                                    */
+/***********************************************************************/
+
+/**
+ * sys_debug(P, F):
+ * The predicate displays the port P and the goal of frame F,
+ * and then continues debugging.
+ */
+% sys_debug(+Atom, +Frame)
+sys_debug(Port, Frame) :-
+   sys_goal_show(Port, Frame), nl.
+
+/**
+ * sys_debug_ask(P, F):
+ * The predicate displays the port P and the goal of frame F,
+ * prompts the user for actions, and then continues debugging.
+ */
+% sys_debug_ask(+Atom, +Frame)
+sys_debug_ask(Port, Frame) :- repeat,
+   sys_trap(sys_debug_prompt(Port, Frame), E,
+      (  sys_error_type(E, system_error(_))
+      -> sys_raise(E)
+      ;  sys_error_message(E), fail)), !.
+
+% sys_debug_prompt(+Atom, +Frame)
+:- private sys_debug_prompt/2.
+sys_debug_prompt(Port, Frame) :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tprompt, Prompt),
+   setup_call_cleanup(
+      set_thread_flag(Thread, sys_tprompt, ask_debug),
+      sys_debug_show(Port, Frame),
+      set_thread_flag(Thread, sys_tprompt, Prompt)).
+
+% sys_debug_prompt(+Atom, +Frame)
+:- private sys_debug_prompt/2.
+sys_debug_show(Port, Frame) :-
+   sys_goal_show(Port, Frame),
+   write(' ? '), flush_output,
+   (  read_line(L) -> true; exit),
+   thread_current(Thread),
+   (  L == ''
+   -> set_thread_flag(Thread, sys_tprompt, off)
+   ;  L == ? -> sys_debug_help
+   ;  term_atom(G, L, [terminator(period)]),
+      once(sys_ignore(G))),
+   current_thread_flag(Thread, sys_tprompt, Response),
+   Response \== ask_debug.
+
+% sys_debug_help
+:- private sys_debug_help/0.
+sys_debug_help :-
+   get_properties(debug, P),
+   get_property(P, 'debug.help', V),
+   write(V), nl.
+
+/****************************************************************/
+/* Goal Display                                                 */
+/****************************************************************/
+
+% sys_goal_show(+Atom, +Frame)
+:- private sys_goal_show/2.
+sys_goal_show(Port, Frame) :-
+   get_properties(debug, P),
+   sys_continue_mode(Mode),
+   atom_concat('debug.', Mode, Key1),
+   get_property(P, Key1, V1),
+   sys_goal_depth(Frame, -1, D),
+   atom_concat('debug.', Port, Key2),
+   get_property(P, Key2, V2),
+   frame_property(Frame, sys_call_goal(Goal)),
+   rebuild_goal(Goal, Rebuild),
+   current_prolog_flag(sys_print_map, N),
+   write(V1),
+   write(' '),
+   write(D),
+   write(' '),
+   write(V2),
+   write(' '),
+   write_term(Rebuild, [context(0),quoted(true),variable_names(N)]).
+
+% sys_goal_depth(+Frame, +Integer, -Integer)
+:- private sys_goal_depth/3.
+sys_goal_depth(null, N, N) :- !.
+sys_goal_depth(Frame, N, M) :-
+   H is N+1,
+   frame_property(Frame, sys_parent_frame(Other)),
+   sys_goal_depth(Other, H, M).
+
+/****************************************************************/
+/* Continue Debug                                               */
+/****************************************************************/
+
+% sys_continue_debug(+Atom, +Frame)
+sys_continue_debug(Port, Frame) :-
+   sys_continue_mode(Mode),
+   sys_continue_setup(Mode, Port, Frame).
+
+% sys_continue_setup(+Atom, +Atom, +Frame)
+:- private sys_continue_setup/3.
+sys_continue_setup(off, _, _).
+sys_continue_setup(step_in, _, _).
+sys_continue_setup(step_over, call, Frame) :- !,
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tskip_frame, Frame).
+sys_continue_setup(step_over, redo, Frame) :- !,
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tskip_frame, Frame).
+sys_continue_setup(step_over, _, _).
+sys_continue_setup(step_out, _, Frame) :-
+   frame_property(Frame, sys_parent_frame(Other)),
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tskip_frame, Other).
+sys_continue_setup(on, _, _).
+
+% sys_continue_mode(-Atom)
+:- private sys_continue_mode/1.
+sys_continue_mode(M) :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tdebug, M),
+   M \== inherit, !.
+sys_continue_mode(M) :-
+   current_prolog_flag(debug, M).
+
+/******************************************************************/
+/* Low-Level Checks                                               */
+/******************************************************************/
+
+/**
+ * sys_notrace_frame(F):
+ * The predicate succeeds if the goal of frame F is sys_notrace.
+ */
+% sys_notrace_frame(+Frame)
+:- public sys_notrace_frame/1.
+:- special(sys_notrace_frame/1, 'SpecialDefault', 3).
+
+/**
+ * sys_leashed_port(P):
+ * The predicate succeeds when the port P is among the leashed ports.
+ */
+:- public sys_leashed_port/1.
+:- special(sys_leashed_port/1, 'SpecialDefault', 4).
