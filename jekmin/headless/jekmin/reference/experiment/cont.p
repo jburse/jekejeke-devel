@@ -74,4 +74,3 @@ sys_assume_cont(G) :-
 :- meta_predicate sys_ripple(0).
 :- set_predicate_property(sys_ripple/1, sys_notrace).
 :- special(sys_ripple/1, 'SpecialCont', 2).
-
