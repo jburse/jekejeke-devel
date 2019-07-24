@@ -317,4 +317,4 @@ vector:randpoly(X, Z) :-
    X =.. [F,V|L],
    Y =.. [F|L],
    Z is sum({V^E*randpoly(Y)|between(1, 2, _),
-                             random(3, E)}).
+   random(3, E)}).

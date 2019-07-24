@@ -206,14 +206,14 @@ sys_matrice_step(K, X, R) :-
    L = K,
    P is 1/X[K,L],
    Y is {{V|between(1, N, J),
-            (  user:(I =:= K)
-            -> (  user:(J =:= L)
-               -> V = P
-               ;  V is -X[I,J]*P)
-            ;  user:(J =:= L)
-            -> V = Q
-            ;  V is X[I,J]-X[K,J]*Q)}|between(1, N, I),
-                                      Q is X[I,L]*P},
+   (  user:(I =:= K)
+   -> (  user:(J =:= L)
+      -> V = P
+      ;  V is -X[I,J]*P)
+   ;  user:(J =:= L)
+   -> V = Q
+   ;  V is X[I,J]-X[K,J]*Q)}|between(1, N, I),
+   Q is X[I,L]*P},
    M is K+1,
    sys_matrice_step(M, Y, R).
 sys_matrice_step(_, X, X).
@@ -234,9 +234,9 @@ sys_matrice_step(_, X, X).
    L is len(X),
    L =:= len(X[1]),
    R is {{V|between(1, L, J),
-            (  user:(I =:= J)
-            -> V = 1
-            ;  V = 0)}|between(1, L, I)}.
+   (  user:(I =:= J)
+   -> V = 1
+   ;  V = 0)}|between(1, L, I)}.
 ^(P, 1, R) :- !,
    R = P.
 ^(P, 2, R) :- !,
