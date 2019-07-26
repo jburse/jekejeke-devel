@@ -2,21 +2,13 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import matula.util.data.AbstractMap;
-import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
 
-import java.util.Comparator;
-
 /**
- * <p>Provides built-in predicates for the module aggregate.</p>
+ * <p>Provides built-in predicates for the module sequence.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -46,60 +38,34 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignAggregate {
+public final class ForeignSequence {
 
     /**
-     * <p>Place a copy into the revolve.</p>
+     * <p>Set a pivot value.</p>
      *
      * @param inter The interpreter.
-     * @param map     The map.
-     * @param val     The key.
+     * @param pivot The pivot.
+     * @param val   The value.
      */
-    public static SetEntry sysRevolveLookup(Interpreter inter,
-                                            AbstractMap map, Object val) {
+    public static void sysPivotSet(Interpreter inter, SetEntry pivot, Object val) {
         Engine en = (Engine) inter.getEngine();
-        Display d = AbstractTerm.getDisplay(val);
+        Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
-        val = AbstractSkel.copySkel(val, d, en);
-        MapEntry h = map.getEntry(val);
-        if (h == null) {
-            h = map.newEntry(val, null);
-            map.putEntry(h);
-        }
-        return h;
+        pivot.value = AbstractSkel.copySkel(val, ref, en);
     }
 
     /**
-     * <p>Enumerate the revolve.</p>
+     * <p>Retreve a pivot value.</p>
      *
-     * @param co The call out.
-     * @param map  The map.
-     * @return The pair.
+     * @param pivot The pivot.
+     * @return The value.
      */
-    public static Object sysRevolvePair(CallOut co, AbstractMap map) {
-        MapEntry at;
-        if (co.getFirst()) {
-            at = map.getFirstEntry();
-        } else {
-            at = (MapEntry) co.getData();
-        }
-        if (at == null)
+    public static Object sysPivotGet(SetEntry pivot) {
+        Object val = pivot.value;
+        if (val == null)
             return null;
-        MapEntry next = map.successor(at);
-        co.setRetry(next != null);
-        co.setData(next);
-        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
-    }
-
-    /**
-     * <p>Retrieve the variant comparator.</p>
-     *
-     * @return The variant comparator.
-     */
-    public static Comparator<Object> sysVariantComparator() {
-        return AbstractSkel.DEFAULT;
     }
 
 }

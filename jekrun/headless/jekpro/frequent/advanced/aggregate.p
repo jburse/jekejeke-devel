@@ -73,6 +73,7 @@
  *   min(X):	The result is the minimum of the X values.
  *   max(X):	The result is the maximum of the X values.
  *   (X,Y):		The result is the aggregate X paired by the aggregate Y.
+ *   nil:       The result is always nil
  */
 % aggregate_all(+Aggregate, +Goal, -Value)
 :- public aggregate_all/3.
@@ -84,7 +85,6 @@ aggregate_all(A, G, S) :-
    S = H.
 
 % aggregate_all2(+Aggregate, +Goal, +Pivot)
-:- private aggregate_all2/3.
 :- meta_predicate aggregate_all2(?,0,?).
 aggregate_all2(A, G, P) :- G,
    pivot_get_default(P, A, H),
@@ -115,8 +115,7 @@ aggregate(A, G, S) :-
    aggregate_all2(A, B, P),
    pivot_get(P, S).
 
-% aggregate(+Vars, +Aggregate, +Goal, +Revolve)
-:- private aggregate2/4.
+% aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
 :- meta_predicate aggregate2(?,?,0,?).
 aggregate2(W, A, G, R) :- G,
    revolve_lookup(R, W, P),
@@ -180,6 +179,7 @@ init_state(max(_), inf).
 init_state((A,B), (S,T)) :-
    init_state(A, S),
    init_state(B, T).
+init_state(nil, nil).
 
 /**
  * next_state(A, H, J):
@@ -206,6 +206,7 @@ next_state(max(X), S, T) :-
 next_state((S,T), (A,B), (U,V)) :-
    next_state(S, A, U),
    next_state(T, B, V).
+next_state(nil, nil, nil).
 
 /*************************************************************/
 /* Revolve Datatype                                          */
@@ -216,7 +217,7 @@ next_state((S,T), (A,B), (U,V)) :-
  * Thre predicate succeeds in R with a new revolve.
  */
 % revolve_new(-Revolve)
-:- private revolve_new/1.
+:- public revolve_new/1.
 :- foreign_constructor(revolve_new/1, 'MapHashLink', new).
 
 /**
@@ -224,7 +225,6 @@ next_state((S,T), (A,B), (U,V)) :-
  * The predicate succeeds in R with a new revolve for the comparator C.
  */
 % revolve_new(+Comparator, -Revolve)
-:- private revolve_new/2.
 :- foreign_constructor(revolve_new/2, 'MapTree', new(java/util/'Comparator')).
 
 /**
@@ -233,16 +233,14 @@ next_state((S,T), (A,B), (U,V)) :-
  * for a copy of the key K in the revolve R.
  */
 % revolve_lookup(+Revolve, +Term, -Pivot)
-:- private revolve_lookup/3.
 :- foreign(revolve_lookup/3, 'ForeignAggregate',
-      sysRevolveLookup('Interpreter','AbstractMap','AbstractTerm')).
+      sysRevolveLookup('Interpreter','AbstractMap','Object')).
 
 /**
  * revolve_pair(R, U):
  * The predicate succeeds in U with the key value pairs of the revolve R.
  */
 % revolve_pair(+Revolve, +Pair)
-:- private revolve_pair/2.
 :- foreign(revolve_pair/2, 'ForeignAggregate',
       sysRevolvePair('CallOut','AbstractMap')).
 
@@ -251,7 +249,6 @@ next_state((S,T), (A,B), (U,V)) :-
  * The predicate succeeds in C with the variant comparator.
  */
 % variant_comparator(-Comparator)
-:- private variant_comparator/1.
 :- foreign(variant_comparator/1, 'ForeignAggregate', sysVariantComparator).
 
 

@@ -70,7 +70,7 @@
  */
 % group_new(-Group)
 :- public group_new/1.
-:- foreign(group_new/1, 'ForeignGroup', sysGroupNew('Interpreter')).
+:- foreign(group_new/1, 'ForeignGroup', sysGroupNew).
 
 /**
  * thread_new(G, C, T):
@@ -216,17 +216,3 @@ sys_get_show_stat(T, sys_thread_state, V) :-
 sys_get_show_stat(T, sys_thread_group_name, V) :-
    current_thread_flag(T, sys_thread_group, H),
    current_group_flag(H, sys_group_name, V).
-
-/****************************************************************/
-/* Debug Threads                                                */
-/****************************************************************/
-
-/**
- * thread_stack(T, S):
- * The predicate succeeds in S with the JVM stack of T.
- */
-/*
-:- public thread_stack/2.
-:- foreign(thread_stack/2, 'ForeignGroup',
-           sysThreadStack('Interpreter', 'Thread')).
-*/
