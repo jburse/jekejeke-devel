@@ -217,7 +217,6 @@ next_state(nil, nil, nil).
  * Thre predicate succeeds in R with a new revolve.
  */
 % revolve_new(-Revolve)
-:- public revolve_new/1.
 :- foreign_constructor(revolve_new/1, 'MapHashLink', new).
 
 /**
