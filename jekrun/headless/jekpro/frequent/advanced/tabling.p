@@ -1,5 +1,5 @@
 /**
- * This module enhance aggregates by memorization. The table/1 directive
+ * This module enhances aggregates by memorization. The table/1 directive
  * has two effects. First of all a tabled predicate call is materialized
  * into a table by the given aggregate. This means for example that
  * duplicates are removed. Second, the materialized table is memorized
@@ -27,8 +27,6 @@
  * path(X, Y, N) :-  edge(X, Z), path(Z, Y, M), N is M+1.
  * ?- path(a, e, X).
  * X = 2
- * ?- path(a, e, 2).
- * Yes
  * ?- path(a, e, 1).
  * No
  *
@@ -77,66 +75,138 @@
 :- public prefix(table).
 :- op(1150, fx, table).
 
+:- public prefix(sys_sorter).
+:- op(1150, fx, sys_sorter).
+
 /**
  * table P, ..:
  * The predicate sets the predicate P to tabled. The predicate can be
- * specified via a predicate indicator or a callable. The following
- * aggregates are recognized:
+ * specified via a predicate indicator or a callable. The result is
+ * grouped by the witnesses. The following aggregates are recognized:
  *
- *   _:         The argument is not aggregated.
- *   sum:       The result is the sum of the argument.
- *   mul:       The result is the product of the argument.
- *   min:       The result is the minimum of the argument.
- *   max:       The result is the maximum of the argument.
+ *   _:            The argument is not aggregated.
+ *   sum:          The result is the sum of the argument.
+ *   mul:          The result is the product of the argument.
+ *   min:          The result is the minimum of the argument.
+ *   max:          The result is the maximum of the argument.
+ *   first(C):     The result is the C first of the argument.
+ *   last(C):      The result is the C last of the argument.
+ *   reduce(I,A):  The result is the I and A reduct of the argument.
  */
-% public +Indicators
+% table(+Indicators)
 :- public (table)/1.
 table [P|Q] :- !,
-   sys_table(P),
+   sys_table(P, hash),
    table(Q).
 table P,Q :- !,
-   sys_table(P),
+   sys_table(P, hash),
    table(Q).
 table [] :- !.
 table P :-
-   sys_table(P).
+   sys_table(P, hash).
 
-% sys_table(+IndicatorOrCallable)
-:- private sys_table/1.
-sys_table(X) :-
+/**
+ * sys_sorter P, ..:
+ * The predicate sets the predicate P to tabled. The predicate can be
+ * specified via a predicate indicator or a callable. The result is
+ * sorted by the witnesses.
+ */
+% sys_sorter(+Indicators)
+:- public (sys_sorter)/1.
+sys_sorter [P|Q] :- !,
+   sys_table(P, tree),
+   sys_sorter(Q).
+sys_sorter P,Q :- !,
+   sys_table(P, tree),
+   sys_sorter(Q).
+sys_sorter [] :- !.
+sys_sorter P :-
+   sys_table(P, tree).
+
+% sys_table(+IndicatorOrCallable, +Atom)
+:- private sys_table/2.
+sys_table(X, _) :-
    var(X),
    throw(error(instantiation_error,_)).
-sys_table(F/N) :- !,
+sys_table(F/N, O) :- !,
    sys_table_declare(F, N),
+   sys_table_aux(F, J),
    length(L, N),
+   G =.. [J|L],
    H =.. [F|L],
-   sys_table_wrapper(H, nil, nil).
-sys_table(C) :-
+   sys_table_wrapper(G, H, nil, nil, O).
+sys_table(C, O) :-
    functor(C, F, N),
    sys_table_declare(F, N),
+   sys_table_aux(F, J),
    length(L, N),
    C =.. [_|R],
-   sys_table_aggregate(R, L, A, S),
-   H =.. [F|L],
-   sys_table_wrapper(H, A, S).
+   sys_table_aggregate(R, L, T, A, S),
+   G =.. [J|L],
+   H =.. [F|T],
+   sys_table_wrapper(G, H, A, S, O).
 
-% sys_table_aggregate(+List, +List, -Aggregate, -Value)
-:- private sys_table_aggregate/4.
-sys_table_aggregate([], [], nil, nil).
-sys_table_aggregate([X|L], [Y|R], (A,P), (S,Q)) :-
-   sys_table_spec(X, Y, A, S), !,
-   sys_table_aggregate(L, R, P, Q).
-sys_table_aggregate([_|L], [_|R], P, Q) :-
-   sys_table_aggregate(L, R, P, Q).
+/**********************************************************/
+/* Aggregate Helper                                       */
+/**********************************************************/
 
-% sys_table_spec(+Spec, +Var, -Aggregate, -Value)
-:- private sys_table_spec/4.
-sys_table_spec(X, _, _, _) :-
+% sys_table_aggregate(+List, +List, -List, -Aggregate, -Value)
+:- private sys_table_aggregate/5.
+sys_table_aggregate([], [], [], nil, nil).
+sys_table_aggregate([X|L], [Y|R], [S|T], (A,P), (S,Q)) :-
+   sys_table_spec(X, Y, A), !,
+   sys_table_aggregate(L, R, T, P, Q).
+sys_table_aggregate([_|L], [Y|R], [Y|T], P, Q) :-
+   sys_table_aggregate(L, R, T, P, Q).
+
+% sys_table_spec(+Spec, +Var, -Aggregate)
+:- private sys_table_spec/3.
+sys_table_spec(X, _, _) :-
    var(X), !, fail.
-sys_table_spec(sum, X, sum(X), X).
-sys_table_spec(mul, X, mul(X), X).
-sys_table_spec(min, X, min(X), X).
-sys_table_spec(max, X, max(X), X).
+sys_table_spec(sum, X, sum(X)).
+sys_table_spec(mul, X, mul(X)).
+sys_table_spec(min, X, min(X)).
+sys_table_spec(max, X, max(X)).
+sys_table_spec(first(C), X, first(C,X)).
+sys_table_spec(last(C), X, last(C,X)).
+sys_table_spec(reduce(I,A), X, reduce(I,A,X)).
+
+/**********************************************************/
+/* Wrapper Helper                                         */
+/**********************************************************/
+
+% sys_table_declare(+Atom, +Integer)
+:- private sys_table_declare/2.
+sys_table_declare(F, N) :-
+   assertz(sys_tabled(F, N)),
+   sys_table_test(F, N, M),
+   thread_local(M/2).
+
+% sys_table_wrapper(+Goal, +Head, +Aggregate, +Value, +Atom)
+:- private sys_table_wrapper/5.
+sys_table_wrapper(G, H, A, S, O) :-
+   functor(H, F, N),
+   sys_table_test(F, N, M),
+   T =.. [M,P,R],
+   sys_table_revolve(O, A, G, W, R, Q),
+   assertz((H :-
+              sys_goal_globals(A^G, W),
+              pivot_new(P),
+              pivot_set(P, H),
+              (  T -> true; Q,
+                 assertz(T)),
+              sys_revolve_list(W, R, S))).
+
+% sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
+:- private sys_table_revolve/6.
+sys_table_revolve(hash, A, G, W, R,
+   sys_revolve_hash(A,G,W,R)).
+sys_table_revolve(tree, A, G, W, R,
+   sys_revolve_tree(A,G,W,R)).
+
+/**********************************************************/
+/* Table Inspection                                       */
+/**********************************************************/
 
 /**
  * current_table(V, R):
@@ -158,36 +228,9 @@ current_table(V, R) :-
    Test =.. [H,P,R], Test,
    pivot_get(P, V).
 
-% sys_table_declare(+Atom, +Integer)
-:- private sys_table_declare/2.
-sys_table_declare(F, N) :-
-   assertz(sys_tabled(F, N)),
-   sys_table_test(F, N, M),
-   thread_local(M/2).
-
 % sys_tabled(-Atom, -Integer)
 :- private sys_tabled/2.
 :- dynamic sys_tabled/2.
-
-/*************************************************************/
-/* Tabling Helper                                            */
-/*************************************************************/
-
-% sys_table_wrapper(+Head, +Aggregate, +Value)
-:- private sys_table_wrapper/3.
-sys_table_wrapper(H, A, S) :-
-   functor(H, F, N),
-   sys_table_test(F, N, M),
-   T =.. [M,P,R],
-   sys_table_head(H, G),
-   assertz((H :-
-              sys_goal_globals(A^G, W),
-              pivot_new(P),
-              pivot_set(P, H),
-              (  T -> true
-              ;  sys_table_make(A, G, W, R),
-                 assertz(T)),
-              sys_table_list(W, R, S))).
 
 % sys_table_test(+Atom, -Integer, -Atom)
 :- private sys_table_test/3.
@@ -195,26 +238,6 @@ sys_table_test(F, N, H) :-
    atom_number(U, N),
    atom_split(G, '_', [F,U,m]),
    sys_replace_site(H, F, G).
-
-% sys_table_make(+Aggregate, +QuantGoal, +List, -Ref)
-:- private sys_table_make/4.
-:- meta_predicate sys_table_make(?,0,?,?).
-sys_table_make(A, G, [], P) :- !,
-   sys_goal_kernel(G, B),
-   pivot_new(P),
-   aggregate_all2(A, B, P).
-sys_table_make(A, G, W, R) :-
-   sys_goal_kernel(G, B),
-   revolve_new(R),
-   aggregate2(W, A, B, R).
-
-% sys_table_list(+List, +Ref, -Value)
-:- private sys_table_list/3.
-sys_table_list([], P, S) :- !,
-   pivot_get(P, S).
-sys_table_list(W, R, S) :-
-   revolve_pair(R, W-Q),
-   pivot_get(Q, S).
 
 /**********************************************************/
 /* Term Rewriting                                         */
@@ -226,9 +249,14 @@ sys_table_head(A, B) :-
    A =.. [F|L],
    length(L, N),
    sys_tabled(F, N),
-   atom_concat(F, '_f', G),
-   sys_replace_site(H, F, G),
+   sys_table_aux(F, H),
    B =.. [H|L].
+
+% sys_table_aux(+Atom, -Atom)
+:- private sys_table_aux/2.
+sys_table_aux(F, H) :-
+   atom_concat(F, '_f', G),
+   sys_replace_site(H, F, G).
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
