@@ -3,7 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides a varmap number undo.</p>

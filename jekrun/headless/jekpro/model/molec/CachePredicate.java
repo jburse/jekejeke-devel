@@ -51,6 +51,7 @@ public final class CachePredicate extends AbstractCache {
     public static final int MASK_CACH_CRTE = 0x00000001;
     public static final int MASK_CACH_NSTS = 0x00000002;
     public static final int MASK_CACH_LOCA = 0x00000004;
+    public static final int MASK_CACH_UCHK = 0x00000008;
 
     /* combined flags */
     public static final int MASK_CACH_DEFI = MASK_CACH_CRTE | MASK_CACH_LOCA;
@@ -140,7 +141,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param sa    The predicate name.
      * @param arity The predicate length.
-     * @param scope The call-site, non null.
+     * @param src   The call-site, non null.
      * @param base  The base.
      * @param en    The engine.
      * @param copt  The create flag.
@@ -149,7 +150,7 @@ public final class CachePredicate extends AbstractCache {
      * @throws InterruptedException Shit happens.
      */
     private static Predicate performLookupDefined(SkelAtom sa, int arity,
-                                                  AbstractSource scope,
+                                                  AbstractSource src,
                                                   AbstractSource base,
                                                   Engine en, int copt)
             throws InterruptedException, EngineMessage {
@@ -169,13 +170,13 @@ public final class CachePredicate extends AbstractCache {
                 /* create name%pred */
                 s = CacheFunctor.composeQuali(s, n);
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineRoutine2(arity, s, sa, en, copt) :
+                        base.defineRoutine(arity, s, sa, en, copt) :
                         base.getRoutine(arity, s));
             } else {
                 /* create pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        defineRoutineUser(arity, n, sa, en, copt) :
-                        getRoutineUser(arity, n, scope.getStore()));
+                        defineRoutineUser(arity, n, sa, src.getStore(), en, copt) :
+                        getRoutineUser(arity, n, src.getStore()));
             }
         } finally {
             base.getRead().unlock();
@@ -266,7 +267,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved predicate or null.
@@ -316,7 +317,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved name.
@@ -365,7 +366,7 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param fun     The predicate name.
      * @param arity   The predicate length.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The resolved predicate or null.
@@ -532,8 +533,7 @@ public final class CachePredicate extends AbstractCache {
                         int flags = 0;
                         if (CachePredicate.visiblePred(pick, src))
                             flags |= MASK_PRED_VISI;
-                        if ((copt & CachePredicate.MASK_CACH_CRTE) != 0)
-                            flags |= MASK_PRED_STBL;
+                        flags |= MASK_PRED_STBL;
                         cp = new CachePredicate();
                         cp.pick = pick;
                         cp.flags = flags;
@@ -572,8 +572,7 @@ public final class CachePredicate extends AbstractCache {
                                 int flags = 0;
                                 if (CachePredicate.visiblePred(pick, src))
                                     flags |= MASK_PRED_VISI;
-                                if ((copt & CachePredicate.MASK_CACH_CRTE) != 0)
-                                    flags |= MASK_PRED_STBL;
+                                flags |= MASK_PRED_STBL;
                                 cp.pick = pick;
                                 cp.flags = flags;
                                 cp.base = base;
@@ -633,18 +632,17 @@ public final class CachePredicate extends AbstractCache {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param sa    The call-site, not nulll.
+     * @param sa    The call-site, non nulll.
+     * @param store The store.
      * @param en    The engine.
      * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
     private static Predicate defineRoutineUser(int arity, String fun,
-                                               SkelAtom sa,
+                                               SkelAtom sa, Store store,
                                                Engine en, int copt)
             throws EngineMessage {
-        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-        Store store = src.getStore();
         Predicate pick = getRoutineUser(arity, fun, store.parent);
         if (pick == null)
             pick = store.user.checkRoutine(arity, fun, sa, en);
@@ -660,7 +658,7 @@ public final class CachePredicate extends AbstractCache {
      * <p>Check whether a predicate is visible.</p>
      *
      * @param pick The predicate.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @return True if the predicate is visible, otherwise false.
      */
     public static boolean visiblePred(Predicate pick, AbstractSource src) {

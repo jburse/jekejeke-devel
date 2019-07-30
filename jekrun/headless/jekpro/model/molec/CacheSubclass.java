@@ -313,7 +313,7 @@ public final class CacheSubclass extends AbstractCache {
      * <p>Find a key according to the auto loader.</p>
      *
      * @param path  The path.
-     * @param scope The source, not null.
+     * @param scope The source, non null.
      * @param mask  The mask.
      * @param en    The engine, or null.
      * @return The source key, or null.
@@ -341,7 +341,7 @@ public final class CacheSubclass extends AbstractCache {
      * <p>Find a key according in the best way.</p>
      *
      * @param path The path.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param mask The mask.
      * @param en   The engine, or null.
      * @return The source key.
@@ -399,7 +399,7 @@ public final class CacheSubclass extends AbstractCache {
      * <p>Unfind a key in the best way.</p>
      *
      * @param path  The absolute or relative path.
-     * @param scope The call-site, not null.
+     * @param scope The call-site, non null.
      * @param mask  The mask.
      * @param en    The engine.
      * @return The path without suffix.
@@ -433,7 +433,7 @@ public final class CacheSubclass extends AbstractCache {
      * <p>Unfind a key in the best way.</p>
      *
      * @param path The absolute or relative path.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param mask The mask.
      * @param en   The engine or null.
      * @return The path without suffix.

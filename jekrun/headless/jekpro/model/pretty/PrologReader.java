@@ -353,15 +353,15 @@ public class PrologReader {
                 current = 0;
                 nextToken();
                 if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
-                    Operator op = engine != null ? OperatorSearch.getOper(source,
+                    Operator oper = engine != null ? OperatorSearch.getOper(source,
                             Foyer.OP_UNIT, Operator.TYPE_POSTFIX, engine) : null;
-                    if (op != null && level >= op.getLevel()) {
-                        if (op.getLevel() - op.getLeft() < current)
+                    if (oper != null && level >= oper.getLevel()) {
+                        if (oper.getLevel() - oper.getLeft() < current)
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
-                        SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
+                        SkelAtom help = makePos(oper.getAliasOrName(), getAtomPos());
                         skel = new SkelCompound(help, skel);
-                        current = op.getLevel();
+                        current = oper.getLevel();
                     } else {
                         throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
                                 st.getTokenOffset());
@@ -385,16 +385,16 @@ public class PrologReader {
                     skel = makePos((String) skel, pos);
                     current = 0;
                 } else {
-                    Operator op = engine != null ? OperatorSearch.getOper(source,
+                    Operator oper = engine != null ? OperatorSearch.getOper(source,
                             (String) skel, Operator.TYPE_PREFIX, engine) : null;
-                    if (op != null) {
-                        if (level < op.getLevel())
+                    if (oper != null) {
+                        if (level < oper.getLevel())
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
-                        SkelAtom help = makePos(op.getAliasOrName(), pos);
-                        Object jill = read(op.getLevel() - op.getRight());
+                        SkelAtom help = makePos(oper.getAliasOrName(), pos);
+                        Object jill = read(oper.getLevel() - oper.getRight());
                         skel = new SkelCompound(help, jill);
-                        current = op.getLevel();
+                        current = oper.getLevel();
                     } else {
                         skel = makePos((String) skel, pos);
                         current = 0;
@@ -435,26 +435,26 @@ public class PrologReader {
                             st.getTokenOffset());
                 }
             }
-            Operator op = engine != null ? OperatorSearch.getOper(source,
+            Operator oper = engine != null ? OperatorSearch.getOper(source,
                     fun, Operator.TYPE_INFIX, engine) : null;
-            if (op != null && level >= op.getLevel()) {
-                if (op.getLevel() - op.getLeft() < current)
+            if (oper != null && level >= oper.getLevel()) {
+                if (oper.getLevel() - oper.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());
-                SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
-                skel = readInfix(help, skel, op);
-                current = op.getLevel();
+                SkelAtom help = makePos(oper.getAliasOrName(), getAtomPos());
+                skel = readInfix(help, skel, oper);
+                current = oper.getLevel();
                 continue;
             }
-            op = engine != null ? OperatorSearch.getOper(source,
+            oper = engine != null ? OperatorSearch.getOper(source,
                     fun, Operator.TYPE_POSTFIX, engine) : null;
-            if (op != null && level >= op.getLevel()) {
-                if (op.getLevel() - op.getLeft() < current)
+            if (oper != null && level >= oper.getLevel()) {
+                if (oper.getLevel() - oper.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());
-                SkelAtom help = makePos(op.getAliasOrName(), getAtomPos());
+                SkelAtom help = makePos(oper.getAliasOrName(), getAtomPos());
                 skel = readPostfix(help, skel);
-                current = op.getLevel();
+                current = oper.getLevel();
                 continue;
             }
             break;

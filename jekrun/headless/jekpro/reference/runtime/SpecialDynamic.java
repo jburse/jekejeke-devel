@@ -11,6 +11,8 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.ForeignPath;
+import jekpro.reference.reflect.SpecialOper;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
@@ -85,21 +87,21 @@ public final class SpecialDynamic extends AbstractSpecial {
             case SPECIAL_SYS_ENSURE_SHARED_DYNAMIC:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineDynamic(pick, en);
                 return true;
             case SPECIAL_SYS_ENSURE_THREAD_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineThreadLocal(pick, en);
                 return true;
             case SPECIAL_SYS_ENSURE_GROUP_LOCAL:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialDynamic.defineGroupLocal(pick, en);
                 return true;
@@ -117,7 +119,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             case SPECIAL_ABOLISH_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = Predicate.indicatorToPredicateDefined(temp[0], ref, en, 0);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0], ref, en, 0);
                 if (pick == null)
                     return true;
                 abolishPred(pick, en);
@@ -125,7 +127,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             case SPECIAL_ABOLISH_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator oper = Operator.operToOperatorDefined(temp[0], ref, en, false);
+                Operator oper = SpecialOper.operToOperatorDefined(temp[0], ref, en, 0);
                 if (oper == null)
                     return true;
                 abolishOper(oper, en);
@@ -385,7 +387,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a module to a slash.</p>
      *
      * @param fun The module.
-     * @param src The call-site, not null.
+     * @param src The call-site, non null.
      * @return The skeleton.
      */
     public static Object moduleToSlashSkel(String fun,
@@ -419,7 +421,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a package to a slash.</p>
      *
      * @param fun   The package.
-     * @param scope The call-site, not null.
+     * @param scope The call-site, non null.
      * @return The skeleton.
      */
     public static Object packageToSlashSkel(String fun, AbstractSource scope) {
@@ -607,7 +609,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a callable to a colon.</p>
      *
      * @param t     The callable.
-     * @param scope The scope, not null.
+     * @param scope The scope, non null.
      * @param en    The engine.
      * @return The colon callable.
      * @throws EngineMessage Shit happens.

@@ -108,7 +108,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -132,7 +132,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -152,7 +152,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -172,7 +172,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -193,7 +193,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -213,7 +213,7 @@ public final class SpecialForeign extends AbstractSpecial {
                             EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
                             Integer.valueOf(del.getArity())));
                 /* create the builtin */
-                pick = Predicate.indicatorToPredicateDefined(temp[0],
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 Predicate.definePredicate(pick, del, en);
                 return true;
@@ -420,7 +420,7 @@ public final class SpecialForeign extends AbstractSpecial {
      *
      * @param name   The name.
      * @param paras  The parameters.
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The callable.
      * @throws EngineMessage Shit happens.
      */
@@ -440,7 +440,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * <p>Method to callable.</p>
      *
      * @param paras  The parameter types.
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The callable.
      */
     public static Object constructorToCallable(Class[] paras,
@@ -459,7 +459,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * <p>A class back to a structured path.</p>
      *
      * @param clazz  The class.
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The class.
      * @throws EngineMessage Shit happens.
      */

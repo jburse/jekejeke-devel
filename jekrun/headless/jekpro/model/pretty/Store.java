@@ -8,7 +8,6 @@ import jekpro.model.inter.LocalBlocking;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;

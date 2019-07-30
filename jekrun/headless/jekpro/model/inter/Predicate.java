@@ -161,21 +161,6 @@ public final class Predicate {
     }
 
     /**
-     * <p>Assure that the predicate is existent.</p>
-     *
-     * @param pick The predicate.
-     * @param t    The skel.
-     * @param d    The display.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkExistentProvable(Predicate pick, Object t, Display d)
-            throws EngineMessage {
-        if (pick == null)
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_PROVABLE, t), d);
-    }
-
-    /**
      * <p>Check a meta predicate declaration.</p>
      * <p>The following syntax is used:</p>
      * <pre>
@@ -476,7 +461,7 @@ public final class Predicate {
      * <p>Add a source to a predicate.</p>
      * <p>Can veto that a non-multifile predicate is extended.</p>
      *
-     * @param sa   The call-site, not null.
+     * @param sa   The call-site, non null.
      * @param en   The engine.
      * @param copt The create flag.
      * @throws EngineMessage Shit happens.
@@ -618,34 +603,6 @@ public final class Predicate {
             f |= (!priv ? AbstractSource.MASK_IMPT_REEX : 0);
             CachePredicate.notifyImportvers(source, f);
         }
-    }
-
-    /*************************************************************/
-    /* Convenience Methods                                       */
-    /*************************************************************/
-
-    /**
-     * <p>Get predicate by indicator and possibly create it.</p>
-     *
-     * @param t    The indicator skel.
-     * @param d    The indicator display.
-     * @param en   The engine.
-     * @param copt The create flag.
-     * @return The predicate, or null.
-     * @throws EngineMessage Shit happens.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Predicate indicatorToPredicateDefined(Object t, Display d,
-                                                        Engine en, int copt)
-            throws EngineMessage, EngineException {
-        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        CachePredicate cp = CachePredicate.getPredicateDefined(sa,
-                arity.intValue(), en, copt);
-        en.skel = sa;
-        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
-            return null;
-        return cp.pick;
     }
 
     /***********************************************************/

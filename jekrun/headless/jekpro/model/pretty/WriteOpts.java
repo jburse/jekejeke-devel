@@ -575,7 +575,7 @@ public final class WriteOpts {
     }
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta offset.
      */
     private static int spezToOffset2(Object obj) {
@@ -593,7 +593,7 @@ public final class WriteOpts {
 
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta offset.
      */
     private static int spezToOffset3(Object obj) {
@@ -631,7 +631,7 @@ public final class WriteOpts {
     }
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta shif.
      */
     private static int spezToShift2(Object obj) {

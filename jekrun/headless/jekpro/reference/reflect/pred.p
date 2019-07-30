@@ -117,7 +117,7 @@ current_predicate(I) :-
 :- set_predicate_property(current_predicate/1, visible(public)).
 
 :- special(sys_current_predicate/1, 'SpecialPred', 1).
-:- set_predicate_property(sys_current_predicate/1, visible(private)).
+:- set_predicate_property(sys_current_predicate/1, visible(public)).
 
 :- special(sys_current_predicate_chk/1, 'SpecialPred', 2).
 :- set_predicate_property(sys_current_predicate_chk/1, visible(private)).
@@ -152,14 +152,17 @@ sys_predicate_property2(I, R) :-
    sys_member(R, P).
 :- set_predicate_property(sys_predicate_property2/2, visible(private)).
 
+% sys_predicate_property(+Indicator, -List)
 :- special(sys_predicate_property/2, 'SpecialPred', 3).
 :- set_predicate_property(sys_predicate_property/2, visible(private)).
 
+% sys_predicate_property_chk(+Indicator, +Indicator, -List)
 :- special(sys_predicate_property_chk/3, 'SpecialPred', 4).
 :- set_predicate_property(sys_predicate_property_chk/3, visible(private)).
 
+% sys_predicate_property_idx(+Term, -List)
 :- special(sys_predicate_property_idx/2, 'SpecialPred', 5).
-:- set_predicate_property(sys_predicate_property_idx/2, visible(private)).
+:- set_predicate_property(sys_predicate_property_idx/2, visible(public)).
 
 /**
  * set_predicate_property(P, Q):
@@ -226,9 +229,11 @@ sys_make_indicator2(I, _, _) :-
 /**********************************************************/
 
 % moved from provable.p in debugger
-:- special(sys_provable_property_chk/3, 'SpecialPred', 8).
-:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
+% sys_provable_property_idx(+Term, -List)
+:- special(sys_provable_property_idx/2, 'SpecialPred', 6).
+:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
 
 % moved from provable.p in debugger
-:- special(sys_provable_property_idx/2, 'SpecialPred', 9).
-:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
+% sys_provable_property_chk(+Indicator, +Indicator, -List)
+:- special(sys_provable_property_chk/3, 'SpecialPred', 7).
+:- set_predicate_property(sys_provable_property_chk/3, visible(public)).

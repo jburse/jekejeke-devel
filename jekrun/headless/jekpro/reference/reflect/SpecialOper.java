@@ -15,10 +15,9 @@ import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -60,10 +59,9 @@ public final class SpecialOper extends AbstractSpecial {
     private final static int SPECIAL_SYS_OPER_PROPERTY = 4;
     private final static int SPECIAL_SYS_OPER_PROPERTY_CHK = 5;
     private final static int SPECIAL_SYS_OPER_PROPERTY_IDX = 6;
-    /* private final static int SPECIAL_SET_OPER_PROPERTY = 7; */
-    private final static int SPECIAL_RESET_OPER_PROPERTY = 8;
+    private final static int SPECIAL_RESET_OPER_PROPERTY = 7;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 8;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 9;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 10;
 
     public final static Operator[] FALSE_OPERS = new Operator[]{};
 
@@ -105,7 +103,7 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_SYS_NEUTRAL_OPER:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Operator.operToOperatorDefined(temp[0], ref, en, true);
+                SpecialOper.operToOperatorDefined(temp[0], ref, en, CachePredicate.MASK_CACH_CRTE);
                 return true;
             case SPECIAL_SYS_CHECK_STYLE_OPER:
                 temp = ((SkelCompound) en.skel).args;
@@ -125,14 +123,14 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_OPER_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                oper = operToOperator(temp[0], ref, en);
+                oper = SpecialOper.operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
                 return true;
             case SPECIAL_SYS_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                oper = operToOperator(temp[0], ref, en);
+                oper = SpecialOper.operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
                 operToProperties(oper, en);
@@ -146,7 +144,7 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_SYS_OPER_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                oper = operToOperator(temp[0], ref, en);
+                oper = SpecialOper.operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
@@ -173,28 +171,13 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                oper = operToOperator(temp[0], ref, en);
+                oper = SpecialOper.operToOperator(temp[0], ref, en);
                 Operator.checkExistentOperator(oper, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialOper.resetOperProp(oper, en.skel, en.display, en);
-                return true;
-            case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                oper = operToSyntax(temp[0], ref, en);
-                if (oper == null)
-                    return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                SpecialOper.operToProperty(oper, prop, en);
-                d = en.display;
-                multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
                 return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
@@ -207,6 +190,22 @@ public final class SpecialOper extends AbstractSpecial {
                         propertyToSyntax(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
+                return true;
+            case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (oper == null)
+                    return false;
+                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                SpecialOper.operToProperty(oper, prop, en);
+                d = en.display;
+                multi = d.getAndReset();
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    d.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -263,25 +262,6 @@ public final class SpecialOper extends AbstractSpecial {
         return res;
     }
 
-    /**
-     * <p>Lookup an operator from a compound.</p>
-     *
-     * @param t  The compound skeleton.
-     * @param d  The compound display.
-     * @param en The engine copy.
-     * @return The operator.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToOperator(Object t, Display d,
-                                          Engine en)
-            throws EngineMessage, EngineException {
-        int type = colonToOper(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        Operator op = OperatorSearch.getOper(sa.scope, sa.fun, type, en);
-        en.skel = sa;
-        return op;
-    }
-
     /***********************************************************************/
     /* High-Level Operator Property Access I                               */
     /***********************************************************************/
@@ -292,7 +272,7 @@ public final class SpecialOper extends AbstractSpecial {
      *
      * @param oper The operator.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public static void operToProperties(Operator oper,
@@ -420,7 +400,7 @@ public final class SpecialOper extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static AbstractProperty<Operator> findOperProperty(StoreKey sk,
-                                                               Engine en)
+                                                              Engine en)
             throws EngineMessage {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
@@ -648,7 +628,7 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Convert a type and fun to a colon.</p>
      *
      * @param fun   The name.
-     * @param scope The scope, not null.
+     * @param scope The scope, non null.
      * @param type  The type.
      * @param en    The engine.
      * @return The compound.
@@ -702,30 +682,6 @@ public final class SpecialOper extends AbstractSpecial {
     /**********************************************************/
 
     /**
-     * <p>Lookup an operator from a compound.</p>
-     *
-     * @param t  The compound skeleton.
-     * @param d  The compound display.
-     * @param en The engine copy.
-     * @return The operator or null.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToSyntax(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int type = colonToOper(t, d, en);
-        String fun = ((SkelAtom) en.skel).fun;
-        if (!CacheFunctor.isQuali(fun)) {
-            return OperatorSearch.getOperUser(type, fun, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(fun);
-            AbstractSource base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            return base.getOper(type, fun);
-        }
-    }
-
-    /**
      * <p>Retrieve the operators for a property.</p>
      *
      * @param t  The value skeleton.
@@ -762,6 +718,53 @@ public final class SpecialOper extends AbstractSpecial {
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
+    }
+
+    /**************************************************************/
+    /* Operator Lookup                                            */
+    /**************************************************************/
+
+    /**
+     * <p>Lookup an operator from a compound.</p>
+     *
+     * @param t  The compound skeleton.
+     * @param d  The compound display.
+     * @param en The engine copy.
+     * @return The operator.
+     * @throws EngineMessage Shit happends.
+     */
+    public static Operator operToOperator(Object t, Display d,
+                                          Engine en)
+            throws EngineMessage, EngineException {
+        int type = colonToOper(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        Operator oper = OperatorSearch.getOper(sa.scope, sa.fun, type, en);
+        en.skel = sa;
+        return oper;
+    }
+
+    /**
+     * <p>Lookup an operator from a compound and possibly create it.</p>
+     *
+     * @param t    The compound skeleton.
+     * @param d    The compound display.
+     * @param en   The engine copy.
+     * @param copt The create flag.
+     * @return The operator.
+     * @throws EngineMessage Shit happends.
+     */
+    public static Operator operToOperatorDefined(Object t, Display d,
+                                                 Engine en, int copt)
+            throws EngineMessage, EngineException {
+        int type = colonToOper(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        Operator oper = OperatorSearch.getOperDefined(sa, type, en, copt);
+        en.skel = sa;
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        if (oper == null || ((copt & CachePredicate.MASK_CACH_UCHK) == 0 &&
+                !OperatorSearch.visibleOper(oper, src)))
+            return null;
+        return oper;
     }
 
 }

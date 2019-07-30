@@ -4,14 +4,12 @@ import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
-import matula.util.data.MapHashLink;
 
 import java.util.Comparator;
 

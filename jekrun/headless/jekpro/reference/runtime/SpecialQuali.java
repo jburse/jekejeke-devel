@@ -484,7 +484,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * <p>Convert an indicator to a qualified indicator.</p>
      *
      * @param fun   The name.
-     * @param scope The scope, not null.
+     * @param scope The scope, non null.
      * @param arity The length.
      * @param en    The engine.
      * @return The colon indictor

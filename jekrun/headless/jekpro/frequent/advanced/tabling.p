@@ -255,7 +255,7 @@ sys_table_head(A, B) :-
 % sys_table_aux(+Atom, -Atom)
 :- private sys_table_aux/2.
 sys_table_aux(F, H) :-
-   atom_concat(F, '_f', G),
+   atom_concat(F, '_a', G),
    sys_replace_site(H, F, G).
 
 % user:term_expansion(+Term, -Term)

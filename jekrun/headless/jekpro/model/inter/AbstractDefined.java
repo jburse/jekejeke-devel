@@ -3,7 +3,10 @@ package jekpro.model.inter;
 import jekpro.frequent.experiment.SpecialRef;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.FileText;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -200,7 +203,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     /**
      * <p>Promote predicate to thread locale.</p>
-     * <p>Explicit by thread_locale directive.</p>
+     * <p>Explicit by thread_local directive.</p>
      *
      * @param pick  The predicate.
      * @param store The store.

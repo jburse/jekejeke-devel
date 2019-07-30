@@ -4,7 +4,6 @@ import jekpro.frequent.standard.SupervisorCall;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -17,7 +16,6 @@ import jekpro.tools.term.AbstractTerm;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
-import matula.util.data.MapHashLink;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.LivestockEvent;
 import matula.util.wire.LivestockEventClose;
@@ -231,7 +229,7 @@ public class Supervisor extends AbstractLivestock {
      * @return The size.
      */
     public int countStack() {
-        if (modstack==null)
+        if (modstack == null)
             return 0;
         return modstack.size();
     }

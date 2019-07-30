@@ -245,7 +245,7 @@ sys_error_stack(E) :-
    print_stack_trace(T, E).
 
 % sys_error_message(+Term)
-:- private sys_error_message/1.
+:- public sys_error_message/1.
 sys_error_message(E) :-
    current_error(T),
    error_make(E, S),
@@ -295,6 +295,12 @@ sys_show_assoc([X], N) :-
 
 % sys_show_pair(+Pair, +Assoc)
 :- private sys_show_pair/2.
+sys_show_pair(X=T, N) :-
+   sys_printable_value(T, S), !,
+   sys_quoted_var(X, Q),
+   write(Q),
+   write(' is '),
+   sys_show_term(S, [priority(699),quoted(true),variable_names(N)]).
 sys_show_pair(X=T, N) :- !,
    sys_quoted_var(X, Q),
    write(Q),

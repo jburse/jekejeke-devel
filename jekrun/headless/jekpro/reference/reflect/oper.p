@@ -244,7 +244,7 @@ sys_oper_property2(I, R) :-
  * The predicate de-assigns the property P from the operator I.
  */
 % reset_oper_property(+Indicator, +Property)
-:- special(reset_oper_property/2, 'SpecialOper', 8).
+:- special(reset_oper_property/2, 'SpecialOper', 7).
 :- set_predicate_property(reset_oper_property/2, visible(public)).
 
 % first defined in special.p
@@ -270,9 +270,10 @@ sys_declaration_indicator(op(_,M,Z), I) :-
 /**********************************************************/
 
 % moved from syntax.p in debugger
+:- special(sys_syntax_property_idx/2, 'SpecialOper', 8).
+:- set_predicate_property(sys_syntax_property_idx/2, visible(public)).
+
+% moved from syntax.p in debugger
 :- special(sys_syntax_property_chk/3, 'SpecialOper', 9).
 :- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
 
-% moved from syntax.p in debugger
-:- special(sys_syntax_property_idx/2, 'SpecialOper', 10).
-:- set_predicate_property(sys_syntax_property_idx/2, visible(public)).

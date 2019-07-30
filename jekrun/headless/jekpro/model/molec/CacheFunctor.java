@@ -47,7 +47,7 @@ public final class CacheFunctor extends AbstractCache {
      *
      * @param sa  The atom.
      * @param mod The module.
-     * @param nsa The call-site, not null.
+     * @param nsa The call-site, non null.
      * @param en  The engine.
      * @return The qualified functor name.
      */
@@ -74,7 +74,7 @@ public final class CacheFunctor extends AbstractCache {
      *
      * @param sa  The atom.
      * @param mod The module.
-     * @param nsa The call-site, not null.
+     * @param nsa The call-site, non null.
      * @param en  The store.
      * @return The qualified functor.
      */

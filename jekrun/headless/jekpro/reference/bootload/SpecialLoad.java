@@ -127,7 +127,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
 
-                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
 
@@ -156,7 +157,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
 
-                Operator oper = SpecialOper.operToSyntax(temp[0], ref, en);
+                Operator oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (oper == null)
                     return false;
 
@@ -209,7 +211,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
 
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
 
@@ -259,7 +262,7 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param pw   The prolog writer.
      * @param pick The predicate.
-     * @param src  The source, not null.
+     * @param src  The source, non null.
      * @param en   The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
@@ -386,7 +389,7 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param pw   The prolog writer.
      * @param oper The operator.
-     * @param src  The source, not null.
+     * @param src  The source, non null.
      * @param en   The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
@@ -680,7 +683,7 @@ public final class SpecialLoad extends AbstractSpecial {
      *
      * @param vals   The value list only buit_in.
      * @param pick   The predicate.
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The value list with spec.
      */
     private static Object[] delegateSpec(Object[] vals, Predicate pick,

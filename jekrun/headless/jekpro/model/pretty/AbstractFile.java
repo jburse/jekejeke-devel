@@ -342,7 +342,7 @@ public abstract class AbstractFile extends AbstractSource {
     /**
      * @param file  The file flag.
      * @param fun   The string.
-     * @param scope The call-site, not null.
+     * @param scope The call-site, non null.
      * @return The package expression.
      */
     public static Object osToSlashSkel(String fun,
