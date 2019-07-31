@@ -84,7 +84,7 @@ public final class LookupResource {
      * <p>Find a path suffix.</p>
      *
      * @param path The path, in slash notation.
-     * @param src  The source, not null.
+     * @param src  The source, non null.
      * @param mask The mask.
      * @return The source key, or null.
      * @throws IOException Shit happens.
@@ -136,7 +136,7 @@ public final class LookupResource {
      * <p>Find a path pack and suffix.</p>
      *
      * @param path The path, in slash notation.
-     * @param src  The source, not null.
+     * @param src  The source, non null.
      * @param mask The mask.
      * @return The source key, or null.
      * @throws IOException Shit happens.

@@ -281,61 +281,10 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
-            for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
-                 (props != null ? props.getFirstEntry() : null);
-                 entry2 != null; entry2 = props.successor(entry2)) {
-                AbstractProperty<Predicate> prop = entry2.value;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
-                    continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
-                        hasClause(pick, src, en))
-                    continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
-                        sameVisiblePredicate(src, pick, en))
-                    continue;
-                Object[] vals = prop.getObjProps(pick, en);
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
-                    vals = selectFirst(vals, src.getPathAtom());
-                } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
-                    vals = delegateSpec(vals, pick, src);
-                }
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
-                    for (int j = 0; j < vals.length; j++) {
-                        Object val = vals[j];
-                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
-                            val = firstArg(val);
-                        if (modifiers == null)
-                            modifiers = new ListArray<SkelAtom>();
-                        modifiers.add((SkelAtom) AbstractTerm.getSkel(val));
-                    }
-                } else {
-                    for (int j = 0; j < vals.length; j++) {
-                        Object val = vals[j];
-                        Object decl;
-                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                            decl = SpecialModel.predDeclSkelSet(
-                                    AbstractTerm.getSkel(val), pick, src);
-                        } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                            decl = SpecialModel.predDeclSkelMeta(
-                                    AbstractTerm.getSkel(val), pick, src);
-                        } else {
-                            if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
-                                val = firstArg(val);
-                            decl = SpecialModel.predDeclSkelIndicator(
-                                    AbstractTerm.getSkel(val), pick, src);
-                        }
-                        if (modifiers != null) {
-                            decl = prependModifiers(modifiers, decl);
-                            modifiers = null;
-                        }
-                        decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
-                        decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                        pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                        SpecialLoad.flushWriter(pw.getWriter());
-                    }
-                }
-            }
+            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
+            for (int j = 0; j < props.size(); j++)
+                modifiers = listProvableProps(pw, pick, src,
+                        props.get(j), en, modifiers);
         }
         AbstractDelegate fun = pick.del;
         if (!(fun instanceof AbstractDefined))
@@ -365,14 +314,89 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
+     * <p>List the provable properties.</p>
+     *
+     * @param pw    The print writer.
+     * @param pick  The predicate.
+     * @param src   The source, non null.
+     * @param props The properties.
+     * @param en    The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static ListArray<SkelAtom> listProvableProps(PrologWriter pw, Predicate pick,
+                                                         AbstractSource src,
+                                                         MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
+                                                         Engine en, ListArray<SkelAtom> modifiers)
+            throws EngineMessage, EngineException {
+        for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
+             (props != null ? props.getFirstEntry() : null);
+             entry2 != null; entry2 = props.successor(entry2)) {
+            AbstractProperty<Predicate> prop = entry2.value;
+            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
+                continue;
+            if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
+                    hasClause(pick, src, en))
+                continue;
+            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
+                    sameVisiblePredicate(pick, src, en))
+                continue;
+            Object[] vals = prop.getObjProps(pick, en);
+            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
+                vals = selectFirst(vals, src.getPathAtom());
+            } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
+                vals = delegateSpec(vals, pick, src);
+            }
+            if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
+                for (int j = 0; j < vals.length; j++) {
+                    Object val = vals[j];
+                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                        val = firstArg(val);
+                    if (modifiers == null)
+                        modifiers = new ListArray<SkelAtom>();
+                    modifiers.add((SkelAtom) AbstractTerm.getSkel(val));
+                }
+            } else {
+                for (int j = 0; j < vals.length; j++) {
+                    Object val = vals[j];
+                    Object decl;
+                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
+                        decl = SpecialModel.predDeclSkelSet(
+                                AbstractTerm.getSkel(val), pick, src);
+                    } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
+                        decl = SpecialModel.predDeclSkelMeta(
+                                AbstractTerm.getSkel(val), pick, src);
+                    } else {
+                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                            val = firstArg(val);
+                        decl = SpecialModel.predDeclSkelIndicator(
+                                AbstractTerm.getSkel(val), pick, src);
+                    }
+                    if (modifiers != null) {
+                        decl = prependModifiers(modifiers, decl);
+                        modifiers = null;
+                    }
+                    decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+                    pw.unparseStatement(decl, Display.DISPLAY_CONST);
+                    SpecialLoad.flushWriter(pw.getWriter());
+                }
+            }
+        }
+        return modifiers;
+    }
+
+    /**
      * <p>Check whether a source and a predicate have the same visibility.</p>
      *
-     * @param src  The source.
      * @param pick The predicate.
+     * @param src  The source.
      * @param en   The engine.
      * @return True if the source and the predicate have the same visibility, otherwise false.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
-    private static boolean sameVisiblePredicate(AbstractSource src, Predicate pick,
+    private static boolean sameVisiblePredicate(Predicate pick, AbstractSource src,
                                                 Engine en)
             throws EngineMessage, EngineException {
         StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);

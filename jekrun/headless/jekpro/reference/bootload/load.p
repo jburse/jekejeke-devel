@@ -101,9 +101,9 @@ ensure_loaded(Path) :-
 consult(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
-consult(user) :- !,
-   sys_set_context_property(U, '', user),
-   sys_import_file(U, []).
+consult(X) :-
+   X = user, !,
+   sys_import_file(X, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
    sys_load_file(Pin, [sys_link(use_module)]).

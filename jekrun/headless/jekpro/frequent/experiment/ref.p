@@ -57,8 +57,8 @@
  * assertable_ref(C, R):
  * The predicate compiles the term C into a new clause reference R.
  * An undefined or unimplemented head predicate will be turned into a
- * dynamic predicate. Otherwise the head predicate must be dynamic
- * or thread local.
+ * dynamic predicate. Otherwise the head predicate must be dynamic,
+ * thread local or group local.
  */
 :- public assertable_ref/2.
 :- meta_predicate assertable_ref(-1,?).
@@ -68,8 +68,8 @@
  * assumable_ref(C, R):
  * The predicate compiles the term C into a new clause reference R.
  * An undefined or unimplemented head predicate will be turned into a
- * thread local predicate. Otherwise the head must be dynamic
- * or thread local.
+ * thread local predicate. Otherwise the head must be dynamic,
+ * thread local or group local.
  */
 :- public assumable_ref/2.
 :- meta_predicate assumable_ref(-1,?).
@@ -171,3 +171,14 @@ ref_property(I, R) :-
 % reset_ref_property(+Reference, +Property)
 :- public reset_ref_property/2.
 :- special(reset_ref_property/2, 'SpecialRef', 10).
+
+/**
+ * compilable_ref(C, R):
+ * The predicate compiles the term C into a new clause reference R.
+ * An undefined or unimplemented head predicate will be turned into a
+ * static predicate. Otherwise the head must be static, dynamic,
+ * thread local or group local.
+ */
+:- public compilable_ref/2.
+:- meta_predicate compilable_ref(-1,?).
+:- special(compilable_ref/2, 'SpecialRef', 11).

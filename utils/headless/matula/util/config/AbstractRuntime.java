@@ -215,16 +215,4 @@ public abstract class AbstractRuntime {
         }
     }
 
-    /********************************************************************/
-    /* Thread Properties                                                */
-    /********************************************************************/
-
-    /**
-     * <p>The thread cpu time in milliseconds.</p>
-     *
-     * @param enforced The enforced.
-     * @return The thread cpu time in milliseconds.
-     */
-    public abstract long currentThreadCpuMillis(Enforced enforced);
-
 }

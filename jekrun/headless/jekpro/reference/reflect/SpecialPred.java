@@ -4,7 +4,10 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
@@ -12,8 +15,9 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
@@ -239,7 +243,8 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static void predicateToProperties(Predicate pick, Engine en)
             throws EngineMessage, EngineException {
@@ -252,18 +257,35 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
-            for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
-                 (props != null ? props.getLastEntry() : null);
-                 entry2 != null; entry2 = props.predecessor(entry2)) {
-                AbstractProperty<Predicate> prop = entry2.value;
-                Object t = en.skel;
-                Display d = en.display;
-                Object[] vals = prop.getObjProps(pick, en);
-                en.skel = t;
-                en.display = d;
-                AbstractProperty.consArray(vals, en);
-            }
+            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
+            for (int j = 0; j < props.size(); j++)
+                predicatePropToProperties(pick, props.get(j), en);
+        }
+    }
+
+    /**
+     * <p>Create a prolog list of the properties of the given predicate and properties.</p>
+     *
+     * @param pick  The predicate.
+     * @param props The properties.
+     * @param en    The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void predicatePropToProperties(Predicate pick,
+                                                  MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
+                                                  Engine en)
+            throws EngineMessage, EngineException {
+        for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
+             (props != null ? props.getLastEntry() : null);
+             entry2 != null; entry2 = props.predecessor(entry2)) {
+            AbstractProperty<Predicate> prop = entry2.value;
+            Object t = en.skel;
+            Display d = en.display;
+            Object[] vals = prop.getObjProps(pick, en);
+            en.skel = t;
+            en.display = d;
+            AbstractProperty.consArray(vals, en);
         }
     }
 
@@ -374,10 +396,12 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
-            AbstractProperty<Predicate> prop = (props != null ? props.get(sk) : null);
-            if (prop != null)
-                return prop;
+            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
+            for (int j = 0; j < props.size(); j++) {
+                AbstractProperty<Predicate> prop = props.get(j).get(sk);
+                if (prop != null)
+                    return prop;
+            }
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,

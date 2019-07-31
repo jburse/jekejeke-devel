@@ -76,7 +76,7 @@ public abstract class AbstractTerm {
      * <p>Will unpack atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton, not null.
+     * @param m The skeleton, non null.
      * @param d The display.
      * @return The term.
      */
@@ -98,7 +98,7 @@ public abstract class AbstractTerm {
      * then switch to the constructor of the apppropriate subclass.</p>
      * <p>Will wrap atoms, numbers and references.</p>
      *
-     * @param m The skeleton, not null.
+     * @param m The skeleton, non null.
      * @param d The display.
      * @return The term.
      */
@@ -119,7 +119,7 @@ public abstract class AbstractTerm {
      * <p>Will keep atoms.</p>
      * <p>Will not wrap numbers and references.</p>
      *
-     * @param m The skeleton, not null.
+     * @param m The skeleton, non null.
      * @param d The display.
      * @return The molec.
      */
@@ -137,7 +137,7 @@ public abstract class AbstractTerm {
      * <p>Retrieve the skeleton.</p>
      * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term, not null.
+     * @param t The term, non null.
      * @return The skeleton.
      */
     public static Object getSkel(Object t) {
@@ -154,7 +154,7 @@ public abstract class AbstractTerm {
      * <p>Retrieve the display.</p>
      * <p>Works for unwrapped, wrapped and molec data structure.</p>
      *
-     * @param t The term, not null.
+     * @param t The term, non null.
      * @return The display.
      */
     public static Display getDisplay(Object t) {

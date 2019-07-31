@@ -145,18 +145,4 @@ public final class RuntimeDalvik extends AbstractRuntime {
         }
     }
 
-    /********************************************************************/
-    /* Thread Properties                                                */
-    /********************************************************************/
-
-    /**
-     * <p>The thread cpu time in milliseconds.</p>
-     *
-     * @param enforced The enforced.
-     * @return The thread cpu time in milliseconds.
-     */
-    public long currentThreadCpuMillis(Enforced enforced) {
-        return SystemClock.currentThreadTimeMillis();
-    }
-
 }

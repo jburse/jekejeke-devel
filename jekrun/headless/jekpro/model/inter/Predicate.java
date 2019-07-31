@@ -57,15 +57,14 @@ public final class Predicate {
     public final static int MASK_PRED_VIRT = 0x00000004;
     public final static int MASK_PRED_AUTO = 0x00000008;
 
-    public final static int MASK_PRED_NOEX = 0x00000010;
-    public final static int MASK_PRED_NOMC = 0x00000020;
-    public final static int MASK_PRED_BODY = 0x00000040;
-    public final static int MASK_PRED_RULE = 0x00000080;
+    public final static int MASK_PRED_VSPR = 0x00000010;
+    public final static int MASK_PRED_VSPU = 0x00000020;
+    public final static int MASK_PRED_NOBR = 0x00000040;
+    public final static int MASK_PRED_NBCV = 0x00000080;
 
-    public final static int MASK_PRED_VSPR = 0x00000100;
-    public final static int MASK_PRED_VSPU = 0x00000200;
-    public final static int MASK_PRED_NOBR = 0x00000400;
-    public final static int MASK_PRED_NBCV = 0x00000800;
+    public final static int MASK_PRED_NOEX = 0x00000100;
+    public final static int MASK_PRED_NOMC = 0x00000200;
+    public final static int MASK_PRED_TABL = 0x00000400;
 
     /* combine masks */
     public final static int MASK_PRED_VISI = MASK_PRED_VSPR | MASK_PRED_VSPU;

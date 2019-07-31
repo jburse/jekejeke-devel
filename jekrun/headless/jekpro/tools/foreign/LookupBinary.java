@@ -88,7 +88,7 @@ public final class LookupBinary {
      * <p>Find a path suffix.</p>
      *
      * @param relpath The path, in slash notation.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The source key, or null.
      */
@@ -122,7 +122,7 @@ public final class LookupBinary {
      * <p>Unfind a path suffix.</p>
      *
      * @param relpath The path, in slash notation.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The source key, or null.
      */

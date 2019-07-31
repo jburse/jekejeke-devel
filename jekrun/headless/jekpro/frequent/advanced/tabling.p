@@ -71,6 +71,7 @@
 :- use_module(library(advanced/sequence)).
 :- use_module(library(advanced/aggregate)).
 :- use_module(library(basic/lists)).
+:- use_module(library(experiment/ref)).
 
 :- public prefix(table).
 :- op(1150, fx, table).
@@ -178,7 +179,8 @@ sys_table_spec(reduce(I,A), X, reduce(I,A,X)).
 % sys_table_declare(+Atom, +Integer)
 :- private sys_table_declare/2.
 sys_table_declare(F, N) :-
-   assertz(sys_tabled(F, N)),
+   static(F/N),
+   set_predicate_property(F/N, sys_tabled),
    sys_table_test(F, N, M),
    thread_local(M/2).
 
@@ -189,13 +191,14 @@ sys_table_wrapper(G, H, A, S, O) :-
    sys_table_test(F, N, M),
    T =.. [M,P,R],
    sys_table_revolve(O, A, G, W, R, Q),
-   assertz((H :-
-              sys_goal_globals(A^G, W),
-              pivot_new(P),
-              pivot_set(P, H),
-              (  T -> true; Q,
-                 assertz(T)),
-              sys_revolve_list(W, R, S))).
+   compilable_ref((H :-
+                     sys_goal_globals(A^G, W),
+                     pivot_new(P),
+                     pivot_set(P, H),
+                     (  T -> true; Q,
+                        assertz(T)),
+                     sys_revolve_list(W, R, S)), K),
+   recordz_ref(K).
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
 :- private sys_table_revolve/6.
@@ -217,20 +220,18 @@ sys_table_revolve(tree, A, G, W, R,
 :- public current_table/2.
 current_table(V, R) :-
    var(V), !,
-   sys_tabled(F, N),
+   sys_provable_property_idx(sys_tabled, L),
+   sys_member(F/N, L),
    sys_table_test(F, N, H),
    Test =.. [H,P,R], Test,
    pivot_get(P, V).
 current_table(V, R) :-
+   callable(V),
    functor(V, F, N),
-   sys_tabled(F, N),
+   sys_provable_property_chk(F/N, sys_tabled/0, [sys_tabled]),
    sys_table_test(F, N, H),
    Test =.. [H,P,R], Test,
    pivot_get(P, V).
-
-% sys_tabled(-Atom, -Integer)
-:- private sys_tabled/2.
-:- dynamic sys_tabled/2.
 
 % sys_table_test(+Atom, -Integer, -Atom)
 :- private sys_table_test/3.
@@ -245,12 +246,13 @@ sys_table_test(F, N, H) :-
 
 % sys_table_head(+Callable, -Callable)
 :- private sys_table_head/2.
-sys_table_head(A, B) :-
-   A =.. [F|L],
-   length(L, N),
-   sys_tabled(F, N),
-   sys_table_aux(F, H),
-   B =.. [H|L].
+sys_table_head(G, N) :-
+   callable(G),
+   functor(G, J, A),
+   sys_provable_property_chk(J/A, sys_tabled/0, [sys_tabled]),
+   G =.. [K|L],
+   sys_table_aux(K, U),
+   N =.. [U|L].
 
 % sys_table_aux(+Atom, -Atom)
 :- private sys_table_aux/2.

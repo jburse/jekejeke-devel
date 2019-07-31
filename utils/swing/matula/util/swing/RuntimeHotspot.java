@@ -133,31 +133,6 @@ public final class RuntimeHotspot extends AbstractRuntime {
     }
 
     /********************************************************************/
-    /* Thread Properties                                                */
-    /********************************************************************/
-
-    /**
-     * <p>The thread cpu time in milliseconds.</p>
-     *
-     * @param enforced The enforced.
-     * @return The thread cpu time in milliseconds.
-     */
-    public long currentThreadCpuMillis(Enforced enforced) {
-        int hint = enforced.getHint();
-        switch (hint) {
-            case Enforced.HINT_WEB:
-                return 0;
-            default:
-                ThreadMXBean tb = ManagementFactory.getThreadMXBean();
-                if (tb.isCurrentThreadCpuTimeSupported()) {
-                    return tb.getCurrentThreadCpuTime() / 1000000L;
-                } else {
-                    return 0;
-                }
-        }
-    }
-
-    /********************************************************************/
     /* Jar Manifest                                                     */
     /********************************************************************/
 
