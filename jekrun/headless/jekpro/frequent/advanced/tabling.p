@@ -126,26 +126,21 @@ sys_sorter P :-
 
 % sys_table(+IndicatorOrCallable, +Atom)
 :- private sys_table/2.
-sys_table(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-sys_table(F/N, O) :- !,
-   sys_table_declare(F, N),
-   sys_table_aux(F, J),
+sys_table(I, O) :-
+   sys_is_indicator(I), !,
+   sys_table_declare(I),
+   sys_make_indicator(F, N, I),
    length(L, N),
-   G =.. [J|L],
-   H =.. [F|L],
-   sys_table_wrapper(G, H, nil, nil, O).
+   sys_table_wrapper(F, L, L, nil, nil, O).
 sys_table(C, O) :-
-   functor(C, F, N),
-   sys_table_declare(F, N),
-   sys_table_aux(F, J),
+   sys_callable(C),
+   sys_functor(C, F, N),
+   sys_make_indicator(F, N, I),
+   sys_table_declare(I),
    length(L, N),
    C =.. [_|R],
    sys_table_aggregate(R, L, T, A, S),
-   G =.. [J|L],
-   H =.. [F|T],
-   sys_table_wrapper(G, H, A, S, O).
+   sys_table_wrapper(F, T, L, A, S, O).
 
 /**********************************************************/
 /* Aggregate Helper                                       */
@@ -176,36 +171,54 @@ sys_table_spec(reduce(I,A), X, reduce(I,A,X)).
 /* Wrapper Helper                                         */
 /**********************************************************/
 
-% sys_table_declare(+Atom, +Integer)
-:- private sys_table_declare/2.
-sys_table_declare(F, N) :-
-   static(F/N),
-   set_predicate_property(F/N, sys_tabled),
+% sys_table_declare(+Indicator)
+:- private sys_table_declare/1.
+sys_table_declare(I) :-
+   static(I),
+   set_predicate_property(I, sys_tabled),
+   sys_make_indicator(F, N, I),
    sys_table_test(F, N, M),
-   thread_local(M/2).
+   sys_make_indicator(M, 2, J),
+   (  predicate_property(I, visible(public))
+   -> public(J)
+   ;  predicate_property(I, visible(private))
+   -> private(J); true),
+   thread_local(J).
 
-% sys_table_wrapper(+Goal, +Head, +Aggregate, +Value, +Atom)
-:- private sys_table_wrapper/5.
-sys_table_wrapper(G, H, A, S, O) :-
-   functor(H, F, N),
+% sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Atom)
+:- private sys_table_wrapper/6.
+sys_table_wrapper(F, T, L, A, S, O) :-
+   length(T, N),
+   sys_univ(Head, [F|T]),
+   sys_table_aux(F, G),
+   sys_univ(Goal, [G|L]),
    sys_table_test(F, N, M),
-   T =.. [M,P,R],
-   sys_table_revolve(O, A, G, W, R, Q),
-   compilable_ref((H :-
-                     sys_goal_globals(A^G, W),
+   sys_univ(Test, [M,P,R]),
+   sys_table_revolve(O, A, Goal, W, R, Q),
+   Key =.. [''|T],
+   Descr =.. [''|L],
+   compilable_ref((Head :-
+                     sys_goal_globals(A^Descr, W),
                      pivot_new(P),
-                     pivot_set(P, H),
-                     (  T -> true; Q,
-                        assertz(T)),
+                     pivot_set(P, Key),
+                     (  Test -> true; Q,
+                        assertz(Test)),
                      sys_revolve_list(W, R, S)), K),
-   recordz_ref(K).
+   recordz_ref(K),
+   sys_make_indicator(F, N, I),
+   sys_make_indicator(G, N, J),
+   (  predicate_property(I, visible(public))
+   -> public(J)
+   ;  predicate_property(I, visible(private))
+   -> private(J); true),
+   static(J).
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
 :- private sys_table_revolve/6.
-sys_table_revolve(hash, A, G, W, R,
-   sys_revolve_hash(A,G,W,R)).
-sys_table_revolve(tree, A, G, W, R,
-   sys_revolve_tree(A,G,W,R)).
+sys_table_revolve(hash, A, Goal, W, R,
+   sys_revolve_hash(A,Goal,W,R)).
+sys_table_revolve(tree, A, Goal, W, R,
+   sys_revolve_tree(A,Goal,W,R)).
 
 /**********************************************************/
 /* Table Inspection                                       */
@@ -219,22 +232,30 @@ sys_table_revolve(tree, A, G, W, R,
 % current_table(-Callable, -Ref)
 :- public current_table/2.
 current_table(V, R) :-
-   var(V), !,
-   sys_provable_property_idx(sys_tabled, L),
-   sys_member(F/N, L),
+   sys_callable(V), !,
+   sys_functor(V, F, N),
+   sys_make_indicator(F, N, I),
+   predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   Test =.. [H,P,R], Test,
-   pivot_get(P, V).
+   sys_univ(Test, [H,P,R]), Test,
+   pivot_get(P, Key),
+   Key =.. [_|L],
+   sys_univ(V, [F|L]).
 current_table(V, R) :-
-   callable(V),
-   functor(V, F, N),
-   sys_provable_property_chk(F/N, sys_tabled/0, [sys_tabled]),
+   predicate_property(I, sys_tabled),
+   sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   Test =.. [H,P,R], Test,
-   pivot_get(P, V).
+   sys_univ(Test, [H,P,R]), Test,
+   pivot_get(P, Key),
+   Key =.. [_|L],
+   sys_univ(V, [F|L]).
 
 % sys_table_test(+Atom, -Integer, -Atom)
 :- private sys_table_test/3.
+sys_table_test(K, N, J) :-
+   K = M:F, !,
+   sys_table_test(F, N, I),
+   sys_replace_site(J, K, M:I).
 sys_table_test(F, N, H) :-
    atom_number(U, N),
    atom_split(G, '_', [F,U,m]),
@@ -247,15 +268,20 @@ sys_table_test(F, N, H) :-
 % sys_table_head(+Callable, -Callable)
 :- private sys_table_head/2.
 sys_table_head(G, N) :-
-   callable(G),
-   functor(G, J, A),
-   sys_provable_property_chk(J/A, sys_tabled/0, [sys_tabled]),
-   G =.. [K|L],
+   sys_callable(G),
+   sys_functor(G, J, A),
+   sys_make_indicator(J, A, I),
+   sys_provable_property_chk(I, sys_tabled/0, [sys_tabled]),
+   sys_univ(G, [K|L]),
    sys_table_aux(K, U),
-   N =.. [U|L].
+   sys_univ(N, [U|L]).
 
 % sys_table_aux(+Atom, -Atom)
 :- private sys_table_aux/2.
+sys_table_aux(K, J) :-
+   K = M:F, !,
+   sys_table_aux(F, I),
+   sys_replace_site(J, K, M:I).
 sys_table_aux(F, H) :-
    atom_concat(F, '_a', G),
    sys_replace_site(H, F, G).

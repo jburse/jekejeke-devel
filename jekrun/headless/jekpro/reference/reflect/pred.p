@@ -195,8 +195,8 @@ sys_declaration_indicator(static(I), I).
 
 /**
  * sys_make_indicator(F, A, I):
- * The predicate succeeds when I is the indicator for the possibly
- * quantified name F and the arity A.
+ * The predicate succeeds when I is the possibly quantified indicator
+ * for the possibly quantified name F and the arity A.
  */
 % sys_make_indicator(+-NameColon, +-Integer, -+IndicatorColon)
 sys_make_indicator(F, A, I) :-
@@ -223,6 +223,18 @@ sys_make_indicator2(F/A, G, B) :- !,
 sys_make_indicator2(I, _, _) :-
    throw(error(type_error(predicate_indicator,I),_)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).
+
+/**
+ * sys_is_indicator(I):
+ * The predicate succeeds when I is a possible quantified indicator.
+ */
+% sys_is_indicator(+IndicatorColon)
+sys_is_indicator(I) :-
+   var(I), !, fail.
+sys_is_indicator(:(_,I)) :- !,
+   sys_is_indicator(I).
+sys_is_indicator(_/_).
+:- set_predicate_property(sys_is_indicator/1, visible(public)).
 
 /**********************************************************/
 /* Moved From Debugger                                    */
