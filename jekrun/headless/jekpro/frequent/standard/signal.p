@@ -70,7 +70,7 @@
  */
 % call_cleanup(+Goal, +Goal)
 :- public call_cleanup/2.
-:- meta_predicate call_cleanup(0,0).
+:- meta_predicate call_cleanup(0, 0).
 :- set_predicate_property(call_cleanup/2, sys_notrace).
 call_cleanup(G, C) :-
    sys_atomic(sys_cleanup(C)),
@@ -90,7 +90,7 @@ call_cleanup(G, C) :-
  */
 % setup_call_cleanup(+Goal, +Goal, +Goal)
 :- public setup_call_cleanup/3.
-:- meta_predicate setup_call_cleanup(0,0,0).
+:- meta_predicate setup_call_cleanup(0, 0, 0).
 :- set_predicate_property(setup_call_cleanup/3, sys_notrace).
 setup_call_cleanup(A, G, C) :-
    sys_atomic((  once(A),

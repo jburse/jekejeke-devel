@@ -120,7 +120,7 @@ read_line_max(Stream, Length, Atom) :-
 
 :- private sys_read_line_max/3.
 :- foreign(sys_read_line_max/3, 'ForeignConsole',
-      readLineMax('Reader','Integer')).
+      readLineMax('Reader', 'Integer')).
 
 /****************************************************************/
 /* Read Punch                                                   */
@@ -178,7 +178,7 @@ read_punch_max(Stream, Length, Block) :-
 
 :- private sys_read_punch_max/3.
 :- foreign(sys_read_punch_max/3, 'ForeignConsole',
-      readPunchMax('InputStream','Integer')).
+      readPunchMax('InputStream', 'Integer')).
 
 /****************************************************************/
 /* Formatted Output                                             */
@@ -226,7 +226,7 @@ error_make(Locale, Term, Atom) :-
 % sys_error_make(+Term, +Atom, +Props, -Atom)
 :- private sys_error_make/4.
 :- foreign(sys_error_make/4, 'ForeignConsole',
-      sysErrorMake('Interpreter','Object','String','Properties')).
+      sysErrorMake('Interpreter', 'Object', 'String', 'Properties')).
 
 /**
  * print_stack_trace(T, E):
@@ -255,5 +255,5 @@ print_stack_trace(Locale, Stream, Error) :-
 % sys_print_stack_trace(+Writer, +Term, +Atom, +Props)
 :- private sys_print_stack_trace/4.
 :- foreign(sys_print_stack_trace/4, 'ForeignConsole',
-      sysPrintStackTrace('Interpreter','Writer','Object',
-         'String','Properties')).
+      sysPrintStackTrace('Interpreter', 'Writer', 'Object',
+         'String', 'Properties')).

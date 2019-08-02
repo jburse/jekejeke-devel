@@ -152,7 +152,7 @@ handle_method(_, _, _, _, Session) :-
 :- private handle_get/4.
 handle_get(Object, URI, Header, Session) :-
    make_link(Spec, Parameter, _, URI),
-   handle_object(Object, Spec, request(Parameter,Header), Session), !.
+   handle_object(Object, Spec, request(Parameter, Header), Session), !.
 handle_get(_, _, _, Session) :-
    dispatch_error(404, Session).
 /* Not Found */
@@ -214,7 +214,7 @@ dispatch(_, '/images/cookie.gif', Request, Session) :- !,
  */
 % http_parameter(+Request, +Atom, -Atom)
 :- public http_parameter/3.
-http_parameter(request(Parameter,_), Name, Value) :-
+http_parameter(request(Parameter, _), Name, Value) :-
    member(Name-Value, Parameter).
 
 /**
@@ -223,7 +223,7 @@ http_parameter(request(Parameter,_), Name, Value) :-
  * from the request R.
  */
 :- public http_header/3.
-http_header(request(_,Header), Name, Value) :-
+http_header(request(_, Header), Name, Value) :-
    member(Name-Value, Header).
 
 % read_request(+Stream, -Atom, -Atom)
@@ -232,7 +232,7 @@ read_request(Request, Method, URI) :-
    read_punch_max(Request, 1024, Punch),
    atom_block(What, Punch),
    \+ atom_length(What, 1024),
-   atom_split(What, ' ', [Method,URI,_]).
+   atom_split(What, ' ', [Method, URI, _]).
 
 % read_header(+Stream, -List)
 :- private read_header/2.
@@ -252,7 +252,7 @@ read_header(What, Request, List) :-
 % make_header(+Atom, -List, +List)
 :- private make_header/3.
 make_header(Line, List, List2) :-
-   atom_split(Line, ': ', [Name,Rest]),
+   atom_split(Line, ': ', [Name, Rest]),
    downcase_atom(Name, Name2),
    make_header2(Name2, Rest, List, List2).
 
@@ -387,7 +387,7 @@ response_text(200, Headers, Response) :-
 :- private response_text_headers/2.
 response_text_headers(X, _) :-
    var(X),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 response_text_headers([], _) :- !.
 response_text_headers([Name-Value|Rest], Response) :- !,
    write(Response, Name),
@@ -396,7 +396,7 @@ response_text_headers([Name-Value|Rest], Response) :- !,
    write(Response, '\r\n'),
    response_text_headers(Rest, Response).
 response_text_headers(X, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 /**
  * dispatch_text(F, R, O):
@@ -484,7 +484,7 @@ response_binary(304, Headers, Response) :-
 :- private response_binary_headers/2.
 response_binary_headers(X, _) :-
    var(X),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 response_binary_headers([], _) :- !.
 response_binary_headers([Name-Value|Rest], Response) :- !,
    write_atom(Response, Name),
@@ -493,7 +493,7 @@ response_binary_headers([Name-Value|Rest], Response) :- !,
    write_atom(Response, '\r\n'),
    response_binary_headers(Rest, Response).
 response_binary_headers(X, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 % write_atom(+Stream, +Atom)
 :- private write_atom/2.
@@ -662,14 +662,14 @@ make_header_last(Millis, ['Last-Modified'-Formatted|Rest], Rest) :-
 :- private make_header_etag/3.
 make_header_etag('', Headers, Headers) :- !.
 make_header_etag(ETag, ['ETag'-Quoted|Rest], Rest) :-
-   atom_split(Quoted, '', ['"',ETag,'"']).
+   atom_split(Quoted, '', ['"', ETag, '"']).
 
 % make_header_ctyp(+Atom, +Atom, -List, +List)
 :- private make_header_ctyp/4.
 make_header_ctyp('', '', Headers, Headers) :- !.
 make_header_ctyp(MimeType, '', ['Content-Type'-MimeType|Rest], Rest) :- !.
 make_header_ctyp(MimeType, Encoding, ['Content-Type'-ContentType|Rest], Rest) :-
-   atom_split(ContentType, '', [MimeType,'; charset=',Encoding]).
+   atom_split(ContentType, '', [MimeType, '; charset=', Encoding]).
 
 % make_header_date(-List, +List)
 :- private make_header_date/2.

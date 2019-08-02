@@ -61,7 +61,7 @@
  * thread local or group local.
  */
 :- public assertable_ref/2.
-:- meta_predicate assertable_ref(-1,?).
+:- meta_predicate assertable_ref(-1, ?).
 :- special(assertable_ref/2, 'SpecialRef', 0).
 
 /**
@@ -72,7 +72,7 @@
  * thread local or group local.
  */
 :- public assumable_ref/2.
-:- meta_predicate assumable_ref(-1,?).
+:- meta_predicate assumable_ref(-1, ?).
 :- special(assumable_ref/2, 'SpecialRef', 1).
 
 /**
@@ -105,7 +105,7 @@
  * into the clause reference R.
  */
 :- public compiled_ref/2.
-:- meta_predicate compiled_ref(?,-1).
+:- meta_predicate compiled_ref(?, -1).
 :- special(compiled_ref/2, 'SpecialRef', 5).
 
 /**
@@ -116,7 +116,7 @@
  */
 % clause_ref(-Term, -Goal, -Ref)
 :- public clause_ref/3.
-:- meta_predicate clause_ref(-1,0,?).
+:- meta_predicate clause_ref(-1, 0, ?).
 :- special(clause_ref/3, 'SpecialRef', 6).
 
 /**
@@ -126,10 +126,10 @@
  * head predicate must be dynamic or thread local.
  */
 :- public clause_ref/2.
-:- meta_predicate clause_ref(-1,?).
+:- meta_predicate clause_ref(-1, ?).
 clause_ref(C, _) :-
    var(C),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 clause_ref((H :- B), R) :- !,
    clause_ref(H, B, R).
 clause_ref(H, R) :-
@@ -180,5 +180,5 @@ ref_property(I, R) :-
  * thread local or group local.
  */
 :- public compilable_ref/2.
-:- meta_predicate compilable_ref(-1,?).
+:- meta_predicate compilable_ref(-1, ?).
 :- special(compilable_ref/2, 'SpecialRef', 11).

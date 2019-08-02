@@ -157,12 +157,12 @@ open(Path, Mode, Stream) :-
 % sys_duplex(+Pin, +Mode, +Options, -Stream)
 :- private sys_duplex/4.
 :- foreign(sys_duplex/4, 'ForeignStream',
-      sysDuplex('Interpreter','Socket','String','Object')).
+      sysDuplex('Interpreter', 'Socket', 'String', 'Object')).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
 :- private sys_open/4.
 :- foreign(sys_open/4, 'ForeignStream',
-      sysOpen('Interpreter','String','String','Object')).
+      sysOpen('Interpreter', 'String', 'String', 'Object')).
 
 /**
  * close(S): [ISO 8.11.6]
@@ -188,7 +188,7 @@ close(Stream) :-
 
 :- private sys_close/2.
 :- foreign(sys_close/2, 'ForeignStream',
-      sysClose('Closeable','Object')).
+      sysClose('Closeable', 'Object')).
 
 /**
  * stream_property(S, P): [ISO 8.11.8]
@@ -226,7 +226,7 @@ set_stream_position(Stream, Pos) :-
 
 :- private sys_set_stream_position/2.
 :- foreign(sys_set_stream_position/2, 'ForeignStream',
-      sysSetStreamPosition('Object',long)).
+      sysSetStreamPosition('Object', long)).
 
 /**
  * set_stream_length(S, L):
@@ -243,7 +243,7 @@ set_stream_length(Stream, Len) :-
 
 :- private sys_set_stream_length/2.
 :- foreign(sys_set_stream_length/2, 'ForeignStream',
-      sysSetStreamLength('Object',long)).
+      sysSetStreamLength('Object', long)).
 
 /*************************************************************************/
 /* Alias handling                                                        */
@@ -256,13 +256,13 @@ set_stream_length(Stream, Len) :-
 sys_get_alias(Alias, Stream) :-
    sys_alias(Alias, Stream), !.
 sys_get_alias(Alias, _) :-
-   throw(error(existence_error(stream,Alias),_)).
+   throw(error(existence_error(stream, Alias), _)).
 
 % sys_put_alias(+Alias, +Stream)
 :- private sys_put_alias/2.
 sys_put_alias(Alias, _) :-
    sys_alias(Alias, _), !,
-   throw(error(permission_error(open,source_sink,alias(Alias)),_)).
+   throw(error(permission_error(open, source_sink, alias(Alias)), _)).
 sys_put_alias(Alias, Stream) :-
    assertz(sys_alias(Alias, Stream)).
 

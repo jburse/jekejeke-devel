@@ -111,7 +111,7 @@ make_query(N, V, R, Q) :-
 
 :- private sys_query_make/4.
 :- foreign(sys_query_make/4, 'ForeignUri',
-      sysQueryMake('String','String','String')).
+      sysQueryMake('String', 'String', 'String')).
 
 /**
  * make_spec(E, A, P, S):
@@ -146,7 +146,7 @@ make_spec(E, A, P, S) :-
 
 :- private sys_spec_make/4.
 :- foreign(sys_spec_make/4, 'ForeignUri',
-      sysSpecMake('String','String','String')).
+      sysSpecMake('String', 'String', 'String')).
 
 /**
  * make_uri(S, Q, H, U):
@@ -181,7 +181,7 @@ make_uri(S, Q, H, U) :-
 
 :- private sys_uri_make/4.
 :- foreign(sys_uri_make/4, 'ForeignUri',
-      sysUriMake('String','String','String')).
+      sysUriMake('String', 'String', 'String')).
 
 /************************************************************/
 /* Uri Following                                            */
@@ -212,11 +212,11 @@ follow_uri(B, R, A) :-
 
 :- private sys_uri_absolute/3.
 :- foreign(sys_uri_absolute/3, 'ForeignUri',
-      sysUriAbsolute('String','String')).
+      sysUriAbsolute('String', 'String')).
 
 :- private sys_uri_relative/3.
 :- foreign(sys_uri_relative/3, 'ForeignUri',
-      sysUriRelative('String','String')).
+      sysUriRelative('String', 'String')).
 
 /************************************************************/
 /* Canonical URI                                            */
@@ -288,10 +288,10 @@ make_parameter(Query, [Key-Value|List]) :-
 :- private make_parameter2/2.
 make_parameter2(X, _) :-
    var(X),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 make_parameter2([], '') :- !.
 make_parameter2([Key-Value|List], Query) :- !,
    make_parameter2(List, Rest),
    make_query(Key, Value, Rest, Query).
 make_parameter2(X, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).

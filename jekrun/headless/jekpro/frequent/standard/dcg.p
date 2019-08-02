@@ -91,7 +91,7 @@
  */
 % phrase(+Goal, +List, -List)
 :- public phrase/3.
-:- meta_predicate phrase(2,?,?).
+:- meta_predicate phrase(2, ?, ?).
 phrase(P, I, O) :-
    call(P, I, O).
 
@@ -99,7 +99,7 @@ phrase(P, I, O) :-
 :- discontiguous user:goal_expansion/2.
 :- public user:goal_expansion/2.
 :- multifile user:goal_expansion/2.
-:- meta_predicate user:goal_expansion(0,0).
+:- meta_predicate user:goal_expansion(0, 0).
 
 /**
  * phrase(A, I):
@@ -108,7 +108,7 @@ phrase(P, I, O) :-
  */
 % phrase(+Goal, +List)
 :- public phrase/2.
-:- meta_predicate phrase(2,?).
+:- meta_predicate phrase(2, ?).
 phrase(P, I) :-
    call(P, I, []).
 
@@ -138,7 +138,7 @@ user:goal_expansion(phrase(P, I, O), Q) :-
  */
 % phrase_expansion(+Phrase, +List, -List, -Goal)
 :- private phrase_expansion/4.
-:- meta_predicate phrase_expansion(2,?,?,0).
+:- meta_predicate phrase_expansion(2, ?, ?, 0).
 :- discontiguous phrase_expansion/4.
 :- set_predicate_property(phrase_expansion/4, sys_noexpand).
 
@@ -160,7 +160,7 @@ phrase_expansion(P, _, _, P) :-
  * output of A is conjoined with the input of B.
  */
 :- public ','/4.
-:- meta_predicate ','(2,2,?,?).
+:- meta_predicate ','(2, 2, ?, ?).
 ','(A, B, I, O) :-
    expand_goal(phrase((  A, B), I, O), Q),
    call(Q).
@@ -190,7 +190,7 @@ phrase_expansion((  A, B), I, O, (  phrase(A, I, H),
  * conjoined with the input of B.
  */
 :- public ;/4.
-:- meta_predicate ;(2,2,?,?).
+:- meta_predicate ;(2, 2, ?, ?).
 ;(A, B, I, O) :-
    expand_goal(phrase((  A; B), I, O), Q),
    call(Q).
@@ -206,7 +206,7 @@ phrase_expansion((  A; B), I, O, (  phrase(A, I, O)
  * inside (;)/2 it is interpreted as if-then-else.
  */
 :- public -> /4.
-:- meta_predicate ->(2,2,?,?).
+:- meta_predicate ->(2, 2, ?, ?).
 ->(A, B, I, O) :-
    expand_goal(phrase((  A -> B), I, O), Q),
    call(Q).
@@ -222,7 +222,7 @@ phrase_expansion((  A -> B), I, O, (  phrase(A, I, H)
  * inside (;)/2 it is interpreted as if-then-else.
  */
 :- public *-> /4.
-:- meta_predicate *->(2,2,?,?).
+:- meta_predicate *->(2, 2, ?, ?).
 *->(A, B, I, O) :-
    expand_goal(phrase((  A *-> B), I, O), Q),
    call(Q).
@@ -250,7 +250,7 @@ phrase_expansion(U, I, O, Q) :-
    sys_replace_site(Q, U, I = O).
 
 :- public '.'/4.
-:- meta_predicate '.'(2,2,?,?).
+:- meta_predicate '.'(2, 2, ?, ?).
 '.'(A, B, I, O) :-
    expand_goal(phrase([A|B], I, O), Q),
    call(Q).
@@ -265,7 +265,7 @@ phrase_expansion(U, I, O, (  P, Q)) :-
    sys_replace_site(Q, U, I = O).
 
 :- private phrase_barrier/3.
-:- meta_predicate phrase_barrier(2,?,0).
+:- meta_predicate phrase_barrier(2, ?, 0).
 :- discontiguous phrase_barrier/3.
 :- set_predicate_property(phrase_barrier/3, sys_noexpand).
 
@@ -287,7 +287,7 @@ phrase_barrier(U, _, U) :-
  * The goal argument A is cut transparent and not grammar translated.
  */
 :- public {}/3.
-:- meta_predicate {}(0,?,?).
+:- meta_predicate {}(0, ?, ?).
 {}(A, I, O) :-
    expand_goal(phrase({A}, I, O), Q),
    call(Q).
@@ -301,23 +301,23 @@ phrase_barrier({A}, _, A).
  * is left loose.
  */
 :- public (\+)/3.
-:- meta_predicate \+(2,?,?).
+:- meta_predicate \+(2, ?, ?).
 \+(A, I, O) :-
    expand_goal(phrase(\+ A, I, O), Q),
    call(Q).
 
 phrase_barrier(U, I, Q) :-
    U = (\+ A),
-   sys_replace_site(Q, U, \+ phrase(A,I,_)).
+   sys_replace_site(Q, U, \+ phrase(A, I, _)).
 
 /**********************************************************/
 /* Goal Rewriting Non-Steadfast                           */
 /**********************************************************/
 
 :- private sys_phrase/3.
-:- meta_predicate sys_phrase(2,?,?).
+:- meta_predicate sys_phrase(2, ?, ?).
 sys_phrase(_, _, _) :-
-   throw(error(existence_error(body,sys_phrase/3),_)).
+   throw(error(existence_error(body, sys_phrase/3), _)).
 
 user:goal_expansion(sys_phrase(P, I, O), call(P, I, O)) :-
    sys_var(P).
@@ -333,7 +333,7 @@ user:goal_expansion(sys_phrase(P, I, O), Q) :-
  */
 % sys_phrase_expansion(+Grammar, +List, -List, -Goal)
 :- private sys_phrase_expansion/4.
-:- meta_predicate sys_phrase_expansion(2,?,?,0).
+:- meta_predicate sys_phrase_expansion(2, ?, ?, 0).
 :- set_predicate_property(sys_phrase_expansion/4, sys_noexpand).
 sys_phrase_expansion(P, _, _, P) :-
    P = fail.
@@ -367,7 +367,7 @@ sys_phrase_expansion(U, I, O, (  P, Q)) :-
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
+:- meta_predicate user:term_expansion(-1, -1).
 :- discontiguous user:term_expansion/2.
 
 /**
@@ -377,7 +377,7 @@ sys_phrase_expansion(U, I, O, (  P, Q)) :-
  */
 user:term_expansion(phrase(P, _, _), _) :-
    sys_var(P),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 user:term_expansion(phrase(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).
 
@@ -394,13 +394,13 @@ user:term_expansion(phrase(P, I, O), Q) :-
  */
 
 :- public --> /2.
-:- meta_predicate -->(2,-3).
+:- meta_predicate -->(2, -3).
 -->(_, _) :-
-   throw(error(existence_error(body,--> /2),_)).
+   throw(error(existence_error(body, --> /2), _)).
 
 user:term_expansion((P --> _), _) :-
    sys_var(P),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 user:term_expansion((P, B --> C),
         (phrase(P, I, O) :-
            sys_phrase(C, I, H),

@@ -163,9 +163,9 @@ sys_table_spec(sum, X, sum(X)).
 sys_table_spec(mul, X, mul(X)).
 sys_table_spec(min, X, min(X)).
 sys_table_spec(max, X, max(X)).
-sys_table_spec(first(C), X, first(C,X)).
-sys_table_spec(last(C), X, last(C,X)).
-sys_table_spec(reduce(I,A), X, reduce(I,A,X)).
+sys_table_spec(first(C), X, first(C, X)).
+sys_table_spec(last(C), X, last(C, X)).
+sys_table_spec(reduce(I, A), X, reduce(I, A, X)).
 
 /**********************************************************/
 /* Wrapper Helper                                         */
@@ -195,17 +195,17 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    sys_table_aux(F, G),
    sys_univ(Goal, [G|L]),
    sys_table_test(F, N, M),
-   sys_univ(Test, [M,P,R]),
+   sys_univ(Test, [M, P, R]),
    sys_table_revolve(O, A, Goal, W, R, Q),
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
-   Body = (  sys_goal_globals(A^Descr,W),
+   Body = (  sys_goal_globals(A^Descr, W),
              pivot_new(P),
-             pivot_set(P,Key),
+             pivot_set(P, Key),
              (  Test -> true; Q,
                 assertz(Test)),
-             sys_revolve_list(W,R,S)),
+             sys_revolve_list(W, R, S)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -222,9 +222,9 @@ sys_table_wrapper(F, T, L, A, S, O) :-
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
 :- private sys_table_revolve/6.
 sys_table_revolve(hash, A, Goal, W, R,
-   sys_revolve_hash(A,Goal,W,R)).
+   sys_revolve_hash(A, Goal, W, R)).
 sys_table_revolve(tree, A, Goal, W, R,
-   sys_revolve_tree(A,Goal,W,R)).
+   sys_revolve_tree(A, Goal, W, R)).
 
 /**********************************************************/
 /* Table Inspection                                       */
@@ -243,7 +243,7 @@ current_table(V, R) :-
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H,P,R]), Test,
+   sys_univ(Test, [H, P, R]), Test,
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -251,7 +251,7 @@ current_table(V, R) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H,P,R]), Test,
+   sys_univ(Test, [H, P, R]), Test,
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -264,7 +264,7 @@ sys_table_test(K, N, J) :-
    sys_replace_site(J, K, M:I).
 sys_table_test(F, N, H) :-
    atom_number(U, N),
-   atom_split(G, '_', [F,U,m]),
+   atom_split(G, '_', [F, U, m]),
    sys_replace_site(H, F, G).
 
 /**********************************************************/
@@ -295,7 +295,7 @@ sys_table_aux(F, H) :-
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
+:- meta_predicate user:term_expansion(-1, -1).
 user:term_expansion(A, _) :-
    var(A), !, fail.
 user:term_expansion((A :- _), _) :-

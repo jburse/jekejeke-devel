@@ -89,7 +89,7 @@ sys_apropos_values(A) :-
    get_properties(info, P),
    sys_apropos_key(K),
    sys_apropos_value(A, K, V),
-   message_make(P, apropos_value(K,V), M),
+   message_make(P, apropos_value(K, V), M),
    write(M), fail.
 sys_apropos_values(_) :- nl.
 
@@ -101,9 +101,9 @@ sys_apropos_key(path).
 
 % sys_apropos_value(+Row, +Atom, -Term)
 :- private sys_apropos_value/3.
-sys_apropos_value(row(I,_,_), pred, I).
-sys_apropos_value(row(_,E,_), arith, E).
-sys_apropos_value(row(_,_,M), path, M).
+sys_apropos_value(row(I, _, _), pred, I).
+sys_apropos_value(row(_, E, _), arith, E).
+sys_apropos_value(row(_, _, M), path, M).
 
 /***********************************************************/
 /* Apropos Search                                          */
@@ -121,7 +121,7 @@ sys_apropos_table(library(stream/frequent)).
 
 % sys_enum_apropos(+Atom, -Row)
 :- private sys_enum_apropos/2.
-sys_enum_apropos(N, row(I,E,T)) :-
+sys_enum_apropos(N, row(I, E, T)) :-
    setup_call_cleanup(
       open_resource(N, S),
       (  repeat,
@@ -134,9 +134,9 @@ sys_enum_apropos(N, row(I,E,T)) :-
 % sys_split_line(+List, -Atom, -Atom)
 :- private sys_split_line/4.
 % old apropos format
-sys_split_line([H,T], H, undef, T).
+sys_split_line([H, T], H, undef, T).
 % new apropos format
-sys_split_line([H,E,T], H, E, T).
+sys_split_line([H, E, T], H, E, T).
 
 % sys_split_indicator(+Atom, -Indicator)
 :- private sys_split_indicator/2.

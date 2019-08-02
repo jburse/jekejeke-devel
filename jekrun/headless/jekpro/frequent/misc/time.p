@@ -84,7 +84,7 @@
 % alarm_schedule(+Queue, +Term, +Integer, -Entry)
 :- public alarm_schedule/4.
 :- foreign(alarm_schedule/4, 'ForeignTime',
-      sysAlarmSchedule('Interpreter','Alarm','AbstractTerm',long)).
+      sysAlarmSchedule('Interpreter', 'Alarm', 'AbstractTerm', long)).
 
 /**
  * alarm_next(A, O):
@@ -118,7 +118,7 @@
  */
 % time_out(+Term, +Integer)
 :- public time_out/2.
-:- meta_predicate time_out(0,?).
+:- meta_predicate time_out(0, ?).
 time_out(G, T) :-
    time_out_queue(A),
    thread_current(I),

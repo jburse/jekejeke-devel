@@ -68,7 +68,7 @@
 % term_simplification(+Clause, -Clause)
 :- public term_simplification/2.
 :- multifile term_simplification/2.
-:- meta_predicate term_simplification(-1,-1).
+:- meta_predicate term_simplification(-1, -1).
 :- set_predicate_property(term_simplification/2, sys_noexpand).
 
 /**
@@ -78,7 +78,7 @@
  */
 % simplify_term(+Clause, -Clause)
 :- public simplify_term/2.
-:- meta_predicate simplify_term(-1,-1).
+:- meta_predicate simplify_term(-1, -1).
 :- set_predicate_property(simplify_term/2, sys_noexpand).
 simplify_term(A, B) :-
    term_simplification(A, B), !.
@@ -117,7 +117,7 @@ term_simplification((C :- true), C).
 % goal_simplification(+Goal, -Goal)
 :- public goal_simplification/2.
 :- multifile goal_simplification/2.
-:- meta_predicate goal_simplification(0,0).
+:- meta_predicate goal_simplification(0, 0).
 :- set_predicate_property(goal_simplification/2, sys_noexpand).
 
 /**
@@ -127,7 +127,7 @@ term_simplification((C :- true), C).
  */
 % simplify_goal(+Goal, -Goal)
 :- public simplify_goal/2.
-:- meta_predicate simplify_goal(0,0).
+:- meta_predicate simplify_goal(0, 0).
 :- set_predicate_property(simplify_goal/2, sys_noexpand).
 simplify_goal(A, B) :-
    goal_simplification(A, B), !.
@@ -197,7 +197,7 @@ simplify_rest(G, G).
 % term_rebuilding(+Clause, -Clause)
 :- public term_rebuilding/2.
 :- multifile term_rebuilding/2.
-:- meta_predicate term_rebuilding(-1,-1).
+:- meta_predicate term_rebuilding(-1, -1).
 :- set_predicate_property(term_rebuilding/2, sys_noexpand).
 :- static term_rebuilding/2.
 
@@ -208,7 +208,7 @@ simplify_rest(G, G).
  */
 % rebuild_term(+Clause, -Clause)
 :- public rebuild_term/2.
-:- meta_predicate rebuild_term(-1,-1).
+:- meta_predicate rebuild_term(-1, -1).
 :- set_predicate_property(rebuild_term/2, sys_noexpand).
 rebuild_term(P, P) :-
    sys_var(P), !.
@@ -264,7 +264,7 @@ rebuild_term_arg(_, X, Y) :-
 % goal_rebuilding(+Goal, -Goal)
 :- public goal_rebuilding/2.
 :- multifile goal_rebuilding/2.
-:- meta_predicate goal_rebuilding(0,0).
+:- meta_predicate goal_rebuilding(0, 0).
 :- set_predicate_property(goal_rebuilding/2, sys_noexpand).
 :- static goal_rebuilding/2.
 
@@ -275,7 +275,7 @@ rebuild_term_arg(_, X, Y) :-
  */
 % rebuild_goal(+Goal, -Goal)
 :- public rebuild_goal/2.
-:- meta_predicate rebuild_goal(0,0).
+:- meta_predicate rebuild_goal(0, 0).
 :- set_predicate_property(rebuild_goal/2, sys_noexpand).
 rebuild_goal(P, P) :-
    sys_var(P), !.

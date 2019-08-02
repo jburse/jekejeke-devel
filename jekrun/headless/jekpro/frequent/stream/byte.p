@@ -72,7 +72,7 @@ put_byte(Stream, Byte) :-
 
 :- private sys_put_byte/2.
 :- foreign(sys_put_byte/2, 'ForeignByte',
-      sysPutByte('OutputStream','Integer')).
+      sysPutByte('OutputStream', 'Integer')).
 
 /**
  * get_byte(B): [ISO 8.13.1]
@@ -210,7 +210,7 @@ read_block(Stream, Length, Block) :-
 
 :- private sys_read_block/3.
 :- foreign(sys_read_block/3, 'ForeignByte',
-      sysReadBlock('InputStream','Integer')).
+      sysReadBlock('InputStream', 'Integer')).
 
 /**
  * write_block(B):
@@ -234,4 +234,4 @@ write_block(Stream, Block) :-
 
 :- private sys_write_block/2.
 :- foreign(sys_write_block/2, 'ForeignByte',
-      sysWriteBlock('OutputStream',{byte})).
+      sysWriteBlock('OutputStream', {byte})).

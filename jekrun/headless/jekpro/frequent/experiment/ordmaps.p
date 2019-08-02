@@ -82,7 +82,7 @@ ord_put([K-_|M], J, U, R) :-
    R = [K-U|M].
 ord_put([K-V|M], J, U, R) :-
    J @< K, !,
-   R = [J-U,K-V|M].
+   R = [J-U, K-V|M].
 ord_put([A|M], J, U, [A|N]) :-
    ord_put(M, J, U, N).
 ord_put([], J, U, [J-U]).

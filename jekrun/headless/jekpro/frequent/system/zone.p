@@ -119,7 +119,7 @@ get_time(Millis, Zone, DateTime) :-
 
 % get_time(+Atom, +Integer, +Atom, -DateTime)
 :- public get_time/4.
-:- foreign(get_time/4, 'ForeignZone', sysGetTime('String',long,'String')).
+:- foreign(get_time/4, 'ForeignZone', sysGetTime('String', long, 'String')).
 
 /*****************************************************************/
 /* Format Date & Calendar                                        */
@@ -148,11 +148,11 @@ date_atom(Locale, Format, DateTime, Formatted) :-
 
 :- private sys_date_to_string/4.
 :- foreign(sys_date_to_string/4, 'ForeignZone',
-      sysDateToString('String','String','Object')).
+      sysDateToString('String', 'String', 'Object')).
 
 :- private sys_string_to_date/4.
 :- foreign(sys_string_to_date/4, 'ForeignZone',
-      sysStringToDate('String','String','String')).
+      sysStringToDate('String', 'String', 'String')).
 
 /**
  * rfc1123_atom(T, A):

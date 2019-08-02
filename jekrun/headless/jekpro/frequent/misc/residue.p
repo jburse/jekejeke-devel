@@ -85,7 +85,7 @@
  * with the newly introduced attributed variables.
  */
 :- public call_residue_vars/2.
-:- meta_predicate call_residue_vars(0,?).
+:- meta_predicate call_residue_vars(0, ?).
 call_residue_vars(G, L) :-
    sys_current_mark(M),
    call(G),
@@ -99,7 +99,7 @@ call_residue_vars(G, L) :-
 % sys_mark_attrs(+Undo, -List)
 :- public sys_mark_attrs/2.
 :- foreign(sys_mark_attrs/2, 'ForeignResidue',
-      sysMarkAttrs('Interpreter','AbstractUndo')).
+      sysMarkAttrs('Interpreter', 'AbstractUndo')).
 
 /**
  * call_residue(G, L):
@@ -107,7 +107,7 @@ call_residue_vars(G, L) :-
  * with the constraints of the newly introduced attributed variables.
  */
 :- public call_residue/2.
-:- meta_predicate call_residue(0,?).
+:- meta_predicate call_residue(0, ?).
 call_residue(G, L) :-
    call_residue_vars(G, K),
    sys_eq_list(K, L).

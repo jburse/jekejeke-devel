@@ -79,9 +79,9 @@
  */
 % thread_new(+Group, +Goal, -Thread)
 :- public thread_new/3.
-:- meta_predicate thread_new(?,0,?).
+:- meta_predicate thread_new(?, 0, ?).
 :- foreign(thread_new/3, 'ForeignGroup',
-      sysThreadNew('Interpreter','ThreadGroup','AbstractTerm')).
+      sysThreadNew('Interpreter', 'ThreadGroup', 'AbstractTerm')).
 
 /****************************************************************/
 /* Group Enumeration                                            */
@@ -106,7 +106,7 @@
 % current_thread(+Group, -Thread)
 :- public current_thread/2.
 :- foreign(current_thread/2, 'ForeignGroup',
-      sysCurrentThread('CallOut','ThreadGroup')).
+      sysCurrentThread('CallOut', 'ThreadGroup')).
 
 /**
  * current_group(G, H):
@@ -116,7 +116,7 @@
 % current_group(+Group, -Group)
 :- public current_group/2.
 :- foreign(current_group/2, 'ForeignGroup',
-      sysCurrentGroup('CallOut','ThreadGroup')).
+      sysCurrentGroup('CallOut', 'ThreadGroup')).
 
 /****************************************************************/
 /* Group Flags                                                  */
@@ -145,7 +145,7 @@ current_group_flag(T, K, V) :-
 % sys_get_group_flag(+Group, +Atom, -Atomic)
 :- private sys_get_group_flag/3.
 :- foreign(sys_get_group_flag/3, 'ForeignGroup',
-      sysGetGroupFlag('ThreadGroup','String')).
+      sysGetGroupFlag('ThreadGroup', 'String')).
 
 /****************************************************************/
 /* Managed Threads                                              */
@@ -165,11 +165,11 @@ current_thread(X) :-
 
 :- private sys_current_thread/1.
 :- foreign(sys_current_thread/1, 'ForeignGroup',
-      sysCurrentThread('CallOut','Interpreter')).
+      sysCurrentThread('CallOut', 'Interpreter')).
 
 :- private sys_current_thread_chk/1.
 :- foreign(sys_current_thread_chk/1, 'ForeignGroup',
-      sysCurrentThreadChk('Interpreter','Thread')).
+      sysCurrentThreadChk('Interpreter', 'Thread')).
 
 /**
  * threads:
@@ -197,7 +197,7 @@ thread_show_values(T) :-
    get_properties(show, P),
    sys_current_show_stat(K),
    sys_get_show_stat(T, K, V),
-   message_make(P, thread_show_value(K,V), M),
+   message_make(P, thread_show_value(K, V), M),
    write(M), fail.
 thread_show_values(_) :- nl.
 

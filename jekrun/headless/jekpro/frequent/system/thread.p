@@ -91,9 +91,9 @@
  */
 % thread_new(+Goal, -Thread)
 :- public thread_new/2.
-:- meta_predicate thread_new(0,?).
+:- meta_predicate thread_new(0, ?).
 :- foreign(thread_new/2, 'ForeignThread',
-      sysThreadNew('Interpreter','AbstractTerm')).
+      sysThreadNew('Interpreter', 'AbstractTerm')).
 
 /**
  * thread_start(T):
@@ -115,7 +115,7 @@
  */
 % thread_abort(+Thread, +Message)
 :- public thread_abort/2.
-:- foreign(thread_abort/2, 'ForeignThread', sysThreadAbort('Thread','AbstractTerm')).
+:- foreign(thread_abort/2, 'ForeignThread', sysThreadAbort('Thread', 'AbstractTerm')).
 
 /**
  * thread_down(T, M):
@@ -123,7 +123,7 @@
  * message M to the thread T. Otherwise the predicate fails.
  */
 :- public thread_down/2.
-:- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread','AbstractTerm')).
+:- foreign(thread_down/2, 'ForeignThread', sysThreadDown('Thread', 'AbstractTerm')).
 
 /**
  * thread_downl(T, M, W):
@@ -132,7 +132,7 @@
  */
 % thread_down(+Thread, +Message, +Integer)
 :- public thread_down/3.
-:- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread','AbstractTerm',long)).
+:- foreign(thread_down/3, 'ForeignThread', sysThreadDown('Thread', 'AbstractTerm', long)).
 
 /**
  * thread_kill(T):
@@ -169,7 +169,7 @@
  * in the timeout W. Otherwise the predicate fails.
  */
 :- public thread_combine/2.
-:- foreign(thread_combine/2, 'ForeignThread', sysThreadCombine('Thread',long)).
+:- foreign(thread_combine/2, 'ForeignThread', sysThreadCombine('Thread', long)).
 
 /****************************************************************/
 /* Thread Inspection                                            */
@@ -192,12 +192,12 @@ current_thread_flag(Thread, Flag, Value) :-
 % sys_current_thread_flag(-Atom)
 :- private sys_current_thread_flag/1.
 :- foreign(sys_current_thread_flag/1, 'ForeignThread',
-      sysCurrentThreadFlag('Interpreter','CallOut')).
+      sysCurrentThreadFlag('Interpreter', 'CallOut')).
 
 % sys_get_thread_flag(+Thread, +Atom, -Atomic)
 :- private sys_get_thread_flag/3.
 :- foreign(sys_get_thread_flag/3, 'ForeignThread',
-      sysGetThreadFlag('Interpreter','Thread','String')).
+      sysGetThreadFlag('Interpreter', 'Thread', 'String')).
 
 /**
  * set_thread_flag(T, F, V):
@@ -207,4 +207,4 @@ current_thread_flag(Thread, Flag, Value) :-
 % set_thread_flag(+Thread, +Atom, +Atomic)
 :- public set_thread_flag/3.
 :- foreign(set_thread_flag/3, 'ForeignThread',
-      sysSetThreadFlag('Interpreter','Thread','String','Object')).
+      sysSetThreadFlag('Interpreter', 'Thread', 'String', 'Object')).

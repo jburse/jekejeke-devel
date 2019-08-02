@@ -151,7 +151,7 @@ length(L, N) :-
    N >= 0,
    length3(N, L).
 length(_, N) :-
-   throw(error(type_error(integer,N),_)).
+   throw(error(type_error(integer, N), _)).
 
 % length2(+List, -Integer)
 :- private length2/2.
@@ -183,7 +183,7 @@ nth0(N, L, E) :-
    N >= 0,
    nth03(N, L, E).
 nth0(N, _, _) :-
-   throw(error(type_error(integer,N),_)).
+   throw(error(type_error(integer, N), _)).
 
 % nth02(+List, +Elem, -Elem, -Integer)
 :- private nth02/4.
@@ -216,7 +216,7 @@ nth0(N, L, E, R) :-
    N >= 0,
    nth03(N, L, E, R).
 nth0(N, _, _, _) :-
-   throw(error(type_error(integer,N),_)).
+   throw(error(type_error(integer, N), _)).
 
 % nth02(+List, +Elem, -Elem, -Integer, -List)
 :- private nth02/5.
@@ -248,7 +248,7 @@ nth1(N, L, E) :-
    N >= 1,
    nth13(N, L, E).
 nth1(N, _, _) :-
-   throw(error(type_error(integer,N),_)).
+   throw(error(type_error(integer, N), _)).
 
 % nth12(+List, +Elem, -Elem, -Integer)
 :- private nth12/4.
@@ -281,7 +281,7 @@ nth1(N, L, E, R) :-
    N >= 1,
    nth13(N, L, E, R).
 nth1(N, _, _, _) :-
-   throw(error(type_error(integer,N),_)).
+   throw(error(type_error(integer, N), _)).
 
 % nth12(+List, +Elem, -Elem, -Integer, -List)
 :- private nth12/5.
@@ -305,28 +305,28 @@ nth13(N, [H|Y], X, [H|T]) :-
  * defined for 1 ≤ n ≤ 4.
  */
 :- public maplist/2.
-:- meta_predicate maplist(1,?).
+:- meta_predicate maplist(1, ?).
 maplist(_, []).
 maplist(C, [X|L]) :-
    call(C, X),
    maplist(C, L).
 
 :- public maplist/3.
-:- meta_predicate maplist(2,?,?).
+:- meta_predicate maplist(2, ?, ?).
 maplist(_, [], []).
 maplist(C, [X|L], [Y|R]) :-
    call(C, X, Y),
    maplist(C, L, R).
 
 :- public maplist/4.
-:- meta_predicate maplist(3,?,?,?).
+:- meta_predicate maplist(3, ?, ?, ?).
 maplist(_, [], [], []).
 maplist(C, [X|L], [Y|R], [Z|S]) :-
    call(C, X, Y, Z),
    maplist(C, L, R, S).
 
 :- public maplist/5.
-:- meta_predicate maplist(4,?,?,?,?).
+:- meta_predicate maplist(4, ?, ?, ?, ?).
 maplist(_, [], [], [], []).
 maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
    call(C, X, Y, Z, U),
@@ -339,28 +339,28 @@ maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
  * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
  */
 :- public foldl/4.
-:- meta_predicate foldl(3,?,?,?).
+:- meta_predicate foldl(3, ?, ?, ?).
 foldl(_, [], P, P).
 foldl(C, [X|L], P, Q) :-
    call(C, X, P, H),
    foldl(C, L, H, Q).
 
 :- public foldl/5.
-:- meta_predicate foldl(4,?,?,?,?).
+:- meta_predicate foldl(4, ?, ?, ?, ?).
 foldl(_, [], [], P, P).
 foldl(C, [X|L], [Y|R], P, Q) :-
    call(C, X, Y, P, H),
    foldl(C, L, R, H, Q).
 
 :- public foldl/6.
-:- meta_predicate foldl(5,?,?,?,?,?).
+:- meta_predicate foldl(5, ?, ?, ?, ?, ?).
 foldl(_, [], [], [], P, P).
 foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
    call(C, X, Y, Z, P, H),
    foldl(C, L, R, S, H, Q).
 
 :- public foldl/7.
-:- meta_predicate foldl(6,?,?,?,?,?,?).
+:- meta_predicate foldl(6, ?, ?, ?, ?, ?, ?).
 foldl(_, [], [], [], [], P, P).
 foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
    call(C, X, Y, Z, U, P, H),

@@ -60,7 +60,7 @@
  */
 % limit(+Integer, +Goal)
 :- public limit/2.
-:- meta_predicate limit(?,0).
+:- meta_predicate limit(?, 0).
 limit(C, G) :-
    C > 0,
    call_nth2(G, N),
@@ -73,7 +73,7 @@ limit(C, G) :-
  */
 % offset(+Integer, +Goal)
 :- public offset/2.
-:- meta_predicate offset(?,0).
+:- meta_predicate offset(?, 0).
 offset(C, G) :-
    call_nth2(G, N),
    N > C.
@@ -85,7 +85,7 @@ offset(C, G) :-
  */
 % call_nth(+Goal, -Integer)
 :- public call_nth/2.
-:- meta_predicate call_nth(0,?).
+:- meta_predicate call_nth(0, ?).
 call_nth(G, C) :-
    var(C), !,
    call_nth2(G, N),
@@ -96,7 +96,7 @@ call_nth(G, C) :-
    (  C =:= N -> !; fail).
 
 :- private call_nth2/2.
-:- meta_predicate call_nth2(0,?).
+:- meta_predicate call_nth2(0, ?).
 call_nth2(G, N) :-
    pivot_new(P),
    pivot_set(P, 0),
@@ -122,7 +122,7 @@ call_nth2(G, N) :-
  */
 % pivot_set(+Pivot, +Term)
 :- foreign(pivot_set/2, 'ForeignSequence',
-      sysPivotSet('Interpreter','SetEntry','Object')).
+      sysPivotSet('Interpreter', 'SetEntry', 'Object')).
 
 /**
  * pivot_get(P, O):

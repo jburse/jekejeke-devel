@@ -160,7 +160,7 @@ code_digit(CodePoint, Radix, Value) :-
    Value = W.
 
 :- private sys_code_digit/3.
-:- foreign(sys_code_digit/3, 'Character', digit(int,int)).
+:- foreign(sys_code_digit/3, 'Character', digit(int, int)).
 
 /******************************************************************/
 /* Upper/Lower Case Conversion                                    */
@@ -311,12 +311,12 @@ pattern_compile(P, O, H) :-
 % sys_create_specimen(+Compiler, +Atom, -Compiled)
 :- private sys_create_specimen/3.
 :- foreign(sys_create_specimen/3, 'ForeignText',
-      sysCreateSpecimen('Interpreter','AbstractCompiler','String')).
+      sysCreateSpecimen('Interpreter', 'AbstractCompiler', 'String')).
 
 % sys_make_pattern(+Compiler, +Atom, +Integer, -Compiled)
 :- private sys_make_pattern/4.
 :- foreign(sys_make_pattern/4, 'ForeignText',
-      sysMakePattern('Interpreter','AbstractCompiler','String',int)).
+      sysMakePattern('Interpreter', 'AbstractCompiler', 'String', int)).
 
 /**
  * compiled_match(H, S):
@@ -351,13 +351,13 @@ sys_pattern_options(O, Q) :-
 :- private sys_pattern_options/3.
 sys_pattern_options(V, _, _) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_pattern_options([], P, P) :- !.
 sys_pattern_options([X|Y], P, Q) :- !,
    sys_pattern_option(X, P, H),
    sys_pattern_options(Y, H, Q).
 sys_pattern_options(L, _, _) :-
-   throw(error(type_error(list,L),_)).
+   throw(error(type_error(list, L), _)).
 
 /**
  * sys_pattern_option(O, P, Q):
@@ -368,7 +368,7 @@ sys_pattern_options(L, _, _) :-
 :- private sys_pattern_option/3.
 sys_pattern_option(V, _, _) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_pattern_option(boundary(O), P, Q) :- !,
    sys_option_boundary(O, P, Q).
 sys_pattern_option(ignore_case(O), P, Q) :- !,
@@ -376,7 +376,7 @@ sys_pattern_option(ignore_case(O), P, Q) :- !,
 sys_pattern_option(style(O), P, Q) :- !,
    sys_option_style(O, P, Q).
 sys_pattern_option(O, _, _) :-
-   throw(error(type_error(option,O),_)).
+   throw(error(type_error(option, O), _)).
 
 /**
  * sys_option_boundary(O, P, Q):
@@ -387,7 +387,7 @@ sys_pattern_option(O, _, _) :-
 :- private sys_option_boundary/3.
 sys_option_boundary(V, _, _) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_option_boundary(whole, P, Q) :- !,
    sys_get_match_boundary(M),
    sys_get_match_whole(N),
@@ -401,7 +401,7 @@ sys_option_boundary(word, P, Q) :- !,
    sys_get_match_word(N),
    Q is P/\ \M\/N.
 sys_option_boundary(O, _, _) :-
-   throw(error(type_error(option,boundary(O)),_)).
+   throw(error(type_error(option, boundary(O)), _)).
 
 :- private sys_get_match_boundary/1.
 :- foreign_getter(sys_get_match_boundary/1, 'AbstractSpecimen', 'MATCH_BDRY').
@@ -424,7 +424,7 @@ sys_option_boundary(O, _, _) :-
 :- private sys_option_ignore_case/3.
 sys_option_ignore_case(V, _, _) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_option_ignore_case(true, P, Q) :- !,
    sys_get_match_ignore_case(M),
    Q is P\/M.
@@ -432,7 +432,7 @@ sys_option_ignore_case(false, P, Q) :- !,
    sys_get_match_ignore_case(M),
    Q is P/\ \M.
 sys_option_ignore_case(O, _, _) :-
-   throw(error(type_error(option,ignore_case(O)),_)).
+   throw(error(type_error(option, ignore_case(O)), _)).
 
 :- private sys_get_match_ignore_case/1.
 :- foreign_getter(sys_get_match_ignore_case/1, 'AbstractSpecimen', 'MATCH_IGCS').
@@ -446,7 +446,7 @@ sys_option_ignore_case(O, _, _) :-
 :- private sys_option_style/3.
 sys_option_style(V, _, _) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_option_style(create, P, Q) :- !,
    sys_get_match_style(M),
    sys_get_match_create(N),
@@ -456,7 +456,7 @@ sys_option_style(parse, P, Q) :- !,
    sys_get_match_parse(N),
    Q is P/\ \M\/N.
 sys_option_style(O, _, _) :-
-   throw(error(type_error(option,style(O)),_)).
+   throw(error(type_error(option, style(O)), _)).
 
 :- private sys_get_match_style/1.
 :- foreign_getter(sys_get_match_style/1, 'AbstractSpecimen', 'MATCH_STLE').

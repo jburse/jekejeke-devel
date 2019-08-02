@@ -86,7 +86,7 @@ make_domain(U, H, D) :-
 
 :- private sys_domain_make/3.
 :- foreign(sys_domain_make/3, 'ForeignDomain',
-      sysDomainMake('String','String')).
+      sysDomainMake('String', 'String')).
 
 /************************************************************/
 /* Domain Lookup                                            */
