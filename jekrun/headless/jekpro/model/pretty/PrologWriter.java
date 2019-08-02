@@ -1050,10 +1050,10 @@ public class PrologWriter {
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
         Object[] decl = predicateToMeta(cp);
-        appendLink(PrologReader.OP_LBRACE, cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
+        appendLink(PrologReader.OP_LBRACE, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1071,15 +1071,21 @@ public class PrologWriter {
      *
      * @param sc  The list skeleton.
      * @param ref The list display.
+     * @param mod The module.
+     * @param nsa The call-site.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
     protected void writeList(SkelCompound sc, Display ref,
-                             CachePredicate cp, Object[] decl,
-                             int backshift, int backoffset, int backspez,
                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        appendLink(PrologReader.OP_LBRACKET, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1104,9 +1110,7 @@ public class PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 appendLink(",", cp);
-//                if ((spez & SPEZ_META) != 0 &&
-//                        (spez & SPEZ_EVAL) == 0)
-                    append(' ');
+                append(' ');
                 decl = predicateToMeta(cp);
                 backspez = spez;
                 backoffset = offset;
@@ -1130,6 +1134,10 @@ public class PrologWriter {
                 break;
             }
         }
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1139,15 +1147,23 @@ public class PrologWriter {
      * @param sc  The compound skeleton.
      * @param ref The compound display.
      * @param mod The module.
+     *            @param nsa The call-site.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
     protected void writeCompound(SkelCompound sc, Display ref,
-                                 CachePredicate cp, Object[] decl,
-                                 int backspez, int backoffset, int backshift,
                                  Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        String t = atomQuoted(sc.sym.fun, 0);
+        safeSpace(t);
+        appendLink(t, cp);
+        append(PrologReader.OP_LPAREN);
         int j = 0;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -1160,9 +1176,7 @@ public class PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-//            if ((backspez & SPEZ_META) != 0 &&
-//                    (backspez & SPEZ_EVAL) == 0)
-                append(' ');
+            append(' ');
             Object mod2;
             SkelAtom nsa2;
             if (j == 1 &&
@@ -1183,6 +1197,10 @@ public class PrologWriter {
             }
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RPAREN);
     }
 
     /**
@@ -1325,7 +1343,10 @@ public class PrologWriter {
         }
         if (engine != null && (flags & FLAG_IGNO) == 0) {
             if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
+                int backindent = indent;
+                indent = getTextOffset() + SPACES;
                 writeSet(sc, ref, mod, nsa);
+                indent = backindent;
                 return;
             }
             if (isUnary(sc) || isIndex(sc) || isStruct(sc)) {
@@ -1404,19 +1425,9 @@ public class PrologWriter {
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-                Object[] decl = predicateToMeta(cp);
                 int backindent = indent;
                 indent = getTextOffset() + SPACES;
-                int backspez = spez;
-                int backoffset = offset;
-                int backshift = shift;
-                appendLink(PrologReader.OP_LBRACKET, cp);
-                writeList(sc, ref, cp, decl, backshift, backoffset, backspez, mod, nsa);
-                spez = backspez;
-                offset = backoffset;
-                shift = backshift;
-                append(PrologReader.OP_RBRACKET);
+                writeList(sc, ref, mod, nsa);
                 indent = backindent;
                 return;
             }
@@ -1507,22 +1518,9 @@ public class PrologWriter {
                 }
             }
         }
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
         int backindent = indent;
         indent = getTextOffset() + SPACES;
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        String t = atomQuoted(sc.sym.fun, 0);
-        safeSpace(t);
-        appendLink(t, cp);
-        append(PrologReader.OP_LPAREN);
-        writeCompound(sc, ref, cp, decl, backspez, backoffset, backshift, mod, nsa);
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RPAREN);
+        writeCompound(sc, ref, mod, nsa);
         indent = backindent;
     }
 
@@ -1674,21 +1672,6 @@ public class PrologWriter {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
-    }
-
-    /**
-     * <p>Check whether the filler has an eol.</p>
-     *
-     * @param filler The filler.
-     * @return True if the filler has eol, otherwise false.
-     */
-    public static boolean hasEol(String[] filler) {
-        if (filler == null)
-            return false;
-        int i = filler.length;
-        while (i > 0 && filler[i - 1].indexOf(CodeType.LINE_EOL) == -1)
-            i--;
-        return (i != 0);
     }
 
     /***********************************************************************/

@@ -42,7 +42,7 @@
  * Succeeds when C unifies with the concatenation of A and B.
  */
 % sys_atom_concat(+Atom, +Atom, -Atom)
-:- foreign(sys_atom_concat/3, 'ForeignConcat',
+:- foreign(sys_atom_concat/3, 'ForeignConcat', 
       sysAtomConcat('String', 'String')).
 :- set_predicate_property(sys_atom_concat/3, visible(public)).
 
@@ -51,6 +51,6 @@
  * Succeeds when A is an atom.
  */
 % sys_atom(+Term)
-:- foreign(sys_atom/1, 'ForeignConcat',
+:- foreign(sys_atom/1, 'ForeignConcat', 
       sysAtom('Object')).
 :- set_predicate_property(sys_atom/1, visible(public)).

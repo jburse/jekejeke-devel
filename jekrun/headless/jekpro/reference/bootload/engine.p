@@ -59,11 +59,11 @@ current_prolog_flag(Flag, Value) :-
    sys_get_flag(Flag, Value).
 
 :- private sys_current_flag/1.
-:- foreign(sys_current_flag/1, 'ForeignEngine',
+:- foreign(sys_current_flag/1, 'ForeignEngine', 
       sysCurrentFlag('Interpreter', 'CallOut')).
 
 :- private sys_get_flag/2.
-:- foreign(sys_get_flag/2, 'ForeignEngine',
+:- foreign(sys_get_flag/2, 'ForeignEngine', 
       sysGetFlag('Interpreter', 'String')).
 
 /**
@@ -72,7 +72,7 @@ current_prolog_flag(Flag, Value) :-
  */
 % set_prolog_flag(+Atom, +Term)
 :- public set_prolog_flag/2.
-:- foreign(set_prolog_flag/2, 'ForeignEngine',
+:- foreign(set_prolog_flag/2, 'ForeignEngine', 
       sysSetFlag('Interpreter', 'String', 'Object')).
 
 /**
@@ -114,11 +114,11 @@ version :-
 :- set_predicate_property(version/0, sys_notrace).
 
 :- private sys_prolog_version/1.
-:- foreign(sys_prolog_version/1, 'ForeignEngine',
+:- foreign(sys_prolog_version/1, 'ForeignEngine', 
       sysPrologVersion('Interpreter')).
 
 :- private sys_prolog_vendor/1.
-:- foreign(sys_prolog_vendor/1, 'ForeignEngine',
+:- foreign(sys_prolog_vendor/1, 'ForeignEngine', 
       sysPrologVendor('Interpreter')).
 
 /********************************************************/
@@ -168,13 +168,13 @@ top_module(N) :-
    absolute_file_name(verbatim(N), D).
 
 :- private sys_module_action/2.
-:- foreign(sys_module_action/2, 'ForeignEngine',
+:- foreign(sys_module_action/2, 'ForeignEngine', 
       sysModuleAction('Interpreter', 'TermAtomic', 'Object')).
 
 :- private sys_peek_stack/1.
-:- foreign(sys_peek_stack/1, 'ForeignEngine',
+:- foreign(sys_peek_stack/1, 'ForeignEngine', 
       sysPeekStack('Interpreter')).
 
 :- private sys_count_stack/1.
-:- foreign(sys_count_stack/1, 'ForeignEngine',
+:- foreign(sys_count_stack/1, 'ForeignEngine', 
       sysCountStack('Interpreter')).
