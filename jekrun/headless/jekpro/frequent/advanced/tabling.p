@@ -221,9 +221,9 @@ sys_table_wrapper(F, T, L, A, S, O) :-
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
 :- private sys_table_revolve/6.
-sys_table_revolve(hash, A, Goal, W, R,
+sys_table_revolve(hash, A, Goal, W, R, 
    sys_revolve_hash(A, Goal, W, R)).
-sys_table_revolve(tree, A, Goal, W, R,
+sys_table_revolve(tree, A, Goal, W, R, 
    sys_revolve_tree(A, Goal, W, R)).
 
 /**********************************************************/

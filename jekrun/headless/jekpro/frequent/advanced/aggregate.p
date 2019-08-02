@@ -268,7 +268,7 @@ next_state(reduce(_, A, X), S, Y) :-
  */
 % revolve_lookup(+Revolve, +Term, -Pivot)
 :- private revolve_lookup/3.
-:- foreign(revolve_lookup/3, 'ForeignAggregate',
+:- foreign(revolve_lookup/3, 'ForeignAggregate', 
       sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
 
 /**
@@ -277,7 +277,7 @@ next_state(reduce(_, A, X), S, Y) :-
  */
 % revolve_pair(+Revolve, +Pair)
 :- private revolve_pair/2.
-:- foreign(revolve_pair/2, 'ForeignAggregate',
+:- foreign(revolve_pair/2, 'ForeignAggregate', 
       sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**

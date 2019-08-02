@@ -121,7 +121,7 @@ call_nth2(G, N) :-
  * The predicate succeeds setting the pivot P to O.
  */
 % pivot_set(+Pivot, +Term)
-:- foreign(pivot_set/2, 'ForeignSequence',
+:- foreign(pivot_set/2, 'ForeignSequence', 
       sysPivotSet('Interpreter', 'SetEntry', 'Object')).
 
 /**

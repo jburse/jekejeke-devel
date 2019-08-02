@@ -98,19 +98,19 @@ make_query(N, V, R, Q) :-
    sys_query_make(N, V, R, Q).
 
 :- private sys_query_name/2.
-:- foreign(sys_query_name/2, 'ForeignUri',
+:- foreign(sys_query_name/2, 'ForeignUri', 
       sysQueryName('String')).
 
 :- private sys_query_value/2.
-:- foreign(sys_query_value/2, 'ForeignUri',
+:- foreign(sys_query_value/2, 'ForeignUri', 
       sysQueryValue('String')).
 
 :- private sys_query_rest/2.
-:- foreign(sys_query_rest/2, 'ForeignUri',
+:- foreign(sys_query_rest/2, 'ForeignUri', 
       sysQueryRest('String')).
 
 :- private sys_query_make/4.
-:- foreign(sys_query_make/4, 'ForeignUri',
+:- foreign(sys_query_make/4, 'ForeignUri', 
       sysQueryMake('String', 'String', 'String')).
 
 /**
@@ -133,19 +133,19 @@ make_spec(E, A, P, S) :-
    sys_spec_make(E, A, P, S).
 
 :- private sys_spec_scheme/2.
-:- foreign(sys_spec_scheme/2, 'ForeignUri',
+:- foreign(sys_spec_scheme/2, 'ForeignUri', 
       sysSpecScheme('String')).
 
 :- private sys_spec_authority/2.
-:- foreign(sys_spec_authority/2, 'ForeignUri',
+:- foreign(sys_spec_authority/2, 'ForeignUri', 
       sysSpecAuthority('String')).
 
 :- private sys_spec_path/2.
-:- foreign(sys_spec_path/2, 'ForeignUri',
+:- foreign(sys_spec_path/2, 'ForeignUri', 
       sysSpecPath('String')).
 
 :- private sys_spec_make/4.
-:- foreign(sys_spec_make/4, 'ForeignUri',
+:- foreign(sys_spec_make/4, 'ForeignUri', 
       sysSpecMake('String', 'String', 'String')).
 
 /**
@@ -168,19 +168,19 @@ make_uri(S, Q, H, U) :-
    sys_uri_make(S, Q, H, U).
 
 :- private sys_uri_hash/2.
-:- foreign(sys_uri_hash/2, 'ForeignUri',
+:- foreign(sys_uri_hash/2, 'ForeignUri', 
       sysUriHash('String')).
 
 :- private sys_uri_query/2.
-:- foreign(sys_uri_query/2, 'ForeignUri',
+:- foreign(sys_uri_query/2, 'ForeignUri', 
       sysUriQuery('String')).
 
 :- private sys_uri_spec/2.
-:- foreign(sys_uri_spec/2, 'ForeignUri',
+:- foreign(sys_uri_spec/2, 'ForeignUri', 
       sysUriSpec('String')).
 
 :- private sys_uri_make/4.
-:- foreign(sys_uri_make/4, 'ForeignUri',
+:- foreign(sys_uri_make/4, 'ForeignUri', 
       sysUriMake('String', 'String', 'String')).
 
 /************************************************************/
@@ -193,7 +193,7 @@ make_uri(S, Q, H, U) :-
  */
 % is_relative_uri(+Atom)
 :- public is_relative_uri/1.
-:- foreign(is_relative_uri/1, 'ForeignUri',
+:- foreign(is_relative_uri/1, 'ForeignUri', 
       sysUriIsRelative('String')).
 
 /**
@@ -211,11 +211,11 @@ follow_uri(B, R, A) :-
    sys_uri_absolute(B, R, A).
 
 :- private sys_uri_absolute/3.
-:- foreign(sys_uri_absolute/3, 'ForeignUri',
+:- foreign(sys_uri_absolute/3, 'ForeignUri', 
       sysUriAbsolute('String', 'String')).
 
 :- private sys_uri_relative/3.
-:- foreign(sys_uri_relative/3, 'ForeignUri',
+:- foreign(sys_uri_relative/3, 'ForeignUri', 
       sysUriRelative('String', 'String')).
 
 /************************************************************/
@@ -228,7 +228,7 @@ follow_uri(B, R, A) :-
  */
 % canonical_uri(+Atom, -Atom)
 :- public canonical_uri/2.
-:- foreign(canonical_uri/2, 'ForeignUri',
+:- foreign(canonical_uri/2, 'ForeignUri', 
       sysCanonicalUri('String')).
 
 /************************************************************/
@@ -250,11 +250,11 @@ uri_encode(X, Y) :-
    sys_uri_encode(X, Y).
 
 :- private sys_uri_encode/2.
-:- foreign(sys_uri_encode/2, 'ForeignUri',
+:- foreign(sys_uri_encode/2, 'ForeignUri', 
       sysUriEncode('String')).
 
 :- private sys_uri_decode/2.
-:- foreign(sys_uri_decode/2, 'ForeignUri',
+:- foreign(sys_uri_decode/2, 'ForeignUri', 
       sysUriDecode('String')).
 
 /***************************************************************/

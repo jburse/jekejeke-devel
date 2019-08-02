@@ -83,7 +83,7 @@
  */
 % alarm_schedule(+Queue, +Term, +Integer, -Entry)
 :- public alarm_schedule/4.
-:- foreign(alarm_schedule/4, 'ForeignTime',
+:- foreign(alarm_schedule/4, 'ForeignTime', 
       sysAlarmSchedule('Interpreter', 'Alarm', 'AbstractTerm', long)).
 
 /**
@@ -123,8 +123,8 @@ time_out(G, T) :-
    time_out_queue(A),
    thread_current(I),
    setup_call_cleanup(
-      alarm_schedule(A, I, T, E),
-      G,
+      alarm_schedule(A, I, T, E), 
+      G, 
       alarm_cancel(A, E)), !.
 
 :- private time_out_queue/1.

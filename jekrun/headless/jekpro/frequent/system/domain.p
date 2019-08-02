@@ -77,15 +77,15 @@ make_domain(U, H, D) :-
    sys_domain_make(U, H, D).
 
 :- private sys_domain_user/2.
-:- foreign(sys_domain_user/2, 'ForeignDomain',
+:- foreign(sys_domain_user/2, 'ForeignDomain', 
       sysDomainUser('String')).
 
 :- private sys_domain_host/2.
-:- foreign(sys_domain_host/2, 'ForeignDomain',
+:- foreign(sys_domain_host/2, 'ForeignDomain', 
       sysDomainHost('String')).
 
 :- private sys_domain_make/3.
-:- foreign(sys_domain_make/3, 'ForeignDomain',
+:- foreign(sys_domain_make/3, 'ForeignDomain', 
       sysDomainMake('String', 'String')).
 
 /************************************************************/
@@ -107,11 +107,11 @@ host_lookup(X, Y) :-
    sys_domain_forward(X, Y).
 
 :- private sys_domain_forward/2.
-:- foreign(sys_domain_forward/2, 'ForeignDomain',
+:- foreign(sys_domain_forward/2, 'ForeignDomain', 
       sysForwardLookup('String')).
 
 :- private sys_domain_reverse/2.
-:- foreign(sys_domain_reverse/2, 'ForeignDomain',
+:- foreign(sys_domain_reverse/2, 'ForeignDomain', 
       sysReverseLookup('String')).
 
 /************************************************************/
@@ -124,7 +124,7 @@ host_lookup(X, Y) :-
  */
 % ping_host(+Atom)
 :- public ping_host/1.
-:- foreign(ping_host/1, 'ForeignDomain',
+:- foreign(ping_host/1, 'ForeignDomain', 
       sysPingHost('String')).
 
 /************************************************************/
@@ -146,11 +146,11 @@ uri_puny(X, Y) :-
    sys_uri_puny(X, Y).
 
 :- private sys_uri_puny/2.
-:- foreign(sys_uri_puny/2, 'ForeignDomain',
+:- foreign(sys_uri_puny/2, 'ForeignDomain', 
       sysUriPuny('String')).
 
 :- private sys_uri_unpuny/2.
-:- foreign(sys_uri_unpuny/2, 'ForeignDomain',
+:- foreign(sys_uri_unpuny/2, 'ForeignDomain', 
       sysUriUnpuny('String')).
 
 /************************************************************/

@@ -156,12 +156,12 @@ open(Path, Mode, Stream) :-
 
 % sys_duplex(+Pin, +Mode, +Options, -Stream)
 :- private sys_duplex/4.
-:- foreign(sys_duplex/4, 'ForeignStream',
+:- foreign(sys_duplex/4, 'ForeignStream', 
       sysDuplex('Interpreter', 'Socket', 'String', 'Object')).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
 :- private sys_open/4.
-:- foreign(sys_open/4, 'ForeignStream',
+:- foreign(sys_open/4, 'ForeignStream', 
       sysOpen('Interpreter', 'String', 'String', 'Object')).
 
 /**
@@ -187,7 +187,7 @@ close(Stream) :-
    close(Stream, []).
 
 :- private sys_close/2.
-:- foreign(sys_close/2, 'ForeignStream',
+:- foreign(sys_close/2, 'ForeignStream', 
       sysClose('Closeable', 'Object')).
 
 /**
@@ -208,7 +208,7 @@ stream_property(Stream, Prop) :-
    sys_member(Prop, Props).
 
 :- private sys_stream_properties/2.
-:- foreign(sys_stream_properties/2, 'ForeignStream',
+:- foreign(sys_stream_properties/2, 'ForeignStream', 
       sysStreamProperties('Object')).
 
 /**
@@ -225,7 +225,7 @@ set_stream_position(Stream, Pos) :-
    sys_set_stream_position(Stream, Pos).
 
 :- private sys_set_stream_position/2.
-:- foreign(sys_set_stream_position/2, 'ForeignStream',
+:- foreign(sys_set_stream_position/2, 'ForeignStream', 
       sysSetStreamPosition('Object', long)).
 
 /**
@@ -242,7 +242,7 @@ set_stream_length(Stream, Len) :-
    sys_set_stream_length(Stream, Len).
 
 :- private sys_set_stream_length/2.
-:- foreign(sys_set_stream_length/2, 'ForeignStream',
+:- foreign(sys_set_stream_length/2, 'ForeignStream', 
       sysSetStreamLength('Object', long)).
 
 /*************************************************************************/
