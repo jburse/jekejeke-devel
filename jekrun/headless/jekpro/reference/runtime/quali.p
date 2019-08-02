@@ -103,7 +103,7 @@
 % +Slash : +Callable:
 :- public : /2.
 :- virtual : /2.
-:- set_predicate_property(: /2, meta_predicate(:(?,0))).
+:- set_predicate_property(: /2, meta_predicate(:(?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialQuali', 0).
@@ -117,7 +117,7 @@
 % +Slash :: +Callable:
 :- public :: /2.
 :- virtual :: /2.
-:- set_predicate_property(:: /2, meta_predicate(::(?,::(0)))).
+:- set_predicate_property(:: /2, meta_predicate(::(?, ::(0)))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
 :- special(:: /2, 'SpecialQuali', 1).
@@ -131,7 +131,7 @@
 % +Slash : +Callable:
 :- public : /3.
 :- virtual : /3.
-:- set_predicate_property(: /3, meta_predicate(:(?,1,?))).
+:- set_predicate_property(: /3, meta_predicate(:(?, 1, ?))).
 :- sys_context_property(here, C),
    set_predicate_property(: /3, sys_meta_predicate(C)).
 :- special(: /3, 'EvaluableQuali', 0).
@@ -145,7 +145,7 @@
 % +Slash :: +Callable:
 :- public :: /3.
 :- virtual :: /3.
-:- set_predicate_property(:: /3, meta_predicate(::(?,::(1),?))).
+:- set_predicate_property(:: /3, meta_predicate(::(?, ::(1), ?))).
 :- sys_context_property(here, C),
    set_predicate_property(:: /3, sys_meta_predicate(C)).
 :- special(:: /3, 'EvaluableQuali', 1).
@@ -319,7 +319,7 @@ sys_functor(T, F, A) :-
 :- private sys_functor2/3.
 sys_functor2(F, _, _) :-
    var(F),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_functor2(J, A, K) :-
    J = M:F, !,
    sys_functor2(F, A, T),
@@ -341,7 +341,7 @@ sys_univ(K, [J|L]) :-
    K = M:T, !,
    sys_univ(T, [F|L]),
    sys_replace_site(J, K, M:F).
-sys_univ(K, [J,R|L]) :-
+sys_univ(K, [J, R|L]) :-
    K = R::T, !,
    sys_get_module(R, M),
    sys_univ(T, [F|L]),
@@ -353,8 +353,8 @@ sys_univ(T, U) :-
 :- private sys_univ2/2.
 sys_univ2([F|_], _) :-
    var(F),
-   throw(error(instantiation_error,_)).
-sys_univ2([J,R|L], K) :-
+   throw(error(instantiation_error, _)).
+sys_univ2([J, R|L], K) :-
    J = M:F,
    sys_get_module_test(R, N),
    N == M, !,
@@ -376,12 +376,12 @@ sys_univ2(U, T) :-
 :- public sys_get_module/2.
 sys_get_module(O, _) :-
    var(O),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_get_module(O, M) :-
    sys_get_module_test(O, N), !,
    M = N.
 sys_get_module(O, _) :-
-   throw(error(domain_error(receiver,O),_)).
+   throw(error(domain_error(receiver, O), _)).
 
 % sys_get_module_test(+Term, -Term)
 :- private sys_get_module_test/2.

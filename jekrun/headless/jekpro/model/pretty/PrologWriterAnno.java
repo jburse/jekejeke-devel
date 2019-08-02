@@ -321,8 +321,8 @@ public class PrologWriterAnno extends PrologWriter {
                     for (int i = 0; i < indent; i++)
                         append(' ');
                 } else {
-                    if ((spez & SPEZ_META) != 0 &&
-                            (spez & SPEZ_EVAL) == 0)
+//                    if ((spez & SPEZ_META) != 0 &&
+//                            (spez & SPEZ_EVAL) == 0)
                         append(' ');
                 }
                 decl = predicateToMeta(cp);
@@ -396,8 +396,8 @@ public class PrologWriterAnno extends PrologWriter {
                 for (int i = 0; i < indent; i++)
                     append(' ');
             } else {
-                if ((backspez & SPEZ_META) != 0 &&
-                        (backspez & SPEZ_EVAL) == 0)
+//                if ((backspez & SPEZ_META) != 0 &&
+//                        (backspez & SPEZ_EVAL) == 0)
                     append(' ');
             }
             Object mod2;

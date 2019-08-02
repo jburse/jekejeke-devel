@@ -99,7 +99,7 @@ sys_meta_predicate(P) :-
    once((  predicate_property(I, sys_usage(D)),
            \+ C = D)),
    \+ predicate_property(I, sys_meta_predicate(D)),
-   throw(error(permission_error(promote,meta_predicate,I),_)).
+   throw(error(permission_error(promote, meta_predicate, I), _)).
 sys_meta_predicate(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
@@ -136,7 +136,7 @@ sys_meta_function(P) :-
    once((  predicate_property(I, sys_usage(D)),
            \+ C = D)),
    \+ predicate_property(I, sys_meta_function(D)),
-   throw(error(permission_error(promote,meta_function,I),_)).
+   throw(error(permission_error(promote, meta_function, I), _)).
 sys_meta_function(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),

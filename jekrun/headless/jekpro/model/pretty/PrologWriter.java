@@ -644,7 +644,8 @@ public class PrologWriter {
                          Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp;
-        if ((spez & SPEZ_META) != 0 && (flags & FLAG_NAVI) != 0) {
+        if ((spez & SPEZ_META) != 0 &&
+                (flags & FLAG_NAVI) != 0) {
             cp = offsetToPredicate(sa, mod, nsa);
         } else {
             cp = null;
@@ -1103,8 +1104,8 @@ public class PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 appendLink(",", cp);
-                if ((spez & SPEZ_META) != 0 &&
-                        (spez & SPEZ_EVAL) == 0)
+//                if ((spez & SPEZ_META) != 0 &&
+//                        (spez & SPEZ_EVAL) == 0)
                     append(' ');
                 decl = predicateToMeta(cp);
                 backspez = spez;
@@ -1159,8 +1160,8 @@ public class PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            if ((backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0)
+//            if ((backspez & SPEZ_META) != 0 &&
+//                    (backspez & SPEZ_EVAL) == 0)
                 append(' ');
             Object mod2;
             SkelAtom nsa2;

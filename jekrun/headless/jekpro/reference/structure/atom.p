@@ -309,11 +309,11 @@ atom_codes(Atom, Codes) :-
 
 :- private sys_atom_to_list/3.
 :- foreign(sys_atom_to_list/3, 'ForeignAtom',
-      sysAtomToList('Interpreter','String',int)).
+      sysAtomToList('Interpreter', 'String', int)).
 
 :- private sys_list_to_atom/3.
 :- foreign(sys_list_to_atom/3, 'ForeignAtom',
-      sysListToAtom('Object',int)).
+      sysListToAtom('Object', int)).
 
 /**
  * char_code(X, Y): [ISO 8.16.6]
@@ -374,11 +374,11 @@ number_codes(Number, Codes) :-
 
 :- private sys_atom_to_number/2.
 :- foreign(sys_atom_to_number/2, 'ForeignAtom',
-      sysAtomToNumber('Interpreter','String')).
+      sysAtomToNumber('Interpreter', 'String')).
 
 :- private sys_number_to_atom/3.
 :- foreign(sys_number_to_atom/3, 'ForeignAtom',
-      sysNumberToAtom('Number',int)).
+      sysNumberToAtom('Number', int)).
 
 /**
  * integer_chars(X, R, Y):
@@ -418,11 +418,11 @@ integer_codes(Integer, Radix, Codes) :-
 
 :- private sys_atom_to_integer/3.
 :- foreign(sys_atom_to_integer/3, 'ForeignAtom',
-      sysAtomToInteger('Interpreter','String',int)).
+      sysAtomToInteger('Interpreter', 'String', int)).
 
 :- private sys_integer_to_atom/3.
 :- foreign(sys_integer_to_atom/3, 'ForeignAtom',
-      sysIntegerToAtom('Number',int)).
+      sysIntegerToAtom('Number', int)).
 
 /****************************************************************/
 /* 16-bit Word Helpers                                          */
@@ -434,27 +434,27 @@ integer_codes(Integer, Radix, Codes) :-
 
 :- private sys_atom_word_substring/4.
 :- virtual sys_atom_word_substring/4.
-:- foreign(sys_atom_word_substring/4, 'String', substring(int,int)).
+:- foreign(sys_atom_word_substring/4, 'String', substring(int, int)).
 
 :- private sys_atom_word_count/4.
 :- virtual sys_atom_word_count/4.
-:- foreign(sys_atom_word_count/4, 'String', codePointCount(int,int)).
+:- foreign(sys_atom_word_count/4, 'String', codePointCount(int, int)).
 
 :- private sys_atom_word_pos/4.
 :- foreign(sys_atom_word_pos/4, 'ForeignAtom',
-      sysAtomWordPos('CallOut','String',int,int)).
+      sysAtomWordPos('CallOut', 'String', int, int)).
 
 :- private sys_atom_word_offset/4.
 :- foreign(sys_atom_word_offset/4, 'ForeignAtom',
-      sysOffsetByCodePoints('String',int,int)).
+      sysOffsetByCodePoints('String', int, int)).
 
 :- private sys_atom_word_match/5.
 :- virtual sys_atom_word_match/5.
-:- foreign(sys_atom_word_match/5, 'String', regionMatches(int,'String',int,int)).
+:- foreign(sys_atom_word_match/5, 'String', regionMatches(int, 'String', int, int)).
 
 :- private sys_atom_word_pos/6.
 :- foreign(sys_atom_word_pos/6, 'ForeignAtom',
-      sysAtomWordPos('Interpreter','CallOut','String',int,int,int,'AbstractTerm')).
+      sysAtomWordPos('Interpreter', 'CallOut', 'String', int, int, int, 'AbstractTerm')).
 
 /****************************************************************/
 /* String Reverse Ops                                           */
@@ -692,14 +692,14 @@ atom_split(Atom, Sep, List) :-
 :- private atom_split1/3.
 atom_split1(List, _, _) :-
    var(List),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 atom_split1([X], _, X) :- !.
-atom_split1([X,Y|Z], Sep, R) :- !,
+atom_split1([X, Y|Z], Sep, R) :- !,
    atom_split1([Y|Z], Sep, H),
    atom_concat(X, Sep, J),
    atom_concat(J, H, R).
 atom_split1(List, _, _) :-
-   throw(error(type_error(list,List),_)).
+   throw(error(type_error(list, List), _)).
 
 % atom_split2(+Atom, +Atom, -List)
 :- private atom_split2/3.
@@ -787,8 +787,8 @@ term_atom(T, A, O) :-
 
 :- private sys_parse_term/3.
 :- foreign(sys_parse_term/3, 'ForeignAtom',
-      sysParseTerm('Interpreter','String','Object')).
+      sysParseTerm('Interpreter', 'String', 'Object')).
 
 :- private sys_unparse_term/3.
 :- foreign(sys_unparse_term/3, 'ForeignAtom',
-      sysUnparseTerm('Interpreter','AbstractTerm','Object')).
+      sysUnparseTerm('Interpreter', 'AbstractTerm', 'Object')).

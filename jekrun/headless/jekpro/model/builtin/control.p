@@ -62,7 +62,8 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(900, fy, \+).
+:- sys_neutral_oper(prefix(\+)).
+:- set_oper_property(prefix(\+), op(900, fy)).
 :- set_oper_property(prefix(\+), visible(public)).
 
 /******************************************************************/
@@ -124,7 +125,7 @@ once(X) :- X, !.
 \+ X :- X, !, fail.
 \+ _.
 :- set_predicate_property((\+)/1, visible(public)).
-:- set_predicate_property((\+)/1, meta_predicate(\+0)).
+:- set_predicate_property((\+)/1, meta_predicate(\+ 0)).
 :- sys_context_property(here, C),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
@@ -140,15 +141,15 @@ once(X) :- X, !.
 % throw(+Exception)
 throw(V) :-
    var(V),
-   throw(error(instantiation_error,_)).
-throw(error(M,T)) :-
+   throw(error(instantiation_error, _)).
+throw(error(M, T)) :-
    var(T), !,
    sys_fetch_stack(T),
-   sys_raise(error(M,T)).
-throw(warning(M,T)) :-
+   sys_raise(error(M, T)).
+throw(warning(M, T)) :-
    var(T), !,
    sys_fetch_stack(T),
-   sys_raise(warning(M,T)).
+   sys_raise(warning(M, T)).
 throw(B) :-
    sys_raise(B).
 :- set_predicate_property(throw/1, visible(public)).
@@ -180,7 +181,7 @@ throw(B) :-
 catch(A, E, B) :-
    sys_trap(A, E, sys_ball_handler(E, B)).
 :- set_predicate_property(catch/3, visible(public)).
-:- set_predicate_property(catch/3, meta_predicate(catch(0,?,0))).
+:- set_predicate_property(catch/3, meta_predicate(catch(0, ?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
@@ -194,7 +195,7 @@ sys_ball_handler(E, _) :-
 sys_ball_handler(_, B) :-
    call(B).
 :- set_predicate_property(sys_ball_handler/2, visible(private)).
-:- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?,0))).
+:- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(sys_ball_handler/2, sys_meta_predicate(C)).
 
@@ -208,7 +209,7 @@ sys_ball_handler(_, B) :-
 % sys_trap(+Goal, +Pattern, +Goal)
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
-:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0,?,0))).
+:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0, ?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(sys_trap/3, sys_meta_predicate(C)).
 
@@ -217,7 +218,7 @@ sys_ball_handler(_, B) :-
  * The predicate succeeds in T with the error type of exception E.
  */
 % sys_error_type(+Exception, -Type)
-sys_error_type(error(T,_), T).
-sys_error_type(cause(E,_), T) :-
+sys_error_type(error(T, _), T).
+sys_error_type(cause(E, _), T) :-
    sys_error_type(E, T).
 :- set_predicate_property(sys_error_type/2, visible(public)).

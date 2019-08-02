@@ -75,7 +75,7 @@
 % abort
 :- public abort/0.
 abort :-
-   throw(error(system_error(user_abort),_)).
+   throw(error(system_error(user_abort), _)).
 :- set_predicate_property(abort/0, sys_notrace).
 
 /**
@@ -85,7 +85,7 @@ abort :-
 % exit
 :- public exit/0.
 exit :-
-   throw(error(system_error(user_exit),_)).
+   throw(error(system_error(user_exit), _)).
 :- set_predicate_property(exit/0, sys_notrace).
 
 /**
@@ -95,7 +95,7 @@ exit :-
 % close
 :- public close/0.
 close :-
-   throw(error(system_error(user_close),_)).
+   throw(error(system_error(user_close), _)).
 :- set_predicate_property(close/0, sys_notrace).
 
 /**
@@ -234,7 +234,7 @@ sys_answer_help :-
 
 % sys_error_cause(+Term)
 :- private sys_error_cause/1.
-sys_error_cause(cause(_,R)) :- !,
+sys_error_cause(cause(_, R)) :- !,
    sys_error_stack(R).
 sys_error_cause(_).
 
@@ -286,7 +286,7 @@ sys_show_assoc([], _) :-
    get_properties(runtime, P),
    get_property(P, 'query.yes', V),
    write(V).
-sys_show_assoc([X,Y|Z], N) :- !,
+sys_show_assoc([X, Y|Z], N) :- !,
    sys_show_pair(X, N),
    write(','), nl,
    sys_show_assoc([Y|Z], N).
@@ -300,14 +300,14 @@ sys_show_pair(X = T, N) :-
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
-   sys_show_term(S, [priority(699),quoted(true),variable_names(N)]).
+   sys_show_term(S, [priority(699), quoted(true), variable_names(N)]).
 sys_show_pair(X = T, N) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' = '),
-   sys_show_term(T, [priority(699),quoted(true),variable_names(N)]).
+   sys_show_term(T, [priority(699), quoted(true), variable_names(N)]).
 sys_show_pair(G, N) :-
-   sys_show_term(G, [context(0),quoted(true),variable_names(N)]).
+   sys_show_term(G, [context(0), quoted(true), variable_names(N)]).
 
 % sys_show_term(+Term, +List)
 :- private sys_show_term/2.

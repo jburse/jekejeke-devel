@@ -180,7 +180,7 @@ sys_declaration_indicator(group_local(I), I).
  */
 % clause(-Term, -Goal)
 :- public clause/2.
-:- meta_predicate clause(-1,0).
+:- meta_predicate clause(-1, 0).
 :- special(clause/2, 'SpecialDynamic', 3).
 
 /**

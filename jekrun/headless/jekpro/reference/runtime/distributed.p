@@ -82,7 +82,7 @@ horde(T) :-
    horde(T, N).
 % horde(+Quant, +Integer)
 :- public horde/2.
-:- meta_predicate horde(0,?).
+:- meta_predicate horde(0, ?).
 horde(T, N) :-
    sys_goal_globals(T, J),
    sys_goal_kernel(T, S),
@@ -91,7 +91,7 @@ horde(T, N) :-
 
 % horde2(+Group, +List, +Goal, +Integer)
 :- private horde2/4.
-:- meta_predicate horde2(?,?,0,?).
+:- meta_predicate horde2(?, ?, 0, ?).
 horde2(Z, J, S, N) :-
    pipe_new(N, B),
    sys_thread_inits(Z, sys_put_all(J, S, B, 1), N),
@@ -113,7 +113,7 @@ balance(P) :-
    balance(P, N).
 % balance(+Quant, +Integer)
 :- public balance/2.
-:- meta_predicate balance(0,?).
+:- meta_predicate balance(0, ?).
 balance(P, N) :-
    sys_goal_globals(P, J),
    sys_goal_kernel(P, (  G, T)),
@@ -139,7 +139,7 @@ setup_balance(Q) :-
    setup_balance(Q, N).
 % setup_balance(+Quant, +Integer)
 :- public setup_balance/2.
-:- meta_predicate setup_balance(0,?).
+:- meta_predicate setup_balance(0, ?).
 setup_balance(Q, N) :-
    sys_goal_globals(Q, J),
    sys_goal_kernel(Q, (  S, G, T)),
@@ -156,7 +156,7 @@ setup_balance(Q, N) :-
  * thread and unifies N with its new name.
  */
 :- public submit/2.
-:- meta_predicate submit(0,?).
+:- meta_predicate submit(0, ?).
 submit(Goal, Name) :-
    thread_new(sys_managed_call(Goal), Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
@@ -201,7 +201,7 @@ sys_take_all2(T, Q) :- repeat,
  */
 % sys_put_all(+Term, +Goal, +Queue, +Integer)
 :- private sys_put_all/4.
-:- meta_predicate sys_put_all(?,0,?,?).
+:- meta_predicate sys_put_all(?, 0, ?, ?).
 sys_put_all(T, G, Q, N) :-
    sys_trap(sys_put_all2(T, G, Q, N),
       E,
@@ -211,7 +211,7 @@ sys_put_all(T, G, Q, N) :-
 
 % sys_put_all2(+Term, +Goal, +Queue, +Integer)
 :- private sys_put_all2/4.
-:- meta_predicate sys_put_all2(?,0,?,?).
+:- meta_predicate sys_put_all2(?, 0, ?, ?).
 sys_put_all2(T, G, Q, _) :- G,
    pipe_put(Q, the(T)), fail.
 sys_put_all2(_, _, Q, N) :-
@@ -269,7 +269,7 @@ sys_thread_fini(Thread) :-
  */
 % sys_thread_init(+Group, +Goal)
 :- private sys_thread_init/2.
-:- meta_predicate sys_thread_init(?,0).
+:- meta_predicate sys_thread_init(?, 0).
 sys_thread_init(Group, Goal) :-
    thread_new(Group, sys_managed_call(Goal), Thread),
    thread_start(Thread).
@@ -281,7 +281,7 @@ sys_thread_init(Group, Goal) :-
  */
 % sys_thread_inits(+Group, +Goal, +Integer)
 :- private sys_thread_inits/3.
-:- meta_predicate sys_thread_inits(?,0,?).
+:- meta_predicate sys_thread_inits(?, 0, ?).
 sys_thread_inits(_, _, 0) :- !.
 sys_thread_inits(Group, Goal, N) :-
    N > 0,

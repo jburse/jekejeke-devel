@@ -60,11 +60,11 @@ current_prolog_flag(Flag, Value) :-
 
 :- private sys_current_flag/1.
 :- foreign(sys_current_flag/1, 'ForeignEngine',
-      sysCurrentFlag('Interpreter','CallOut')).
+      sysCurrentFlag('Interpreter', 'CallOut')).
 
 :- private sys_get_flag/2.
 :- foreign(sys_get_flag/2, 'ForeignEngine',
-      sysGetFlag('Interpreter','String')).
+      sysGetFlag('Interpreter', 'String')).
 
 /**
  * set_prolog_flag(F, V): [ISO]
@@ -73,7 +73,7 @@ current_prolog_flag(Flag, Value) :-
 % set_prolog_flag(+Atom, +Term)
 :- public set_prolog_flag/2.
 :- foreign(set_prolog_flag/2, 'ForeignEngine',
-      sysSetFlag('Interpreter','String','Object')).
+      sysSetFlag('Interpreter', 'String', 'Object')).
 
 /**
  * halt: [ISO 8.17.3]
@@ -133,7 +133,7 @@ version :-
 :- public begin_module/1.
 begin_module(N) :-
    absolute_file_name(verbatim(N), D),
-   sys_module_action(D, [action(begin_module),sys_link(sys_auto_load)]),
+   sys_module_action(D, [action(begin_module), sys_link(sys_auto_load)]),
    set_prolog_flag(sys_last_pred, null).
 
 /**
@@ -144,7 +144,7 @@ begin_module(N) :-
 :- public end_module/0.
 end_module :-
    sys_peek_stack(D),
-   sys_module_action(D, [action(end_module),sys_link(sys_auto_load)]),
+   sys_module_action(D, [action(end_module), sys_link(sys_auto_load)]),
    set_prolog_flag(sys_last_pred, null).
 
 /**
@@ -169,7 +169,7 @@ top_module(N) :-
 
 :- private sys_module_action/2.
 :- foreign(sys_module_action/2, 'ForeignEngine',
-      sysModuleAction('Interpreter','TermAtomic','Object')).
+      sysModuleAction('Interpreter', 'TermAtomic', 'Object')).
 
 :- private sys_peek_stack/1.
 :- foreign(sys_peek_stack/1, 'ForeignEngine',

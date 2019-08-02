@@ -95,7 +95,7 @@
 % package(+Callable)
 package(P) :-
    var(P),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 package(library(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, package(library(P))).
@@ -103,7 +103,7 @@ package(foreign(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, package(foreign(P))).
 package(P) :-
-   throw(error(domain_error(fix_option,P),_)).
+   throw(error(domain_error(fix_option, P), _)).
 :- set_predicate_property(package/1, visible(public)).
 
 /**
@@ -116,7 +116,7 @@ package(P) :-
 % use_package(+Callable)
 use_package(P) :-
    var(P),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 use_package(library(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, use_package(library(P))).
@@ -124,7 +124,7 @@ use_package(foreign(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, use_package(foreign(P))).
 use_package(P) :-
-   throw(error(domain_error(fix_option,P),_)).
+   throw(error(domain_error(fix_option, P), _)).
 :- set_predicate_property(use_package/1, visible(public)).
 
 /**
@@ -136,7 +136,7 @@ use_package(P) :-
 % module(+Atom, +Indicators)
 module(N, _) :-
    var(N),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 module(N, L) :-
    =(N, user), !,
    sys_context_property(N, C),
@@ -156,7 +156,7 @@ module(N, L) :-
 sys_check_key(K, C) :-
    absolute_file_name(library(K), C), !.
 sys_check_key(K, _) :-
-   throw(error(syntax_error(key_mismatch,K),_)).
+   throw(error(syntax_error(key_mismatch, K), _)).
 :- set_predicate_property(sys_check_key/2, visible(private)).
 
 % sys_get_key(+Path, -Name)
@@ -179,7 +179,7 @@ sys_get_key(C, N) :-
 % use_module(+Atom)
 use_module(Slash) :-
    absolute_file_name(Slash, Pin),
-   sys_load_file(Pin, [condition(on),sys_link(use_module)]).
+   sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
 :- set_predicate_property(use_module/1, sys_notrace).
 
@@ -192,7 +192,7 @@ use_module(Slash) :-
 % reexport(+Atom)
 reexport(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),sys_link(reexport)]).
+   sys_load_file(Pin, [condition(on), sys_link(reexport)]).
 :- set_predicate_property(reexport/1, visible(public)).
 
 /**
@@ -203,7 +203,7 @@ reexport(Path) :-
 % sys_auto_load(+Atom)
 sys_auto_load(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),verbose(off),sys_link(sys_auto_load)]).
+   sys_load_file(Pin, [condition(on), verbose(off), sys_link(sys_auto_load)]).
 :- set_predicate_property(sys_auto_load/1, visible(public)).
 
 /**
@@ -214,7 +214,7 @@ sys_auto_load(Path) :-
 % sys_load_resource(+Atom)
 sys_load_resource(Path) :-
    absolute_resource_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),sys_link(sys_load_resource)]).
+   sys_load_file(Pin, [condition(on), sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
 
 /**
@@ -250,7 +250,7 @@ private P :-
 % sys_private(+IndicatorOrOperator)
 sys_private(X) :-
    var(X),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_private(D) :-
    sys_declaration_indicator(D, I), !,
    sys_private(I),
@@ -288,7 +288,7 @@ public P :-
 % sys_public(+IndicatorOrOperator)
 sys_public(X) :-
    var(X),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_public(D) :-
    sys_declaration_indicator(D, I), !,
    sys_public(I),
@@ -308,7 +308,7 @@ sys_public(I) :-
    once((  predicate_property(I, sys_usage(D)),
            \+ =(C, D))),
    \+ predicate_property(I, sys_public(D)),
-   throw(error(permission_error(promote,public,I),_)).
+   throw(error(permission_error(promote, public, I), _)).
 sys_public(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
@@ -336,7 +336,7 @@ override P :-
 % sys_override(+Indicator)
 sys_override(V) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_override(D) :-
    sys_declaration_indicator(D, I), !,
    sys_override(I),

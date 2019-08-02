@@ -84,7 +84,7 @@
  */
 % +Goal ; +Goal
 :- public ;/2.
-:- meta_predicate ;(0,0).
+:- meta_predicate ;(0, 0).
 :- set_predicate_property(;/2, sys_nobarrier).
 :- set_predicate_property(;/2, sys_proto).
 A -> B; C :- sys_local_cut,
@@ -101,7 +101,7 @@ A; B :- A; B.                                     % Proto
  */
 % +Goal -> +Goal
 :- public -> /2.
-:- meta_predicate ->(0,0).
+:- meta_predicate ->(0, 0).
 :- set_predicate_property(-> /2, sys_nobarrier).
 :- set_predicate_property(-> /2, sys_proto).
 A -> B :- A -> B.                                 % Proto
@@ -114,7 +114,7 @@ A -> B :- A -> B.                                 % Proto
  */
 % +Goal *-> +Goal
 :- public *-> /2.
-:- meta_predicate *->(0,0).
+:- meta_predicate *->(0, 0).
 :- set_predicate_property(*-> /2, sys_nobarrier).
 :- set_predicate_property(*-> /2, sys_proto).
 A *-> B :- A *-> B.                               % Proto

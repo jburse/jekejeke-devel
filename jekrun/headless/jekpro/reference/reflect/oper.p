@@ -90,7 +90,7 @@
 % op(+Integer, +Atom, +List)
 op(_, _, Z) :-
    var(Z),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 op(_, _, []) :- !.
 op(L, M, [Z|T]) :- !,
    sys_oper(L, M, Z),
@@ -102,15 +102,15 @@ op(L, M, Z) :-
 % sys_oper(+Integer, +Atom, +Atom) :-
 sys_oper(_, M, _) :-
    var(M), !,
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_oper(_, _, Z) :-
    var(Z), !,
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_oper(L, M, Z) :-
    sys_make_oper(M, Z, I), !,
    sys_oper2(I, L, M).
 sys_oper(_, M, _) :-
-   throw(error(domain_error(operator_specifier,M),_)).
+   throw(error(domain_error(operator_specifier, M), _)).
 :- set_predicate_property(sys_oper/3, visible(private)).
 
 % sys_oper2(+Indicator, +Integer, +Atom)
@@ -118,13 +118,13 @@ sys_oper2(I, 0, _) :- !,
    abolish(I).
 sys_oper2(infix(X), _, _) :-
    current_oper(postfix(X)),
-   throw(error(permission_error(create,operator,infix(X)),_)).
+   throw(error(permission_error(create, operator, infix(X)), _)).
 sys_oper2(postfix(X), _, _) :-
    current_oper(infix(X)),
-   throw(error(permission_error(create,operator,postfix(X)),_)).
+   throw(error(permission_error(create, operator, postfix(X)), _)).
 sys_oper2(I, L, M) :-
    sys_neutral_oper(I),
-   set_oper_property(I, op(L,M)),
+   set_oper_property(I, op(L, M)),
    sys_oper3(I, L),
    sys_check_style_oper(I).
 :- set_predicate_property(sys_oper2/3, visible(private)).
@@ -165,16 +165,16 @@ sys_oper3(postfix(X), _) :-
 current_op(L, M, C) :-
    var(C), !,
    current_oper(I),
-   oper_property(I, op(L,M)),
+   oper_property(I, op(L, M)),
    sys_make_oper(M, C, I).
 current_op(L, M, C) :-
    var(M), !,
    current_oper(I),
-   oper_property(I, op(L,M)),
+   oper_property(I, op(L, M)),
    sys_make_oper(M, C, I).
 current_op(L, M, C) :-
    sys_make_oper(M, C, I),
-   oper_property(I, op(L,M)).
+   oper_property(I, op(L, M)).
 :- set_predicate_property(current_op/3, visible(public)).
 
 % sys_make_oper(+Atom, +Atom, -Indicator)
@@ -271,13 +271,13 @@ sys_oper_property2(I, R) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator(op(_,M,_), _) :-
+sys_declaration_indicator(op(_, M, _), _) :-
    var(M),
-   throw(error(instantiation_error,_)).
-sys_declaration_indicator(op(_,_,Z), _) :-
+   throw(error(instantiation_error, _)).
+sys_declaration_indicator(op(_, _, Z), _) :-
    var(Z),
-   throw(error(instantiation_error,_)).
-sys_declaration_indicator(op(_,M,Z), I) :-
+   throw(error(instantiation_error, _)).
+sys_declaration_indicator(op(_, M, Z), I) :-
    sys_make_oper(M, Z, I).
 
 /**********************************************************/

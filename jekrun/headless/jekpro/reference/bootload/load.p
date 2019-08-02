@@ -79,13 +79,13 @@
 % ensure_loaded(Path)
 ensure_loaded(Path) :-
    var(Path),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 ensure_loaded(X) :-
    =(X, user), !,
    sys_import_file(X, []).
 ensure_loaded(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),sys_link(use_module)]).
+   sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(ensure_loaded/1, visible(public)).
 :- set_predicate_property(ensure_loaded/1, sys_notrace).
 
@@ -100,7 +100,7 @@ ensure_loaded(Path) :-
 % consult(Path)
 consult(Path) :-
    var(Path),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 consult(X) :-
    =(X, user), !,
    sys_import_file(X, []).
@@ -130,7 +130,7 @@ unload_file(Path) :-
 % [Path|Goal]
 [Path|_] :-
    var(Path),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 [+(Path)|Y] :- !,
    consult(Path),
    call(Y).
@@ -236,7 +236,7 @@ discontiguous P :-
 % sys_discontiguous(+Indicator)
 sys_discontiguous(V) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_discontiguous(D) :-
    sys_declaration_indicator(D, I), !,
    sys_discontiguous(I),
@@ -267,7 +267,7 @@ sys_notrace P :-
 % sys_sys_notrace(+Indicator)
 sys_sys_notrace(V) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_sys_notrace(D) :-
    sys_declaration_indicator(D, I), !,
    sys_sys_notrace(I),
@@ -296,7 +296,7 @@ multifile P :-
 % sys_multifile(+Indicator)
 sys_multifile(V) :-
    var(V),
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 sys_multifile(D) :-
    sys_declaration_indicator(D, I), !,
    sys_multifile(I),
@@ -307,7 +307,7 @@ sys_multifile(I) :-
    once((  predicate_property(I, sys_usage(D)),
            \+ =(C, D))),
    \+ predicate_property(I, sys_multifile(D)),
-   throw(error(permission_error(promote,multifile,I),_)).
+   throw(error(permission_error(promote, multifile, I), _)).
 sys_multifile(I) :-
    sys_make_indicator(J, _, I),
    sys_context_property(J, C),
