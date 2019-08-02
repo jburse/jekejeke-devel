@@ -81,7 +81,7 @@ ensure_loaded(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
 ensure_loaded(X) :-
-   X = user, !,
+   =(X, user), !,
    sys_import_file(X, []).
 ensure_loaded(Path) :-
    absolute_file_name(Path, Pin),
@@ -102,7 +102,7 @@ consult(Path) :-
    var(Path),
    throw(error(instantiation_error,_)).
 consult(X) :-
-   X = user, !,
+   =(X, user), !,
    sys_import_file(X, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
@@ -225,7 +225,7 @@ include(Path) :-
 discontiguous [P|Q] :- !,
    sys_discontiguous(P),
    discontiguous(Q).
-discontiguous P,Q :- !,
+discontiguous P, Q :- !,
    sys_discontiguous(P),
    discontiguous(Q).
 discontiguous [] :- !.
@@ -256,7 +256,7 @@ sys_discontiguous(I) :-
 sys_notrace [P|Q] :- !,
    sys_sys_notrace(P),
    sys_notrace(Q).
-sys_notrace P,Q :- !,
+sys_notrace P, Q :- !,
    sys_sys_notrace(P),
    sys_notrace(Q).
 sys_notrace [] :- !.
@@ -285,7 +285,7 @@ sys_sys_notrace(I) :-
 multifile [P|Q] :- !,
    sys_multifile(P),
    multifile(Q).
-multifile P,Q :- !,
+multifile P, Q :- !,
    sys_multifile(P),
    multifile(Q).
 multifile [] :- !.
@@ -305,7 +305,7 @@ sys_multifile(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
    once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+           \+ =(C, D))),
    \+ predicate_property(I, sys_multifile(D)),
    throw(error(permission_error(promote,multifile,I),_)).
 sys_multifile(I) :-

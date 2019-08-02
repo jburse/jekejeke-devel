@@ -83,15 +83,15 @@ public class PrologWriter {
     public final static int SPEZ_META = 0x00000004;
     public final static int SPEZ_EVAL = 0x00000008;
 
+    public final static int LEVEL_IMPL = 1125;
+    public final static int LEVEL_DISJ = 1025;
+
     final static int SPEZ_FUNC = 0x00000100;
     final static int SPEZ_MINS = 0x00000200;
     final static int SPEZ_ICUT = 0x00000400;
 
     private final static String noTermChs = "([{}])";
     private final static String noOperChs = ".,|";
-
-    protected final static int DISJ_LOW = 1025;
-    protected final static int DISJ_HIGH = 1125;
 
     final static int MASK_ATOM_OPER = 0x00000001;
 
@@ -653,7 +653,7 @@ public class PrologWriter {
                 (spez & SPEZ_OPLE) != 0) {
             Operator oper = OperatorSearch.getOper(sa.scope, sa.fun,
                     Operator.TYPE_PREFIX, engine);
-            if (oper != null) {
+            if (oper != null && oper.getLevel() != 0) {
                 if ((spez & SPEZ_FUNC) != 0)
                     append(' ');
                 append(PrologReader.OP_LPAREN);
@@ -885,16 +885,10 @@ public class PrologWriter {
     final void writePrefix(Operator op, SkelAtom sa,
                            CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
-        /**
-         * - spacing.
-         * - anti specification
-         */
         String t = atomQuoted(op.getPortrayOrName(), 0);
         safeSpace(t);
         appendLink(t, cp);
-        if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
-                (spez & SPEZ_META) != 0 &&
-                (spez & SPEZ_EVAL) == 0) {
+        if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0) {
             append(' ');
             spez &= ~SPEZ_FUNC;
             spez &= ~SPEZ_MINS;
@@ -922,10 +916,7 @@ public class PrologWriter {
     protected void writeInfix(Operator op, SkelAtom sa,
                               CachePredicate cp, Object[] decl)
             throws IOException, EngineException, EngineMessage {
-        if (op.getLevel() > Operator.LEVEL_MIDDLE &&
-                (spez & SPEZ_META) != 0 &&
-                (spez & SPEZ_EVAL) == 0 &&
-                (flags & FLAG_NEWL) != 0) {
+        if (op.getLevel() > Operator.LEVEL_MIDDLE && (flags & FLAG_NEWL) != 0) {
             if ((spez & SPEZ_ICUT) != 0) {
                 if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                     append(' ');
@@ -934,7 +925,7 @@ public class PrologWriter {
                 appendLink(t, cp);
                 if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
                     append(' ');
-            } else if (op.getLevel() >= DISJ_LOW && op.getLevel() < DISJ_HIGH) {
+            } else if (op.getLevel() >= LEVEL_DISJ && op.getLevel() < LEVEL_IMPL) {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent - SPACES; i++)
                     append(' ');
@@ -954,16 +945,12 @@ public class PrologWriter {
                     append(' ');
             }
         } else {
-            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
-                    (spez & SPEZ_META) != 0 &&
-                    (spez & SPEZ_EVAL) == 0)
+            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
                 append(' ');
             String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
             safeSpace(t);
             appendLink(t, cp);
-            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0 &&
-                    (spez & SPEZ_META) != 0 &&
-                    (spez & SPEZ_EVAL) == 0)
+            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
                 append(' ');
         }
     }
@@ -985,12 +972,7 @@ public class PrologWriter {
                             CachePredicate cp, Object[] decl,
                             Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
-        /**
-         * - spacing
-         */
-        if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0 &&
-                (spez & SPEZ_META) != 0 &&
-                (spez & SPEZ_EVAL) == 0)
+        if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
             append(' ');
         if (isIndex(sc)) {
             writeIndex(sc, ref, cp, decl, mod, nsa);
@@ -1093,12 +1075,10 @@ public class PrologWriter {
      * @throws EngineException Auto load problem.
      */
     protected void writeList(SkelCompound sc, Display ref,
-                             Object mod, SkelAtom nsa,
-                             int backshift, int backoffset, int backspez)
+                             CachePredicate cp, Object[] decl,
+                             int backshift, int backoffset, int backspez,
+                             Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
-        appendLink(PrologReader.OP_LBRACKET, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1149,7 +1129,6 @@ public class PrologWriter {
                 break;
             }
         }
-        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1164,17 +1143,10 @@ public class PrologWriter {
      * @throws EngineException Auto load problem.
      */
     protected void writeCompound(SkelCompound sc, Display ref,
+                                 CachePredicate cp, Object[] decl,
+                                 int backspez, int backoffset, int backshift,
                                  Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
-        String t = atomQuoted(sc.sym.fun, 0);
-        safeSpace(t);
-        appendLink(t, cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        append(PrologReader.OP_LPAREN);
         int j = 0;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -1210,10 +1182,6 @@ public class PrologWriter {
             }
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RPAREN);
     }
 
     /**
@@ -1362,7 +1330,7 @@ public class PrologWriter {
             if (isUnary(sc) || isIndex(sc) || isStruct(sc)) {
                 Operator oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_PREFIX, engine);
-                if (oper != null) {
+                if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
                     int backindent = indent;
@@ -1372,10 +1340,11 @@ public class PrologWriter {
                     if (needsParen(oper, backspez, level)) {
                         if ((backspez & SPEZ_FUNC) != 0)
                             append(' ');
+                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
-                    if (oper.getLevel() >= DISJ_HIGH &&
+                    if (oper.getLevel() >= LEVEL_IMPL &&
                             (backspez & SPEZ_META) != 0 &&
                             (backspez & SPEZ_EVAL) == 0 &&
                             (flags & FLAG_NEWL) != 0) {
@@ -1398,9 +1367,10 @@ public class PrologWriter {
                 }
                 oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_POSTFIX, engine);
-                if (oper != null) {
+                if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
+                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
@@ -1409,6 +1379,7 @@ public class PrologWriter {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
+                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                     }
                     /* left operand */
@@ -1427,23 +1398,31 @@ public class PrologWriter {
                     writePostfix(oper, sc, ref, cp, decl, mod, nsa);
                     if (needsParen(oper, backspez, level))
                         append(PrologReader.OP_RPAREN);
+                    indent = backindent;
                     return;
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
+                CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+                Object[] decl = predicateToMeta(cp);
+                int backindent = indent;
+                indent = getTextOffset() + SPACES;
                 int backspez = spez;
                 int backoffset = offset;
                 int backshift = shift;
-                writeList(sc, ref, mod, nsa, backshift, backoffset, backspez);
+                appendLink(PrologReader.OP_LBRACKET, cp);
+                writeList(sc, ref, cp, decl, backshift, backoffset, backspez, mod, nsa);
                 spez = backspez;
                 offset = backoffset;
                 shift = backshift;
+                append(PrologReader.OP_RBRACKET);
+                indent = backindent;
                 return;
             }
             if (isBinary(sc)) {
                 Operator oper = OperatorSearch.getOper(sc.sym.scope,
                         sc.sym.fun, Operator.TYPE_INFIX, engine);
-                if (oper != null) {
+                if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
                     int backindent = indent;
@@ -1455,15 +1434,14 @@ public class PrologWriter {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
+                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                         if (oper.getLevel() > Operator.LEVEL_MIDDLE &&
-                                (backspez & SPEZ_META) != 0 &&
-                                (backspez & SPEZ_EVAL) == 0 &&
                                 (flags & FLAG_NEWL) != 0) {
-                            if (oper.getLevel() >= DISJ_HIGH) {
-                                indent = getTextOffset() - 1;
+                            if (oper.getLevel() >= LEVEL_IMPL) {
+                                indent += -1;
                             } else {
-                                indent = getTextOffset() + SPACES - 1;
+                                indent += SPACES - 1;
                                 for (int i = 0; i < SPACES - 1; i++)
                                     append(' ');
                             }
@@ -1503,9 +1481,7 @@ public class PrologWriter {
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     int forwardspez = spez;
-                    if (oper.getLevel() >= DISJ_HIGH &&
-                            (backspez & SPEZ_META) != 0 &&
-                            (backspez & SPEZ_EVAL) == 0 &&
+                    if (oper.getLevel() >= LEVEL_IMPL &&
                             (flags & FLAG_NEWL) != 0) {
                         indent += SPACES;
                     }
@@ -1530,7 +1506,23 @@ public class PrologWriter {
                 }
             }
         }
-        writeCompound(sc, ref, mod, nsa);
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backindent = indent;
+        indent = getTextOffset() + SPACES;
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        String t = atomQuoted(sc.sym.fun, 0);
+        safeSpace(t);
+        appendLink(t, cp);
+        append(PrologReader.OP_LPAREN);
+        writeCompound(sc, ref, cp, decl, backspez, backoffset, backshift, mod, nsa);
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RPAREN);
+        indent = backindent;
     }
 
     /**
@@ -1600,7 +1592,7 @@ public class PrologWriter {
             return false;
         Operator op2 = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                 Operator.TYPE_INFIX, engine);
-        if (op2 == null)
+        if (op2 == null || op2.getLevel() == 0)
             return false;
         if (!(op2.getLevel() > Operator.LEVEL_MIDDLE))
             return false;

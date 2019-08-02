@@ -93,7 +93,7 @@
 dynamic [P|Q] :- !,
    sys_dynamic(P),
    dynamic(Q).
-dynamic P,Q :- !,
+dynamic P, Q :- !,
    sys_dynamic(P),
    dynamic(Q).
 dynamic [] :- !.
@@ -120,7 +120,7 @@ sys_dynamic(I) :-
 thread_local [P|Q] :- !,
    sys_thread_local(P),
    thread_local(Q).
-thread_local P,Q :- !,
+thread_local P, Q :- !,
    sys_thread_local(P),
    thread_local(Q).
 thread_local [] :- !.
@@ -147,7 +147,7 @@ sys_thread_local(I) :-
 group_local [P|Q] :- !,
    sys_group_local(P),
    group_local(Q).
-group_local P,Q :- !,
+group_local P, Q :- !,
    sys_group_local(P),
    group_local(Q).
 group_local [] :- !.

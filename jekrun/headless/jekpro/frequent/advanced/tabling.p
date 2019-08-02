@@ -99,7 +99,7 @@
 table [P|Q] :- !,
    sys_table(P, hash),
    table(Q).
-table P,Q :- !,
+table P, Q :- !,
    sys_table(P, hash),
    table(Q).
 table [] :- !.
@@ -117,7 +117,7 @@ table P :-
 sys_sorter [P|Q] :- !,
    sys_table(P, tree),
    sys_sorter(Q).
-sys_sorter P,Q :- !,
+sys_sorter P, Q :- !,
    sys_table(P, tree),
    sys_sorter(Q).
 sys_sorter [] :- !.
@@ -149,7 +149,7 @@ sys_table(C, O) :-
 % sys_table_aggregate(+List, +List, -List, -Aggregate, -Value)
 :- private sys_table_aggregate/5.
 sys_table_aggregate([], [], [], nil, nil).
-sys_table_aggregate([X|L], [Y|R], [S|T], (A,P), (S,Q)) :-
+sys_table_aggregate([X|L], [Y|R], [S|T], (  A, P), (  S, Q)) :-
    sys_table_spec(X, Y, A), !,
    sys_table_aggregate(L, R, T, P, Q).
 sys_table_aggregate([_|L], [Y|R], [Y|T], P, Q) :-
@@ -200,13 +200,12 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
-   Body = (sys_goal_globals(A^Descr,W),
-           pivot_new(P),
-           pivot_set(P,Key),
-           (Test->true;
-            Q,
-            assertz(Test)),
-           sys_revolve_list(W,R,S)),
+   Body = (  sys_goal_globals(A^Descr,W),
+             pivot_new(P),
+             pivot_set(P,Key),
+             (  Test -> true; Q,
+                assertz(Test)),
+             sys_revolve_list(W,R,S)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),

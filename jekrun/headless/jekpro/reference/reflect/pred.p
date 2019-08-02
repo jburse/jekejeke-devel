@@ -76,7 +76,8 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(1150, fx, static).
+:- sys_neutral_oper(prefix(static)).
+:- set_oper_property(prefix(static), op(1150,fx)).
 :- set_oper_property(prefix(static), visible(public)).
 
 /**
@@ -87,7 +88,7 @@
 static [P|Q] :- !,
    sys_static(P),
    static(Q).
-static P,Q :- !,
+static P, Q :- !,
    sys_static(P),
    static(Q).
 static [] :- !.
@@ -203,7 +204,7 @@ sys_make_indicator(F, A, I) :-
    var(F), !,
    sys_make_indicator2(I, F, A).
 sys_make_indicator(K, A, J) :-
-   K = :(M,F), !,
+   =(K, :(M,F)), !,
    sys_make_indicator(F, A, I),
    sys_replace_site(J, K, :(M,I)).
 sys_make_indicator(F, A, F/A).
@@ -214,12 +215,11 @@ sys_make_indicator2(I, _, _) :-
    var(I),
    throw(error(instantiation_error,_)).
 sys_make_indicator2(J, K, A) :-
-   J = :(M,I), !,
+   =(J, :(M,I)), !,
    sys_make_indicator2(I, F, A),
    sys_replace_site(K, J, :(M,F)).
 sys_make_indicator2(F/A, G, B) :- !,
-   F = G,
-   A = B.
+   =(F/A, G/B).
 sys_make_indicator2(I, _, _) :-
    throw(error(type_error(predicate_indicator,I),_)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).

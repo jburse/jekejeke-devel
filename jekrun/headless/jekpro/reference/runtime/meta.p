@@ -84,7 +84,7 @@
 meta_predicate [P|Q] :- !,
    sys_meta_predicate(P),
    meta_predicate(Q).
-meta_predicate P,Q :- !,
+meta_predicate P, Q :- !,
    sys_meta_predicate(P),
    meta_predicate(Q).
 meta_predicate [] :- !.
@@ -121,7 +121,7 @@ sys_meta_predicate(P) :-
 meta_function [P|Q] :- !,
    sys_meta_function(P),
    meta_function(Q).
-meta_function P,Q :- !,
+meta_function P, Q :- !,
    sys_meta_function(P),
    meta_function(Q).
 meta_function [] :- !.

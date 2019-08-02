@@ -116,7 +116,7 @@ balance(P) :-
 :- meta_predicate balance(0,?).
 balance(P, N) :-
    sys_goal_globals(P, J),
-   sys_goal_kernel(P, (G,T)),
+   sys_goal_kernel(P, (  G, T)),
    term_variables(G, I),
    pipe_new(N, F),
    sys_group_clean(Z),
@@ -142,7 +142,7 @@ setup_balance(Q) :-
 :- meta_predicate setup_balance(0,?).
 setup_balance(Q, N) :-
    sys_goal_globals(Q, J),
-   sys_goal_kernel(Q, (S,G,T)),
+   sys_goal_kernel(Q, (  S, G, T)),
    term_variables(G, I),
    pipe_new(N, F),
    sys_group_clean(Z),

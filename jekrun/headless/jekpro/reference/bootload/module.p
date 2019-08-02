@@ -138,7 +138,7 @@ module(N, _) :-
    var(N),
    throw(error(instantiation_error,_)).
 module(N, L) :-
-   N = user, !,
+   =(N, user), !,
    sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    public(L).
@@ -239,7 +239,7 @@ sys_add_resource(Path) :-
 private [P|Q] :- !,
    sys_private(P),
    private(Q).
-private P,Q :- !,
+private P, Q :- !,
    sys_private(P),
    private(Q).
 private [] :- !.
@@ -277,7 +277,7 @@ sys_private(I) :-
 public [P|Q] :- !,
    sys_public(P),
    public(Q).
-public P,Q :- !,
+public P, Q :- !,
    sys_public(P),
    public(Q).
 public [] :- !.
@@ -306,7 +306,7 @@ sys_public(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
    once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+           \+ =(C, D))),
    \+ predicate_property(I, sys_public(D)),
    throw(error(permission_error(promote,public,I),_)).
 sys_public(I) :-
@@ -325,7 +325,7 @@ sys_public(I) :-
 override [P|Q] :- !,
    sys_override(P),
    override(Q).
-override P,Q :- !,
+override P, Q :- !,
    sys_override(P),
    override(Q).
 override [] :- !.

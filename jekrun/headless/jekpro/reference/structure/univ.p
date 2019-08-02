@@ -47,9 +47,8 @@
 
 :- module(user, []).
 
-% already defined in member.p
-% :- public infix(=).
-% :- op(700, xfx, =).
+:- public infix(=).
+:- op(700, xfx, =).
 
 :- public infix(=..).
 :- op(700, xfx, =..).
@@ -118,8 +117,6 @@ T =.. L :-
  */
 % +Term = +Term
 % already defined in member.p
-% :- public (=)/2.
-% :- special((=)/2, 'SpecialUniv', 3).
 
 /**
  * unify_with_occurs_check(X, Y): [ISO 8.2.2]

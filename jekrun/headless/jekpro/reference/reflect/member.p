@@ -33,9 +33,6 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(700, xfx, =).
-:- set_oper_property(infix(=), visible(public)).
-
 /*************************************************************************/
 /* List Helper                                                           */
 /*************************************************************************/
@@ -101,3 +98,14 @@ functor(T, F, A) :-
 
 :- special(sys_term_to_functor/3, 'SpecialMember', 5).
 :- set_predicate_property(sys_term_to_functor/3, visible(private)).
+
+/*************************************************************************/
+/* Compare Helper                                                        */
+/*************************************************************************/
+
+% >(+Expr, +Expr)
+:- special(> /2, 'SpecialMember', 6).
+:- set_predicate_property(> /2, meta_predicate(>(#(1),#(1)))).
+:- sys_context_property(here, C),
+   set_predicate_property(> /2, sys_meta_predicate(C)).
+:- set_predicate_property(> /2, visible(public)).

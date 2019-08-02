@@ -247,7 +247,7 @@ phrase_expansion(call(P), I, O, phrase(P, I, O)).
 
 phrase_expansion(U, I, O, Q) :-
    U = [],
-   sys_replace_site(Q, U, I=O).
+   sys_replace_site(Q, U, I = O).
 
 :- public '.'/4.
 :- meta_predicate '.'(2,2,?,?).
@@ -258,11 +258,11 @@ phrase_expansion(U, I, O, Q) :-
 phrase_expansion(U, H, O, (  Q,
                              sys_phrase(B, I, O))) :-
    U = [A|B],
-   sys_replace_site(Q, U, [A|I]=H).
+   sys_replace_site(Q, U, [A|I] = H).
 
 phrase_expansion(U, I, O, (  P, Q)) :-
    phrase_barrier(U, I, P),
-   sys_replace_site(Q, U, I=O).
+   sys_replace_site(Q, U, I = O).
 
 :- private phrase_barrier/3.
 :- meta_predicate phrase_barrier(2,?,0).
@@ -307,8 +307,8 @@ phrase_barrier({A}, _, A).
    call(Q).
 
 phrase_barrier(U, I, Q) :-
-   U = (\+A),
-   sys_replace_site(Q, U, \+phrase(A,I,_)).
+   U = (\+ A),
+   sys_replace_site(Q, U, \+ phrase(A,I,_)).
 
 /**********************************************************/
 /* Goal Rewriting Non-Steadfast                           */
@@ -358,7 +358,7 @@ sys_phrase_expansion(U, I, I, Q) :-
 sys_phrase_expansion([A|B], [A|I], O, sys_phrase(B, I, O)).
 sys_phrase_expansion(U, I, O, (  P, Q)) :-
    phrase_barrier(U, I, P),
-   sys_replace_site(Q, U, I=O).
+   sys_replace_site(Q, U, I = O).
 
 /**********************************************************/
 /* Term Rewriting                                         */

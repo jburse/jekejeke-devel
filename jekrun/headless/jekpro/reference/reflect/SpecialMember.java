@@ -4,6 +4,7 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -48,6 +49,7 @@ public final class SpecialMember extends AbstractSpecial {
     private final static int SPECIAL_GROUND = 3;
     private final static int SPECIAL_SYS_FUNCTOR_TO_TERM = 4;
     private final static int SPECIAL_SYS_TERM_TO_FUNCTOR = 5;
+    private final static int SPECIAL_COMPARE_GR = 6;
 
     /**
      * <p>Create a zygote special.</p>
@@ -152,6 +154,24 @@ public final class SpecialMember extends AbstractSpecial {
                     if (!en.unifyTerm(temp[1], ref, obj, en.display))
                         return false;
                     if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                        return false;
+                    return true;
+                case SPECIAL_COMPARE_GR:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    num = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    if (SpecialCompare.computeCmp(num, beta) <= 0)
                         return false;
                     return true;
                 default:

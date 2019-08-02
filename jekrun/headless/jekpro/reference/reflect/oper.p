@@ -125,8 +125,25 @@ sys_oper2(postfix(X), _, _) :-
 sys_oper2(I, L, M) :-
    sys_neutral_oper(I),
    set_oper_property(I, op(L,M)),
+   sys_oper3(I, L),
    sys_check_style_oper(I).
 :- set_predicate_property(sys_oper2/3, visible(private)).
+
+% sys_oper3(+Indicator, +Integer)
+sys_oper3(I, L) :-
+   >(L, 699), !,
+   reset_oper_property(I, nspl),
+   reset_oper_property(I, nspr).
+sys_oper3(prefix(X), _) :-
+   reset_oper_property(prefix(X), nspl),
+   set_oper_property(prefix(X), nspr).
+sys_oper3(infix(X), _) :-
+   set_oper_property(infix(X), nspl),
+   set_oper_property(infix(X), nspr).
+sys_oper3(postfix(X), _) :-
+   set_oper_property(postfix(X), nspl),
+   reset_oper_property(postfix(X), nspr).
+:- set_predicate_property(sys_oper3/2, visible(private)).
 
 /**
  * sys_neutral_oper(I):
@@ -134,8 +151,7 @@ sys_oper2(I, L, M) :-
  * indicator I, defines a corresponding neutral syntax operator.
  */
 % sys_neutral_oper(+Indicator)
-:- special(sys_neutral_oper/1, 'SpecialOper', 0).
-:- set_predicate_property(sys_neutral_oper/1, visible(public)).
+% natively bootstrapped by SpecialModel
 
 :- special(sys_check_style_oper/1, 'SpecialOper', 1).
 :- set_predicate_property(sys_check_style_oper/1, visible(private)).
@@ -237,7 +253,6 @@ sys_oper_property2(I, R) :-
  */
 % set_oper_property(+Indicator, +Property)
 % natively bootstrapped by SpecialModel
-% :- special(set_oper_property/2, 'SpecialOper', 7).
 
 /**
  * reset_oper_property(I, P):

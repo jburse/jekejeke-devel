@@ -353,9 +353,9 @@ public class PrologReader {
                 current = 0;
                 nextToken();
                 if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
-                    Operator oper = engine != null ? OperatorSearch.getOper(source,
-                            Foyer.OP_UNIT, Operator.TYPE_POSTFIX, engine) : null;
-                    if (oper != null && level >= oper.getLevel()) {
+                    Operator oper = (engine != null ? OperatorSearch.getOper(source,
+                            Foyer.OP_UNIT, Operator.TYPE_POSTFIX, engine) : null);
+                    if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                         if (oper.getLevel() - oper.getLeft() < current)
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
@@ -385,9 +385,9 @@ public class PrologReader {
                     skel = makePos((String) skel, pos);
                     current = 0;
                 } else {
-                    Operator oper = engine != null ? OperatorSearch.getOper(source,
-                            (String) skel, Operator.TYPE_PREFIX, engine) : null;
-                    if (oper != null) {
+                    Operator oper = (engine != null ? OperatorSearch.getOper(source,
+                            (String) skel, Operator.TYPE_PREFIX, engine) : null);
+                    if (oper != null && oper.getLevel() != 0) {
                         if (level < oper.getLevel())
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
@@ -435,9 +435,9 @@ public class PrologReader {
                             st.getTokenOffset());
                 }
             }
-            Operator oper = engine != null ? OperatorSearch.getOper(source,
-                    fun, Operator.TYPE_INFIX, engine) : null;
-            if (oper != null && level >= oper.getLevel()) {
+            Operator oper = (engine != null ? OperatorSearch.getOper(source,
+                    fun, Operator.TYPE_INFIX, engine) : null);
+            if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                 if (oper.getLevel() - oper.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());
@@ -446,9 +446,9 @@ public class PrologReader {
                 current = oper.getLevel();
                 continue;
             }
-            oper = engine != null ? OperatorSearch.getOper(source,
-                    fun, Operator.TYPE_POSTFIX, engine) : null;
-            if (oper != null && level >= oper.getLevel()) {
+            oper = (engine != null ? OperatorSearch.getOper(source,
+                    fun, Operator.TYPE_POSTFIX, engine) : null);
+            if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                 if (oper.getLevel() - oper.getLeft() < current)
                     throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                             st.getTokenOffset());

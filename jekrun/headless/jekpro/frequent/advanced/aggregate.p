@@ -196,7 +196,7 @@ init_state(sum(_), 0).
 init_state(mul(_), 1).
 init_state(min(_), sup).
 init_state(max(_), inf).
-init_state((A,B), (S,T)) :-
+init_state((  A, B), (  S, T)) :-
    init_state(A, S),
    init_state(B, T).
 init_state(nil, nil).
@@ -226,7 +226,7 @@ next_state(min(X), S, T) :-
 next_state(max(X), inf, X) :- !.
 next_state(max(X), S, T) :-
    T is max(S,X).
-next_state((S,T), (A,B), (U,V)) :-
+next_state((  S, T), (  A, B), (  U, V)) :-
    next_state(S, A, U),
    next_state(T, B, V).
 next_state(nil, nil, nil).

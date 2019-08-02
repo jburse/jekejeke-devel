@@ -124,11 +124,7 @@
  * Succeeds when X is arithmetically greater than Y, otherwise fails.
  */
 % +Expr > +Expr
-:- public > /2.
-:- set_predicate_property(> /2, meta_predicate(>(#(1),#(1)))).
-:- sys_context_property(here, C),
-   set_predicate_property(> /2, sys_meta_predicate(C)).
-:- special(> /2, 'SpecialCompare', 4).
+% already defined in member.p
 
 /**
  * X >= Y: [ISO 8.7.1]

@@ -264,12 +264,12 @@ sys_filter_show(N, R) :-
 
 % sys_filter_assoc(+Assoc, +Assoc, +List, -Assoc)
 :- private sys_filter_assoc/4.
-sys_filter_assoc([X=Y|L], N, K, R) :-
+sys_filter_assoc([X = Y|L], N, K, R) :-
    var(Y),
    sys_get_assoc(Y, N, Z),
    Z == X, !,
    sys_filter_assoc(L, N, K, R).
-sys_filter_assoc([X=Y|L], N, K, [X=Y|R]) :-
+sys_filter_assoc([X = Y|L], N, K, [X = Y|R]) :-
    sys_filter_assoc(L, N, K, R).
 sys_filter_assoc([], _, K, K).
 
@@ -277,7 +277,7 @@ sys_filter_assoc([], _, K, K).
 :- private sys_get_assoc/3.
 sys_get_assoc(Y, [_|L], Z) :-
    sys_get_assoc(Y, L, Z), !.
-sys_get_assoc(Y, [Z=T|_], Z) :-
+sys_get_assoc(Y, [Z = T|_], Z) :-
    T == Y.
 
 % sys_show_assoc(+Assoc, +Assoc)
@@ -295,13 +295,13 @@ sys_show_assoc([X], N) :-
 
 % sys_show_pair(+Pair, +Assoc)
 :- private sys_show_pair/2.
-sys_show_pair(X=T, N) :-
+sys_show_pair(X = T, N) :-
    sys_printable_value(T, S), !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
    sys_show_term(S, [priority(699),quoted(true),variable_names(N)]).
-sys_show_pair(X=T, N) :- !,
+sys_show_pair(X = T, N) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' = '),
