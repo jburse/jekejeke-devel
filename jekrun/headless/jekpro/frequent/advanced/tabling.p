@@ -183,6 +183,8 @@ sys_table_declare(I) :-
    -> public(J)
    ;  predicate_property(I, visible(private))
    -> private(J); true),
+   (  predicate_property(I, multifile)
+   -> multifile(J); true),
    thread_local(J).
 
 % sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Atom)
@@ -197,20 +199,25 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    sys_table_revolve(O, A, Goal, W, R, Q),
    Key =.. [''|T],
    Descr =.. [''|L],
-   compilable_ref((Head :-
-                     sys_goal_globals(A^Descr, W),
-                     pivot_new(P),
-                     pivot_set(P, Key),
-                     (  Test -> true; Q,
-                        assertz(Test)),
-                     sys_revolve_list(W, R, S)), K),
-   recordz_ref(K),
    sys_make_indicator(F, N, I),
+   Body = (sys_goal_globals(A^Descr,W),
+           pivot_new(P),
+           pivot_set(P,Key),
+           (Test->true;
+            Q,
+            assertz(Test)),
+           sys_revolve_list(W,R,S)),
+   (  predicate_property(I, multifile)
+   -> compilable_ref((Head :- !, Body), K)
+   ;  compilable_ref((Head :- Body), K)),
+   recordz_ref(K),
    sys_make_indicator(G, N, J),
    (  predicate_property(I, visible(public))
    -> public(J)
    ;  predicate_property(I, visible(private))
    -> private(J); true),
+   (  predicate_property(I, multifile)
+   -> multifile(J); true),
    static(J).
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
