@@ -1147,7 +1147,7 @@ public class PrologWriter {
      * @param sc  The compound skeleton.
      * @param ref The compound display.
      * @param mod The module.
-     *            @param nsa The call-site.
+     * @param nsa The call-site.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.

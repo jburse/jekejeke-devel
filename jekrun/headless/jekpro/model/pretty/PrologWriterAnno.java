@@ -137,11 +137,11 @@ public class PrologWriterAnno extends PrologWriter {
             } else if (op.getLevel() >= LEVEL_DISJ && op.getLevel() < LEVEL_IMPL) {
                 String[][] fillers = (sa instanceof SkelAtomAnno ?
                         ((SkelAtomAnno) sa).getFillers() : null);
-                indent-= SPACES;
+                indent -= SPACES;
                 writeFillerIndent(ENDLINE, (fillers != null ? fillers[0] : null));
                 if (!lastEol(fillers != null ? fillers[0] : null))
                     writeFillerIndent(ENDLINE, FILLER_EOLN);
-                indent+= SPACES;
+                indent += SPACES;
                 String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
                 safeSpace(t);
                 appendLink(t, cp);
@@ -344,7 +344,7 @@ public class PrologWriterAnno extends PrologWriter {
      * @param sc  The compound skeleton.
      * @param ref The compound display.
      * @param mod The module.
-     *            @param nsa The call-site.
+     * @param nsa The call-site.
      * @throws IOException     IO Error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
@@ -634,12 +634,13 @@ public class PrologWriterAnno extends PrologWriter {
                 for (; i < at; i++)
                     append(' ');
                 safeSpace(str);
-                append(str);
             } else {
-                append(str);
+                at = STANDALONE;
+            }
+            append(str);
+            if (str.length() > 0 && str.charAt(str.length() - 1) == CodeType.LINE_EOL) {
                 for (int i = 0; i < indent; i++)
                     append(' ');
-                at = STANDALONE;
             }
         }
     }
@@ -654,12 +655,9 @@ public class PrologWriterAnno extends PrologWriter {
         if (filler == null)
             return false;
         String str = filler[filler.length - 1];
-        if (str.startsWith(CompLang.ISO_COMPLANG.getLineComment()) ||
-                str.startsWith(CompLang.ISO_COMPLANG.getBlockCommentStart())) {
-            return false;
-        } else {
+        if (str.length() > 0 && str.charAt(str.length() - 1) == CodeType.LINE_EOL)
             return true;
-        }
+        return false;
     }
 
 }
