@@ -62,13 +62,9 @@
  * in the ordered map M.
  */
 :- public ord_get/3.
-ord_get([K-V|_], J, U) :-
-   J == K, !,
-   U = V.
-ord_get([K-_|_], J, _) :-
-   J @< K, !, fail.
-ord_get([_|M], J, U) :-
-   ord_get(M, J, U).
+ord_get([K-V|_], J, U) :- J == K, !, U = V.
+ord_get([K-_|_], J, _) :- J @< K, !, fail.
+ord_get([_|M], J, U) :- ord_get(M, J, U).
 
 /**
  * ord_put(M, K, V, N):
@@ -77,14 +73,9 @@ ord_get([_|M], J, U) :-
  * as in the ordered map M.
  */
 :- public ord_put/4.
-ord_put([K-_|M], J, U, R) :-
-   J == K, !,
-   R = [K-U|M].
-ord_put([K-V|M], J, U, R) :-
-   J @< K, !,
-   R = [J-U, K-V|M].
-ord_put([A|M], J, U, [A|N]) :-
-   ord_put(M, J, U, N).
+ord_put([K-_|M], J, U, R) :- J == K, !, R = [K-U|M].
+ord_put([K-V|M], J, U, R) :- J @< K, !, R = [J-U, K-V|M].
+ord_put([A|M], J, U, [A|N]) :- ord_put(M, J, U, N).
 ord_put([], J, U, [J-U]).
 
 /**
@@ -94,12 +85,7 @@ ord_put([], J, U, [J-U]).
  * ordered map M.
  */
 :- public ord_remove/3.
-ord_remove([K-_|M], J, R) :-
-   J == K, !,
-   R = M.
-ord_remove([K-V|M], J, R) :-
-   J @< K, !,
-   R = [K-V|M].
-ord_remove([A|M], J, [A|N]) :-
-   ord_remove(M, J, N).
+ord_remove([K-_|M], J, R) :- J == K, !, R = M.
+ord_remove([K-V|M], J, R) :- J @< K, !, R = [K-V|M].
+ord_remove([A|M], J, [A|N]) :- ord_remove(M, J, N).
 ord_remove([], _, []).

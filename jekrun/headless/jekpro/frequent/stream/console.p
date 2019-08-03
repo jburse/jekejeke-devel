@@ -111,8 +111,7 @@ read_line_max(Length, Atom) :-
 
 % read_line_max(+AliasOrStream, +Integer, -Atom)
 :- public read_line_max/3.
-read_line_max(Alias, Length, Atom) :-
-   atom(Alias), !,
+read_line_max(Alias, Length, Atom) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_read_line_max(Stream, Length, Atom).
 read_line_max(Stream, Length, Atom) :-
@@ -169,8 +168,7 @@ read_punch_max(Length, Block) :-
 
 % read_punch_max(+AliasOrStream, +Integer, -Block)
 :- public read_punch_max/3.
-read_punch_max(Alias, Length, Block) :-
-   atom(Alias), !,
+read_punch_max(Alias, Length, Block) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_read_punch_max(Stream, Length, Block).
 read_punch_max(Stream, Length, Block) :-

@@ -178,8 +178,7 @@ random_permutation(G, L, R) :-
 
 % add_random_keys(+List, +Random, -Pairs)
 :- private add_random_keys/3.
-add_random_keys(X, _, _) :-
-   var(X),
+add_random_keys(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
 add_random_keys([X|L], G, [K-X|R]) :- !,
    random_next(G, K),

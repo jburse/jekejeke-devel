@@ -76,9 +76,7 @@
  */
 % make_name(+-Atom, +-Atom, -+Atom)
 :- public make_name/3.
-make_name(B, E, N) :-
-   (  var(B)
-   ;  var(E)), !,
+make_name(B, E, N) :- (var(B); var(E)), !,
    sys_name_base(N, B),
    sys_name_ext(N, E).
 make_name(B, E, N) :-
@@ -106,9 +104,7 @@ make_name(B, E, N) :-
 % make_path(+-Atom, +-Atom, -+Atom)
 % should also handle //
 :- public make_path/3.
-make_path(D, N, P) :-
-   (  var(D)
-   ;  var(N)), !,
+make_path(D, N, P) :- (var(D); var(N)), !,
    sys_path_directory(P, D),
    sys_path_name(P, N).
 make_path(D, N, P) :-
@@ -293,11 +289,8 @@ set_time_file(Name, Date) :-
 % follow_path(+-Atom, +-Atom, -+Atom)
 % should also handle // with /
 :- public follow_path/3.
-follow_path(B, R, A) :-
-   var(R), !,
-   sys_path_relative(B, A, R).
-follow_path(B, R, A) :-
-   sys_path_absolute(B, R, A).
+follow_path(B, R, A) :- var(R), !, sys_path_relative(B, A, R).
+follow_path(B, R, A) :- sys_path_absolute(B, R, A).
 
 :- private sys_path_absolute/3.
 :- foreign(sys_path_absolute/3, 'ForeignFile', 
@@ -381,9 +374,7 @@ exists_entry(Name, Entry) :-
  */
 % make_pack(+-Atom, +-Atom, -+Atom)
 :- public make_pack/3.
-make_pack(N, V, P) :-
-   (  var(N)
-   ;  var(V)), !,
+make_pack(N, V, P) :- (var(N); var(V)), !,
    sys_pack_name(P, N),
    sys_pack_varsion(P, V).
 make_pack(N, V, P) :-

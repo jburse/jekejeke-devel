@@ -54,11 +54,8 @@
  * key K in the map M.
  */
 :- public get/3.
-get([K-V|_], J, U) :-
-   J == K, !,
-   U = V.
-get([_|M], J, U) :-
-   get(M, J, U).
+get([K-V|_], J, U) :- J == K, !, U = V.
+get([_|M], J, U) :- get(M, J, U).
 
 /**
  * put(M, K, V, N):
@@ -67,11 +64,8 @@ get([_|M], J, U) :-
  * the map M.
  */
 :- public put/4.
-put([K-_|M], J, U, R) :-
-   J == K, !,
-   R = [K-U|M].
-put([A|M], J, U, [A|N]) :-
-   put(M, J, U, N).
+put([K-_|M], J, U, R) :- J == K, !, R = [K-U|M].
+put([A|M], J, U, [A|N]) :- put(M, J, U, N).
 put([], J, U, [J-U]).
 
 /**
@@ -80,11 +74,8 @@ put([], J, U, [J-U]).
  * and the other key values are associated as in the map M.
  */
 :- public remove/3.
-remove([K-_|M], J, R) :-
-   J == K, !,
-   R = M.
-remove([A|M], J, [A|N]) :-
-   remove(M, J, N).
+remove([K-_|M], J, R) :- J == K, !, R = M.
+remove([A|M], J, [A|N]) :- remove(M, J, N).
 remove([], _, []).
 
 

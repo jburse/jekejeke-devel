@@ -96,15 +96,10 @@
  */
 % table(+Indicators)
 :- public (table)/1.
-table [P|Q] :- !,
-   sys_table(P, hash),
-   table(Q).
-table P, Q :- !,
-   sys_table(P, hash),
-   table(Q).
+table [P|Q] :- !, sys_table(P, hash), table(Q).
+table P, Q :- !, sys_table(P, hash), table(Q).
 table [] :- !.
-table P :-
-   sys_table(P, hash).
+table P :- sys_table(P, hash).
 
 /**
  * sys_sorter P, ..:
@@ -114,20 +109,14 @@ table P :-
  */
 % sys_sorter(+Indicators)
 :- public (sys_sorter)/1.
-sys_sorter [P|Q] :- !,
-   sys_table(P, tree),
-   sys_sorter(Q).
-sys_sorter P, Q :- !,
-   sys_table(P, tree),
-   sys_sorter(Q).
+sys_sorter [P|Q] :- !, sys_table(P, tree), sys_sorter(Q).
+sys_sorter P, Q :- !, sys_table(P, tree), sys_sorter(Q).
 sys_sorter [] :- !.
-sys_sorter P :-
-   sys_table(P, tree).
+sys_sorter P :- sys_table(P, tree).
 
 % sys_table(+IndicatorOrCallable, +Atom)
 :- private sys_table/2.
-sys_table(I, O) :-
-   sys_is_indicator(I), !,
+sys_table(I, O) :- sys_is_indicator(I), !,
    sys_table_declare(I),
    sys_make_indicator(F, N, I),
    length(L, N),
@@ -149,7 +138,7 @@ sys_table(C, O) :-
 % sys_table_aggregate(+List, +List, -List, -Aggregate, -Value)
 :- private sys_table_aggregate/5.
 sys_table_aggregate([], [], [], nil, nil).
-sys_table_aggregate([X|L], [Y|R], [S|T], (  A, P), (  S, Q)) :-
+sys_table_aggregate([X|L], [Y|R], [S|T], (A, P), (S, Q)) :-
    sys_table_spec(X, Y, A), !,
    sys_table_aggregate(L, R, T, P, Q).
 sys_table_aggregate([_|L], [Y|R], [Y|T], P, Q) :-
@@ -157,8 +146,7 @@ sys_table_aggregate([_|L], [Y|R], [Y|T], P, Q) :-
 
 % sys_table_spec(+Spec, +Var, -Aggregate)
 :- private sys_table_spec/3.
-sys_table_spec(X, _, _) :-
-   var(X), !, fail.
+sys_table_spec(X, _, _) :- var(X), !, fail.
 sys_table_spec(sum, X, sum(X)).
 sys_table_spec(mul, X, mul(X)).
 sys_table_spec(min, X, min(X)).
@@ -179,12 +167,11 @@ sys_table_declare(I) :-
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, M),
    sys_make_indicator(M, 2, J),
-   (  predicate_property(I, visible(public))
-   -> public(J)
-   ;  predicate_property(I, visible(private))
-   -> private(J); true),
-   (  predicate_property(I, multifile)
-   -> multifile(J); true),
+   (predicate_property(I, visible(public)) -> public(J);
+    predicate_property(I, visible(private)) -> private(J);
+    true),
+   (predicate_property(I, multifile) -> multifile(J);
+    true),
    thread_local(J).
 
 % sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Atom)
@@ -200,23 +187,23 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
-   Body = (  sys_goal_globals(A^Descr, W),
-             pivot_new(P),
-             pivot_set(P, Key),
-             (  Test -> true; Q,
-                assertz(Test)),
-             sys_revolve_list(W, R, S)),
-   (  predicate_property(I, multifile)
-   -> compilable_ref((Head :- !, Body), K)
-   ;  compilable_ref((Head :- Body), K)),
+   Body = (sys_goal_globals(A^Descr, W),
+           pivot_new(P),
+           pivot_set(P, Key),
+           (Test -> true;
+            Q,
+            assertz(Test)),
+           sys_revolve_list(W, R, S)),
+   (predicate_property(I, multifile) ->
+       compilable_ref((Head :- !, Body), K);
+    compilable_ref((Head :- Body), K)),
    recordz_ref(K),
    sys_make_indicator(G, N, J),
-   (  predicate_property(I, visible(public))
-   -> public(J)
-   ;  predicate_property(I, visible(private))
-   -> private(J); true),
-   (  predicate_property(I, multifile)
-   -> multifile(J); true),
+   (predicate_property(I, visible(public)) -> public(J);
+    predicate_property(I, visible(private)) -> private(J);
+    true),
+   (predicate_property(I, multifile) -> multifile(J);
+    true),
    static(J).
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
@@ -243,7 +230,8 @@ current_table(V, R) :-
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, R]), Test,
+   sys_univ(Test, [H, P, R]),
+   Test,
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -251,15 +239,15 @@ current_table(V, R) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, R]), Test,
+   sys_univ(Test, [H, P, R]),
+   Test,
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
 
 % sys_table_test(+Atom, -Integer, -Atom)
 :- private sys_table_test/3.
-sys_table_test(K, N, J) :-
-   K = M:F, !,
+sys_table_test(K, N, J) :- K = M:F, !,
    sys_table_test(F, N, I),
    sys_replace_site(J, K, M:I).
 sys_table_test(F, N, H) :-
@@ -284,8 +272,7 @@ sys_table_head(G, N) :-
 
 % sys_table_aux(+Atom, -Atom)
 :- private sys_table_aux/2.
-sys_table_aux(K, J) :-
-   K = M:F, !,
+sys_table_aux(K, J) :- K = M:F, !,
    sys_table_aux(F, I),
    sys_replace_site(J, K, M:I).
 sys_table_aux(F, H) :-
@@ -296,11 +283,7 @@ sys_table_aux(F, H) :-
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1, -1).
-user:term_expansion(A, _) :-
-   var(A), !, fail.
-user:term_expansion((A :- _), _) :-
-   var(A), !, fail.
-user:term_expansion((A :- B), (C :- B)) :-
-   sys_table_head(A, C), !.
-user:term_expansion(A, B) :-
-   sys_table_head(A, B), !.
+user:term_expansion(A, _) :- var(A), !, fail.
+user:term_expansion((A :- _), _) :- var(A), !, fail.
+user:term_expansion((A :- B), (C :- B)) :- sys_table_head(A, C), !.
+user:term_expansion(A, B) :- sys_table_head(A, B), !.

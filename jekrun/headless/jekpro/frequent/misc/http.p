@@ -91,8 +91,7 @@
 % run_http(+Object, +Integer)
 :- public run_http/2.
 run_http(Object, Port) :-
-   balance((  accept(Object, Port, Session),
-              handle(Object, Session))).
+   balance((accept(Object, Port, Session), handle(Object, Session))).
 
 /**
  * accept(O, P, S):
@@ -104,8 +103,7 @@ run_http(Object, Port) :-
 accept(Object, Port, Session) :-
    setup_call_cleanup(
       accept_new(Object, Port, Server), 
-      (  repeat,
-         server_accept(Server, Session)), 
+      (repeat, server_accept(Server, Session)), 
       accept_close(Object, Server)).
 
 % accept_new(+Object, +Integer, -Server)
@@ -338,32 +336,27 @@ response_error(501, Response) :-
 send_error(400, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err400), Stream), 
-      (  response_error(400, Response),
-         send_lines(Stream, Response)), 
+      (response_error(400, Response), send_lines(Stream, Response)), 
       close(Stream)).
 send_error(404, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err404), Stream), 
-      (  response_error(404, Response),
-         send_lines(Stream, Response)), 
+      (response_error(404, Response), send_lines(Stream, Response)), 
       close(Stream)).
 send_error(415, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err415), Stream), 
-      (  response_error(415, Response),
-         send_lines(Stream, Response)), 
+      (response_error(415, Response), send_lines(Stream, Response)), 
       close(Stream)).
 send_error(422, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err422), Stream), 
-      (  response_error(422, Response),
-         send_lines(Stream, Response)), 
+      (response_error(422, Response), send_lines(Stream, Response)), 
       close(Stream)).
 send_error(501, Response) :- !,
    setup_call_cleanup(
       open_resource(library(misc/pages/err501), Stream), 
-      (  response_error(501, Response),
-         send_lines(Stream, Response)), 
+      (response_error(501, Response), send_lines(Stream, Response)), 
       close(Stream)).
 
 /***************************************************************/
@@ -385,8 +378,7 @@ response_text(200, Headers, Response) :-
 
 % response_text_headers(+List, +Stream)
 :- private response_text_headers/2.
-response_text_headers(X, _) :-
-   var(X),
+response_text_headers(X, _) :- var(X),
    throw(error(instantiation_error, _)).
 response_text_headers([], _) :- !.
 response_text_headers([Name-Value|Rest], Response) :- !,
@@ -431,8 +423,8 @@ handle_text(File, Headers, Session) :-
 send_text(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream), 
-      (  response_text(200, Headers, Response),
-         send_lines(Stream, Response)), 
+      (response_text(200, Headers, Response),
+       send_lines(Stream, Response)), 
       close(Stream)).
 
 % send_lines(+Stream, +Stream)
@@ -440,10 +432,10 @@ send_text(File, Headers, Response) :-
 send_lines(Stream, Response) :-
    read_line_max(Stream, 1024, Line), !,
    write(Response, Line),
-   (  \+ atom_length(Line, 1024)
-   -> write(Response, '\r\n'),
-      send_lines(Stream, Response)
-   ;  send_lines2(Stream, Response)).
+   (\+ atom_length(Line, 1024) ->
+       write(Response, '\r\n'),
+       send_lines(Stream, Response);
+    send_lines2(Stream, Response)).
 send_lines(_, _).
 
 % send_lines2(+Stream, +Stream)
@@ -451,10 +443,10 @@ send_lines(_, _).
 send_lines2(Stream, Response) :-
    read_line_max(Stream, 1024, Line), !,
    write(Response, Line),
-   (  \+ atom_length(Line, 1024)
-   -> write(Response, '\r\n'),
-      send_lines(Stream, Response)
-   ;  send_lines2(Stream, Response)).
+   (\+ atom_length(Line, 1024) ->
+       write(Response, '\r\n'),
+       send_lines(Stream, Response);
+    send_lines2(Stream, Response)).
 send_lines2(_, Response) :-
    write(Response, '\r\n').
 
@@ -482,8 +474,7 @@ response_binary(304, Headers, Response) :-
 
 % response_binary_headers(+List, +Stream)
 :- private response_binary_headers/2.
-response_binary_headers(X, _) :-
-   var(X),
+response_binary_headers(X, _) :- var(X),
    throw(error(instantiation_error, _)).
 response_binary_headers([], _) :- !.
 response_binary_headers([Name-Value|Rest], Response) :- !,
@@ -534,8 +525,8 @@ handle_binary(File, Headers, Session) :-
 send_binary(File, Headers, Response) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]), 
-      (  response_binary(200, Headers, Response),
-         send_blocks(Stream, Response)), 
+      (response_binary(200, Headers, Response),
+       send_blocks(Stream, Response)), 
       close(Stream)).
 
 % send_blocks(+Stream, +Stream)
@@ -627,9 +618,9 @@ response_redirect(Location, Response) :-
 meta_binary(File, Headers) :-
    setup_call_cleanup(
       open_resource(File, Stream, [type(binary)]), 
-      (  stream_property(Stream, last_modified(Millis)),
-         stream_property(Stream, version_tag(ETag)),
-         stream_property(Stream, mime_type(MimeType))), 
+      (stream_property(Stream, last_modified(Millis)),
+       stream_property(Stream, version_tag(ETag)),
+       stream_property(Stream, mime_type(MimeType))), 
       close(Stream)),
    make_header_last(Millis, Headers, Headers2),
    make_header_etag(ETag, Headers2, Headers3),
@@ -644,9 +635,9 @@ meta_binary(File, Headers) :-
 meta_text(File, Headers) :-
    setup_call_cleanup(
       open_resource(File, Stream), 
-      (  stream_property(Stream, last_modified(Millis)),
-         stream_property(Stream, version_tag(ETag)),
-         stream_property(Stream, mime_type(MimeType))), 
+      (stream_property(Stream, last_modified(Millis)),
+       stream_property(Stream, version_tag(ETag)),
+       stream_property(Stream, mime_type(MimeType))), 
       close(Stream)),
    make_header_last(Millis, Headers, Headers2),
    make_header_etag(ETag, Headers2, Headers3),

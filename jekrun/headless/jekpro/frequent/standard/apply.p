@@ -78,38 +78,32 @@
 :- public : /4.
 :- virtual : /4.
 :- meta_predicate :(?, 2, ?, ?).
-:(_, _, _, _) :-
-   throw(error(existence_error(body, : /4), _)).
+:(_, _, _, _) :- throw(error(existence_error(body, : /4), _)).
 
 :- public : /5.
 :- virtual : /5.
 :- meta_predicate :(?, 3, ?, ?, ?).
-:(_, _, _, _, _) :-
-   throw(error(existence_error(body, : /5), _)).
+:(_, _, _, _, _) :- throw(error(existence_error(body, : /5), _)).
 
 :- public : /6.
 :- virtual : /6.
 :- meta_predicate :(?, 4, ?, ?, ?, ?).
-:(_, _, _, _, _, _) :-
-   throw(error(existence_error(body, : /6), _)).
+:(_, _, _, _, _, _) :- throw(error(existence_error(body, : /6), _)).
 
 :- public : /7.
 :- virtual : /7.
 :- meta_predicate :(?, 5, ?, ?, ?, ?, ?).
-:(_, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, : /7), _)).
+:(_, _, _, _, _, _, _) :- throw(error(existence_error(body, : /7), _)).
 
 :- public : /8.
 :- virtual : /8.
 :- meta_predicate :(?, 6, ?, ?, ?, ?, ?, ?).
-:(_, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, : /8), _)).
+:(_, _, _, _, _, _, _, _) :- throw(error(existence_error(body, : /8), _)).
 
 :- public : /9.
 :- virtual : /9.
 :- meta_predicate :(?, 7, ?, ?, ?, ?, ?, ?, ?).
-:(_, _, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, : /9), _)).
+:(_, _, _, _, _, _, _, _, _) :- throw(error(existence_error(body, : /9), _)).
 
 % already defined in quali.p
 % :- public (::)/2.
@@ -126,38 +120,32 @@
 :- public :: /4.
 :- virtual :: /4.
 :- meta_predicate ::(?, ::(2), ?, ?).
-::(_, _, _, _) :-
-   throw(error(existence_error(body, :: /4), _)).
+::(_, _, _, _) :- throw(error(existence_error(body, :: /4), _)).
 
 :- public :: /5.
 :- virtual :: /5.
 :- meta_predicate ::(?, ::(3), ?, ?, ?).
-::(_, _, _, _, _) :-
-   throw(error(existence_error(body, :: /5), _)).
+::(_, _, _, _, _) :- throw(error(existence_error(body, :: /5), _)).
 
 :- public :: /6.
 :- virtual :: /6.
 :- meta_predicate ::(?, ::(4), ?, ?, ?, ?).
-::(_, _, _, _, _, _) :-
-   throw(error(existence_error(body, :: /6), _)).
+::(_, _, _, _, _, _) :- throw(error(existence_error(body, :: /6), _)).
 
 :- public :: /7.
 :- virtual :: /7.
 :- meta_predicate ::(?, ::(5), ?, ?, ?, ?, ?).
-::(_, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, :: /7), _)).
+::(_, _, _, _, _, _, _) :- throw(error(existence_error(body, :: /7), _)).
 
 :- public :: /8.
 :- virtual :: /8.
 :- meta_predicate ::(?, ::(6), ?, ?, ?, ?, ?, ?).
-::(_, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, :: /8), _)).
+::(_, _, _, _, _, _, _, _) :- throw(error(existence_error(body, :: /8), _)).
 
 :- public :: /9.
 :- virtual :: /9.
 :- meta_predicate ::(?, ::(7), ?, ?, ?, ?, ?, ?, ?).
-::(_, _, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body, :: /9), _)).
+::(_, _, _, _, _, _, _, _, _) :- throw(error(existence_error(body, :: /9), _)).
 
 /**
  * sys_modext_args(P, Y1, .., Yn, Q):

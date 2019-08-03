@@ -54,8 +54,7 @@
  */
 % contains(+Elem, +Set)
 :- public contains/2.
-contains(X, [Y|_]) :-
-   X == Y, !.
+contains(X, [Y|_]) :- X == Y, !.
 contains(X, [_|Y]) :-
    contains(X, Y).
 
@@ -66,8 +65,7 @@ contains(X, [_|Y]) :-
  */
 % remove(+Elem, +Set, -Set)
 :- public remove/3.
-remove(X, [Y|Z], Z) :-
-   X == Y, !.
+remove(X, [Y|Z], Z) :- X == Y, !.
 remove(X, [Y|Z], [Y|T]) :-
    remove(X, Z, T).
 

@@ -63,8 +63,7 @@
  */
 % text_escape(+-Atom, -+Atom)
 :- public text_escape/2.
-text_escape(X, Y) :-
-   var(X), !,
+text_escape(X, Y) :- var(X), !,
    sys_text_unescape(Y, X).
 text_escape(X, Y) :-
    sys_text_escape(X, Y).

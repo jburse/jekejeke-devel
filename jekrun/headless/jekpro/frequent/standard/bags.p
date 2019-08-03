@@ -67,8 +67,7 @@
 
 :- public ^ /2.
 :- meta_predicate ^(?, 0).
-^(_, _) :-
-   throw(error(existence_error(body, ^ /2), _)).
+^(_, _) :- throw(error(existence_error(body, ^ /2), _)).
 
 /**********************************************************/
 /* Bagof Predicates                                       */
@@ -157,8 +156,7 @@ sys_run_values_more([K-V|P], _, _, J, M) :-
 % sys_run_values_rest(+Pairs, +Key, -Values, -Pairs)
 :- private sys_run_values_rest/4.
 sys_run_values_rest([K-V|P], J, [V|L], Q) :-
-   K == J, !,
-   sys_run_values_rest(P, J, L, Q).
+   K == J, !, sys_run_values_rest(P, J, L, Q).
 sys_run_values_rest(P, _, [], P).
 
 /**********************************************************/
@@ -189,9 +187,7 @@ sys_run_values_rest(P, _, [], P).
  */
 :- public forall/2.
 :- meta_predicate forall(0, 0).
-forall(A, B) :-
-   \+ (  A,
-         \+ B).
+forall(A, B) :- \+ (A, \+ B).
 
 /**********************************************************/
 /* Copy Term                                              */

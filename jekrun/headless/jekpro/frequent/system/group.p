@@ -130,8 +130,7 @@
  */
 % current_group_flag(+Group, +Atom, -Atomic)
 :- public current_group_flag/3.
-current_group_flag(T, K, V) :-
-   var(K), !,
+current_group_flag(T, K, V) :- var(K), !,
    sys_current_group_flag(K),
    sys_get_group_flag(T, K, V).
 current_group_flag(T, K, V) :-
@@ -157,8 +156,7 @@ current_group_flag(T, K, V) :-
  */
 % current_thread(-Thread)
 :- public current_thread/1.
-current_thread(X) :-
-   var(X), !,
+current_thread(X) :- var(X), !,
    sys_current_thread(X).
 current_thread(X) :-
    sys_current_thread_chk(X).
@@ -177,9 +175,11 @@ current_thread(X) :-
  */
 % threads
 :- public threads/0.
-threads :- thread_show_keys,
+threads :-
+   thread_show_keys,
    current_thread(T),
-   thread_show_values(T), fail.
+   thread_show_values(T),
+   fail.
 threads.
 
 % thread_show_keys
@@ -188,8 +188,10 @@ thread_show_keys :-
    get_properties(show, P),
    sys_current_show_stat(K),
    message_make(P, thread_show_key(K), M),
-   write(M), fail.
-thread_show_keys :- nl.
+   write(M),
+   fail.
+thread_show_keys :-
+   nl.
 
 % thread_show_values(+Thread)
 :- private thread_show_values/1.
@@ -198,8 +200,10 @@ thread_show_values(T) :-
    sys_current_show_stat(K),
    sys_get_show_stat(T, K, V),
    message_make(P, thread_show_value(K, V), M),
-   write(M), fail.
-thread_show_values(_) :- nl.
+   write(M),
+   fail.
+thread_show_values(_) :-
+   nl.
 
 % sys_current_show_stat(-Atom)
 :- private sys_current_show_stat/1.

@@ -64,7 +64,7 @@
 limit(C, G) :-
    C > 0,
    call_nth2(G, N),
-   (  N < C -> true; !).
+   (N < C -> true; !).
 
 /**
  * offset(C, G):
@@ -86,14 +86,13 @@ offset(C, G) :-
 % call_nth(+Goal, -Integer)
 :- public call_nth/2.
 :- meta_predicate call_nth(0, ?).
-call_nth(G, C) :-
-   var(C), !,
+call_nth(G, C) :- var(C), !,
    call_nth2(G, N),
    C = N.
 call_nth(G, C) :-
    C > 0,
    call_nth2(G, N),
-   (  C =:= N -> !; fail).
+   (C =:= N -> !; fail).
 
 :- private call_nth2/2.
 :- meta_predicate call_nth2(0, ?).

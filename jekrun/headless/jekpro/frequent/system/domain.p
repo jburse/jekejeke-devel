@@ -68,9 +68,7 @@
  */
 % make_domain(+-Atom, +-Atom, -+Atom)
 :- public make_domain/3.
-make_domain(U, H, D) :-
-   (  var(U)
-   ;  var(H)), !,
+make_domain(U, H, D) :- (var(U); var(H)), !,
    sys_domain_user(D, U),
    sys_domain_host(D, H).
 make_domain(U, H, D) :-
@@ -100,11 +98,8 @@ make_domain(U, H, D) :-
  */
 % host_lookup(+-Atom, -+Atom)
 :- public host_lookup/2.
-host_lookup(X, Y) :-
-   var(X), !,
-   sys_domain_reverse(Y, X).
-host_lookup(X, Y) :-
-   sys_domain_forward(X, Y).
+host_lookup(X, Y) :- var(X), !, sys_domain_reverse(Y, X).
+host_lookup(X, Y) :- sys_domain_forward(X, Y).
 
 :- private sys_domain_forward/2.
 :- foreign(sys_domain_forward/2, 'ForeignDomain', 
@@ -139,11 +134,8 @@ host_lookup(X, Y) :-
  */
 % uri_puny(+-Atom, -+Atom)
 :- public uri_puny/2.
-uri_puny(X, Y) :-
-   var(X), !,
-   sys_uri_unpuny(Y, X).
-uri_puny(X, Y) :-
-   sys_uri_puny(X, Y).
+uri_puny(X, Y) :- var(X), !, sys_uri_unpuny(Y, X).
+uri_puny(X, Y) :- sys_uri_puny(X, Y).
 
 :- private sys_uri_puny/2.
 :- foreign(sys_uri_puny/2, 'ForeignDomain', 

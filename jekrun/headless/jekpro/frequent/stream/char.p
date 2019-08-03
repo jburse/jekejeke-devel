@@ -64,8 +64,7 @@ nl :-
 
 % nl(+AliasOrStream)
 :- public nl/1.
-nl(Alias) :-
-   atom(Alias), !,
+nl(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_nl(Stream).
 nl(Stream) :-
@@ -89,8 +88,7 @@ put_char(Char) :-
 
 % put_char(+AliasOrStream, +Char)
 :- public put_char/2.
-put_char(Alias, Char) :-
-   atom(Alias), !,
+put_char(Alias, Char) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_put_char(Stream, Char).
 put_char(Stream, Char) :-
@@ -115,8 +113,7 @@ put_code(Code) :-
 
 % put_code(+AliasOrStream, +Code)
 :- public put_code/2.
-put_code(Alias, Code) :-
-   atom(Alias), !,
+put_code(Alias, Code) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_put_code(Stream, Code).
 put_code(Stream, Code) :-
@@ -142,8 +139,7 @@ get_char(Char) :-
 
 % get_char(+AliasOrStream, -Char)
 :- public get_char/2.
-get_char(Alias, Char) :-
-   atom(Alias), !,
+get_char(Alias, Char) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_get_char(Stream, Char).
 get_char(Stream, Char) :-
@@ -169,8 +165,7 @@ get_code(Code) :-
 
 % get_code(+AliasOrStream, -Code)
 :- public get_code/2.
-get_code(Alias, Code) :-
-   atom(Alias), !,
+get_code(Alias, Code) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_get_code(Stream, Code).
 get_code(Stream, Code) :-
@@ -197,8 +192,7 @@ peek_char(Char) :-
 
 % peek_char(+AliasOrStream, -Char)
 :- public peek_char/2.
-peek_char(Alias, Char) :-
-   atom(Alias), !,
+peek_char(Alias, Char) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_peek_char(Stream, Char).
 peek_char(Stream, Char) :-
@@ -224,8 +218,7 @@ peek_code(Code) :-
 
 % peek_code(+AliasOrStream, -Code)
 :- public peek_code/2.
-peek_code(Alias, Code) :-
-   atom(Alias), !,
+peek_code(Alias, Code) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_peek_code(Stream, Code).
 peek_code(Stream, Code) :-

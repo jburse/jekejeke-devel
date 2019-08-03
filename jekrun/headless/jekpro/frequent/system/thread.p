@@ -182,8 +182,7 @@
  */
 % current_thread_flag(+Thread, +Atom, -Atomic)
 :- public current_thread_flag/3.
-current_thread_flag(Thread, Flag, Value) :-
-   var(Flag), !,
+current_thread_flag(Thread, Flag, Value) :- var(Flag), !,
    sys_current_thread_flag(Flag),
    sys_get_thread_flag(Thread, Flag, Value).
 current_thread_flag(Thread, Flag, Value) :-

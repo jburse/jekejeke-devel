@@ -90,10 +90,12 @@ aggregate_all(A, G, S) :-
 % aggregate_all2(+Aggregate, +Goal, +Pivot)
 :- private aggregate_all2/3.
 :- meta_predicate aggregate_all2(?, 0, ?).
-aggregate_all2(A, G, P) :- G,
+aggregate_all2(A, G, P) :-
+   G,
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J), fail.
+   pivot_set(P, J),
+   fail.
 aggregate_all2(_, _, _).
 
 /**
@@ -112,11 +114,13 @@ aggregate(A, G, S) :-
 % aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
 :- private aggregate2/4.
 :- meta_predicate aggregate2(?, ?, 0, ?).
-aggregate2(W, A, G, R) :- G,
+aggregate2(W, A, G, R) :-
+   G,
    revolve_lookup(R, W, P),
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J), fail.
+   pivot_set(P, J),
+   fail.
 aggregate2(_, _, _, _).
 
 /**
@@ -188,15 +192,14 @@ pivot_get_default(_, A, H) :-
  */
 % init_state(+Aggregate, -Value)
 :- private init_state/2.
-init_state(X, _) :-
-   var(X),
+init_state(X, _) :- var(X),
    throw(error(instantiation_error, _)).
 init_state(count, 0).
 init_state(sum(_), 0).
 init_state(mul(_), 1).
 init_state(min(_), sup).
 init_state(max(_), inf).
-init_state((  A, B), (  S, T)) :-
+init_state((A, B), (S, T)) :-
    init_state(A, S),
    init_state(B, T).
 init_state(nil, nil).
@@ -211,35 +214,26 @@ init_state(reduce(I, _, _), I).
  */
 % next_state(+Aggregate, +Value, -Value)
 :- private next_state/3.
-next_state(X, _, _) :-
-   var(X),
+next_state(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-next_state(count, S, T) :-
-   T is S+1.
-next_state(sum(X), S, T) :-
-   T is S+X.
-next_state(mul(X), S, T) :-
-   T is S*X.
+next_state(count, S, T) :- T is S+1.
+next_state(sum(X), S, T) :- T is S+X.
+next_state(mul(X), S, T) :- T is S*X.
 next_state(min(X), sup, X) :- !.
-next_state(min(X), S, T) :-
-   T is min(S, X).
+next_state(min(X), S, T) :- T is min(S, X).
 next_state(max(X), inf, X) :- !.
-next_state(max(X), S, T) :-
-   T is max(S, X).
-next_state((  S, T), (  A, B), (  U, V)) :-
+next_state(max(X), S, T) :- T is max(S, X).
+next_state((S, T), (A, B), (U, V)) :-
    next_state(S, A, U),
    next_state(T, B, V).
 next_state(nil, nil, nil).
 next_state(first(_, X), sup, X) :- !.
-next_state(first(C, X), S, X) :-
-   call(C, X, S), !.
+next_state(first(C, X), S, X) :- call(C, X, S), !.
 next_state(first(_, _), S, S).
 next_state(last(_, X), inf, X) :- !.
-next_state(last(C, X), S, X) :-
-   call(C, S, X), !.
+next_state(last(C, X), S, X) :- call(C, S, X), !.
 next_state(last(_, _), S, S).
-next_state(reduce(_, A, X), S, Y) :-
-   call(A, S, X, Y).
+next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 
 /*************************************************************/
 /* Revolve Datatype                                          */

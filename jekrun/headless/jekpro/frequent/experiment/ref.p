@@ -127,8 +127,7 @@
  */
 :- public clause_ref/2.
 :- meta_predicate clause_ref(-1, ?).
-clause_ref(C, _) :-
-   var(C),
+clause_ref(C, _) :- var(C),
    throw(error(instantiation_error, _)).
 clause_ref((H :- B), R) :- !,
    clause_ref(H, B, R).
@@ -141,8 +140,7 @@ clause_ref(H, R) :-
  */
 % ref_property(+Reference, -Property)
 :- public ref_property/2.
-ref_property(I, R) :-
-   var(R), !,
+ref_property(I, R) :- var(R), !,
    sys_ref_property(I, P),
    sys_member(R, P).
 ref_property(I, R) :-

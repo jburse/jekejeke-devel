@@ -120,8 +120,8 @@ call_residue(G, L) :-
 % sys_eq_list(+List, -Goals)
 :- private sys_eq_list/2.
 sys_eq_list(K, L) :-
-   findall(E, (  sys_member(V, K),
-                 sys_current_eq(V, E)), H),
+   findall(E, (sys_member(V, K),
+               sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 
@@ -142,8 +142,7 @@ sys_unwrap_eqs([], L, L).
  */
 % printable(+Term, -Term)
 :- public printable/2.
-printable(E, F) :-
-   sys_printable_value(E, H), !,
+printable(E, F) :- sys_printable_value(E, H), !,
    F = H.
 printable(E, E).
 

@@ -90,8 +90,7 @@
  */
 % get_time(+-Integer, -+DateTime)
 :- public get_time/2.
-get_time(Millis, DateTime) :-
-   var(DateTime), !,
+get_time(Millis, DateTime) :- var(DateTime), !,
    sys_long_to_date(Millis, DateTime).
 get_time(Millis, DateTime) :-
    sys_date_to_long(DateTime, Millis).
@@ -140,8 +139,7 @@ date_atom(Format, DateTime, Formatted) :-
 
 % date_atom(+Locale, +Format, +-DateTime, -+Atom)
 :- public date_atom/4.
-date_atom(Locale, Format, DateTime, Formatted) :-
-   var(Formatted), !,
+date_atom(Locale, Format, DateTime, Formatted) :- var(Formatted), !,
    sys_date_to_string(Locale, Format, DateTime, Formatted).
 date_atom(Locale, Format, DateTime, Formatted) :-
    sys_string_to_date(Locale, Format, Formatted, DateTime).
@@ -162,8 +160,7 @@ date_atom(Locale, Format, DateTime, Formatted) :-
  */
 % rfc1123_atom(+-Integer, -+Atom)
 :- public rfc1123_atom/2.
-rfc1123_atom(Millis, Formatted) :-
-   var(Formatted), !,
+rfc1123_atom(Millis, Formatted) :- var(Formatted), !,
    get_time(en_GB, Millis, 'GMT', Calendar),
    date_atom(en_GB, 'EEE, dd MMM yyyy HH:mm:ss ''GMT''', Calendar, Formatted).
 rfc1123_atom(Millis, Formatted) :-

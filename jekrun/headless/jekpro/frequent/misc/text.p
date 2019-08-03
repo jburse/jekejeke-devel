@@ -349,8 +349,7 @@ sys_pattern_options(O, Q) :-
  */
 % sys_pattern_options(+Options, +Integer, -Integer)
 :- private sys_pattern_options/3.
-sys_pattern_options(V, _, _) :-
-   var(V),
+sys_pattern_options(V, _, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_pattern_options([], P, P) :- !.
 sys_pattern_options([X|Y], P, Q) :- !,
@@ -366,8 +365,7 @@ sys_pattern_options(L, _, _) :-
  */
 % sys_pattern_option(+Option, +Integer, -Integer)
 :- private sys_pattern_option/3.
-sys_pattern_option(V, _, _) :-
-   var(V),
+sys_pattern_option(V, _, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_pattern_option(boundary(O), P, Q) :- !,
    sys_option_boundary(O, P, Q).
@@ -385,8 +383,7 @@ sys_pattern_option(O, _, _) :-
  */
 % sys_option_boundary(+BoundaryOption, +Integer, -Integer)
 :- private sys_option_boundary/3.
-sys_option_boundary(V, _, _) :-
-   var(V),
+sys_option_boundary(V, _, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_option_boundary(whole, P, Q) :- !,
    sys_get_match_boundary(M),
@@ -422,8 +419,7 @@ sys_option_boundary(O, _, _) :-
  */
 % sys_option_ignore_case(+IgnoreCaseFlag, +Integer, -Integer)
 :- private sys_option_ignore_case/3.
-sys_option_ignore_case(V, _, _) :-
-   var(V),
+sys_option_ignore_case(V, _, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_option_ignore_case(true, P, Q) :- !,
    sys_get_match_ignore_case(M),
@@ -444,8 +440,7 @@ sys_option_ignore_case(O, _, _) :-
  */
 % sys_option_style(+StyleOption, +Integer, -Integer)
 :- private sys_option_style/3.
-sys_option_style(V, _, _) :-
-   var(V),
+sys_option_style(V, _, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_option_style(create, P, Q) :- !,
    sys_get_match_style(M),
