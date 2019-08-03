@@ -121,7 +121,7 @@ call_residue(G, L) :-
 :- private sys_eq_list/2.
 sys_eq_list(K, L) :-
    findall(E, (sys_member(V, K),
-   sys_current_eq(V, E)), H),
+      sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 

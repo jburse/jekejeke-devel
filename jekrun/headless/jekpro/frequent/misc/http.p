@@ -102,9 +102,9 @@ run_http(Object, Port) :-
 :- private accept/3.
 accept(Object, Port, Session) :-
    setup_call_cleanup(
-   accept_new(Object, Port, Server),
-   (repeat, server_accept(Server, Session)),
-   accept_close(Object, Server)).
+      accept_new(Object, Port, Server),
+      (repeat, server_accept(Server, Session)),
+      accept_close(Object, Server)).
 
 % accept_new(+Object, +Integer, -Server)
 :- private accept_new/3.
@@ -332,29 +332,29 @@ response_error(501, Response) :-
 :- private send_error/2.
 send_error(400, Response) :- !,
    setup_call_cleanup(
-   open_resource(library(misc/pages/err400), Stream),
-   (response_error(400, Response), send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(library(misc/pages/err400), Stream),
+      (response_error(400, Response), send_lines(Stream, Response)),
+      close(Stream)).
 send_error(404, Response) :- !,
    setup_call_cleanup(
-   open_resource(library(misc/pages/err404), Stream),
-   (response_error(404, Response), send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(library(misc/pages/err404), Stream),
+      (response_error(404, Response), send_lines(Stream, Response)),
+      close(Stream)).
 send_error(415, Response) :- !,
    setup_call_cleanup(
-   open_resource(library(misc/pages/err415), Stream),
-   (response_error(415, Response), send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(library(misc/pages/err415), Stream),
+      (response_error(415, Response), send_lines(Stream, Response)),
+      close(Stream)).
 send_error(422, Response) :- !,
    setup_call_cleanup(
-   open_resource(library(misc/pages/err422), Stream),
-   (response_error(422, Response), send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(library(misc/pages/err422), Stream),
+      (response_error(422, Response), send_lines(Stream, Response)),
+      close(Stream)).
 send_error(501, Response) :- !,
    setup_call_cleanup(
-   open_resource(library(misc/pages/err501), Stream),
-   (response_error(501, Response), send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(library(misc/pages/err501), Stream),
+      (response_error(501, Response), send_lines(Stream, Response)),
+      close(Stream)).
 
 /***************************************************************/
 /* Text HTTP Response                                          */
@@ -419,10 +419,10 @@ handle_text(File, Headers, Session) :-
 :- private send_text/3.
 send_text(File, Headers, Response) :-
    setup_call_cleanup(
-   open_resource(File, Stream),
-   (response_text(200, Headers, Response),
-   send_lines(Stream, Response)),
-   close(Stream)).
+      open_resource(File, Stream),
+      (response_text(200, Headers, Response),
+      send_lines(Stream, Response)),
+      close(Stream)).
 
 % send_lines(+Stream, +Stream)
 :- private send_lines/2.
@@ -521,10 +521,10 @@ handle_binary(File, Headers, Session) :-
 :- private send_binary/3.
 send_binary(File, Headers, Response) :-
    setup_call_cleanup(
-   open_resource(File, Stream, [type(binary)]),
-   (response_binary(200, Headers, Response),
-   send_blocks(Stream, Response)),
-   close(Stream)).
+      open_resource(File, Stream, [type(binary)]),
+      (response_binary(200, Headers, Response),
+      send_blocks(Stream, Response)),
+      close(Stream)).
 
 % send_blocks(+Stream, +Stream)
 :- private send_blocks/2.
@@ -614,11 +614,11 @@ response_redirect(Location, Response) :-
 :- private meta_binary/2.
 meta_binary(File, Headers) :-
    setup_call_cleanup(
-   open_resource(File, Stream, [type(binary)]),
-   (stream_property(Stream, last_modified(Millis)),
-   stream_property(Stream, version_tag(ETag)),
-   stream_property(Stream, mime_type(MimeType))),
-   close(Stream)),
+      open_resource(File, Stream, [type(binary)]),
+      (stream_property(Stream, last_modified(Millis)),
+      stream_property(Stream, version_tag(ETag)),
+      stream_property(Stream, mime_type(MimeType))),
+      close(Stream)),
    make_header_last(Millis, Headers, Headers2),
    make_header_etag(ETag, Headers2, Headers3),
    make_header_ctyp(MimeType, '', Headers3, []).
@@ -631,11 +631,11 @@ meta_binary(File, Headers) :-
 :- private meta_text/2.
 meta_text(File, Headers) :-
    setup_call_cleanup(
-   open_resource(File, Stream),
-   (stream_property(Stream, last_modified(Millis)),
-   stream_property(Stream, version_tag(ETag)),
-   stream_property(Stream, mime_type(MimeType))),
-   close(Stream)),
+      open_resource(File, Stream),
+      (stream_property(Stream, last_modified(Millis)),
+      stream_property(Stream, version_tag(ETag)),
+      stream_property(Stream, mime_type(MimeType))),
+      close(Stream)),
    make_header_last(Millis, Headers, Headers2),
    make_header_etag(ETag, Headers2, Headers3),
    make_header_ctyp(MimeType, 'UTF-8', Headers3, []).

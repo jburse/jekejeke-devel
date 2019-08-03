@@ -188,12 +188,12 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
    Body = (sys_goal_globals(A^Descr, W),
-   pivot_new(P),
-   pivot_set(P, Key),
-   (Test -> true;
-   Q,
-   assertz(Test)),
-   sys_revolve_list(W, R, S)),
+      pivot_new(P),
+      pivot_set(P, Key),
+      (Test -> true;
+      Q,
+      assertz(Test)),
+      sys_revolve_list(W, R, S)),
    (predicate_property(I, multifile) ->
       compilable_ref((Head :- !, Body), K);
    compilable_ref((Head :- Body), K)),
