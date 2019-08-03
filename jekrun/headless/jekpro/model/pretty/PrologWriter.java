@@ -83,12 +83,12 @@ public class PrologWriter {
     public final static int SPEZ_META = 0x00000004;
     public final static int SPEZ_EVAL = 0x00000008;
 
-    public final static int LEVEL_IMPL = 1125;
-    public final static int LEVEL_DISJ = 1025;
+    public final static int LEVEL_RULE = 1149;
+    public final static int LEVEL_DISJ = 1099;
+    public final static int LEVEL_COND = 1049;
 
     final static int SPEZ_FUNC = 0x00000100;
     final static int SPEZ_MINS = 0x00000200;
-    final static int SPEZ_ICUT = 0x00000400;
 
     private final static String noTermChs = "([{}])";
     private final static String noOperChs = ".,|";
@@ -264,7 +264,6 @@ public class PrologWriter {
         printmap = v;
     }
 
-
     /**
      * <p>Retrieve the indent.</p>
      *
@@ -282,7 +281,6 @@ public class PrologWriter {
     public void setIndent(int i) {
         indent = i;
     }
-
 
     /**
      * <p>Retrieve the source.</p>
@@ -907,51 +905,28 @@ public class PrologWriter {
      * <p>Write the operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param op   The operator.
-     * @param sa   The atom.
+     * @param oper The operator.
+     * @param sc   The compound skeleton..
+     * @param ref  The compound display.
      * @param cp   The predicate or null.
-     * @param decl The declaration or null.
      * @throws IOException   IO Error.
      * @throws EngineMessage Shit happens.
      */
-    protected void writeInfix(Operator op, SkelAtom sa,
-                              CachePredicate cp, Object[] decl)
+    protected void writeInfix(Operator oper, SkelCompound sc,
+                              Display ref, CachePredicate cp)
             throws IOException, EngineException, EngineMessage {
-        if (op.getLevel() > Operator.LEVEL_MIDDLE && (flags & FLAG_NEWL) != 0) {
-            if ((spez & SPEZ_ICUT) != 0) {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                    append(' ');
-            } else if (op.getLevel() >= LEVEL_DISJ && op.getLevel() < LEVEL_IMPL) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent - SPACES; i++)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                for (int i = t.length(); i < SPACES; i++)
-                    append(' ');
-            } else {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        } else {
-            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
+        if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
+            append(' ');
+        String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
+        safeSpace(t);
+        appendLink(t, cp);
+        if (oper.getLevel() > Operator.LEVEL_MIDDLE &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
                 append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
+        } else {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
                 append(' ');
         }
     }
@@ -1177,30 +1152,37 @@ public class PrologWriter {
             shift = getShift(z);
             append(',');
             append(' ');
-            Object mod2;
-            SkelAtom nsa2;
-            if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, false, false, engine) : null);
-                nsa2 = sc.sym;
-            } else if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, true, false, engine) : null);
-                nsa2 = sc.sym;
-            } else {
-                mod2 = null;
-                nsa2 = null;
-            }
+            Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
+            SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
         spez = backspez;
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RPAREN);
+    }
+
+    /**
+     * <p>Decode a qualification.</p>
+     *
+     * @param sc  The compound skeleton.
+     * @param ref The compound display.
+     * @return The qualification.
+     * @throws EngineMessage Shit happens.
+     */
+    public Object decodeQualification(SkelCompound sc, Display ref)
+            throws EngineMessage {
+        if (sc.args.length == 2 &&
+                sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
+            return (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                    ref, false, false, engine) : null);
+        } else if (sc.args.length == 2 &&
+                sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+            return (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                    ref, true, false, engine) : null);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1234,9 +1216,7 @@ public class PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            if ((backspez & SPEZ_META) != 0 &&
-                    (backspez & SPEZ_EVAL) == 0)
-                append(' ');
+            append(' ');
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         }
         append(PrologReader.OP_RBRACKET);
@@ -1366,9 +1346,11 @@ public class PrologWriter {
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
-                    if (oper.getLevel() >= LEVEL_IMPL &&
-                            (backspez & SPEZ_META) != 0 &&
-                            (backspez & SPEZ_EVAL) == 0 &&
+                    if (oper.getLevel() > LEVEL_RULE &&
+                            (flags & FLAG_NEWL) != 0) {
+                        indent += SPACES;
+                    } else if (oper.getLevel() > LEVEL_COND &&
+                            oper.getLevel() <= LEVEL_DISJ &&
                             (flags & FLAG_NEWL) != 0) {
                         indent += SPACES;
                     }
@@ -1448,16 +1430,6 @@ public class PrologWriter {
                         }
                         indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
-                        if (oper.getLevel() > Operator.LEVEL_MIDDLE &&
-                                (flags & FLAG_NEWL) != 0) {
-                            if (oper.getLevel() >= LEVEL_IMPL) {
-                                indent += -1;
-                            } else {
-                                indent += SPACES - 1;
-                                for (int i = 0; i < SPACES - 1; i++)
-                                    append(' ');
-                            }
-                        }
                     }
                     /* left operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
@@ -1472,41 +1444,21 @@ public class PrologWriter {
                     spez = backspez;
                     if (needsParen(oper, backspez, level))
                         spez &= ~SPEZ_OPLE;
-                    /* infix operator */
-                    Object mod2;
-                    SkelAtom nsa2;
-                    if ((sc.sym.fun.equals(SpecialQuali.OP_COLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                                ref, false, false, engine) : null);
-                        nsa2 = sc.sym;
-                    } else if ((sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON))) {
-                        mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                                ref, true, false, engine) : null);
-                        nsa2 = sc.sym;
-                    } else {
-                        mod2 = null;
-                        nsa2 = null;
-                    }
-                    /* right operand */
                     z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
                     spez = (spez & SPEZ_OPLE) + getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
-                    int forwardspez = spez;
-                    if (oper.getLevel() >= LEVEL_IMPL &&
+                    if (oper.getLevel() > LEVEL_RULE &&
+                            (flags & FLAG_NEWL) != 0) {
+                        indent += SPACES;
+                    } else if (oper.getLevel() > LEVEL_COND &&
+                            oper.getLevel() <= LEVEL_DISJ &&
                             (flags & FLAG_NEWL) != 0) {
                         indent += SPACES;
                     }
-                    if (isSimple(sc.args[1], ref) || isOperSimple(sc.args[1], ref, oper)) {
-                        spez = backspez;
-                        spez |= SPEZ_ICUT;
-                        writeInfix(oper, sc.sym, cp, decl);
-                    } else {
-                        spez = backspez;
-                        writeInfix(oper, sc.sym, cp, decl);
-                    }
-                    spez = forwardspez;
-                    /* right operand */
+                    writeInfix(oper, sc, ref, cp);
+                    Object mod2 = decodeQualification(sc, ref);
+                    SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
                     write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
                     spez = backspez;
                     offset = backoffset;
@@ -1536,68 +1488,6 @@ public class PrologWriter {
                 return true;
         }
         return Foyer.OP_UNIT.equals(s);
-    }
-
-    /***********************************************************************/
-    /* Classification for Opers and Compounds                              */
-    /***********************************************************************/
-
-    /**
-     * <p>Check whether the argument is a simple.</p>
-     *
-     * @param term The argument skeleton.
-     * @param ref  The argument display.
-     * @return True if the argument is a simple, otherwise false.
-     */
-    private boolean isSimple(Object term, Display ref) {
-        if (engine != null) {
-            engine.skel = term;
-            engine.display = ref;
-            engine.deref();
-            term = engine.skel;
-        }
-        if (!(term instanceof SkelCompound))
-            return true;
-        return false;
-    }
-
-    /**
-     * <p>Check whether the argument is an oper and a simple.</p>
-     * <p>Spez and offset must have been set appropriatly.</p>
-     *
-     * @param term The argument skeleton.
-     * @param ref  The argument display.
-     * @param op   The operator.
-     * @return True if the argument is a an oper and a simple, otherwise false.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    private boolean isOperSimple(Object term, Display ref,
-                                 Operator op)
-            throws EngineMessage, EngineException {
-        if (engine != null) {
-            engine.skel = term;
-            engine.display = ref;
-            engine.deref();
-            term = engine.skel;
-            ref = engine.display;
-        }
-        if (!(term instanceof SkelCompound))
-            return false;
-        SkelCompound sc = (SkelCompound) term;
-        if (sc.args.length != 2)
-            return false;
-        if (!isSimple(sc.args[0], ref))
-            return false;
-        Operator op2 = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
-                Operator.TYPE_INFIX, engine);
-        if (op2 == null || op2.getLevel() == 0)
-            return false;
-        if (!(op2.getLevel() > Operator.LEVEL_MIDDLE))
-            return false;
-        if (needsParen(op2, spez, op.getLevel() - op.getRight()))
-            return false;
-        return true;
     }
 
     /************************************************************/

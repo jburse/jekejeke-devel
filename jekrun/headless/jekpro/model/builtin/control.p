@@ -139,19 +139,12 @@ once(X) :- X, !.
  * and then raises the exception E.
  */
 % throw(+Exception)
-throw(V) :-
-   var(V),
-   throw(error(instantiation_error, _)).
-throw(error(M, T)) :-
-   var(T), !,
-   sys_fetch_stack(T),
-   sys_raise(error(M, T)).
-throw(warning(M, T)) :-
-   var(T), !,
-   sys_fetch_stack(T),
-   sys_raise(warning(M, T)).
-throw(B) :-
-   sys_raise(B).
+throw(V) :- var(V), throw(error(instantiation_error, _)).
+throw(error(M, T)) :- var(T), !,
+   sys_fetch_stack(T), sys_raise(error(M, T)).
+throw(warning(M, T)) :- var(T), !,
+   sys_fetch_stack(T), sys_raise(warning(M, T)).
+throw(B) :- sys_raise(B).
 :- set_predicate_property(throw/1, visible(public)).
 
 % sys_fetch_stack(-Trace)
@@ -186,11 +179,9 @@ catch(A, E, B) :-
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
 % sys_ball_handler(+Exception, +Goal)
-sys_ball_handler(E, _) :-
-   sys_error_type(E, system_error(_)), !,
+sys_ball_handler(E, _) :- sys_error_type(E, system_error(_)), !,
    sys_raise(E).
-sys_ball_handler(E, _) :-
-   sys_error_type(E, limit_error(_)), !,
+sys_ball_handler(E, _) :- sys_error_type(E, limit_error(_)), !,
    sys_raise(E).
 sys_ball_handler(_, B) :-
    call(B).
@@ -219,6 +210,5 @@ sys_ball_handler(_, B) :-
  */
 % sys_error_type(+Exception, -Type)
 sys_error_type(error(T, _), T).
-sys_error_type(cause(E, _), T) :-
-   sys_error_type(E, T).
+sys_error_type(cause(E, _), T) :- sys_error_type(E, T).
 :- set_predicate_property(sys_error_type/2, visible(public)).

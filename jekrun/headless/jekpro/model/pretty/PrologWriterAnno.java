@@ -5,7 +5,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.regex.CodeType;
@@ -109,67 +108,33 @@ public class PrologWriterAnno extends PrologWriter {
      * <p>Write the operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param op   The operator.
-     * @param sa   The atom.
+     * @param oper The operator.
+     * @param sc   The compound skeleton..
+     * @param ref  The compound display.
      * @param cp   The cache predicate or null.
-     * @param decl The declaration or null.
      * @throws IOException     IO Error.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    protected final void writeInfix(Operator op, SkelAtom sa,
-                                    CachePredicate cp,
-                                    Object[] decl)
+    protected final void writeInfix(Operator oper, SkelCompound sc,
+                                    Display ref, CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
         if ((flags & FLAG_FILL) == 0) {
-            super.writeInfix(op, sa, cp, decl);
+            super.writeInfix(oper, sc, ref, cp);
             return;
         }
-        if (op.getLevel() > Operator.LEVEL_MIDDLE && (flags & FLAG_NEWL) != 0) {
-            if ((spez & SPEZ_ICUT) != 0) {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                    append(' ');
-            } else if (op.getLevel() >= LEVEL_DISJ && op.getLevel() < LEVEL_IMPL) {
-                String[][] fillers = (sa instanceof SkelAtomAnno ?
-                        ((SkelAtomAnno) sa).getFillers() : null);
-                indent -= SPACES;
-                writeFillerIndent(ENDLINE, (fillers != null ? fillers[0] : null));
-                if (!lastEol(fillers != null ? fillers[0] : null))
-                    writeFillerIndent(ENDLINE, FILLER_EOLN);
-                indent += SPACES;
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                for (int i = t.length(); i < SPACES; i++)
-                    append(' ');
-            } else {
-                if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                    append(' ');
-                String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-                safeSpace(t);
-                appendLink(t, cp);
-                String[][] fillers = (sa instanceof SkelAtomAnno ?
-                        ((SkelAtomAnno) sa).getFillers() : null);
-                writeFillerIndent(ENDLINE, (fillers != null ? fillers[1] : null));
-                if (!lastEol(fillers != null ? fillers[1] : null))
-                    writeFillerIndent(ENDLINE, FILLER_EOLN);
-            }
-        } else {
-            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
+        if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
+            append(' ');
+        String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
+        safeSpace(t);
+        appendLink(t, cp);
+        SkelAtom sa = sc.sym;
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
+        writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
+        if (!lastEol(fillers != null ? fillers[1] : null)) {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
                 append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                append(' ');
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
         }
     }
 
@@ -190,7 +155,6 @@ public class PrologWriterAnno extends PrologWriter {
                 return sc.args.length == 1;
         }
     }
-
 
     /**
      * <p>Check whether the compound is binary.</p>
@@ -384,24 +348,8 @@ public class PrologWriterAnno extends PrologWriter {
             fillers = (sc.sym instanceof SkelAtomAnno ?
                     ((SkelAtomAnno) sc.sym).getFillers() : null);
             writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
-            Object mod2;
-            SkelAtom nsa2;
-            if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, false, false, engine) : null);
-                nsa2 = sc.sym;
-            } else if (j == 1 &&
-                    sc.args.length == 2 &&
-                    sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                mod2 = (engine != null ? SpecialQuali.slashToClass(sc.args[0],
-                        ref, true, false, engine) : null);
-                nsa2 = sc.sym;
-            } else {
-                mod2 = null;
-                nsa2 = null;
-            }
+            Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
+            SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
         spez = backspez;

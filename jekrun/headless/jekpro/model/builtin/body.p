@@ -84,8 +84,7 @@
  * the body conversion table.
  */
 % :- +Goal
-(:- _) :-
-   throw(error(existence_error(body, (:-)/1), _)).
+(:- _) :- throw(error(existence_error(body, (:-)/1), _)).
 :- set_predicate_property((:-)/1, visible(public)).
 :- set_predicate_property((:-)/1, meta_predicate((:- -1))).
 :- sys_context_property(here, C),
@@ -97,8 +96,7 @@
  * the body conversion table.
  */
 % +Term :- +Goal
-(_ :- _) :-
-   throw(error(existence_error(body, (:-)/2), _)).
+(_ :- _) :- throw(error(existence_error(body, (:-)/2), _)).
 :- set_predicate_property((:-)/2, visible(public)).
 :- set_predicate_property((:-)/2, meta_predicate((0 :- -1))).
 :- sys_context_property(here, C),
@@ -117,7 +115,7 @@
 A, B :- A, B.                                     % Proto
 :- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
-:- set_predicate_property(','/2, meta_predicate((  0, 0))).
+:- set_predicate_property(','/2, meta_predicate((0, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(','/2, sys_meta_predicate(C)).
 

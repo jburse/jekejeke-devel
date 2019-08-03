@@ -122,22 +122,14 @@ special(I, C, K) :-
  * The predicate sets the predicate P to virtual.
  */
 % virtual +Indicators
-virtual [P|Q] :- !,
-   sys_virtual(P),
-   virtual(Q).
-virtual P, Q :- !,
-   sys_virtual(P),
-   virtual(Q).
+virtual [P|Q] :- !, sys_virtual(P), virtual(Q).
+virtual P, Q :- !, sys_virtual(P), virtual(Q).
 virtual [] :- !.
-virtual P :-
-   sys_virtual(P).
+virtual P :- sys_virtual(P).
 :- set_predicate_property((virtual)/1, visible(public)).
 
-sys_virtual(X) :-
-   var(X),
-   throw(error(instantiation_error, _)).
-sys_virtual(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_virtual(X) :- var(X), throw(error(instantiation_error, _)).
+sys_virtual(D) :- sys_declaration_indicator(D, I), !,
    sys_virtual(I),
    call(D).
 sys_virtual(I) :-
@@ -171,5 +163,4 @@ sys_virtual(I) :-
 sys_declaration_indicator(special(I, _, _), I).
 sys_declaration_indicator(set_predicate_property(I, _), I).
 sys_declaration_indicator(reset_predicate_property(I, _), I).
-sys_declaration_indicator(virtual(D), I) :-
-   sys_declaration_indicator(D, I).
+sys_declaration_indicator(virtual(D), I) :- sys_declaration_indicator(D, I).
