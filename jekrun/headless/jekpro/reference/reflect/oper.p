@@ -140,19 +140,23 @@ sys_oper3(postfix(X), _) :-
 :- set_predicate_property(sys_oper3/2, visible(private)).
 
 % sys_oper4(+Indicator, +Integer)
-sys_oper4(I, L) :- >(L, 999), !,
-   set_oper_property(I, sys_newr).
+sys_oper4(infix(X), L) :- >(L, 999), !,
+   set_oper_property(infix(X), sys_newr).
 sys_oper4(I, _) :-
    reset_oper_property(I, sys_newr).
 :- set_predicate_property(sys_oper4/2, visible(private)).
 
 % sys_oper5(+Indicator, +Integer)
-sys_oper5(I, L) :- >(L, 1149), !,
-   set_oper_property(I, sys_tabr).
+sys_oper5(infix(X), L) :- >(L, 1149), !,
+   set_oper_property(infix(X), sys_tabr).
+sys_oper5(prefix(X), L) :- >(L, 1149), !,
+   set_oper_property(prefix(X), sys_tabr).
 sys_oper5(I, L) :- >(L, 1099), !,
    reset_oper_property(I, sys_tabr).
-sys_oper5(I, L) :- >(L, 1049), !,
-   set_oper_property(I, sys_tabr).
+sys_oper5(infix(X), L) :- >(L, 1049), !,
+   set_oper_property(infix(X), sys_tabr).
+sys_oper5(prefix(X), L) :- >(L, 1049), !,
+   set_oper_property(prefix(X), sys_tabr).
 sys_oper5(I, _) :-
    reset_oper_property(I, sys_tabr).
 :- set_predicate_property(sys_oper5/2, visible(private)).
