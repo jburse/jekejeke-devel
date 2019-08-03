@@ -94,12 +94,12 @@ call_residue_vars(G, L) :-
 % sys_current_mark(-Undo)
 :- public sys_current_mark/1.
 :- foreign(sys_current_mark/1, 'ForeignResidue',
-      sysCurrentMark('Interpreter')).
+   sysCurrentMark('Interpreter')).
 
 % sys_mark_attrs(+Undo, -List)
 :- public sys_mark_attrs/2.
 :- foreign(sys_mark_attrs/2, 'ForeignResidue',
-      sysMarkAttrs('Interpreter', 'AbstractUndo')).
+   sysMarkAttrs('Interpreter', 'AbstractUndo')).
 
 /**
  * call_residue(G, L):
@@ -121,7 +121,7 @@ call_residue(G, L) :-
 :- private sys_eq_list/2.
 sys_eq_list(K, L) :-
    findall(E, (sys_member(V, K),
-               sys_current_eq(V, E)), H),
+   sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 

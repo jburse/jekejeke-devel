@@ -168,10 +168,10 @@ sys_table_declare(I) :-
    sys_table_test(F, N, M),
    sys_make_indicator(M, 2, J),
    (predicate_property(I, visible(public)) -> public(J);
-    predicate_property(I, visible(private)) -> private(J);
-    true),
+   predicate_property(I, visible(private)) -> private(J);
+   true),
    (predicate_property(I, multifile) -> multifile(J);
-    true),
+   true),
    thread_local(J).
 
 % sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Atom)
@@ -188,30 +188,30 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
    Body = (sys_goal_globals(A^Descr, W),
-           pivot_new(P),
-           pivot_set(P, Key),
-           (Test -> true;
-            Q,
-            assertz(Test)),
-           sys_revolve_list(W, R, S)),
+   pivot_new(P),
+   pivot_set(P, Key),
+   (Test -> true;
+   Q,
+   assertz(Test)),
+   sys_revolve_list(W, R, S)),
    (predicate_property(I, multifile) ->
-       compilable_ref((Head :- !, Body), K);
-    compilable_ref((Head :- Body), K)),
+      compilable_ref((Head :- !, Body), K);
+   compilable_ref((Head :- Body), K)),
    recordz_ref(K),
    sys_make_indicator(G, N, J),
    (predicate_property(I, visible(public)) -> public(J);
-    predicate_property(I, visible(private)) -> private(J);
-    true),
+   predicate_property(I, visible(private)) -> private(J);
+   true),
    (predicate_property(I, multifile) -> multifile(J);
-    true),
+   true),
    static(J).
 
 % sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
 :- private sys_table_revolve/6.
 sys_table_revolve(hash, A, Goal, W, R,
-   sys_revolve_hash(A, Goal, W, R)).
+sys_revolve_hash(A, Goal, W, R)).
 sys_table_revolve(tree, A, Goal, W, R,
-   sys_revolve_tree(A, Goal, W, R)).
+sys_revolve_tree(A, Goal, W, R)).
 
 /**********************************************************/
 /* Table Inspection                                       */

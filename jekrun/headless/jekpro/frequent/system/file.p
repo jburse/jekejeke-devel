@@ -84,15 +84,15 @@ make_name(B, E, N) :-
 
 :- private sys_name_base/2.
 :- foreign(sys_name_base/2, 'ForeignFile',
-      sysNameBase('String')).
+   sysNameBase('String')).
 
 :- private sys_name_ext/2.
 :- foreign(sys_name_ext/2, 'ForeignFile',
-      sysNameExt('String')).
+   sysNameExt('String')).
 
 :- private sys_name_make/3.
 :- foreign(sys_name_make/3, 'ForeignFile',
-      sysNameMake('String', 'String')).
+   sysNameMake('String', 'String')).
 
 /**
  * make_path(D, N, P):
@@ -112,15 +112,15 @@ make_path(D, N, P) :-
 
 :- private sys_path_directory/2.
 :- foreign(sys_path_directory/2, 'ForeignFile',
-      sysPathDirectory('String')).
+   sysPathDirectory('String')).
 
 :- private sys_path_name/2.
 :- foreign(sys_path_name/2, 'ForeignFile',
-      sysPathName('String')).
+   sysPathName('String')).
 
 :- private sys_path_make/3.
 :- foreign(sys_path_make/3, 'ForeignFile',
-      sysPathMake('String', 'String')).
+   sysPathMake('String', 'String')).
 
 /************************************************************/
 /* File Ops                                                 */
@@ -138,7 +138,7 @@ create_file(Name) :-
 
 :- private sys_create_file/1.
 :- foreign(sys_create_file/1, 'ForeignDirectory',
-      sysCreateFile('String')).
+   sysCreateFile('String')).
 
 /**
  * delete_file(F):
@@ -152,7 +152,7 @@ delete_file(Name) :-
 
 :- private sys_delete_file/1.
 :- foreign(sys_delete_file/1, 'ForeignDirectory',
-      sysDeleteFile('String')).
+   sysDeleteFile('String')).
 
 /**
  * rename_file(F, G):
@@ -168,7 +168,7 @@ rename_file(FromName, ToName) :-
 
 :- private sys_rename_file/2.
 :- foreign(sys_rename_file/2, 'ForeignDirectory',
-      sysRenameFile('String', 'String')).
+   sysRenameFile('String', 'String')).
 
 /************************************************************/
 /* Directory Ops                                            */
@@ -186,7 +186,7 @@ make_directory(Name) :-
 
 :- private sys_make_directory/1.
 :- foreign(sys_make_directory/1, 'ForeignDirectory',
-      sysMakeDirectory('String')).
+   sysMakeDirectory('String')).
 
 /**
  * directory_file(F, N):
@@ -200,7 +200,7 @@ directory_file(Name, Elem) :-
 
 :- private sys_directory_file/2.
 :- foreign(sys_directory_file/2, 'ForeignDirectory',
-      sysDirectoryFile('CallOut', 'String')).
+   sysDirectoryFile('CallOut', 'String')).
 
 /**
  * exists_file(F):
@@ -214,7 +214,7 @@ exists_file(Name) :-
 
 :- private sys_is_file/1.
 :- foreign(sys_is_file/1, 'ForeignDirectory',
-      sysIsFile('String')).
+   sysIsFile('String')).
 
 /**
  * exists_directory(F):
@@ -228,7 +228,7 @@ exists_directory(Name) :-
 
 :- private sys_is_directory/1.
 :- foreign(sys_is_directory/1, 'ForeignDirectory',
-      sysIsDirectory('String')).
+   sysIsDirectory('String')).
 
 /************************************************************/
 /* Time Stamp                                               */
@@ -248,7 +248,7 @@ get_time_file(Name, Date) :-
 
 :- private sys_get_time_file/2.
 :- foreign(sys_get_time_file/2, 'ForeignDirectory',
-      sysGetTimeFile('String')).
+   sysGetTimeFile('String')).
 
 /**
  * set_time_file(F, T):
@@ -264,7 +264,7 @@ set_time_file(Name, Date) :-
 
 :- private sys_set_time_file/2.
 :- foreign(sys_set_time_file/2, 'ForeignDirectory',
-      sysSetTimeFile('String', long)).
+   sysSetTimeFile('String', long)).
 
 /************************************************************/
 /* Path Following                                           */
@@ -277,7 +277,7 @@ set_time_file(Name, Date) :-
 % is_relative_path(+Atom)
 :- public is_relative_path/1.
 :- foreign(is_relative_path/1, 'ForeignFile',
-      sysPathIsRelative('String')).
+   sysPathIsRelative('String')).
 
 /**
  * follow_path(B, R, A):
@@ -294,11 +294,11 @@ follow_path(B, R, A) :- sys_path_absolute(B, R, A).
 
 :- private sys_path_absolute/3.
 :- foreign(sys_path_absolute/3, 'ForeignFile',
-      sysPathAbsolute('String', 'String')).
+   sysPathAbsolute('String', 'String')).
 
 :- private sys_path_relative/3.
 :- foreign(sys_path_relative/3, 'ForeignFile',
-      sysPathRelative('String', 'String')).
+   sysPathRelative('String', 'String')).
 
 /**
  * canonical_path(P, C):
@@ -307,7 +307,7 @@ follow_path(B, R, A) :- sys_path_absolute(B, R, A).
 % canonical_path(+Atom, -Atom)
 :- public canonical_path/2.
 :- foreign(canonical_path/2, 'ForeignFile',
-      sysCanonicalPath('String')).
+   sysCanonicalPath('String')).
 
 /*****************************************************************/
 /* Environment Variables                                         */
@@ -350,7 +350,7 @@ archive_file(Name, Prefix, Segment) :-
 
 :- private sys_archive_file/3.
 :- foreign(sys_archive_file/3, 'ForeignDirectory',
-      sysArchiveFile('CallOut', 'String', 'String')).
+   sysArchiveFile('CallOut', 'String', 'String')).
 
 /**
  * exists_entry(F, N):
@@ -364,7 +364,7 @@ exists_entry(Name, Entry) :-
 
 :- private sys_exists_entry/2.
 :- foreign(sys_exists_entry/2, 'ForeignDirectory',
-      sysExistsEntry('String', 'String')).
+   sysExistsEntry('String', 'String')).
 
 /**
  * make_pack(N, V, P):
@@ -382,12 +382,12 @@ make_pack(N, V, P) :-
 
 :- private sys_pack_name/2.
 :- foreign(sys_pack_name/2, 'ForeignArchive',
-      sysPackName('String')).
+   sysPackName('String')).
 
 :- private sys_pack_varsion/2.
 :- foreign(sys_pack_varsion/2, 'ForeignArchive',
-      sysPackVersion('String')).
+   sysPackVersion('String')).
 
 :- private sys_pack_make/3.
 :- foreign(sys_pack_make/3, 'ForeignArchive',
-      sysPackMake('String', 'String')).
+   sysPackMake('String', 'String')).

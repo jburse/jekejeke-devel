@@ -72,7 +72,7 @@ nl(Stream) :-
 
 :- private sys_nl/1.
 :- foreign(sys_nl/1, 'ForeignChar',
-      sysNl('Writer')).
+   sysNl('Writer')).
 
 /**
  * put_char(C): [ISO 8.12.3]
@@ -97,7 +97,7 @@ put_char(Stream, Char) :-
 
 :- private sys_put_char/2.
 :- foreign(sys_put_char/2, 'ForeignChar',
-      sysPutChar('Writer', 'String')).
+   sysPutChar('Writer', 'String')).
 
 /**
  * put_code(C): [ISO 8.12.3]
@@ -122,7 +122,7 @@ put_code(Stream, Code) :-
 
 :- private sys_put_code/2.
 :- foreign(sys_put_code/2, 'ForeignChar',
-      sysPutCode('Writer', 'Integer')).
+   sysPutCode('Writer', 'Integer')).
 
 /**
  * get_char(C): [ISO 8.12.1]
@@ -148,7 +148,7 @@ get_char(Stream, Char) :-
 
 :- private sys_get_char/2.
 :- foreign(sys_get_char/2, 'ForeignChar',
-      sysGetChar('Reader')).
+   sysGetChar('Reader')).
 
 /**
  * get_code(C): [ISO 8.12.1]
@@ -174,7 +174,7 @@ get_code(Stream, Code) :-
 
 :- private sys_get_code/2.
 :- foreign(sys_get_code/2, 'ScannerToken',
-      sysGetCode('Reader')).
+   sysGetCode('Reader')).
 
 /**
  * peek_char(C): [ISO 8.12.2]
@@ -201,7 +201,7 @@ peek_char(Stream, Char) :-
 
 :- private sys_peek_char/2.
 :- foreign(sys_peek_char/2, 'ForeignChar',
-      sysPeekChar('Reader')).
+   sysPeekChar('Reader')).
 
 /**
  * peek_code(C): [ISO 8.12.2]
@@ -227,4 +227,4 @@ peek_code(Stream, Code) :-
 
 :- private sys_peek_code/2.
 :- foreign(sys_peek_code/2, 'ScannerToken',
-      sysPeekCode('Reader')).
+   sysPeekCode('Reader')).
