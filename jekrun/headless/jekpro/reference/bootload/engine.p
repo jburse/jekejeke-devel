@@ -59,11 +59,11 @@ current_prolog_flag(Flag, Value) :-
 
 :- private sys_current_flag/1.
 :- foreign(sys_current_flag/1, 'ForeignEngine',
-      sysCurrentFlag('Interpreter', 'CallOut')).
+   sysCurrentFlag('Interpreter', 'CallOut')).
 
 :- private sys_get_flag/2.
 :- foreign(sys_get_flag/2, 'ForeignEngine',
-      sysGetFlag('Interpreter', 'String')).
+   sysGetFlag('Interpreter', 'String')).
 
 /**
  * set_prolog_flag(F, V): [ISO]
@@ -72,7 +72,7 @@ current_prolog_flag(Flag, Value) :-
 % set_prolog_flag(+Atom, +Term)
 :- public set_prolog_flag/2.
 :- foreign(set_prolog_flag/2, 'ForeignEngine',
-      sysSetFlag('Interpreter', 'String', 'Object')).
+   sysSetFlag('Interpreter', 'String', 'Object')).
 
 /**
  * halt: [ISO 8.17.3]
@@ -113,11 +113,11 @@ version :-
 
 :- private sys_prolog_version/1.
 :- foreign(sys_prolog_version/1, 'ForeignEngine',
-      sysPrologVersion('Interpreter')).
+   sysPrologVersion('Interpreter')).
 
 :- private sys_prolog_vendor/1.
 :- foreign(sys_prolog_vendor/1, 'ForeignEngine',
-      sysPrologVendor('Interpreter')).
+   sysPrologVendor('Interpreter')).
 
 /********************************************************/
 /* Locale Modules                                       */
@@ -168,12 +168,12 @@ top_module(N) :-
 
 :- private sys_module_action/2.
 :- foreign(sys_module_action/2, 'ForeignEngine',
-      sysModuleAction('Interpreter', 'TermAtomic', 'Object')).
+   sysModuleAction('Interpreter', 'TermAtomic', 'Object')).
 
 :- private sys_peek_stack/1.
 :- foreign(sys_peek_stack/1, 'ForeignEngine',
-      sysPeekStack('Interpreter')).
+   sysPeekStack('Interpreter')).
 
 :- private sys_count_stack/1.
 :- foreign(sys_count_stack/1, 'ForeignEngine',
-      sysCountStack('Interpreter')).
+   sysCountStack('Interpreter')).

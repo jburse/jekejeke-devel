@@ -92,7 +92,7 @@ sys_meta_predicate(P) :-
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    once((predicate_property(I, sys_usage(D)),
-         \+ C = D)),
+   \+ C = D)),
    \+ predicate_property(I, sys_meta_predicate(D)),
    throw(error(permission_error(promote, meta_predicate, I), _)).
 sys_meta_predicate(P) :-
@@ -124,7 +124,7 @@ sys_meta_function(P) :-
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    once((predicate_property(I, sys_usage(D)),
-         \+ C = D)),
+   \+ C = D)),
    \+ predicate_property(I, sys_meta_function(D)),
    throw(error(permission_error(promote, meta_function, I), _)).
 sys_meta_function(P) :-

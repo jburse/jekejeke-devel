@@ -275,11 +275,11 @@ atom_codes(Atom, Codes) :-
 
 :- private sys_atom_to_list/3.
 :- foreign(sys_atom_to_list/3, 'ForeignAtom',
-      sysAtomToList('Interpreter', 'String', int)).
+   sysAtomToList('Interpreter', 'String', int)).
 
 :- private sys_list_to_atom/3.
 :- foreign(sys_list_to_atom/3, 'ForeignAtom',
-      sysListToAtom('Object', int)).
+   sysListToAtom('Object', int)).
 
 /**
  * char_code(X, Y): [ISO 8.16.6]
@@ -297,11 +297,11 @@ char_code(Char, Code) :-
 
 :- private sys_char_to_code/2.
 :- foreign(sys_char_to_code/2, 'ForeignAtom',
-      sysCharToCode('String')).
+   sysCharToCode('String')).
 
 :- private sys_code_to_char/2.
 :- foreign(sys_code_to_char/2, 'ForeignAtom',
-      sysCodeToChar('Integer')).
+   sysCodeToChar('Integer')).
 
 /**
  * number_chars(X, Y): [ISO 8.16.7]
@@ -337,11 +337,11 @@ number_codes(Number, Codes) :-
 
 :- private sys_atom_to_number/2.
 :- foreign(sys_atom_to_number/2, 'ForeignAtom',
-      sysAtomToNumber('Interpreter', 'String')).
+   sysAtomToNumber('Interpreter', 'String')).
 
 :- private sys_number_to_atom/3.
 :- foreign(sys_number_to_atom/3, 'ForeignAtom',
-      sysNumberToAtom('Number', int)).
+   sysNumberToAtom('Number', int)).
 
 /**
  * integer_chars(X, R, Y):
@@ -379,11 +379,11 @@ integer_codes(Integer, Radix, Codes) :-
 
 :- private sys_atom_to_integer/3.
 :- foreign(sys_atom_to_integer/3, 'ForeignAtom',
-      sysAtomToInteger('Interpreter', 'String', int)).
+   sysAtomToInteger('Interpreter', 'String', int)).
 
 :- private sys_integer_to_atom/3.
 :- foreign(sys_integer_to_atom/3, 'ForeignAtom',
-      sysIntegerToAtom('Number', int)).
+   sysIntegerToAtom('Number', int)).
 
 /****************************************************************/
 /* 16-bit Word Helpers                                          */
@@ -403,11 +403,11 @@ integer_codes(Integer, Radix, Codes) :-
 
 :- private sys_atom_word_pos/4.
 :- foreign(sys_atom_word_pos/4, 'ForeignAtom',
-      sysAtomWordPos('CallOut', 'String', int, int)).
+   sysAtomWordPos('CallOut', 'String', int, int)).
 
 :- private sys_atom_word_offset/4.
 :- foreign(sys_atom_word_offset/4, 'ForeignAtom',
-      sysOffsetByCodePoints('String', int, int)).
+   sysOffsetByCodePoints('String', int, int)).
 
 :- private sys_atom_word_match/5.
 :- virtual sys_atom_word_match/5.
@@ -415,7 +415,7 @@ integer_codes(Integer, Radix, Codes) :-
 
 :- private sys_atom_word_pos/6.
 :- foreign(sys_atom_word_pos/6, 'ForeignAtom',
-      sysAtomWordPos('Interpreter', 'CallOut', 'String', int, int, int, 'AbstractTerm')).
+   sysAtomWordPos('Interpreter', 'CallOut', 'String', int, int, int, 'AbstractTerm')).
 
 /****************************************************************/
 /* String Reverse Ops                                           */
@@ -678,11 +678,11 @@ atom_block(A, B) :-
 
 :- private sys_block_to_atom/2.
 :- foreign(sys_block_to_atom/2, 'ForeignAtom',
-      sysBlockToAtom({byte})).
+   sysBlockToAtom({byte})).
 
 :- private sys_atom_to_block/2.
 :- foreign(sys_atom_to_block/2, 'ForeignAtom',
-      sysAtomToBlock('String')).
+   sysAtomToBlock('String')).
 
 /****************************************************************/
 /* Term Conversion                                              */
@@ -709,8 +709,8 @@ term_atom(T, A, O) :-
 
 :- private sys_parse_term/3.
 :- foreign(sys_parse_term/3, 'ForeignAtom',
-      sysParseTerm('Interpreter', 'String', 'Object')).
+   sysParseTerm('Interpreter', 'String', 'Object')).
 
 :- private sys_unparse_term/3.
 :- foreign(sys_unparse_term/3, 'ForeignAtom',
-      sysUnparseTerm('Interpreter', 'AbstractTerm', 'Object')).
+   sysUnparseTerm('Interpreter', 'AbstractTerm', 'Object')).
