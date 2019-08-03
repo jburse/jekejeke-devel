@@ -202,8 +202,8 @@ sys_take_all2(T, Q) :-
 :- private sys_put_all/4.
 :- meta_predicate sys_put_all(?, 0, ?, ?).
 sys_put_all(T, G, Q, N) :-
-   sys_trap(sys_put_all2(T, G, Q, N), 
-      E, 
+   sys_trap(sys_put_all2(T, G, Q, N),
+      E,
       (sys_error_type(E, system_error(_)) -> sys_raise(E);
        pipe_put(Q, ball(E)))).
 

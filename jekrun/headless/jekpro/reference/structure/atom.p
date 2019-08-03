@@ -274,11 +274,11 @@ atom_codes(Atom, Codes) :-
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_list/3.
-:- foreign(sys_atom_to_list/3, 'ForeignAtom', 
+:- foreign(sys_atom_to_list/3, 'ForeignAtom',
       sysAtomToList('Interpreter', 'String', int)).
 
 :- private sys_list_to_atom/3.
-:- foreign(sys_list_to_atom/3, 'ForeignAtom', 
+:- foreign(sys_list_to_atom/3, 'ForeignAtom',
       sysListToAtom('Object', int)).
 
 /**
@@ -296,11 +296,11 @@ char_code(Char, Code) :-
    sys_char_to_code(Char, Code).
 
 :- private sys_char_to_code/2.
-:- foreign(sys_char_to_code/2, 'ForeignAtom', 
+:- foreign(sys_char_to_code/2, 'ForeignAtom',
       sysCharToCode('String')).
 
 :- private sys_code_to_char/2.
-:- foreign(sys_code_to_char/2, 'ForeignAtom', 
+:- foreign(sys_code_to_char/2, 'ForeignAtom',
       sysCodeToChar('Integer')).
 
 /**
@@ -336,11 +336,11 @@ number_codes(Number, Codes) :-
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_number/2.
-:- foreign(sys_atom_to_number/2, 'ForeignAtom', 
+:- foreign(sys_atom_to_number/2, 'ForeignAtom',
       sysAtomToNumber('Interpreter', 'String')).
 
 :- private sys_number_to_atom/3.
-:- foreign(sys_number_to_atom/3, 'ForeignAtom', 
+:- foreign(sys_number_to_atom/3, 'ForeignAtom',
       sysNumberToAtom('Number', int)).
 
 /**
@@ -378,11 +378,11 @@ integer_codes(Integer, Radix, Codes) :-
    sys_atom_to_list(Atom, 1, Codes).
 
 :- private sys_atom_to_integer/3.
-:- foreign(sys_atom_to_integer/3, 'ForeignAtom', 
+:- foreign(sys_atom_to_integer/3, 'ForeignAtom',
       sysAtomToInteger('Interpreter', 'String', int)).
 
 :- private sys_integer_to_atom/3.
-:- foreign(sys_integer_to_atom/3, 'ForeignAtom', 
+:- foreign(sys_integer_to_atom/3, 'ForeignAtom',
       sysIntegerToAtom('Number', int)).
 
 /****************************************************************/
@@ -402,11 +402,11 @@ integer_codes(Integer, Radix, Codes) :-
 :- foreign(sys_atom_word_count/4, 'String', codePointCount(int, int)).
 
 :- private sys_atom_word_pos/4.
-:- foreign(sys_atom_word_pos/4, 'ForeignAtom', 
+:- foreign(sys_atom_word_pos/4, 'ForeignAtom',
       sysAtomWordPos('CallOut', 'String', int, int)).
 
 :- private sys_atom_word_offset/4.
-:- foreign(sys_atom_word_offset/4, 'ForeignAtom', 
+:- foreign(sys_atom_word_offset/4, 'ForeignAtom',
       sysOffsetByCodePoints('String', int, int)).
 
 :- private sys_atom_word_match/5.
@@ -414,7 +414,7 @@ integer_codes(Integer, Radix, Codes) :-
 :- foreign(sys_atom_word_match/5, 'String', regionMatches(int, 'String', int, int)).
 
 :- private sys_atom_word_pos/6.
-:- foreign(sys_atom_word_pos/6, 'ForeignAtom', 
+:- foreign(sys_atom_word_pos/6, 'ForeignAtom',
       sysAtomWordPos('Interpreter', 'CallOut', 'String', int, int, int, 'AbstractTerm')).
 
 /****************************************************************/
@@ -677,11 +677,11 @@ atom_block(A, B) :-
    sys_atom_to_block(A, B).
 
 :- private sys_block_to_atom/2.
-:- foreign(sys_block_to_atom/2, 'ForeignAtom', 
+:- foreign(sys_block_to_atom/2, 'ForeignAtom',
       sysBlockToAtom({byte})).
 
 :- private sys_atom_to_block/2.
-:- foreign(sys_atom_to_block/2, 'ForeignAtom', 
+:- foreign(sys_atom_to_block/2, 'ForeignAtom',
       sysAtomToBlock('String')).
 
 /****************************************************************/
@@ -708,9 +708,9 @@ term_atom(T, A, O) :-
    sys_parse_term(A, O, T).
 
 :- private sys_parse_term/3.
-:- foreign(sys_parse_term/3, 'ForeignAtom', 
+:- foreign(sys_parse_term/3, 'ForeignAtom',
       sysParseTerm('Interpreter', 'String', 'Object')).
 
 :- private sys_unparse_term/3.
-:- foreign(sys_unparse_term/3, 'ForeignAtom', 
+:- foreign(sys_unparse_term/3, 'ForeignAtom',
       sysUnparseTerm('Interpreter', 'AbstractTerm', 'Object')).

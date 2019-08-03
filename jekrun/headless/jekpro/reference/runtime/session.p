@@ -105,7 +105,7 @@ close :- throw(error(system_error(user_close), _)).
 :- public prolog/0.
 prolog :-
    call_cleanup(
-      sys_toplevel, 
+      sys_toplevel,
       end_all_modules).
 :- set_predicate_property(prolog/0, sys_notrace).
 
@@ -115,8 +115,8 @@ break :-
    current_prolog_flag(sys_break_level, X),
    Y is X+1,
    setup_call_cleanup(
-      set_prolog_flag(sys_break_level, Y), 
-      sys_toplevel, 
+      set_prolog_flag(sys_break_level, Y),
+      sys_toplevel,
       set_prolog_flag(sys_break_level, X)).
 :- set_predicate_property(break/0, sys_notrace).
 
@@ -124,7 +124,7 @@ break :-
 :- private sys_toplevel/0.
 sys_toplevel :-
    repeat,
-   sys_trap(sys_toplevel_ask, E, 
+   sys_trap(sys_toplevel_ask, E,
       (sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail;
        sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E);
        sys_error_type(E, system_error(_)) -> sys_raise(E);
@@ -140,8 +140,8 @@ sys_toplevel_ask :-
    read_term(G, [variable_names(N)]),
    (G == end_of_file -> true;
     current_prolog_flag(sys_print_map, M),
-    setup_call_cleanup(set_prolog_flag(sys_print_map, N), 
-       sys_answer(G, N), 
+    setup_call_cleanup(set_prolog_flag(sys_print_map, N),
+       sys_answer(G, N),
        set_prolog_flag(sys_print_map, M)), fail).
 
 % sys_toplevel_level
@@ -180,7 +180,7 @@ sys_answer(_, _) :-
 :- private sys_answer_ask/2.
 sys_answer_ask(N, R) :-
    repeat,
-   sys_trap(sys_answer_prompt(N, R, Response), E, 
+   sys_trap(sys_answer_prompt(N, R, Response), E,
       (sys_error_type(E, system_error(_)) -> sys_raise(E);
        sys_error_message(E), fail)), !, Response == answer_cut.
 
@@ -190,8 +190,8 @@ sys_answer_prompt(N, R, Response) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tprompt, Prompt),
    setup_call_cleanup(
-      set_thread_flag(Thread, sys_tprompt, on), 
-      sys_answer_show(N, R, Response), 
+      set_thread_flag(Thread, sys_tprompt, on),
+      sys_answer_show(N, R, Response),
       set_thread_flag(Thread, sys_tprompt, Prompt)).
 
 % sys_answer_show(+Assoc, +List, -Atom)

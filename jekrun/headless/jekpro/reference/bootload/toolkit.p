@@ -40,7 +40,7 @@
  */
 % sys_activate_capability(+Capa, +Key)
 :- public sys_activate_capability/2.
-:- foreign(sys_activate_capability/2, 'ForeignToolkit', 
+:- foreign(sys_activate_capability/2, 'ForeignToolkit',
       sysActivateCapability('Interpreter', 'String', 'String')).
 
 /**
@@ -50,7 +50,7 @@
  */
 % sys_calc_install_id(+Capa, -ID)
 :- public sys_calc_install_id/2.
-:- foreign(sys_calc_install_id/2, 'ForeignToolkit', 
+:- foreign(sys_calc_install_id/2, 'ForeignToolkit',
       sysCalcInstallID('Interpreter', 'String')).
 
 /**
@@ -60,7 +60,7 @@
  */
 % sys_reg_license_text(+Capa, +Text)
 :- public sys_reg_license_text/2.
-:- foreign(sys_reg_license_text/2, 'ForeignToolkit', 
+:- foreign(sys_reg_license_text/2, 'ForeignToolkit',
       sysRegLicenseText('Interpreter', 'String', 'String')).
 
 /**
@@ -70,7 +70,7 @@
  */
 % sys_reged_license_text(+Capa, -Text)
 :- public sys_reged_license_text/2.
-:- foreign(sys_reged_license_text/2, 'ForeignToolkit', 
+:- foreign(sys_reged_license_text/2, 'ForeignToolkit',
       sysRegedLicenseText('Interpreter', 'String')).
 
 /**
@@ -83,12 +83,12 @@
 
 % sys_init_capability(+Capa)
 :- public sys_init_capability/1.
-:- foreign(sys_init_capability/1, 'ForeignToolkit', 
+:- foreign(sys_init_capability/1, 'ForeignToolkit',
       sysInitCapability('Interpreter', 'String')).
 
 % sys_init_capability(+Capa, +Opts)
 :- public sys_init_capability/2.
-:- foreign(sys_init_capability/2, 'ForeignToolkit', 
+:- foreign(sys_init_capability/2, 'ForeignToolkit',
       sysInitCapabilityOpt('Interpreter', 'String', 'Object')).
 
 /**
@@ -97,7 +97,7 @@
  */
 % sys_finit_capability(+Capa)
 :- public sys_finit_capability/1.
-:- foreign(sys_finit_capability/1, 'ForeignToolkit', 
+:- foreign(sys_finit_capability/1, 'ForeignToolkit',
       sysFiniCapability('Interpreter', 'String')).
 
 /**
@@ -111,7 +111,7 @@ sys_current_capability(Cap) :-
    sys_member(Cap, Caps).
 
 :- private sys_get_capabilities/1.
-:- foreign(sys_get_capabilities/1, 'ForeignToolkit', 
+:- foreign(sys_get_capabilities/1, 'ForeignToolkit',
       sysGetCapabilities('Interpreter')).
 
 /**
@@ -130,11 +130,11 @@ sys_capability_property(Cap, Prop) :-
    sys_get_capability_property(Cap, F, Prop).
 
 :- private sys_get_capability_properties/2.
-:- foreign(sys_get_capability_properties/2, 'ForeignToolkit', 
+:- foreign(sys_get_capability_properties/2, 'ForeignToolkit',
       sysGetCapabilityProperties('Interpreter', 'String')).
 
 :- private sys_get_capability_property/3.
-:- foreign(sys_get_capability_property/3, 'ForeignToolkit', 
+:- foreign(sys_get_capability_property/3, 'ForeignToolkit',
       sysGetCapabilityProperty('Interpreter', 'String', 'String')).
 
 /**
@@ -144,7 +144,7 @@ sys_capability_property(Cap, Prop) :-
  */
 % sys_check_license(+Capa)
 :- public sys_check_license/1.
-:- foreign(sys_check_license/1, 'ForeignToolkit', 
+:- foreign(sys_check_license/1, 'ForeignToolkit',
       sysCheckLicense('Interpreter', 'String')).
 
 /**
@@ -154,5 +154,5 @@ sys_capability_property(Cap, Prop) :-
  */
 % sys_check_licenses
 :- public sys_check_licenses/0.
-:- foreign(sys_check_licenses/0, 'ForeignToolkit', 
+:- foreign(sys_check_licenses/0, 'ForeignToolkit',
       sysCheckLicenses('Interpreter')).
