@@ -47,10 +47,6 @@ import java.io.IOException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class PrologWriterAnno extends PrologWriter {
-    private final static int STANDALONE = 0;
-    private final static int ENDLINE = 50;
-
-    private final static String[] FILLER_EOLN = {"\n"};
 
     /************************************************************/
     /* Write Atom Hint                                          */
@@ -128,19 +124,32 @@ public class PrologWriterAnno extends PrologWriter {
         String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
         safeSpace(t);
         appendLink(t, cp);
-        SkelAtom sa = sc.sym;
-        String[][] fillers = (sa instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sa).getFillers() : null);
-        writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
-        if (!lastEol(fillers != null ? fillers[1] : null)) {
-            if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0 &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            } else {
-                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                    append(' ');
+        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sc.sym).getFillers() : null);
+        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+            writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+            if (!lastEol(fillers != null ? fillers[1] : null)) {
+                if ((flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                        append(' ');
+                }
+            }
+        } else {
+            writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+            if (!lastEol(fillers != null ? fillers[1] : null)) {
+                if (MARGIN < getTextOffset() &&
+                        (flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                        append(' ');
+                }
             }
         }
     }
@@ -214,11 +223,27 @@ public class PrologWriterAnno extends PrologWriter {
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
-        SkelAtom sa = sc.sym;
-        String[][] fillers = (sa instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sa).getFillers() : null);
-        writeFillerIndent(ENDLINE, fillers != null ? fillers[0] : null);
+        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sc.sym).getFillers() : null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[0] : null);
+        if (!lastEol(fillers != null ? fillers[0] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
         write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+        if (!lastEol(fillers != null ? fillers[1] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
         spez = backspez;
         offset = backoffset;
         shift = backshift;
@@ -255,7 +280,15 @@ public class PrologWriterAnno extends PrologWriter {
         shift = getShift(z);
         String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
                 ((SkelAtomAnno) sc.sym).getFillers() : null);
-        writeFillerIndent(ENDLINE, fillers != null ? fillers[0] : null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[0] : null);
+        if (!lastEol(fillers != null ? fillers[0] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
         write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
         z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -278,9 +311,9 @@ public class PrologWriterAnno extends PrologWriter {
                 appendLink(",", cp);
                 fillers = (sc.sym instanceof SkelAtomAnno ?
                         ((SkelAtomAnno) sc.sym).getFillers() : null);
-                writeFillerIndent(ENDLINE, fillers != null ? fillers[0] : null);
+                writeFiller(indent, MARGIN, fillers != null ? fillers[0] : null);
                 if (!lastEol(fillers != null ? fillers[0] : null)) {
-                    if (indent + MARGIN < getTextOffset() &&
+                    if (MARGIN < getTextOffset() &&
                             (flags & FLAG_NEWL) != 0) {
                         append(CodeType.LINE_EOL);
                         for (int i = 0; i < indent; i++)
@@ -309,6 +342,15 @@ public class PrologWriterAnno extends PrologWriter {
                 write(term, ref, Operator.LEVEL_MIDDLE, null, null);
                 break;
             } else {
+                writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+                if (!lastEol(fillers != null ? fillers[1] : null)) {
+                    if (MARGIN < getTextOffset() &&
+                            (flags & FLAG_NEWL) != 0) {
+                        append(CodeType.LINE_EOL);
+                        for (int i = 0; i < indent; i++)
+                            append(' ');
+                    }
+                }
                 break;
             }
         }
@@ -352,7 +394,15 @@ public class PrologWriterAnno extends PrologWriter {
         shift = getShift(z);
         String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
                 ((SkelAtomAnno) sc.sym).getFillers() : null);
-        writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
+        if (!lastEol(fillers != null ? fillers[j] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         for (j = 1; j < sc.args.length; j++) {
             z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
@@ -360,11 +410,9 @@ public class PrologWriterAnno extends PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            fillers = (sc.sym instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sc.sym).getFillers() : null);
-            writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
+            writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
             if (!lastEol(fillers != null ? fillers[j] : null)) {
-                if (indent + MARGIN < getTextOffset() &&
+                if (MARGIN < getTextOffset() &&
                         (flags & FLAG_NEWL) != 0) {
                     append(CodeType.LINE_EOL);
                     for (int i = 0; i < indent; i++)
@@ -376,6 +424,15 @@ public class PrologWriterAnno extends PrologWriter {
             Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
             SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
+        }
+        writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
+        if (!lastEol(fillers != null ? fillers[j] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
         }
         spez = backspez;
         offset = backoffset;
@@ -414,7 +471,7 @@ public class PrologWriterAnno extends PrologWriter {
         SkelAtom sa = sc.sym;
         String[][] fillers = (sa instanceof SkelAtomAnno ?
                 ((SkelAtomAnno) sa).getFillers() : null);
-        writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         for (j = 2; j < sc.args.length; j++) {
             z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
@@ -423,10 +480,9 @@ public class PrologWriterAnno extends PrologWriter {
             shift = getShift(z);
             append(',');
             append(' ');
-            sa = sc.sym;
-            fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
+            fillers = (sc.sym instanceof SkelAtomAnno ?
+                    ((SkelAtomAnno) sc.sym).getFillers() : null);
+            writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         }
         append(PrologReader.OP_RBRACKET);
@@ -463,10 +519,9 @@ public class PrologWriterAnno extends PrologWriter {
             spez = getSpez(z);
             offset = getOffset(z, backoffset);
             shift = getShift(z);
-            SkelAtom sa = sc.sym;
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
+            String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
+                    ((SkelAtomAnno) sc.sym).getFillers() : null);
+            writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
             write(sc.args[1], ref, Operator.LEVEL_HIGH, null, null);
         }
         append(PrologReader.OP_RBRACE);
@@ -494,7 +549,7 @@ public class PrologWriterAnno extends PrologWriter {
         if ((flags & FLAG_CMMT) != 0) {
             String[][] fillers = (sa instanceof SkelAtomAnno ?
                     ((SkelAtomAnno) sa).getFillers() : null);
-            writeFillerIndent(STANDALONE, (fillers != null ? fillers[0] : null));
+            writeFiller(indent, 0, fillers != null ? fillers[0] : null);
         }
     }
 
@@ -519,17 +574,20 @@ public class PrologWriterAnno extends PrologWriter {
         int k = predicateComments(filler);
         if ((flags & FLAG_CMMT) != 0) {
             if (filler != null)
-                writeFillerIndent(STANDALONE, filler, 0, k);
+                writeFiller(indent, 0, filler, 0, k);
         }
         if ((flags & FLAG_STMT) != 0) {
             if (filler != null)
-                writeFillerIndent(STANDALONE, filler, k, filler.length);
+                writeFiller(indent, 0, filler, k, filler.length);
             write(t, ref, lev, null, null);
             safeSpace(".");
             append(".");
-            writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
-            if (!lastEol(fillers != null ? fillers[1] : null))
-                writeFillerIndent(ENDLINE, FILLER_EOLN);
+            writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+            if (!lastEol(fillers != null ? fillers[1] : null)) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
         }
     }
 
@@ -577,27 +635,29 @@ public class PrologWriterAnno extends PrologWriter {
     /**
      * <p>Write the filler.</p>
      *
+     * @param pos    The newline position.
      * @param at     The comment position.
      * @param filler The filler.
      * @throws IOException IO error.
      */
-    private void writeFillerIndent(int at, String[] filler)
+    private void writeFiller(int pos, int at, String[] filler)
             throws IOException {
         if (filler == null)
             return;
-        writeFillerIndent(at, filler, 0, filler.length);
+        writeFiller(pos, at, filler, 0, filler.length);
     }
 
     /**
      * <p>Write a segment of a filler.</p>
      *
+     * @param pos    The newline position.
      * @param at     The comment position.
      * @param filler The filler, non null.
      * @param from   The start index, inclusive.
      * @param to     The end index, exclusive.
      * @throws IOException IO error.
      */
-    private void writeFillerIndent(int at, String[] filler, int from, int to)
+    private void writeFiller(int pos, int at, String[] filler, int from, int to)
             throws IOException {
         for (int j = from; j < to; j++) {
             String str = filler[j];
@@ -608,11 +668,11 @@ public class PrologWriterAnno extends PrologWriter {
                     append(' ');
                 safeSpace(str);
             } else {
-                at = STANDALONE;
+                at = 0;
             }
             append(str);
             if (str.length() > 0 && str.charAt(str.length() - 1) == CodeType.LINE_EOL) {
-                for (int i = 0; i < indent; i++)
+                for (int i = 0; i < pos; i++)
                     append(' ');
             }
         }

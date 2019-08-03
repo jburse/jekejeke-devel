@@ -60,7 +60,7 @@ public class PrologWriter {
     public final static String OP_DOLLAR_STR = "$STR";
 
     public final static int SPACES = 3;
-    public final static int MARGIN = 40;
+    public final static int MARGIN = 50;
 
     public final static int FLAG_QUOT = 0x00000001;
     public final static int FLAG_NUMV = 0x00000002;
@@ -917,14 +917,25 @@ public class PrologWriter {
         String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
         safeSpace(t);
         appendLink(t, cp);
-        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0 &&
-                (flags & FLAG_NEWL) != 0) {
-            append(CodeType.LINE_EOL);
-            for (int i = 0; i < indent; i++)
-                append(' ');
+        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+            if ((flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                    append(' ');
+            }
         } else {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                append(' ');
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                    append(' ');
+            }
         }
     }
 
@@ -1030,7 +1041,19 @@ public class PrologWriter {
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
+        }
         write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
+        }
         spez = backspez;
         offset = backoffset;
         shift = backshift;
@@ -1062,6 +1085,12 @@ public class PrologWriter {
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
+        }
         write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
         z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
@@ -1082,7 +1111,7 @@ public class PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 appendLink(",", cp);
-                if (indent + MARGIN < getTextOffset() &&
+                if (MARGIN < getTextOffset() &&
                         (flags & FLAG_NEWL) != 0) {
                     append(CodeType.LINE_EOL);
                     for (int i = 0; i < indent; i++)
@@ -1110,6 +1139,12 @@ public class PrologWriter {
                 write(term, ref, Operator.LEVEL_MIDDLE, null, null);
                 break;
             } else {
+                if (MARGIN < getTextOffset() &&
+                        (flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                }
                 break;
             }
         }
@@ -1148,6 +1183,12 @@ public class PrologWriter {
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
+        }
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         for (j = 1; j < sc.args.length; j++) {
             z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
@@ -1155,7 +1196,7 @@ public class PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            if (indent + MARGIN < getTextOffset() &&
+            if (MARGIN < getTextOffset() &&
                     (flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent; i++)
@@ -1166,6 +1207,12 @@ public class PrologWriter {
             Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
             SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
+        }
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
         }
         spez = backspez;
         offset = backoffset;
@@ -1334,10 +1381,7 @@ public class PrologWriter {
         }
         if (engine != null && (flags & FLAG_IGNO) == 0) {
             if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
-                int backindent = indent;
-                indent = getTextOffset() + SPACES;
                 writeSet(sc, ref, mod, nsa);
-                indent = backindent;
                 return;
             }
             if (isUnary(sc) || isIndex(sc) || isStruct(sc)) {
@@ -1346,14 +1390,12 @@ public class PrologWriter {
                 if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
-                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
                     if (needsParen(oper, backspez, level)) {
                         if ((backspez & SPEZ_FUNC) != 0)
                             append(' ');
-                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
@@ -1366,12 +1408,13 @@ public class PrologWriter {
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
                     write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
+                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                        indent -= SPACES;
                     spez = backspez;
                     offset = backoffset;
                     shift = backshift;
                     if (needsParen(oper, backspez, level))
                         append(PrologReader.OP_RPAREN);
-                    indent = backindent;
                     return;
                 }
                 oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
@@ -1379,7 +1422,6 @@ public class PrologWriter {
                 if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
-                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
@@ -1388,7 +1430,6 @@ public class PrologWriter {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
-                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                     }
                     /* left operand */
@@ -1407,15 +1448,11 @@ public class PrologWriter {
                     writePostfix(oper, sc, ref, cp, decl, mod, nsa);
                     if (needsParen(oper, backspez, level))
                         append(PrologReader.OP_RPAREN);
-                    indent = backindent;
                     return;
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                int backindent = indent;
-                indent = getTextOffset() + SPACES;
                 writeList(sc, ref, mod, nsa);
-                indent = backindent;
                 return;
             }
             if (isBinary(sc)) {
@@ -1424,7 +1461,6 @@ public class PrologWriter {
                 if (oper != null && oper.getLevel() != 0) {
                     CachePredicate cp = offsetToPredicate(term, mod, nsa);
                     Object[] decl = predicateToMeta(cp);
-                    int backindent = indent;
                     int backspez = spez;
                     int backoffset = offset;
                     int backshift = shift;
@@ -1433,7 +1469,6 @@ public class PrologWriter {
                             append(' ');
                             spez &= ~(SPEZ_FUNC | SPEZ_MINS);
                         }
-                        indent = getTextOffset() + 1;
                         append(PrologReader.OP_LPAREN);
                     }
                     /* left operand */
@@ -1459,20 +1494,18 @@ public class PrologWriter {
                     Object mod2 = decodeQualification(sc, ref);
                     SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
                     write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
+                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                        indent -= SPACES;
                     spez = backspez;
                     offset = backoffset;
                     shift = backshift;
                     if (needsParen(oper, backspez, level))
                         append(PrologReader.OP_RPAREN);
-                    indent = backindent;
                     return;
                 }
             }
         }
-        int backindent = indent;
-        indent = getTextOffset() + SPACES;
         writeCompound(sc, ref, mod, nsa);
-        indent = backindent;
     }
 
     /**
