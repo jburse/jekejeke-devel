@@ -70,7 +70,7 @@ put_byte(Stream, Byte) :-
    sys_put_byte(Stream, Byte).
 
 :- private sys_put_byte/2.
-:- foreign(sys_put_byte/2, 'ForeignByte', 
+:- foreign(sys_put_byte/2, 'ForeignByte',
       sysPutByte('OutputStream', 'Integer')).
 
 /**
@@ -123,7 +123,7 @@ peek_byte(Stream, Byte) :-
    sys_peek_byte(Stream, Byte).
 
 :- private sys_peek_byte/2.
-:- foreign(sys_peek_byte/2, 'ForeignByte', 
+:- foreign(sys_peek_byte/2, 'ForeignByte',
       sysPeekByte('InputStream')).
 
 /****************************************************************/
@@ -151,6 +151,7 @@ flush_output(Alias) :- atom(Alias), !,
 flush_output(Stream) :-
    sys_flush_output(Stream).
 
+:- private sys_flush_output/1.
 :- virtual sys_flush_output/1.
 :- foreign(sys_flush_output/1, 'Flushable', flush).
 
@@ -176,7 +177,7 @@ at_end_of_stream(Stream) :-
    sys_at_end_of_stream(Stream).
 
 :- private sys_at_end_of_stream/1.
-:- foreign(sys_at_end_of_stream/1, 'ForeignByte', 
+:- foreign(sys_at_end_of_stream/1, 'ForeignByte',
       sysAtEndOfStream('Object')).
 
 /****************************************************************/
@@ -203,7 +204,7 @@ read_block(Stream, Length, Block) :-
    sys_read_block(Stream, Length, Block).
 
 :- private sys_read_block/3.
-:- foreign(sys_read_block/3, 'ForeignByte', 
+:- foreign(sys_read_block/3, 'ForeignByte',
       sysReadBlock('InputStream', 'Integer')).
 
 /**
@@ -226,5 +227,5 @@ write_block(Stream, Block) :-
    sys_write_block(Stream, Block).
 
 :- private sys_write_block/2.
-:- foreign(sys_write_block/2, 'ForeignByte', 
+:- foreign(sys_write_block/2, 'ForeignByte',
       sysWriteBlock('OutputStream', {byte})).

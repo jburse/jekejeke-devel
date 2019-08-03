@@ -171,7 +171,8 @@ write_term(Alias, Term, Opt) :-
 write_term(Stream, Term, Opt) :-
    sys_write_term(Stream, Term, Opt).
 
-:- foreign(sys_write_term/3, 'ForeignTerm', 
+:- private sys_write_term/3.
+:- foreign(sys_write_term/3, 'ForeignTerm',
       sysWriteTerm('Interpreter', 'Writer', 'AbstractTerm', 'Object')).
 
 /**
@@ -223,5 +224,5 @@ read_term(Stream, Term, Opt) :-
    sys_read_term(Stream, Opt, Term).
 
 :- private sys_read_term/3.
-:- foreign(sys_read_term/3, 'ForeignTerm', 
+:- foreign(sys_read_term/3, 'ForeignTerm',
       sysReadTerm('Interpreter', 'Reader', 'Object')).

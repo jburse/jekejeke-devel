@@ -79,7 +79,7 @@
  */
 % pipe_put(+Pipe, +Term)
 :- public pipe_put/2.
-:- foreign(pipe_put/2, 'ForeignPipe', 
+:- foreign(pipe_put/2, 'ForeignPipe',
       sysPipePut('Interpreter', 'InterfacePipe', 'AbstractTerm')).
 
 /**
@@ -89,7 +89,7 @@
  */
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
-:- foreign(pipe_offer/2, 'ForeignPipe', 
+:- foreign(pipe_offer/2, 'ForeignPipe',
       sysPipeOffer('Interpreter', 'Queue', 'AbstractTerm')).
 
 /**
@@ -99,7 +99,7 @@
  */
 % pipe_offer(+Pipe, +Term, +Integer)
 :- public pipe_offer/3.
-:- foreign(pipe_offer/3, 'ForeignPipe', 
+:- foreign(pipe_offer/3, 'ForeignPipe',
       sysPipeOffer('Interpreter', 'Queue', 'AbstractTerm', long)).
 
 /**

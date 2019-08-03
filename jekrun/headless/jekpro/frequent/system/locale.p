@@ -91,7 +91,7 @@ get_properties(Slash, Locale, Props) :-
    sys_get_properties(Pin, Locale, Props).
 
 :- private sys_get_properties/3.
-:- foreign(sys_get_properties/3, 'ForeignLocale', 
+:- foreign(sys_get_properties/3, 'ForeignLocale',
       sysGetLang('Interpreter', 'String', 'String')).
 
 /**
@@ -110,7 +110,7 @@ get_error_properties(Props) :-
 
 % get_error_properties(+Locale, -Props)
 :- public get_error_properties/2.
-:- foreign(get_error_properties/2, 'ForeignLocale', 
+:- foreign(get_error_properties/2, 'ForeignLocale',
       sysGetErrorProperties('Interpreter', 'String')).
 
 /**
@@ -122,12 +122,12 @@ get_error_properties(Props) :-
  */
 % get_property(+Props, +Atom, -Atom)
 :- public get_property/3.
-:- foreign(get_property/3, 'ForeignLocale', 
+:- foreign(get_property/3, 'ForeignLocale',
       sysGetProperty('Properties', 'String')).
 
 % get_property(+Props, +Atom, +Atom, -Atom)
 :- public get_property/4.
-:- foreign(get_property/4, 'ForeignLocale', 
+:- foreign(get_property/4, 'ForeignLocale',
       sysGetProperty('Properties', 'String', 'String')).
 
 /**
@@ -145,7 +145,7 @@ format_atom(Format, Arguments, Atom) :-
 
 % format_atom(+Locale, +Format, +List, -Atom)
 :- public format_atom/4.
-:- foreign(format_atom/4, 'ForeignLocale', 
+:- foreign(format_atom/4, 'ForeignLocale',
       sysFormatToString('Interpreter', 'String', 'String', 'Object')).
 
 /**
@@ -163,7 +163,7 @@ message_make(Props, Term, Atom) :-
 
 % message_make(+Locale, +Props, +Term, -Atom)
 :- public message_make/4.
-:- foreign(message_make/4, 'ForeignLocale', 
+:- foreign(message_make/4, 'ForeignLocale',
       sysMessageMake('Interpreter', 'String', 'Properties', 'Object')).
 
 /**
@@ -181,7 +181,7 @@ get_descr_model(Capability, Props) :-
 
 % get_descr_model(+Locale, +Capability, -Props)
 :- public get_descr_model/3.
-:- foreign(get_descr_model/3, 'ForeignLocale', 
+:- foreign(get_descr_model/3, 'ForeignLocale',
       sysGetDescrModel('Interpreter', 'String', 'String')).
 
 /**
@@ -199,5 +199,5 @@ get_descr_platform(Capability, Props) :-
 
 % get_descr_platform(+Locale, +Capability, -Props)
 :- public get_descr_platform/3.
-:- foreign(get_descr_platform/3, 'ForeignLocale', 
+:- foreign(get_descr_platform/3, 'ForeignLocale',
       sysGetDescrPlatform('Interpreter', 'String', 'String')).

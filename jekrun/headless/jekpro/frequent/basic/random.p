@@ -128,7 +128,7 @@ random(M, N) :-
  */
 % random_next(+Random, +Number, -Number)
 :- public random_next/3.
-:- foreign(random_next/3, 'ForeignRandom', 
+:- foreign(random_next/3, 'ForeignRandom',
       sysRandomNext('Random', 'Number')).
 
 /****************************************************************/

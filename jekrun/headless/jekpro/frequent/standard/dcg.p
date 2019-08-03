@@ -369,7 +369,7 @@ user:term_expansion(phrase(P, I, O), Q) :-
 
 user:term_expansion((P --> _), _) :-
    sys_var(P), throw(error(instantiation_error, _)).
-user:term_expansion((P, B --> C), 
+user:term_expansion((P, B --> C),
         (phrase(P, I, O) :- sys_phrase(C, I, H), phrase(B, O, H))).
-user:term_expansion((P --> B), 
+user:term_expansion((P --> B),
         (phrase(P, I, O) :- sys_phrase(B, I, O))).
