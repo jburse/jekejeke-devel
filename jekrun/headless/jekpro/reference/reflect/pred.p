@@ -85,15 +85,10 @@
  * The predicate sets the predicate P to static.
  */
 % static +Indicators
-static [P|Q] :- !,
-   sys_static(P),
-   static(Q).
-static P, Q :- !,
-   sys_static(P),
-   static(Q).
+static [P|Q] :- !, sys_static(P), static(Q).
+static P, Q :- !, sys_static(P), static(Q).
 static [] :- !.
-static P :-
-   sys_static(P).
+static P :- sys_static(P).
 :- set_predicate_property((static)/1, visible(public)).
 
 sys_static(I) :-
@@ -109,8 +104,7 @@ sys_static(I) :-
  * The predicate succeeds for the visible predicates P.
  */
 % current_predicate(-Indicator)
-current_predicate(I) :-
-   ground(I), !,
+current_predicate(I) :- ground(I), !,
    sys_current_predicate_chk(I).
 current_predicate(I) :-
    sys_current_predicate(L),
@@ -128,11 +122,9 @@ current_predicate(I) :-
  * The predicate succeeds for the properties Q of the predicate P.
  */
 % predicate_property(+-Indicator, -+Property)
-predicate_property(I, R) :-
-   ground(I), !,
+predicate_property(I, R) :- ground(I), !,
    sys_predicate_property2(I, R).
-predicate_property(I, R) :-
-   var(R), !,
+predicate_property(I, R) :- var(R), !,
    sys_current_predicate(L),
    sys_member(I, L),
    sys_predicate_property(I, P),
@@ -143,8 +135,7 @@ predicate_property(I, R) :-
 :- set_predicate_property(predicate_property/2, visible(public)).
 
 % sys_predicate_property2(+Indicator, -Property)
-sys_predicate_property2(I, R) :-
-   var(R), !,
+sys_predicate_property2(I, R) :- var(R), !,
    sys_predicate_property(I, P),
    sys_member(R, P).
 sys_predicate_property2(I, R) :-
@@ -200,22 +191,18 @@ sys_declaration_indicator(static(I), I).
  * for the possibly quantified name F and the arity A.
  */
 % sys_make_indicator(+-NameColon, +-Integer, -+IndicatorColon)
-sys_make_indicator(F, A, I) :-
-   var(F), !,
+sys_make_indicator(F, A, I) :- var(F), !,
    sys_make_indicator2(I, F, A).
-sys_make_indicator(K, A, J) :-
-   =(K, :(M, F)), !,
+sys_make_indicator(K, A, J) :- =(K, :(M, F)), !,
    sys_make_indicator(F, A, I),
    sys_replace_site(J, K, :(M, I)).
 sys_make_indicator(F, A, F/A).
 :- set_predicate_property(sys_make_indicator/3, visible(public)).
 
 % sys_make_indicator2(+IndicatorColon, -NameColon, -Integer)
-sys_make_indicator2(I, _, _) :-
-   var(I),
+sys_make_indicator2(I, _, _) :- var(I),
    throw(error(instantiation_error, _)).
-sys_make_indicator2(J, K, A) :-
-   =(J, :(M, I)), !,
+sys_make_indicator2(J, K, A) :- =(J, :(M, I)), !,
    sys_make_indicator2(I, F, A),
    sys_replace_site(K, J, :(M, F)).
 sys_make_indicator2(F/A, G, B) :- !,
@@ -229,8 +216,7 @@ sys_make_indicator2(I, _, _) :-
  * The predicate succeeds when I is a possible quantified indicator.
  */
 % sys_is_indicator(+IndicatorColon)
-sys_is_indicator(I) :-
-   var(I), !, fail.
+sys_is_indicator(I) :- var(I), !, fail.
 sys_is_indicator(:(_, I)) :- !,
    sys_is_indicator(I).
 sys_is_indicator(_/_).

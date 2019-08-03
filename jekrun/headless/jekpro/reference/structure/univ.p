@@ -66,8 +66,7 @@
  */
 % +-Term =.. -+List
 :- public =.. /2.
-T =.. L :-
-   var(T), !,
+T =.. L :- var(T), !,
    sys_list_to_term(L, T).
 T =.. L :-
    sys_term_to_list(T, L).

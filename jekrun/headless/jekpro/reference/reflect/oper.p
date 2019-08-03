@@ -88,23 +88,16 @@
  * with mode M.
  */
 % op(+Integer, +Atom, +List)
-op(_, _, Z) :-
-   var(Z),
-   throw(error(instantiation_error, _)).
+op(_, _, Z) :- var(Z), throw(error(instantiation_error, _)).
 op(_, _, []) :- !.
-op(L, M, [Z|T]) :- !,
-   sys_oper(L, M, Z),
-   op(L, M, T).
-op(L, M, Z) :-
-   sys_oper(L, M, Z).
+op(L, M, [Z|T]) :- !, sys_oper(L, M, Z), op(L, M, T).
+op(L, M, Z) :- sys_oper(L, M, Z).
 :- set_predicate_property(op/3, visible(public)).
 
 % sys_oper(+Integer, +Atom, +Atom) :-
-sys_oper(_, M, _) :-
-   var(M), !,
+sys_oper(_, M, _) :- var(M), !,
    throw(error(instantiation_error, _)).
-sys_oper(_, _, Z) :-
-   var(Z), !,
+sys_oper(_, _, Z) :- var(Z), !,
    throw(error(instantiation_error, _)).
 sys_oper(L, M, Z) :-
    sys_make_oper(M, Z, I), !,
@@ -153,6 +146,7 @@ sys_oper3(postfix(X), _) :-
 % sys_neutral_oper(+Indicator)
 % natively bootstrapped by SpecialModel
 
+% sys_check_style_oper(+Indicator)
 :- special(sys_check_style_oper/1, 'SpecialOper', 1).
 :- set_predicate_property(sys_check_style_oper/1, visible(private)).
 
@@ -162,13 +156,11 @@ sys_oper3(postfix(X), _) :-
  * and level L.
  */
 % current_op(+Level, +Mode, -Pattern)
-current_op(L, M, C) :-
-   var(C), !,
+current_op(L, M, C) :- var(C), !,
    current_oper(I),
    oper_property(I, op(L, M)),
    sys_make_oper(M, C, I).
-current_op(L, M, C) :-
-   var(M), !,
+current_op(L, M, C) :- var(M), !,
    current_oper(I),
    oper_property(I, op(L, M)),
    sys_make_oper(M, C, I).
@@ -192,8 +184,7 @@ sys_make_oper(yfx, N, infix(N)).
  * The predicate succeeds for each user operator I.
  */
 % current_oper(-Indicator)
-current_oper(I) :-
-   ground(I), !,
+current_oper(I) :- ground(I), !,
    sys_current_oper_chk(I).
 current_oper(I) :-
    sys_current_oper(L),
@@ -213,11 +204,9 @@ current_oper(I) :-
  * see the API documentation.
  */
 % oper_property(+-Indicator, -+Property)
-oper_property(I, R) :-
-   ground(I), !,
+oper_property(I, R) :- ground(I), !,
    sys_oper_property2(I, R).
-oper_property(I, R) :-
-   var(R), !,
+oper_property(I, R) :- var(R), !,
    sys_current_oper(L),
    sys_member(I, L),
    sys_oper_property(I, P),
@@ -228,8 +217,7 @@ oper_property(I, R) :-
 :- set_predicate_property(oper_property/2, visible(public)).
 
 % sys_oper_property2(+Indicator, -Property)
-sys_oper_property2(I, R) :-
-   var(R), !,
+sys_oper_property2(I, R) :- var(R), !,
    sys_oper_property(I, P),
    sys_member(R, P).
 sys_oper_property2(I, R) :-
@@ -272,11 +260,9 @@ sys_oper_property2(I, R) :-
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(op(_, M, _), _) :-
-   var(M),
-   throw(error(instantiation_error, _)).
+   var(M), throw(error(instantiation_error, _)).
 sys_declaration_indicator(op(_, _, Z), _) :-
-   var(Z),
-   throw(error(instantiation_error, _)).
+   var(Z), throw(error(instantiation_error, _)).
 sys_declaration_indicator(op(_, M, Z), I) :-
    sys_make_oper(M, Z, I).
 

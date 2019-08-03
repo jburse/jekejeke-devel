@@ -74,8 +74,7 @@
  */
 % abort
 :- public abort/0.
-abort :-
-   throw(error(system_error(user_abort), _)).
+abort :- throw(error(system_error(user_abort), _)).
 :- set_predicate_property(abort/0, sys_notrace).
 
 /**
@@ -84,8 +83,7 @@ abort :-
  */
 % exit
 :- public exit/0.
-exit :-
-   throw(error(system_error(user_exit), _)).
+exit :- throw(error(system_error(user_exit), _)).
 :- set_predicate_property(exit/0, sys_notrace).
 
 /**
@@ -94,8 +92,7 @@ exit :-
  */
 % close
 :- public close/0.
-close :-
-   throw(error(system_error(user_close), _)).
+close :- throw(error(system_error(user_close), _)).
 :- set_predicate_property(close/0, sys_notrace).
 
 /**
@@ -125,45 +122,41 @@ break :-
 
 % sys_toplevel
 :- private sys_toplevel/0.
-sys_toplevel :- repeat,
+sys_toplevel :-
+   repeat,
    sys_trap(sys_toplevel_ask, E, 
-      (  sys_error_type(E, system_error(user_abort))
-      -> sys_error_cause(E), fail
-      ;  sys_error_type(E, system_error(user_exit))
-      -> sys_error_cause(E)
-      ;  sys_error_type(E, system_error(_))
-      -> sys_raise(E)
-      ;  sys_error_stack(E), fail)), !.
+      (sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail;
+       sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E);
+       sys_error_type(E, system_error(_)) -> sys_raise(E);
+       sys_error_stack(E), fail)), !.
 :- set_predicate_property(sys_toplevel/0, sys_notrace).
 
 % sys_toplevel_ask
 :- private sys_toplevel_ask/0.
-sys_toplevel_ask :- sys_toplevel_level, sys_toplevel_top,
+sys_toplevel_ask :-
+   sys_toplevel_level,
+   sys_toplevel_top,
    write('?- '), flush_output,
    read_term(G, [variable_names(N)]),
-   (  G == end_of_file -> true
-   ;  current_prolog_flag(sys_print_map, M),
-      setup_call_cleanup(set_prolog_flag(sys_print_map, N), 
-         sys_answer(G, N), 
-         set_prolog_flag(sys_print_map, M)), fail).
+   (G == end_of_file -> true;
+    current_prolog_flag(sys_print_map, M),
+    setup_call_cleanup(set_prolog_flag(sys_print_map, N), 
+       sys_answer(G, N), 
+       set_prolog_flag(sys_print_map, M)), fail).
 
 % sys_toplevel_level
 :- private sys_toplevel_level/0.
 sys_toplevel_level :-
    current_prolog_flag(sys_break_level, X),
    X > 0, !,
-   write('['),
-   write(X),
-   write('] ').
+   write('['), write(X), write('] ').
 sys_toplevel_level.
 
 % sys_toplevel_top
 :- private sys_toplevel_top/0.
 sys_toplevel_top :-
    top_module(N), !,
-   write('('),
-   writeq(N),
-   write(') ').
+   write('('), writeq(N), write(') ').
 sys_toplevel_top.
 
 /****************************************************************/
@@ -174,12 +167,10 @@ sys_toplevel_top.
 :- private sys_answer/2.
 sys_answer(G, N) :-
    current_prolog_flag(sys_choices, X),
-   expand_goal(G, H),
-   call_residue(H, R),
+   expand_goal(G, H), call_residue(H, R),
    current_prolog_flag(sys_choices, Y),
-   (  X =:= Y -> !,
-      sys_filter_show(N, R), nl
-   ;  sys_answer_ask(N, R) -> !; true).
+   (X =:= Y -> !, sys_filter_show(N, R), nl;
+    sys_answer_ask(N, R) -> !; true).
 sys_answer(_, _) :-
    get_properties(runtime, P),
    get_property(P, 'query.no', V),
@@ -187,12 +178,11 @@ sys_answer(_, _) :-
 
 % sys_answer_ask(+Assoc, +List)
 :- private sys_answer_ask/2.
-sys_answer_ask(N, R) :- repeat,
+sys_answer_ask(N, R) :-
+   repeat,
    sys_trap(sys_answer_prompt(N, R, Response), E, 
-      (  sys_error_type(E, system_error(_))
-      -> sys_raise(E)
-      ;  sys_error_message(E), fail)), !,
-   Response == answer_cut.
+      (sys_error_type(E, system_error(_)) -> sys_raise(E);
+       sys_error_message(E), fail)), !, Response == answer_cut.
 
 % sys_answer_prompt(+Assoc, +List, -Atom)
 :- private sys_answer_prompt/3.
@@ -207,19 +197,14 @@ sys_answer_prompt(N, R, Response) :-
 % sys_answer_show(+Assoc, +List, -Atom)
 :- private sys_answer_show/3.
 sys_answer_show(N, R, Response) :-
-   sys_filter_show(N, R),
-   write(' '), flush_output,
-   (  read_line(L) -> true; exit),
+   sys_filter_show(N, R), write(' '), flush_output,
+   (read_line(L) -> true; exit),
    thread_current(Thread),
-   (  L == ;
-   -> set_thread_flag(Thread, sys_tprompt, off)
-   ;  L == ''
-   -> set_thread_flag(Thread, sys_tprompt, answer_cut)
-   ;  L == ? -> sys_answer_help
-   ;  term_atom(G, L, [terminator(period)]),
-      once(sys_ignore(G))),
-   current_thread_flag(Thread, sys_tprompt, Response),
-   Response \== on.
+   (L == ; -> set_thread_flag(Thread, sys_tprompt, off);
+    L == '' -> set_thread_flag(Thread, sys_tprompt, answer_cut);
+    L == ? -> sys_answer_help;
+    term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
+   current_thread_flag(Thread, sys_tprompt, Response), Response \== on.
 
 % sys_answer_help
 :- private sys_answer_help/0.
@@ -249,8 +234,7 @@ sys_error_stack(E) :-
 sys_error_message(E) :-
    current_error(T),
    error_make(E, S),
-   write(T, S),
-   nl(T).
+   write(T, S), nl(T).
 
 /****************************************************************/
 /* Filter & Show Variables                                      */
@@ -295,8 +279,7 @@ sys_show_assoc([X], N) :-
 
 % sys_show_pair(+Pair, +Assoc)
 :- private sys_show_pair/2.
-sys_show_pair(X = T, N) :-
-   sys_printable_value(T, S), !,
+sys_show_pair(X = T, N) :- sys_printable_value(T, S), !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
@@ -311,8 +294,7 @@ sys_show_pair(G, N) :-
 
 % sys_show_term(+Term, +List)
 :- private sys_show_term/2.
-sys_show_term(T, L) :-
-   acyclic_term(T), !,
+sys_show_term(T, L) :- acyclic_term(T), !,
    write_term(T, L).
 sys_show_term(_, _) :-
    get_properties(runtime, P),

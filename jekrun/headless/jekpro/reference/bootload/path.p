@@ -89,6 +89,7 @@
 
 :- sys_neutral_oper(prefix(../)).
 :- set_oper_property(prefix(../), op(200, fy)).
+:- set_oper_property(prefix(../), nspr).
 :- set_oper_property(prefix(../), visible(public)).
 
 /****************************************************************/
@@ -166,8 +167,7 @@ sys_current_file_extension(E, O) :-
  * path option. For a list of options see the API documentation.
  */
 % absolute_file_name(+Slash, -Pin)
-absolute_file_name(Slash, Pin) :-
-   ground(Slash), !,
+absolute_file_name(Slash, Pin) :- ground(Slash), !,
    absolute_file_name2(Slash, Pin).
 absolute_file_name(Slash, Pin) :-
    sys_absolute_file_name2(Pin, Slash).
@@ -181,8 +181,7 @@ absolute_file_name2(Slash, _) :-
 :- set_predicate_property(absolute_file_name2/2, visible(private)).
 
 % absolute_file_name(+Slash, -Pin, +Opt)
-absolute_file_name(Slash, Pin, Opt) :-
-   ground(Slash), !,
+absolute_file_name(Slash, Pin, Opt) :- ground(Slash), !,
    absolute_file_name2(Slash, Pin, Opt).
 absolute_file_name(Slash, Pin, Opt) :-
    sys_absolute_file_name2(Pin, Slash, Opt).
@@ -379,16 +378,14 @@ sys_absolute_resource_name(Slash, Pin) :-
  * Succeeds when B unifies with the atom representing the path A.
  */
 % sys_path_to_atom(+-Slash, -+Atom)
-sys_path_to_atom(Slash, Atom) :-
-   var(Atom), !,
+sys_path_to_atom(Slash, Atom) :- var(Atom), !,
    sys_path_to_atom1(Slash, Atom).
 sys_path_to_atom(Slash, Atom) :-
    sys_path_to_atom2(Atom, Slash).
 :- set_predicate_property(sys_path_to_atom/2, visible(private)).
 
 % sys_path_to_atom(+Slash, -Atom)
-sys_path_to_atom1(Slash, _) :-
-   var(Slash),
+sys_path_to_atom1(Slash, _) :- var(Slash),
    throw(error(instantiation_error, _)).
 sys_path_to_atom1({Dir}, Path) :- !,
    sys_path_to_atom1(Dir, Y),
@@ -397,11 +394,10 @@ sys_path_to_atom1(Dir/Name, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(Y, /, H),
    sys_atom_concat(H, Name, Path).
-sys_path_to_atom1(../ Dir, Path) :- !,
+sys_path_to_atom1(../Dir, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(../, Y, Path).
-sys_path_to_atom1(X, Path) :-
-   sys_atom(X), !,
+sys_path_to_atom1(X, Path) :- sys_atom(X), !,
    =(X, Path).
 sys_path_to_atom1(X, _) :-
    throw(error(type_error(path, X), _)).
@@ -419,7 +415,7 @@ sys_path_to_atom2(Path, Dir/Name) :-
    \+ last_sub_atom(X, _, 0, /..), !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
-sys_path_to_atom2(Path, ../ Dir) :-
+sys_path_to_atom2(Path, ../Dir) :-
    sub_atom(Path, 0, _, After, ../),
    last_sub_atom(Path, After, 0, X),
    \+ =(X, ''), !,

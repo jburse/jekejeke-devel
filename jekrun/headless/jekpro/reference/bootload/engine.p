@@ -51,8 +51,7 @@
  */
 % current_prolog_flag(-Atom, -Term)
 :- public current_prolog_flag/2.
-current_prolog_flag(Flag, Value) :-
-   var(Flag), !,
+current_prolog_flag(Flag, Value) :- var(Flag), !,
    sys_current_flag(Flag),
    sys_get_flag(Flag, Value).
 current_prolog_flag(Flag, Value) :-
@@ -84,8 +83,7 @@ current_prolog_flag(Flag, Value) :-
  */
 % halt
 :- public halt/0.
-halt :-
-   halt(0).
+halt :- halt(0).
 
 % halt(+Integer)
 :- public halt/1.
@@ -154,8 +152,9 @@ end_module :-
 % end_all_modules
 :- public end_all_modules/0.
 end_all_modules :-
-   sys_count_stack(C),
-   >=(C, 2), !, end_module, end_all_modules.
+   sys_count_stack(C), >=(C, 2), !,
+   end_module,
+   end_all_modules.
 end_all_modules.
 
 /**

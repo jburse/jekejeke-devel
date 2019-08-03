@@ -122,8 +122,7 @@ sys_current_capability(Cap) :-
  */
 % sys_capability_property(+Capa, -Prop)
 :- public sys_capability_property/2.
-sys_capability_property(Cap, Prop) :-
-   var(Prop), !,
+sys_capability_property(Cap, Prop) :- var(Prop), !,
    sys_get_capability_properties(Cap, Props),
    sys_member(Prop, Props).
 sys_capability_property(Cap, Prop) :-

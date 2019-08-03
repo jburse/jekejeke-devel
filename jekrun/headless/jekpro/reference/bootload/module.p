@@ -93,9 +93,7 @@
  * directive.
  */
 % package(+Callable)
-package(P) :-
-   var(P),
-   throw(error(instantiation_error, _)).
+package(P) :- var(P), throw(error(instantiation_error, _)).
 package(library(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, package(library(P))).
@@ -114,9 +112,7 @@ package(P) :-
  * directive.
  */
 % use_package(+Callable)
-use_package(P) :-
-   var(P),
-   throw(error(instantiation_error, _)).
+use_package(P) :- var(P), throw(error(instantiation_error, _)).
 use_package(library(P)) :- !,
    sys_context_property(P, C),
    set_source_property(C, use_package(library(P))).
@@ -134,11 +130,8 @@ use_package(P) :-
  * setting the syntax operators and predicates L to public.
  */
 % module(+Atom, +Indicators)
-module(N, _) :-
-   var(N),
-   throw(error(instantiation_error, _)).
-module(N, L) :-
-   =(N, user), !,
+module(N, _) :- var(N), throw(error(instantiation_error, _)).
+module(N, L) :- =(N, user), !,
    sys_context_property(N, C),
    reset_source_property(C, sys_source_visible(public)),
    public(L).
@@ -236,23 +229,15 @@ sys_add_resource(Path) :-
  * The predicate sets the operator, evaluable or predicate P to private.
  */
 % private +Indicators
-private [P|Q] :- !,
-   sys_private(P),
-   private(Q).
-private P, Q :- !,
-   sys_private(P),
-   private(Q).
+private [P|Q] :- !, sys_private(P), private(Q).
+private P, Q :- !, sys_private(P), private(Q).
 private [] :- !.
-private P :-
-   sys_private(P).
+private P :- sys_private(P).
 :- set_predicate_property((private)/1, visible(public)).
 
 % sys_private(+IndicatorOrOperator)
-sys_private(X) :-
-   var(X),
-   throw(error(instantiation_error, _)).
-sys_private(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_private(X) :- var(X), throw(error(instantiation_error, _)).
+sys_private(D) :- sys_declaration_indicator(D, I), !,
    sys_private(I),
    call(D).
 sys_private(prefix(X)) :- !,
@@ -274,23 +259,15 @@ sys_private(I) :-
  * The predicate sets the operator, evaluable or predicate P to public.
  */
 % public +Indicators
-public [P|Q] :- !,
-   sys_public(P),
-   public(Q).
-public P, Q :- !,
-   sys_public(P),
-   public(Q).
+public [P|Q] :- !, sys_public(P), public(Q).
+public P, Q :- !, sys_public(P), public(Q).
 public [] :- !.
-public P :-
-   sys_public(P).
+public P :- sys_public(P).
 :- set_predicate_property((public)/1, visible(public)).
 
 % sys_public(+IndicatorOrOperator)
-sys_public(X) :-
-   var(X),
-   throw(error(instantiation_error, _)).
-sys_public(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_public(X) :- var(X), throw(error(instantiation_error, _)).
+sys_public(D) :- sys_declaration_indicator(D, I), !,
    sys_public(I),
    call(D).
 sys_public(prefix(X)) :- !,
@@ -305,8 +282,8 @@ sys_public(postfix(X)) :- !,
 sys_public(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
-   once((  predicate_property(I, sys_usage(D)),
-           \+ =(C, D))),
+   once((predicate_property(I, sys_usage(D)),
+         \+ =(C, D))),
    \+ predicate_property(I, sys_public(D)),
    throw(error(permission_error(promote, public, I), _)).
 sys_public(I) :-
@@ -322,23 +299,15 @@ sys_public(I) :-
  * The predicate sets the predicate indicator I to override.
  */
 % override(+Indicators)
-override [P|Q] :- !,
-   sys_override(P),
-   override(Q).
-override P, Q :- !,
-   sys_override(P),
-   override(Q).
+override [P|Q] :- !, sys_override(P), override(Q).
+override P, Q :- !, sys_override(P), override(Q).
 override [] :- !.
-override P :-
-   sys_override(P).
+override P :- sys_override(P).
 :- set_predicate_property((override)/1, visible(public)).
 
 % sys_override(+Indicator)
-sys_override(V) :-
-   var(V),
-   throw(error(instantiation_error, _)).
-sys_override(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_override(V) :- var(V), throw(error(instantiation_error, _)).
+sys_override(D) :- sys_declaration_indicator(D, I), !,
    sys_override(I),
    call(D).
 sys_override(prefix(X)) :- !,
@@ -366,12 +335,9 @@ sys_override(I) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator(public(D), I) :-
-   sys_declaration_indicator(D, I).
-sys_declaration_indicator(private(D), I) :-
-   sys_declaration_indicator(D, I).
-sys_declaration_indicator(override(D), I) :-
-   sys_declaration_indicator(D, I).
+sys_declaration_indicator(public(D), I) :- sys_declaration_indicator(D, I).
+sys_declaration_indicator(private(D), I) :- sys_declaration_indicator(D, I).
+sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 
 /********************************************************/
 /* Load Rest                                            */

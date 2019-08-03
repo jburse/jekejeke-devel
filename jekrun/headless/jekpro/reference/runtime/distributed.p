@@ -116,12 +116,12 @@ balance(P) :-
 :- meta_predicate balance(0, ?).
 balance(P, N) :-
    sys_goal_globals(P, J),
-   sys_goal_kernel(P, (  G, T)),
+   sys_goal_kernel(P, (G, T)),
    term_variables(G, I),
    pipe_new(N, F),
    sys_group_clean(Z),
    sys_thread_init(Z, sys_put_all(I, G, F, N)),
-   horde2(Z, J, (  sys_take_all(I, F, 1), T), N).
+   horde2(Z, J, (sys_take_all(I, F, 1), T), N).
 
 /**
  * setup_balance(V1^..Vn^(S, G, T)):
@@ -142,13 +142,12 @@ setup_balance(Q) :-
 :- meta_predicate setup_balance(0, ?).
 setup_balance(Q, N) :-
    sys_goal_globals(Q, J),
-   sys_goal_kernel(Q, (  S, G, T)),
+   sys_goal_kernel(Q, (S, G, T)),
    term_variables(G, I),
    pipe_new(N, F),
    sys_group_clean(Z),
    sys_thread_init(Z, sys_put_all(I, G, F, N)),
-   horde2(Z, J, (  S,
-                   sys_take_all(I, F, 1), T), N).
+   horde2(Z, J, (S, sys_take_all(I, F, 1), T), N).
 
 /**
  * submit(C, N):
@@ -188,12 +187,12 @@ sys_take_all(T, Q, N) :-
 
 % sys_take_all2(+Term, +Queue)
 :- private sys_take_all2/2.
-sys_take_all2(T, Q) :- repeat,
+sys_take_all2(T, Q) :-
+   repeat,
    pipe_take(Q, A),
-   (  A = the(S)
-   -> S = T
-   ;  A = ball(E)
-   -> sys_raise(E); !, fail).
+   (A = the(S) -> S = T;
+    A = ball(E) -> sys_raise(E);
+    !, fail).
 
 /**
  * sys_put_all(T, G, Q, N):
@@ -205,18 +204,20 @@ sys_take_all2(T, Q) :- repeat,
 sys_put_all(T, G, Q, N) :-
    sys_trap(sys_put_all2(T, G, Q, N), 
       E, 
-      (  sys_error_type(E, system_error(_))
-      -> sys_raise(E)
-      ;  pipe_put(Q, ball(E)))).
+      (sys_error_type(E, system_error(_)) -> sys_raise(E);
+       pipe_put(Q, ball(E)))).
 
 % sys_put_all2(+Term, +Goal, +Queue, +Integer)
 :- private sys_put_all2/4.
 :- meta_predicate sys_put_all2(?, 0, ?, ?).
-sys_put_all2(T, G, Q, _) :- G,
-   pipe_put(Q, the(T)), fail.
+sys_put_all2(T, G, Q, _) :-
+   G,
+   pipe_put(Q, the(T)),
+   fail.
 sys_put_all2(_, _, Q, N) :-
    between(1, N, _),
-   pipe_put(Q, no), fail.
+   pipe_put(Q, no),
+   fail.
 sys_put_all2(_, _, _, _).
 
 /**********************************************************/
@@ -233,8 +234,8 @@ sys_put_all2(_, _, _, _).
 :- private sys_group_clean/1.
 :- meta_predicate sys_group_clean(?).
 sys_group_clean(G) :-
-   sys_atomic((  group_new(G),
-                 sys_cleanup(sys_group_fini(G)))).
+   sys_atomic((group_new(G),
+               sys_cleanup(sys_group_fini(G)))).
 
 /**
  * sys_group_fini(G):
@@ -242,8 +243,7 @@ sys_group_clean(G) :-
  */
 % sys_group_fini(+Group)
 :- private sys_group_fini/1.
-sys_group_fini(Group) :-
-   group_thread(Group, Thread), !,
+sys_group_fini(Group) :- group_thread(Group, Thread), !,
    sys_thread_fini(Thread),
    sys_group_fini(Group).
 sys_group_fini(_).
@@ -283,8 +283,7 @@ sys_thread_init(Group, Goal) :-
 :- private sys_thread_inits/3.
 :- meta_predicate sys_thread_inits(?, 0, ?).
 sys_thread_inits(_, _, 0) :- !.
-sys_thread_inits(Group, Goal, N) :-
-   N > 0,
+sys_thread_inits(Group, Goal, N) :- N > 0,
    sys_thread_init(Group, Goal),
    M is N-1,
    sys_thread_inits(Group, Goal, M).

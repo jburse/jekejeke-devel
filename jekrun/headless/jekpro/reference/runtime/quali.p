@@ -82,13 +82,9 @@
 
 :- public infix(:).
 :- op(600, xfy, :).
-:- set_oper_property(infix(:), nspl).
-:- set_oper_property(infix(:), nspr).
 
 :- public infix(::).
 :- op(600, xfy, ::).
-:- set_oper_property(infix(::), nspl).
-:- set_oper_property(infix(::), nspr).
 
 /*******************************************************/
 /* Qualified Calls & Evaluations                       */
@@ -299,15 +295,12 @@ sys_type_callable(S, 0) :-
  */
 % sys_functor(+-Term, -+Term, -+Integer)
 :- public sys_functor/3.
-sys_functor(T, F, A) :-
-   var(T), !,
+sys_functor(T, F, A) :- var(T), !,
    sys_functor2(F, A, T).
-sys_functor(K, J, A) :-
-   K = M:T, !,
+sys_functor(K, J, A) :- K = M:T, !,
    sys_functor(T, F, A),
    sys_replace_site(J, K, M:F).
-sys_functor(K, J, B) :-
-   K = R::T, !,
+sys_functor(K, J, B) :- K = R::T, !,
    sys_get_module(R, M),
    sys_functor(T, F, A),
    sys_replace_site(J, K, M:F),
@@ -317,11 +310,9 @@ sys_functor(T, F, A) :-
 
 % sys_functor2(+Term, +Integer, -Term)
 :- private sys_functor2/3.
-sys_functor2(F, _, _) :-
-   var(F),
+sys_functor2(F, _, _) :- var(F),
    throw(error(instantiation_error, _)).
-sys_functor2(J, A, K) :-
-   J = M:F, !,
+sys_functor2(J, A, K) :- J = M:F, !,
    sys_functor2(F, A, T),
    sys_replace_site(K, J, M:T).
 sys_functor2(F, A, T) :-
@@ -334,38 +325,30 @@ sys_functor2(F, A, T) :-
  */
 % sys_univ(+-Term, -+List)
 :- public sys_univ/2.
-sys_univ(T, U) :-
-   var(T), !,
+sys_univ(T, U) :- var(T), !,
    sys_univ2(U, T).
-sys_univ(K, [J|L]) :-
-   K = M:T, !,
+sys_univ(K, [J|L]) :- K = M:T, !,
    sys_univ(T, [F|L]),
    sys_replace_site(J, K, M:F).
-sys_univ(K, [J, R|L]) :-
-   K = R::T, !,
+sys_univ(K, [J, R|L]) :- K = R::T, !,
    sys_get_module(R, M),
    sys_univ(T, [F|L]),
    sys_replace_site(J, K, M:F).
-sys_univ(T, U) :-
-   T =.. U.
+sys_univ(T, U) :- T =.. U.
 
 % sys_univ2(+List, -Term)
 :- private sys_univ2/2.
-sys_univ2([F|_], _) :-
-   var(F),
+sys_univ2([F|_], _) :- var(F),
    throw(error(instantiation_error, _)).
-sys_univ2([J, R|L], K) :-
-   J = M:F,
+sys_univ2([J, R|L], K) :- J = M:F,
    sys_get_module_test(R, N),
    N == M, !,
    sys_univ2([F|L], T),
    sys_replace_site(K, J, R::T).
-sys_univ2([J|L], K) :-
-   J = M:F, !,
+sys_univ2([J|L], K) :- J = M:F, !,
    sys_univ2([F|L], T),
    sys_replace_site(K, J, M:T).
-sys_univ2(U, T) :-
-   T =.. U.
+sys_univ2(U, T) :- T =.. U.
 
 /**
  * sys_get_module(O, M):
@@ -374,8 +357,7 @@ sys_univ2(U, T) :-
  */
 % sys_get_module(+Term, -Term)
 :- public sys_get_module/2.
-sys_get_module(O, _) :-
-   var(O),
+sys_get_module(O, _) :- var(O),
    throw(error(instantiation_error, _)).
 sys_get_module(O, M) :-
    sys_get_module_test(O, N), !,
@@ -385,15 +367,12 @@ sys_get_module(O, _) :-
 
 % sys_get_module_test(+Term, -Term)
 :- private sys_get_module_test/2.
-sys_get_module_test(O, _) :-
-   var(O), !, fail.
-sys_get_module_test(K, J) :-
-   K = R/O, !,
+sys_get_module_test(O, _) :- var(O), !, fail.
+sys_get_module_test(K, J) :- K = R/O, !,
    callable(O),
    functor(O, M, _),
    sys_replace_site(J, K, R/M).
-sys_get_module_test(O, M) :-
-   reference(O), !,
+sys_get_module_test(O, M) :- reference(O), !,
    sys_get_class(O, M).
 sys_get_module_test(O, M) :-
    callable(O),
