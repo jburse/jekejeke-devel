@@ -276,10 +276,19 @@ public class PrologWriterAnno extends PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 appendLink(",", cp);
-                append(' ');
                 fillers = (sc.sym instanceof SkelAtomAnno ?
                         ((SkelAtomAnno) sc.sym).getFillers() : null);
                 writeFillerIndent(ENDLINE, fillers != null ? fillers[0] : null);
+                if (!lastEol(fillers != null ? fillers[0] : null)) {
+                    if (indent + MARGIN < getTextOffset() &&
+                            (flags & FLAG_NEWL) != 0) {
+                        append(CodeType.LINE_EOL);
+                        for (int i = 0; i < indent; i++)
+                            append(' ');
+                    } else {
+                        append(' ');
+                    }
+                }
                 decl = predicateToMeta(cp);
                 backspez = spez;
                 backoffset = offset;
@@ -351,10 +360,19 @@ public class PrologWriterAnno extends PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            append(' ');
             fillers = (sc.sym instanceof SkelAtomAnno ?
                     ((SkelAtomAnno) sc.sym).getFillers() : null);
             writeFillerIndent(ENDLINE, fillers != null ? fillers[j] : null);
+            if (!lastEol(fillers != null ? fillers[j] : null)) {
+                if (indent + MARGIN < getTextOffset() &&
+                        (flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    append(' ');
+                }
+            }
             Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
             SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);

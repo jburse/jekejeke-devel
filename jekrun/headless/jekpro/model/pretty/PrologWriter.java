@@ -60,6 +60,7 @@ public class PrologWriter {
     public final static String OP_DOLLAR_STR = "$STR";
 
     public final static int SPACES = 3;
+    public final static int MARGIN = 40;
 
     public final static int FLAG_QUOT = 0x00000001;
     public final static int FLAG_NUMV = 0x00000002;
@@ -82,10 +83,6 @@ public class PrologWriter {
     public final static int SPEZ_LEFT = 0x00000002;
     public final static int SPEZ_META = 0x00000004;
     public final static int SPEZ_EVAL = 0x00000008;
-
-    public final static int LEVEL_RULE = 1149;
-    public final static int LEVEL_DISJ = 1099;
-    public final static int LEVEL_COND = 1049;
 
     final static int SPEZ_FUNC = 0x00000100;
     final static int SPEZ_MINS = 0x00000200;
@@ -1085,7 +1082,14 @@ public class PrologWriter {
                 sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
                 appendLink(",", cp);
-                append(' ');
+                if (indent + MARGIN < getTextOffset() &&
+                        (flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                } else {
+                    append(' ');
+                }
                 decl = predicateToMeta(cp);
                 backspez = spez;
                 backoffset = offset;
@@ -1151,7 +1155,14 @@ public class PrologWriter {
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
-            append(' ');
+            if (indent + MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                append(' ');
+            }
             Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
             SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
