@@ -275,7 +275,7 @@ public class PrologReader {
      * @throws EngineException Auto load problem.
      * @throws IOException     IO error.
      */
-    public Object read(int level)
+    final Object read(int level)
             throws ScannerError, EngineMessage, EngineException, IOException {
         if (isTemplate(-1) || isTemplates(noTermChs) || isTemplates(noOperChs))
             throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,

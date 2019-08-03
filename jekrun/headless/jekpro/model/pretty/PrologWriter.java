@@ -822,7 +822,7 @@ public class PrologWriter {
      * @param obj The reference.
      * @return The string.
      */
-    public static String refToString(Object obj) {
+    private static String refToString(Object obj) {
         StringBuilder buf = new StringBuilder();
         buf.appendCodePoint(CodeType.LINE_ZERO);
         buf.appendCodePoint(ScannerToken.PREFIX_REFERENCE);
@@ -831,7 +831,116 @@ public class PrologWriter {
     }
 
     /********************************************************/
-    /* Operator Handling                                    */
+    /* Operator Handling I                                  */
+    /********************************************************/
+
+    /**
+     * <p>Write an unary term.</p>
+     *
+     * @param sc    The unary skeleton.
+     * @param ref   The unary display.
+     * @param level The level.
+     * @param mod   The module context, or null.
+     * @param nsa   The module context, or null.
+     * @param oper  The operator.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    private void writeUnary(SkelCompound sc, Display ref, int level,
+                            Object mod, SkelAtom nsa, Operator oper)
+            throws IOException, EngineException, EngineMessage {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        if (needsParen(oper, backspez, level)) {
+            if ((backspez & SPEZ_FUNC) != 0)
+                append(' ');
+            append(PrologReader.OP_LPAREN);
+            spez &= ~SPEZ_OPLE;
+        }
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+            indent += SPACES;
+        writePrefix(oper, sc.sym, cp);
+        /* right operand */
+        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        spez = (spez & (SPEZ_OPLE | SPEZ_FUNC | SPEZ_MINS)) + getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+            indent -= SPACES;
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        if (needsParen(oper, backspez, level))
+            append(PrologReader.OP_RPAREN);
+    }
+
+    /**
+     * <p>Write a binary term.</p>
+     *
+     * @param sc    The binary skeleton.
+     * @param ref   The binary display.
+     * @param level The level.
+     * @param mod   The module context, or null.
+     * @param nsa   The module context, or null.
+     * @param oper  The operator.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    private void writeBinary(SkelCompound sc, Display ref, int level,
+                             Object mod, SkelAtom nsa, Operator oper)
+            throws EngineException, EngineMessage, IOException {
+        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+        Object[] decl = predicateToMeta(cp);
+        int backspez = spez;
+        int backoffset = offset;
+        int backshift = shift;
+        if (needsParen(oper, backspez, level)) {
+            if ((backspez & SPEZ_FUNC) != 0) {
+                append(' ');
+                spez &= ~(SPEZ_FUNC | SPEZ_MINS);
+            }
+            append(PrologReader.OP_LPAREN);
+        }
+        /* left operand */
+        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
+                (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
+                getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        if (oper.getLeft() == 0)
+            spez |= SPEZ_LEFT;
+        write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
+        spez = backspez;
+        if (needsParen(oper, backspez, level))
+            spez &= ~SPEZ_OPLE;
+        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
+        spez = (spez & SPEZ_OPLE) + getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+            indent += SPACES;
+        writeInfix(oper, sc, ref, cp);
+        Object mod2 = decodeQualification(sc, ref);
+        SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
+        write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+            indent -= SPACES;
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        if (needsParen(oper, backspez, level))
+            append(PrologReader.OP_RPAREN);
+    }
+
+    /********************************************************/
+    /* Operator Handling II                                 */
     /********************************************************/
 
     /**
@@ -878,8 +987,8 @@ public class PrologWriter {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    final void writePrefix(Operator op, SkelAtom sa,
-                           CachePredicate cp)
+    private void writePrefix(Operator op, SkelAtom sa,
+                             CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
         String t = atomQuoted(op.getPortrayOrName(), 0);
         safeSpace(t);
@@ -952,9 +1061,9 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    final void writePostfix(Operator op, SkelCompound sc, Display ref,
-                            CachePredicate cp, Object[] decl,
-                            Object mod, SkelAtom nsa)
+    private void writePostfix(Operator op, SkelCompound sc, Display ref,
+                              CachePredicate cp, Object[] decl,
+                              Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
             append(' ');
@@ -1221,6 +1330,37 @@ public class PrologWriter {
     }
 
     /**
+     * <p>Check whether there is an goal/term argument.</p>
+     *
+     * @param sc  The compound skeleton.
+     * @param ref The compound display.
+     * @return True if there is a goal/term argument.
+     */
+    private boolean metaCall(SkelCompound sc, Display ref)
+            throws EngineException, EngineMessage {
+        for (int i = 0; i < sc.args.length; i++) {
+            Object term = sc.args[i];
+            engine.skel = term;
+            engine.display = ref;
+            engine.deref();
+            term = engine.skel;
+            ref = engine.display;
+            if (!(term instanceof SkelCompound))
+                continue;
+            SkelCompound sc2 = (SkelCompound) term;
+            if (!isBinary(sc2))
+                continue;
+            Operator oper = OperatorSearch.getOper(sc2.sym.scope,
+                    sc2.sym.fun, Operator.TYPE_INFIX, engine);
+            if (oper == null || oper.getLevel() == 0)
+                continue;
+            if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
+                return true;
+        }
+        return false;
+    }
+
+    /**
      * <p>Decode a qualification.</p>
      *
      * @param sc  The compound skeleton.
@@ -1331,8 +1471,8 @@ public class PrologWriter {
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    public final void write(Object term, Display ref, int level,
-                            Object mod, SkelAtom nsa)
+    final void write(Object term, Display ref, int level,
+                     Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (engine != null) {
             engine.skel = term;
@@ -1345,7 +1485,7 @@ public class PrologWriter {
             writeAtomicOrVar(term, ref, mod, nsa);
             return;
         }
-        SkelCompound sc = ((SkelCompound) term);
+        SkelCompound sc = (SkelCompound) term;
         if ((flags & FLAG_NUMV) != 0 && sc.args.length == 1 &&
                 sc.sym.fun.equals(OP_DOLLAR_VAR)) {
             Object help = sc.args[0];
@@ -1388,33 +1528,14 @@ public class PrologWriter {
                 Operator oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_PREFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
-                    CachePredicate cp = offsetToPredicate(term, mod, nsa);
-                    Object[] decl = predicateToMeta(cp);
-                    int backspez = spez;
-                    int backoffset = offset;
-                    int backshift = shift;
-                    if (needsParen(oper, backspez, level)) {
-                        if ((backspez & SPEZ_FUNC) != 0)
-                            append(' ');
-                        append(PrologReader.OP_LPAREN);
-                        spez &= ~SPEZ_OPLE;
-                    }
-                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                    if ((oper.getBits() & Operator.MASK_OPER_TABR) == 0 &&
+                            metaCall(sc, ref)) {
                         indent += SPACES;
-                    writePrefix(oper, sc.sym, cp);
-                    /* right operand */
-                    Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                    spez = (spez & (SPEZ_OPLE | SPEZ_FUNC | SPEZ_MINS)) + getSpez(z);
-                    offset = getOffset(z, backoffset);
-                    shift = getShift(z);
-                    write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
-                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                        writeUnary(sc, ref, level, mod, nsa, oper);
                         indent -= SPACES;
-                    spez = backspez;
-                    offset = backoffset;
-                    shift = backshift;
-                    if (needsParen(oper, backspez, level))
-                        append(PrologReader.OP_RPAREN);
+                    } else {
+                        writeUnary(sc, ref, level, mod, nsa, oper);
+                    }
                     return;
                 }
                 oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
@@ -1459,53 +1580,26 @@ public class PrologWriter {
                 Operator oper = OperatorSearch.getOper(sc.sym.scope,
                         sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
-                    CachePredicate cp = offsetToPredicate(term, mod, nsa);
-                    Object[] decl = predicateToMeta(cp);
-                    int backspez = spez;
-                    int backoffset = offset;
-                    int backshift = shift;
-                    if (needsParen(oper, backspez, level)) {
-                        if ((backspez & SPEZ_FUNC) != 0) {
-                            append(' ');
-                            spez &= ~(SPEZ_FUNC | SPEZ_MINS);
-                        }
-                        append(PrologReader.OP_LPAREN);
-                    }
-                    /* left operand */
-                    Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-                    spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                            (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
-                            getSpez(z);
-                    offset = getOffset(z, backoffset);
-                    shift = getShift(z);
-                    if (oper.getLeft() == 0)
-                        spez |= SPEZ_LEFT;
-                    write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
-                    spez = backspez;
-                    if (needsParen(oper, backspez, level))
-                        spez &= ~SPEZ_OPLE;
-                    z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-                    spez = (spez & SPEZ_OPLE) + getSpez(z);
-                    offset = getOffset(z, backoffset);
-                    shift = getShift(z);
-                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                    if ((oper.getBits() & Operator.MASK_OPER_NEWR) == 0 &&
+                            metaCall(sc, ref)) {
                         indent += SPACES;
-                    writeInfix(oper, sc, ref, cp);
-                    Object mod2 = decodeQualification(sc, ref);
-                    SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
-                    write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
-                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+                        writeBinary(sc, ref, level, mod, nsa, oper);
                         indent -= SPACES;
-                    spez = backspez;
-                    offset = backoffset;
-                    shift = backshift;
-                    if (needsParen(oper, backspez, level))
-                        append(PrologReader.OP_RPAREN);
+                    } else {
+                        writeBinary(sc, ref, level, mod, nsa, oper);
+                    }
                     return;
                 }
             }
         }
-        writeCompound(sc, ref, mod, nsa);
+        if (engine != null && (flags & FLAG_IGNO) == 0
+                && metaCall(sc, ref)) {
+            indent += SPACES;
+            writeCompound(sc, ref, mod, nsa);
+            indent -= SPACES;
+        } else {
+            writeCompound(sc, ref, mod, nsa);
+        }
     }
 
     /**

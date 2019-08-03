@@ -267,7 +267,7 @@ sys_multifile(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
    once((predicate_property(I, sys_usage(D)),
-   \+ =(C, D))),
+      \+ =(C, D))),
    \+ predicate_property(I, sys_multifile(D)),
    throw(error(permission_error(promote, multifile, I), _)).
 sys_multifile(I) :-
@@ -318,7 +318,7 @@ listing(I) :- ground(I), !,
    sys_listing2(I).
 listing(I) :-
    bagof(I, (sys_listing_user(U),
-   sys_listing_item_idx(U, I)), B),
+      sys_listing_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
    sys_listing_show(I, U),

@@ -125,10 +125,10 @@ break :-
 sys_toplevel :-
    repeat,
    sys_trap(sys_toplevel_ask, E,
-   (sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail;
-   sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E);
-   sys_error_type(E, system_error(_)) -> sys_raise(E);
-   sys_error_stack(E), fail)), !.
+      (sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail;
+      sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E);
+      sys_error_type(E, system_error(_)) -> sys_raise(E);
+      sys_error_stack(E), fail)), !.
 :- set_predicate_property(sys_toplevel/0, sys_notrace).
 
 % sys_toplevel_ask
@@ -181,8 +181,8 @@ sys_answer(_, _) :-
 sys_answer_ask(N, R) :-
    repeat,
    sys_trap(sys_answer_prompt(N, R, Response), E,
-   (sys_error_type(E, system_error(_)) -> sys_raise(E);
-   sys_error_message(E), fail)), !, Response == answer_cut.
+      (sys_error_type(E, system_error(_)) -> sys_raise(E);
+      sys_error_message(E), fail)), !, Response == answer_cut.
 
 % sys_answer_prompt(+Assoc, +List, -Atom)
 :- private sys_answer_prompt/3.

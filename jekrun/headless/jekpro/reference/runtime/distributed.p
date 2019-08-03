@@ -203,9 +203,9 @@ sys_take_all2(T, Q) :-
 :- meta_predicate sys_put_all(?, 0, ?, ?).
 sys_put_all(T, G, Q, N) :-
    sys_trap(sys_put_all2(T, G, Q, N),
-   E,
-   (sys_error_type(E, system_error(_)) -> sys_raise(E);
-   pipe_put(Q, ball(E)))).
+      E,
+      (sys_error_type(E, system_error(_)) -> sys_raise(E);
+      pipe_put(Q, ball(E)))).
 
 % sys_put_all2(+Term, +Goal, +Queue, +Integer)
 :- private sys_put_all2/4.
@@ -235,7 +235,7 @@ sys_put_all2(_, _, _, _).
 :- meta_predicate sys_group_clean(?).
 sys_group_clean(G) :-
    sys_atomic((group_new(G),
-   sys_cleanup(sys_group_fini(G)))).
+      sys_cleanup(sys_group_fini(G)))).
 
 /**
  * sys_group_fini(G):
