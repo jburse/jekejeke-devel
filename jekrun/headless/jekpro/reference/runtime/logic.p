@@ -57,7 +57,7 @@
 
 :- public infix(;).
 :- op(1100, xfy, ;).
-:- set_oper_property(infix(;), nspl).
+:- set_oper_property(infix(;), sys_nspl).
 
 :- public infix(->).
 :- op(1050, xfy, ->).

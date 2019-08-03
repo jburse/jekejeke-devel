@@ -920,7 +920,7 @@ public class PrologWriter {
         String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
         safeSpace(t);
         appendLink(t, cp);
-        if (oper.getLevel() > Operator.LEVEL_MIDDLE &&
+        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0 &&
                 (flags & FLAG_NEWL) != 0) {
             append(CodeType.LINE_EOL);
             for (int i = 0; i < indent; i++)
@@ -1346,14 +1346,8 @@ public class PrologWriter {
                         append(PrologReader.OP_LPAREN);
                         spez &= ~SPEZ_OPLE;
                     }
-                    if (oper.getLevel() > LEVEL_RULE &&
-                            (flags & FLAG_NEWL) != 0) {
+                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
                         indent += SPACES;
-                    } else if (oper.getLevel() > LEVEL_COND &&
-                            oper.getLevel() <= LEVEL_DISJ &&
-                            (flags & FLAG_NEWL) != 0) {
-                        indent += SPACES;
-                    }
                     writePrefix(oper, sc.sym, cp);
                     /* right operand */
                     Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
@@ -1448,14 +1442,8 @@ public class PrologWriter {
                     spez = (spez & SPEZ_OPLE) + getSpez(z);
                     offset = getOffset(z, backoffset);
                     shift = getShift(z);
-                    if (oper.getLevel() > LEVEL_RULE &&
-                            (flags & FLAG_NEWL) != 0) {
+                    if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
                         indent += SPACES;
-                    } else if (oper.getLevel() > LEVEL_COND &&
-                            oper.getLevel() <= LEVEL_DISJ &&
-                            (flags & FLAG_NEWL) != 0) {
-                        indent += SPACES;
-                    }
                     writeInfix(oper, sc, ref, cp);
                     Object mod2 = decodeQualification(sc, ref);
                     SkelAtom nsa2 = (mod2 != null ? sc.sym : null);

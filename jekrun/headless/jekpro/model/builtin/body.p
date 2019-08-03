@@ -67,16 +67,12 @@
 
 % already defined in special.p
 % :- public prefix(':-').
-% :- op(1200, fx, :-).
 
 % already defined in special.p
 % :- public infix(':-').
-% :- op(1200, xfx, :-).
 
 % already defined in special.p
 % :- public infix(',').
-% :- op(1000, xfy, ',').
-% :- set_oper_property(infix(','), nspl).
 
 /**
  * :- A:

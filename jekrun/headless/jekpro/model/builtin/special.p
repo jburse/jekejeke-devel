@@ -76,23 +76,30 @@
 
 :-(sys_neutral_oper(prefix(:-))).
 :-(set_oper_property(prefix(:-), op(1200, fx))).
+:- set_oper_property(prefix(:-), sys_newr).
+:- set_oper_property(prefix(:-), sys_tabr).
 :- set_oper_property(prefix(:-), visible(public)).
 :- sys_neutral_oper(infix(:-)).
 :- set_oper_property(infix(:-), op(1200, xfx)).
+:- set_oper_property(infix(:-), sys_newr).
+:- set_oper_property(infix(:-), sys_tabr).
 :- set_oper_property(infix(:-), visible(public)).
 :- sys_neutral_oper(infix(',')).
 :- set_oper_property(infix(','), op(1000, xfy)).
-:- set_oper_property(infix(','), nspl).
+:- set_oper_property(infix(','), sys_nspl).
+:- set_oper_property(infix(','), sys_newr).
 :- set_oper_property(infix(','), visible(public)).
 
 :- sys_neutral_oper(infix(/)).
 :- set_oper_property(infix(/), op(400, yfx)).
-:- set_oper_property(infix(/), nspl).
-:- set_oper_property(infix(/), nspr).
+:- set_oper_property(infix(/), sys_nspl).
+:- set_oper_property(infix(/), sys_nspr).
 :- set_oper_property(infix(/), visible(public)).
 
 :- sys_neutral_oper(prefix(virtual)).
 :- set_oper_property(prefix(virtual), op(1150, fy)).
+:- set_oper_property(prefix(virtual), sys_newr).
+:- set_oper_property(prefix(virtual), sys_tabr).
 :- set_oper_property(prefix(virtual), visible(public)).
 
 /**

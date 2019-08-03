@@ -89,7 +89,7 @@
 
 :- sys_neutral_oper(prefix(../)).
 :- set_oper_property(prefix(../), op(200, fy)).
-:- set_oper_property(prefix(../), nspr).
+:- set_oper_property(prefix(../), sys_nspr).
 :- set_oper_property(prefix(../), visible(public)).
 
 /****************************************************************/

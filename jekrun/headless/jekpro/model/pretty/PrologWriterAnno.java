@@ -133,8 +133,15 @@ public class PrologWriterAnno extends PrologWriter {
                 ((SkelAtomAnno) sa).getFillers() : null);
         writeFillerIndent(ENDLINE, fillers != null ? fillers[1] : null);
         if (!lastEol(fillers != null ? fillers[1] : null)) {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                append(' ');
+            if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0 &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                    append(' ');
+            }
         }
     }
 

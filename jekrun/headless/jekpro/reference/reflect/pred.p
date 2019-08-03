@@ -78,6 +78,8 @@
 
 :- sys_neutral_oper(prefix(static)).
 :- set_oper_property(prefix(static), op(1150, fx)).
+:- set_oper_property(prefix(static), sys_newr).
+:- set_oper_property(prefix(static), sys_tabr).
 :- set_oper_property(prefix(static), visible(public)).
 
 /**
