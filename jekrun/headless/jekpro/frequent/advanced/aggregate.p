@@ -263,7 +263,7 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 % revolve_lookup(+Revolve, +Term, -Pivot)
 :- private revolve_lookup/3.
 :- foreign(revolve_lookup/3, 'ForeignAggregate',
-   sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
+      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
 
 /**
  * revolve_pair(R, U):
@@ -272,7 +272,7 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 % revolve_pair(+Revolve, +Pair)
 :- private revolve_pair/2.
 :- foreign(revolve_pair/2, 'ForeignAggregate',
-   sysRevolvePair('CallOut', 'AbstractMap')).
+      sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**
  * variant_comparator(C):

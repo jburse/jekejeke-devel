@@ -70,11 +70,11 @@ text_escape(X, Y) :-
 
 :- private sys_text_escape/2.
 :- foreign(sys_text_escape/2, 'ForeignXml',
-   sysTextEscape('String')).
+      sysTextEscape('String')).
 
 :- private sys_text_unescape/2.
 :- foreign(sys_text_unescape/2, 'ForeignXml',
-   sysTextUnescape('String')).
+      sysTextUnescape('String')).
 
 /**
  * html_escpae(T):
@@ -114,11 +114,11 @@ hex_block(X, Y) :-
 
 :- private sys_hex_decode/2.
 :- foreign(sys_hex_decode/2, 'ForeignXml',
-   sysHexDecode('String')).
+      sysHexDecode('String')).
 
 :- private sys_hex_encode/2.
 :- foreign(sys_hex_encode/2, 'ForeignXml',
-   sysHexEncode({byte})).
+      sysHexEncode({byte})).
 
 /**
  * base64_block(T, E):
@@ -136,8 +136,8 @@ base64_block(X, Y) :-
 
 :- private sys_base64_decode/2.
 :- foreign(sys_base64_decode/2, 'ForeignXml',
-   sysBase64Decode('String')).
+      sysBase64Decode('String')).
 
 :- private sys_base64_encode/2.
 :- foreign(sys_base64_encode/2, 'ForeignXml',
-   sysBase64Encode({byte})).
+      sysBase64Encode({byte})).

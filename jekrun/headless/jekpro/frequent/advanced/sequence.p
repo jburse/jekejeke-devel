@@ -121,7 +121,7 @@ call_nth2(G, N) :-
  */
 % pivot_set(+Pivot, +Term)
 :- foreign(pivot_set/2, 'ForeignSequence',
-   sysPivotSet('Interpreter', 'SetEntry', 'Object')).
+      sysPivotSet('Interpreter', 'SetEntry', 'Object')).
 
 /**
  * pivot_get(P, O):

@@ -283,9 +283,9 @@ dispatch_error(Code, Session) :-
 :- private handle_error/2.
 handle_error(Code, Session) :-
    setup_call_cleanup(
-   open(Session, write, Response),
-   send_error(Code, Response),
-   close(Response)).
+      open(Session, write, Response),
+      send_error(Code, Response),
+      close(Response)).
 
 /**
  * response_error(C, O):
@@ -411,9 +411,9 @@ dispatch_text(_, _, Headers, Session) :-
 :- private handle_text/3.
 handle_text(File, Headers, Session) :-
    setup_call_cleanup(
-   open(Session, write, Response),
-   send_text(File, Headers, Response),
-   close(Response)).
+      open(Session, write, Response),
+      send_text(File, Headers, Response),
+      close(Response)).
 
 % send_text(+File, +List, +Stream)
 :- private send_text/3.
@@ -513,9 +513,9 @@ dispatch_binary(_, _, Headers, Session) :-
 :- private handle_binary/3.
 handle_binary(File, Headers, Session) :-
    setup_call_cleanup(
-   open(Session, write, Response, [type(binary)]),
-   send_binary(File, Headers, Response),
-   close(Response)).
+      open(Session, write, Response, [type(binary)]),
+      send_binary(File, Headers, Response),
+      close(Response)).
 
 % send_binary(+File, +List, +Stream)
 :- private send_binary/3.
@@ -551,9 +551,9 @@ dispatch_upgrade(Request, Session) :-
 :- private handle_upgrade/2.
 handle_upgrade(Request, Session) :-
    setup_call_cleanup(
-   open(Session, write, Output, [type(binary)]),
-   response_upgrade(Request, Output),
-   flush_output(Output)).
+      open(Session, write, Output, [type(binary)]),
+      response_upgrade(Request, Output),
+      flush_output(Output)).
 
 % response_upgrade(+Request, +Stream)
 :- private response_upgrade/2.
@@ -587,9 +587,9 @@ dispatch_redirect(Location, Session) :-
 :- private handle_redirect/2.
 handle_redirect(Location, Session) :-
    setup_call_cleanup(
-   open(Session, write, Response),
-   response_redirect(Location, Response),
-   close(Response)).
+      open(Session, write, Response),
+      response_redirect(Location, Response),
+      close(Response)).
 
 % response_redirect(+Atom, +Stream)
 :- private response_redirect/2.
@@ -719,6 +719,6 @@ dispatch_head(Code, Headers, Session) :-
 :- private handle_head/3.
 handle_head(Code, Headers, Session) :-
    setup_call_cleanup(
-   open(Session, write, Response, [type(binary)]),
-   response_binary(Code, Headers, Response),
-   close(Response)).
+      open(Session, write, Response, [type(binary)]),
+      response_binary(Code, Headers, Response),
+      close(Response)).

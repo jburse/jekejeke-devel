@@ -93,7 +93,7 @@
 :- public thread_new/2.
 :- meta_predicate thread_new(0, ?).
 :- foreign(thread_new/2, 'ForeignThread',
-   sysThreadNew('Interpreter', 'AbstractTerm')).
+      sysThreadNew('Interpreter', 'AbstractTerm')).
 
 /**
  * thread_start(T):
@@ -191,12 +191,12 @@ current_thread_flag(Thread, Flag, Value) :-
 % sys_current_thread_flag(-Atom)
 :- private sys_current_thread_flag/1.
 :- foreign(sys_current_thread_flag/1, 'ForeignThread',
-   sysCurrentThreadFlag('Interpreter', 'CallOut')).
+      sysCurrentThreadFlag('Interpreter', 'CallOut')).
 
 % sys_get_thread_flag(+Thread, +Atom, -Atomic)
 :- private sys_get_thread_flag/3.
 :- foreign(sys_get_thread_flag/3, 'ForeignThread',
-   sysGetThreadFlag('Interpreter', 'Thread', 'String')).
+      sysGetThreadFlag('Interpreter', 'Thread', 'String')).
 
 /**
  * set_thread_flag(T, F, V):
@@ -206,4 +206,4 @@ current_thread_flag(Thread, Flag, Value) :-
 % set_thread_flag(+Thread, +Atom, +Atomic)
 :- public set_thread_flag/3.
 :- foreign(set_thread_flag/3, 'ForeignThread',
-   sysSetThreadFlag('Interpreter', 'Thread', 'String', 'Object')).
+      sysSetThreadFlag('Interpreter', 'Thread', 'String', 'Object')).

@@ -311,12 +311,12 @@ pattern_compile(P, O, H) :-
 % sys_create_specimen(+Compiler, +Atom, -Compiled)
 :- private sys_create_specimen/3.
 :- foreign(sys_create_specimen/3, 'ForeignText',
-   sysCreateSpecimen('Interpreter', 'AbstractCompiler', 'String')).
+      sysCreateSpecimen('Interpreter', 'AbstractCompiler', 'String')).
 
 % sys_make_pattern(+Compiler, +Atom, +Integer, -Compiled)
 :- private sys_make_pattern/4.
 :- foreign(sys_make_pattern/4, 'ForeignText',
-   sysMakePattern('Interpreter', 'AbstractCompiler', 'String', int)).
+      sysMakePattern('Interpreter', 'AbstractCompiler', 'String', int)).
 
 /**
  * compiled_match(H, S):
