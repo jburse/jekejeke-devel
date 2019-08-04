@@ -392,8 +392,7 @@ public class PrologReader {
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
                                     st.getTokenOffset());
                         SkelAtom help = makePos(oper.getAliasOrName(), pos);
-                        Object jill = read(oper.getLevel() - oper.getRight());
-                        skel = new SkelCompound(help, jill);
+                        skel = readPrefix(help, oper);
                         current = oper.getLevel();
                     } else {
                         skel = makePos((String) skel, pos);
@@ -504,6 +503,23 @@ public class PrologReader {
     /*********************************************************************/
     /* Special Operators                                                 */
     /*********************************************************************/
+
+    /**
+     * <p>Reads an prefix.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param help The functor.
+     * @param oper The operator.
+     * @return The preiîx.
+     * @throws ScannerError    Error and position.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected Object readPrefix(SkelAtom help, Operator oper)
+            throws EngineException, IOException, ScannerError, EngineMessage {
+        Object jill = read(oper.getLevel() - oper.getRight());
+        return new SkelCompound(help, jill);
+    }
 
     /**
      * <p>Reads an infix.</p>

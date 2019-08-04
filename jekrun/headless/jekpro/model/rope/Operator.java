@@ -43,7 +43,7 @@ import java.io.Reader;
  */
 public class Operator {
     public final static int LEVEL_HIGH = 1200;
-    public final static int LEVEL_MIDDLE = 999;
+    public final static int LEVEL_MIDDLE = 949;
 
     public static final int TYPE_PREFIX = 0;
     public static final int TYPE_INFIX = 1;

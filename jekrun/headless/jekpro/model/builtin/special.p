@@ -70,9 +70,9 @@
  */
 
 :-(','(sys_context_property(here, C),
-set_source_property(C, use_package(foreign(/(/(jekpro, model), builtin)))))).
+   set_source_property(C, use_package(foreign(/(/(jekpro, model), builtin)))))).
 :-(','(sys_context_property(here, C),
-reset_source_property(C, sys_source_visible(public)))).
+   reset_source_property(C, sys_source_visible(public)))).
 
 :-(sys_neutral_oper(prefix(:-))).
 :-(set_oper_property(prefix(:-), op(1200, fx))).

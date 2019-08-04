@@ -87,7 +87,11 @@ public class PrologWriterAnno extends PrologWriter {
                 append(t);
                 break;
             case CodeType.LINE_ZERO:
-                safeSpace(sa.fun);
+                if ((spez & SPEZ_MINS) != 0) {
+                    append(' ');
+                } else {
+                    safeSpace(sa.fun);
+                }
                 append(sa.fun);
                 break;
             default:
@@ -97,26 +101,76 @@ public class PrologWriterAnno extends PrologWriter {
     }
 
     /********************************************************/
-    /* Write Operator Filler                                */
+    /* Operator Handling II                                 */
     /********************************************************/
+
+    /**
+     * <p>Write the operator.</p>
+     *
+     * @param oper The operator.
+     * @param sa The atom.
+     * @param cp The predicate or null.
+     * @throws IOException     IO Error.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    protected final void writePrefix(Operator oper, SkelAtom sa,
+                               CachePredicate cp)
+            throws IOException, EngineMessage, EngineException {
+        if ((flags & FLAG_FILL) == 0) {
+            super.writePrefix(oper, sa, cp);
+            return;
+        }
+        String t = atomQuoted(oper.getPortrayOrName(), 0);
+        safeSpace(t);
+        appendLink(t, cp);
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[0] : null);
+        if (!lastEol(fillers != null ? fillers[0] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+                spez &= ~SPEZ_FUNC;
+                spez &= ~SPEZ_MINS;
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0) {
+                    append(' ');
+                    spez &= ~SPEZ_FUNC;
+                    spez &= ~SPEZ_MINS;
+                } else {
+                    spez |= SPEZ_FUNC;
+                    if (sa.fun.equals(Foyer.OP_SUB)) {
+                        spez |= SPEZ_MINS;
+                    } else {
+                        spez &= ~SPEZ_MINS;
+                    }
+                }
+            }
+        } else {
+            spez &= ~SPEZ_FUNC;
+            spez &= ~SPEZ_MINS;
+        }
+    }
 
     /**
      * <p>Write the operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param oper The operator.
-     * @param sc   The compound skeleton..
-     * @param ref  The compound display.
+     * @param sa   The call-site.
      * @param cp   The cache predicate or null.
      * @throws IOException     IO Error.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    protected final void writeInfix(Operator oper, SkelCompound sc,
-                                    Display ref, CachePredicate cp)
+    protected final void writeInfix(Operator oper, SkelAtom sa,
+                                    CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
         if ((flags & FLAG_FILL) == 0) {
-            super.writeInfix(oper, sc, ref, cp);
+            super.writeInfix(oper, sa, cp);
             return;
         }
         if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
@@ -124,8 +178,8 @@ public class PrologWriterAnno extends PrologWriter {
         String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
         safeSpace(t);
         appendLink(t, cp);
-        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sc.sym).getFillers() : null);
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
         if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
             writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
             if (!lastEol(fillers != null ? fillers[1] : null)) {

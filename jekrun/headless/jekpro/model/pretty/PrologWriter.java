@@ -802,16 +802,20 @@ public class PrologWriter {
             safeSpace(t);
             append(t);
         } else if (term instanceof Number) {
-            if ((spez & SPEZ_MINS) != 0)
-                append(' ');
             String t = ForeignAtom.sysNumberToAtom((Number) term, flags);
-            safeSpace(t);
+            if ((spez & SPEZ_MINS) != 0) {
+                append(' ');
+            } else {
+                safeSpace(t);
+            }
             append(t);
         } else {
-            if ((spez & SPEZ_MINS) != 0)
-                append(' ');
             String t = refToString(term);
-            safeSpace(t);
+            if ((spez & SPEZ_MINS) != 0) {
+                append(' ');
+            } else {
+                safeSpace(t);
+            }
             append(t);
         }
     }
@@ -926,7 +930,7 @@ public class PrologWriter {
         shift = getShift(z);
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
             indent += SPACES;
-        writeInfix(oper, sc, ref, cp);
+        writeInfix(oper, sc.sym, cp);
         Object mod2 = decodeQualification(sc, ref);
         SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
         write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
@@ -980,29 +984,38 @@ public class PrologWriter {
      * <p>Write the operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param op The operator.
-     * @param sa The atom.
-     * @param cp The predicate or null.
+     * @param oper The operator.
+     * @param sa   The atom.
+     * @param cp   The predicate or null.
      * @throws IOException     IO Error.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private void writePrefix(Operator op, SkelAtom sa,
-                             CachePredicate cp)
+    protected void writePrefix(Operator oper, SkelAtom sa,
+                               CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
-        String t = atomQuoted(op.getPortrayOrName(), 0);
+        String t = atomQuoted(oper.getPortrayOrName(), 0);
         safeSpace(t);
         appendLink(t, cp);
-        if ((op.getBits() & Operator.MASK_OPER_NSPR) == 0) {
-            append(' ');
+        if (MARGIN < getTextOffset() &&
+                (flags & FLAG_NEWL) != 0) {
+            append(CodeType.LINE_EOL);
+            for (int i = 0; i < indent; i++)
+                append(' ');
             spez &= ~SPEZ_FUNC;
             spez &= ~SPEZ_MINS;
         } else {
-            spez |= SPEZ_FUNC;
-            if (sa.fun.equals(Foyer.OP_SUB)) {
-                spez |= SPEZ_MINS;
-            } else {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0) {
+                append(' ');
+                spez &= ~SPEZ_FUNC;
                 spez &= ~SPEZ_MINS;
+            } else {
+                spez |= SPEZ_FUNC;
+                if (sa.fun.equals(Foyer.OP_SUB)) {
+                    spez |= SPEZ_MINS;
+                } else {
+                    spez &= ~SPEZ_MINS;
+                }
             }
         }
     }
@@ -1012,14 +1025,13 @@ public class PrologWriter {
      * <p>Can be overridden by sub classes.</p>
      *
      * @param oper The operator.
-     * @param sc   The compound skeleton..
-     * @param ref  The compound display.
+     * @param sa   The call-site.
      * @param cp   The predicate or null.
      * @throws IOException   IO Error.
      * @throws EngineMessage Shit happens.
      */
-    protected void writeInfix(Operator oper, SkelCompound sc,
-                              Display ref, CachePredicate cp)
+    protected void writeInfix(Operator oper, SkelAtom sa,
+                              CachePredicate cp)
             throws IOException, EngineException, EngineMessage {
         if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
             append(' ');
@@ -1330,37 +1342,6 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Check whether there is an goal/term argument.</p>
-     *
-     * @param sc  The compound skeleton.
-     * @param ref The compound display.
-     * @return True if there is a goal/term argument.
-     */
-    private boolean metaCall(SkelCompound sc, Display ref)
-            throws EngineException, EngineMessage {
-        for (int i = 0; i < sc.args.length; i++) {
-            Object term = sc.args[i];
-            engine.skel = term;
-            engine.display = ref;
-            engine.deref();
-            term = engine.skel;
-            ref = engine.display;
-            if (!(term instanceof SkelCompound))
-                continue;
-            SkelCompound sc2 = (SkelCompound) term;
-            if (!isBinary(sc2))
-                continue;
-            Operator oper = OperatorSearch.getOper(sc2.sym.scope,
-                    sc2.sym.fun, Operator.TYPE_INFIX, engine);
-            if (oper == null || oper.getLevel() == 0)
-                continue;
-            if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
-                return true;
-        }
-        return false;
-    }
-
-    /**
      * <p>Decode a qualification.</p>
      *
      * @param sc  The compound skeleton.
@@ -1529,7 +1510,7 @@ public class PrologWriter {
                         Operator.TYPE_PREFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
                     if ((oper.getBits() & Operator.MASK_OPER_TABR) == 0 &&
-                            metaCall(sc, ref)) {
+                            level > Operator.LEVEL_MIDDLE) {
                         indent += SPACES;
                         writeUnary(sc, ref, level, mod, nsa, oper);
                         indent -= SPACES;
@@ -1573,7 +1554,13 @@ public class PrologWriter {
                 }
             }
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                writeList(sc, ref, mod, nsa);
+                if (level > Operator.LEVEL_MIDDLE) {
+                    indent += SPACES;
+                    writeList(sc, ref, mod, nsa);
+                    indent -= SPACES;
+                } else {
+                    writeList(sc, ref, mod, nsa);
+                }
                 return;
             }
             if (isBinary(sc)) {
@@ -1581,7 +1568,7 @@ public class PrologWriter {
                         sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
                     if ((oper.getBits() & Operator.MASK_OPER_NEWR) == 0 &&
-                            metaCall(sc, ref)) {
+                            level > Operator.LEVEL_MIDDLE) {
                         indent += SPACES;
                         writeBinary(sc, ref, level, mod, nsa, oper);
                         indent -= SPACES;
@@ -1592,8 +1579,7 @@ public class PrologWriter {
                 }
             }
         }
-        if (engine != null && (flags & FLAG_IGNO) == 0
-                && metaCall(sc, ref)) {
+        if (level > Operator.LEVEL_MIDDLE) {
             indent += SPACES;
             writeCompound(sc, ref, mod, nsa);
             indent -= SPACES;
