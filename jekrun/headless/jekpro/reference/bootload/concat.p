@@ -43,7 +43,7 @@
  */
 % sys_atom_concat(+Atom, +Atom, -Atom)
 :- foreign(sys_atom_concat/3, 'ForeignConcat',
-   sysAtomConcat('String', 'String')).
+      sysAtomConcat('String', 'String')).
 :- set_predicate_property(sys_atom_concat/3, visible(public)).
 
 /**
@@ -52,5 +52,5 @@
  */
 % sys_atom(+Term)
 :- foreign(sys_atom/1, 'ForeignConcat',
-   sysAtom('Object')).
+      sysAtom('Object')).
 :- set_predicate_property(sys_atom/1, visible(public)).

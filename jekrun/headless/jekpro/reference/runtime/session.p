@@ -105,8 +105,8 @@ close :- throw(error(system_error(user_close), _)).
 :- public prolog/0.
 prolog :-
    call_cleanup(
-   sys_toplevel,
-   end_all_modules).
+      sys_toplevel,
+      end_all_modules).
 :- set_predicate_property(prolog/0, sys_notrace).
 
 % break
@@ -115,9 +115,9 @@ break :-
    current_prolog_flag(sys_break_level, X),
    Y is X+1,
    setup_call_cleanup(
-   set_prolog_flag(sys_break_level, Y),
-   sys_toplevel,
-   set_prolog_flag(sys_break_level, X)).
+      set_prolog_flag(sys_break_level, Y),
+      sys_toplevel,
+      set_prolog_flag(sys_break_level, X)).
 :- set_predicate_property(break/0, sys_notrace).
 
 % sys_toplevel
@@ -141,8 +141,8 @@ sys_toplevel_ask :-
    (G == end_of_file -> true;
    current_prolog_flag(sys_print_map, M),
    setup_call_cleanup(set_prolog_flag(sys_print_map, N),
-   sys_answer(G, N),
-   set_prolog_flag(sys_print_map, M)), fail).
+      sys_answer(G, N),
+      set_prolog_flag(sys_print_map, M)), fail).
 
 % sys_toplevel_level
 :- private sys_toplevel_level/0.
@@ -190,9 +190,9 @@ sys_answer_prompt(N, R, Response) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tprompt, Prompt),
    setup_call_cleanup(
-   set_thread_flag(Thread, sys_tprompt, on),
-   sys_answer_show(N, R, Response),
-   set_thread_flag(Thread, sys_tprompt, Prompt)).
+      set_thread_flag(Thread, sys_tprompt, on),
+      sys_answer_show(N, R, Response),
+      set_thread_flag(Thread, sys_tprompt, Prompt)).
 
 % sys_answer_show(+Assoc, +List, -Atom)
 :- private sys_answer_show/3.

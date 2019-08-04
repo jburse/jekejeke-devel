@@ -103,7 +103,7 @@
  */
 % sys_add_path(+Path)
 :- foreign(sys_add_path/1, 'ForeignPath',
-   sysAddClassdPath('Interpreter', 'String')).
+      sysAddClassdPath('Interpreter', 'String')).
 :- set_predicate_property(sys_add_path/1, visible(public)).
 
 /**
@@ -118,7 +118,7 @@ sys_current_path(Path) :-
 :- set_predicate_property(sys_current_path/1, visible(public)).
 
 :- foreign(sys_get_class_paths/1, 'ForeignPath',
-   sysGetClassPaths('Interpreter')).
+      sysGetClassPaths('Interpreter')).
 :- set_predicate_property(sys_get_class_paths/1, visible(private)).
 
 /**
@@ -128,7 +128,7 @@ sys_current_path(Path) :-
  * For a list of recognized database entries see the API documentation.
  */
 :- foreign(sys_add_file_extension/2, 'ForeignPath',
-   sysAddFileExtenstion('Interpreter', 'String', 'Object')).
+      sysAddFileExtenstion('Interpreter', 'String', 'Object')).
 :- set_predicate_property(sys_add_file_extension/2, visible(public)).
 
 /**
@@ -137,7 +137,7 @@ sys_current_path(Path) :-
  * with the name suffix E from the current knowledge base
  */
 :- foreign(sys_remove_file_extension/1, 'ForeignPath',
-   sysRemoveFileExtenstion('Interpreter', 'String')).
+      sysRemoveFileExtenstion('Interpreter', 'String')).
 :- set_predicate_property(sys_remove_file_extension/1, visible(public)).
 
 /**
@@ -152,7 +152,7 @@ sys_current_file_extension(E, O) :-
 :- set_predicate_property(sys_current_file_extension/2, visible(public)).
 
 :- foreign(sys_get_file_extensions/1, 'ForeignPath',
-   sysGetFileExtenstions('Interpreter')).
+      sysGetFileExtenstions('Interpreter')).
 :- set_predicate_property(sys_get_file_extensions/1, visible(private)).
 
 /****************************************************************/
@@ -248,15 +248,15 @@ sys_access_opt([_|L], V, W) :-
 :- set_predicate_property(sys_access_opt/3, visible(private)).
 
 :- foreign(sys_find_write/2, 'ForeignPath',
-   sysFindWrite('Interpreter', 'String')).
+      sysFindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_find_write/2, visible(private)).
 
 :- foreign(sys_find_prefix/4, 'ForeignPath',
-   sysFindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysFindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_find_prefix/4, visible(private)).
 
 :- foreign(sys_find_key/4, 'ForeignPath',
-   sysFindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysFindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_find_key/4, visible(private)).
 
 /****************************************************************/
@@ -307,19 +307,19 @@ sys_absolute_file_name2(Pin, Slash, _) :-
 :- set_predicate_property(sys_absolute_file_name2/3, visible(private)).
 
 :- foreign(sys_is_relative_uri/1, 'ForeignUri',
-   sysUriIsRelative('String')).
+      sysUriIsRelative('String')).
 :- set_predicate_property(sys_is_relative_uri/1, visible(private)).
 
 :- foreign(sys_unfind_write/2, 'ForeignPath',
-   sysUnfindWrite('Interpreter', 'String')).
+      sysUnfindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_unfind_write/2, visible(private)).
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
-   sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_unfind_key/4, visible(private)).
 
 :- foreign(sys_unfind_prefix/4, 'ForeignPath',
-   sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_unfind_prefix/4, visible(private)).
 
 /****************************************************************/
