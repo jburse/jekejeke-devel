@@ -16,7 +16,7 @@ import java.io.IOException;
  * <p>This class provides the writing of annotated prolog terms.</p>
  * <p>The following parameters are recognized:</p>
  * <ul>
- * <li><b>flags:</b> FLAG_FILL and FLAG_NAVI.</li>
+ * <li><b>flags:</b> FLAG_FILL.</li>
  * </ul>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -108,14 +108,14 @@ public class PrologWriterAnno extends PrologWriter {
      * <p>Write the operator.</p>
      *
      * @param oper The operator.
-     * @param sa The atom.
-     * @param cp The predicate or null.
+     * @param sa   The atom.
+     * @param cp   The predicate or null.
      * @throws IOException     IO Error.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     protected final void writePrefix(Operator oper, SkelAtom sa,
-                               CachePredicate cp)
+                                     CachePredicate cp)
             throws IOException, EngineMessage, EngineException {
         if ((flags & FLAG_FILL) == 0) {
             super.writePrefix(oper, sa, cp);
@@ -209,6 +209,51 @@ public class PrologWriterAnno extends PrologWriter {
     }
 
     /**
+     * <p>Write the operator.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param op   The operator.
+     * @param sc   The compound skeleton.
+     * @param ref  The compoun display.
+     * @param cp   The predicate or null.
+     * @param decl The declaration or null.
+     * @throws IOException     IO error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected void writePostfix(Operator op, SkelCompound sc, Display ref,
+                                CachePredicate cp, Object[] decl,
+                                Object mod, SkelAtom nsa)
+            throws EngineException, IOException, EngineMessage {
+        if ((flags & FLAG_FILL) == 0) {
+            super.writePostfix(op, sc, ref, cp, decl, mod, nsa);
+            return;
+        }
+        if (isIndex(sc)) {
+            writeIndex(sc, ref, cp, decl, mod, nsa);
+        } else if (isStruct(sc)) {
+            writeStruct(sc, ref, cp, decl, mod, nsa);
+        } else {
+            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                append(' ');
+            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            appendLink(t, cp);
+            String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
+                    ((SkelAtomAnno) sc.sym).getFillers() : null);
+            writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
+            if (!lastEol(fillers != null ? fillers[1] : null)) {
+                if (MARGIN < getTextOffset() &&
+                        (flags & FLAG_NEWL) != 0) {
+                    append(CodeType.LINE_EOL);
+                    for (int i = 0; i < indent; i++)
+                        append(' ');
+                }
+            }
+        }
+    }
+
+    /**
      * <p>Check whether the compound is unary.</p>
      *
      * @param sc The compound.
@@ -289,6 +334,10 @@ public class PrologWriterAnno extends PrologWriter {
             }
         }
         write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RBRACE);
         writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
         if (!lastEol(fillers != null ? fillers[1] : null)) {
             if (MARGIN < getTextOffset() &&
@@ -298,10 +347,6 @@ public class PrologWriterAnno extends PrologWriter {
                     append(' ');
             }
         }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RBRACE);
     }
 
     /**
@@ -396,15 +441,6 @@ public class PrologWriterAnno extends PrologWriter {
                 write(term, ref, Operator.LEVEL_MIDDLE, null, null);
                 break;
             } else {
-                writeFiller(indent, MARGIN, fillers != null ? fillers[1] : null);
-                if (!lastEol(fillers != null ? fillers[1] : null)) {
-                    if (MARGIN < getTextOffset() &&
-                            (flags & FLAG_NEWL) != 0) {
-                        append(CodeType.LINE_EOL);
-                        for (int i = 0; i < indent; i++)
-                            append(' ');
-                    }
-                }
                 break;
             }
         }
@@ -412,6 +448,15 @@ public class PrologWriterAnno extends PrologWriter {
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RBRACKET);
+        writeFiller(indent, MARGIN, fillers != null ? fillers[2] : null);
+        if (!lastEol(fillers != null ? fillers[2] : null)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
     }
 
     /**
@@ -479,6 +524,10 @@ public class PrologWriterAnno extends PrologWriter {
             SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
             write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
         }
+        spez = backspez;
+        offset = backoffset;
+        shift = backshift;
+        append(PrologReader.OP_RPAREN);
         writeFiller(indent, MARGIN, fillers != null ? fillers[j] : null);
         if (!lastEol(fillers != null ? fillers[j] : null)) {
             if (MARGIN < getTextOffset() &&
@@ -488,10 +537,6 @@ public class PrologWriterAnno extends PrologWriter {
                     append(' ');
             }
         }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RPAREN);
     }
 
     /**
