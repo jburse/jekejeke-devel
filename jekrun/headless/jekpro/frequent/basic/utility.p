@@ -132,9 +132,9 @@ sys_enum_apropos(N, row(I, E, T)) :-
       open_resource(N, S),
       (repeat,
       (read_line(S, L) ->
-         atom_split(L, '\t', U),
-         sys_split_line(U, H, E, T),
-         sys_split_indicator(H, I);
+      atom_split(L, '\t', U),
+      sys_split_line(U, H, E, T),
+      sys_split_indicator(H, I);
       !, fail)),
       close(S)).
 

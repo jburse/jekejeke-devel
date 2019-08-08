@@ -195,7 +195,7 @@ sys_table_wrapper(F, T, L, A, S, O) :-
       assertz(Test)),
       sys_revolve_list(W, R, S)),
    (predicate_property(I, multifile) ->
-      compilable_ref((Head :- !, Body), K);
+   compilable_ref((Head :- !, Body), K);
    compilable_ref((Head :- Body), K)),
    recordz_ref(K),
    sys_make_indicator(G, N, J),
