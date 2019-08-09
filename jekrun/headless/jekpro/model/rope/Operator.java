@@ -51,11 +51,11 @@ public class Operator {
 
     public final static int MASK_OPER_LEFT = 0x00000001;
     public final static int MASK_OPER_RGHT = 0x00000002;
+    public final static int MASK_OPER_TABR = 0x00000004;
 
     public final static int MASK_OPER_NSPL = 0x00000010;
     public final static int MASK_OPER_NSPR = 0x00000020;
-    public final static int MASK_OPER_TABR = 0x00000040;
-    public final static int MASK_OPER_NEWR = 0x00000080;
+    public final static int MASK_OPER_NEWR = 0x00000040;
 
     public final static int MASK_OPER_VSPR = 0x00000100;
     public final static int MASK_OPER_VSPU = 0x00000200;

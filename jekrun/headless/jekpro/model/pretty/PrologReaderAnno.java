@@ -91,10 +91,11 @@ public class PrologReaderAnno extends PrologReader {
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
             return super.readInfix(help, skel, oper);
-        nextOperator();
         String[] filler = getFiller();
-        if (filler != null)
-            help = makeFillers(help, new String[][]{null, filler, null});
+        nextOperator();
+        String[] filler2 = getFiller();
+        if (filler != null || filler2 != null)
+            help = makeFillers(help, new String[][]{filler, filler2, null});
         Object jack = read(oper.getLevel() - oper.getRight());
         return new SkelCompound(help, skel, jack);
     }

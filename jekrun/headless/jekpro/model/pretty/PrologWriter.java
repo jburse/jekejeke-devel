@@ -865,16 +865,29 @@ public class PrologWriter {
             append(PrologReader.OP_LPAREN);
             spez &= ~SPEZ_OPLE;
         }
-        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
             indent += SPACES;
         writePrefix(oper, sc.sym, cp);
+        if (lch == ' ' || lch == CodeType.LINE_EOL) {
+            spez &= ~SPEZ_FUNC;
+            spez &= ~SPEZ_MINS;
+        } else {
+            spez |= SPEZ_FUNC;
+            if (sc.sym.fun.equals(Foyer.OP_SUB)) {
+                spez |= SPEZ_MINS;
+            } else {
+                spez &= ~SPEZ_MINS;
+            }
+        }
         /* right operand */
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = (spez & (SPEZ_OPLE | SPEZ_FUNC | SPEZ_MINS)) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
-        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
             indent -= SPACES;
         spez = backspez;
         offset = backoffset;
@@ -956,6 +969,11 @@ public class PrologWriter {
                 spez &= ~(SPEZ_FUNC | SPEZ_MINS);
             }
             append(PrologReader.OP_LPAREN);
+            if (needsSpaces(oper, sc.sym)) {
+                for (int i = 1; i < SPACES; i++)
+                    append(' ');
+                indent += SPACES;
+            }
         }
         /* left operand */
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
@@ -974,19 +992,31 @@ public class PrologWriter {
         spez = (spez & SPEZ_OPLE) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
-        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
             indent += SPACES;
+        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) == 0) {
+            indent -= SPACES;
+        }
         writeInfix(oper, sc.sym, cp);
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) == 0)
+            indent += SPACES;
         Object mod2 = decodeQualification(sc, ref);
         SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
         write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
-        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0)
+        if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
+                (oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
             indent -= SPACES;
         spez = backspez;
         offset = backoffset;
         shift = backshift;
-        if (needsParen(oper, backspez, level))
+        if (needsParen(oper, backspez, level)) {
+            if (needsSpaces(oper, sc.sym))
+                indent -= SPACES;
             append(PrologReader.OP_RPAREN);
+        }
     }
 
     /********************************************************/
@@ -1027,7 +1057,7 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Write the operator.</p>
+     * <p>Write the prefix operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param oper The operator.
@@ -1043,31 +1073,42 @@ public class PrologWriter {
         String t = atomQuoted(oper.getPortrayOrName(), 0);
         safeSpace(t);
         appendLink(t, cp);
-        if (MARGIN < getTextOffset() &&
-                (flags & FLAG_NEWL) != 0) {
+        if (MARGIN < getTextOffset() && (flags & FLAG_NEWL) != 0) {
             append(CodeType.LINE_EOL);
             for (int i = 0; i < indent; i++)
                 append(' ');
-            spez &= ~SPEZ_FUNC;
-            spez &= ~SPEZ_MINS;
         } else {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0) {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
                 append(' ');
-                spez &= ~SPEZ_FUNC;
-                spez &= ~SPEZ_MINS;
-            } else {
-                spez |= SPEZ_FUNC;
-                if (sa.fun.equals(Foyer.OP_SUB)) {
-                    spez |= SPEZ_MINS;
-                } else {
-                    spez &= ~SPEZ_MINS;
-                }
-            }
         }
     }
 
     /**
-     * <p>Write the operator.</p>
+     * <p>Determine whether the infinx operator needs spaces.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param oper The infix operator.
+     * @param sa   The call-site.
+     * @return True if the infix operators needs spaces.
+     */
+    protected boolean needsSpaces(Operator oper, SkelAtom sa) {
+        /* comma etc.. */
+        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+            return false;
+        /* semicolon etc.. */
+        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
+            if ((flags & FLAG_NEWL) != 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Write the infix operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param oper The operator.
@@ -1079,12 +1120,13 @@ public class PrologWriter {
     protected void writeInfix(Operator oper, SkelAtom sa,
                               CachePredicate cp)
             throws IOException, EngineException, EngineMessage {
-        if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
-            append(' ');
-        String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
-        safeSpace(t);
-        appendLink(t, cp);
+        /* comma etc.. */
         if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                append(' ');
+            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            appendLink(t, cp);
             if ((flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent; i++)
@@ -1093,9 +1135,33 @@ public class PrologWriter {
                 if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
                     append(' ');
             }
+        /* semicolon etc.. */
+        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
+            if ((flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                    append(' ');
+            }
+            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            appendLink(t, cp);
+            if ((flags & FLAG_NEWL) != 0) {
+                for (int i = t.length(); i < SPACES; i++)
+                    append(' ');
+            } else {
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
+                    append(' ');
+            }
         } else {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
+            if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
+                append(' ');
+            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
+            safeSpace(t);
+            appendLink(t, cp);
+            if (MARGIN < getTextOffset() && (flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
                 for (int i = 0; i < indent; i++)
                     append(' ');
@@ -1107,7 +1173,7 @@ public class PrologWriter {
     }
 
     /**
-     * <p>Write the operator.</p>
+     * <p>Write the postfix operator.</p>
      * <p>Can be overridden by sub classes.</p>
      *
      * @param op   The operator.
@@ -1144,12 +1210,24 @@ public class PrologWriter {
 
     /**
      * <p>Check whether the compound is unary.</p>
+     * <p>Can be overridden by sub classes.</p>
      *
      * @param sc The compound.
      * @return True if unary, otherwise false.
      */
     protected boolean isUnary(SkelCompound sc) {
         return sc.args.length == 1;
+    }
+
+    /**
+     * <p>Check whether the compound is binary.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param sc The compound.
+     * @return True if binary, otherwise false.
+     */
+    protected boolean isBinary(SkelCompound sc) {
+        return sc.args.length == 2;
     }
 
     /**
@@ -1173,16 +1251,6 @@ public class PrologWriter {
         return sc.args.length >= 1 &&
                 sc.args.length <= 2 &&
                 sc.sym.fun.equals(Foyer.OP_STRUCT);
-    }
-
-    /**
-     * <p>Check whether the compound is binary.</p>
-     *
-     * @param sc The compound.
-     * @return True if binary, otherwise false.
-     */
-    protected boolean isBinary(SkelCompound sc) {
-        return sc.args.length == 2;
     }
 
     /*********************************************************************/

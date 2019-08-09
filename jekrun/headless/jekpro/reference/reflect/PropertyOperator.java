@@ -55,9 +55,9 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     private final static String OP_OP = "op";
     private final static String OP_SYS_PORTRAY = "sys_portray";
     private final static String OP_SYS_ALIAS = "sys_alias";
+    private final static String OP_SYS_TABR = "sys_tabr";
     private final static String OP_SYS_NSPL = "sys_nspl";
     private final static String OP_SYS_NSPR = "sys_nspr";
-    private final static String OP_SYS_TABR = "sys_tabr";
     private final static String OP_SYS_NEWR = "sys_newr";
 
     private static final int PROP_VISIBLE = 0;
@@ -66,9 +66,9 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     private static final int PROP_SYS_USAGE = 3;
     private static final int PROP_SYS_PORTRAY = 4;
     private static final int PROP_SYS_ALIAS = 5;
-    private static final int PROP_SYS_NSPL = 6;
-    private static final int PROP_SYS_NSPR = 7;
-    private static final int PROP_SYS_TABR = 8;
+    private static final int PROP_SYS_TABR = 6;
+    private static final int PROP_SYS_NSPL = 7;
+    private static final int PROP_SYS_NSPR = 8;
     private static final int PROP_SYS_NEWR = 9;
     private static final int PROP_FULL_NAME = 10;
 
@@ -84,9 +84,9 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_TABR, 0), new PropertyOperator(PROP_SYS_TABR));
         DEFAULT.add(new StoreKey(OP_SYS_NSPL, 0), new PropertyOperator(PROP_SYS_NSPL));
         DEFAULT.add(new StoreKey(OP_SYS_NSPR, 0), new PropertyOperator(PROP_SYS_NSPR));
-        DEFAULT.add(new StoreKey(OP_SYS_TABR, 0), new PropertyOperator(PROP_SYS_TABR));
         DEFAULT.add(new StoreKey(OP_SYS_NEWR, 0), new PropertyOperator(PROP_SYS_NEWR));
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
     }
@@ -176,6 +176,12 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_TABR:
+                if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_TABR)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             case PROP_SYS_NSPL:
                 if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NSPL)};
@@ -185,12 +191,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             case PROP_SYS_NSPR:
                 if ((oper.getBits() & Operator.MASK_OPER_NSPR) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NSPR)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_TABR:
-                if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_TABR)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -248,14 +248,14 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     str = PropertyOperator.derefAndCastAlias(m, d, en);
                     oper.setAlias(str);
                     return true;
+                case PROP_SYS_TABR:
+                    oper.setBit(Operator.MASK_OPER_TABR);
+                    return true;
                 case PROP_SYS_NSPL:
                     oper.setBit(Operator.MASK_OPER_NSPL);
                     return true;
                 case PROP_SYS_NSPR:
                     oper.setBit(Operator.MASK_OPER_NSPR);
-                    return true;
-                case PROP_SYS_TABR:
-                    oper.setBit(Operator.MASK_OPER_TABR);
                     return true;
                 case PROP_SYS_NEWR:
                     oper.setBit(Operator.MASK_OPER_NEWR);
@@ -305,14 +305,14 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_SYS_ALIAS:
                     oper.setAlias(null);
                     return true;
+                case PROP_SYS_TABR:
+                    oper.resetBit(Operator.MASK_OPER_TABR);
+                    return true;
                 case PROP_SYS_NSPL:
                     oper.resetBit(Operator.MASK_OPER_NSPL);
                     return true;
                 case PROP_SYS_NSPR:
                     oper.resetBit(Operator.MASK_OPER_NSPR);
-                    return true;
-                case PROP_SYS_TABR:
-                    oper.resetBit(Operator.MASK_OPER_TABR);
                     return true;
                 case PROP_SYS_NEWR:
                     oper.resetBit(Operator.MASK_OPER_NEWR);
