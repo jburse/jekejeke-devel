@@ -25,7 +25,7 @@ import java.io.Writer;
  * <li><b>en:</b> Serno generator, or null.</li>
  * <li><b>printmap:</b> Variable names, or null.</li>
  * <li><b>level:</b> Initial operator level.</li>
- * <li><b>spez:</b> SPEZ_OPLE, SPEZ_LEFT, SPEZ_TERM and SPEZ_GOAL control.</li>
+ * <li><b>spez:</b> SPEZ_OPER, SPEZ_LEFT, SPEZ_TERM and SPEZ_GOAL control.</li>
  * </ul>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -79,13 +79,15 @@ public class PrologWriter {
 
     public final static int FLAG_DFLT = FLAG_CMMT | FLAG_STMT;
 
-    public final static int SPEZ_OPLE = 0x00000001;
-    public final static int SPEZ_LEFT = 0x00000002;
-    public final static int SPEZ_META = 0x00000004;
-    public final static int SPEZ_EVAL = 0x00000008;
+    public final static int SPEZ_LEFT = 0x00000001;
+    public final static int SPEZ_META = 0x00000002;
+    public final static int SPEZ_EVAL = 0x00000004;
 
-    final static int SPEZ_FUNC = 0x00000100;
-    final static int SPEZ_MINS = 0x00000200;
+    public final static int SPEZ_OPER = 0x00000010;
+    public final static int SPEZ_FUNC = 0x00000020;
+    public final static int SPEZ_MINS = 0x00000040;
+
+    public final static int SPEZ_LAST = 0x00000100;
 
     private final static String noTermChs = "([{}])";
     private final static String noOperChs = ".,|";
@@ -646,7 +648,7 @@ public class PrologWriter {
             cp = null;
         }
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
-                (spez & SPEZ_OPLE) != 0) {
+                (spez & SPEZ_OPER) != 0) {
             Operator oper = OperatorSearch.getOper(sa.scope, sa.fun,
                     Operator.TYPE_PREFIX, engine);
             if (oper != null && oper.getLevel() != 0) {
@@ -863,7 +865,7 @@ public class PrologWriter {
             if ((backspez & SPEZ_FUNC) != 0)
                 append(' ');
             append(PrologReader.OP_LPAREN);
-            spez &= ~SPEZ_OPLE;
+            spez &= ~SPEZ_OPER;
         }
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
                 (oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
@@ -882,7 +884,7 @@ public class PrologWriter {
         }
         /* right operand */
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = (spez & (SPEZ_OPLE | SPEZ_FUNC | SPEZ_MINS)) + getSpez(z);
+        spez = (spez & (SPEZ_OPER | SPEZ_FUNC | SPEZ_MINS)) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
@@ -927,7 +929,7 @@ public class PrologWriter {
         /* left operand */
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
+                (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPER) +
                 getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
@@ -978,7 +980,7 @@ public class PrologWriter {
         /* left operand */
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
-                (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPLE) +
+                (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPER) +
                 getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
@@ -987,9 +989,9 @@ public class PrologWriter {
         write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
         spez = backspez;
         if (needsParen(oper, backspez, level))
-            spez &= ~SPEZ_OPLE;
+            spez &= ~SPEZ_OPER;
         z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-        spez = (spez & SPEZ_OPLE) + getSpez(z);
+        spez = (spez & SPEZ_OPER) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
@@ -1095,7 +1097,7 @@ public class PrologWriter {
         /* comma etc.. */
         if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
             return false;
-        /* semicolon etc.. */
+            /* semicolon etc.. */
         } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
             if ((flags & FLAG_NEWL) != 0) {
                 return true;
@@ -1135,7 +1137,7 @@ public class PrologWriter {
                 if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
                     append(' ');
             }
-        /* semicolon etc.. */
+            /* semicolon etc.. */
         } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
             if ((flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
@@ -1279,7 +1281,7 @@ public class PrologWriter {
         int backshift = shift;
         appendLink(PrologReader.OP_LBRACE, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = SPEZ_LAST + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         if (MARGIN < getTextOffset() &&
@@ -1293,11 +1295,13 @@ public class PrologWriter {
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RBRACE);
-        if (MARGIN < getTextOffset() &&
-                (flags & FLAG_NEWL) != 0) {
-            append(CodeType.LINE_EOL);
-            for (int i = 0; i < indent; i++)
-                append(' ');
+        if ((spez & SPEZ_LAST) != 0) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
         }
     }
 
@@ -1323,7 +1327,7 @@ public class PrologWriter {
         int backshift = shift;
         appendLink(PrologReader.OP_LBRACKET, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         if (MARGIN < getTextOffset() &&
@@ -1365,7 +1369,7 @@ public class PrologWriter {
                 backoffset = offset;
                 backshift = shift;
                 z = getArg(decl, backshift, backspez, cp);
-                spez = getSpez(z);
+                spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
                 offset = getOffset(z, backoffset);
                 shift = getShift(z);
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
@@ -1387,11 +1391,36 @@ public class PrologWriter {
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RBRACKET);
-        if (MARGIN < getTextOffset() &&
-                (flags & FLAG_NEWL) != 0) {
-            append(CodeType.LINE_EOL);
-            for (int i = 0; i < indent; i++)
-                append(' ');
+        if ((spez & SPEZ_LAST) != 0) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
+        }
+    }
+
+    /**
+     * <p>Check whether the term is a list cell.</p>
+     *
+     * @param term The skeleton.
+     * @param ref The display.
+     * @return True if the term is a list cell.
+     */
+    boolean isList(Object term, Display ref) {
+        if (engine != null) {
+            engine.skel = term;
+            engine.display = ref;
+            engine.deref();
+            term = engine.skel;
+        }
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONS)) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -1421,7 +1450,7 @@ public class PrologWriter {
         append(PrologReader.OP_LPAREN);
         int j = 0;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         if (MARGIN < getTextOffset() &&
@@ -1433,7 +1462,7 @@ public class PrologWriter {
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         for (j = 1; j < sc.args.length; j++) {
             z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-            spez = getSpez(z);
+            spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
@@ -1453,11 +1482,13 @@ public class PrologWriter {
         offset = backoffset;
         shift = backshift;
         append(PrologReader.OP_RPAREN);
-        if (MARGIN < getTextOffset() &&
-                (flags & FLAG_NEWL) != 0) {
-            append(CodeType.LINE_EOL);
-            for (int i = 0; i < indent; i++)
-                append(' ');
+        if ((spez & SPEZ_LAST) != 0) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            }
         }
     }
 

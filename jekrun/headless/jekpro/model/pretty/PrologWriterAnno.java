@@ -370,7 +370,7 @@ public class PrologWriterAnno extends PrologWriter {
         int backshift = shift;
         appendLink(PrologReader.OP_LBRACE, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = SPEZ_LAST + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
@@ -390,7 +390,8 @@ public class PrologWriterAnno extends PrologWriter {
         shift = backshift;
         append(PrologReader.OP_RBRACE);
         writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-        if (!lastEol(fillers != null ? fillers[1] : null)) {
+        if (!lastEol(fillers != null ? fillers[1] : null) &&
+                (spez & SPEZ_LAST) != 0) {
             if (MARGIN < getTextOffset() &&
                     (flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
@@ -425,7 +426,7 @@ public class PrologWriterAnno extends PrologWriter {
         int backshift = shift;
         appendLink(PrologReader.OP_LBRACKET, cp);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
@@ -477,7 +478,7 @@ public class PrologWriterAnno extends PrologWriter {
                 backoffset = offset;
                 backshift = shift;
                 z = getArg(decl, backshift, backspez, cp);
-                spez = getSpez(z);
+                spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
                 offset = getOffset(z, backoffset);
                 shift = getShift(z);
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
@@ -500,7 +501,8 @@ public class PrologWriterAnno extends PrologWriter {
         shift = backshift;
         append(PrologReader.OP_RBRACKET);
         writeFiller(MARGIN, fillers != null ? fillers[2] : null);
-        if (!lastEol(fillers != null ? fillers[2] : null)) {
+        if (!lastEol(fillers != null ? fillers[2] : null) &&
+                (spez & SPEZ_LAST) != 0) {
             if (MARGIN < getTextOffset() &&
                     (flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
@@ -539,7 +541,7 @@ public class PrologWriterAnno extends PrologWriter {
         append(PrologReader.OP_LPAREN);
         int j = 0;
         Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
         offset = getOffset(z, backoffset);
         shift = getShift(z);
         String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
@@ -556,7 +558,7 @@ public class PrologWriterAnno extends PrologWriter {
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         for (j = 1; j < sc.args.length; j++) {
             z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-            spez = getSpez(z);
+            spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
             offset = getOffset(z, backoffset);
             shift = getShift(z);
             append(',');
@@ -580,7 +582,8 @@ public class PrologWriterAnno extends PrologWriter {
         shift = backshift;
         append(PrologReader.OP_RPAREN);
         writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-        if (!lastEol(fillers != null ? fillers[j] : null)) {
+        if (!lastEol(fillers != null ? fillers[j] : null) &&
+                (spez & SPEZ_LAST) != 0) {
             if (MARGIN < getTextOffset() &&
                     (flags & FLAG_NEWL) != 0) {
                 append(CodeType.LINE_EOL);
