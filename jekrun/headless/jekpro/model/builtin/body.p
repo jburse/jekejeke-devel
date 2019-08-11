@@ -108,7 +108,7 @@
 :- sys_neutral_predicate(','/2).
 :- set_predicate_property(','/2, sys_nobarrier).
 :- set_predicate_property(','/2, sys_proto).
-A, B :- A, B.                                     % Proto
+A, B :- A, B.                                           % Proto
 :- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
 :- set_predicate_property(','/2, meta_predicate((0, 0))).

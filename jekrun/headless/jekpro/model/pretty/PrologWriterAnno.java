@@ -71,8 +71,9 @@ public class PrologWriterAnno extends PrologWriter {
             return;
         }
         SkelAtom sa = (SkelAtom) term;
-        int quote = (sa instanceof SkelAtomAnno ? ((SkelAtomAnno) sa).getHint() : 0);
-        switch (quote) {
+        int quote = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getHint() : 0);
+        switch (quote & 0xFF) {
             case CodeType.LINE_SINGLE:
             case CodeType.LINE_DOUBLE:
             case CodeType.LINE_BACK:
@@ -105,206 +106,6 @@ public class PrologWriterAnno extends PrologWriter {
     /********************************************************/
 
     /**
-     * <p>Write the operator.</p>
-     *
-     * @param oper The operator.
-     * @param sa   The atom.
-     * @param cp   The predicate or null.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    protected final void writePrefix(Operator oper, SkelAtom sa,
-                                     CachePredicate cp)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writePrefix(oper, sa, cp);
-            return;
-        }
-        String t = atomQuoted(oper.getPortrayOrName(), 0);
-        safeSpace(t);
-        appendLink(t, cp);
-        String[][] fillers = (sa instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sa).getFillers() : null);
-        writeFiller(MARGIN, fillers != null ? fillers[0] : null);
-        if (!lastEol(fillers != null ? fillers[0] : null)) {
-            if (MARGIN < getTextOffset() && (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            } else {
-                if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                    append(' ');
-            }
-        }
-    }
-
-    /**
-     * <p>Determine whether the infinx operator needs spaces.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param oper The infix operator.
-     * @param sa   The call-site.
-     * @return True if the infix operators needs spaces.
-     */
-    protected boolean needsSpaces(Operator oper, SkelAtom sa) {
-        if ((flags & FLAG_FILL) == 0)
-            return super.needsSpaces(oper, sa);
-        /* comma etc.. */
-        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
-            return false;
-            /* semicolon etc.. */
-        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            if (lastEol(fillers != null ? fillers[0] : null) ||
-                    (flags & FLAG_NEWL) != 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Write the operator.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param oper The operator.
-     * @param sa   The call-site.
-     * @param cp   The cache predicate or null.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    protected final void writeInfix(Operator oper, SkelAtom sa,
-                                    CachePredicate cp)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writeInfix(oper, sa, cp);
-            return;
-        }
-        /* comma etc.. */
-        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                append(' ');
-            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-            if (!lastEol(fillers != null ? fillers[1] : null)) {
-                if ((flags & FLAG_NEWL) != 0) {
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                } else {
-                    if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                        append(' ');
-                }
-            }
-        /* semicolon etc.. */
-        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[0] : null);
-            if (!lastEol(fillers != null ? fillers[0] : null)) {
-                if ((flags & FLAG_NEWL) != 0) {
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                } else {
-                    if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                        append(' ');
-                }
-            }
-            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-            if (!lastEol(fillers != null ? fillers[1] : null)) {
-                if (lastEol(fillers != null ? fillers[0] : null) ||
-                        (flags & FLAG_NEWL) != 0) {
-                    for (int i = t.length(); i < SPACES; i++)
-                        append(' ');
-                } else {
-                    if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                        append(' ');
-                }
-            } else {
-                for (int i = 0; i < SPACES; i++)
-                    append(' ');
-            }
-        } else {
-            if ((oper.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                append(' ');
-            String t = atomQuoted(oper.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            String[][] fillers = (sa instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sa).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-            if (!lastEol(fillers != null ? fillers[1] : null)) {
-                if (MARGIN < getTextOffset() && (flags & FLAG_NEWL) != 0) {
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                } else {
-                    if ((oper.getBits() & Operator.MASK_OPER_NSPR) == 0)
-                        append(' ');
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>Write the operator.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param op   The operator.
-     * @param sc   The compound skeleton.
-     * @param ref  The compoun display.
-     * @param cp   The predicate or null.
-     * @param decl The declaration or null.
-     * @throws IOException     IO error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected void writePostfix(Operator op, SkelCompound sc, Display ref,
-                                CachePredicate cp, Object[] decl,
-                                Object mod, SkelAtom nsa)
-            throws EngineException, IOException, EngineMessage {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writePostfix(op, sc, ref, cp, decl, mod, nsa);
-            return;
-        }
-        if (isIndex(sc)) {
-            writeIndex(sc, ref, cp, decl, mod, nsa);
-        } else if (isStruct(sc)) {
-            writeStruct(sc, ref, cp, decl, mod, nsa);
-        } else {
-            if ((op.getBits() & Operator.MASK_OPER_NSPL) == 0)
-                append(' ');
-            String t = atomQuoted(op.getPortrayOrName(), MASK_ATOM_OPER);
-            safeSpace(t);
-            appendLink(t, cp);
-            String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sc.sym).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-            if (!lastEol(fillers != null ? fillers[1] : null)) {
-                if (MARGIN < getTextOffset() && (flags & FLAG_NEWL) != 0) {
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                }
-            }
-        }
-    }
-
-    /**
      * <p>Check whether the compound is unary.</p>
      *
      * @param sc The compound.
@@ -313,8 +114,9 @@ public class PrologWriterAnno extends PrologWriter {
     protected final boolean isUnary(SkelCompound sc) {
         if ((flags & FLAG_FILL) == 0)
             return super.isUnary(sc);
-        int quote = (sc.sym instanceof SkelAtomAnno ? ((SkelAtomAnno) sc.sym).getHint() : 0);
-        switch (quote) {
+        int quote = (sc.sym instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sc.sym).getHint() : 0);
+        switch (quote >> 8) {
             case '(':
                 return false;
             default:
@@ -331,8 +133,9 @@ public class PrologWriterAnno extends PrologWriter {
     protected boolean isBinary(SkelCompound sc) {
         if ((flags & FLAG_FILL) == 0)
             return sc.args.length == 2;
-        int quote = (sc.sym instanceof SkelAtomAnno ? ((SkelAtomAnno) sc.sym).getHint() : 0);
-        switch (quote) {
+        int quote = (sc.sym instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sc.sym).getHint() : 0);
+        switch (quote >> 8) {
             case '(':
                 return false;
             default:
@@ -341,257 +144,137 @@ public class PrologWriterAnno extends PrologWriter {
     }
 
     /*********************************************************************/
-    /* Special Compounds                                                 */
+    /* Parenthesis Handling                                              */
     /*********************************************************************/
 
     /**
-     * <p>Write a set.</p>
+     * <p>Write a break if necessary.</p>
+     *
+     * @param sa    The call site.
+     * @param j     The argument index.
+     * @param space The space flag.
+     * @throws IOException IO Error.
+     */
+    protected final void writeBreak(SkelAtom sa, int j, boolean space)
+            throws IOException {
+        if ((flags & FLAG_FILL) == 0) {
+            super.writeBreak(sa, j, space);
+            return;
+        }
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
+        String[] filler = (fillers != null && j < fillers.length ?
+                fillers[j] : null);
+        writeFiller(MARGIN, filler);
+        if (!lastEol(filler)) {
+            if (MARGIN < getTextOffset() &&
+                    (flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if (space)
+                    append(' ');
+            }
+        }
+    }
+
+    /**
+     * <p>Write always a break.</p>
+     *
+     * @param sa    The call site.
+     * @param j     The argument index.
+     * @param space The space flag.
+     * @throws IOException IO Error.
+     */
+    protected final void writeBreakForce(SkelAtom sa, int j, boolean space)
+            throws IOException {
+        if ((flags & FLAG_FILL) == 0) {
+            super.writeBreakForce(sa, j, space);
+            return;
+        }
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
+        String[] filler = (fillers != null && j < fillers.length ?
+                fillers[j] : null);
+        writeFiller(MARGIN, filler);
+        if (!lastEol(filler)) {
+            if ((flags & FLAG_NEWL) != 0) {
+                append(CodeType.LINE_EOL);
+                for (int i = 0; i < indent; i++)
+                    append(' ');
+            } else {
+                if (space)
+                    append(' ');
+            }
+        }
+    }
+
+    /**
+     * <p>Write operator adjust.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param sc  The set skeleton.
-     * @param ref The set display.
-     * @param mod The module.
-     * @param nsa The call-site.
-     * @throws IOException     IO error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
+     * @param sa    The call site.
+     * @param j     The argument index.
+     * @param t     The operator.
+     * @param space The space flag.
+     * @throws IOException IO Error.
      */
-    protected final void writeSet(SkelCompound sc, Display ref,
-                                  Object mod, SkelAtom nsa)
-            throws IOException, EngineException, EngineMessage {
+    protected void writeAdjust(SkelAtom sa, int j,
+                               String t, boolean space)
+            throws IOException {
         if ((flags & FLAG_FILL) == 0) {
-            super.writeSet(sc, ref, mod, nsa);
+            super.writeAdjust(sa, j, t, space);
             return;
         }
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        appendLink(PrologReader.OP_LBRACE, cp);
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = SPEZ_LAST + getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
-        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sc.sym).getFillers() : null);
-        writeFiller(MARGIN, fillers != null ? fillers[0] : null);
-        if (!lastEol(fillers != null ? fillers[0] : null)) {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        }
-        write(sc.args[0], ref, Operator.LEVEL_HIGH, null, null);
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RBRACE);
-        writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-        if (!lastEol(fillers != null ? fillers[1] : null) &&
-                (spez & SPEZ_LAST) != 0) {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
+        String[][] fillers = (sa instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sa).getFillers() : null);
+        String[] filler = (fillers != null && j < fillers.length ?
+                fillers[j] : null);
+        if (lastEol(filler) ||
+                (flags & FLAG_NEWL) != 0) {
+            for (int i = t.length(); i < SPACES; i++)
+                append(' ');
+        } else {
+            if (space)
+                append(' ');
         }
     }
 
     /**
-     * <p>Write a list.</p>
+     * <p>Determine whether the infinx operator needs spaces.</p>
      *
-     * @param sc  The list skeleton.
-     * @param ref The list display.
-     * @param mod The module.
-     * @param nsa The call-site.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
+     * @param oper The infix operator.
+     * @param sa   The call-site.
+     * @param j    The argument index.
+     * @return True if the infix operators needs spaces.
      */
-    protected final void writeList(SkelCompound sc, Display ref,
-                                   Object mod, SkelAtom nsa)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writeList(sc, ref, mod, nsa);
-            return;
-        }
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        appendLink(PrologReader.OP_LBRACKET, cp);
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
-        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sc.sym).getFillers() : null);
-        writeFiller(MARGIN, fillers != null ? fillers[0] : null);
-        if (!lastEol(fillers != null ? fillers[0] : null)) {
-            if (MARGIN < getTextOffset() &&
+    protected final boolean needsSpaces(Operator oper, SkelAtom sa, int j) {
+        if ((flags & FLAG_FILL) == 0)
+            return super.needsSpaces(oper, sa, j);
+        /* comma etc.. */
+        if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+            return false;
+            /* semicolon etc.. */
+        } else if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
+            String[][] fillers = (sa instanceof SkelAtomAnno ?
+                    ((SkelAtomAnno) sa).getFillers() : null);
+            String[] filler = (fillers != null && j < fillers.length ?
+                    fillers[j] : null);
+            if (lastEol(filler) ||
                     (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        }
-        write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
-        Object term = sc.args[1];
-        for (; ; ) {
-            if (engine != null) {
-                engine.skel = term;
-                engine.display = ref;
-                engine.deref();
-                term = engine.skel;
-                ref = engine.display;
-            }
-            if (term instanceof SkelCompound &&
-                    ((SkelCompound) term).args.length == 2 &&
-                    ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONS)) {
-                sc = (SkelCompound) term;
-                cp = offsetToPredicate(term, null, null);
-                appendLink(",", cp);
-                fillers = (sc.sym instanceof SkelAtomAnno ?
-                        ((SkelAtomAnno) sc.sym).getFillers() : null);
-                writeFiller(MARGIN, fillers != null ? fillers[0] : null);
-                if (!lastEol(fillers != null ? fillers[0] : null)) {
-                    if (MARGIN < getTextOffset() &&
-                            (flags & FLAG_NEWL) != 0) {
-                        append(CodeType.LINE_EOL);
-                        for (int i = 0; i < indent; i++)
-                            append(' ');
-                    } else {
-                        append(' ');
-                    }
-                }
-                decl = predicateToMeta(cp);
-                backspez = spez;
-                backoffset = offset;
-                backshift = shift;
-                z = getArg(decl, backshift, backspez, cp);
-                spez = (isList(sc.args[1], ref)?0:SPEZ_LAST)+getSpez(z);
-                offset = getOffset(z, backoffset);
-                shift = getShift(z);
-                write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-                z = getArg(decl, backshift + 1, backspez, cp);
-                spez = getSpez(z);
-                offset = getOffset(z, backoffset);
-                shift = getShift(z);
-                term = sc.args[1];
-            } else if (!(term instanceof SkelAtom) ||
-                    !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
-                append('|');
-                write(term, ref, Operator.LEVEL_MIDDLE, null, null);
-                break;
+                return true;
             } else {
-                break;
+                return false;
             }
-        }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RBRACKET);
-        writeFiller(MARGIN, fillers != null ? fillers[2] : null);
-        if (!lastEol(fillers != null ? fillers[2] : null) &&
-                (spez & SPEZ_LAST) != 0) {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
+        } else {
+            return false;
         }
     }
 
-    /**
-     * <p>Write a compound.</p>
-     *
-     * @param sc  The compound skeleton.
-     * @param ref The compound display.
-     * @param mod The module.
-     * @param nsa The call-site.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected final void writeCompound(SkelCompound sc, Display ref,
-                                       Object mod, SkelAtom nsa)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writeCompound(sc, ref, mod, nsa);
-            return;
-        }
-        CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        String t = atomQuoted(sc.sym.fun, 0);
-        safeSpace(t);
-        appendLink(t, cp);
-        append(PrologReader.OP_LPAREN);
-        int j = 0;
-        Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
-        String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sc.sym).getFillers() : null);
-        writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-        if (!lastEol(fillers != null ? fillers[j] : null)) {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        }
-        write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
-        for (j = 1; j < sc.args.length; j++) {
-            z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-            spez = (j == sc.args.length - 1 ? SPEZ_LAST : 0) + getSpez(z);
-            offset = getOffset(z, backoffset);
-            shift = getShift(z);
-            append(',');
-            writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-            if (!lastEol(fillers != null ? fillers[j] : null)) {
-                if (MARGIN < getTextOffset() &&
-                        (flags & FLAG_NEWL) != 0) {
-                    append(CodeType.LINE_EOL);
-                    for (int i = 0; i < indent; i++)
-                        append(' ');
-                } else {
-                    append(' ');
-                }
-            }
-            Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);
-            SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
-            write(sc.args[j], ref, Operator.LEVEL_MIDDLE, mod2, nsa2);
-        }
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-        append(PrologReader.OP_RPAREN);
-        writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-        if (!lastEol(fillers != null ? fillers[j] : null) &&
-                (spez & SPEZ_LAST) != 0) {
-            if (MARGIN < getTextOffset() &&
-                    (flags & FLAG_NEWL) != 0) {
-                append(CodeType.LINE_EOL);
-                for (int i = 0; i < indent; i++)
-                    append(' ');
-            }
-        }
-    }
+    /*********************************************************************/
+    /* Special Compounds                                                 */
+    /*********************************************************************/
 
     /**
      * <p>Write an array index.</p>

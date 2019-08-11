@@ -190,9 +190,9 @@ sys_take_all(T, Q, N) :-
 sys_take_all2(T, Q) :-
    repeat,
    pipe_take(Q, A),
-   (A = the(S) -> S = T;
-   A = ball(E) -> sys_raise(E);
-   !, fail).
+   (  A = the(S) -> S = T
+   ;  A = ball(E) -> sys_raise(E)
+   ;  !, fail).
 
 /**
  * sys_put_all(T, G, Q, N):
@@ -204,8 +204,8 @@ sys_take_all2(T, Q) :-
 sys_put_all(T, G, Q, N) :-
    sys_trap(sys_put_all2(T, G, Q, N),
       E,
-      (sys_error_type(E, system_error(_)) -> sys_raise(E);
-      pipe_put(Q, ball(E)))).
+      (  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  pipe_put(Q, ball(E)))).
 
 % sys_put_all2(+Term, +Goal, +Queue, +Integer)
 :- private sys_put_all2/4.

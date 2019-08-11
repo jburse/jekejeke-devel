@@ -183,7 +183,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :- var(Off), var(Off2), !,
    sys_atom_word_pos(Str, 0, 0, Count2, Off, Pos2),
    sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
    Off2 is Temp2-Off.
-sub_atom(Str, Off, Len, Off2, Sub) :-             % not in sub_atom/4.
+sub_atom(Str, Off, Len, Off2, Sub) :-                   % not in sub_atom/4.
    var(Off), var(Len), var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
@@ -192,7 +192,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :-             % not in sub_atom/4.
    sys_atom_word_pos(Str, 0, 0, Pos, Off, Pos2),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
    Len is Temp2-Off.
-sub_atom(Str, Off, Len, Off2, Sub) :-             % not in sub_atom/4.
+sub_atom(Str, Off, Len, Off2, Sub) :-                   % not in sub_atom/4.
    var(Off), var(Sub), !,
    sys_atom_word_len(Str, Count),
    Off1 is -Off2,
@@ -201,7 +201,7 @@ sub_atom(Str, Off, Len, Off2, Sub) :-             % not in sub_atom/4.
    sys_atom_word_offset(Str, Pos, Len1, Pos2),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
    sys_atom_word_count(Str, 0, Pos2, Off).
-sub_atom(Str, Off, Len, Off2, Sub) :-             % not in sub_atom/4.
+sub_atom(Str, Off, Len, Off2, Sub) :-                   % not in sub_atom/4.
    var(Off), !,
    sys_atom_word_len(Str, Count),
    sys_atom_word_len(Sub, Count1),
@@ -565,7 +565,7 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :- var(Off), !,
    Pos2 is Pos-Count1,
    sys_atom_word_match(Str, Pos2, Sub, 0, Count1),
    sys_atom_word_count(Str, 0, Pos2, Off).
-last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
+last_sub_atom(Str, Off, Len, Off2, Sub) :-              % not in last_sub_atom/4
    var(Len), var(Off2), var(Sub), !,
    sys_atom_word_len(Str, Count),
    sys_atom_word_count(Str, 0, Count, Temp),
@@ -574,7 +574,7 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
    Len is Help-Off,
    Off2 is Temp-Help.
-last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
+last_sub_atom(Str, Off, Len, Off2, Sub) :-              % not in last_sub_atom/4
    var(Off2), var(Sub), !,
    sys_atom_word_offset(Str, 0, Off, Pos2),
    sys_atom_word_offset(Str, Pos2, Len, Pos),
@@ -588,7 +588,7 @@ last_sub_atom(Str, Off, Len, Off2, Sub) :- var(Len), var(Sub), !,
    sys_atom_word_offset(Str, Count, Off1, Pos),
    sys_atom_word_substring(Str, Pos2, Pos, Sub),
    sys_atom_word_count(Str, Pos2, Pos, Len).
-last_sub_atom(Str, Off, Len, Off2, Sub) :-        % not in last_sub_atom/4
+last_sub_atom(Str, Off, Len, Off2, Sub) :-              % not in last_sub_atom/4
    sys_atom_word_len(Sub, Count1),
    sys_atom_word_count(Sub, 0, Count1, Len),
    sys_atom_word_offset(Str, 0, Off, Pos),

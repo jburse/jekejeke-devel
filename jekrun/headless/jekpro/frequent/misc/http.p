@@ -127,7 +127,7 @@ accept_close(Object, Server) :-
 handle(Object, Session) :-
    catch(receive_http(Method, URI, Header, Session), _, fail), !,
    handle_method(Object, Method, URI, Header, Session).
-handle(_, Session) :-                             /* Bad Request */
+handle(_, Session) :-                                   /* Bad Request */
    dispatch_error(400, Session).
 
 % receive_http(-Atom, -Atom, -List, +Socket)
@@ -141,7 +141,7 @@ receive_http(Method, URI, Header, Session) :-
 :- private handle_method/5.
 handle_method(Object, 'GET', URI, Header, Session) :- !,
    handle_get(Object, URI, Header, Session).
-handle_method(_, _, _, _, Session) :-             /* Not Implemented */
+handle_method(_, _, _, _, Session) :-                   /* Not Implemented */
    dispatch_error(501, Session).
 
 % handle_get(+Object, +Atom, +List, +Socket)
@@ -149,7 +149,7 @@ handle_method(_, _, _, _, Session) :-             /* Not Implemented */
 handle_get(Object, URI, Header, Session) :-
    make_link(Spec, Parameter, _, URI),
    handle_object(Object, Spec, request(Parameter, Header), Session), !.
-handle_get(_, _, _, Session) :-                   /* Not Found */
+handle_get(_, _, _, Session) :-                         /* Not Found */
    dispatch_error(404, Session).
 
 % handle_object(+Object, +Atom, +Request, +Socket)

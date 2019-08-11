@@ -125,10 +125,10 @@ break :-
 sys_toplevel :-
    repeat,
    sys_trap(sys_toplevel_ask, E,
-      (sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail;
-      sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E);
-      sys_error_type(E, system_error(_)) -> sys_raise(E);
-      sys_error_stack(E), fail)), !.
+      (  sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail
+      ;  sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E)
+      ;  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  sys_error_stack(E), fail)), !.
 :- set_predicate_property(sys_toplevel/0, sys_notrace).
 
 % sys_toplevel_ask
@@ -138,11 +138,11 @@ sys_toplevel_ask :-
    sys_toplevel_top,
    write('?- '), flush_output,
    read_term(G, [variable_names(N)]),
-   (G == end_of_file -> true;
-   current_prolog_flag(sys_print_map, M),
-   setup_call_cleanup(set_prolog_flag(sys_print_map, N),
-      sys_answer(G, N),
-      set_prolog_flag(sys_print_map, M)), fail).
+   (  G == end_of_file -> true
+   ;  current_prolog_flag(sys_print_map, M),
+      setup_call_cleanup(set_prolog_flag(sys_print_map, N),
+         sys_answer(G, N),
+         set_prolog_flag(sys_print_map, M)), fail).
 
 % sys_toplevel_level
 :- private sys_toplevel_level/0.
@@ -169,8 +169,8 @@ sys_answer(G, N) :-
    current_prolog_flag(sys_choices, X),
    expand_goal(G, H), call_residue(H, R),
    current_prolog_flag(sys_choices, Y),
-   (X =:= Y -> !, sys_filter_show(N, R), nl;
-   sys_answer_ask(N, R) -> !; true).
+   (  X =:= Y -> !, sys_filter_show(N, R), nl
+   ;  sys_answer_ask(N, R) -> !; true).
 sys_answer(_, _) :-
    get_properties(runtime, P),
    get_property(P, 'query.no', V),
@@ -181,8 +181,8 @@ sys_answer(_, _) :-
 sys_answer_ask(N, R) :-
    repeat,
    sys_trap(sys_answer_prompt(N, R, Response), E,
-      (sys_error_type(E, system_error(_)) -> sys_raise(E);
-      sys_error_message(E), fail)), !, Response == answer_cut.
+      (  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  sys_error_message(E), fail)), !, Response == answer_cut.
 
 % sys_answer_prompt(+Assoc, +List, -Atom)
 :- private sys_answer_prompt/3.
@@ -200,10 +200,10 @@ sys_answer_show(N, R, Response) :-
    sys_filter_show(N, R), write(' '), flush_output,
    (read_line(L) -> true; exit),
    thread_current(Thread),
-   (L == ; -> set_thread_flag(Thread, sys_tprompt, off);
-   L == '' -> set_thread_flag(Thread, sys_tprompt, answer_cut);
-   L == ? -> sys_answer_help;
-   term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
+   (  L == ; -> set_thread_flag(Thread, sys_tprompt, off)
+   ;  L == '' -> set_thread_flag(Thread, sys_tprompt, answer_cut)
+   ;  L == ? -> sys_answer_help
+   ;  term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
    current_thread_flag(Thread, sys_tprompt, Response), Response \== on.
 
 % sys_answer_help

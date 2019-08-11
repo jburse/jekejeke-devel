@@ -298,10 +298,7 @@ public class PrologReader {
                 skel = Foyer.OP_UNIT;
                 current = -1;
             } else {
-                skel = read(Operator.LEVEL_HIGH);
-                if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
-                    throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
-                            st.getTokenOffset());
+                skel = readParen();
                 current = 0;
             }
         } else if (OP_LBRACE.equals(st.getData())) {
@@ -310,10 +307,8 @@ public class PrologReader {
                 skel = Foyer.OP_SET;
                 current = -1;
             } else {
-                skel = readSet(level);
-                if (level == -1)
-                    return skel;
-                current = -2;
+                skel = readSet();
+                current = 0;
             }
         } else if (OP_LBRACKET.equals(st.getData())) {
             nextToken();
@@ -321,10 +316,8 @@ public class PrologReader {
                 skel = Foyer.OP_NIL;
                 current = -1;
             } else {
-                skel = readList(level);
-                if (level == -1)
-                    return skel;
-                current = -2;
+                skel = readList();
+                current = 0;
             }
         } else {
             int h = st.getData().codePointAt(0);
@@ -344,13 +337,10 @@ public class PrologReader {
                         st.getTokenOffset());
             }
         }
-        if (current == -2) {
-            current = 0;
-        } else if (current == -1) {
+        if (current == -1) {
             if (st.lookAhead() == OP_LPAREN.codePointAt(0)) {
                 skel = makePos((String) skel, getAtomPos());
                 nextToken();
-                current = 0;
                 nextToken();
                 if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
                     Operator oper = (engine != null ? OperatorSearch.getOper(source,
@@ -366,14 +356,13 @@ public class PrologReader {
                         throw new ScannerError(ERROR_SYNTAX_CANNOT_START_TERM,
                                 st.getTokenOffset());
                     }
-                    if (level == -1)
-                        return skel;
-                    nextToken();
                 } else {
-                    skel = readCompound(markFunc((SkelAtom) skel), level);
-                    if (level == -1)
-                        return skel;
+                    skel = readCompound(makeFunc((SkelAtom) skel));
+                    current = 0;
                 }
+                if (level == -1)
+                    return skel;
+                nextToken();
             } else {
                 PositionKey pos = getAtomPos();
                 if (level == -1)
@@ -521,26 +510,6 @@ public class PrologReader {
     }
 
     /**
-     * <p>Reads an infix.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param help The functor.
-     * @param skel The left argument.
-     * @param op   The operator.
-     * @return The infix.
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected Object readInfix(SkelAtom help, Object skel, Operator op)
-            throws ScannerError, EngineMessage, EngineException, IOException {
-        nextOperator();
-        Object jack = read(op.getLevel() - op.getRight());
-        return new SkelCompound(help, skel, jack);
-    }
-
-    /**
      * <p>Reads a postfix.</p>
      * <p>Can be overridden by sub classes.</p>
      *
@@ -596,6 +565,26 @@ public class PrologReader {
     }
 
     /**
+     * <p>Reads an infix.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param help The functor.
+     * @param skel The left argument.
+     * @param op   The operator.
+     * @return The infix.
+     * @throws ScannerError    Error and position.
+     * @throws EngineMessage   IO Error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected Object readInfix(SkelAtom help, Object skel, Operator op)
+            throws ScannerError, EngineMessage, EngineException, IOException {
+        nextOperator();
+        Object jack = read(op.getLevel() - op.getRight());
+        return new SkelCompound(help, skel, jack);
+    }
+
+    /**
      * <p>Advance the operator.</p>
      *
      * @throws ScannerError Error and position.
@@ -637,25 +626,41 @@ public class PrologReader {
     /*********************************************************************/
 
     /**
+     * <p>Read a parenthesis expression.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @return The term.
+     * @throws ScannerError    Error and position.
+     * @throws IOException     I/O error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected Object readParen()
+            throws EngineException, IOException, ScannerError, EngineMessage {
+        Object arg = read(Operator.LEVEL_HIGH);
+        if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
+            throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
+                    st.getTokenOffset());
+        return arg;
+    }
+
+    /**
      * <p>Read a set.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param level The level.
      * @return The set.
      * @throws ScannerError    Error and position.
      * @throws IOException     I/O error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected Object readSet(int level)
+    protected Object readSet()
             throws EngineException, IOException, ScannerError, EngineMessage {
         SkelAtom help = makePos(Foyer.OP_SET, getAtomPos());
         Object arg = read(Operator.LEVEL_HIGH);
         if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
             throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
                     st.getTokenOffset());
-        if (level != -1)
-            nextToken();
         return new SkelCompound(help, arg);
     }
 
@@ -663,14 +668,13 @@ public class PrologReader {
      * <p>Reads a list.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param level The level.
      * @return The list.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected Object readList(int level)
+    protected Object readList()
             throws ScannerError, EngineMessage, EngineException, IOException {
         SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
         Object[] args = new Object[2];
@@ -698,8 +702,6 @@ public class PrologReader {
         if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
             throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
                     st.getTokenOffset());
-        if (level != -1)
-            nextToken();
         back = new SkelCompound(help, args, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
@@ -717,7 +719,7 @@ public class PrologReader {
      * @param sa The skel atom.
      * @return The marked skel atom.
      */
-    protected SkelAtom markFunc(SkelAtom sa) {
+    protected SkelAtom makeFunc(SkelAtom sa) {
         return sa;
     }
 
@@ -726,14 +728,13 @@ public class PrologReader {
      * <p>Can be overridden by sub classes.</p>
      *
      * @param help  The functor.
-     * @param level The level.
      * @return The compound.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected Object readCompound(SkelAtom help, int level)
+    protected Object readCompound(SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
         ListArray<Object> vec = new ListArray<Object>();
         vec.add(read(Operator.LEVEL_MIDDLE));
@@ -744,8 +745,6 @@ public class PrologReader {
         if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
             throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
                     st.getTokenOffset());
-        if (level != -1)
-            nextToken();
         Object[] args = new Object[vec.size()];
         vec.toArray(args);
         return new SkelCompound(help, args);
