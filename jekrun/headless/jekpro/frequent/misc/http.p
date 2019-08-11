@@ -429,10 +429,10 @@ send_text(File, Headers, Response) :-
 send_lines(Stream, Response) :-
    read_line_max(Stream, 1024, Line), !,
    write(Response, Line),
-   (\+ atom_length(Line, 1024) ->
-   write(Response, '\r\n'),
-   send_lines(Stream, Response);
-   send_lines2(Stream, Response)).
+   (  \+ atom_length(Line, 1024)
+   -> write(Response, '\r\n'),
+      send_lines(Stream, Response)
+   ;  send_lines2(Stream, Response)).
 send_lines(_, _).
 
 % send_lines2(+Stream, +Stream)
@@ -440,10 +440,10 @@ send_lines(_, _).
 send_lines2(Stream, Response) :-
    read_line_max(Stream, 1024, Line), !,
    write(Response, Line),
-   (\+ atom_length(Line, 1024) ->
-   write(Response, '\r\n'),
-   send_lines(Stream, Response);
-   send_lines2(Stream, Response)).
+   (  \+ atom_length(Line, 1024)
+   -> write(Response, '\r\n'),
+      send_lines(Stream, Response)
+   ;  send_lines2(Stream, Response)).
 send_lines2(_, Response) :-
    write(Response, '\r\n').
 
