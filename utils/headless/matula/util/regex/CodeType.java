@@ -66,6 +66,7 @@ public final class CodeType {
     public static final char LINE_SINGLE = '\'';
     public static final char LINE_DOUBLE = '\"';
     public static final char LINE_BACK = '`';
+    public static final char LINE_SLASH = '/';
 
     public static final int SUB_CLASS_BLANK = 0;
     public static final int SUB_CLASS_CNTRL = 1;

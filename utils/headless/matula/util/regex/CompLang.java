@@ -57,7 +57,7 @@ public final class CompLang {
         CompLang.JSON_COMPLANG.setLineComment("//");
         CompLang.JSON_COMPLANG.setBlockCommentStart("/*");
         CompLang.JSON_COMPLANG.setBlockCommentEnd("*/");
-        CompLang.JSON_COMPLANG.setCodeEscapes("u");
+        CompLang.JSON_COMPLANG.setCodeEscapes("u/");
     }
 
     /**
@@ -250,6 +250,7 @@ public final class CompLang {
                         case CodeType.LINE_DOUBLE:
                         case CodeType.LINE_BACK:
                         case CodeType.LINE_BACKSLASH:
+                        case CodeType.LINE_SLASH:
                             buf.appendCodePoint(k);
                             break;
                         case CodeType.LINE_EOL:
@@ -326,6 +327,8 @@ public final class CompLang {
                 }
                 buf.appendCodePoint(k);
             } else if (k == CodeType.LINE_BACKSLASH
+                    || (k == CodeType.LINE_SLASH &&
+                    getCodeEscapes().indexOf(CodeType.LINE_SLASH) != -1)
                     || (k != ' ' && d.isLayout(k))
                     || !d.isValid(k)) {
                 if (buf == null)
@@ -357,6 +360,7 @@ public final class CompLang {
                     case CodeType.LINE_DOUBLE:
                     case CodeType.LINE_BACK:
                     case CodeType.LINE_BACKSLASH:
+                    case CodeType.LINE_SLASH:
                         buf.appendCodePoint(k);
                         break;
                     default:

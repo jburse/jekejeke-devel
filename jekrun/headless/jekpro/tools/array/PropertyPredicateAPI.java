@@ -80,8 +80,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
         DEFAULT.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicateAPI(PROP_META_FUNCTION,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        DEFAULT.add(new StoreKey(OP_SYS_TABLED, 0), new PropertyPredicateAPI(PROP_SYS_TABLED,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_TABLED, 0), new PropertyPredicateAPI(PROP_SYS_TABLED));
     }
 
 
