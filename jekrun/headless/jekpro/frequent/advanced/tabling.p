@@ -219,19 +219,20 @@ sys_table_revolve(tree, A, Goal, W, R,
 
 /**
  * current_table(V, R):
- * The predicate succeeds in V with the current variant keys
- * and in R with the current materialized table keys.
+ * The predicate succeeds in V with the cached variant keys
+ * and in R with the cache clause reference.
  */
 % current_table(-Callable, -Ref)
 :- public current_table/2.
+% :- meta_predicate current_table(-1,?).
 current_table(V, R) :-
    sys_callable(V), !,
    sys_functor(V, F, N),
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, R]),
-   Test,
+   sys_univ(Test, [H, P, _]),
+   clause_ref(Test, true, R),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -239,8 +240,8 @@ current_table(V, R) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, R]),
-   Test,
+   sys_univ(Test, [H, P, _]),
+   clause_ref(Test, true, R),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -254,6 +255,36 @@ sys_table_test(F, N, H) :-
    atom_number(U, N),
    atom_split(G, '_', [F, U, m]),
    sys_replace_site(H, F, G).
+
+/**********************************************************/
+/* Table Modification                                     */
+/**********************************************************/
+
+/**
+ * retract_table(V):
+ * The predicate succeeds with and removes the cached
+ * variant keys that match V.
+ */
+% retract_table(-Callable)
+:- public retract_table/1.
+% :- meta_predicate retract_table(-1).
+retract_table(V) :-
+   current_table(V, R),
+   erase_ref(R).
+
+/**
+ * retractall_table(V):
+ * The predicate succeeds and removes all the cached
+ * variant keys that match V.
+ */
+% retractall_table(+Callable)
+:- public retractall_table/1.
+% :- meta_predicate retractall_table(-1).
+retractall_table(V) :-
+   current_table(V, R),
+   erase_ref(R),
+   fail.
+retractall_table(_).
 
 /**********************************************************/
 /* Term Rewriting                                         */
@@ -284,6 +315,4 @@ sys_table_aux(F, H) :-
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1, -1).
 user:term_expansion(A, _) :- var(A), !, fail.
-user:term_expansion((A :- _), _) :- var(A), !, fail.
-user:term_expansion((A :- B), (C :- B)) :- sys_table_head(A, C), !.
 user:term_expansion(A, B) :- sys_table_head(A, B), !.

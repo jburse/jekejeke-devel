@@ -161,7 +161,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 ((SkelCompound) obj).sym.fun.equals(OP_HOME)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_PRODUCT_SHOP, ((SkelAtom) obj).fun);
+                prop.put(AbstractBundle.PROP_LICENSE_INFO, ((SkelAtom) obj).fun);
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 2 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_AUTHOR)) {

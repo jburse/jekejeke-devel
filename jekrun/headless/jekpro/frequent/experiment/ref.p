@@ -114,7 +114,7 @@
  * H :- B and the clause reference R of the user clause. The
  * head predicate must be dynamic or thread local.
  */
-% clause_ref(-Term, -Goal, -Ref)
+% clause_ref(-Callable, -Goal, -Ref)
 :- public clause_ref/3.
 :- meta_predicate clause_ref(-1, 0, ?).
 :- special(clause_ref/3, 'SpecialRef', 6).
@@ -125,6 +125,7 @@
  * C and the clause reference R of the user clause. The
  * head predicate must be dynamic or thread local.
  */
+% clause_ref(-Term, -Ref)
 :- public clause_ref/2.
 :- meta_predicate clause_ref(-1, ?).
 clause_ref(C, _) :- var(C),

@@ -1,14 +1,14 @@
 package matula.util.swing;
 
 import derek.util.protect.LicenseError;
-import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignDomain;
 import matula.util.system.ForeignUri;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -46,6 +46,29 @@ import java.net.URLClassLoader;
  */
 public final class RuntimeHotspot extends AbstractRuntime {
     public static RuntimeHotspot DEFAULT = new RuntimeHotspot();
+
+    private static Field ucp;
+    private static Method geturls;
+
+    static {
+        try {
+            Class<?> clazz = Class.forName("jdk.internal.loader.BuiltinClassLoader");
+            ucp = clazz.getDeclaredField("ucp");
+            ucp.setAccessible(true);
+
+            clazz = Class.forName("jdk.internal.loader.URLClassPath");
+            geturls = clazz.getDeclaredMethod("getURLs", new Class[0]);
+        } catch (ClassNotFoundException e) {
+            ucp = null;
+            geturls = null;
+        } catch (NoSuchFieldException e) {
+            ucp = null;
+            geturls = null;
+        } catch (NoSuchMethodException e) {
+            ucp = null;
+            geturls = null;
+        }
+    }
 
     /**
      * <p>Create an activator android.</p>
@@ -127,6 +150,15 @@ public final class RuntimeHotspot extends AbstractRuntime {
         if (loader instanceof URLClassLoader) {
             URLClassLoader urlloader = (URLClassLoader) loader;
             return urlloader.getURLs();
+        } else if (ucp != null && ucp.getDeclaringClass().isAssignableFrom(loader.getClass())) {
+            try {
+                Object val = ucp.get(loader);
+                return (val != null ? (URL[]) geturls.invoke(val) : null);
+            } catch (IllegalAccessException e) {
+                return null;
+            } catch (InvocationTargetException e) {
+                return null;
+            }
         } else {
             return null;
         }
