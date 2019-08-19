@@ -63,16 +63,15 @@
  */
 % deposita_ref(+Ref)
 :- public deposita_ref/1.
-deposita_ref(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+deposita_ref(V) :- var(V),
+   throw(error(instantiation_error, _)).
 deposita_ref([R|L]) :- !,
    deposita_ref(R),
    deposita_ref(L).
 deposita_ref([]) :- !.
 deposita_ref(R) :-
-   sys_atomic((  recorda_ref(R),
-                 sys_unbind(erase_ref(R)))).
+   sys_atomic((recorda_ref(R),
+      sys_unbind(erase_ref(R)))).
 
 /**
  * depositz_ref(R):
@@ -81,16 +80,15 @@ deposita_ref(R) :-
  */
 % depositz_ref(+Ref)
 :- public depositz_ref/1.
-depositz_ref(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+depositz_ref(V) :- var(V),
+   throw(error(instantiation_error, _)).
 depositz_ref([R|L]) :- !,
    depositz_ref(R),
    depositz_ref(L).
 depositz_ref([]) :- !.
 depositz_ref(R) :-
-   sys_atomic((  recordz_ref(R),
-                 sys_unbind(erase_ref(R)))).
+   sys_atomic((recordz_ref(R),
+      sys_unbind(erase_ref(R)))).
 
 /**
  * withdrawa_ref(R):
@@ -100,16 +98,15 @@ depositz_ref(R) :-
  */
 % withdrawa_ref(+Ref)
 :- public withdrawa_ref/1.
-withdrawa_ref(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+withdrawa_ref(V) :- var(V),
+   throw(error(instantiation_error, _)).
 withdrawa_ref([R|L]) :- !,
    withdrawz_ref(L),
    withdrawz_ref(R).
 withdrawa_ref([]) :- !.
 withdrawa_ref(R) :-
-   sys_atomic((  erase_ref(R),
-                 sys_unbind(recorda_ref(R)))).
+   sys_atomic((erase_ref(R),
+      sys_unbind(recorda_ref(R)))).
 
 /**
  * withdrawz_ref(R):
@@ -119,13 +116,12 @@ withdrawa_ref(R) :-
  */
 % withdrawz_ref(+Ref)
 :- public withdrawz_ref/1.
-withdrawz_ref(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+withdrawz_ref(V) :- var(V),
+   throw(error(instantiation_error, _)).
 withdrawz_ref([R|L]) :- !,
    withdrawz_ref(L),
    withdrawz_ref(R).
 withdrawz_ref([]) :- !.
 withdrawz_ref(R) :-
-   sys_atomic((  erase_ref(R),
-                 sys_unbind(recordz_ref(R)))).
+   sys_atomic((erase_ref(R),
+      sys_unbind(recordz_ref(R)))).

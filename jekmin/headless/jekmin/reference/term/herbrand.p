@@ -102,10 +102,9 @@ sys_ensure_sto(V) :-
 % dif(+Term, +Term)
 :- public dif/2.
 dif(X, Y) :-
-   sys_reduce_dif(X, Y, [], G), !,
-   G \== [],
+   sys_reduce_dif(X, Y, [], G), !, G \== [],
    sys_freeze_var(W, S),
-   W = sys_data_dif(N,G),
+   W = sys_data_dif(N, G),
    sys_listeners_difs(G, R),
    term_variables(R, L),
    sys_serno_hooks(L, sys_hook_dif(S), N),
@@ -117,7 +116,7 @@ dif(_, _).
  */
 % sys_listeners_difs(+Map, -Set)
 :- private sys_listeners_difs/2.
-sys_listeners_difs([X-Y|G], [X,Y|L]) :-
+sys_listeners_difs([X-Y|G], [X, Y|L]) :-
    var(Y), !,
    sys_listeners_difs(G, L).
 sys_listeners_difs([X-_|G], [X|L]) :-
@@ -148,9 +147,7 @@ sys_reduce_dif(S, T, L, R) :-
  */
 % sys_deref_term(+Term, +Map, -Term)
 :- private sys_deref_term/3.
-sys_deref_term(X, L, T) :-
-   var(X),
-   get(L, X, S), !,
+sys_deref_term(X, L, T) :- var(X), get(L, X, S), !,
    sys_deref_term(S, L, T).
 sys_deref_term(S, _, S).
 
@@ -162,16 +159,11 @@ sys_deref_term(S, _, S).
  */
 % sys_reduce_uninst(+Term, +Term, +Map, -Map).
 :- private sys_reduce_uninst/4.
-sys_reduce_uninst(X, Y, L, R) :-
-   var(X),
-   var(Y),
-   X == Y, !,
+sys_reduce_uninst(X, Y, L, R) :- var(X), var(Y), X == Y, !,
    R = L.
-sys_reduce_uninst(X, T, L, R) :-
-   var(X), !,
+sys_reduce_uninst(X, T, L, R) :- var(X), !,
    put(L, X, T, R).
-sys_reduce_uninst(T, X, L, R) :-
-   var(X), !,
+sys_reduce_uninst(T, X, L, R) :- var(X), !,
    put(L, X, T, R).
 sys_reduce_uninst(S, T, _, _) :-
    functor(S, F, N),
@@ -217,7 +209,7 @@ sys_hook_sto(V, T) :-
 % sys_hook_dif(+Warp, +Var, +Term)
 :- private sys_hook_dif/3.
 sys_hook_dif(S, _, _) :-
-   sys_melt_var(S, sys_data_dif(L,G)),
+   sys_melt_var(S, sys_data_dif(L, G)),
    withdrawz_ref(L),
    sys_make_dif(G, P, Q),
    sys_assume_cont(dif(P, Q)).
@@ -250,8 +242,8 @@ residue:sys_current_eq(V, dif(S)) :-
 :- multifile residue:sys_unwrap_eq/3.
 residue:sys_unwrap_eq(sto(K), [sto(V)|L], L) :-
    sys_melt_var(K, V).
-residue:sys_unwrap_eq(dif(S), [dif(P,Q)|L], L) :-
-   sys_melt_var(S, sys_data_dif(_,G)),
+residue:sys_unwrap_eq(dif(S), [dif(P, Q)|L], L) :-
+   sys_melt_var(S, sys_data_dif(_, G)),
    sys_make_dif(G, P, Q).
 
 /**
@@ -261,6 +253,6 @@ residue:sys_unwrap_eq(dif(S), [dif(P,Q)|L], L) :-
  */
 % sys_make_dif(+Map, -List, -List)
 :- private sys_make_dif/3.
-sys_make_dif([X-T,U|V], (X,L), (T,R)) :- !,
+sys_make_dif([X-T, U|V], (X, L), (T, R)) :- !,
    sys_make_dif([U|V], L, R).
 sys_make_dif([X-T], X, T).

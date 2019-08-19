@@ -131,10 +131,10 @@ bdd_add_vars([], _).
 % bdd_add_var(+Var, +Ref, +Var)
 :- private bdd_add_var/3.
 bdd_add_var(A, K, H) :-
-   get_attr(A, clpb, bdd_ref(K,F)), !,
-   put_attr(A, clpb, bdd_ref(K,[H|F])).
+   get_attr(A, clpb, bdd_ref(K, F)), !,
+   put_attr(A, clpb, bdd_ref(K, [H|F])).
 bdd_add_var(A, K, H) :-
-   put_attr(A, clpb, bdd_ref(K,[H])).
+   put_attr(A, clpb, bdd_ref(K, [H])).
 
 /**
  * sat_trivial(S, H):
@@ -154,13 +154,13 @@ sat_trivial(S, H) :-
  */
 % sat_propagate(+Tree)
 :- private sat_propagate/1.
-sat_propagate(node(X,_,_,zero)) :- !,
+sat_propagate(node(X, _, _, zero)) :- !,
    sys_melt_var(X, Y),
    Y = 1.
-sat_propagate(node(X,_,zero,_)) :- !,
+sat_propagate(node(X, _, zero, _)) :- !,
    sys_melt_var(X, Y),
    Y = 0.
-sat_propagate(node(X,_,node(Y,_,A,zero),node(Y,_,zero,A))) :- !,
+sat_propagate(node(X, _, node(Y, _, A, zero), node(Y, _, zero, A))) :- !,
    sys_melt_var(X, Z),
    sys_melt_var(Y, T),
    Z = T.
@@ -178,23 +178,21 @@ sat_propagate(_).
 % attr_unify_hook(+Attr, +Term)
 :- public attr_unify_hook/2.
 :- override attr_unify_hook/2.
-attr_unify_hook(bdd_ref(K,F), W) :-
-   var(W),
-   get_attr(W, clpb, bdd_ref(I,G)), !,
+attr_unify_hook(bdd_ref(K, F), W) :- var(W),
+   get_attr(W, clpb, bdd_ref(I, G)), !,
    union(F, G, E),
-   put_attr(W, clpb, bdd_ref(I,E)),
-   bdd_unify(G, K, node(I,[I],one,zero)).
-attr_unify_hook(bdd_ref(K,F), W) :-
-   var(W), !,
+   put_attr(W, clpb, bdd_ref(I, E)),
+   bdd_unify(G, K, node(I, [I], one, zero)).
+attr_unify_hook(bdd_ref(K, F), W) :- var(W), !,
    var_map_new(W, I),
-   put_attr(W, clpb, bdd_ref(I,F)),
-   bdd_unify(F, K, node(I,[I],one,zero)).
-attr_unify_hook(bdd_ref(K,F), 0) :- !,
+   put_attr(W, clpb, bdd_ref(I, F)),
+   bdd_unify(F, K, node(I, [I], one, zero)).
+attr_unify_hook(bdd_ref(K, F), 0) :- !,
    bdd_unify(F, K, zero).
-attr_unify_hook(bdd_ref(K,F), 1) :- !,
+attr_unify_hook(bdd_ref(K, F), 1) :- !,
    bdd_unify(F, K, one).
-attr_unify_hook(bdd_ref(_,_), W) :-
-   throw(error(type_error(sat_value,W),_)).
+attr_unify_hook(bdd_ref(_, _), W) :-
+   throw(error(type_error(sat_value, W), _)).
 
 /**
  * set_unify(F, K, W):
@@ -224,7 +222,7 @@ sat_assign(T, U, one, S) :- !,
 sat_assign(T, U, zero, S) :- !,
    tree_zero(T, U, S).
 sat_assign(T, U, W, S) :-
-   tree_equiv(node(U,[U],one,zero), W, P),
+   tree_equiv(node(U, [U], one, zero), W, P),
    tree_and(T, P, Q),
    tree_exists(Q, U, S).
 
@@ -241,7 +239,7 @@ sat_assign(T, U, W, S) :-
 :- public attribute_goals/3.
 :- override attribute_goals/3.
 attribute_goals(A, S, S) :-
-   get_attr(A, clpb, bdd_ref(_,_)).
+   get_attr(A, clpb, bdd_ref(_, _)).
 attribute_goals(A, [sat(E)|S], S) :-
    get_attr(A, clpb, bdd_root(T)),
    expr_pretty(T, E).
@@ -256,15 +254,14 @@ attribute_goals(A, [sat(E)|S], S) :-
  */
 % labeling(+List)
 :- public labeling/1.
-labeling(L) :-
-   var(L),
-   throw(error(instantiation_error,_)).
+labeling(L) :- var(L),
+   throw(error(instantiation_error, _)).
 labeling([B|L]) :- !,
    expr_value(B),
    labeling(L).
 labeling([]) :- !.
 labeling(L) :-
-   throw(error(type_error(list,L),_)).
+   throw(error(type_error(list, L), _)).
 
 /**
  * random_labeling(L):
@@ -272,12 +269,9 @@ labeling(L) :-
  */
 % random_labeling(+List)
 :- public random_labeling/1.
-random_labeling(L) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-random_labeling([B|L]) :-
-   var(B),
-   random(2, 1), !,
+random_labeling(L) :- var(L),
+   throw(error(instantiation_error, _)).
+random_labeling([B|L]) :- var(B), random(2, 1), !,
    expr_value_reverse(B),
    random_labeling(L).
 random_labeling([B|L]) :- !,
@@ -285,7 +279,7 @@ random_labeling([B|L]) :- !,
    random_labeling(L).
 random_labeling([]) :- !.
 random_labeling(L) :-
-   throw(error(type_error(list,L),_)).
+   throw(error(type_error(list, L), _)).
 
 /**
  * count(L, N):
@@ -294,17 +288,15 @@ random_labeling(L) :-
  */
 % count(+List, -Integer)
 :- public count/2.
-count(L, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
+count(L, _) :- var(L),
+   throw(error(instantiation_error, _)).
 count([B|L], N) :- !,
-   findall(M, (  expr_value(B),
-                 count(L, M)), R),
+   findall(M, (expr_value(B), count(L, M)), R),
    sys_sat_sum(R, N).
 count([], N) :- !,
    N = 1.
 count(L, _) :-
-   throw(error(type_error(list,L),_)).
+   throw(error(type_error(list, L), _)).
 
 /**
  * sys_sat_sum(L, N):
@@ -356,20 +348,20 @@ weighted_maximum(R, L, O) :-
 % sat_find_start(+List, +List, -Number)
 :- private sat_find_start/3.
 sat_find_start(R, L, K) :-
-   catch((  random_labeling(L),
-            sys_weighted_sum(R, L, 0, F),
-            throw(sat_start_bound(F))),
+   catch((random_labeling(L),
+      sys_weighted_sum(R, L, 0, F),
+      throw(sat_start_bound(F))),
       sat_start_bound(K),
       true).
 
 % sat_find_maximum(+Number, +Interval, +Var, +List, +List, +Number, -Number)
 :- private sat_find_maximum/7.
 sat_find_maximum(V, J, H, R, L, K, O) :-
-   catch((  U is K-V,
-            watch_trivial(H, J, L, >, U),
-            random_labeling(L),
-            sys_weighted_sum(R, L, 0, F),
-            throw(sat_new_bound(F))),
+   catch((U is K-V,
+      watch_trivial(H, J, L, >, U),
+      random_labeling(L),
+      sys_weighted_sum(R, L, 0, F),
+      throw(sat_new_bound(F))),
       sat_new_bound(P),
       true), !,
    sat_find_maximum(V, J, H, R, L, P, O).

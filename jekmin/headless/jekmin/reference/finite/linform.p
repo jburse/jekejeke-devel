@@ -167,7 +167,7 @@ X #= Y :-
 % #\=(+Expr,+Expr)
 :- public #\= /2.
 X #\= Y :-
-   sys_compare_expr(Y, X, [.. -1,1...]).
+   sys_compare_expr(Y, X, [.. -1, 1...]).
 
 /**
  * A #< B:
@@ -235,15 +235,14 @@ sys_compare_expr(Y, X, S) :-
 % SWI-Prolog like naming
 % Does a validation of the list
 :- public all_different/1.
-all_different(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+all_different(V) :- var(V),
+   throw(error(instantiation_error, _)).
 all_different([X|Y]) :- !,
    all_different(Y),
    sys_nq_list(Y, X).
 all_different([]) :- !.
 all_different(X) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 % sys_nq_list(+List, +Expr)
 % Doesn't do a validation of the list
@@ -259,17 +258,15 @@ sys_nq_list([], _).
 
 % sys_hook_lin(+Var, +Term)
 :- private sys_hook_lin/2.
-sys_hook_lin(V, W) :-
-   var(W), !,
+sys_hook_lin(V, W) :- var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
    sys_assume_cont(post(sys_var_lin(R, S))).
-sys_hook_lin(V, T) :-
-   integer(T), !,
+sys_hook_lin(V, T) :- integer(T), !,
    sys_freeze_var(V, R),
    sys_assume_cont(post(sys_const_lin(R, T))).
 sys_hook_lin(_, T) :-
-   throw(error(type_error(integer,T),_)).
+   throw(error(type_error(integer, T), _)).
 
 % sys_var_lin(+Wrap, +Wrap)
 % sys_var_lin(X, Y) = X = Y
@@ -309,19 +306,16 @@ true <=
 
 /* Create Surrogate */
 post(sys_lin_ref(R, L, T)) <=
-   phaseout_posted(sys_lin(L, T)),
-   surrogate_new(R).
+   phaseout_posted(sys_lin(L, T)), surrogate_new(R).
 
 /* Trivial Cases */
 fail <=
-   phaseout_posted(sys_lin_ref(_, [], K)),
-   K \== 0, !.
+   phaseout_posted(sys_lin_ref(_, [], K)), K \== 0, !.
 true <=
    phaseout_posted(sys_lin_ref(_, [], _)), !.
 /* Agent start */
 assumez(sys_lin_waits(X, R)) <=
-   posted(sys_lin_ref(R, L, _)),
-   member(_*X, L).
+   posted(sys_lin_ref(R, L, _)), member(_*X, L).
 post(sys_lin_agent(R, X, [A*X|B], T)) <=
    phaseout_posted(sys_lin_ref(R, [A*X|B], T)).
 
@@ -329,120 +323,81 @@ post(sys_lin_agent(R, X, [A*X|B], T)) <=
 % Remove helper
 :- private sys_lin_remove/2.
 true <=
-   posted(sys_lin_remove(V)),
-   phaseout(sys_lin_waits(_, V)).
+   posted(sys_lin_remove(V)), phaseout(sys_lin_waits(_, V)).
 true <=
    phaseout_posted(sys_lin_remove(_)).
 
 /* GCD Normalisation */
 fail <=
-   phaseout_posted(sys_lin_agent(_, _, P, T)),
-   sys_gcd_prod(P, G),
-   0 =\= T rem G, !.
+   phaseout_posted(sys_lin_agent(_, _, P, T)), sys_gcd_prod(P, G), 0 =\= T rem G, !.
 post(sys_lin_agent(V, X, R, H)) <=
-   phaseout_posted(sys_lin_agent(V, X, P, T)),
-   sys_gcd_prod(P, G), !,
-   sys_div_prod(P, G, R),
-   H is T//G.
+   phaseout_posted(sys_lin_agent(V, X, P, T)), sys_gcd_prod(P, G), !,
+   sys_div_prod(P, G, R), H is T//G.
 post(sys_lin_agent(V, X, R, H)) <=
-   phaseout_posted(sys_lin_agent(V, X, [A*X|B], T)),
-   A < 0, !,
-   sys_flip_prod([A*X|B], R),
-   H is -T.
+   phaseout_posted(sys_lin_agent(V, X, [A*X|B], T)), A < 0, !,
+   sys_flip_prod([A*X|B], R), H is -T.
 /* Unification Trigger */
 sys_melt_const(X, A) <=
-   phaseout_posted(sys_lin_agent(V, X, [1*X], A)), !,
-   phaseout(sys_lin_waits(X, V)).
+   phaseout_posted(sys_lin_agent(V, X, [1*X], A)), !, phaseout(sys_lin_waits(X, V)).
 sys_melt_join(Y, X) <=
-   phaseout_posted(sys_lin_agent(V, X, [1*X,-1*Y], 0)), !,
-   phaseout(sys_lin_waits(X, V)),
-   phaseout(sys_lin_waits(Y, V)).
+   phaseout_posted(sys_lin_agent(V, X, [1*X, -1*Y], 0)), !,
+   phaseout(sys_lin_waits(X, V)), phaseout(sys_lin_waits(Y, V)).
 /* Lin & Lin Intersection */
 fail <=
-   phaseout_posted(sys_lin_agent(_, X, L, C)),
-   sys_lin_agent(_, X, L, D),
-   C \== D, !.
+   phaseout_posted(sys_lin_agent(_, X, L, C)), sys_lin_agent(_, X, L, D), C \== D, !.
 post(sys_lin_remove(V)) <=
-   phaseout_posted(sys_lin_agent(V, X, L, _)),
-   sys_lin_agent(_, X, L, _), !.
+   phaseout_posted(sys_lin_agent(V, X, L, _)), sys_lin_agent(_, X, L, _), !.
 /* Lin & Set Intersection */
 fail <=
-   phaseout_posted(sys_lin_agent(_, X, L, C)),
-   sys_set_agent(_, X, L, S, _),
-   \+ sys_elem_set(S, C), !.
+   phaseout_posted(sys_lin_agent(_, X, L, C)), sys_set_agent(_, X, L, S, _), \+ sys_elem_set(S, C), !.
 post(intset:sys_set_remove(V)) <=
-   posted(sys_lin_agent(_, X, L, _)),
-   phaseout(sys_set_agent(V, X, L, _, _)).
+   posted(sys_lin_agent(_, X, L, _)), phaseout(sys_set_agent(V, X, L, _, _)).
 /* Union Find */
-post(sys_lin_remove(V)),
-post(sys_lin_ref(V, D, T)) <=
-   phaseout_posted(sys_lin_agent(V, _, L, T)),
-   sys_lin_waits(X, V),
-   sys_bound_var(X),
-   sys_melt_var(X, H),
-   var(H), !,
-   sys_fresh_var(H, Y),
-   sys_pick_prod(B, X, L, E),
-   sys_add_prod([B*Y], E, D).
+post(sys_lin_remove(V)), post(sys_lin_ref(V, D, T)) <=
+   phaseout_posted(sys_lin_agent(V, _, L, T)), sys_lin_waits(X, V),
+   sys_bound_var(X), sys_melt_var(X, H), var(H), !,
+   sys_fresh_var(H, Y), sys_pick_prod(B, X, L, E), sys_add_prod([B*Y], E, D).
 /* Constant Elimination */
 post(sys_lin_agent(V, Z, [A*Z|D], H)) <=
-   phaseout_posted(sys_lin_agent(V, _, L, T)),
-   phaseout(sys_lin_waits(X, V)),
-   sys_bound_var(X),
-   sys_melt_var(X, C),
-   integer(C), !,
-   sys_pick_prod(B, X, L, [A*Z|D]),
-   H is T-B*C.
+   phaseout_posted(sys_lin_agent(V, _, L, T)), phaseout(sys_lin_waits(X, V)),
+   sys_bound_var(X), sys_melt_var(X, C), integer(C), !,
+   sys_pick_prod(B, X, L, [A*Z|D]), H is T-B*C.
 /* Hook Adding */
 sys_melt_hook(X, sys_hook_lin) <=
-   posted(sys_lin_agent(V, _, _, _)),
-   sys_lin_waits(X, V).
+   posted(sys_lin_agent(V, _, _, _)), sys_lin_waits(X, V).
 /* Set Diffusion, Directed, Bounds */
 post(intset:sys_in(X, L, U)) <=
    posted(sys_lin_agent(_, _, [A*X|B], T)),
-   sys_bound_poly(B, Q),
-   sys_flip_range(Q, R),
+   sys_bound_poly(B, Q), sys_flip_range(Q, R),
    sys_add_range(R, T, S),
    (  sys_div_range(S, A, U)
    -> L = [U]
-   ;  U = ...,
-      L = []).
+   ;  U = ..., L = []).
 /* Variable Rename */
-post(sys_lin_remove(V)),
-post(sys_lin_ref(V, D, T)) <=
+post(sys_lin_remove(V)), post(sys_lin_ref(V, D, T)) <=
    posted(sys_var_lin(X, Y)),
-   sys_lin_waits(X, V),
-   phaseout(sys_lin_agent(V, _, L, T)),
-   sys_pick_prod(B, X, L, E),
-   sys_add_prod([B*Y], E, D).
+   sys_lin_waits(X, V), phaseout(sys_lin_agent(V, _, L, T)),
+   sys_pick_prod(B, X, L, E), sys_add_prod([B*Y], E, D).
 /* Constant Backpropagation */
 post(sys_lin_agent(V, Z, [A*Z|D], H)) <=
    posted(sys_const_lin(X, C)),
-   phaseout(sys_lin_waits(X, V)),
-   phaseout(sys_lin_agent(V, _, L, T)),
-   sys_pick_prod(B, X, L, [A*Z|D]),
-   H is T-B*C.
+   phaseout(sys_lin_waits(X, V)), phaseout(sys_lin_agent(V, _, L, T)),
+   sys_pick_prod(B, X, L, [A*Z|D]), H is T-B*C.
 /* Set Update, Directed, Bounds */
 post(intset:sys_in(X, L, U)) <=
-   posted(intset:sys_in(Y, _, E)),
-   E \== ...,
-   sys_lin_waits(Y, V),
-   sys_lin_agent(V, _, [A*X|B], T),
-   Y \== X,
-   sys_pick_prod(C, Y, B, D),
-   sys_rampup_poly(D, C, E, Q),
-   sys_flip_range(Q, R),
+   posted(intset:sys_in(Y, _, E)), E \== ...,
+   sys_lin_waits(Y, V), sys_lin_agent(V, _, [A*X|B], T),
+   Y \== X, sys_pick_prod(C, Y, B, D), sys_rampup_poly(D, C, E, Q), sys_flip_range(Q, R),
    sys_add_range(R, T, S),
    (  sys_div_range(S, A, U)
    -> L = [U]
-   ;  U = ...,
-      L = []).
+   ;  U = ..., L = []).
 
 % residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, L#=C) :-
+residue:sys_current_eq(V, L #= C) :-
    sys_clause_hook(V, sys_hook_lin, _),
    sys_freeze_var(V, X),
    sys_lin_waits(X, K),
@@ -452,7 +407,7 @@ residue:sys_current_eq(V, L#=C) :-
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
 :- discontiguous residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq([A*X|B]#=K, [E#=F|L], L) :-
+residue:sys_unwrap_eq([A*X|B] #= K, [E #= F|L], L) :-
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
@@ -465,8 +420,7 @@ residue:sys_unwrap_eq([A*X|B]#=K, [E#=F|L], L) :-
  * V (finite):
  * An native Prolog variable V represents an integer variable.
  */
-sys_value_expr(X, [1*B], 0) :-
-   var(X), !,
+sys_value_expr(X, [1*B], 0) :- var(X), !,
    sys_fresh_var(X, B).
 
 /**
@@ -474,8 +428,7 @@ sys_value_expr(X, [1*B], 0) :-
  * An integer I represents an integer constant.
  */
 % sys_value_expr(+Expr, -Prod, -Integer)
-sys_value_expr(A, [], A) :-
-   integer(A), !.
+sys_value_expr(A, [], A) :- integer(A), !.
 
 /**
  * A + B (finite):
@@ -533,13 +486,12 @@ sys_value_expr(abs(X), S, H) :- !,
  * C (finite):
  * A callable C is also a value expression.
  */
-sys_value_expr(C, L, A) :-
-   sys_callable(C), !,
+sys_value_expr(C, L, A) :- sys_callable(C), !,
    X is C,
    sys_value_expr(X, L, A).
 
 sys_value_expr(A, _, _) :-
-   throw(error(type_error(fd_value,A),_)).
+   throw(error(type_error(fd_value, A), _)).
 
 /**
  * sys_value_expr_inv(E, P, K):
@@ -548,11 +500,9 @@ sys_value_expr(A, _, _) :-
  * directed in the opposite.
  */
 % sys_value_expr_inv(+Expr, -Prod, -Integer)
-sys_value_expr_inv(X, [1*B], 0) :-
-   var(X), !,
+sys_value_expr_inv(X, [1*B], 0) :- var(X), !,
    sys_fresh_var(X, B).
-sys_value_expr_inv(A, [], A) :-
-   integer(A), !.
+sys_value_expr_inv(A, [], A) :- integer(A), !.
 sys_value_expr_inv(A+B, E, K) :- !,
    sys_value_expr_inv(A, P, C),
    sys_value_expr_inv(B, Q, D),
@@ -580,12 +530,11 @@ sys_value_expr_inv(abs(X), S, H) :- !,
    sys_fresh_var(_, V),
    sys_value_expr_inv(X, L, A),
    sys_abs_lin(L, A, S, H, V, G).
-sys_value_expr_inv(C, L, A) :-
-   sys_callable(C), !,
+sys_value_expr_inv(C, L, A) :- sys_callable(C), !,
    X is C,
    sys_value_expr(X, L, A).
 sys_value_expr_inv(A, _, _) :-
-   throw(error(type_error(fd_value,A),_)).
+   throw(error(type_error(fd_value, A), _)).
 
 /**********************************************************/
 /* Scalar Product Unparsing                               */
@@ -594,8 +543,7 @@ sys_value_expr_inv(A, _, _) :-
 % sys_pretty_lin(+Prod, +Integer, -Expr)
 sys_pretty_lin(P, 0, E) :- !,
    sys_pretty_prod(P, E).
-sys_pretty_lin(P, K, E) :-
-   K < 0, !,
+sys_pretty_lin(P, K, E) :- K < 0, !,
    H is -K,
    sys_pretty_prod(P, J),
    sys_pretty_sub(J, H, E).
@@ -613,8 +561,7 @@ sys_pretty_prod([-1*X|A], C) :- !,
    sys_pretty_prod(A, B),
    sys_melt_var(X, Y),
    sys_pretty_sub(B, Y, C).
-sys_pretty_prod([A*X|B], D) :-
-   A < 0, !,
+sys_pretty_prod([A*X|B], D) :- A < 0, !,
    sys_pretty_prod(B, C),
    sys_melt_var(X, Y),
    H is -A,
@@ -627,36 +574,30 @@ sys_pretty_prod([], 0).
 
 % sys_pretty_add(+Expr, +Expr, -Expr)
 :- private sys_pretty_add/3.
-sys_pretty_add(X, Y, X+Y) :-
-   var(X), !.
+sys_pretty_add(X, Y, X+Y) :- var(X), !.
 sys_pretty_add(0, X, X) :- !.
 sys_pretty_add(X, Y, X+Y).
 
 % sys_pretty_sub(+Expr, +Expr, -Expr)
 :- private sys_pretty_sub/3.
-sys_pretty_sub(X, Y, X-Y) :-
-   var(X), !.
+sys_pretty_sub(X, Y, X-Y) :- var(X), !.
 sys_pretty_sub(0, X, -X) :- !.
 sys_pretty_sub(X, Y, X-Y).
 
 % sys_pretty_in(+Set, +Lin, -Goal)
-sys_pretty_in([..I,J...], [A*X|B], E#\=F) :-
-   K is I+1,
-   K is J-1, !,
+sys_pretty_in([..I, J...], [A*X|B], E #\= F) :- K is I+1, K is J-1, !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
-sys_pretty_in([..I], [A*X|B], E#=<F) :- !,
+sys_pretty_in([..I], [A*X|B], E #=< F) :- !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, I, F).
-sys_pretty_in([I...], [A*X|B], E#>F) :-
-   K is I-1, !,
+sys_pretty_in([I...], [A*X|B], E #> F) :- K is I-1, !,
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, K, F).
-sys_pretty_in([I], [A*X|B], E#=F) :-
-   integer(I), !,                                 /* Guard Included */
+sys_pretty_in([I], [A*X|B], E #= F) :- integer(I), !,   /* Guard Included */
    sys_pretty_lin([A*X], 0, E),
    sys_flip_prod(B, C),
    sys_pretty_lin(C, I, F).
@@ -680,10 +621,7 @@ sys_mul_lin(L, A, R, C, B, K, V, W, G) :-
    sys_mul_arg(L, A, [M*E], P, V),
    sys_mul_arg(R, C, [N*F], Q, W),
    post(clpfd:sys_mulv(E, F, G)),
-   H is M*N,
-   I is M*Q,
-   J is N*P,
-   K is P*Q,
+   H is M*N, I is M*Q, J is N*P, K is P*Q,
    sys_make_prod(I, E, [], S),
    sys_make_prod(J, F, [], T),
    sys_add_prod(S, T, U),
@@ -733,8 +671,7 @@ sys_add_prod([A*X|B], [C*X|D], J) :- !,
    sys_add_prod(B, D, H),
    I is A+C,
    sys_make_prod(I, X, H, J).
-sys_add_prod([A*X|B], [C*Y|D], [A*X|H]) :-
-   X @> Y, !,
+sys_add_prod([A*X|B], [C*Y|D], [A*X|H]) :- X @> Y, !,
    sys_add_prod(B, [C*Y|D], H).
 sys_add_prod(B, [C*Y|D], [C*Y|H]) :-
    sys_add_prod(B, D, H).
@@ -762,7 +699,7 @@ sys_gcd_prod([A*_], A) :- !,
 sys_gcd_prod([A*_|L], C) :-
    abs(A) =\= 1,
    sys_gcd_prod(L, B),
-   C is gcd(A,B),
+   C is gcd(A, B),
    abs(C) =\= 1.
 
 % sys_flip_prod(+Prod, -Prod)

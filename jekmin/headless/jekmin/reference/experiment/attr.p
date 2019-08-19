@@ -80,7 +80,7 @@
  * the compiled reference of the hook H unifies with R.
  */
 :- public sys_compile_hook/3.
-:- meta_predicate sys_compile_hook(?,2,?).
+:- meta_predicate sys_compile_hook(?, 2, ?).
 :- special(sys_compile_hook/3, 'SpecialAttr', 1).
 
 /**
@@ -104,5 +104,5 @@ sys_serno_hooks([], _, []).
  * with the hooks and references of the attribute variable V.
  */
 :- public sys_clause_hook/3.
-:- meta_predicate sys_clause_hook(?,2,?).
+:- meta_predicate sys_clause_hook(?, 2, ?).
 :- special(sys_clause_hook/3, 'SpecialAttr', 2).

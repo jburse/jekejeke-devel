@@ -70,7 +70,7 @@ sys_melt_hook(X, H) :-
 
 % sys_ensure_hook(+Attr, +Closure)
 :- private sys_ensure_hook/2.
-:- meta_predicate sys_ensure_hook(?,2).
+:- meta_predicate sys_ensure_hook(?, 2).
 sys_ensure_hook(V, H) :-
    sys_clause_hook(V, H, _), !.
 sys_ensure_hook(V, H) :-

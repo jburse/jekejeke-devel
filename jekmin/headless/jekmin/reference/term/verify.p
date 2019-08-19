@@ -106,11 +106,10 @@ get_atts(V, K, W) :-
  */
 % del_atts(+Var, +Term)
 :- public del_atts/2.
-del_atts(V, K) :-
-   ground(K), !,
+del_atts(V, K) :- ground(K), !,
    del_atts2(V, K).
 del_atts(_, _) :-
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 
 % del_atts2(+Var, +Term)
 :- private del_atts2/2.
@@ -145,7 +144,7 @@ atts(K, F, _, T) :-
 % sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-residue:sys_current_eq(V, atts(R,K,F)) :-
+residue:sys_current_eq(V, atts(R, K, F)) :-
    sys_clause_hook(V, atts(K, F), _),
    sys_freeze_var(V, R).
 
@@ -159,10 +158,10 @@ residue:sys_current_eq(V, atts(R,K,F)) :-
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(atts(R,K,_), I, O) :-
+residue:sys_unwrap_eq(atts(R, K, _), I, O) :-
    current_predicate(K:portray_attributes/3),
    sys_melt_var(R, V),
    K:portray_attributes(V, I, O), !.
-residue:sys_unwrap_eq(atts(R,K,F), [put_atts(V,K,W)|L], L) :-
+residue:sys_unwrap_eq(atts(R, K, F), [put_atts(V, K, W)|L], L) :-
    sys_melt_var(R, V),
    sys_melt_var(F, wrap(W)).

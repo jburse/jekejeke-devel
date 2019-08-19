@@ -108,15 +108,13 @@
  */
 % indomain(-Integer)
 :- public indomain/1.
-indomain(X) :-
-   var(X), !,
+indomain(X) :- var(X), !,
    sys_freeze_var(X, B),
    sys_retire_set(B, S),
    sys_mem_set(S, X).
+indomain(X) :- integer(X), !.
 indomain(X) :-
-   integer(X), !.
-indomain(X) :-
-   throw(error(type_error(integer,X),_)).
+   throw(error(type_error(integer, X), _)).
 
 /**
  * random_indomain(V):
@@ -126,17 +124,15 @@ indomain(X) :-
  */
 % random_indomain(-Integer)
 :- public random_indomain/1.
-random_indomain(X) :-
-   var(X), !,
+random_indomain(X) :- var(X), !,
    sys_freeze_var(X, B),
    sys_retire_set(B, S),
    findall(Y, sys_mem_set(S, Y), L),
    random_permutation(L, R),
    member(X, R).
+random_indomain(X) :- integer(X), !.
 random_indomain(X) :-
-   integer(X), !.
-random_indomain(X) :-
-   throw(error(type_error(integer,X),_)).
+   throw(error(type_error(integer, X), _)).
 
 /**
  * sys_retire_set(B, S):
@@ -221,8 +217,7 @@ sys_random_label_finite(_).
 % Fails if all variables are instantiated
 % Doesn't do a validation of the list
 :- private sys_good_pick/4.
-sys_good_pick([X|L], Y, N, R) :-
-   var(X), !,
+sys_good_pick([X|L], Y, N, R) :- var(X), !,
    sys_freeze_var(X, B),
    sys_get_set(B, S),
    sys_card_set(S, M),
@@ -251,7 +246,7 @@ sys_better_pick(X, N, _, X, N, []).
 % sys_best_pick(+Var, +Integer, +Var, +Integer, +List, -Var, -Integer, -List)
 :- private sys_best_pick/8.
 sys_best_pick(X, N, Y, M, L, X, N, [Y|L]) :-
-   (N,X) @< (M,Y), !.
+   (N, X) @< (M, Y), !.
 sys_best_pick(X, _, Y, M, L, Y, M, [X|L]).
 
 /**********************************************************/
@@ -261,38 +256,32 @@ sys_best_pick(X, _, Y, M, L, Y, M, [X|L]).
 % sys_sel_infinite(+List, -List)
 % Does a validation of the list
 :- private sys_sel_infinite/2.
-sys_sel_infinite(V, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_sel_infinite([X|L], C) :-
-   var(X), !,
+sys_sel_infinite(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
+sys_sel_infinite([X|L], C) :- var(X), !,
    sys_freeze_var(X, B),
    sys_get_set(B, S),
    sys_card_set(S, M),
    sys_sel_infinite(L, D),
-   (  M \== ...
-   -> C = D
-   ;  C = [X|D]).
-sys_sel_infinite([X|L], D) :-
-   integer(X), !,
+   (M \== ... -> C = D; C = [X|D]).
+sys_sel_infinite([X|L], D) :- integer(X), !,
    sys_sel_infinite(L, D).
 sys_sel_infinite([X|_], _) :-
-   throw(error(type_error(integer,X),_)).
+   throw(error(type_error(integer, X), _)).
 sys_sel_infinite([], []) :- !.
 sys_sel_infinite(X, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 % sys_abs_sum(+List, -Integer)
 :- private sys_abs_sum/2.
-sys_abs_sum([X,Y|Z], abs(X)+R) :- !,
+sys_abs_sum([X, Y|Z], abs(X)+R) :- !,
    sys_abs_sum([Y|Z], R).
 sys_abs_sum([X], abs(X)).
 
 % sys_abs_bound(+List, +Integer))
 :- private sys_abs_bound/2.
 sys_abs_bound([X|Y], N) :- !,
-   -N #=< X,
-   X #=< N,
+   -N #=< X, X #=< N,
    sys_abs_bound(Y, N).
 sys_abs_bound([], _).
 
@@ -302,11 +291,9 @@ sys_abs_bound([], _).
 
 % sys_mem_set(+Set, -Integer)
 :- private sys_mem_set/2.
-sys_mem_set([..A,B...], C) :- !,
-   above(0, Y),
-   (  C is B+Y
-   ;  C is A-Y).
-sys_mem_set([..A,U|L], C) :- !,
+sys_mem_set([..A, B...], C) :- !,
+   above(0, Y), (C is B+Y; C is A-Y).
+sys_mem_set([..A, U|L], C) :- !,
    sys_mem_set2([..A|L], U, C).
 sys_mem_set([U|L], C) :-
    sys_mem_set2(L, U, C).
@@ -315,11 +302,9 @@ sys_mem_set([U|L], C) :-
 :- private sys_mem_set2/3.
 sys_mem_set2(_, U, C) :-
    sys_mem_range(U, C).
-sys_mem_set2([..A,B...], _, C) :- !,
-   above(0, Y),
-   (  C is B+Y
-   ;  C is A-Y).
-sys_mem_set2([..A,U|L], _, C) :- !,
+sys_mem_set2([..A, B...], _, C) :- !,
+   above(0, Y), (C is B+Y; C is A-Y).
+sys_mem_set2([..A, U|L], _, C) :- !,
    sys_mem_set2([..A|L], U, C).
 sys_mem_set2([U|L], _, C) :-
    sys_mem_set2(L, U, C).
@@ -327,13 +312,9 @@ sys_mem_set2([U|L], _, C) :-
 % sys_mem_range(+Range, -Integer)
 :- private sys_mem_range/2.
 sys_mem_range(..., C) :- !,
-   above(0, Y),
-   (  C is Y
-   ;  C is -1-Y).
+   above(0, Y), (C is Y; C is -1-Y).
 sys_mem_range(..A, C) :- !,
-   B is -A,
-   above(B, Y),
-   C is -Y.
+   B is -A, above(B, Y), C is -Y.
 sys_mem_range(B..., C) :- !,
    above(B, C).
 sys_mem_range(A..B, C) :- !,
@@ -356,16 +337,14 @@ sys_card_set([U|Y], C) :-
 :- private sys_card_add/3.
 sys_card_add(..., _, ...) :- !.
 sys_card_add(_, ..., ...) :- !.
-sys_card_add(A, B, C) :-
-   C is A+B.
+sys_card_add(A, B, C) :- C is A+B.
 
 % sys_card_range(+Range, -Integer)
 :- private sys_card_range/2.
 sys_card_range(..., ...) :- !.
 sys_card_range(.._, ...) :- !.
 sys_card_range(_..., ...) :- !.
-sys_card_range(A..B, C) :- !,
-   C is B-A+1.
+sys_card_range(A..B, C) :- !, C is B-A+1.
 sys_card_range(_, 1).
 
 /**********************************************************/
@@ -389,17 +368,17 @@ label_maximum(L, F) :-
 % fd_find_start(+List, +Var, -Number)
 :- private fd_find_start/3.
 fd_find_start(L, F, K) :-
-   catch((  random_label(L),
-            throw(fd_start_bound(F))),
+   catch((random_label(L),
+      throw(fd_start_bound(F))),
       fd_start_bound(K),
       true).
 
 % fd_find_maximum(+List, +Var, +Number, -Number)
 :- private fd_find_maximum/4.
 fd_find_maximum(L, F, K, O) :-
-   catch((  F #> K,
-            random_label(L),
-            throw(fd_new_bound(F))),
+   catch((F #> K,
+      random_label(L),
+      throw(fd_new_bound(F))),
       fd_new_bound(P),
       true), !,
    fd_find_maximum(L, F, P, O).

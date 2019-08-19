@@ -76,11 +76,10 @@ nb_current(K, W) :-
  */
 % b_delete(+Term)
 :- public b_delete/1.
-b_delete(K) :-
-   ground(K), !,
+b_delete(K) :- ground(K), !,
    b_delete2(K).
 b_delete(_) :-
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 
 % b_delete2(+Term)
 :- private b_delete2/1.

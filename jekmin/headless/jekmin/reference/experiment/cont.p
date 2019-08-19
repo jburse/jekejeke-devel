@@ -52,8 +52,8 @@
 :- public sys_assume_cont/1.
 :- meta_predicate sys_assume_cont(0).
 sys_assume_cont(G) :-
-   sys_atomic((  cont_push(G),
-                 sys_unbind(cont_pop))).
+   sys_atomic((cont_push(G),
+      sys_unbind(cont_pop))).
 
 % cont_push(+Term)
 :- private cont_push/1.

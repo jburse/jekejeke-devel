@@ -138,15 +138,14 @@ X in U :-
 % +List ins +Set
 % SWI-Prolog like naming.
 :- public ins/2.
-V ins _ :-
-   var(V),
-   throw(error(instantiation_error,_)).
+V ins _ :- var(V),
+   throw(error(instantiation_error, _)).
 [] ins _ :- !.
 [X|Y] ins D :- !,
    X in D,
    Y ins D.
 X ins _ :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 /**********************************************************/
 /* Domain Constraint                                      */
@@ -154,17 +153,15 @@ X ins _ :-
 
 % sys_hook_in(+Var, +Term)
 :- private sys_hook_in/2.
-sys_hook_in(V, W) :-
-   var(W), !,
+sys_hook_in(V, W) :- var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
    sys_assume_cont(post(sys_var_in(R, S))).
-sys_hook_in(V, T) :-
-   integer(T), !,
+sys_hook_in(V, T) :- integer(T), !,
    sys_freeze_var(V, R),
    sys_assume_cont(post(sys_const_in(R, T))).
 sys_hook_in(_, T) :-
-   throw(error(type_error(integer,T),_)).
+   throw(error(type_error(integer, T), _)).
 
 % sys_var_in(+Wrap, +Wrap)
 % sys_var_in(X, Y) = X = Y
@@ -196,61 +193,42 @@ true <=
 fail <=
    phaseout_posted(sys_in(_, [], _)), !.
 sys_melt_const(X, C) <=
-   phaseout_posted(sys_in(X, [C], _)),
-   integer(C), !.
+   phaseout_posted(sys_in(X, [C], _)), integer(C), !.
 /* In & In intersection */
 post(sys_in(X, W, R)) <=
-   phaseout_posted(sys_in(X, S, P)),
-   phaseout(sys_in(X, T, Q)),
+   phaseout_posted(sys_in(X, S, P)), phaseout(sys_in(X, T, Q)),
    (  sys_inter_range(P, Q, R)
    -> sys_inter_set(S, T, W)
-   ;  W = [],
-      R = ...),
+   ;  W = [], R = ...),
    W \== T, !.
 true <=
-   phaseout_posted(sys_in(X, _, _)),
-   sys_in(X, _, _), !.
+   phaseout_posted(sys_in(X, _, _)), sys_in(X, _, _), !.
 /* Union Find */
 post(sys_in(Y, T, S)) <=
-   phaseout_posted(sys_in(X, T, S)),
-   sys_bound_var(X),
-   sys_melt_var(X, H),
-   var(H), !,
+   phaseout_posted(sys_in(X, T, S)), sys_bound_var(X), sys_melt_var(X, H), var(H), !,
    sys_fresh_var(H, Y).
 /* Constant Elimination */
 fail <=
-   phaseout_posted(sys_in(X, T, _)),
-   sys_bound_var(X),
-   sys_melt_var(X, C),
-   integer(C),
-   \+ sys_elem_set(T, C), !.
+   phaseout_posted(sys_in(X, T, _)), sys_bound_var(X), sys_melt_var(X, C), integer(C), \+ sys_elem_set(T, C), !.
 true <=
-   phaseout_posted(sys_in(X, _, _)),
-   sys_bound_var(X),
-   sys_melt_var(X, C),
-   integer(C), !.
+   phaseout_posted(sys_in(X, _, _)), sys_bound_var(X), sys_melt_var(X, C), integer(C), !.
 /* Hook Adding */
 sys_melt_hook(X, sys_hook_in) <=
    posted(sys_in(X, _, _)).
 /* Variable Rename */
 post(sys_in(Y, T, S)) <=
-   posted(sys_var_in(X, Y)),
-   phaseout(sys_in(X, T, S)).
+   posted(sys_var_in(X, Y)), phaseout(sys_in(X, T, S)).
 /* Constant Backpropagation */
 fail <=
-   posted(sys_const_in(X, H)),
-   phaseout(sys_in(X, T, _)),
-   \+ sys_elem_set(T, H).
+   posted(sys_const_in(X, H)), phaseout(sys_in(X, T, _)), \+ sys_elem_set(T, H).
 true <=
-   posted(sys_const_in(X, H)),
-   phaseout(sys_in(X, T, _)),
-   sys_elem_set(T, H).
+   posted(sys_const_in(X, H)), phaseout(sys_in(X, T, _)), sys_elem_set(T, H).
 
 % residue:sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
 :- discontiguous residue:sys_current_eq/2.
-residue:sys_current_eq(V, in(X,S)) :-
+residue:sys_current_eq(V, in(X, S)) :-
    sys_clause_hook(V, sys_hook_in, _),
    sys_freeze_var(V, X),
    sys_in(X, S, _).
@@ -259,7 +237,7 @@ residue:sys_current_eq(V, in(X,S)) :-
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
 :- discontiguous residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(in(X,S), [G|L], L) :-
+residue:sys_unwrap_eq(in(X, S), [G|L], L) :-
    sys_pretty_in(S, [1*X], G).
 
 /**********************************************************/
@@ -268,17 +246,15 @@ residue:sys_unwrap_eq(in(X,S), [G|L], L) :-
 
 % sys_hook_set(+Var, +Term)
 :- private sys_hook_set/2.
-sys_hook_set(V, W) :-
-   var(W), !,
+sys_hook_set(V, W) :- var(W), !,
    sys_freeze_var(V, R),
    sys_fresh_var(W, S),
    sys_assume_cont(post(sys_var_set(R, S))).
-sys_hook_set(V, T) :-
-   integer(T), !,
+sys_hook_set(V, T) :- integer(T), !,
    sys_freeze_var(V, R),
    sys_assume_cont(post(sys_const_set(R, T))).
 sys_hook_set(_, T) :-
-   throw(error(type_error(integer,T),_)).
+   throw(error(type_error(integer, T), _)).
 
 % sys_var_set(+Wrap, +Wrap)
 % sys_var_set(X, Y) = X = Y
@@ -318,28 +294,23 @@ true <=
 
 /* Create Surrogate */
 post(sys_set_ref(V, L, S, T)) <=
-   phaseout_posted(sys_set(L, S)),
-   surrogate_new(V),
-   sys_bound_set(S, T).
+   phaseout_posted(sys_set(L, S)), surrogate_new(V), sys_bound_set(S, T).
 
 /* Trivial Cases */
 fail <=
-   phaseout_posted(sys_set_ref(_, [], S, _)),
-   \+ sys_elem_set(S, 0), !.
+   phaseout_posted(sys_set_ref(_, [], S, _)), \+ sys_elem_set(S, 0), !.
 true <=
    phaseout_posted(sys_set_ref(_, [], _, _)), !.
 /* Agent start */
 assumez(sys_set_waits(X, V)) <=
-   posted(sys_set_ref(V, L, _, _)),
-   member(_*X, L).
+   posted(sys_set_ref(V, L, _, _)), member(_*X, L).
 post(sys_set_agent(V, X, [A*X|B], S, T)) <=
    phaseout_posted(sys_set_ref(V, [A*X|B], S, T)).
 
 % sys_set_remove(+Ref)
 % Remove helper
 true <=
-   posted(sys_set_remove(V)),
-   phaseout(sys_set_waits(_, V)).
+   posted(sys_set_remove(V)), phaseout(sys_set_waits(_, V)).
 true <=
    phaseout_posted(sys_set_remove(_)).
 
@@ -349,8 +320,7 @@ true <=
 :- thread_local sys_set_move/1.
 :- private sys_set_move/2.
 assumez(linform:sys_lin_waits(X, V)) <=
-   posted(sys_set_move(V)),
-   phaseout(sys_set_waits(X, V)).
+   posted(sys_set_move(V)), phaseout(sys_set_waits(X, V)).
 true <=
    phaseout_posted(sys_set_move(_)).
 
@@ -359,78 +329,50 @@ true <=
    phaseout_posted(sys_set_agent(_, _, _, [...], _)), !.
 fail <=
    phaseout_posted(sys_set_agent(_, _, _, [], _)), !.
-post(sys_set_move(V)),
-post(linform:sys_lin_agent(V, X, L, Y)) <=
-   phaseout_posted(sys_set_agent(V, X, L, [Y], _)),
-   integer(Y), !.
+post(sys_set_move(V)), post(linform:sys_lin_agent(V, X, L, Y)) <=
+   phaseout_posted(sys_set_agent(V, X, L, [Y], _)), integer(Y), !.
 /* GCD Normalisation */
 fail <=
    phaseout_posted(sys_set_agent(_, _, P, _, U)),
-   sys_gcd_prod(P, G),
-   \+ sys_div_range(U, G, _), !.
+   sys_gcd_prod(P, G), \+ sys_div_range(U, G, _), !.
 post(sys_set_agent(V, X, R, T, W)) <=
    phaseout_posted(sys_set_agent(V, X, P, S, U)),
    sys_gcd_prod(P, G), !,
-   sys_div_prod(P, G, R),
-   sys_div_set(S, G, T),
-   sys_div_range(U, G, W).
+   sys_div_prod(P, G, R), sys_div_set(S, G, T), sys_div_range(U, G, W).
 post(sys_set_agent(V, X, R, T, W)) <=
-   phaseout_posted(sys_set_agent(V, X, [A*X|B], S, U)),
-   A < 0, !,
-   sys_flip_prod([A*X|B], R),
-   sys_flip_set(S, [], T),
-   sys_flip_range(U, W).
+   phaseout_posted(sys_set_agent(V, X, [A*X|B], S, U)), A < 0, !,
+   sys_flip_prod([A*X|B], R), sys_flip_set(S, [], T), sys_flip_range(U, W).
 /* Simple Trigger */
 post(sys_in(X, S, T)) <=
-   phaseout_posted(sys_set_agent(V, X, [1*X], S, T)), !,
-   phaseout(sys_set_waits(X, V)).
+   phaseout_posted(sys_set_agent(V, X, [1*X], S, T)), !, phaseout(sys_set_waits(X, V)).
 /* Set & Set Intersection */
-post(sys_set_remove(J)),
-post(sys_set_agent(K, X, L, W, R)) <=
-   phaseout_posted(sys_set_agent(J, X, L, S, P)),
-   phaseout(sys_set_agent(K, X, L, T, Q)),
+post(sys_set_remove(J)), post(sys_set_agent(K, X, L, W, R)) <=
+   phaseout_posted(sys_set_agent(J, X, L, S, P)), phaseout(sys_set_agent(K, X, L, T, Q)),
    (  sys_inter_range(P, Q, R)
    -> sys_inter_set(S, T, W)
-   ;  W = [],
-      R = ...),
+   ;  W = [], R = ...),
    W \== T, !.
 post(sys_set_remove(K)) <=
-   phaseout_posted(sys_set_agent(K, X, L, _, _)),
-   sys_set_agent(_, X, L, _, _), !.
+   phaseout_posted(sys_set_agent(K, X, L, _, _)), sys_set_agent(_, X, L, _, _), !.
 /* Set & Lin Intersection */
 fail <=
-   phaseout_posted(sys_set_agent(_, X, L, S, _)),
-   sys_lin_agent(_, X, L, C),
-   \+ sys_elem_set(S, C), !.
+   phaseout_posted(sys_set_agent(_, X, L, S, _)), sys_lin_agent(_, X, L, C), \+ sys_elem_set(S, C), !.
 post(sys_set_remove(V)) <=
-   phaseout_posted(sys_set_agent(V, X, L, _, _)),
-   sys_lin_agent(_, X, L, _), !.
+   phaseout_posted(sys_set_agent(V, X, L, _, _)), sys_lin_agent(_, X, L, _), !.
 /* Union Find */
-post(sys_set_remove(V)),
-post(sys_set_ref(V, D, S, T)) <=
-   phaseout_posted(sys_set_agent(V, _, L, S, T)),
-   sys_set_waits(X, V),
-   sys_bound_var(X),
-   sys_melt_var(X, H),
-   var(H), !,
-   sys_fresh_var(H, Y),
-   sys_pick_prod(B, X, L, E),
-   sys_add_prod([B*Y], E, D).
+post(sys_set_remove(V)), post(sys_set_ref(V, D, S, T)) <=
+   phaseout_posted(sys_set_agent(V, _, L, S, T)), sys_set_waits(X, V),
+   sys_bound_var(X), sys_melt_var(X, H), var(H), !,
+   sys_fresh_var(H, Y), sys_pick_prod(B, X, L, E), sys_add_prod([B*Y], E, D).
 /* Constant Elimination */
 post(sys_set_agent(V, Z, [A*Z|D], W, U)) <=
-   phaseout_posted(sys_set_agent(V, _, L, S, T)),
-   phaseout(sys_set_waits(X, V)),
-   sys_bound_var(X),
-   sys_melt_var(X, C),
-   integer(C), !,
-   sys_pick_prod(B, X, L, [A*Z|D]),
-   H is -B*C,
-   sys_add_set(S, H, W),
-   sys_add_range(T, H, U).
+   phaseout_posted(sys_set_agent(V, _, L, S, T)), phaseout(sys_set_waits(X, V)),
+   sys_bound_var(X), sys_melt_var(X, C), integer(C), !,
+   sys_pick_prod(B, X, L, [A*Z|D]), H is -B*C,
+   sys_add_set(S, H, W), sys_add_range(T, H, U).
 /* Hook Adding */
 sys_melt_hook(X, sys_hook_set) <=
-   posted(sys_set_agent(V, _, _, _, _)),
-   sys_set_waits(X, V).
+   posted(sys_set_agent(V, _, _, _, _)), sys_set_waits(X, V).
 /* Redundancy Elimination */
 % sys_set_remove(V) <=
 %    &- sys_set_agent(V, _, B, S, _), sys_bound_poly(B, R),
@@ -438,61 +380,45 @@ sys_melt_hook(X, sys_hook_set) <=
 /* Set Diffusion, Directed, Bounds */
 post(sys_in(X, L, U)) <=
    posted(sys_set_agent(_, _, [A*X|B], _, T)),
-   T \== ...,
-   sys_bound_poly(B, Q),
-   sys_flip_range(Q, R),
-   sys_blur_range(R, T, S),
+   T \== ..., sys_bound_poly(B, Q),
+   sys_flip_range(Q, R), sys_blur_range(R, T, S),
    (  sys_div_range(S, A, U)
    -> L = [U]
-   ;  L = [],
-      U = ...).
+   ;  L = [], U = ...).
 /* Variable Rename */
-post(sys_set_remove(V)),
-post(sys_set_ref(V, D, S, T)) <=
+post(sys_set_remove(V)), post(sys_set_ref(V, D, S, T)) <=
    posted(sys_var_set(X, Y)),
-   sys_set_waits(X, V),
-   phaseout(sys_set_agent(V, _, L, S, T)),
-   sys_pick_prod(B, X, L, E),
-   sys_add_prod([B*Y], E, D).
+   sys_set_waits(X, V), phaseout(sys_set_agent(V, _, L, S, T)),
+   sys_pick_prod(B, X, L, E), sys_add_prod([B*Y], E, D).
 /* Constant Backpropagation */
 post(sys_set_agent(V, Z, [A*Z|D], W, U)) <=
    posted(sys_const_set(X, C)),
-   phaseout(sys_set_waits(X, V)),
-   phaseout(sys_set_agent(V, _, L, S, T)),
-   sys_pick_prod(B, X, L, [A*Z|D]),
-   H is -B*C,
-   sys_add_set(S, H, W),
-   sys_add_range(T, H, U).
+   phaseout(sys_set_waits(X, V)), phaseout(sys_set_agent(V, _, L, S, T)),
+   sys_pick_prod(B, X, L, [A*Z|D]), H is -B*C,
+   sys_add_set(S, H, W), sys_add_range(T, H, U).
 /* Redundancy Backpropagation */
 % sys_set_remove(V) <=
 %    sys_in(Y, _, E), E\==(...), sys_set_waits(Y, V), &- sys_set_agent(V, _, B, S, _),
 %    sys_pick_prod(C, Y, B, D), sys_rampup_poly(D, C, E, R), sys_inter_set(S, [R], W), W==[R].
 /* Set Update, Directed, Bounds */
 post(sys_in(X, L, U)) <=
-   posted(sys_in(Y, _, E)),
-   E \== ...,
-   sys_set_waits(Y, V),
-   sys_set_agent(V, _, [A*X|B], _, T),
-   T \== ...,
-   Y \== X,
-   sys_pick_prod(C, Y, B, D),
-   sys_rampup_poly(D, C, E, Q),
-   sys_flip_range(Q, R),
-   sys_blur_range(R, T, S),
+   posted(sys_in(Y, _, E)), E \== ...,
+   sys_set_waits(Y, V), sys_set_agent(V, _, [A*X|B], _, T),
+   T \== ..., Y \== X, sys_pick_prod(C, Y, B, D),
+   sys_rampup_poly(D, C, E, Q), sys_flip_range(Q, R), sys_blur_range(R, T, S),
    (  sys_div_range(S, A, U)
    -> L = [U]
-   ;  L = [],
-      U = ...).
+   ;  L = [], U = ...).
 
 % residue:sys_current_eq(+Var, -Goal)
-residue:sys_current_eq(V, set(L,S)) :-
+residue:sys_current_eq(V, set(L, S)) :-
    sys_clause_hook(V, sys_hook_set, _),
    sys_freeze_var(V, X),
    sys_set_waits(X, K),
    sys_set_agent(K, _, L, S, _).
 
 % residue:sys_unwrap_eq(+Goal, -Goal)
-residue:sys_unwrap_eq(set(L,S), [G|R], R) :-
+residue:sys_unwrap_eq(set(L, S), [G|R], R) :-
    sys_pretty_in(S, L, G).
 
 /**********************************************************/
@@ -500,16 +426,14 @@ residue:sys_unwrap_eq(set(L,S), [G|R], R) :-
 /**********************************************************/
 
 % sys_expr_set(+Expr, -Set)
-sys_expr_set(V, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+sys_expr_set(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
 
 /**
  * I (finite):
  * An integer I represents a singleton set {I}.
  */
-sys_expr_set(A, [A]) :-
-   integer(A), !.
+sys_expr_set(A, [A]) :- integer(A), !.
 
 /**
  * I..J (finite):
@@ -548,29 +472,19 @@ sys_expr_set(\X, E) :- !,
    sys_comp_set(A, E).
 
 sys_expr_set(A, _) :-
-   throw(error(type_error(fd_set,A),_)).
+   throw(error(type_error(fd_set, A), _)).
 
 % sys_expr_range(+Integer, +Integer, -Set)
 :- private sys_expr_range/3.
-sys_expr_range(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_expr_range(_, V, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_expr_range(A, B, L) :-
-   integer(A),
-   integer(B), !,
-   (  sys_make_range(A, B, R)
-   -> L = [R]
-   ;  L = []).
-sys_expr_range(inf, A, [..A]) :-
-   integer(A), !.
-sys_expr_range(A, sup, [A...]) :-
-   integer(A), !.
+sys_expr_range(V, _, _) :- var(V), throw(error(instantiation_error, _)).
+sys_expr_range(_, V, _) :- var(V), throw(error(instantiation_error, _)).
+sys_expr_range(A, B, L) :- integer(A), integer(B), !,
+   (sys_make_range(A, B, R) -> L = [R]; L = []).
+sys_expr_range(inf, A, [..A]) :- integer(A), !.
+sys_expr_range(A, sup, [A...]) :- integer(A), !.
 sys_expr_range(inf, sup, [...]) :- !.
 sys_expr_range(A, B, _) :-
-   throw(error(type_error(fd_set,A..B),_)).
+   throw(error(type_error(fd_set, A..B), _)).
 
 /************************************************/
 /* Set Unparsing                                */
@@ -601,25 +515,19 @@ sys_pretty_range(A, A).
 /************************************************/
 
 % sys_elem_set(+Set, +Integer)
-sys_elem_set([U|_], X) :-
-   sys_elem_range(U, X), !.
+sys_elem_set([U|_], X) :- sys_elem_range(U, X), !.
 sys_elem_set([U|Y], X) :-
    sys_upper_range(U, A)
--> (  A < X
-   -> sys_elem_set(Y, X); fail); fail.
+-> (A < X -> sys_elem_set(Y, X); fail)
+;  fail.
 
 % sys_elem_range(+Range, +Integer)
 :- private sys_elem_range/2.
 sys_elem_range(..., _) :- !.
-sys_elem_range(B..., A) :- !,
-   B =< A.
-sys_elem_range(..B, A) :- !,
-   A =< B.
-sys_elem_range(B..C, A) :- !,
-   B =< A,
-   A =< C.
-sys_elem_range(B, A) :-
-   A =:= B.
+sys_elem_range(B..., A) :- !, B =< A.
+sys_elem_range(..B, A) :- !, A =< B.
+sys_elem_range(B..C, A) :- !, B =< A, A =< C.
+sys_elem_range(B, A) :- A =:= B.
 
 /************************************************/
 /* Set Translation & Flip                       */
@@ -641,15 +549,10 @@ sys_add_set2([U|X], A, [V|Y]) :-
 
 % sys_add_range(+Range,+Integer,-Range)
 sys_add_range(..., _, ...) :- !.
-sys_add_range(..A, B, ..C) :- !,
-   C is A+B.
-sys_add_range(A..., B, C...) :- !,
-   C is A+B.
-sys_add_range(A..B, C, D..E) :- !,
-   D is A+C,
-   E is B+C.
-sys_add_range(A, B, C) :-
-   C is A+B.
+sys_add_range(..A, B, ..C) :- !, C is A+B.
+sys_add_range(A..., B, C...) :- !, C is A+B.
+sys_add_range(A..B, C, D..E) :- !, D is A+C, E is B+C.
+sys_add_range(A, B, C) :- C is A+B.
 
 % sys_flip_set(+Set,+Set,-Set)
 sys_flip_set([], T, T).
@@ -659,15 +562,10 @@ sys_flip_set([U|X], Y, T) :-
 
 % sys_flip_range(+Range,-Range)
 sys_flip_range(..., ...) :- !.
-sys_flip_range(..A, C...) :- !,
-   C is -A.
-sys_flip_range(A..., ..C) :- !,
-   C is -A.
-sys_flip_range(A..B, E..D) :- !,
-   D is -A,
-   E is -B.
-sys_flip_range(A, C) :-
-   C is -A.
+sys_flip_range(..A, C...) :- !, C is -A.
+sys_flip_range(A..., ..C) :- !, C is -A.
+sys_flip_range(A..B, E..D) :- !, D is -A, E is -B.
+sys_flip_range(A, C) :- C is -A.
 
 /************************************************/
 /* Set Intersection                             */
@@ -680,17 +578,13 @@ sys_inter_set([U|Y], [V|Z], [X|T]) :-
    sys_inter_range(U, V, X), !,
    (  sys_upper_range(U, A)
    -> (  sys_upper_range(V, B)
-      -> (  A < B
-         -> sys_inter_set(Y, [V|Z], T)
-         ;  sys_inter_set([U|Y], Z, T))
+      -> (A < B -> sys_inter_set(Y, [V|Z], T); sys_inter_set([U|Y], Z, T))
       ;  T = Y)
    ;  T = Z).
 sys_inter_set([U|Y], [V|Z], T) :-
    sys_upper_range(U, A)
 -> (  sys_upper_range(V, B)
-   -> (  A < B
-      -> sys_inter_set(Y, [V|Z], T)
-      ;  sys_inter_set([U|Y], Z, T))
+   -> (A < B -> sys_inter_set(Y, [V|Z], T); sys_inter_set([U|Y], Z, T))
    ;  sys_inter_set(Y, [V|Z], T))
 ;  sys_inter_set([U|Y], Z, T).
 
@@ -698,46 +592,22 @@ sys_inter_set([U|Y], [V|Z], T) :-
 % Fails if the intersection is empty.
 sys_inter_range(..., X, X) :- !.
 sys_inter_range(X, ..., X) :- !.
-sys_inter_range(A..., B..., C...) :- !,
-   C is max(A,B).
-sys_inter_range(A..., B..C, R) :- !,
-   D is max(A,B),
-   sys_make_range(D, C, R).
-sys_inter_range(A..B, C..., R) :- !,
-   D is max(A,C),
-   sys_make_range(D, B, R).
-sys_inter_range(A..., ..B, R) :- !,
-   sys_make_range(A, B, R).
-sys_inter_range(..A, B..., R) :- !,
-   sys_make_range(B, A, R).
-sys_inter_range(..A, ..B, ..C) :- !,
-   C is min(A,B).
-sys_inter_range(..A, B..C, R) :- !,
-   D is min(A,C),
-   sys_make_range(B, D, R).
-sys_inter_range(A..B, ..C, R) :- !,
-   D is min(B,C),
-   sys_make_range(A, D, R).
-sys_inter_range(A..B, C..D, R) :- !,
-   E is max(A,C),
-   F is min(B,D),
-   sys_make_range(E, F, R).
-sys_inter_range(A, B..., A) :- !,
-   B =< A.
-sys_inter_range(A..., B, B) :- !,
-   A =< B.
-sys_inter_range(A, ..B, A) :- !,
-   A =< B.
-sys_inter_range(..A, B, B) :- !,
-   B =< A.
-sys_inter_range(A, B..C, A) :- !,
-   B =< A,
-   A =< C.
-sys_inter_range(A..B, C, C) :- !,
-   A =< C,
-   C =< B.
-sys_inter_range(A, B, A) :-
-   A =:= B.
+sys_inter_range(A..., B..., C...) :- !, C is max(A, B).
+sys_inter_range(A..., B..C, R) :- !, D is max(A, B), sys_make_range(D, C, R).
+sys_inter_range(A..B, C..., R) :- !, D is max(A, C), sys_make_range(D, B, R).
+sys_inter_range(A..., ..B, R) :- !, sys_make_range(A, B, R).
+sys_inter_range(..A, B..., R) :- !, sys_make_range(B, A, R).
+sys_inter_range(..A, ..B, ..C) :- !, C is min(A, B).
+sys_inter_range(..A, B..C, R) :- !, D is min(A, C), sys_make_range(B, D, R).
+sys_inter_range(A..B, ..C, R) :- !, D is min(B, C), sys_make_range(A, D, R).
+sys_inter_range(A..B, C..D, R) :- !, E is max(A, C), F is min(B, D), sys_make_range(E, F, R).
+sys_inter_range(A, B..., A) :- !, B =< A.
+sys_inter_range(A..., B, B) :- !, A =< B.
+sys_inter_range(A, ..B, A) :- !, A =< B.
+sys_inter_range(..A, B, B) :- !, B =< A.
+sys_inter_range(A, B..C, A) :- !, B =< A, A =< C.
+sys_inter_range(A..B, C, C) :- !, A =< C, C =< B.
+sys_inter_range(A, B, A) :- A =:= B.
 
 /************************************************/
 /* Set Union                                    */
@@ -753,15 +623,9 @@ sys_union_set([U|Y], [V|Z], T) :-
 sys_union_set([U|Y], [V|Z], T) :-
    sys_upper_range(U, A)
 -> (  sys_upper_range(V, B)
-   -> (  A < B
-      -> sys_union_set(Y, [V|Z], S),
-         T = [U|S]
-      ;  sys_union_set([U|Y], Z, S),
-         T = [V|S])
-   ;  sys_union_set(Y, [V|Z], S),
-      T = [U|S])
-;  sys_union_set([U|Y], Z, S),
-   T = [V|S].
+   -> (A < B -> sys_union_set(Y, [V|Z], S), T = [U|S]; sys_union_set([U|Y], Z, S), T = [V|S])
+   ;  sys_union_set(Y, [V|Z], S), T = [U|S])
+;  sys_union_set([U|Y], Z, S), T = [V|S].
 
 % sys_more_set(+Set, +Set, +Range, -Set)
 :- private sys_more_set/4.
@@ -790,67 +654,32 @@ sys_insert_set(T, X, [X|T]).
 :- private sys_union_range/3.
 sys_union_range(..., _, ...) :- !.
 sys_union_range(_, ..., ...) :- !.
-sys_union_range(A..., B..., C...) :- !,
-   C is min(A,B).
-sys_union_range(A..., B..C, D...) :- !,
-   A-1 =< C,
-   D is min(A,B).
-sys_union_range(A..B, C..., D...) :- !,
-   C-1 =< B,
-   D is min(A,C).
-sys_union_range(A..., ..B, ...) :- !,
-   A-1 =< B.
-sys_union_range(..A, B..., ...) :- !,
-   B-1 =< A.
-sys_union_range(..A, ..B, ..C) :- !,
-   C is max(A,B).
-sys_union_range(..A, B..C, ..D) :- !,
-   B-1 =< A,
-   D is max(A,C).
-sys_union_range(A..B, ..C, ..D) :- !,
-   A-1 =< C,
-   D is max(B,C).
-sys_union_range(A..B, C..D, E..F) :- !,
-   C-1 =< B,
-   A-1 =< D,
-   E is min(A,C),
-   F is max(B,D).
-sys_union_range(A, B..., B...) :-
-   B =< A, !.
-sys_union_range(A, B..., A...) :- !,
-   A =:= B-1.
-sys_union_range(A..., B, A...) :-
-   A =< B, !.
-sys_union_range(A..., B, B...) :- !,
-   B =:= A-1.
-sys_union_range(A, ..B, ..B) :-
-   A =< B, !.
-sys_union_range(A, ..B, ..A) :- !,
-   A =:= B+1.
-sys_union_range(..A, B, ..A) :-
-   B =< A, !.
-sys_union_range(..A, B, ..B) :- !,
-   B =:= A+1.
-sys_union_range(A, B..C, B..C) :-
-   B =< A,
-   A =< C, !.
-sys_union_range(A, B..C, A..C) :-
-   A =:= B-1, !.
-sys_union_range(A, B..C, B..A) :- !,
-   A =:= C+1.
-sys_union_range(A..B, C, A..B) :-
-   A =< C,
-   C =< B, !.
-sys_union_range(A..B, C, C..B) :-
-   C =:= A-1, !.
-sys_union_range(A..B, C, A..C) :- !,
-   C =:= B+1.
-sys_union_range(A, B, A) :-
-   A =:= B, !.
-sys_union_range(A, B, A..B) :-
-   A =:= B-1, !.
-sys_union_range(A, B, B..A) :-
-   A =:= B+1.
+sys_union_range(A..., B..., C...) :- !, C is min(A, B).
+sys_union_range(A..., B..C, D...) :- !, A-1 =< C, D is min(A, B).
+sys_union_range(A..B, C..., D...) :- !, C-1 =< B, D is min(A, C).
+sys_union_range(A..., ..B, ...) :- !, A-1 =< B.
+sys_union_range(..A, B..., ...) :- !, B-1 =< A.
+sys_union_range(..A, ..B, ..C) :- !, C is max(A, B).
+sys_union_range(..A, B..C, ..D) :- !, B-1 =< A, D is max(A, C).
+sys_union_range(A..B, ..C, ..D) :- !, A-1 =< C, D is max(B, C).
+sys_union_range(A..B, C..D, E..F) :- !, C-1 =< B, A-1 =< D, E is min(A, C), F is max(B, D).
+sys_union_range(A, B..., B...) :- B =< A, !.
+sys_union_range(A, B..., A...) :- !, A =:= B-1.
+sys_union_range(A..., B, A...) :- A =< B, !.
+sys_union_range(A..., B, B...) :- !, B =:= A-1.
+sys_union_range(A, ..B, ..B) :- A =< B, !.
+sys_union_range(A, ..B, ..A) :- !, A =:= B+1.
+sys_union_range(..A, B, ..A) :- B =< A, !.
+sys_union_range(..A, B, ..B) :- !, B =:= A+1.
+sys_union_range(A, B..C, B..C) :- B =< A, A =< C, !.
+sys_union_range(A, B..C, A..C) :- A =:= B-1, !.
+sys_union_range(A, B..C, B..A) :- !, A =:= C+1.
+sys_union_range(A..B, C, A..B) :- A =< C, C =< B, !.
+sys_union_range(A..B, C, C..B) :- C =:= A-1, !.
+sys_union_range(A..B, C, A..C) :- !, C =:= B+1.
+sys_union_range(A, B, A) :- A =:= B, !.
+sys_union_range(A, B, A..B) :- A =:= B-1, !.
+sys_union_range(A, B, B..A) :- A =:= B+1.
 
 /*******************************************************************/
 /* Set Complement                                                  */
@@ -860,15 +689,13 @@ sys_union_range(A, B, B..A) :-
 sys_comp_set([X|L], H) :-
    sys_lower_range(X, A)
 -> B is A-1,
-   (  sys_upper_range(X, C)
-   -> D is C+1,
-      sys_comp_rest(L, D, J)
-   ;  J = []),
+   (sys_upper_range(X, C)
+-> D is C+1,
+   sys_comp_rest(L, D, J); J = []),
    H = [..B|J]
 ;  sys_upper_range(X, A)
 -> B is A+1,
-   sys_comp_rest(L, B, H)
-;  H = [].
+   sys_comp_rest(L, B, H); H = [].
 sys_comp_set([], [...]).
 
 % sys_comp_rest(+Set, +Integer, -Set)
@@ -877,10 +704,9 @@ sys_comp_rest([X|L], A, [R|H]) :-
    sys_lower_range(X, B),
    C is B-1,
    sys_make_range(A, C, R),
-   (  sys_upper_range(X, D)
-   -> E is D+1,
-      sys_comp_rest(L, E, H)
-   ;  H = []).
+   (sys_upper_range(X, D)
+-> E is D+1,
+   sys_comp_rest(L, E, H); H = []).
 sys_comp_rest([], A, [A...]).
 
 /************************************************/
@@ -900,16 +726,13 @@ sys_bound_set(S, R) :-
 % sys_upper_set(+Set, -Integer)
 % Fails if set does not have supremum
 :- private sys_upper_set/2.
-sys_upper_set([X], A) :- !,
-   sys_upper_range(X, A).
-sys_upper_set([_|Y], A) :-
-   sys_upper_set(Y, A).
+sys_upper_set([X], A) :- !, sys_upper_range(X, A).
+sys_upper_set([_|Y], A) :- sys_upper_set(Y, A).
 
 % sys_lower_set(+Set, -Integer)
 % Fails if set does not have infimum
 :- private sys_lower_set/2.
-sys_lower_set([X|_], A) :-
-   sys_lower_range(X, A).
+sys_lower_set([X|_], A) :- sys_lower_range(X, A).
 
 /************************************************/
 /* Set Division                                 */
@@ -921,8 +744,7 @@ sys_lower_set([X|_], A) :-
 sys_div_range(S, 1, S) :- !.
 sys_div_range(S, -1, R) :- !,
    sys_flip_range(S, R).
-sys_div_range(S, N, R) :-
-   N > 0, !,
+sys_div_range(S, N, R) :- N > 0, !,
    sys_div_range2(S, N, R).
 sys_div_range(S, N, R) :- !,
    sys_flip_range(S, H),
@@ -934,25 +756,17 @@ sys_div_range(S, N, R) :- !,
 % Dumb version which does always divide
 :- private sys_div_range2/3.
 sys_div_range2(..., _, ...) :- !.
-sys_div_range2(A..., B, C...) :- !,
-   C is (A+B-1)div B.
-sys_div_range2(..A, B, ..C) :- !,
-   C is A div B.
-sys_div_range2(A..B, C, R) :- !,
-   D is (A+C-1)div C,
-   E is B div C,
-   sys_make_range(D, E, R).
-sys_div_range2(A, B, C) :-
-   0 =:= A rem B,
-   C is A//B.
+sys_div_range2(A..., B, C...) :- !, C is (A+B-1)div B.
+sys_div_range2(..A, B, ..C) :- !, C is A div B.
+sys_div_range2(A..B, C, R) :- !, D is (A+C-1)div C, E is B div C, sys_make_range(D, E, R).
+sys_div_range2(A, B, C) :- 0 =:= A rem B, C is A//B.
 
 % sys_div_set(+Set, +Integer, -Set)
 % Smart version which avoids unnecessary division
 sys_div_set(S, 1, S) :- !.
 sys_div_set(S, -1, R) :- !,
    sys_flip_set(S, [], R).
-sys_div_set(S, N, R) :-
-   N > 0, !,
+sys_div_set(S, N, R) :- N > 0, !,
    sys_div_set2(S, N, R).
 sys_div_set(S, N, R) :- !,
    sys_flip_set(S, [], H),
@@ -979,8 +793,7 @@ sys_div_set2([_|X], A, Y) :-
 sys_pump_range(R, 1, R) :- !.
 sys_pump_range(R, -1, S) :- !,
    sys_flip_range(R, S).
-sys_pump_range(R, C, S) :-
-   C > 0, !,
+sys_pump_range(R, C, S) :- C > 0, !,
    sys_pump_range2(R, C, S).
 sys_pump_range(R, C, S) :-
    sys_flip_range(R, I),
@@ -991,15 +804,10 @@ sys_pump_range(R, C, S) :-
 % Dumb version that always pumps
 :- private sys_pump_range2/3.
 sys_pump_range2(..., _, ...) :- !.
-sys_pump_range2(A..., B, C...) :- !,
-   C is A*B.
-sys_pump_range2(..A, B, ..C) :- !,
-   C is A*B.
-sys_pump_range2(A..B, C, D..E) :- !,
-   D is A*C,
-   E is B*C.
-sys_pump_range2(A, B, C) :-
-   C is A*B.
+sys_pump_range2(A..., B, C...) :- !, C is A*B.
+sys_pump_range2(..A, B, ..C) :- !, C is A*B.
+sys_pump_range2(A..B, C, D..E) :- !, D is A*C, E is B*C.
+sys_pump_range2(A, B, C) :- C is A*B.
 
 /************************************************/
 /* Interval Arithmetic                          */
@@ -1010,39 +818,22 @@ sys_pump_range2(A, B, C) :-
 % Minkowski sum of two ranges
 sys_blur_range(..., _, ...) :- !.
 sys_blur_range(_, ..., ...) :- !.
-sys_blur_range(A..., B..., C...) :- !,
-   C is A+B.
-sys_blur_range(A.._, B..., C...) :- !,
-   C is A+B.
-sys_blur_range(A..., B.._, C...) :- !,
-   C is A+B.
+sys_blur_range(A..., B..., C...) :- !, C is A+B.
+sys_blur_range(A.._, B..., C...) :- !, C is A+B.
+sys_blur_range(A..., B.._, C...) :- !, C is A+B.
 sys_blur_range(_..., .._, ...) :- !.
 sys_blur_range(.._, _..., ...) :- !.
-sys_blur_range(..A, ..B, ..C) :- !,
-   C is A+B.
-sys_blur_range(_..A, ..B, ..C) :- !,
-   C is A+B.
-sys_blur_range(..A, _..B, ..C) :- !,
-   C is A+B.
-sys_blur_range(A..B, C..D, E..F) :- !,
-   E is A+C,
-   F is B+D.
-sys_blur_range(A, B..., C...) :- !,
-   C is A+B.
-sys_blur_range(A..., B, C...) :- !,
-   C is A+B.
-sys_blur_range(A, ..B, ..C) :- !,
-   C is A+B.
-sys_blur_range(..A, B, ..C) :- !,
-   C is A+B.
-sys_blur_range(A, B..C, D..E) :- !,
-   D is A+B,
-   E is A+C.
-sys_blur_range(A..B, C, D..E) :- !,
-   D is A+C,
-   E is B+C.
-sys_blur_range(A, B, C) :-
-   C is A+B.
+sys_blur_range(..A, ..B, ..C) :- !, C is A+B.
+sys_blur_range(_..A, ..B, ..C) :- !, C is A+B.
+sys_blur_range(..A, _..B, ..C) :- !, C is A+B.
+sys_blur_range(A..B, C..D, E..F) :- !, E is A+C, F is B+D.
+sys_blur_range(A, B..., C...) :- !, C is A+B.
+sys_blur_range(A..., B, C...) :- !, C is A+B.
+sys_blur_range(A, ..B, ..C) :- !, C is A+B.
+sys_blur_range(..A, B, ..C) :- !, C is A+B.
+sys_blur_range(A, B..C, D..E) :- !, D is A+B, E is A+C.
+sys_blur_range(A..B, C, D..E) :- !, D is A+C, E is B+C.
+sys_blur_range(A, B, C) :- C is A+B.
 
 % sys_cross_range(+Range, +Range, -Range)
 % sys_cross_range(A, B, C): C >= {a*b | a in A, b in B}
@@ -1051,99 +842,48 @@ sys_cross_range(..., 0, 0) :- !.
 sys_cross_range(..., _, ...) :- !.
 sys_cross_range(0, ..., 0) :- !.
 sys_cross_range(_, ..., ...) :- !.
-sys_cross_range(A..., B..., C...) :-
-   A >= 0,
-   B >= 0, !,
-   C is A*B.
+sys_cross_range(A..., B..., C...) :- A >= 0, B >= 0, !, C is A*B.
 sys_cross_range(_..., _..., ...) :- !.
-sys_cross_range(A..B, C..., D...) :-
-   A >= 0, !,
-   D is min(A*C,B*C).
-sys_cross_range(A..B, C..., ..D) :-
-   B =< 0, !,
-   D is max(A*C,B*C).
+sys_cross_range(A..B, C..., D...) :- A >= 0, !, D is min(A*C, B*C).
+sys_cross_range(A..B, C..., ..D) :- B =< 0, !, D is max(A*C, B*C).
 sys_cross_range(_.._, _..., ...) :- !.
-sys_cross_range(A..., B..C, D...) :-
-   B >= 0, !,
-   D is min(A*B,A*C).
-sys_cross_range(A..., B..C, ..D) :-
-   C =< 0, !,
-   D is max(A*B,A*C).
+sys_cross_range(A..., B..C, D...) :- B >= 0, !, D is min(A*B, A*C).
+sys_cross_range(A..., B..C, ..D) :- C =< 0, !, D is max(A*B, A*C).
 sys_cross_range(_..., _.._, ...) :- !.
-sys_cross_range(A..., ..B, ..C) :-
-   A >= 0,
-   B =< 0, !,
-   C is A*B.
+sys_cross_range(A..., ..B, ..C) :- A >= 0, B =< 0, !, C is A*B.
 sys_cross_range(_..., .._, ...) :- !.
-sys_cross_range(..A, B..., ..C) :-
-   A =< 0,
-   B >= 0, !,
-   C is A*B.
+sys_cross_range(..A, B..., ..C) :- A =< 0, B >= 0, !, C is A*B.
 sys_cross_range(.._, _..., ...) :- !.
-sys_cross_range(..A, ..B, ..C) :-
-   A =< 0,
-   B =< 0, !,
-   C is A*B.
+sys_cross_range(..A, ..B, ..C) :- A =< 0, B =< 0, !, C is A*B.
 sys_cross_range(.._, .._, ...) :- !.
-sys_cross_range(A..B, ..C, ..D) :-
-   A >= 0, !,
-   D is max(A*C,B*C).
-sys_cross_range(A..B, ..C, D...) :-
-   B =< 0, !,
-   D is min(A*C,B*C).
+sys_cross_range(A..B, ..C, ..D) :- A >= 0, !, D is max(A*C, B*C).
+sys_cross_range(A..B, ..C, D...) :- B =< 0, !, D is min(A*C, B*C).
 sys_cross_range(_.._, .._, ...) :- !.
-sys_cross_range(..A, B..C, ..D) :-
-   B >= 0, !,
-   D is max(A*B,A*C).
-sys_cross_range(..A, B..C, D...) :-
-   C =< 0, !,
-   D is min(A*B,A*C).
+sys_cross_range(..A, B..C, ..D) :- B >= 0, !, D is max(A*B, A*C).
+sys_cross_range(..A, B..C, D...) :- C =< 0, !, D is min(A*B, A*C).
 sys_cross_range(.._, _.._, ...) :- !.
 sys_cross_range(A..B, C..D, E..F) :- !,
-   X is A*C,
-   Y is A*D,
-   Z is B*C,
-   T is B*D,
-   E is min(min(X,Y),min(Z,T)),
-   F is max(max(X,Y),max(Z,T)).
+   X is A*C, Y is A*D, Z is B*C, T is B*D,
+   E is min(min(X, Y), min(Z, T)), F is max(max(X, Y), max(Z, T)).
 sys_cross_range(0, _..., 0) :- !.
-sys_cross_range(A, B..., C...) :-
-   A > 0, !,
-   C is A*B.
-sys_cross_range(A, B..., ..C) :- !,
-   C is A*B.
+sys_cross_range(A, B..., C...) :- A > 0, !, C is A*B.
+sys_cross_range(A, B..., ..C) :- !, C is A*B.
 sys_cross_range(_..., 0, 0) :- !.
-sys_cross_range(A..., B, C...) :-
-   B > 0, !,
-   C is A*B.
-sys_cross_range(A..., B, ..C) :- !,
-   C is A*B.
+sys_cross_range(A..., B, C...) :- B > 0, !, C is A*B.
+sys_cross_range(A..., B, ..C) :- !, C is A*B.
 sys_cross_range(0, .._, 0) :- !.
-sys_cross_range(A, ..B, ..C) :-
-   A > 0, !,
-   C is A*B.
-sys_cross_range(A, ..B, C...) :- !,
-   C is A*B.
+sys_cross_range(A, ..B, ..C) :- A > 0, !, C is A*B.
+sys_cross_range(A, ..B, C...) :- !, C is A*B.
 sys_cross_range(.._, 0, 0) :- !.
-sys_cross_range(..A, B, ..C) :-
-   B > 0, !,
-   C is A*B.
-sys_cross_range(..A, B, C...) :- !,
-   C is A*B.
+sys_cross_range(..A, B, ..C) :- B > 0, !, C is A*B.
+sys_cross_range(..A, B, C...) :- !, C is A*B.
 sys_cross_range(0, _.._, 0) :- !.
 sys_cross_range(A, B..C, D..E) :- !,
-   X is A*B,
-   Y is A*C,
-   D is min(X,Y),
-   E is max(X,Y).
+   X is A*B, Y is A*C, D is min(X, Y), E is max(X, Y).
 sys_cross_range(_.._, 0, 0) :- !.
 sys_cross_range(A..B, C, D..E) :- !,
-   X is A*C,
-   Y is B*C,
-   D is min(X,Y),
-   E is max(X,Y).
-sys_cross_range(A, B, C) :-
-   C is A*B.
+   X is A*C, Y is B*C, D is min(X, Y), E is max(X, Y).
+sys_cross_range(A, B, C) :- C is A*B.
 
 % sys_slash_range(+Range, +Range, -Range)
 % sys_slash_range(A, B, C): C >= {c | a in A, b in B, a = b*c}
@@ -1152,317 +892,129 @@ sys_cross_range(A, B, C) :-
 sys_slash_range(..., _, ...) :- !.
 
 sys_slash_range(_..., ..., ...) :- !.
-sys_slash_range(A..B, ..., ...) :-
-   A =< 0,
-   0 =< B, !.
-sys_slash_range(A..B, ..., X..B) :-
-   A > 0, !,
-   X is -B.
-sys_slash_range(A.._, ..., A..X) :-
-   X is -A.
+sys_slash_range(A..B, ..., ...) :- A =< 0, 0 =< B, !.
+sys_slash_range(A..B, ..., X..B) :- A > 0, !, X is -B.
+sys_slash_range(A.._, ..., A..X) :- X is -A.
 sys_slash_range(.._, ..., ...) :- !.
 sys_slash_range(0, ..., ...) :- !.
-sys_slash_range(A, ..., X..A) :-
-   A > 0, !,
-   X is -A.
-sys_slash_range(A, ..., A..X) :-
-   X is -A.
+sys_slash_range(A, ..., X..A) :- A > 0, !, X is -A.
+sys_slash_range(A, ..., A..X) :- X is -A.
 
-sys_slash_range(A..., C..., ...) :-
-   A =< 0,
-   C =< 0, !.
-sys_slash_range(A..., C..., E...) :-
-   A =< 0, !,
-   E is (A+C-1)div C.
-sys_slash_range(_..., C..., 1...) :-
-   C >= 0, !.
+sys_slash_range(A..., C..., ...) :- A =< 0, C =< 0, !.
+sys_slash_range(A..., C..., E...) :- A =< 0, !, E is (A+C-1)div C.
+sys_slash_range(_..., C..., 1...) :- C >= 0, !.
 sys_slash_range(_..., _..., ...) :- !.
 
-sys_slash_range(A..B, C..., ...) :-
-   B >= 0,
-   A =< 0,
-   C =< 0, !.
-sys_slash_range(A..B, C..., R) :-
-   B >= 0,
-   A =< 0, !,
-   E is (A+C-1)div C,
-   F is B div C,
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, C..., R) :-
-   A > 0,
-   C >= 0, !,
-   X is max(C,1),
-   F is B div X,
-   sys_make_range(1, F, R).
-sys_slash_range(A.._, C..., R) :-
-   C >= 0, !,
-   X is max(C,1),
-   E is (A+X-1)div X,
-   sys_make_range(E, -1, R).
-sys_slash_range(A..B, _..., X..B) :-
-   A > 0, !,
-   X is -B.
-sys_slash_range(A.._, _..., A..X) :- !,
-   X is -A.
+sys_slash_range(A..B, C..., ...) :- B >= 0, A =< 0, C =< 0, !.
+sys_slash_range(A..B, C..., R) :- B >= 0, A =< 0, !, E is (A+C-1)div C,
+   F is B div C, sys_make_range(E, F, R).
+sys_slash_range(A..B, C..., R) :- A > 0, C >= 0, !, X is max(C, 1),
+   F is B div X, sys_make_range(1, F, R).
+sys_slash_range(A.._, C..., R) :- C >= 0, !, X is max(C, 1),
+   E is (A+X-1)div X, sys_make_range(E, -1, R).
+sys_slash_range(A..B, _..., X..B) :- A > 0, !, X is -B.
+sys_slash_range(A.._, _..., A..X) :- !, X is -A.
 
-sys_slash_range(A..., C..D, ...) :-
-   A =< 0,
-   D >= 0,
-   C =< 0, !.
-sys_slash_range(A..., C.._, E...) :-
-   A =< 0,
-   C > 0, !,
-   E is (A+C-1)div C.
-sys_slash_range(A..., _..D, ..F) :-
-   A =< 0, !,
-   F is -((A-D-1)div-D).
-sys_slash_range(A..., C..D, E...) :-
-   C >= 0, !,
-   E is max((A+D-1)div D,1).
-sys_slash_range(A..., C..D, ..F) :-
-   D =< 0, !,
-   F is min(-((A-C-1)div-C),-1).
+sys_slash_range(A..., C..D, ...) :- A =< 0, D >= 0, C =< 0, !.
+sys_slash_range(A..., C.._, E...) :- A =< 0, C > 0, !, E is (A+C-1)div C.
+sys_slash_range(A..., _..D, ..F) :- A =< 0, !, F is -((A-D-1)div-D).
+sys_slash_range(A..., C..D, E...) :- C >= 0, !, E is max((A+D-1)div D, 1).
+sys_slash_range(A..., C..D, ..F) :- D =< 0, !, F is min(-((A-C-1)div-C), -1).
 sys_slash_range(_..., _.._, ...) :- !.
 
-sys_slash_range(A..., ..D, ...) :-
-   A =< 0,
-   D >= 0, !.
-sys_slash_range(A..., ..D, ..F) :-
-   A =< 0, !,
-   F is -((A-D-1)div-D).
-sys_slash_range(_..., ..D, .. -1) :-
-   D =< 0, !.
+sys_slash_range(A..., ..D, ...) :- A =< 0, D >= 0, !.
+sys_slash_range(A..., ..D, ..F) :- A =< 0, !, F is -((A-D-1)div-D).
+sys_slash_range(_..., ..D, .. -1) :- D =< 0, !.
 sys_slash_range(_..., .._, ...) :- !.
 
-sys_slash_range(..B, C..., ...) :-
-   B >= 0,
-   C =< 0, !.
-sys_slash_range(..B, C..., ..F) :-
-   B >= 0, !,
-   F is B div C.
-sys_slash_range(.._, C..., .. -1) :-
-   C >= 0, !.
+sys_slash_range(..B, C..., ...) :- B >= 0, C =< 0, !.
+sys_slash_range(..B, C..., ..F) :- B >= 0, !, F is B div C.
+sys_slash_range(.._, C..., .. -1) :- C >= 0, !.
 sys_slash_range(.._, _..., ...) :- !.
 
-sys_slash_range(..B, ..D, ...) :-
-   B >= 0,
-   D >= 0, !.
-sys_slash_range(..B, ..D, E...) :-
-   B >= 0, !,
-   E is -(B div-D).
-sys_slash_range(.._, ..D, 1...) :-
-   D =< 0, !.
+sys_slash_range(..B, ..D, ...) :- B >= 0, D >= 0, !.
+sys_slash_range(..B, ..D, E...) :- B >= 0, !, E is -(B div-D).
+sys_slash_range(.._, ..D, 1...) :- D =< 0, !.
 sys_slash_range(.._, .._, ...) :- !.
 
-sys_slash_range(A..B, ..D, ...) :-
-   B >= 0,
-   A =< 0,
-   D >= 0, !.
-sys_slash_range(A..B, ..D, R) :-
-   B >= 0,
-   A =< 0, !,
-   E is -(B div-D),
-   F is -((A-D-1)div-D),
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, ..D, R) :-
-   A > 0,
-   D =< 0, !,
-   X is min(D,-1),
-   E is -(B div-X),
-   sys_make_range(E, -1, R).
-sys_slash_range(A.._, ..D, R) :-
-   D =< 0, !,
-   X is min(D,-1),
-   F is -((A-X-1)div-X),
-   sys_make_range(1, F, R).
-sys_slash_range(A..B, .._, X..B) :-
-   A > 0, !,
-   X is -B.
-sys_slash_range(A.._, .._, A..X) :- !,
-   X is -A.
+sys_slash_range(A..B, ..D, ...) :- B >= 0, A =< 0, D >= 0, !.
+sys_slash_range(A..B, ..D, R) :- B >= 0, A =< 0, !, E is -(B div-D),
+   F is -((A-D-1)div-D), sys_make_range(E, F, R).
+sys_slash_range(A..B, ..D, R) :- A > 0, D =< 0, !, X is min(D, -1),
+   E is -(B div-X), sys_make_range(E, -1, R).
+sys_slash_range(A.._, ..D, R) :- D =< 0, !, X is min(D, -1),
+   F is -((A-X-1)div-X), sys_make_range(1, F, R).
+sys_slash_range(A..B, .._, X..B) :- A > 0, !, X is -B.
+sys_slash_range(A.._, .._, A..X) :- !, X is -A.
 
-sys_slash_range(..B, C..D, ...) :-
-   B >= 0,
-   D >= 0,
-   C =< 0, !.
-sys_slash_range(..B, C.._, ..F) :-
-   B >= 0,
-   C > 0, !,
-   F is B div C.
-sys_slash_range(..B, _..D, E...) :-
-   B >= 0, !,
-   E is -(B div-D).
-sys_slash_range(..B, C..D, ..F) :-
-   C >= 0, !,
-   F is min(B div D,-1).
-sys_slash_range(..B, C..D, E...) :-
-   D =< 0, !,
-   E is max(-(B div-C),1).
+sys_slash_range(..B, C..D, ...) :- B >= 0, D >= 0, C =< 0, !.
+sys_slash_range(..B, C.._, ..F) :- B >= 0, C > 0, !, F is B div C.
+sys_slash_range(..B, _..D, E...) :- B >= 0, !, E is -(B div-D).
+sys_slash_range(..B, C..D, ..F) :- C >= 0, !, F is min(B div D, -1).
+sys_slash_range(..B, C..D, E...) :- D =< 0, !, E is max(-(B div-C), 1).
 sys_slash_range(.._, _.._, ...) :- !.
 
-sys_slash_range(A..B, C..D, ...) :-
-   B >= 0,
-   A =< 0,
-   D >= 0,
-   C =< 0, !.
-sys_slash_range(A..B, C.._, R) :-
-   B >= 0,
-   A =< 0,
-   C > 0, !,
-   E is (A+C-1)div C,
-   F is B div C,
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, _..D, R) :-
-   B >= 0,
-   A =< 0, !,
-   E is -(B div-D),
-   F is -((A-D-1)div-D),
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, C..D, R) :-
-   A > 0,
-   C >= 0, !,
-   X is max(C,1),
-   E is max((A+D-1)div D,1),
-   F is B div X,
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, C..D, R) :-
-   C >= 0, !,
-   X is max(C,1),
-   E is (A+X-1)div X,
-   F is min(B div D,-1),
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, C..D, R) :-
-   A > 0,
-   D =< 0, !,
-   X is min(D,-1),
-   E is -(B div-X),
-   F is min(-((A-C-1)div-C),-1),
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, C..D, R) :-
-   D =< 0, !,
-   X is min(D,-1),
-   E is max(-(B div-C),1),
-   F is -((A-X-1)div-X),
-   sys_make_range(E, F, R).
-sys_slash_range(A..B, _.._, X..B) :-
-   A > 0, !,
-   X is -B.
-sys_slash_range(A.._, _.._, A..X) :- !,
-   X is -A.
+sys_slash_range(A..B, C..D, ...) :- B >= 0, A =< 0, D >= 0, C =< 0, !.
+sys_slash_range(A..B, C.._, R) :- B >= 0, A =< 0, C > 0, !, E is (A+C-1)div C,
+   F is B div C, sys_make_range(E, F, R).
+sys_slash_range(A..B, _..D, R) :- B >= 0, A =< 0, !, E is -(B div-D),
+   F is -((A-D-1)div-D), sys_make_range(E, F, R).
+sys_slash_range(A..B, C..D, R) :- A > 0, C >= 0, !, X is max(C, 1), E is max((A+D-1)div D, 1),
+   F is B div X, sys_make_range(E, F, R).
+sys_slash_range(A..B, C..D, R) :- C >= 0, !, X is max(C, 1), E is (A+X-1)div X,
+   F is min(B div D, -1), sys_make_range(E, F, R).
+sys_slash_range(A..B, C..D, R) :- A > 0, D =< 0, !, X is min(D, -1), E is -(B div-X),
+   F is min(-((A-C-1)div-C), -1), sys_make_range(E, F, R).
+sys_slash_range(A..B, C..D, R) :- D =< 0, !, X is min(D, -1), E is max(-(B div-C), 1),
+   F is -((A-X-1)div-X), sys_make_range(E, F, R).
+sys_slash_range(A..B, _.._, X..B) :- A > 0, !, X is -B.
+sys_slash_range(A.._, _.._, A..X) :- !, X is -A.
 
-sys_slash_range(0, A..., ...) :-
-   A =< 0, !.
+sys_slash_range(0, A..., ...) :- A =< 0, !.
 sys_slash_range(0, _..., 0) :- !.
-sys_slash_range(A, B..., R) :-
-   A > 0,
-   B >= 0, !,
-   X is max(B,1),
-   E is A div X,
-   sys_make_range(1, E, R).
-sys_slash_range(A, B..., R) :-
-   B >= 0, !,
-   X is max(B,1),
-   D is (A+X-1)div X,
-   sys_make_range(D, -1, R).
-sys_slash_range(A, _..., X..A) :-
-   A > 0, !,
-   X is -A.
-sys_slash_range(A, _..., A..X) :- !,
-   X is -A.
+sys_slash_range(A, B..., R) :- A > 0, B >= 0, !, X is max(B, 1), E is A div X, sys_make_range(1, E, R).
+sys_slash_range(A, B..., R) :- B >= 0, !, X is max(B, 1), D is (A+X-1)div X, sys_make_range(D, -1, R).
+sys_slash_range(A, _..., X..A) :- A > 0, !, X is -A.
+sys_slash_range(A, _..., A..X) :- !, X is -A.
 
-sys_slash_range(A..., 0, ...) :-
-   A =< 0, !.
+sys_slash_range(A..., 0, ...) :- A =< 0, !.
 sys_slash_range(_..., 0, _) :- !, fail.
-sys_slash_range(A..., B, C...) :-
-   B > 0, !,
-   C is (A+B-1)div B.
-sys_slash_range(A..., B, ..C) :- !,
-   C is (-A-B-1)div-B.
+sys_slash_range(A..., B, C...) :- B > 0, !, C is (A+B-1)div B.
+sys_slash_range(A..., B, ..C) :- !, C is (-A-B-1)div-B.
 
-sys_slash_range(0, ..B, ...) :-
-   B >= 0, !.
+sys_slash_range(0, ..B, ...) :- B >= 0, !.
 sys_slash_range(0, .._, 0) :- !.
-sys_slash_range(A, ..C, R) :-
-   A > 0,
-   C =< 0, !,
-   X is min(C,-1),
-   D is -(A div-X),
-   sys_make_range(D, -1, R).
-sys_slash_range(A, ..C, R) :-
-   C =< 0, !,
-   X is min(C,-1),
-   E is -((A-X-1)div-X),
-   sys_make_range(1, E, R).
-sys_slash_range(A, .._, X..A) :-
-   A > 0, !,
-   X is -A.
-sys_slash_range(A, .._, A..X) :- !,
-   X is -A.
+sys_slash_range(A, ..C, R) :- A > 0, C =< 0, !, X is min(C, -1), D is -(A div-X), sys_make_range(D, -1, R).
+sys_slash_range(A, ..C, R) :- C =< 0, !, X is min(C, -1), E is -((A-X-1)div-X), sys_make_range(1, E, R).
+sys_slash_range(A, .._, X..A) :- A > 0, !, X is -A.
+sys_slash_range(A, .._, A..X) :- !, X is -A.
 
-sys_slash_range(..A, 0, ...) :-
-   A >= 0, !.
+sys_slash_range(..A, 0, ...) :- A >= 0, !.
 sys_slash_range(.._, 0, _) :- !, fail.
-sys_slash_range(..A, B, ..C) :-
-   B > 0, !,
-   C is A div B.
-sys_slash_range(..A, B, C...) :- !,
-   C is -A div-B.
+sys_slash_range(..A, B, ..C) :- B > 0, !, C is A div B.
+sys_slash_range(..A, B, C...) :- !, C is -A div-B.
 
-sys_slash_range(0, A..B, ...) :-
-   B >= 0,
-   A =< 0, !.
+sys_slash_range(0, A..B, ...) :- B >= 0, A =< 0, !.
 sys_slash_range(0, _.._, 0) :- !.
-sys_slash_range(A, B..C, R) :-
-   A > 0,
-   B >= 0, !,
-   X is max(B,1),
-   D is max((A+C-1)div C,1),
-   E is A div X,
-   sys_make_range(D, E, R).
-sys_slash_range(A, B..C, R) :-
-   B >= 0, !,
-   X is max(B,1),
-   D is (A+X-1)div X,
-   E is min(A div C,-1),
-   sys_make_range(D, E, R).
-sys_slash_range(A, B..C, R) :-
-   A > 0,
-   C =< 0, !,
-   X is min(C,-1),
-   D is -(A div-X),
-   E is min(-((A-B-1)div-B),-1),
-   sys_make_range(D, E, R).
-sys_slash_range(A, B..C, R) :-
-   C =< 0, !,
-   X is min(C,-1),
-   D is max(-(A div-B),1),
-   E is -((A-X-1)div-X),
-   sys_make_range(D, E, R).
-sys_slash_range(A, _.._, X..A) :-
-   A > 0, !,
-   X is -A.
-sys_slash_range(A, _.._, A..X) :- !,
-   X is -A.
+sys_slash_range(A, B..C, R) :- A > 0, B >= 0, !, X is max(B, 1), D is max((A+C-1)div C, 1),
+   E is A div X, sys_make_range(D, E, R).
+sys_slash_range(A, B..C, R) :- B >= 0, !, X is max(B, 1), D is (A+X-1)div X,
+   E is min(A div C, -1), sys_make_range(D, E, R).
+sys_slash_range(A, B..C, R) :- A > 0, C =< 0, !, X is min(C, -1), D is -(A div-X),
+   E is min(-((A-B-1)div-B), -1), sys_make_range(D, E, R).
+sys_slash_range(A, B..C, R) :- C =< 0, !, X is min(C, -1), D is max(-(A div-B), 1),
+   E is -((A-X-1)div-X), sys_make_range(D, E, R).
+sys_slash_range(A, _.._, X..A) :- A > 0, !, X is -A.
+sys_slash_range(A, _.._, A..X) :- !, X is -A.
 
-sys_slash_range(A..B, 0, ...) :-
-   B >= 0,
-   A =< 0, !.
+sys_slash_range(A..B, 0, ...) :- B >= 0, A =< 0, !.
 sys_slash_range(_.._, 0, _) :- !, fail.
-sys_slash_range(A..B, C, R) :-
-   C > 0, !,
-   D is (A+C-1)div C,
-   E is B div C,
-   sys_make_range(D, E, R).
-sys_slash_range(A..B, C, R) :- !,
-   D is (-B-C-1)div-C,
-   E is -A div-C,
-   sys_make_range(D, E, R).
+sys_slash_range(A..B, C, R) :- C > 0, !, D is (A+C-1)div C, E is B div C, sys_make_range(D, E, R).
+sys_slash_range(A..B, C, R) :- !, D is (-B-C-1)div-C, E is -A div-C, sys_make_range(D, E, R).
 
 sys_slash_range(0, 0, ...) :- !.
 sys_slash_range(_, 0, _) :- !, fail.
-sys_slash_range(A, B, C) :-
-   0 =:= A rem B,
-   C is A//B.
+sys_slash_range(A, B, C) :- 0 =:= A rem B, C is A//B.
 
 /************************************************/
 /* Multiplication Special Cases                 */
@@ -1472,27 +1024,14 @@ sys_slash_range(A, B, C) :-
 % sys_square_range(A, B): B >= {b | a in A, b = a*a}
 % Interval Arithmetic Square
 sys_square_range(..., 0...) :- !.
-sys_square_range(A..., 0...) :-
-   A =< 0, !.
-sys_square_range(A..., B...) :- !,
-   B is A*A.
-sys_square_range(..A, 0...) :-
-   A >= 0, !.
-sys_square_range(..A, B...) :- !,
-   B is A*A.
-sys_square_range(A..B, 0..C) :-
-   A =< 0,
-   B >= 0, !,
-   C is max(A*A,B*B).
-sys_square_range(A..B, C..D) :-
-   A > 0, !,
-   C is A*A,
-   D is B*B.
-sys_square_range(A..B, C..D) :- !,
-   C is B*B,
-   D is A*A.
-sys_square_range(A, B) :-
-   B is A*A.
+sys_square_range(A..., 0...) :- A =< 0, !.
+sys_square_range(A..., B...) :- !, B is A*A.
+sys_square_range(..A, 0...) :- A >= 0, !.
+sys_square_range(..A, B...) :- !, B is A*A.
+sys_square_range(A..B, 0..C) :- A =< 0, B >= 0, !, C is max(A*A, B*B).
+sys_square_range(A..B, C..D) :- A > 0, !, C is A*A, D is B*B.
+sys_square_range(A..B, C..D) :- !, C is B*B, D is A*A.
+sys_square_range(A, B) :- B is A*A.
 
 % sys_root_range(+Range, -Range)
 % sys_root_range(A, B): B >= {b | a in A, a = b*b}
@@ -1501,38 +1040,24 @@ sys_square_range(A, B) :-
 sys_root_range(..., ...) :- !.
 sys_root_range(_..., ...) :- !.
 sys_root_range(..0, 0) :- !.
-sys_root_range(..A, _) :-
-   A < 0, !, fail.
-sys_root_range(..A, H..B) :- !,
-   B is isqrt(A),
-   H is -B.
+sys_root_range(..A, _) :- A < 0, !, fail.
+sys_root_range(..A, H..B) :- !, B is isqrt(A), H is -B.
 sys_root_range(_..0, 0) :- !.
-sys_root_range(_..A, _) :-
-   A < 0, !, fail.
-sys_root_range(_..A, H..B) :- !,
-   B is isqrt(A),
-   H is -B.
+sys_root_range(_..A, _) :- A < 0, !, fail.
+sys_root_range(_..A, H..B) :- !, B is isqrt(A), H is -B.
 sys_root_range(0, 0) :- !.
-sys_root_range(A, _) :-
-   A < 0, !, fail.
-sys_root_range(A, H..B) :-
-   sqrtrem(A, B, R),
-   R =:= 0,
-   H is -B.
+sys_root_range(A, _) :- A < 0, !, fail.
+sys_root_range(A, H..B) :- sqrtrem(A, B, R), R =:= 0, H is -B.
 
 % sys_prem_range(+Range, -Range)
 % sys_prem_range(A, B): B >= {b | a in A, b = b*a}
 % Interval Arithmetic Premisse
 sys_prem_range(..., ...) :- !.
-sys_prem_range(..A, ...) :-
-   A >= 1, !.
+sys_prem_range(..A, ...) :- A >= 1, !.
 sys_prem_range(.._, 0) :- !.
-sys_prem_range(A..., ...) :-
-   A =< 1, !.
+sys_prem_range(A..., ...) :- A =< 1, !.
 sys_prem_range(_..., 0) :- !.
-sys_prem_range(A..B, ...) :-
-   A =< 1,
-   B >= 1, !.
+sys_prem_range(A..B, ...) :- A =< 1, B >= 1, !.
 sys_prem_range(_.._, 0) :- !.
 sys_prem_range(1, ...) :- !.
 sys_prem_range(_, 0) :- !.
@@ -1541,15 +1066,11 @@ sys_prem_range(_, 0) :- !.
 % sys_conc_range(A, B): B >= {b | a in A, a = a*b}
 % Interval Arithmetic Conclusion
 sys_conc_range(..., ...) :- !.
-sys_conc_range(..A, ...) :-
-   A >= 0, !.
+sys_conc_range(..A, ...) :- A >= 0, !.
 sys_conc_range(.._, 1) :- !.
-sys_conc_range(A..., ...) :-
-   A =< 0, !.
+sys_conc_range(A..., ...) :- A =< 0, !.
 sys_conc_range(_..., 1) :- !.
-sys_conc_range(A..B, ...) :-
-   A =< 0,
-   B >= 0, !.
+sys_conc_range(A..B, ...) :- A =< 0, B >= 0, !.
 sys_conc_range(_.._, 1) :- !.
 sys_conc_range(0, ...) :- !.
 sys_conc_range(_, 1) :- !.
@@ -1562,25 +1083,14 @@ sys_conc_range(_, 1) :- !.
 % sys_abs_range(A, B): B >= {b | a in A, b = abs(a)}
 % Interval Arithmetic Absolute
 sys_abs_range(..., 0...) :- !.
-sys_abs_range(A..., 0...) :-
-   A =< 0, !.
-sys_abs_range(A..., B...) :- !,
-   B is A.
-sys_abs_range(..A, 0...) :-
-   A >= 0, !.
-sys_abs_range(..A, B...) :- !,
-   B is -A.
-sys_abs_range(A..B, 0..C) :-
-   A =< 0,
-   B >= 0, !,
-   C is max(-A,B).
-sys_abs_range(A..B, A..B) :-
-   A > 0, !.
-sys_abs_range(A..B, C..D) :- !,
-   C is -B,
-   D is -A.
-sys_abs_range(A, B) :-
-   B is abs(A).
+sys_abs_range(A..., 0...) :- A =< 0, !.
+sys_abs_range(A..., B...) :- !, B is A.
+sys_abs_range(..A, 0...) :- A >= 0, !.
+sys_abs_range(..A, B...) :- !, B is -A.
+sys_abs_range(A..B, 0..C) :- A =< 0, B >= 0, !, C is max(-A, B).
+sys_abs_range(A..B, A..B) :- A > 0, !.
+sys_abs_range(A..B, C..D) :- !, C is -B, D is -A.
+sys_abs_range(A, B) :- B is abs(A).
 
 % sys_invabs_range(+Range, -Range)
 % sys_invabs_range(A, B): B >= {b | a in A, a = abs(b)}
@@ -1589,20 +1099,14 @@ sys_abs_range(A, B) :-
 sys_invabs_range(..., ...) :- !.
 sys_invabs_range(_..., ...) :- !.
 sys_invabs_range(..0, 0) :- !.
-sys_invabs_range(..A, _) :-
-   A < 0, !, fail.
-sys_invabs_range(..A, H..A) :- !,
-   H is -A.
+sys_invabs_range(..A, _) :- A < 0, !, fail.
+sys_invabs_range(..A, H..A) :- !, H is -A.
 sys_invabs_range(_..0, 0) :- !.
-sys_invabs_range(_..A, _) :-
-   A < 0, !, fail.
-sys_invabs_range(_..A, H..A) :- !,
-   H is -A.
+sys_invabs_range(_..A, _) :- A < 0, !, fail.
+sys_invabs_range(_..A, H..A) :- !, H is -A.
 sys_invabs_range(0, 0) :- !.
-sys_invabs_range(A, _) :-
-   A < 0, !, fail.
-sys_invabs_range(A, H..A) :-
-   H is -A.
+sys_invabs_range(A, _) :- A < 0, !, fail.
+sys_invabs_range(A, H..A) :- H is -A.
 
 /************************************************/
 /* Range API                                    */
@@ -1610,10 +1114,8 @@ sys_invabs_range(A, H..A) :-
 
 % sys_make_range(+Integer, +Integer, -Range)
 % Fails if the range is empty.
-sys_make_range(A, B, A..B) :-
-   A < B, !.
-sys_make_range(A, B, A) :-
-   A =:= B.
+sys_make_range(A, B, A..B) :- A < B, !.
+sys_make_range(A, B, A) :- A =:= B.
 
 % sys_lower_range(+Range, -Integer)
 % Fails if range does not have infimum

@@ -86,35 +86,25 @@
  */
 % words(+List, +Integer, -Integer)
 :- public words/3.
-words(L, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-words(L, I, O) :-
-   expand_goal(words(L, I, O), Q),
-   call(Q).
+words(L, _, _) :- var(L), throw(error(instantiation_error, _)).
+words(L, I, O) :- expand_goal(words(L, I, O), Q), call(Q).
 
 % words(+List, +Integer, -Integer, +Goal)
 :- public words/4.
-words(L, _, _, _) :-
-   var(L),
-   throw(error(instantiation_error,_)).
-words(L, I, O, G) :-
-   expand_goal(words(L, I, O), Q),
-   call(Q, G).
+words(L, _, _, _) :- var(L), throw(error(instantiation_error, _)).
+words(L, I, O, G) :- expand_goal(words(L, I, O), Q), call(Q, G).
 
 % user:goal_expansion(+Goal, -Goal)
 :- public user:goal_expansion/2.
 :- multifile user:goal_expansion/2.
-:- meta_predicate user:goal_expansion(0,0).
+:- meta_predicate user:goal_expansion(0, 0).
 :- discontiguous user:goal_expansion/2.
 
-user:goal_expansion(words(L, _, _), _) :-
-   var(L), !, fail.
+user:goal_expansion(words(L, _, _), _) :- var(L), !, fail.
 user:goal_expansion(words([], I, I), true).
-user:goal_expansion(words(U, I, O), (  words(B, H, O), G)) :-
-   U = [A|B],
+user:goal_expansion(words(U, I, O), (words(B, H, O), G)) :- U = [A|B],
    H is I+1,
-   sys_replace_site(Q, U, 'D'(A,I,H)),
+   sys_replace_site(Q, U, 'D'(A, I, H)),
    sys_replace_site(G, Q, post(Q)).
 
 /**********************************************************/
@@ -127,13 +117,9 @@ user:goal_expansion(words(U, I, O), (  words(B, H, O), G)) :-
  */
 % chart(+Phrase, +Integer, -Integer)
 :- public chart/3.
-:- meta_predicate chart(2,?,?).
-chart(P, _, _) :-
-   sys_var(P),
-   throw(error(instantiation_error,_)).
-chart(P, I, O) :-
-   expand_goal(chart(P, I, O), Q),
-   call(Q).
+:- meta_predicate chart(2, ?, ?).
+chart(P, _, _) :- sys_var(P), throw(error(instantiation_error, _)).
+chart(P, I, O) :- expand_goal(chart(P, I, O), Q), call(Q).
 
 /**********************************************************/
 /* Goal Rewriting Steadfast                               */
@@ -157,7 +143,7 @@ user:goal_expansion(chart(P, I, O), Q) :-
  */
 % chart_expansion(+Phrase, +List, -List, -Goal)
 :- private chart_expansion/4.
-:- meta_predicate chart_expansion(2,?,?,0).
+:- meta_predicate chart_expansion(2, ?, ?, 0).
 :- discontiguous chart_expansion/4.
 :- set_predicate_property(chart_expansion/4, sys_noexpand).
 
@@ -165,47 +151,36 @@ user:goal_expansion(chart(P, I, O), Q) :-
  * fail:
  * The grammar fails.
  */
-chart_expansion(P, _, _, P) :-
-   P = fail.
+chart_expansion(P, _, _, P) :- P = fail.
 
 /**
  * A, B:
  * The output of A is conjoined with the input of B.
  */
-chart_expansion((  A, B), I, O, (  chart(A, I, H),
-                                   sys_chart(B, H, O))) :-
-   sys_var(A).
-chart_expansion((  U, B), I, O, (  P,
-                                   chart(B, I, O))) :-
-   chart_barrier(U, I, P).
-chart_expansion((  A, B), I, O, (  chart(A, I, H),
-                                   sys_chart(B, H, O))).
+chart_expansion((A, B), I, O, (chart(A, I, H), sys_chart(B, H, O))) :- sys_var(A).
+chart_expansion((U, B), I, O, (P, chart(B, I, O))) :- chart_barrier(U, I, P).
+chart_expansion((A, B), I, O, (chart(A, I, H), sys_chart(B, H, O))).
 
 /**
  * A; B:
  * The grammar succeeds when A succeeds or when B succeeds.
  */
-chart_expansion((  A; B), I, O, (  chart(A, I, O)
-                                ;  chart(B, I, O))).
+chart_expansion((A; B), I, O, (chart(A, I, O); chart(B, I, O))).
 
 /**
  * [A1, ..., An]:
  * The terminals A1, ..., An are checked.
  */
-chart_expansion(U, I, O, Q) :-
-   U = [],
-   sys_replace_site(Q, U, I=O).
-chart_expansion(U, I, O, (  Q,
-                            sys_chart(B, H, O))) :-
-   U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I,H)).
+chart_expansion(U, I, O, Q) :- U = [],
+   sys_replace_site(Q, U, I = O).
+chart_expansion(U, I, O, (Q, sys_chart(B, H, O))) :- U = [A|B],
+   sys_replace_site(Q, U, 'D'(A, I, H)).
 
-chart_expansion(U, I, O, (  P, Q)) :-
-   chart_barrier(U, I, P),
-   sys_replace_site(Q, U, I=O).
+chart_expansion(U, I, O, (P, Q)) :- chart_barrier(U, I, P),
+   sys_replace_site(Q, U, I = O).
 
 :- private chart_barrier/3.
-:- meta_predicate chart_barrier(2,?,0).
+:- meta_predicate chart_barrier(2, ?, 0).
 :- discontiguous chart_barrier/3.
 :- set_predicate_property(chart_barrier/3, sys_noexpand).
 
@@ -213,8 +188,7 @@ chart_expansion(U, I, O, (  P, Q)) :-
  * !:
  * The choice points are removed.
  */
-chart_barrier(U, _, U) :-
-   U = !.
+chart_barrier(U, _, U) :- U = !.
 
 /**
  * {A}:
@@ -226,18 +200,16 @@ chart_barrier({A}, _, A).
  * \+ A:
  * The negation of A is checked. The output of A is left loose.
  */
-chart_barrier(U, I, Q) :-
-   U = (\+A),
-   sys_replace_site(Q, U, {\+chart(A,I,_)}).
+chart_barrier(U, I, Q) :- U = (\+ A),
+   sys_replace_site(Q, U, {\+ chart(A, I, _)}).
 
 /**********************************************************/
 /* Goal Rewriting Non-Steadfast                           */
 /**********************************************************/
 
 :- private sys_chart/3.
-:- meta_predicate sys_chart(2,?,?).
-sys_chart(_, _, _) :-
-   throw(error(existence_error(body,sys_chart/3),_)).
+:- meta_predicate sys_chart(2, ?, ?).
+sys_chart(_, _, _) :- throw(error(existence_error(body, sys_chart/3), _)).
 
 user:goal_expansion(sys_chart(P, I, O), chart(P, I, O)) :-
    sys_var(P).
@@ -253,30 +225,19 @@ user:goal_expansion(sys_chart(P, I, O), Q) :-
  */
 % sys_chart_expansion(+Grammar, +List, -List, -Goal)
 :- private sys_chart_expansion/4.
-:- meta_predicate sys_chart_expansion(2,?,?,0).
+:- meta_predicate sys_chart_expansion(2, ?, ?, 0).
 :- set_predicate_property(sys_chart_expansion/4, sys_noexpand).
-sys_chart_expansion(P, _, _, P) :-
-   P = fail.
-sys_chart_expansion((  A, B), I, O, (  sys_chart(A, I, H),
-                                       sys_chart(B, H, O))) :-
-   sys_var(A).
-sys_chart_expansion((  U, B), I, O, (  P,
-                                       chart(B, I, O))) :-
-   chart_barrier(U, I, P).
-sys_chart_expansion((  A, B), I, O, (  sys_chart(A, I, H),
-                                       sys_chart(B, H, O))).
-sys_chart_expansion((  A; B), I, O, (  chart(A, I, O)
-                                    ;  chart(B, I, O))).
-sys_chart_expansion(U, I, I, Q) :-
-   U = [],
+sys_chart_expansion(P, _, _, P) :- P = fail.
+sys_chart_expansion((A, B), I, O, (sys_chart(A, I, H), sys_chart(B, H, O))) :- sys_var(A).
+sys_chart_expansion((U, B), I, O, (P, chart(B, I, O))) :- chart_barrier(U, I, P).
+sys_chart_expansion((A, B), I, O, (sys_chart(A, I, H), sys_chart(B, H, O))).
+sys_chart_expansion((A; B), I, O, (chart(A, I, O); chart(B, I, O))).
+sys_chart_expansion(U, I, I, Q) :- U = [],
    sys_replace_site(Q, U, true).
-sys_chart_expansion(U, I, O, (  Q,
-                                sys_chart(B, H, O))) :-
-   U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I,H)).
-sys_chart_expansion(U, I, O, (  P, Q)) :-
-   chart_barrier(U, I, P),
-   sys_replace_site(Q, U, I=O).
+sys_chart_expansion(U, I, O, (Q, sys_chart(B, H, O))) :- U = [A|B],
+   sys_replace_site(Q, U, 'D'(A, I, H)).
+sys_chart_expansion(U, I, O, (P, Q)) :- chart_barrier(U, I, P),
+   sys_replace_site(Q, U, I = O).
 
 /**********************************************************/
 /* Chart DCG Rule                                         */
@@ -285,7 +246,7 @@ sys_chart_expansion(U, I, O, (  P, Q)) :-
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
+:- meta_predicate user:term_expansion(-1, -1).
 :- discontiguous user:term_expansion/2.
 
 /**
@@ -293,12 +254,10 @@ sys_chart_expansion(U, I, O, (  P, Q)) :-
  * Chart DCG rule with chart head H and chart body B.
  */
 :- public ==: /2.
-:- meta_predicate (-3==: -3).
-(_ ==: _) :-
-   throw(error(existence_error(body,==: /2),_)).
+:- meta_predicate (-3 ==: -3).
+(_ ==: _) :- throw(error(existence_error(body, ==: /2), _)).
 
-user:term_expansion((P ==: A), (chart_post(P, I, O) <=
-                                  chart_posted(A, I, O))).
+user:term_expansion((P ==: A), (chart_post(P, I, O) <= chart_posted(A, I, O))).
 
 /**
  * chart_post(H, I, O):
@@ -306,9 +265,8 @@ user:term_expansion((P ==: A), (chart_post(P, I, O) <=
  * expansion wrapper, that generates the post head of a chart rule.
  */
 :- private chart_post/3.
-:- meta_predicate chart_post(2,?,?).
-chart_post(_, _, _) :-
-   throw(error(existence_error(body,chart_post/3),_)).
+:- meta_predicate chart_post(2, ?, ?).
+chart_post(_, _, _) :- throw(error(existence_error(body, chart_post/3), _)).
 
 user:goal_expansion(chart_post(P, I, O), H) :-
    sys_modext_args(P, I, O, Q),
@@ -320,21 +278,14 @@ user:goal_expansion(chart_post(P, I, O), H) :-
  * expansion wrapper, that generates the posted body of a chart rule.
  */
 :- private chart_posted/3.
-:- meta_predicate chart_posted(2,?,?).
-chart_posted(_, _, _) :-
-   throw(error(existence_error(body,chart_posted/3),_)).
+:- meta_predicate chart_posted(2, ?, ?).
+chart_posted(_, _, _) :- throw(error(existence_error(body, chart_posted/3), _)).
 
-user:goal_expansion(chart_posted(P, _, _), _) :-
-   sys_var(P),
-   throw(error(instantiation_error,_)).
-user:goal_expansion(chart_posted((  A, B), I, O), (  chart_posted(A, I, H),
-                                                     sys_chart(B, H, O))).
-user:goal_expansion(chart_posted((  A; B), I, O), (  chart_posted(A, I, O)
-                                                  ;  chart_posted(B, I, O))).
-user:goal_expansion(chart_posted(U, I, O), (  posted(Q),
-                                              sys_chart(B, H, O))) :-
-   U = [A|B],
-   sys_replace_site(Q, U, 'D'(A,I,H)).
+user:goal_expansion(chart_posted(P, _, _), _) :- sys_var(P), throw(error(instantiation_error, _)).
+user:goal_expansion(chart_posted((A, B), I, O), (chart_posted(A, I, H), sys_chart(B, H, O))).
+user:goal_expansion(chart_posted((A; B), I, O), (chart_posted(A, I, O); chart_posted(B, I, O))).
+user:goal_expansion(chart_posted(U, I, O), (posted(Q), sys_chart(B, H, O))) :- U = [A|B],
+   sys_replace_site(Q, U, 'D'(A, I, H)).
 user:goal_expansion(chart_posted(P, I, O), posted(Q)) :-
    sys_modext_args(P, I, O, Q).
 
