@@ -78,12 +78,12 @@ element:taylor(P, X, N, R) :-
 % sys_maclaurin_horner(+Internal, +Variable, +Integer, +Integer, -Internal)
 :- private sys_maclaurin_horner/5.
 sys_maclaurin_horner(P, X, N, N, R) :- !,
-   R is subst(P,X,0).
+   R is subst(P, X, 0).
 sys_maclaurin_horner(P, X, N, M, R) :-
-   Q is deriv(P,X),
+   Q is deriv(P, X),
    user: +(N, 1, K),
    sys_maclaurin_horner(Q, X, K, M, H),
-   R is X*H/K+subst(P,X,0).
+   R is X*H/K+subst(P, X, 0).
 
 % element:taylor(+Element, +Variable, +Integer, +Internal, -Internal)
 :- public element:taylor/5.
@@ -93,12 +93,12 @@ element:taylor(P, X, N, R, S) :-
 % sys_taylor_horner(+Internal, +Variable, +Integer, +Integer, -Internal)
 :- private sys_taylor_horner/6.
 sys_taylor_horner(P, X, N, N, R, S) :- !,
-   S is subst(P,X,R).
+   S is subst(P, X, R).
 sys_taylor_horner(P, X, N, M, R, S) :-
-   Q is deriv(P,X),
+   Q is deriv(P, X),
    user: +(N, 1, K),
    sys_taylor_horner(Q, X, K, M, R, H),
-   S is (X-R)*H/K+subst(P,X,R).
+   S is (X-R)*H/K+subst(P, X, R).
 
 /**
  * laurent(P, X, N, Q):
@@ -110,13 +110,13 @@ sys_taylor_horner(P, X, N, M, R, S) :-
 % element:laurent(+Element, +Variable, +Integer, -Internal)
 :- public element:laurent/4.
 element:laurent(P, X, N, R) :-
-   H is subst(P,X,1/Y),
-   J is taylor(H,Y,N),
-   R is subst(J,Y,1/X).
+   H is subst(P, X, 1/Y),
+   J is taylor(H, Y, N),
+   R is subst(J, Y, 1/X).
 
 % element:laurent(+Element, +Variable, +Integer, +Internal, -Internal)
 :- public element:laurent/5.
 element:laurent(P, X, N, R, S) :-
-   H is subst(P,X,1/Y),
-   J is taylor(H,Y,N,R),
-   S is subst(J,Y,1/X).
+   H is subst(P, X, 1/Y),
+   J is taylor(H, Y, N, R),
+   S is subst(J, Y, 1/X).

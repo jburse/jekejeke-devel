@@ -93,7 +93,7 @@ dec_decomp(X, E, M) :-
    E is P-S,
    E \== 0, !,
    U is unscaled_value(X),
-   M is new_decimal(U,P).
+   M is new_decimal(U, P).
 dec_decomp(X, 0, X).
 
 /**

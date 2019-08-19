@@ -59,7 +59,7 @@
  * the precision P.
  */
 % mp(+Expression, +Integer, -Decimal)
-:- meta_predicate mp(#(1),?,?).
+:- meta_predicate mp(#(1), ?, ?).
 :- public mp/3.
 :- virtual mp/3.
 mp(E, P, R) :-
@@ -73,17 +73,14 @@ mp(E, P, R) :-
  * extended.
  */
 % mp_math(+Expression, +Context, -Decimal)
-:- meta_predicate mp_math(#(1),?,?).
+:- meta_predicate mp_math(#(1), ?, ?).
 :- multifile mp_math/3.
 :- public mp_math/3.
-mp_math(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-mp_math(N, _, R) :-
-   number(N), !,
+mp_math(V, _, _) :- var(V),
+   throw(error(instantiation_error, _)).
+mp_math(N, _, R) :- number(N), !,
    R = N.
-mp_math(E, P, R) :-
-   \+ mp_abnormal(E), !,
+mp_math(E, P, R) :- \+ mp_abnormal(E), !,
    E =.. [F|L],
    mp_list(L, P, K),
    D =.. [F|K],

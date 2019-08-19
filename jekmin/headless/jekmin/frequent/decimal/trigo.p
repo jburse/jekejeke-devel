@@ -64,14 +64,11 @@
  */
 % mp_sin(+Decimal, +Context, -Decimal)
 :- private mp_sin/3.
-mp_sin(X, _, Y) :-
-   X =:= 0d0, !,
+mp_sin(X, _, Y) :- X =:= 0d0, !,
    Y = 0d0.
-mp_sin(X, P, Y) :-
-   X < 0d0, !,
+mp_sin(X, P, Y) :- X < 0d0, !,
    mp_math(-sin(-X), P, Y).
-mp_sin(X, P, Y) :-
-   X > 0d0.40, !,
+mp_sin(X, P, Y) :- X > 0d0.40, !,
    mod_range(X, K, P, H),
    mp_sin_case(K, H, P, Y).
 mp_sin(X, P, Y) :-
@@ -100,26 +97,22 @@ mp_sin_case(7, X, P, Y) :-
 
 % mp_sin(+Part, +Decimal, +Context, -Decimal)
 :- private mp_sin/4.
-mp_sin((0,S), _, _, S) :- !.
+mp_sin((0, S), _, _, S) :- !.
 mp_sin(U, X, P, Y) :-
    next_sin(U, X, P, V),
    mp_sin(V, X, P, Y).
 
 % init_sin(+Integer, +Decimal, +Context, -Part)
 :- private init_sin/4.
-init_sin(K, X, P, (K,S)) :-
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+init_sin(K, X, P, (K, S)) :-
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math(V/(2*K+1), P, S).
 
 % next_sin(+Part, +Decimal, +Context, -Part)
 :- private next_sin/4.
-next_sin((L,T), X, P, (K,S)) :-
+next_sin((L, T), X, P, (K, S)) :-
    K is L-1,
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math((T*X*X/(2*K+2)+V)/(2*K+1), P, S).
 
 % mod_range(+Decimal, -Integer, +Context, -Decimal)
@@ -139,14 +132,11 @@ mod_range(X, K, P, Y) :-
  */
 % mp_cos(+Decimal, +Context, -Decimal)
 :- private mp_cos/3.
-mp_cos(X, _, Y) :-
-   X =:= 0d0, !,
+mp_cos(X, _, Y) :- X =:= 0d0, !,
    Y = 0d1.
-mp_cos(X, P, Y) :-
-   X < 0d0, !,
+mp_cos(X, P, Y) :- X < 0d0, !,
    mp_math(cos(-X), P, Y).
-mp_cos(X, P, Y) :-
-   X > 0d0.40, !,
+mp_cos(X, P, Y) :- X > 0d0.40, !,
    mod_range(X, K, P, H),
    mp_cos_case(K, H, P, Y).
 mp_cos(X, P, Y) :-
@@ -175,27 +165,23 @@ mp_cos_case(7, X, P, Y) :-
 
 % mp_cos(+Part, +Decimal, +Context, -Decimal)
 :- private mp_cos/4.
-mp_cos((0,S), _, _, S) :- !.
+mp_cos((0, S), _, _, S) :- !.
 mp_cos(U, X, P, Y) :-
    next_cos(U, X, P, V),
    mp_cos(V, X, P, Y).
 
 % init_cos(+Integer, +Decimal, +Context, -Part)
 :- private init_cos/4.
-init_cos(K, _, P, (K,S)) :-
-   (  K mod 2 =:= 0
-   -> V = 0d1
-   ;  V = -0d1),
-   mp_math(V/max(2*K,1), P, S).
+init_cos(K, _, P, (K, S)) :-
+   (K mod 2 =:= 0 -> V = 0d1; V = -0d1),
+   mp_math(V/max(2*K, 1), P, S).
 
 % next_cos(+Part, +Decimal, +Context, -Part)
 :- private next_cos/4.
-next_cos((L,T), X, P, (K,S)) :-
+next_cos((L, T), X, P, (K, S)) :-
    K is L-1,
-   (  K mod 2 =:= 0
-   -> V = 0d1
-   ;  V = -0d1),
-   mp_math((T*X*X/(2*K+1)+V)/max(2*K,1), P, S).
+   (K mod 2 =:= 0 -> V = 0d1; V = -0d1),
+   mp_math((T*X*X/(2*K+1)+V)/max(2*K, 1), P, S).
 
 /****************************************************************/
 /* Arcus Tangent                                                */
@@ -207,17 +193,13 @@ next_cos((L,T), X, P, (K,S)) :-
  */
 % mp_atan(+Decimal, +Context, -Decimal)
 :- private mp_atan/3.
-mp_atan(X, _, Y) :-
-   X =:= 0d0, !,
+mp_atan(X, _, Y) :- X =:= 0d0, !,
    Y = 0d0.
-mp_atan(X, P, Y) :-
-   X < 0d0, !,
+mp_atan(X, P, Y) :- X < 0d0, !,
    mp_math(-atan(-X), P, Y).
-mp_atan(X, P, Y) :-
-   X > 0d1, !,
+mp_atan(X, P, Y) :- X > 0d1, !,
    mp_math(pi*0d0.5-atan(0d1/X), P, Y).
-mp_atan(X, P, Y) :-
-   X > 0d0.5, !,
+mp_atan(X, P, Y) :- X > 0d0.5, !,
    mp_math(pi*0d0.25-atan((0d1-X)/(0d1+X)), P, Y).
 mp_atan(X, P, Y) :-
    K is integer(ceiling(requested(P)/(2*dec_log10(X)))),
@@ -226,26 +208,22 @@ mp_atan(X, P, Y) :-
 
 % mp_atan(+Part, +Decimal, +Context, -Decimal)
 :- private mp_atan/4.
-mp_atan((0,S), _, _, S) :- !.
+mp_atan((0, S), _, _, S) :- !.
 mp_atan(U, X, P, Y) :-
    next_atan(U, X, P, V),
    mp_atan(V, X, P, Y).
 
 % init_atan(+Integer, +Decimal, +Context, -Part)
 :- private init_atan/4.
-init_atan(K, X, P, (K,S)) :-
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+init_atan(K, X, P, (K, S)) :-
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math(V/(2*K+1), P, S).
 
 % next_atan(+Part, +Decimal, +Context, -Part)
 :- private next_atan/4.
-next_atan((L,T), X, P, (K,S)) :-
+next_atan((L, T), X, P, (K, S)) :-
    K is L-1,
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math(T*X*X+V/(2*K+1), P, S).
 
 /****************************************************************/
@@ -258,18 +236,14 @@ next_atan((L,T), X, P, (K,S)) :-
  */
 % mp_exp(+Decimal, +Context, -Decimal)
 :- private mp_exp/3.
-mp_exp(X, _, Y) :-
-   X =:= 0d0, !,
+mp_exp(X, _, Y) :- X =:= 0d0, !,
    Y = 0d1.
-mp_exp(X, P, Y) :-
-   X < 0d0, !,
+mp_exp(X, P, Y) :- X < 0d0, !,
    mp_math(0d1/exp(-X), P, Y).
-mp_exp(X, P, Y) :-
-   X >= 0d1, !,
+mp_exp(X, P, Y) :- X >= 0d1, !,
    K is integer(X),
    mp_math(exp(X-K)*e^K, P, Y).
-mp_exp(X, P, Y) :-
-   X > 0d0.5, !,
+mp_exp(X, P, Y) :- X > 0d0.5, !,
    mp_math(exp(X/0d2)^2, P, Y).
 mp_exp(X, P, Y) :-
    K is integer(ceiling(requested(P)/dec_log10(X))),
@@ -278,21 +252,21 @@ mp_exp(X, P, Y) :-
 
 % mp_exp(+Part, +Decimal, +Context, -Decimal)
 :- private mp_exp/4.
-mp_exp((0,S), _, _, S) :- !.
+mp_exp((0, S), _, _, S) :- !.
 mp_exp(U, X, P, Y) :-
    next_exp(U, X, P, V),
    mp_exp(V, X, P, Y).
 
 % init_exp(+Integer, +Decimal, +Context, -Part)
 :- private init_exp/4.
-init_exp(K, _, P, (K,S)) :-
-   mp_math(0d1/max(K,1), P, S).
+init_exp(K, _, P, (K, S)) :-
+   mp_math(0d1/max(K, 1), P, S).
 
 % next_exp(+Part, +Decimal, +Context, -Part)
 :- private next_exp/4.
-next_exp((L,T), X, P, (K,S)) :-
+next_exp((L, T), X, P, (K, S)) :-
    K is L-1,
-   mp_math((T*X+0d1)/max(K,1), P, S).
+   mp_math((T*X+0d1)/max(K, 1), P, S).
 
 /****************************************************************/
 /* Logarithm                                                    */
@@ -304,12 +278,10 @@ next_exp((L,T), X, P, (K,S)) :-
  */
 % mp_log(+Decimal, +Context, -Decimal)
 :- private mp_log/3.
-mp_log(X, _, _) :-
-   X =:= 0d0,
-   throw(error(evaluation_error(float_underflow),_)).
-mp_log(X, _, _) :-
-   X < 0d0,
-   throw(error(evaluation_error(undefined),_)).
+mp_log(X, _, _) :- X =:= 0d0,
+   throw(error(evaluation_error(float_underflow), _)).
+mp_log(X, _, _) :- X < 0d0,
+   throw(error(evaluation_error(undefined), _)).
 mp_log(X, P, Y) :-
    dec_decomp(X, D, M),
    bin_decomp(M, P, B, N),
@@ -317,11 +289,9 @@ mp_log(X, P, Y) :-
 
 % mp_log(+Integer, +Integer, +Decimal, +Context, -Decimal)
 :- private mp_log/5.
-mp_log(B, D, X, P, Y) :-
-   X =:= 0d1, !,
+mp_log(B, D, X, P, Y) :- X =:= 0d1, !,
    bin_dec_log(B, D, P, Y).
-mp_log(B, D, X, P, Y) :-
-   X > 0d1.4, !,
+mp_log(B, D, X, P, Y) :- X > 0d1.4, !,
    mp_math(0d2/X, P, M),
    L is B+1,
    mp_math(M-0d1, P, Z),
@@ -340,26 +310,22 @@ mp_log(B, D, X, P, Y) :-
 
 % mp_log(+Part, +Decimal, +Context, -Decimal)
 :- private mp_log/4.
-mp_log((0,S), _, _, S) :- !.
+mp_log((0, S), _, _, S) :- !.
 mp_log(U, X, P, Y) :-
    next_log(U, X, P, V),
    mp_log(V, X, P, Y).
 
 % init_log(+Integer, +Decimal, +Context, -Part)
 :- private init_log/4.
-init_log(K, X, P, (K,S)) :-
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+init_log(K, X, P, (K, S)) :-
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math(V/(K+1), P, S).
 
 % next_log(+Part, +Decimal, +Context, -Part)
 :- private next_log/4.
-next_log((L,T), X, P, (K,S)) :-
+next_log((L, T), X, P, (K, S)) :-
    K is L-1,
-   (  K mod 2 =:= 0
-   -> V = X
-   ;  V = -X),
+   (K mod 2 =:= 0 -> V = X; V = -X),
    mp_math(T*X+V/(K+1), P, S).
 
 /**
@@ -383,18 +349,13 @@ bin_dec_log(B, D, P, X) :-
  */
 % mp_atan2(+Decimal, +Context, +Decimal, -Decimal)
 :- private mp_atan2/4.
-mp_atan2(Y, X, P, Z) :-
-   X < 0d0,
-   Y < 0d0, !,
-   mp_math(-pi+atan2(-Y,-X), P, Z).
-mp_atan2(Y, X, P, Z) :-
-   X < 0d0, !,
-   mp_math(pi-atan2(Y,-X), P, Z).
-mp_atan2(Y, X, P, Z) :-
-   Y < 0d0, !,
-   mp_math(-atan2(-Y,X), P, Z).
-mp_atan2(Y, X, P, Z) :-
-   X < Y, !,
+mp_atan2(Y, X, P, Z) :- X < 0d0, Y < 0d0, !,
+   mp_math(-pi+atan2(-Y, -X), P, Z).
+mp_atan2(Y, X, P, Z) :- X < 0d0, !,
+   mp_math(pi-atan2(Y, -X), P, Z).
+mp_atan2(Y, X, P, Z) :- Y < 0d0, !,
+   mp_math(-atan2(-Y, X), P, Z).
+mp_atan2(Y, X, P, Z) :- X < Y, !,
    mp_math(pi*0d0.5-atan(X/Y), P, Z).
 mp_atan2(Y, X, P, Z) :-
    mp_math(atan(Y/X), P, Z).
@@ -404,12 +365,11 @@ mp_atan2(Y, X, P, Z) :-
 /****************************************************************/
 
 % mp_math(+Expression, +Context, -Decimal)
-:- meta_predicate multi:mp_math(#(1),?,?).
+:- meta_predicate multi:mp_math(#(1), ?, ?).
 :- multifile multi:mp_math/3.
 :- public multi:mp_math/3.
-multi:mp_math(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+multi:mp_math(V, _, _) :- var(V),
+   throw(error(instantiation_error, _)).
 
 /* special sin, etc.. */
 multi:mp_math(sin(X), P, R) :- !,
@@ -435,14 +395,14 @@ multi:mp_math(X**Y, P, R) :- !,
    mp_math(exp(log(X)*Y), P, R).
 
 /* special atan2, etc.. */
-multi:mp_math(atan2(X,Y), P, R) :- !,
+multi:mp_math(atan2(X, Y), P, R) :- !,
    mp_math(decimal(X), P, H),
    mp_math(decimal(Y), P, J),
    mp_atan2(H, J, P, R).
 multi:mp_math(asin(X), P, R) :- !,
-   mp_math(atan2(X,sqrt(1-X^2)), P, R).
+   mp_math(atan2(X, sqrt(1-X^2)), P, R).
 multi:mp_math(acos(X), P, R) :- !,
-   mp_math(atan2(sqrt(1-X^2),X), P, R).
+   mp_math(atan2(sqrt(1-X^2), X), P, R).
 
 /* constants */
 multi:mp_math(pi, P, R) :- !,
@@ -468,7 +428,7 @@ multi:mp_abnormal(sin(_)).
 multi:mp_abnormal(cos(_)).
 multi:mp_abnormal(tan(_)).
 multi:mp_abnormal(atan(_)).
-multi:mp_abnormal(atan2(_,_)).
+multi:mp_abnormal(atan2(_, _)).
 multi:mp_abnormal(asin(_)).
 multi:mp_abnormal(acos(_)).
 multi:mp_abnormal(exp(_)).

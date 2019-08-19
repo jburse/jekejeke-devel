@@ -78,8 +78,7 @@
 :- override =:= /2.
 :- public =:= /2.
 E =:= F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    sys_poly_send(X, gen_eq, [Y]).
 
 /**
@@ -90,8 +89,7 @@ E =:= F :-
 :- override =\= /2.
 :- public =\= /2.
 E =\= F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    \+ sys_poly_send(X, gen_eq, [Y]).
 
 /**
@@ -102,8 +100,7 @@ E =\= F :-
 :- override < /2.
 :- public < /2.
 E < F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    sys_poly_send(X, gen_ls, [Y]).
 
 /**
@@ -114,8 +111,7 @@ E < F :-
 :- override =< /2.
 :- public =< /2.
 E =< F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    \+ sys_poly_send(Y, gen_ls, [X]).
 
 /**
@@ -126,8 +122,7 @@ E =< F :-
 :- override > /2.
 :- public > /2.
 E > F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    sys_poly_send(Y, gen_ls, [X]).
 
 /**
@@ -138,8 +133,7 @@ E > F :-
 :- override >= /2.
 :- public >= /2.
 E >= F :-
-   X is E,
-   Y is F,
+   X is E, Y is F,
    \+ sys_poly_send(X, gen_ls, [Y]).
 
 /*********************************************************************/
@@ -153,9 +147,7 @@ E >= F :-
 % element:min(+Element, +Internal,-Internal)
 :- override min/3.
 :- public min/3.
-min(X, Y, Z) :-
-   X < Y, !,
-   Z = X.
+min(X, Y, Z) :- X < Y, !, Z = X.
 min(_, X, X).
 
 /**
@@ -165,9 +157,7 @@ min(_, X, X).
 % element:max(+Element, +Internal,-Internal)
 :- override max/3.
 :- public max/3.
-max(X, Y, Z) :-
-   X < Y, !,
-   Z = Y.
+max(X, Y, Z) :- X < Y, !, Z = Y.
 max(X, _, X).
 
 /**
@@ -177,9 +167,7 @@ max(X, _, X).
 % abs(+Ordered, -Ordered)
 :- override abs/2.
 :- public abs/2.
-abs(X, Y) :-
-   X < 0, !,
-   Y is -X.
+abs(X, Y) :- X < 0, !, Y is -X.
 abs(X, X).
 
 /**
@@ -195,16 +183,16 @@ integer:sign(X, Y) :-
 % sign(+Rational, -Integer)
 :- override rational:sign/2.
 :- public rational:sign/2.
-rational:sign(rational(A,_), Y) :-
+rational:sign(rational(A, _), Y) :-
    user:sign(A, Y).
 
 % sign(+Radical, -Integer)
 :- override radical:sign/2.
 :- public radical:sign/2.
-radical:sign(radical(0,[_-S]), Y) :- !,
+radical:sign(radical(0, [_-S]), Y) :- !,
    Y = S.
-radical:sign(radical(A,B), Y) :-
-   sys_radical_triage(radical(A,B), P, Q),
+radical:sign(radical(A, B), Y) :-
+   sys_radical_triage(radical(A, B), P, Q),
    U is sign(P),
    V is sign(Q),
    (  user:(U =:= V)
@@ -218,7 +206,7 @@ radical:sign(radical(A,B), Y) :-
 
 % sys_radical_triage(+Radical, -Internal, -Internal)
 :- public sys_radical_triage/3.
-sys_radical_triage(radical(A,[B-S|L]), P, Q) :-
+sys_radical_triage(radical(A, [B-S|L]), P, Q) :-
    sys_radical_level(B, M),
    sys_sqrt_triage([B-S|L], R, N, M, J),
    sys_sqrt_filter(R, N, J, U, V),
@@ -230,10 +218,8 @@ sys_radical_triage(radical(A,[B-S|L]), P, Q) :-
 sys_sqrt_filter([H-B-S|L], N, J, U, V) :-
    sys_sqrt_filter(L, N, J, P, Q),
    (  member(N, H)
-   -> U = P,
-      V = [B-S|Q]
-   ;  U = [B-S|P],
-      V = Q).
+   -> U = P, V = [B-S|Q]
+   ;  U = [B-S|P], V = Q).
 sys_sqrt_filter([], _, J, J, []).
 
 % sys_sqrt_triage(+Map, -Classified, -Integer, +Integer, -Map)
@@ -242,9 +228,7 @@ sys_sqrt_triage([B-S|L], R, N, K, J) :-
    sys_radical_level(B, T),
    user:(T =:= K), !,
    sys_sqrt_triage(L, U, M, K, J),
-   (  sys_radical_prod(U, D, H),
-      H = [_,_|_],
-      sys_test_lindep(D, B, _)
+   (  sys_radical_prod(U, D, H), H = [_, _|_], sys_test_lindep(D, B, _)
    -> N = M,
       R = [H-B-S|U]
    ;  user: +(M, 1, N),
@@ -255,11 +239,9 @@ sys_sqrt_triage(L, [], 0, _, L).
 :- private sys_radical_prod/3.
 sys_radical_prod([[N]-B-_|L], D, H) :- !,
    sys_radical_prod(L, E, J),
-   (  D = E,
-      H = J
-   ;  D is E*B,
-      H = [N|J]).
-sys_radical_prod([[_,_|_]-_-_|L], D, H) :-
+   (  D = E, H = J
+   ;  D is E*B, H = [N|J]).
+sys_radical_prod([[_, _|_]-_-_|L], D, H) :-
    sys_radical_prod(L, D, H).
 sys_radical_prod([], 1, []).
 
@@ -282,7 +264,7 @@ sys_test_lindep(A, B, H) :-
 :- public sys_new_radical/3.
 sys_new_radical(A, [], R) :- !,
    R = A.
-sys_new_radical(A, L, radical(A,L)).
+sys_new_radical(A, L, radical(A, L)).
 
 /*********************************************************************/
 /* Nesting Level                                                     */
@@ -295,17 +277,16 @@ sys_new_radical(A, L, radical(A,L)).
  */
 % sys_radical_base(+Ordered, +Integer, -Integer)
 :- public sys_radical_base/3.
-sys_radical_base(X, _, Y) :-
-   integer(X), !,
+sys_radical_base(X, _, Y) :- integer(X), !,
    Y = 0.
-sys_radical_base(rational(_,_), _, Y) :- !,
+sys_radical_base(rational(_, _), _, Y) :- !,
    Y = 0.
-sys_radical_base(radical(_,B), N, Y) :-
+sys_radical_base(radical(_, B), N, Y) :-
    sys_sqrt_triage(B, _, Y, N, _).
 
 % sys_radical_midlevel(+Radical, -Integer)
 :- public sys_radical_midlevel/2.
-sys_radical_midlevel(radical(_,[B-_|_]), N) :-
+sys_radical_midlevel(radical(_, [B-_|_]), N) :-
    sys_radical_level(B, N).
 
 /**
@@ -315,12 +296,11 @@ sys_radical_midlevel(radical(_,[B-_|_]), N) :-
  */
 % sys_radical_level(+Ordered, -Integer)
 :- public sys_radical_level/2.
-sys_radical_level(X, Y) :-
-   integer(X), !,
+sys_radical_level(X, Y) :- integer(X), !,
    Y = 0.
-sys_radical_level(rational(_,_), Y) :- !,
+sys_radical_level(rational(_, _), Y) :- !,
    Y = 0.
-sys_radical_level(radical(_,[A-_|L]), Y) :-
+sys_radical_level(radical(_, [A-_|L]), Y) :-
    sys_radical_level(A, H),
    sys_sqrt_level(L, H, J),
    user: +(J, 1, Y).
@@ -343,35 +323,38 @@ sys_sqrt_level([], H, H).
  */
 % gen_eq(+Integer, +Ordered)
 :- public integer:gen_eq/2.
-integer:gen_eq(X, Y) :-
-   integer(Y), !,
+integer:gen_eq(X, Y) :- integer(Y), !,
    user:(X =:= Y).
-integer:gen_eq(_, rational(_,_)) :- !, fail.
-integer:gen_eq(_, radical(_,_)) :- !, fail.
+integer:gen_eq(_, rational(_, _)) :- !,
+   fail.
+integer:gen_eq(_, radical(_, _)) :- !,
+   fail.
 integer:gen_eq(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 % gen_eq(+Rational, +Ordered)
 :- public rational:gen_eq/2.
-rational:gen_eq(_, X) :-
-   integer(X), !, fail.
-rational:gen_eq(rational(A,B), rational(C,D)) :- !,
+rational:gen_eq(_, X) :- integer(X), !,
+   fail.
+rational:gen_eq(rational(A, B), rational(C, D)) :- !,
    user:(A =:= C),
    user:(B =:= D).
-rational:gen_eq(_, radical(_,_)) :- !, fail.
+rational:gen_eq(_, radical(_, _)) :- !,
+   fail.
 rational:gen_eq(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 % gen_eq(+Radical, +Ordered)
 :- public radical:gen_eq/2.
-radical:gen_eq(_, X) :-
-   integer(X), !, fail.
-radical:gen_eq(_, rational(_,_)) :- !, fail.
-radical:gen_eq(radical(A,B), radical(C,D)) :- !,
+radical:gen_eq(_, X) :- integer(X), !,
+   fail.
+radical:gen_eq(_, rational(_, _)) :- !,
+   fail.
+radical:gen_eq(radical(A, B), radical(C, D)) :- !,
    A =:= C,
    sys_radical_eq(B, D).
 radical:gen_eq(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 % sys_radical_eq(+Map, +Map)
 :- private sys_radical_eq/2.
@@ -391,43 +374,40 @@ sys_radical_eq([], []).
  */
 % gen_ls(+Integer, +Ordered)
 :- public integer:gen_ls/2.
-integer:gen_ls(X, Y) :-
-   integer(Y), !,
+integer:gen_ls(X, Y) :- integer(Y), !,
    user:(X < Y).
-integer:gen_ls(X, rational(A,B)) :- !,
+integer:gen_ls(X, rational(A, B)) :- !,
    user: *(B, X, H),
    user:(H < A).
-integer:gen_ls(X, radical(C,D)) :- !,
-   1 =:= sign(radical(C,D)-X).
+integer:gen_ls(X, radical(C, D)) :- !,
+   1 =:= sign(radical(C, D)-X).
 integer:gen_ls(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 % gen_ls(+Rational, +Ordered)
 :- public rational:gen_ls/2.
-rational:gen_ls(rational(A,B), Y) :-
-   integer(Y), !,
+rational:gen_ls(rational(A, B), Y) :- integer(Y), !,
    user: *(B, Y, H),
    user:(A < H).
-rational:gen_ls(rational(A,B), rational(C,D)) :- !,
+rational:gen_ls(rational(A, B), rational(C, D)) :- !,
    user: *(D, A, H),
    user: *(B, C, J),
    user:(H < J).
-rational:gen_ls(X, radical(C,D)) :- !,
-   1 =:= sign(radical(C,D)-X).
+rational:gen_ls(X, radical(C, D)) :- !,
+   1 =:= sign(radical(C, D)-X).
 rational:gen_ls(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 % gen_ls(+Radical, +Ordered)
 :- public radical:gen_ls/2.
-radical:gen_ls(X, Y) :-
-   integer(Y), !,
+radical:gen_ls(X, Y) :- integer(Y), !,
    1 =:= sign(Y-X).
-radical:gen_ls(X, rational(C,D)) :- !,
-   1 =:= sign(rational(C,D)-X).
-radical:gen_ls(X, radical(C,D)) :- !,
-   1 =:= sign(radical(C,D)-X).
+radical:gen_ls(X, rational(C, D)) :- !,
+   1 =:= sign(rational(C, D)-X).
+radical:gen_ls(X, radical(C, D)) :- !,
+   1 =:= sign(radical(C, D)-X).
 radical:gen_ls(_, _) :-
-   throw(error(evaluation_error(ordered),_)).
+   throw(error(evaluation_error(ordered), _)).
 
 /*********************************************************************/
 /* Floor                                                             */
@@ -445,18 +425,18 @@ integer:floor(X, X).
 % floor(+Rational, -Integer)
 :- override rational:floor/2.
 :- public rational:floor/2.
-rational:floor(rational(A,B), X) :-
+rational:floor(rational(A, B), X) :-
    user:div(A, B, X).
 
 % floor(+Radical, -Integer)
 :- override radical:floor/2.
 :- public radical:floor/2.
-radical:floor(radical(0,[A-S]), X) :- !,
+radical:floor(radical(0, [A-S]), X) :- !,
    sys_radical_lower([A-S], X).
-radical:floor(radical(A,B), X) :-
+radical:floor(radical(A, B), X) :-
    sys_radical_lower(B, H),
    K is floor(A)+H,
-   sys_radical_search(K, radical(A,B), X).
+   sys_radical_search(K, radical(A, B), X).
 
 % sys_radical_lower(+Map, -Integer)
 :- private sys_radical_lower/2.
@@ -497,7 +477,7 @@ integer:ceiling(X, X).
 % ceiling(+Rational, -Integer)
 :- override rational:ceiling/2.
 :- public rational:ceiling/2.
-rational:ceiling(rational(A,B), X) :-
+rational:ceiling(rational(A, B), X) :-
    user: -(B, 1, H),
    user: +(A, H, J),
    user:div(J, B, X).
@@ -524,14 +504,13 @@ integer:integer(X, X).
 % integer(+Rational, -Integer)
 :- override rational:integer/2.
 :- public rational:integer/2.
-rational:integer(rational(A,B), X) :-
+rational:integer(rational(A, B), X) :-
    user: //(A, B, X).
 
 % integer(+Radical, -Integer)
 :- override radical:integer/2.
 :- public radical:integer/2.
-radical:integer(X, Y) :-
-   X >= 0, !,
+radical:integer(X, Y) :- X >= 0, !,
    Y is floor(X).
 radical:integer(X, Y) :-
    Y is -floor(-X).
@@ -553,13 +532,13 @@ integer:float(X, Y) :-
 % float(+Rational, -Float)
 :- override rational:float/2.
 :- public rational:float/2.
-rational:float(rational(A,B), X) :-
+rational:float(rational(A, B), X) :-
    user: /(A, B, X).
 
 % float(+Radical, -Float)
 :- override radical:float/2.
 :- public radical:float/2.
-radical:float(radical(A,B), Y) :-
+radical:float(radical(A, B), Y) :-
    X is float(A),
    sys_sqrt_float(B, X, Y).
 

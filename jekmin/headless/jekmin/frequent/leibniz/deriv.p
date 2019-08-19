@@ -89,11 +89,10 @@ variable:deriv(X, _, X).
  */
 % polynom:deriv(+Polynom, +Variable, -Internal)
 :- public polynom:deriv/3.
-polynom:deriv(polynom(A,B), X, R) :-
-   A @> X, !,
+polynom:deriv(polynom(A, B), X, R) :- A @> X, !,
    sys_coeff_deriv(B, X, H),
    sys_make_poly(H, A, R).
-polynom:deriv(polynom(X,B), X, R) :- !,
+polynom:deriv(polynom(X, B), X, R) :- !,
    sys_poly_deriv(B, H),
    sys_make_poly(H, X, R).
 polynom:deriv(_, _, 0).
@@ -111,7 +110,7 @@ sys_poly_deriv([], []).
 % sys_coeff_deriv(+Map, +Variable, -Map)
 :- private sys_coeff_deriv/3.
 sys_coeff_deriv([N-A|L], X, R) :-
-   B is deriv(A,X),
+   B is deriv(A, X),
    sys_coeff_deriv(L, X, H),
    sys_make_coeff(H, N, B, R).
 sys_coeff_deriv([], _, []).
@@ -122,8 +121,8 @@ sys_coeff_deriv([], _, []).
  */
 % fraction:deriv(+Fraction, +Variable, -Internal)
 :- public fraction:deriv/3.
-fraction:deriv(fraction(A,B), X, R) :-
-   R is (deriv(A,X)-deriv(B,X)*fraction(A,B))/B.
+fraction:deriv(fraction(A, B), X, R) :-
+   R is (deriv(A, X)-deriv(B, X)*fraction(A, B))/B.
 
 /*********************************************************************/
 /* Integral                                                          */
@@ -155,13 +154,12 @@ variable:integ(X, Y, Z) :-
  */
 % polynom:integ(+Polynom, +Variable, -Internal)
 :- public polynom:integ/3.
-polynom:integ(polynom(A,B), X, R) :-
-   A @> X, !,
+polynom:integ(polynom(A, B), X, R) :- A @> X, !,
    sys_coeff_integ(B, X, H),
-   R = polynom(A,H).
-polynom:integ(polynom(X,B), X, R) :- !,
+   R = polynom(A, H).
+polynom:integ(polynom(X, B), X, R) :- !,
    sys_poly_integ(B, H),
-   R = polynom(X,H).
+   R = polynom(X, H).
 polynom:integ(X, Y, Z) :-
    Z is X*Y.
 
@@ -176,6 +174,6 @@ sys_poly_integ([], []).
 % sys_coeff_integ(+Map, +Variable, -Map)
 :- private sys_coeff_integ/3.
 sys_coeff_integ([N-A|L], X, [N-B|R]) :-
-   B is integ(A,X),
+   B is integ(A, X),
    sys_coeff_integ(L, X, R).
 sys_coeff_integ([], _, []).

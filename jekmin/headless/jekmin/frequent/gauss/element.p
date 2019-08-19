@@ -79,7 +79,7 @@
 :- override '.'/3.
 :- public '.'/3.
 '.'(X, L, Z) :-
-   Z =.. [vector,X|L].
+   Z =.. [vector, X|L].
 
 /*********************************************************************/
 /* Generic Hook                                                      */
@@ -89,7 +89,7 @@
  * Experimental pretty printing set builder expressions.
  */
 :- public user:'|'/3.
-:- meta_predicate user:'|'(#(1),0,?).
+:- meta_predicate user:'|'(#(1), 0, ?).
 :- static user:'|'/3.
 
 /**
@@ -100,9 +100,8 @@
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
 /**
@@ -115,7 +114,7 @@ generic:(X is []) :- !,
 generic:(X is [F|G]) :- !,
    A is F,
    sys_eval_list(G, [], B),
-   sys_poly_send(A, '.', [B,X]).
+   sys_poly_send(A, '.', [B, X]).
 /**
  * X is {F | G}:
  * The special form succeeds in X in evaluating F by using polymorphism
@@ -123,15 +122,13 @@ generic:(X is [F|G]) :- !,
  */
 generic:(X is {H}) :- !,
    findall(Y, Y is H, L),
-   (  L = [A|B]
-   -> sys_poly_send(A, '.', [B,X])
-   ;  X = vector).
-generic:(X is (F|G)) :- !, G,
-   X is F.
+   (L = [A|B] -> sys_poly_send(A, '.', [B, X]); X = vector).
+generic:(X is (F | G)) :- !,
+   G, X is F.
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
 generic:is_abnormal([]).
 generic:is_abnormal([_|_]).
 generic:is_abnormal({_}).
-generic:is_abnormal((_|_)).
+generic:is_abnormal((_ | _)).

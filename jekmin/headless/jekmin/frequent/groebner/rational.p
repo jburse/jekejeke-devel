@@ -72,7 +72,7 @@
 % -(+Rational, -Rational)
 :- override (-)/2.
 :- public (-)/2.
--(rational(A,B), rational(C,B)) :-
+-(rational(A, B), rational(C, B)) :-
    user: -(A, C).
 
 /**
@@ -82,24 +82,22 @@
 % +(+Rational, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, R) :-
-   integer(Y), !,
-   rational: +(X, rational(Y,1), R).
-+(rational(A,B), rational(C,D), R) :- !,
++(X, Y, R) :- integer(Y), !,
+   rational: +(X, rational(Y, 1), R).
++(rational(A, B), rational(C, D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: +(H, J, K),
    user: *(B, D, L),
    make_rational(K, L, R).
-+(X, radical(A,B), R) :- !,
-   radical: +(radical(X,[]), radical(A,B), R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-+(X, polynom(C,D), R) :- !,
-   polynom: +(polynom(C,[0-X]), polynom(C,D), R).
-+(X, fraction(C,D), R) :-
-   fraction: +(fraction(X,1), fraction(C,D), R).
++(X, radical(A, B), R) :- !,
+   radical: +(radical(X, []), radical(A, B), R).
++(X, Y, R) :- sys_freezer(Y), !,
+   polynom: +(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
++(X, polynom(C, D), R) :- !,
+   polynom: +(polynom(C, [0-X]), polynom(C, D), R).
++(X, fraction(C, D), R) :-
+   fraction: +(fraction(X, 1), fraction(C, D), R).
 
 /**
  * -(P, Q, R):
@@ -108,24 +106,22 @@
 % -(+Rational, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, R) :-
-   integer(Y), !,
-   rational: -(X, rational(Y,1), R).
--(rational(A,B), rational(C,D), R) :- !,
+-(X, Y, R) :- integer(Y), !,
+   rational: -(X, rational(Y, 1), R).
+-(rational(A, B), rational(C, D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: -(H, J, K),
    user: *(B, D, L),
    make_rational(K, L, R).
--(X, radical(A,B), R) :- !,
-   radical: -(radical(X,[]), radical(A,B), R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
--(X, polynom(C,D), R) :- !,
-   polynom: -(polynom(C,[0-X]), polynom(C,D), R).
--(X, fraction(C,D), R) :-
-   fraction: -(fraction(X,1), fraction(C,D), R).
+-(X, radical(A, B), R) :- !,
+   radical: -(radical(X, []), radical(A, B), R).
+-(X, Y, R) :- sys_freezer(Y), !,
+   polynom: -(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
+-(X, polynom(C, D), R) :- !,
+   polynom: -(polynom(C, [0-X]), polynom(C, D), R).
+-(X, fraction(C, D), R) :-
+   fraction: -(fraction(X, 1), fraction(C, D), R).
 
 /**
  * *(P, Q, R):
@@ -134,22 +130,20 @@
 % *(+Rational, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(X, Y, R) :-
-   integer(Y), !,
-   rational: *(X, rational(Y,1), R).
-*(rational(A,B), rational(C,D), R) :- !,
+*(X, Y, R) :- integer(Y), !,
+   rational: *(X, rational(Y, 1), R).
+*(rational(A, B), rational(C, D), R) :- !,
    user: *(A, C, H),
    user: *(B, D, J),
    make_rational(H, J, R).
-*(X, radical(A,B), R) :- !,
-   radical: *(radical(X,[]), radical(A,B), R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-*(X, polynom(C,D), R) :- !,
-   polynom: *(polynom(C,[0-X]), polynom(C,D), R).
-*(X, fraction(C,D), R) :-
-   fraction: *(fraction(X,1), fraction(C,D), R).
+*(X, radical(A, B), R) :- !,
+   radical: *(radical(X, []), radical(A, B), R).
+*(X, Y, R) :- sys_freezer(Y), !,
+   polynom: *(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
+*(X, polynom(C, D), R) :- !,
+   polynom: *(polynom(C, [0-X]), polynom(C, D), R).
+*(X, fraction(C, D), R) :-
+   fraction: *(fraction(X, 1), fraction(C, D), R).
 
 /**
  * /(P, Q, R):
@@ -158,22 +152,20 @@
 % /(+Rational, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(X, Y, R) :-
-   integer(Y), !,
-   rational: /(X, rational(Y,1), R).
-/(rational(A,B), rational(C,D), R) :- !,
+/(X, Y, R) :- integer(Y), !,
+   rational: /(X, rational(Y, 1), R).
+/(rational(A, B), rational(C, D), R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    make_rational(H, J, R).
-/(X, radical(A,B), R) :- !,
-   radical: /(radical(X,[]), radical(A,B), R).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
+/(X, radical(A, B), R) :- !,
+   radical: /(radical(X, []), radical(A, B), R).
+/(X, Y, R) :- sys_freezer(Y), !,
    new_fraction(X, Y, R).
-/(X, polynom(C,D), R) :- !,
-   new_fraction(X, polynom(C,D), R).
-/(X, fraction(C,D), R) :-
-   fraction: /(fraction(X,1), fraction(C,D), R).
+/(X, polynom(C, D), R) :- !,
+   new_fraction(X, polynom(C, D), R).
+/(X, fraction(C, D), R) :-
+   fraction: /(fraction(X, 1), fraction(C, D), R).
 
 /**
  * ^(P, Q, R):
@@ -182,15 +174,14 @@
 % ^(+Rational, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(rational(A,B), Y, R) :-
-   user:(Y < 0), !,
+^(rational(A, B), Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    user: ^(A, Z, H),
    user: ^(B, Z, J),
    new_rational(J, H, R).
 ^(_, 0, R) :- !,
    R = 1.
-^(rational(A,B), Y, rational(H,J)) :-
+^(rational(A, B), Y, rational(H, J)) :-
    user: ^(A, Y, H),
    user: ^(B, Y, J).
 
@@ -205,9 +196,8 @@
 % sqrt(+Rational, -Radical)
 :- override sqrt/2.
 :- public sqrt/2.
-sqrt(rational(A,_), _) :-
-   user:(A < 0),
-   throw(error(evaluation_error(undefined),_)).
+sqrt(rational(A, _), _) :- user:(A < 0),
+   throw(error(evaluation_error(undefined), _)).
 sqrt(X, R) :-
    make_radical(X, R).
 
@@ -218,12 +208,11 @@ sqrt(X, R) :-
 % make_rational(+Integer, +Integer, -Internal)
 :- public make_rational/3.
 make_rational(_, 0, _) :-
-   throw(error(evaluation_error(zero_divisor),_)).
+   throw(error(evaluation_error(zero_divisor), _)).
 make_rational(0, _, R) :- !,
    R = 0.
 make_rational(A, B, C) :-
-   elem:gcd(A, B, H),
-   H \== 1, !,
+   elem:gcd(A, B, H), H \== 1, !,
    user: //(A, H, J),
    user: //(B, H, K),
    new_rational(J, K, C).
@@ -235,12 +224,11 @@ new_rational(A, -1, B) :- !,
    user: -(A, B).
 new_rational(A, 1, R) :- !,
    R = A.
-new_rational(A, B, R) :-
-   user:(B < 0), !,
+new_rational(A, B, R) :- user:(B < 0), !,
    user: -(A, C),
    user: -(B, D),
-   R = rational(C,D).
-new_rational(A, B, rational(A,B)).
+   R = rational(C, D).
+new_rational(A, B, rational(A, B)).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */
@@ -254,25 +242,20 @@ new_rational(A, B, rational(A,B)).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(rational(A,B), X) :-
-   user: //(A, B, H),
-   user:(H =\= 0), !,
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(rational(A, B), X) :- user: //(A, B, H), user:(H =\= 0), !,
    user: *(B, H, J),
    user: -(A, J, R),
    sys_make_integer(H, R, B, X).
-residue:sys_printable_value(rational(A,B), X) :-
-   user:(A < 0), !,
+residue:sys_printable_value(rational(A, B), X) :- user:(A < 0), !,
    user: -(A, C),
    X = -C/B.
-residue:sys_printable_value(rational(A,B), X) :- !,
+residue:sys_printable_value(rational(A, B), X) :- !,
    X = A/B.
 
 % sys_make_integer(+Integer, +Integer, +Integer, -External)
 :- private sys_make_integer/4.
-sys_make_integer(H, R, B, X) :-
-   user:(H < 0), !,
+sys_make_integer(H, R, B, X) :- user:(H < 0), !,
    user: -(H, K),
    user: -(R, S),
    X = -K-S/B.
@@ -291,14 +274,13 @@ sys_make_integer(H, R, B, X) :-
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is rational(A,B)) :- !,
-   X = rational(A,B).
+generic:(X is rational(A, B)) :- !,
+   X = rational(A, B).
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(rational(_,_)).
+generic:is_abnormal(rational(_, _)).

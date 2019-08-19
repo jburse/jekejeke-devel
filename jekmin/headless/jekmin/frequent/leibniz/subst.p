@@ -82,11 +82,10 @@ variable:subst(X, _, _, X).
  */
 % polynom:subst(+Polynom, +Variable, +Internal, -Internal)
 :- public polynom:subst/4.
-polynom:subst(polynom(A,[N-B|L]), X, R, S) :-
-   A @> X, !,
-   H is subst(B,X,R),
+polynom:subst(polynom(A, [N-B|L]), X, R, S) :- A @> X, !,
+   H is subst(B, X, R),
    sys_coeff_subst(L, N, H, A, X, R, S).
-polynom:subst(polynom(X,[N-A|L]), X, R, S) :- !,
+polynom:subst(polynom(X, [N-A|L]), X, R, S) :- !,
    sys_poly_subst(L, N, A, R, S).
 polynom:subst(X, _, _, X).
 
@@ -103,7 +102,7 @@ sys_poly_subst([], N, A, R, S) :-
 :- private sys_coeff_subst/7.
 sys_coeff_subst([M-B|L], N, C, A, X, R, S) :-
    user: -(N, M, K),
-   H is A^K*C+subst(B,X,R),
+   H is A^K*C+subst(B, X, R),
    sys_coeff_subst(L, M, H, A, X, R, S).
 sys_coeff_subst([], N, C, A, _, _, S) :-
    S is A^N*C.
@@ -114,5 +113,5 @@ sys_coeff_subst([], N, C, A, _, _, S) :-
  */
 % fraction:subst(+Polynom, +Variable, +Internal, -Internal)
 :- public fraction:subst/4.
-fraction:subst(fraction(A,B), X, R, S) :-
-   S is subst(A,X,R)/subst(B,X,R).
+fraction:subst(fraction(A, B), X, R, S) :-
+   S is subst(A, X, R)/subst(B, X, R).
