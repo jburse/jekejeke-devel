@@ -2,7 +2,7 @@
 
 Current: [
 ![release badge](https://img.shields.io/badge/release-v1.4.0-green.svg)
-         ](https://github.com/jburse/jekejeke-devel/releases/tag/v1.4.0) Archive: [
+](https://github.com/jburse/jekejeke-devel/releases/tag/v1.4.0) Archive: [
 ![release badge](https://img.shields.io/badge/release-v1.3.8-green.svg)
 ](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.8)
 
