@@ -10,6 +10,8 @@ Freischützgasse 14,<br/>
 Zentrale Lage, Helles Appartment<br/>
 WC/Dusche und Küche, möbliert<br/>
 Glasfaser- und Kabelanschluss<br/>
+Eigenes Estrichabteil<br/>
+Gemeinsame Waschmaschine/Tumbler<br/>
 ca. 40 m2, Miete 1'231.- CHF
 
 # Besichtigungstermin:
