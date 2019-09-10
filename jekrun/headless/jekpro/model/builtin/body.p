@@ -67,16 +67,12 @@
 
 % already defined in special.p
 % :- public prefix(':-').
-% :- op(1200, fx, :-).
 
 % already defined in special.p
 % :- public infix(':-').
-% :- op(1200, xfx, :-).
 
 % already defined in special.p
 % :- public infix(',').
-% :- op(1000, xfy, ',').
-% :- set_oper_property(infix(','), nspl).
 
 /**
  * :- A:
@@ -84,13 +80,11 @@
  * the body conversion table.
  */
 % :- +Goal
-(:- _) :-
-   throw(error(existence_error(body,(:-)/1),_)).
+(:- _) :- throw(error(existence_error(body, (:-)/1), _)).
 :- set_predicate_property((:-)/1, visible(public)).
 :- set_predicate_property((:-)/1, meta_predicate((:- -1))).
 :- sys_context_property(here, C),
    set_predicate_property((:-)/1, sys_meta_predicate(C)).
-:- set_predicate_property((:-)/1, sys_rule).
 
 /**
  * A :- B:
@@ -98,29 +92,28 @@
  * the body conversion table.
  */
 % +Term :- +Goal
-(_ :- _) :-
-   throw(error(existence_error(body,(:-)/2),_)).
+(_ :- _) :- throw(error(existence_error(body, (:-)/2), _)).
 :- set_predicate_property((:-)/2, visible(public)).
-:- set_predicate_property((:-)/2, meta_predicate((0:- -1))).
+:- set_predicate_property((:-)/2, meta_predicate((0 :- -1))).
 :- sys_context_property(here, C),
    set_predicate_property((:-)/2, sys_meta_predicate(C)).
-:- set_predicate_property((:-)/2, sys_rule).
 
 /**
  * A, B: [ISO 7.8.5]
  * The predicate succeeds whenever A and B succeed. Both goal
  * arguments A and B are cut transparent.
  */
+
 % (+Goal, +Goal)
 :- sys_neutral_predicate(','/2).
 :- set_predicate_property(','/2, sys_nobarrier).
-A, B :- A, B.                                          % Proto
+:- set_predicate_property(','/2, sys_proto).
+A, B :- A, B.                                           % Proto
+:- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
-:- set_predicate_property(','/2, meta_predicate((0,0))).
+:- set_predicate_property(','/2, meta_predicate((0, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(','/2, sys_meta_predicate(C)).
-:- set_predicate_property(','/2, sys_body).
-:- set_predicate_property(','/2, sys_notrace).
 
 /**
  * call(A): [ÍSO 7.8.3]
@@ -149,3 +142,11 @@ A, B :- A, B.                                          % Proto
 % sys_commit
 :- special(sys_commit/0, 'SpecialBody', 4).
 :- set_predicate_property(sys_commit/0, visible(public)).
+
+% sys_soft_begin
+:- special(sys_soft_begin/0, 'SpecialBody', 5).
+:- set_predicate_property(sys_soft_begin/0, visible(public)).
+
+% sys_soft_commit
+:- special(sys_soft_commit/0, 'SpecialBody', 6).
+:- set_predicate_property(sys_soft_commit/0, visible(public)).

@@ -62,7 +62,8 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(900, fy, \+).
+:- sys_neutral_oper(prefix(\+)).
+:- set_oper_property(prefix(\+), op(900, fy)).
 :- set_oper_property(prefix(\+), visible(public)).
 
 /******************************************************************/
@@ -83,6 +84,7 @@
 
 /**
  * true: [ISO 7.8.1]
+ * otherwise:
  * The predicate succeeds once.
  */
 % true
@@ -123,7 +125,7 @@ once(X) :- X, !.
 \+ X :- X, !, fail.
 \+ _.
 :- set_predicate_property((\+)/1, visible(public)).
-:- set_predicate_property((\+)/1, meta_predicate(\+0)).
+:- set_predicate_property((\+)/1, meta_predicate(\+ 0)).
 :- sys_context_property(here, C),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
@@ -137,25 +139,14 @@ once(X) :- X, !.
  * and then raises the exception E.
  */
 % throw(+Exception)
-throw(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-throw(error(M,T)) :-
-   var(T), !,
-   sys_fetch_stack(T),
-   sys_raise(error(M,T)).
-throw(warning(M,T)) :-
-   var(T), !,
-   sys_fetch_stack(T),
-   sys_raise(warning(M,T)).
-throw(B) :-
-   sys_raise(B).
+throw(V) :- var(V), throw(error(instantiation_error, _)).
+throw(error(M, T)) :- var(T), !,
+   sys_fetch_stack(T), sys_raise(error(M, T)).
+throw(warning(M, T)) :- var(T), !,
+   sys_fetch_stack(T), sys_raise(warning(M, T)).
+throw(B) :- sys_raise(B).
 :- set_predicate_property(throw/1, visible(public)).
 
-/**
- * sys_fetch_stack(T):
- * The predicate retrieves the current stack trace.
- */
 % sys_fetch_stack(-Trace)
 :- special(sys_fetch_stack/1, 'SpecialControl', 3).
 :- set_predicate_property(sys_fetch_stack/1, visible(private)).
@@ -181,42 +172,23 @@ throw(B) :-
  */
 % catch(+Goal, +Pattern, +Goal)
 catch(A, E, B) :-
-   sys_trap(A, F, sys_handle_ball(F, E, B)).
+   sys_trap(A, E, sys_ball_handler(E, B)).
 :- set_predicate_property(catch/3, visible(public)).
-:- set_predicate_property(catch/3, meta_predicate(catch(0,?,0))).
+:- set_predicate_property(catch/3, meta_predicate(catch(0, ?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
-/**
- * sys_handle_ball(F, E, B):
- * The predicate handles the exception F for the pattern E and the goal B.
- */
-% sys_handle_ball(+Exception, +Pattern, +Goal)
-sys_handle_ball(F, _, _) :-
-   sys_reserved_ball(F), !,
-   sys_raise(F).
-sys_handle_ball(E, E, B) :- !,
+% sys_ball_handler(+Exception, +Goal)
+sys_ball_handler(E, _) :- sys_error_type(E, system_error(_)), !,
+   sys_raise(E).
+sys_ball_handler(E, _) :- sys_error_type(E, limit_error(_)), !,
+   sys_raise(E).
+sys_ball_handler(_, B) :-
    call(B).
-sys_handle_ball(F, _, _) :-
-   sys_raise(F).
-:- set_predicate_property(sys_handle_ball/3, visible(private)).
-:- set_predicate_property(sys_handle_ball/3, meta_predicate(sys_handle_ball(?,?,0))).
+:- set_predicate_property(sys_ball_handler/2, visible(private)).
+:- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?, 0))).
 :- sys_context_property(here, C),
-   set_predicate_property(sys_handle_ball/3, sys_meta_predicate(C)).
-
-/**
- * sys_reserved_ball(E):
- * The predicate succeeds when E is a reserved exception.
- */
-% sys_reserved_ball(+Exception)
-sys_reserved_ball(V) :-
-   var(V), !, fail.
-sys_reserved_ball(error(V,_)) :-
-   var(V), !, fail.
-sys_reserved_ball(error(system_error(_),_)) :- !.
-sys_reserved_ball(cause(E,_)) :-
-   sys_reserved_ball(E).
-:- set_predicate_property(sys_reserved_ball/1, visible(private)).
+   set_predicate_property(sys_ball_handler/2, sys_meta_predicate(C)).
 
 /**
  * sys_trap(A, E, B):
@@ -228,6 +200,15 @@ sys_reserved_ball(cause(E,_)) :-
 % sys_trap(+Goal, +Pattern, +Goal)
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
-:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0,?,0))).
+:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0, ?, 0))).
 :- sys_context_property(here, C),
    set_predicate_property(sys_trap/3, sys_meta_predicate(C)).
+
+/**
+ * sys_error_type(E, T):
+ * The predicate succeeds in T with the error type of exception E.
+ */
+% sys_error_type(+Exception, -Type)
+sys_error_type(error(T, _), T).
+sys_error_type(cause(E, _), T) :- sys_error_type(E, T).
+:- set_predicate_property(sys_error_type/2, visible(public)).

@@ -2,10 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
@@ -94,17 +91,10 @@ public final class SpecialApply extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
-                d = en.display;
-                boolean ext = d.getAndReset();
-                multi = en.wrapGoal();
-                if (multi && ext)
-                    d.remTab(en);
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi || ext)
-                    ref.remTab(en);
+
+                Directive dire = SupervisorCall.callGoal2(0, en);
+                Display d2 = en.display;
+
                 CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
@@ -197,7 +187,7 @@ public final class SpecialApply extends AbstractSpecial {
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
-        if (EngineCopy.getVar(t) != null) {
+        if (SupervisorCopy.getVar(t) != null) {
             countvar++;
             if (last == Display.DISPLAY_CONST) {
                 last = d;
@@ -205,7 +195,7 @@ public final class SpecialApply extends AbstractSpecial {
                 multi = true;
             }
         }
-        if (EngineCopy.getVar(t2) != null) {
+        if (SupervisorCopy.getVar(t2) != null) {
             countvar++;
             if (last == Display.DISPLAY_CONST) {
                 last = d2;
@@ -248,7 +238,7 @@ public final class SpecialApply extends AbstractSpecial {
         }
         Object[] args = new Object[2];
         int countvar = 0;
-        if (multi && EngineCopy.getVar(t) != null) {
+        if (multi && SupervisorCopy.getVar(t) != null) {
             SkelVar sv = vars[countvar];
             countvar++;
             d3.bind[sv.id].bindUniv(t, d, en);
@@ -256,7 +246,7 @@ public final class SpecialApply extends AbstractSpecial {
         } else {
             args[0] = t;
         }
-        if (multi && EngineCopy.getVar(t2) != null) {
+        if (multi && SupervisorCopy.getVar(t2) != null) {
             SkelVar sv = vars[countvar];
             // countvar++;
             boolean ext = d2.getAndReset();
@@ -303,7 +293,7 @@ public final class SpecialApply extends AbstractSpecial {
                 en.skel = sc.args[i];
                 en.display = d;
                 en.deref();
-                if (EngineCopy.getVar(en.skel) != null) {
+                if (SupervisorCopy.getVar(en.skel) != null) {
                     countvar++;
                     if (last == Display.DISPLAY_CONST) {
                         last = en.display;
@@ -317,7 +307,7 @@ public final class SpecialApply extends AbstractSpecial {
             en.skel = t2[i];
             en.display = d2;
             en.deref();
-            if (EngineCopy.getVar(en.skel) != null) {
+            if (SupervisorCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -375,7 +365,7 @@ public final class SpecialApply extends AbstractSpecial {
                 en.skel = sc.args[i];
                 en.display = d;
                 en.deref();
-                if (multi && EngineCopy.getVar(en.skel) != null) {
+                if (multi && SupervisorCopy.getVar(en.skel) != null) {
                     SkelVar sv = vars[countvar];
                     countvar++;
                     d3.bind[sv.id].bindUniv(en.skel, en.display, en);
@@ -389,7 +379,7 @@ public final class SpecialApply extends AbstractSpecial {
             en.skel = t2[i];
             en.display = d2;
             en.deref();
-            if (multi && EngineCopy.getVar(en.skel) != null) {
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d3.bind[sv.id].bindUniv(en.skel, en.display, en);

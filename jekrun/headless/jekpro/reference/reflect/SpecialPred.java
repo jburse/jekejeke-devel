@@ -4,7 +4,10 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
@@ -12,10 +15,10 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -56,10 +59,8 @@ public final class SpecialPred extends AbstractSpecial {
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY = 3;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY_CHK = 4;
     private final static int SPECIAL_SYS_PREDICATE_PROPERTY_IDX = 5;
-    /* private final static int SPECIAL_SYS_SET_PREDICATE_PROPERTY = 5; */
-    /* private final static int SPECIAL_SYS_RESET_PREDICATE_PROPERTY = 6; */
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 8;
-    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 9;
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 6;
+    private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 7;
 
     /**
      * <p>Create a pred special.</p>
@@ -87,7 +88,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_ENSURE_SHARED_STATIC:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = Predicate.indicatorToPredicateDefined(temp[0],
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
                 SpecialPred.defineStatic(pick, en);
                 return true;
@@ -109,7 +110,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_PREDICATE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = indicatorToPredicate(temp[0], ref, en);
+                pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 SpecialPred.predicateToProperties(pick, en);
@@ -123,7 +124,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_PREDICATE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = indicatorToPredicate(temp[0], ref, en);
+                pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
                 StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
@@ -147,21 +148,6 @@ public final class SpecialPred extends AbstractSpecial {
                         Display.DISPLAY_CONST))
                     return false;
                 return true;
-            case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = indicatorToProvable(temp[0], ref, en);
-                if (pick == null)
-                    return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
-                SpecialPred.predicateToProperty(pick, prop, en);
-                d = en.display;
-                multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -173,6 +159,22 @@ public final class SpecialPred extends AbstractSpecial {
                         propertyToProvables(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
+                return true;
+            case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                SpecialPred.predicateToProperty(pick, prop, en);
+                d = en.display;
+                multi = d.getAndReset();
+                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    return false;
+                if (multi)
+                    d.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -231,32 +233,6 @@ public final class SpecialPred extends AbstractSpecial {
     }
 
     /**************************************************************/
-    /* Predicate Enumeration                                      */
-    /**************************************************************/
-
-    /**
-     * <p>Get a predicate by indicator.</p>
-     *
-     * @param t  The indicator skel.
-     * @param d  The indicator display.
-     * @param en The engine.
-     * @return The predicate, or null.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public static Predicate indicatorToPredicate(Object t, Display d,
-                                                 Engine en)
-            throws EngineMessage, EngineException {
-        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        CachePredicate cp = CachePredicate.getPredicate(sa, arity.intValue(), en);
-        en.skel = sa;
-        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
-            return null;
-        return cp.pick;
-    }
-
-    /**************************************************************/
     /* High-Level Predicate Property Access                       */
     /**************************************************************/
 
@@ -267,7 +243,8 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
      */
     public static void predicateToProperties(Predicate pick, Engine en)
             throws EngineMessage, EngineException {
@@ -280,18 +257,35 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
-            for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
-                 (props != null ? props.getLastEntry() : null);
-                 entry2 != null; entry2 = props.predecessor(entry2)) {
-                AbstractProperty<Predicate> prop = entry2.value;
-                Object t = en.skel;
-                Display d = en.display;
-                Object[] vals = prop.getObjProps(pick, en);
-                en.skel = t;
-                en.display = d;
-                AbstractProperty.consArray(vals, en);
-            }
+            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
+            for (int j = 0; j < props.size(); j++)
+                predicatePropToProperties(pick, props.get(j), en);
+        }
+    }
+
+    /**
+     * <p>Create a prolog list of the properties of the given predicate and properties.</p>
+     *
+     * @param pick  The predicate.
+     * @param props The properties.
+     * @param en    The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void predicatePropToProperties(Predicate pick,
+                                                  MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
+                                                  Engine en)
+            throws EngineMessage, EngineException {
+        for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
+             (props != null ? props.getLastEntry() : null);
+             entry2 != null; entry2 = props.predecessor(entry2)) {
+            AbstractProperty<Predicate> prop = entry2.value;
+            Object t = en.skel;
+            Display d = en.display;
+            Object[] vals = prop.getObjProps(pick, en);
+            en.skel = t;
+            en.display = d;
+            AbstractProperty.consArray(vals, en);
         }
     }
 
@@ -402,10 +396,12 @@ public final class SpecialPred extends AbstractSpecial {
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Predicate>> props = branch.getPredProps();
-            AbstractProperty<Predicate> prop = (props != null ? props.get(sk) : null);
-            if (prop != null)
-                return prop;
+            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
+            for (int j = 0; j < props.size(); j++) {
+                AbstractProperty<Predicate> prop = props.get(j).get(sk);
+                if (prop != null)
+                    return prop;
+            }
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
@@ -439,31 +435,6 @@ public final class SpecialPred extends AbstractSpecial {
     /**********************************************************/
     /* Moved From Debugger                                    */
     /**********************************************************/
-
-    /**
-     * <p>Get predicate by indicator.</p>
-     *
-     * @param t  The skel of the compound.
-     * @param d  The display of the compound.
-     * @param en The engine.
-     * @return The predicate.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Predicate indicatorToProvable(Object t, Display d, Engine en)
-            throws EngineMessage {
-        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        AbstractSource base;
-        if (!CacheFunctor.isQuali(sa.fun)) {
-            return CachePredicate.getRoutineUser(arity.intValue(), sa.fun, en.store);
-        } else {
-            String s = CacheFunctor.sepModule(sa.fun);
-            base = AbstractSource.getModule(s, en.store);
-            if (base == null)
-                return null;
-            return base.getRoutine(arity.intValue(), sa.fun);
-        }
-    }
 
     /**
      * <p>Retrieve the predicates to a property.</p>
@@ -503,6 +474,57 @@ public final class SpecialPred extends AbstractSpecial {
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
+    }
+
+    /**************************************************************/
+    /* Predicate Lookup                                           */
+    /**************************************************************/
+
+    /**
+     * <p>Get a predicate by indicator.</p>
+     *
+     * @param t  The indicator skel.
+     * @param d  The indicator display.
+     * @param en The engine.
+     * @return The predicate, or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static Predicate indicatorToPredicate(Object t, Display d,
+                                                 Engine en)
+            throws EngineMessage, EngineException {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        CachePredicate cp = CachePredicate.getPredicate(sa, arity.intValue(), en);
+        en.skel = sa;
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return null;
+        return cp.pick;
+    }
+
+    /**
+     * <p>Get predicate by indicator and possibly create it.</p>
+     *
+     * @param t    The indicator skel.
+     * @param d    The indicator display.
+     * @param en   The engine.
+     * @param copt The create flag.
+     * @return The predicate, or null.
+     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Predicate indicatorToPredicateDefined(Object t, Display d,
+                                                        Engine en, int copt)
+            throws EngineMessage, EngineException {
+        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
+        SkelAtom sa = (SkelAtom) en.skel;
+        CachePredicate cp = CachePredicate.getPredicateDefined(sa,
+                arity.intValue(), en, copt);
+        en.skel = sa;
+        if (cp == null || ((copt & CachePredicate.MASK_CACH_UCHK) == 0 &&
+                (cp.flags & CachePredicate.MASK_PRED_VISI) == 0))
+            return null;
+        return cp.pick;
     }
 
 }

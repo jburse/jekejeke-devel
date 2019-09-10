@@ -76,9 +76,11 @@ trace_goal(_, Frame) :-
    sys_notrace_frame(Frame), !.
 trace_goal(Port, Frame) :-
    sys_leashed_port(Port), !,
-   sys_trace_prompt(Port, Frame).
+   sys_debug_ask(Port, Frame),
+   sys_continue_debug(Port, Frame).
 trace_goal(Port, Frame) :-
-   sys_trace(Port, Frame).
+   sys_debug(Port, Frame),
+   sys_continue_debug(Port, Frame).
 
 /**
  * store_changing(S):
@@ -119,40 +121,3 @@ leash(Name) :-
 leash(Flags) :-
    set_prolog_flag(sys_leash, Flags).
 :- set_predicate_property(leash/1, sys_notrace).
-
-/******************************************************************/
-/* Default Debugger                                               */
-/******************************************************************/
-
-/**
- * sys_notrace_frame(F):
- * The predicate succeeds if the goal of frame F is sys_notrace.
- */
-% sys_notrace_frame(+Frame)
-:- public sys_notrace_frame/1.
-:- special(sys_notrace_frame/1, 'SpecialDefault', 3).
-
-/**
- * sys_leashed_port(P):
- * The predicate succeeds when the port P is among the leashed ports.
- */
-:- public sys_leashed_port/1.
-:- special(sys_leashed_port/1, 'SpecialDefault', 4).
-
-/**
- * sys_trace(P, F):
- * The predicate displays the port P and the goal of frame F,
- * and the continues debugging.
- */
-% sys_trace(+Atom, +Frame)
-:- private sys_trace/2.
-:- special(sys_trace/2, 'SpecialDefault', 5).
-
-/**
- * sys_trace_prompt(P, F):
- * The predicate displays the port P and the goal of frame F,
- * prompts the user for actions, and then continues debugging.
- */
-% sys_trace_prompt(+Atom, +Frame)
-:- private sys_trace_prompt/2.
-:- special(sys_trace_prompt/2, 'SpecialDefault', 6).

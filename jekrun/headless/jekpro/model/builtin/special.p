@@ -70,22 +70,36 @@
  */
 
 :-(','(sys_context_property(here, C),
-      set_source_property(C, use_package(foreign(/(/(jekpro,model),builtin)))))).
+   set_source_property(C, use_package(foreign(/(/(jekpro, model), builtin)))))).
 :-(','(sys_context_property(here, C),
-      reset_source_property(C, sys_source_visible(public)))).
+   reset_source_property(C, sys_source_visible(public)))).
 
-:-(sys_op(1200, fx, :-)).
+:-(sys_neutral_oper(prefix(:-))).
+:-(set_oper_property(prefix(:-), op(1200, fx))).
+:- set_oper_property(prefix(:-), sys_newr).
+:- set_oper_property(prefix(:-), sys_tabr).
 :- set_oper_property(prefix(:-), visible(public)).
-:- sys_op(1200, xfx, :-).
+:- sys_neutral_oper(infix(:-)).
+:- set_oper_property(infix(:-), op(1200, xfx)).
+:- set_oper_property(infix(:-), sys_newr).
+:- set_oper_property(infix(:-), sys_tabr).
 :- set_oper_property(infix(:-), visible(public)).
-:- sys_op(1000, xfy, ',').
+:- sys_neutral_oper(infix(',')).
+:- set_oper_property(infix(','), op(1000, xfy)).
+:- set_oper_property(infix(','), sys_nspl).
+:- set_oper_property(infix(','), sys_newr).
 :- set_oper_property(infix(','), visible(public)).
-:- set_oper_property(infix(','), nspl).
 
-:- sys_op(400, yfx, /).
+:- sys_neutral_oper(infix(/)).
+:- set_oper_property(infix(/), op(400, yfx)).
+:- set_oper_property(infix(/), sys_nspl).
+:- set_oper_property(infix(/), sys_nspr).
 :- set_oper_property(infix(/), visible(public)).
 
-:- sys_op(1150, fy, virtual).
+:- sys_neutral_oper(prefix(virtual)).
+:- set_oper_property(prefix(virtual), op(1150, fy)).
+:- set_oper_property(prefix(virtual), sys_newr).
+:- set_oper_property(prefix(virtual), sys_tabr).
 :- set_oper_property(prefix(virtual), visible(public)).
 
 /**
@@ -115,22 +129,14 @@ special(I, C, K) :-
  * The predicate sets the predicate P to virtual.
  */
 % virtual +Indicators
-virtual [P|Q] :- !,
-   sys_virtual(P),
-   virtual(Q).
-virtual P,Q :- !,
-   sys_virtual(P),
-   virtual(Q).
+virtual [P|Q] :- !, sys_virtual(P), virtual(Q).
+virtual P, Q :- !, sys_virtual(P), virtual(Q).
 virtual [] :- !.
-virtual P :-
-   sys_virtual(P).
+virtual P :- sys_virtual(P).
 :- set_predicate_property((virtual)/1, visible(public)).
 
-sys_virtual(X) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-sys_virtual(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_virtual(X) :- var(X), throw(error(instantiation_error, _)).
+sys_virtual(D) :- sys_declaration_indicator(D, I), !,
    sys_virtual(I),
    call(D).
 sys_virtual(I) :-
@@ -161,8 +167,7 @@ sys_virtual(I) :-
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 
-sys_declaration_indicator(special(I,_,_), I).
-sys_declaration_indicator(set_predicate_property(I,_), I).
-sys_declaration_indicator(reset_predicate_property(I,_), I).
-sys_declaration_indicator(virtual(D), I) :-
-   sys_declaration_indicator(D, I).
+sys_declaration_indicator(special(I, _, _), I).
+sys_declaration_indicator(set_predicate_property(I, _), I).
+sys_declaration_indicator(reset_predicate_property(I, _), I).
+sys_declaration_indicator(virtual(D), I) :- sys_declaration_indicator(D, I).

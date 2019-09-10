@@ -1,6 +1,6 @@
 package jekpro.tools.call;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
@@ -403,7 +403,7 @@ public final class Interpreter {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        if (EngineCopy.displaySize(val) != 0)
+        if (SupervisorCopy.displaySize(val) != 0)
             ref.vars = Display.VARS_MARKER;
         return AbstractTerm.createTermWrapped(val, ref);
     }

@@ -74,37 +74,51 @@
  */
 % choose(+List)
 :- public choose/1.
-choose(L) :-
-   sys_least_one(L), !.
-choose([A|L]) :-
-   choose2(L, A).
-
-% choose2(+List, +Term)
-:- private choose2/2.
-choose2([], A) :- !,
-   post(A).
-choose2([_|_], A) :-
-   post(A).
-choose2([A|L], _) :-
-   choose2(L, A).
+choose(L) :- sys_least_one(L), !.
+choose([A|L]) :- choose2(L, A).
 
 % choose(+List, +Goal)
 :- public choose/2.
-:- meta_predicate choose(?,0).
-choose(L, G) :-
-   sys_least_one(L), !, G.
-choose([A|L], G) :-
-   choose2(L, A, G).
+:- meta_predicate choose(?, 0).
+choose(L, G) :- sys_least_one(L), !, G.
+choose([A|L], G) :- choose2(L, A, G).
+
+/**
+ * random_choose(L):
+ * random_choose(L, G):
+ * If a positive literal from L is already satisfied, the construct
+ * does nothing before further solving. Otherwise, the construct posts
+ * each positive literal from L in random order before further solving.
+ */
+% random_choose(+List)
+:- public random_choose/1.
+random_choose(L) :- sys_least_one(L), !.
+random_choose(L) :- random_permutation(L, [A|H]), choose2(H, A).
+
+% random_choose(+List, +Goal)
+:- public random_choose/2.
+:- meta_predicate random_choose(?, 0).
+random_choose(L, G) :- sys_least_one(L), !, G.
+random_choose(L, G) :- random_permutation(L, [A|H]), choose2(H, A, G).
+
+/**
+ * choose2(L, A):
+ * choose2(L, A, G):
+ * The predicate posts the positive literal A and then each positive
+ * literal from L in input order before further solving.
+ */
+% choose2(+List, +Term)
+:- private choose2/2.
+choose2([], A) :- !, post(A).
+choose2([_|_], A) :- post(A).
+choose2([A|L], _) :- choose2(L, A).
 
 % choose2(+List, +Term, +Goal)
 :- private choose2/3.
-:- meta_predicate choose2(?,-1,0).
-choose2([], A, G) :- !,
-   post(A, G).
-choose2([_|_], A, G) :-
-   post(A, G).
-choose2([A|L], _, G) :-
-   choose2(L, A, G).
+:- meta_predicate choose2(?, -1, 0).
+choose2([], A, G) :- !, post(A, G).
+choose2([_|_], A, G) :- post(A, G).
+choose2([A|L], _, G) :- choose2(L, A, G).
 
 /**
  * sys_last_one(L):
@@ -113,7 +127,5 @@ choose2([A|L], _, G) :-
  */
 % sys_least_one(+List)
 :- private sys_least_one/1.
-sys_least_one([A|_]) :-
-   clause(A, true), !.
-sys_least_one([_|L]) :-
-   sys_least_one(L).
+sys_least_one([A|_]) :- clause(A, true), !.
+sys_least_one([_|L]) :- sys_least_one(L).

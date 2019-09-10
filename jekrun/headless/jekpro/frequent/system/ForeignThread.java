@@ -17,6 +17,7 @@ import matula.util.data.MapHash;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
 import matula.util.wire.AbstractLivestock;
+import matula.util.wire.ManagedGroup;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -71,11 +72,9 @@ public final class ForeignThread {
     public static Thread sysThreadNew(Interpreter inter, AbstractTerm t)
             throws InterpreterMessage, InterpreterException {
         Object obj = AbstractTerm.copyMolec(inter, t);
-        final Interpreter inter2 = makeInterpreter(inter);
-        final CallIn callin = inter2.iterator(obj);
-        Thread thread = new Thread(makeRunnable(callin, inter2));
-        inter2.getController().setFence(thread);
-        return thread;
+        Interpreter inter2 = makeInterpreter(inter);
+        CallIn callin = inter2.iterator(obj);
+        return new Thread(callin);
     }
 
     /**
@@ -119,57 +118,6 @@ public final class ForeignThread {
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
         return inter2;
-    }
-
-    /**
-     * <p>Make a runnable for a thread.</p>
-     *
-     * @param callin The call-in.
-     * @param inter2 The interpreter.
-     * @return The runnable.
-     */
-    static Runnable makeRunnable(final CallIn callin, final Interpreter inter2) {
-        return new Runnable() {
-            public void run() {
-                try {
-                    try {
-                        callin.next().close();
-                    } catch (InterpreterMessage y) {
-                        InterpreterException x = new InterpreterException(y,
-                                InterpreterException.fetchStack(inter2));
-                        systemDeathBreak(inter2, x);
-                    } catch (InterpreterException x) {
-                        systemDeathBreak(inter2, x);
-                    }
-                } catch (ThreadDeath x) {
-                    /* */
-                } catch (Throwable x) {
-                    x.printStackTrace();
-                }
-                inter2.getController().setFence(null);
-            }
-        };
-    }
-
-    /**
-     * <p>Show the death exception.</p>
-     *
-     * @param inter The interpreter.
-     * @param x     The death exception.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    private static void systemDeathBreak(Interpreter inter, InterpreterException x)
-            throws InterpreterMessage, InterpreterException {
-        InterpreterMessage m;
-        if ((m = x.exceptionType("error")) != null &&
-                m.messageType("system_error") != null) {
-            InterpreterException rest = x.causeChainRest();
-            if (rest != null)
-                rest.printStackTrace(inter);
-        } else {
-            x.printStackTrace(inter);
-        }
     }
 
     /****************************************************************/
@@ -446,9 +394,6 @@ public final class ForeignThread {
                 new SkelAtom(flag)));
     }
 
-    /****************************************************************/
-    /* Controller Helper                                            */
-    /****************************************************************/
 
     /**
      * <p>Some testing.</p>

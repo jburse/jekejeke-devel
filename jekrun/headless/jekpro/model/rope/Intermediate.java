@@ -37,7 +37,6 @@ import jekpro.model.molec.EngineMessage;
  */
 public abstract class Intermediate {
     public Intermediate next;
-    public Object term;
     public int flags;
 
     /**

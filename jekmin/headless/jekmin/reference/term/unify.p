@@ -84,6 +84,7 @@ put_attr(V, K, W) :-
    del_attr(V, K),
    sys_freeze_var(H, F),
    H = wrap(W),
+   sys_ensure_serno(V),
    sys_compile_hook(V, attr(K, F), R),
    depositz_ref(R).
 
@@ -104,11 +105,10 @@ get_attr(V, K, W) :-
  */
 % del_attr(+Var, +Term)
 :- public del_attr/2.
-del_attr(V, K) :-
-   ground(K), !,
+del_attr(V, K) :- ground(K), !,
    del_attr2(V, K).
 del_attr(_, _) :-
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 
 % del_attr2(+Var, +Term)
 :- private del_attr2/2.
@@ -142,7 +142,7 @@ attr(K, F, _, T) :-
 % sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-residue:sys_current_eq(V, attr(R,K,F)) :-
+residue:sys_current_eq(V, attr(R, K, F)) :-
    sys_clause_hook(V, attr(K, F), _),
    sys_freeze_var(V, R).
 
@@ -156,10 +156,10 @@ residue:sys_current_eq(V, attr(R,K,F)) :-
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(attr(R,K,_), I, O) :-
+residue:sys_unwrap_eq(attr(R, K, _), I, O) :-
    current_predicate(K:attribute_goals/3),
    sys_melt_var(R, V),
    K:attribute_goals(V, I, O), !.
-residue:sys_unwrap_eq(attr(R,K,F), [put_attr(V,K,W)|L], L) :-
+residue:sys_unwrap_eq(attr(R, K, F), [put_attr(V, K, W)|L], L) :-
    sys_melt_var(R, V),
    sys_melt_var(F, wrap(W)).

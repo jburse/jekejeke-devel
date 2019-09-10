@@ -90,14 +90,14 @@ tskip :-
 :- set_predicate_property(tskip/0, sys_notrace).
 
 /**
- * tout:
+ * tup:
  * The predicate switches the engine to the step out mode.
  */
-:- public tout/0.
-tout :-
+:- public tup/0.
+tup :-
    thread_current(Thread),
    set_thread_flag(Thread, sys_tdebug, step_out).
-:- set_predicate_property(tout/0, sys_notrace).
+:- set_predicate_property(tup/0, sys_notrace).
 
 /**
  * tnodebug:
@@ -123,10 +123,12 @@ tleash(Name) :-
    throw(error(instantiation_error,_)).
 tleash(Name) :-
    sys_name_flags(Name, Flags), !,
-   set_prolog_flag(sys_tleash, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tleash, Flags).
 tleash(Flags) :-
-   set_prolog_flag(sys_tleash, Flags).
-:- set_predicate_property(leash/1, sys_notrace).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tleash, Flags).
+:- set_predicate_property(tleash/1, sys_notrace).
 
 /**
  * tvisible(L):
@@ -142,10 +144,12 @@ tvisible(Name) :-
    throw(error(instantiation_error,_)).
 tvisible(Name) :-
    sys_name_flags(Name, Flags), !,
-   set_prolog_flag(sys_tvisible, Flags).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tvisible, Flags).
 tvisible(Flags) :-
-   set_prolog_flag(sys_tvisible, Flags).
-:- set_predicate_property(visible/1, sys_notrace).
+   thread_current(Thread),
+   set_thread_flag(Thread, sys_tvisible, Flags).
+:- set_predicate_property(tvisible/1, sys_notrace).
 
 /***********************************************************************/
 /* Thread Spy & Break Points                                           */
@@ -164,12 +168,14 @@ tdebugging :-
    write_term((:-C), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
-   current_prolog_flag(sys_tvisible, X),
-   write_term((:-tvisible(X)), [context(0)]),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tleash, X),
+   write_term((:-tleash(X)), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
-   current_prolog_flag(sys_tleash, X),
-   write_term((:-tleash(X)), [context(0)]),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tvisible, X),
+   write_term((:-tvisible(X)), [context(0)]),
    write('.'), nl, fail.
 tdebugging :-
    tspying(X),
@@ -187,7 +193,7 @@ tdebugging_tdebug(inherit, tclear).
 tdebugging_tdebug(on, tdebug).
 tdebugging_tdebug(step_in, ttrace).
 tdebugging_tdebug(step_over, tskip).
-tdebugging_tdebug(step_out, tout).
+tdebugging_tdebug(step_out, tup).
 tdebugging_tdebug(off, tnodebug).
 
 /**

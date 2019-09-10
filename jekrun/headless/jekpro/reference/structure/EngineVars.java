@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.tools.term.AbstractTerm;
@@ -60,7 +60,7 @@ public final class EngineVars {
      */
     public void varInclude(Object t, Display d) {
         for (; ; ) {
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 break;
             SkelVar v;
@@ -119,7 +119,7 @@ public final class EngineVars {
      */
     public void varExclude(Object t, Display d) {
         for (; ; ) {
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 break;
             SkelVar v;
@@ -229,7 +229,7 @@ public final class EngineVars {
     public boolean isAcyclic(Object t, Display d) {
         int undo = 0;
         for (; ; ) {
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 break;
             SkelVar v;
@@ -299,7 +299,7 @@ public final class EngineVars {
     public void safeVars(Object t, Display d) {
         int undo = 0;
         for (; ; ) {
-            Object var = EngineCopy.getVar(t);
+            Object var = SupervisorCopy.getVar(t);
             if (var == null)
                 break;
             SkelVar v;

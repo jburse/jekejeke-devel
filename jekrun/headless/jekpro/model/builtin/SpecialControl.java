@@ -2,11 +2,13 @@ package jekpro.model.builtin;
 
 import jekpro.frequent.standard.ChoiceAtomic;
 import jekpro.frequent.standard.SpecialSignal;
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
+import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -78,7 +80,7 @@ public final class SpecialControl extends AbstractSpecial {
                 return true;
             case SPECIAL_CUT:
                 CallFrame ref2 = en.contdisplay;
-                while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0)
+                while ((ref2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0)
                     ref2 = ref2.contdisplay;
                 int level = ref2.number;
                 if (level < en.number) {
@@ -87,7 +89,7 @@ public final class SpecialControl extends AbstractSpecial {
                     ref2 = en.contdisplay;
                     CallFrame u = ref2;
 
-                    while ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0) {
+                    while ((ref2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0) {
                         en.fault = null;
                         en.cutChoices(ref2.number);
                         if (en.fault != null)
@@ -146,13 +148,9 @@ public final class SpecialControl extends AbstractSpecial {
         AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d2 = en.display;
+
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
@@ -193,31 +191,52 @@ public final class SpecialControl extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineException Shit happens.
      */
-    public static boolean handleException(Engine en)
+    static boolean handleException(Engine en)
             throws EngineException {
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
-        EngineException y = en.fault;
-        StackElement.callGoal(r, u, en);
+        Intermediate ir = en.contskel;
+        en.skel = ((Goal) ir).term;
+        en.display = en.contdisplay.disp;
+        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0)
+            en.deref();
+
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        try {
-            Object temp2 = y.getTemplate();
-            Display ref2 = AbstractSkel.createMarker(temp2);
-            boolean multi = ref2.getAndReset();
-            if (!en.unifyTerm(temp[1], ref, temp2, ref2))
-                throw y;
-            if (multi)
-                ref2.remTab(en);
-        } catch (EngineException z) {
-            throw new EngineException(y, z);
-        }
+        EngineException y = en.fault;
+        if (!unifyException(temp[1], ref, y, en))
+            throw y;
+
         en.skel = temp[2];
         en.display = ref;
         en.deref();
         if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_MASK))
             return false;
         return true;
+    }
+
+    /**
+     * <p>Attempt to unify the exception.</p>
+     *
+     * @param t  The term skeleton.
+     * @param d  The term display.
+     * @param y  The exception.
+     * @param en The engine.
+     * @return True if the exception unifies, otherwise false.
+     */
+    private static boolean unifyException(Object t, Display d,
+                                          EngineException y, Engine en)
+            throws EngineException {
+        try {
+            Object temp2 = y.getTemplate();
+            Display ref2 = AbstractSkel.createMarker(temp2);
+            boolean multi = ref2.getAndReset();
+            if (!en.unifyTerm(t, d, temp2, ref2))
+                return false;
+            if (multi)
+                ref2.remTab(en);
+            return true;
+        } catch (EngineException z) {
+            throw new EngineException(y, z);
+        }
     }
 
 }

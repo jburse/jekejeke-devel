@@ -58,11 +58,14 @@ public abstract class AbstractBundle extends Check {
     public final static String PROP_CAPA_ICON = "capa.icon";
     public final static String PROP_CAPA_BIGICON = "capa.bigicon";
 
-    public final static String PROP_PRODUCT_SHOP = "product.shop";
     public final static String PROP_PRODUCT_COMPANY = "product.company";
     public final static String PROP_PRODUCT_LANG = "product.lang";
     public final static String PROP_PRODUCT_PACK = "product.pack";
     public final static String PROP_PRODUCT_INST = "product.inst";
+
+    public final static String PROP_LICENSE_INFO = "license.info";
+    public final static String PROP_LICENSE_SERVICE = "license.service";
+    public final static String PROP_LICENSE_EMAIL = "license.email";
 
     public final static String PROP_SLIP_CAPA = "slip.capa";
     public final static String PROP_SLIP_DONTASK = "slip.dontask";

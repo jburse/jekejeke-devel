@@ -66,32 +66,38 @@
 % apropos(+Atom)
 :- public apropos/1.
 apropos(Pattern) :-
-   sys_apropos_compile(Pattern, Compiled), sys_apropos_keys,
+   sys_apropos_compile(Pattern, Compiled),
+   sys_apropos_keys,
    sys_apropos_table(Table),
    sys_enum_apropos(Table, Row),
    sys_match_row(Compiled, Row),
-   sys_apropos_values(Row), fail.
+   sys_apropos_values(Row),
+   fail.
 apropos(_).
 :- set_predicate_property(apropos/1, sys_notrace).
 
 % sys_apropos_keys
 :- private sys_apropos_keys/0.
 sys_apropos_keys :-
-   sys_get_lang(info, P),
+   get_properties(info, P),
    sys_apropos_key(K),
    message_make(P, apropos_key(K), M),
-   write(M), fail.
-sys_apropos_keys :- nl.
+   write(M),
+   fail.
+sys_apropos_keys :-
+   nl.
 
 % sys_apropos_values(+Row)
 :- private sys_apropos_values/1.
 sys_apropos_values(A) :-
-   sys_get_lang(info, P),
+   get_properties(info, P),
    sys_apropos_key(K),
    sys_apropos_value(A, K, V),
-   message_make(P, apropos_value(K,V), M),
-   write(M), fail.
-sys_apropos_values(_) :- nl.
+   message_make(P, apropos_value(K, V), M),
+   write(M),
+   fail.
+sys_apropos_values(_) :-
+   nl.
 
 % sys_apropos_key(-Atom)
 :- private sys_apropos_key/1.
@@ -101,9 +107,9 @@ sys_apropos_key(path).
 
 % sys_apropos_value(+Row, +Atom, -Term)
 :- private sys_apropos_value/3.
-sys_apropos_value(row(I,_,_), pred, I).
-sys_apropos_value(row(_,E,_), arith, E).
-sys_apropos_value(row(_,_,M), path, M).
+sys_apropos_value(row(I, _, _), pred, I).
+sys_apropos_value(row(_, E, _), arith, E).
+sys_apropos_value(row(_, _, M), path, M).
 
 /***********************************************************/
 /* Apropos Search                                          */
@@ -121,22 +127,23 @@ sys_apropos_table(library(stream/frequent)).
 
 % sys_enum_apropos(+Atom, -Row)
 :- private sys_enum_apropos/2.
-sys_enum_apropos(N, row(I,E,T)) :-
+sys_enum_apropos(N, row(I, E, T)) :-
    setup_call_cleanup(
       open_resource(N, S),
-      (  repeat,
-         (  read_line(S, L)
-         -> atom_split(L, '\t', U),
-            sys_split_line(U, H, E, T),
-            sys_split_indicator(H, I); !, fail)),
+      (repeat,
+      (  read_line(S, L)
+      -> atom_split(L, '\t', U),
+         sys_split_line(U, H, E, T),
+         sys_split_indicator(H, I)
+      ;  !, fail)),
       close(S)).
 
 % sys_split_line(+List, -Atom, -Atom)
 :- private sys_split_line/4.
 % old apropos format
-sys_split_line([H,T], H, undef, T).
+sys_split_line([H, T], H, undef, T).
 % new apropos format
-sys_split_line([H,E,T], H, E, T).
+sys_split_line([H, E, T], H, E, T).
 
 % sys_split_indicator(+Atom, -Indicator)
 :- private sys_split_indicator/2.

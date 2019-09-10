@@ -76,7 +76,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             throw en.fault;
 
         Intermediate ir = goaldisplay.contskel;
-        Object t = ir.term;
+        Object t = ((Goal) ir).term;
         Display d = goaldisplay.contdisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
@@ -96,7 +96,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             d2.setSize(clause.sizerule);
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.intargs, en))
                 break;
 
@@ -124,7 +124,8 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         }
 
         if (at != list.length) {
-            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -133,13 +134,14 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = goaldisplay.getFrame(en);
-            dc.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }

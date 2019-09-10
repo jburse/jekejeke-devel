@@ -78,34 +78,28 @@
 % ^(_,_,_) :- throw(error(existence_error(body, (^)/3), _)).
 
 :- public ^ /4.
-:- meta_predicate ^(?,2,?,?).
-^(_, _, _, _) :-
-   throw(error(existence_error(body,^ /4),_)).
+:- meta_predicate ^(?, 2, ?, ?).
+^(_, _, _, _) :- throw(error(existence_error(body, ^ /4), _)).
 
 :- public ^ /5.
-:- meta_predicate ^(?,3,?,?,?).
-^(_, _, _, _, _) :-
-   throw(error(existence_error(body,^ /5),_)).
+:- meta_predicate ^(?, 3, ?, ?, ?).
+^(_, _, _, _, _) :- throw(error(existence_error(body, ^ /5), _)).
 
 :- public ^ /6.
-:- meta_predicate ^(?,4,?,?,?,?).
-^(_, _, _, _, _, _) :-
-   throw(error(existence_error(body,^ /6),_)).
+:- meta_predicate ^(?, 4, ?, ?, ?, ?).
+^(_, _, _, _, _, _) :- throw(error(existence_error(body, ^ /6), _)).
 
 :- public ^ /7.
-:- meta_predicate ^(?,5,?,?,?,?,?).
-^(_, _, _, _, _, _, _) :-
-   throw(error(existence_error(body,^ /7),_)).
+:- meta_predicate ^(?, 5, ?, ?, ?, ?, ?).
+^(_, _, _, _, _, _, _) :- throw(error(existence_error(body, ^ /7), _)).
 
 :- public ^ /8.
-:- meta_predicate ^(?,6,?,?,?,?,?,?).
-^(_, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body,^ /8),_)).
+:- meta_predicate ^(?, 6, ?, ?, ?, ?, ?, ?).
+^(_, _, _, _, _, _, _, _) :- throw(error(existence_error(body, ^ /8), _)).
 
 :- public ^ /9.
-:- meta_predicate ^(?,7,?,?,?,?,?,?,?).
-^(_, _, _, _, _, _, _, _, _) :-
-   throw(error(existence_error(body,^ /9),_)).
+:- meta_predicate ^(?, 7, ?, ?, ?, ?, ?, ?, ?).
+^(_, _, _, _, _, _, _, _, _) :- throw(error(existence_error(body, ^ /9), _)).
 
 /**
  * \(X, A, Y1, .., Yn):
@@ -114,57 +108,57 @@
  */
 % \(+Var, +Goal, +Term, ..)
 :- public (\)/3.
-:- meta_predicate \(?,0,?).
+:- meta_predicate \(?, 0, ?).
 \(X, A, Y) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q).
 
 :- public (\)/4.
-:- meta_predicate \(?,1,?,?).
+:- meta_predicate \(?, 1, ?, ?).
 \(X, A, Y, Z) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z).
 
 :- public (\)/5.
-:- meta_predicate \(?,2,?,?,?).
+:- meta_predicate \(?, 2, ?, ?, ?).
 \(X, A, Y, Z, T) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T).
 
 :- public (\)/6.
-:- meta_predicate \(?,3,?,?,?,?).
+:- meta_predicate \(?, 3, ?, ?, ?, ?).
 \(X, A, Y, Z, T, U) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U).
 
 :- public (\)/7.
-:- meta_predicate \(?,4,?,?,?,?,?).
+:- meta_predicate \(?, 4, ?, ?, ?, ?, ?).
 \(X, A, Y, Z, T, U, V) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U, V).
 
 :- public (\)/8.
-:- meta_predicate \(?,5,?,?,?,?,?,?).
+:- meta_predicate \(?, 5, ?, ?, ?, ?, ?, ?).
 \(X, A, Y, Z, T, U, V, W) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U, V, W).
 
 :- public (\)/9.
-:- meta_predicate \(?,6,?,?,?,?,?,?,?).
+:- meta_predicate \(?, 6, ?, ?, ?, ?, ?, ?, ?).
 \(X, A, Y, Z, T, U, V, W, R) :-
    sys_goal_kernel(A, B),
    sys_goal_globals(X^A, L),
-   copy_term(rec(X,B,L), rec(Y,Q,L)),
+   copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U, V, W, R).

@@ -67,16 +67,20 @@
  * The predicates aggregates the aggregate A for the solutions of G and
  * unifies the result with S. The following aggregates are recognized:
  *
- *   count:		The result is the number of solutions.
- *   sum(X):	The result is the sum of the X values.
- *   mul(X):	The result is the product of the X values.
- *   min(X):	The result is the minimum of the X values.
- *   max(X):	The result is the maximum of the X values.
- *   (X,Y):		The result is the aggregate X paired by the aggregate Y.
+ *   count:		    The result is the number of solutions.
+ *   sum(X):	    The result is the sum of the X values.
+ *   mul(X):	    The result is the product of the X values.
+ *   min(X):	    The result is the minimum of the X values.
+ *   max(X):	    The result is the maximum of the X values.
+ *   (X,Y):		    The result is the aggregate X paired by the aggregate Y.
+ *   nil:           The result is always nil.
+ *   first(C,X):    The result is the C first of the X values.
+ *   last(C,X):     The result is the C last of the X values.
+ *   reduce(I,A,X): The result is the I and A reduct of the X values.
  */
 % aggregate_all(+Aggregate, +Goal, -Value)
 :- public aggregate_all/3.
-:- meta_predicate aggregate_all(?,0,?).
+:- meta_predicate aggregate_all(?, 0, ?).
 aggregate_all(A, G, S) :-
    pivot_new(P),
    aggregate_all2(A, G, P),
@@ -85,11 +89,13 @@ aggregate_all(A, G, S) :-
 
 % aggregate_all2(+Aggregate, +Goal, +Pivot)
 :- private aggregate_all2/3.
-:- meta_predicate aggregate_all2(?,0,?).
-aggregate_all2(A, G, P) :- G,
+:- meta_predicate aggregate_all2(?, 0, ?).
+aggregate_all2(A, G, P) :-
+   G,
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J), fail.
+   pivot_set(P, J),
+   fail.
 aggregate_all2(_, _, _).
 
 /**
@@ -99,30 +105,22 @@ aggregate_all2(_, _, _).
  */
 % aggregate(+Aggregate, +QuantGoal, -Value)
 :- public aggregate/3.
-:- meta_predicate aggregate(?,0,?).
+:- meta_predicate aggregate(?, 0, ?).
 aggregate(A, G, S) :-
    sys_goal_globals(A^G, W),
-   W \== [], !,
-   sys_goal_kernel(G, B),
-   variant_comparator(C),
-   revolve_new(C, R),
-   aggregate2(W, A, B, R),
-   revolve_pair(R, W-Q),
-   pivot_get(Q, S).
-aggregate(A, G, S) :-
-   sys_goal_kernel(G, B),
-   pivot_new(P),
-   aggregate_all2(A, B, P),
-   pivot_get(P, S).
+   sys_revolve_tree(A, G, W, P),
+   sys_revolve_list(W, P, S).
 
-% aggregate(+Vars, +Aggregate, +Goal, +Revolve)
+% aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
 :- private aggregate2/4.
-:- meta_predicate aggregate2(?,?,0,?).
-aggregate2(W, A, G, R) :- G,
+:- meta_predicate aggregate2(?, ?, 0, ?).
+aggregate2(W, A, G, R) :-
+   G,
    revolve_lookup(R, W, P),
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J), fail.
+   pivot_set(P, J),
+   fail.
 aggregate2(_, _, _, _).
 
 /**
@@ -132,20 +130,45 @@ aggregate2(_, _, _, _).
  */
 % sys_collect(+Aggregate, +QuantGoal, -Value)
 :- public sys_collect/3.
-:- meta_predicate sys_collect(?,0,?).
+:- meta_predicate sys_collect(?, 0, ?).
 sys_collect(A, G, S) :-
    sys_goal_globals(A^G, W),
-   W \== [], !,
-   sys_goal_kernel(G, B),
-   revolve_new(R),
-   aggregate2(W, A, B, R),
-   revolve_pair(R, W-Q),
-   pivot_get(Q, S).
-sys_collect(A, G, S) :-
+   sys_revolve_hash(A, G, W, P),
+   sys_revolve_list(W, P, S).
+
+/*************************************************************/
+/* Revolve Helper                                            */
+/*************************************************************/
+
+% sys_revolve_tree(+Aggregate, +QuantGoal, +List, -Ref)
+:- meta_predicate sys_revolve_tree(?, 0, ?, ?).
+sys_revolve_tree(A, G, [], P) :- !,
    sys_goal_kernel(G, B),
    pivot_new(P),
-   aggregate_all2(A, B, P),
+   aggregate_all2(A, B, P).
+sys_revolve_tree(A, G, W, R) :-
+   sys_goal_kernel(G, B),
+   variant_comparator(C),
+   revolve_new(C, R),
+   aggregate2(W, A, B, R).
+
+% sys_revolve_hash(+Aggregate, +QuantGoal, +List, -Ref)
+:- meta_predicate sys_revolve_hash(?, 0, ?, ?).
+sys_revolve_hash(A, G, [], P) :- !,
+   sys_goal_kernel(G, B),
+   pivot_new(P),
+   aggregate_all2(A, B, P).
+sys_revolve_hash(A, G, W, R) :-
+   sys_goal_kernel(G, B),
+   revolve_new(R),
+   aggregate2(W, A, B, R).
+
+% sys_revolve_list(+List, +Ref, -Value)
+sys_revolve_list([], P, S) :- !,
    pivot_get(P, S).
+sys_revolve_list(W, R, S) :-
+   revolve_pair(R, W-Q),
+   pivot_get(Q, S).
 
 /*************************************************************/
 /* Aggregate State                                           */
@@ -169,17 +192,20 @@ pivot_get_default(_, A, H) :-
  */
 % init_state(+Aggregate, -Value)
 :- private init_state/2.
-init_state(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+init_state(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 init_state(count, 0).
 init_state(sum(_), 0).
 init_state(mul(_), 1).
 init_state(min(_), sup).
 init_state(max(_), inf).
-init_state((A,B), (S,T)) :-
+init_state((A, B), (S, T)) :-
    init_state(A, S),
    init_state(B, T).
+init_state(nil, nil).
+init_state(first(_, _), sup).
+init_state(last(_, _), inf).
+init_state(reduce(I, _, _), I).
 
 /**
  * next_state(A, H, J):
@@ -188,24 +214,26 @@ init_state((A,B), (S,T)) :-
  */
 % next_state(+Aggregate, +Value, -Value)
 :- private next_state/3.
-next_state(X, _, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-next_state(count, S, T) :-
-   T is S+1.
-next_state(sum(X), S, T) :-
-   T is S+X.
-next_state(mul(X), S, T) :-
-   T is S*X.
+next_state(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+next_state(count, S, T) :- T is S+1.
+next_state(sum(X), S, T) :- T is S+X.
+next_state(mul(X), S, T) :- T is S*X.
 next_state(min(X), sup, X) :- !.
-next_state(min(X), S, T) :-
-   T is min(S,X).
+next_state(min(X), S, T) :- T is min(S, X).
 next_state(max(X), inf, X) :- !.
-next_state(max(X), S, T) :-
-   T is max(S,X).
-next_state((S,T), (A,B), (U,V)) :-
+next_state(max(X), S, T) :- T is max(S, X).
+next_state((S, T), (A, B), (U, V)) :-
    next_state(S, A, U),
    next_state(T, B, V).
+next_state(nil, nil, nil).
+next_state(first(_, X), sup, X) :- !.
+next_state(first(C, X), S, X) :- call(C, X, S), !.
+next_state(first(_, _), S, S).
+next_state(last(_, X), inf, X) :- !.
+next_state(last(C, X), S, X) :- call(C, S, X), !.
+next_state(last(_, _), S, S).
+next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 
 /*************************************************************/
 /* Revolve Datatype                                          */
@@ -235,7 +263,7 @@ next_state((S,T), (A,B), (U,V)) :-
 % revolve_lookup(+Revolve, +Term, -Pivot)
 :- private revolve_lookup/3.
 :- foreign(revolve_lookup/3, 'ForeignAggregate',
-      sysRevolveLookup('Interpreter','AbstractMap','AbstractTerm')).
+      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
 
 /**
  * revolve_pair(R, U):
@@ -244,7 +272,7 @@ next_state((S,T), (A,B), (U,V)) :-
 % revolve_pair(+Revolve, +Pair)
 :- private revolve_pair/2.
 :- foreign(revolve_pair/2, 'ForeignAggregate',
-      sysRevolvePair('CallOut','AbstractMap')).
+      sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**
  * variant_comparator(C):
@@ -253,5 +281,3 @@ next_state((S,T), (A,B), (U,V)) :-
 % variant_comparator(-Comparator)
 :- private variant_comparator/1.
 :- foreign(variant_comparator/1, 'ForeignAggregate', sysVariantComparator).
-
-

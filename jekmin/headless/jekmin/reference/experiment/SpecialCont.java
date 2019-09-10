@@ -1,18 +1,23 @@
-package jekpro.frequent.advanced;
+package jekmin.reference.experiment;
 
+import jekpro.frequent.standard.ChoiceAtomic;
+import jekpro.frequent.standard.SpecialFind;
+import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import matula.util.data.SetEntry;
+import jekpro.tools.term.TermVar;
+import matula.util.data.AbstractMap;
+import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
 
 /**
- * <p>Provides built-in predicates for the module sequence.</p>
+ * <p>Provides built-ins for the module experiment/cont.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,82 +47,87 @@ import matula.util.data.SetEntry;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialSequence extends AbstractSpecial {
-    private final static int SPECIAL_PIVOT_NEW = 0;
-    private final static int SPECIAL_PIVOT_SET = 1;
-    private final static int SPECIAL_PIVOT_GET = 2;
+public final class SpecialCont extends AbstractSpecial {
+    private final static int SPECIAL_CONT_PUSH = 0;
+    private final static int SPECIAL_CONT_POP = 1;
+    private final static int SPECIAL_SYS_RIPPLE = 2;
 
     /**
-     * <p>Create a sequence special.</p>
+     * <p>Create a suspension queue special.</p>
      *
      * @param i The id.
      */
-    public SpecialSequence(int i) {
+    public SpecialCont(int i) {
         super(i);
     }
 
     /**
-     * <p>Logically evaluate a term in a list of goals for the first time.</p>
-     * <p>The term is passed via the skel and display of the engine.</p>
+     * <p>Logically evaluate a goal in a list of goals for the first time.</p>
+     * <p>The goal is passed via the skel and display of the engine.</p>
      * <p>The continuation is passed via the r and u of the engine.</p>
      * <p>The new continuation is returned via the skel and display of the engine.</p>
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineException {
         switch (id) {
-            case SPECIAL_PIVOT_NEW:
+            case SPECIAL_CONT_PUSH:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!en.unifyTerm(temp[0], ref, new SetEntry(), Display.DISPLAY_CONST))
-                    return false;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                BindUniv bv = new BindUniv();
+                bv.bindUniv(en.skel, en.display, en);
+                SpecialCont.pushCont(bv, en);
                 return true;
-            case SPECIAL_PIVOT_SET:
+            case SPECIAL_CONT_POP:
+                SpecialCont.popCont(en);
+                return true;
+            case SPECIAL_SYS_RIPPLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SetEntry pivot = derefAndCastPivot(temp[0], ref);
-                pivot.value = AbstractSkel.copySkel(temp[1], ref, en);
-                return true;
-            case SPECIAL_PIVOT_GET:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pivot = derefAndCastPivot(temp[0], ref);
-                Object val = pivot.value;
-                if (val == null)
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_VRFY))
                     return false;
-                Display d = AbstractSkel.createMarker(val);
-                boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, val, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
                 return true;
             default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+                throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
     }
 
+    /**********************************************************/
+    /* Push/Pop Cont                                          */
+    /**********************************************************/
+
     /**
-     * <p>Cast a pivot.</p>
+     * <p>Push a goal on the suspension queue.</p>
      *
-     * @param m The term skel.
-     * @param d The term display.
-     * @return The pivot.
-     * @throws EngineMessage Shit happens.
+     * @param bv The bind var.
+     * @param en The engine.
      */
-    public static SetEntry derefAndCastPivot(Object m, Display d)
-            throws EngineMessage {
-        m = SpecialUniv.derefAndCastRef(m, d);
-        if (m instanceof SetEntry) {
-            return (SetEntry) m;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_REF, m), d);
-        }
+    private static void pushCont(BindUniv bv, Engine en) {
+        Supervisor visor = en.visor;
+        if (visor.cont == null)
+            visor.cont = new ListArray<BindUniv>();
+        visor.cont.add(bv);
+    }
+
+    /**
+     * <p>Pop a goal from the suspension queue.</p>
+     *
+     * @param en The engine.
+     */
+    private static void popCont(Engine en) {
+        Supervisor visor = en.visor;
+        visor.cont.remove(visor.cont.size() - 1);
+        if (visor.cont.size() == 0)
+            visor.cont = null;
     }
 
 }

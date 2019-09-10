@@ -89,7 +89,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<Object, NamedDistance> printmap;
+    public MapHashLink<Object, String> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -483,11 +483,11 @@ public final class WriteOpts {
         if (printmap == null)
             return;
         PrologWriter pw = new PrologWriter();
-        for (MapEntry<Object, NamedDistance> entry = printmap.getLastEntry();
+        for (MapEntry<Object, String> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
-            if (pw.variableNeedsQuotes(entry.value.getName()))
+            if (pw.variableNeedsQuotes(entry.value))
                 throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value.getName())));
+                        EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value)));
         }
     }
 
@@ -575,7 +575,7 @@ public final class WriteOpts {
     }
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta offset.
      */
     private static int spezToOffset2(Object obj) {
@@ -593,7 +593,7 @@ public final class WriteOpts {
 
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta offset.
      */
     private static int spezToOffset3(Object obj) {
@@ -631,7 +631,7 @@ public final class WriteOpts {
     }
 
     /**
-     * @param obj The meta spezifier, not null.
+     * @param obj The meta spezifier, non null.
      * @return The meta shif.
      */
     private static int spezToShift2(Object obj) {

@@ -76,9 +76,7 @@
  */
 % make_name(+-Atom, +-Atom, -+Atom)
 :- public make_name/3.
-make_name(B, E, N) :-
-   (  var(B)
-   ;  var(E)), !,
+make_name(B, E, N) :- (var(B); var(E)), !,
    sys_name_base(N, B),
    sys_name_ext(N, E).
 make_name(B, E, N) :-
@@ -94,7 +92,7 @@ make_name(B, E, N) :-
 
 :- private sys_name_make/3.
 :- foreign(sys_name_make/3, 'ForeignFile',
-      sysNameMake('String','String')).
+      sysNameMake('String', 'String')).
 
 /**
  * make_path(D, N, P):
@@ -106,9 +104,7 @@ make_name(B, E, N) :-
 % make_path(+-Atom, +-Atom, -+Atom)
 % should also handle //
 :- public make_path/3.
-make_path(D, N, P) :-
-   (  var(D)
-   ;  var(N)), !,
+make_path(D, N, P) :- (var(D); var(N)), !,
    sys_path_directory(P, D),
    sys_path_name(P, N).
 make_path(D, N, P) :-
@@ -124,7 +120,7 @@ make_path(D, N, P) :-
 
 :- private sys_path_make/3.
 :- foreign(sys_path_make/3, 'ForeignFile',
-      sysPathMake('String','String')).
+      sysPathMake('String', 'String')).
 
 /************************************************************/
 /* File Ops                                                 */
@@ -172,7 +168,7 @@ rename_file(FromName, ToName) :-
 
 :- private sys_rename_file/2.
 :- foreign(sys_rename_file/2, 'ForeignDirectory',
-      sysRenameFile('String','String')).
+      sysRenameFile('String', 'String')).
 
 /************************************************************/
 /* Directory Ops                                            */
@@ -204,7 +200,7 @@ directory_file(Name, Elem) :-
 
 :- private sys_directory_file/2.
 :- foreign(sys_directory_file/2, 'ForeignDirectory',
-      sysDirectoryFile('CallOut','String')).
+      sysDirectoryFile('CallOut', 'String')).
 
 /**
  * exists_file(F):
@@ -268,7 +264,7 @@ set_time_file(Name, Date) :-
 
 :- private sys_set_time_file/2.
 :- foreign(sys_set_time_file/2, 'ForeignDirectory',
-      sysSetTimeFile('String',long)).
+      sysSetTimeFile('String', long)).
 
 /************************************************************/
 /* Path Following                                           */
@@ -293,19 +289,16 @@ set_time_file(Name, Date) :-
 % follow_path(+-Atom, +-Atom, -+Atom)
 % should also handle // with /
 :- public follow_path/3.
-follow_path(B, R, A) :-
-   var(R), !,
-   sys_path_relative(B, A, R).
-follow_path(B, R, A) :-
-   sys_path_absolute(B, R, A).
+follow_path(B, R, A) :- var(R), !, sys_path_relative(B, A, R).
+follow_path(B, R, A) :- sys_path_absolute(B, R, A).
 
 :- private sys_path_absolute/3.
 :- foreign(sys_path_absolute/3, 'ForeignFile',
-      sysPathAbsolute('String','String')).
+      sysPathAbsolute('String', 'String')).
 
 :- private sys_path_relative/3.
 :- foreign(sys_path_relative/3, 'ForeignFile',
-      sysPathRelative('String','String')).
+      sysPathRelative('String', 'String')).
 
 /**
  * canonical_path(P, C):
@@ -357,7 +350,7 @@ archive_file(Name, Prefix, Segment) :-
 
 :- private sys_archive_file/3.
 :- foreign(sys_archive_file/3, 'ForeignDirectory',
-      sysArchiveFile('CallOut','String','String')).
+      sysArchiveFile('CallOut', 'String', 'String')).
 
 /**
  * exists_entry(F, N):
@@ -371,7 +364,7 @@ exists_entry(Name, Entry) :-
 
 :- private sys_exists_entry/2.
 :- foreign(sys_exists_entry/2, 'ForeignDirectory',
-      sysExistsEntry('String','String')).
+      sysExistsEntry('String', 'String')).
 
 /**
  * make_pack(N, V, P):
@@ -381,9 +374,7 @@ exists_entry(Name, Entry) :-
  */
 % make_pack(+-Atom, +-Atom, -+Atom)
 :- public make_pack/3.
-make_pack(N, V, P) :-
-   (  var(N)
-   ;  var(V)), !,
+make_pack(N, V, P) :- (var(N); var(V)), !,
    sys_pack_name(P, N),
    sys_pack_varsion(P, V).
 make_pack(N, V, P) :-
@@ -399,4 +390,4 @@ make_pack(N, V, P) :-
 
 :- private sys_pack_make/3.
 :- foreign(sys_pack_make/3, 'ForeignArchive',
-      sysPackMake('String','String')).
+      sysPackMake('String', 'String')).

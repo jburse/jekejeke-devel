@@ -32,6 +32,7 @@ package matula.util.wire;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractLivestock extends AbstractDomestic {
+    private long mills;
 
     /**************************************************************/
     /* Variation Point                                            */
@@ -150,6 +151,30 @@ public abstract class AbstractLivestock extends AbstractDomestic {
         if (live == null)
             return false;
         return live.setMask(m);
+    }
+
+    /*********************************************************/
+    /* Managed CPU Time                                      */
+    /*********************************************************/
+
+    /**
+     * <p>Retrieve the children thread cpu.</p>
+     *
+     * @return The the children thread cpu.
+     */
+    public long getMillis() {
+        return mills;
+    }
+
+    /**
+     * <p>Add the children thread cpu.</p>
+     *
+     * @param c The children thread cpu.
+     */
+    public void addMillis(long c) {
+        synchronized (this) {
+            mills += c;
+        }
     }
 
 }

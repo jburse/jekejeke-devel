@@ -84,7 +84,7 @@
  * The predicate succeeds in C with a new client socket for host H and port P.
  */
 :- public client_new/3.
-:- foreign(client_new/3, 'ForeignSocket', sysClientNew('String',int)).
+:- foreign(client_new/3, 'ForeignSocket', sysClientNew('String', int)).
 
 /**
  * websock_new(S, W):

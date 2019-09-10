@@ -1,11 +1,9 @@
 package jekpro.model.inter;
 
-import jekpro.frequent.standard.EngineCopy;
-import jekpro.frequent.standard.SpecialFind;
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
-import jekpro.model.rope.Intermediate;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialLexical;
@@ -54,8 +52,6 @@ public class Engine extends StackElement implements Comparator<Object> {
     public AbstractUndo bind;
     public AbstractChoice choices;
     public int number;
-    public EngineCopy enginecopy;
-    public EngineWrap enginewrap;
     public Object proxy;
     public EngineException fault;
 
@@ -241,42 +237,20 @@ public class Engine extends StackElement implements Comparator<Object> {
      * <p>And prepend the goals to the current continuation.</p>
      */
     public final void retireCont()
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         ListArray<BindUniv> list = UndoCont.bindCont(this);
-        createComma(list, this);
-        Display d2 = display;
-        boolean ext = d2.getAndReset();
-        boolean multi = wrapGoal();
-        if (multi && ext)
-            d2.remTab(this);
-        Display ref = display;
-        Directive dire = store.foyer.CLAUSE_CONT;
-        Display d3 = new Display(dire.size);
-        d3.bind[0].bindUniv(skel, ref, this);
-        if (multi || ext)
-            ref.remTab(this);
-        CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
-        contskel = dire;
-        contdisplay = ref2;
-    }
+        for (int i = list.size() - 1; i >= 0; i--) {
+            BindUniv bc = list.get(i);
+            skel = bc.skel;
+            display = bc.display;
+            deref();
 
-    /**
-     * <p>Create the comma list.</p>
-     * <p>Result is returned in skel and display of the engine.</p>
-     *
-     * @param temp The list of solutions or null.
-     * @param en   The engine.
-     */
-    private static void createComma(ListArray<BindUniv> temp, Engine en) {
-        BindUniv val = temp.get(temp.size() - 1);
-        en.skel = val.skel;
-        en.display = val.display;
-        for (int i = temp.size() - 2; i >= 0; i--) {
-            Object t = en.skel;
-            Display d = en.display;
-            val = temp.get(i);
-            SpecialFind.pairValue(en.store.foyer.CELL_COMMA,
-                    val.skel, val.display, t, d, en);
+            Directive dire = SupervisorCall.callGoal(0, this);
+            Display d3 = display;
+
+            CallFrame ref2 = CallFrame.getFrame(d3, dire, this);
+            contskel = dire;
+            contdisplay = ref2;
         }
     }
 
@@ -338,107 +312,6 @@ public class Engine extends StackElement implements Comparator<Object> {
         skel = alfa;
         display = d1;
         fun.moniEvaluate(this);
-    }
-
-    /****************************************************************************/
-    /* Execution Helpers                                                        */
-    /****************************************************************************/
-
-    /**
-     * <p>Search the given term once and close it.</p>
-     * <p>Throw a warning when it fails.</p>
-     * <p>The term is passed via skel and display.</p>
-     *
-     * @throws EngineException Shit happens.
-     */
-    public final void invokeChecked()
-            throws EngineException {
-        Intermediate r = contskel;
-        CallFrame u = contdisplay;
-        boolean backignore = visor.setIgnore(false);
-        boolean backverify = visor.setVerify(false);
-        AbstractUndo mark = bind;
-        int snap = number;
-        try {
-            boolean multi = wrapGoal();
-            Display ref = display;
-            Directive dire = store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(skel, ref, this);
-            if (multi)
-                ref.remTab(this);
-            CallFrame ref2 = CallFrame.getFrame(d2, dire, this);
-            contskel = dire;
-            contdisplay = ref2;
-            if (!runLoop2(snap, true))
-                throw new EngineMessage(EngineMessage.syntaxError(
-                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
-        } catch (EngineException x) {
-            contskel = r;
-            contdisplay = u;
-            fault = x;
-            cutChoices(snap);
-            releaseBind(mark);
-            visor.setVerify(backverify);
-            visor.setIgnore(backignore);
-            throw fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(this));
-            contskel = r;
-            contdisplay = u;
-            fault = x;
-            cutChoices(snap);
-            releaseBind(mark);
-            visor.setVerify(backverify);
-            visor.setIgnore(backignore);
-            throw fault;
-        }
-        contskel = r;
-        contdisplay = u;
-        fault = null;
-        cutChoices(snap);
-        releaseBind(mark);
-        visor.setVerify(backverify);
-        visor.setIgnore(backignore);
-        if (fault != null)
-            throw fault;
-    }
-
-    /**
-     * <p>Prepare a term for execution.</p>
-     * <p>Goal is updated in the skel and the display of this engine.</p>
-     *
-     * @return True if new display is returned, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public final boolean wrapGoal()
-            throws EngineException, EngineMessage {
-        Object t = skel;
-        Display d = display;
-        EngineMessage.checkInstantiated(t);
-        EngineWrap ew = enginewrap;
-        if (ew == null) {
-            ew = new EngineWrap();
-            enginewrap = ew;
-        }
-        ew.countvar = 0;
-        ew.flags = 0;
-        ew.last = Display.DISPLAY_CONST;
-        ew.countGoal(t, d, this);
-        if ((ew.flags & EngineWrap.MASK_WRAP_CHNG) == 0) {
-            skel = t;
-            display = d;
-            return false;
-        }
-        if ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0)
-            ew.last = new Display(ew.countvar);
-        ew.countvar = 0;
-        skel = ew.replaceGoalAndWrap(t, d, this);
-        display = ew.last;
-        ew.last = Display.DISPLAY_CONST;
-        return ((ew.flags & EngineWrap.MASK_WRAP_MLTI) != 0);
     }
 
     /*****************************************************************/

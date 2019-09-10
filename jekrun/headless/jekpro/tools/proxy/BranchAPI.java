@@ -7,6 +7,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
+import jekpro.reference.reflect.PropertyPredicate;
+import jekpro.tools.array.PropertyPredicateAPI;
 import matula.util.data.MapEntry;
 
 /**
@@ -55,6 +57,7 @@ final class BranchAPI extends Branch {
      * <p>Create the branch API.</p>
      */
     BranchAPI() {
+        addPredProps(PropertyPredicateAPI.DEFAULT);
     }
 
     /**

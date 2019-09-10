@@ -50,6 +50,9 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FlagFactory extends AbstractFlag<Engine> {
+    public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
+            = new MapHash<String, AbstractFlag<Engine>>();
+
     public final static String OP_SYS_MASK = "sys_mask";
     public final static String OP_SYS_CUR_INPUT = "sys_cur_input";
     public final static String OP_SYS_CUR_OUTPUT = "sys_cur_output";
@@ -101,34 +104,27 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         super(i);
     }
 
-    /**
-     * <p>Define the prolog flags.</p>
-     *
-     * @return The prolog flags.
-     */
-    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
-        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
-        prologflags.add(OP_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
-        prologflags.add(OP_SYS_CUR_INPUT, new FlagFactory(FLAG_SYS_CUR_INPUT));
-        prologflags.add(OP_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
-        prologflags.add(OP_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
-        prologflags.add(OP_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
-        prologflags.add(OP_BASE_URL, new FlagFactory(FLAG_BASE_URL));
-        prologflags.add(OP_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
-        prologflags.add(OP_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
-        prologflags.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
-        prologflags.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
-        prologflags.add(OP_VERBOSE, new FlagFactory(FLAG_VERBOSE));
-        prologflags.add(OP_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
-        prologflags.add(OP_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
-        prologflags.add(OP_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
-        prologflags.add(OP_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
-        prologflags.add(OP_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
-        prologflags.add(OP_BOUNDED, new FlagFactory(FLAG_BOUNDED));
-        prologflags.add(OP_INTEGER_ROUNDING_FUNCTION, new FlagFactory(FLAG_INTEGER_ROUNDING_FUNCTION));
-        prologflags.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
-        prologflags.add(OP_MAX_ARITY, new FlagFactory(FLAG_MAX_ARITY));
-        return prologflags;
+    static {
+        DEFAULT.add(OP_SYS_MASK, new FlagFactory(FLAG_SYS_MASK));
+        DEFAULT.add(OP_SYS_CUR_INPUT, new FlagFactory(FLAG_SYS_CUR_INPUT));
+        DEFAULT.add(OP_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
+        DEFAULT.add(OP_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
+        DEFAULT.add(OP_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
+        DEFAULT.add(OP_BASE_URL, new FlagFactory(FLAG_BASE_URL));
+        DEFAULT.add(OP_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
+        DEFAULT.add(OP_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
+        DEFAULT.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
+        DEFAULT.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
+        DEFAULT.add(OP_VERBOSE, new FlagFactory(FLAG_VERBOSE));
+        DEFAULT.add(OP_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
+        DEFAULT.add(OP_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
+        DEFAULT.add(OP_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
+        DEFAULT.add(OP_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
+        DEFAULT.add(OP_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
+        DEFAULT.add(OP_BOUNDED, new FlagFactory(FLAG_BOUNDED));
+        DEFAULT.add(OP_INTEGER_ROUNDING_FUNCTION, new FlagFactory(FLAG_INTEGER_ROUNDING_FUNCTION));
+        DEFAULT.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
+        DEFAULT.add(OP_MAX_ARITY, new FlagFactory(FLAG_MAX_ARITY));
     }
 
     /**

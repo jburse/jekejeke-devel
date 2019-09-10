@@ -48,7 +48,6 @@ public final class SpecialCompare extends AbstractSpecial {
     private final static int SPECIAL_COMPARE_NQ = 1;
     private final static int SPECIAL_COMPARE_LS = 2;
     private final static int SPECIAL_COMPARE_LQ = 3;
-    private final static int SPECIAL_COMPARE_GR = 4;
     private final static int SPECIAL_COMPARE_GQ = 5;
 
     public static final int NUM_INTEGER = 0;
@@ -155,24 +154,6 @@ public final class SpecialCompare extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 if (SpecialCompare.computeCmp(alfa, beta) > 0)
-                    return false;
-                return true;
-            case SPECIAL_COMPARE_GR:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.computeExpr(temp[0], ref);
-                d = en.display;
-                multi = d.getAndReset();
-                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                en.computeExpr(temp[1], ref);
-                d = en.display;
-                multi = d.getAndReset();
-                beta = SpecialEval.derefAndCastNumber(en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                if (SpecialCompare.computeCmp(alfa, beta) <= 0)
                     return false;
                 return true;
             case SPECIAL_COMPARE_GQ:

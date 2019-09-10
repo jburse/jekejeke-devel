@@ -63,8 +63,7 @@
  */
 % current_input(-Stream)
 :- public current_input/1.
-current_input(Stream) :-
-   current_prolog_flag(sys_cur_input, Stream).
+current_input(Stream) :- current_prolog_flag(sys_cur_input, Stream).
 
 /**
  * current_output(S): [ISO 8.11.2]
@@ -72,8 +71,7 @@ current_input(Stream) :-
  */
 % current_output(-Stream)
 :- public current_output/1.
-current_output(Stream) :-
-   current_prolog_flag(sys_cur_output, Stream).
+current_output(Stream) :- current_prolog_flag(sys_cur_output, Stream).
 
 /**
  * current_error(S):
@@ -81,8 +79,7 @@ current_output(Stream) :-
  */
 % current_error(-Stream)
 :- public current_error/1.
-current_error(Stream) :-
-   current_prolog_flag(sys_cur_error, Stream).
+current_error(Stream) :- current_prolog_flag(sys_cur_error, Stream).
 
 /**
  * set_input(S): [ISO 8.11.3]
@@ -90,8 +87,7 @@ current_error(Stream) :-
  */
 % set_input(+AliasOrPath)
 :- public set_input/1.
-set_input(Alias) :-
-   atom(Alias), !,
+set_input(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    set_prolog_flag(sys_cur_input, Stream).
 set_input(Stream) :-
@@ -103,8 +99,7 @@ set_input(Stream) :-
  */
 % set_output(+AliasOrPath)
 :- public set_output/1.
-set_output(Alias) :-
-   atom(Alias), !,
+set_output(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    set_prolog_flag(sys_cur_output, Stream).
 set_output(Stream) :-
@@ -116,8 +111,7 @@ set_output(Stream) :-
  */
 % set_error(+AliasOrPath)
 :- public set_error/1.
-set_error(Alias) :-
-   atom(Alias), !,
+set_error(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    set_prolog_flag(sys_cur_error, Stream).
 set_error(Stream) :-
@@ -142,8 +136,7 @@ open(Path, Mode, Stream, Opt) :-
 
 % open2(+Path, +Mode, -Stream, +Opt)
 :- private open2/4.
-open2(Path, Mode, Stream, Opt) :-
-   reference(Path), !,
+open2(Path, Mode, Stream, Opt) :- reference(Path), !,
    sys_duplex(Path, Mode, Opt, Stream).
 open2(Path, Mode, Stream, Opt) :-
    absolute_file_name(Path, Pin, [access(Mode)]),
@@ -157,12 +150,12 @@ open(Path, Mode, Stream) :-
 % sys_duplex(+Pin, +Mode, +Options, -Stream)
 :- private sys_duplex/4.
 :- foreign(sys_duplex/4, 'ForeignStream',
-      sysDuplex('Interpreter','Socket','String','Object')).
+      sysDuplex('Interpreter', 'Socket', 'String', 'Object')).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
 :- private sys_open/4.
 :- foreign(sys_open/4, 'ForeignStream',
-      sysOpen('Interpreter','String','String','Object')).
+      sysOpen('Interpreter', 'String', 'String', 'Object')).
 
 /**
  * close(S): [ISO 8.11.6]
@@ -173,8 +166,7 @@ open(Path, Mode, Stream) :-
  */
 % close(+AliasOrPath, +Opt)
 :- public close/2.
-close(Alias, Opt) :-
-   atom(Alias), !,
+close(Alias, Opt) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_close(Stream, Opt),
    sys_remove_alias(Alias, Stream).
@@ -183,12 +175,11 @@ close(Stream, Opt) :-
 
 % close(+AliasOrPath)
 :- public close/1.
-close(Stream) :-
-   close(Stream, []).
+close(Stream) :- close(Stream, []).
 
 :- private sys_close/2.
 :- foreign(sys_close/2, 'ForeignStream',
-      sysClose('Closeable','Object')).
+      sysClose('Closeable', 'Object')).
 
 /**
  * stream_property(S, P): [ISO 8.11.8]
@@ -198,8 +189,7 @@ close(Stream) :-
  */
 % stream_property(+AliasOrPath, -Prop)
 :- public stream_property/2.
-stream_property(Alias, Prop) :-
-   atom(Alias), !,
+stream_property(Alias, Prop) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_stream_properties(Stream, Props),
    sys_member(Prop, Props).
@@ -217,8 +207,7 @@ stream_property(Stream, Prop) :-
  */
 % set_stream_position(+AliasOrPath, +Pos)
 :- public set_stream_position/2.
-set_stream_position(Alias, Pos) :-
-   atom(Alias), !,
+set_stream_position(Alias, Pos) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_set_stream_position(Stream, Pos).
 set_stream_position(Stream, Pos) :-
@@ -226,7 +215,7 @@ set_stream_position(Stream, Pos) :-
 
 :- private sys_set_stream_position/2.
 :- foreign(sys_set_stream_position/2, 'ForeignStream',
-      sysSetStreamPosition('Object',long)).
+      sysSetStreamPosition('Object', long)).
 
 /**
  * set_stream_length(S, L):
@@ -234,8 +223,7 @@ set_stream_position(Stream, Pos) :-
  */
 % set_stream_length(+AliasOrPath, +Pos)
 :- public set_stream_length/2.
-set_stream_length(Alias, Len) :-
-   atom(Alias), !,
+set_stream_length(Alias, Len) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_set_stream_length(Stream, Len).
 set_stream_length(Stream, Len) :-
@@ -243,7 +231,7 @@ set_stream_length(Stream, Len) :-
 
 :- private sys_set_stream_length/2.
 :- foreign(sys_set_stream_length/2, 'ForeignStream',
-      sysSetStreamLength('Object',long)).
+      sysSetStreamLength('Object', long)).
 
 /*************************************************************************/
 /* Alias handling                                                        */
@@ -253,16 +241,14 @@ set_stream_length(Stream, Len) :-
 :- group_local sys_alias/2.
 
 % sys_get_alias(+Alias, -Stream)
-sys_get_alias(Alias, Stream) :-
-   sys_alias(Alias, Stream), !.
+sys_get_alias(Alias, Stream) :- sys_alias(Alias, Stream), !.
 sys_get_alias(Alias, _) :-
-   throw(error(existence_error(stream,Alias),_)).
+   throw(error(existence_error(stream, Alias), _)).
 
 % sys_put_alias(+Alias, +Stream)
 :- private sys_put_alias/2.
-sys_put_alias(Alias, _) :-
-   sys_alias(Alias, _), !,
-   throw(error(permission_error(open,source_sink,alias(Alias)),_)).
+sys_put_alias(Alias, _) :- sys_alias(Alias, _), !,
+   throw(error(permission_error(open, source_sink, alias(Alias)), _)).
 sys_put_alias(Alias, Stream) :-
    assertz(sys_alias(Alias, Stream)).
 

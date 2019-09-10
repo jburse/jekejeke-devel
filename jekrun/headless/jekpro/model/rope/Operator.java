@@ -43,7 +43,7 @@ import java.io.Reader;
  */
 public class Operator {
     public final static int LEVEL_HIGH = 1200;
-    public final static int LEVEL_MIDDLE = 999;
+    public final static int LEVEL_MIDDLE = 949;
 
     public static final int TYPE_PREFIX = 0;
     public static final int TYPE_INFIX = 1;
@@ -51,9 +51,11 @@ public class Operator {
 
     public final static int MASK_OPER_LEFT = 0x00000001;
     public final static int MASK_OPER_RGHT = 0x00000002;
+    public final static int MASK_OPER_TABR = 0x00000004;
 
     public final static int MASK_OPER_NSPL = 0x00000010;
     public final static int MASK_OPER_NSPR = 0x00000020;
+    public final static int MASK_OPER_NEWR = 0x00000040;
 
     public final static int MASK_OPER_VSPR = 0x00000100;
     public final static int MASK_OPER_VSPU = 0x00000200;
@@ -248,26 +250,27 @@ public class Operator {
     }
 
     /**************************************************************/
-    /* Definiion Handling                                         */
+    /* Definition Handling                                        */
     /**************************************************************/
 
     /**
      * <p>Add a source definition.</p>
      * <p>Can veto that an operator is extended.</p>
      *
-     * @param s  The source.
+     * @param sa  The call-site, non-null.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void addDef(AbstractSource s, Engine en)
+    public void addDef(SkelAtom sa, Engine en)
             throws EngineMessage {
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         boolean ok;
         synchronized (this) {
-            if (scope != s) {
+            if (scope != src) {
                 if (scope != null) {
                     ok = false;
                 } else {
-                    scope = s;
+                    scope = src;
                     ok = true;
                 }
             } else {
@@ -275,7 +278,8 @@ public class Operator {
             }
         }
         if (ok) {
-            s.addOperInv(this);
+            src.addOperInv(this);
+            setPosition(sa.getPosition());
             return;
         }
         throw new EngineMessage(EngineMessage.permissionError(
@@ -370,29 +374,6 @@ public class Operator {
     /**************************************************************/
 
     /**
-     * <p>Lookup an operator from a compound and possibly create it.</p>
-     *
-     * @param t      The compound skeleton.
-     * @param d      The compound display.
-     * @param en     The engine copy.
-     * @param create The create flag.
-     * @return The operator.
-     * @throws EngineMessage Shit happends.
-     */
-    public static Operator operToOperatorDefined(Object t, Display d,
-                                                 Engine en,
-                                                 boolean create)
-            throws EngineMessage, EngineException {
-        int type = SpecialOper.colonToOper(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        Operator op = OperatorSearch.getOperDefined(sa, type, en, create);
-        if (create)
-            op.setPosition(sa.getPosition());
-        en.skel = sa;
-        return op;
-    }
-
-    /**
      * <p>Assure that the operator is existent.</p>
      *
      * @param op The operator.
@@ -405,21 +386,6 @@ public class Operator {
         if (op == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_OPERATOR, t), d);
-    }
-
-    /**
-     * <p>Assure that the operator is existent.</p>
-     *
-     * @param op The operator.
-     * @param t  The skel.
-     * @param d  The display.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkExistentSyntax(Operator op, Object t, Display d)
-            throws EngineMessage {
-        if (op == null)
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_SYNTAX, t), d);
     }
 
     /************************************************************************/

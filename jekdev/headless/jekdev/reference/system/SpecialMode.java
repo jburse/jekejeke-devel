@@ -9,7 +9,6 @@ import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.structure.SpecialUniv;
@@ -62,13 +61,12 @@ public final class SpecialMode extends AbstractSpecial {
     public final static int CODE_HEAD = 4;
     public final static int CODE_CHOP = 5;
 
-    private final static int SPECIAL_SYS_IGNORE = 0;
-    private final static int SPECIAL_SYS_NOTRACE_CHK = 1;
-    private final static int SPECIAL_SYS_PORT_SHOW = 2;
-    private final static int SPECIAL_SYS_CUT_CHK = 3;
-    private final static int SPECIAL_SYS_GOAL_CHK = 4;
-    private final static int SPECIAL_SYS_GOAL_CUT = 5;
-    private final static int SPECIAL_SYS_CLAUSE_CHK = 6;
+    private final static int SPECIAL_SYS_NOTRACE_CHK = 0;
+    private final static int SPECIAL_SYS_PORT_SHOW = 1;
+    private final static int SPECIAL_SYS_CUT_CHK = 2;
+    private final static int SPECIAL_SYS_GOAL_CHK = 3;
+    private final static int SPECIAL_SYS_GOAL_CUT = 4;
+    private final static int SPECIAL_SYS_CLAUSE_CHK = 5;
 
     /**
      * <p>Create a mode mask special.</p>
@@ -93,17 +91,8 @@ public final class SpecialMode extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_IGNORE:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_IGNR))
-                    return false;
-                return true;
             case SPECIAL_SYS_NOTRACE_CHK:
-                temp = ((SkelCompound) en.skel).args;
+                Object[] temp = ((SkelCompound) en.skel).args;
                 int port = ((Integer) temp[0]).intValue();
 
                 CallFrame u2 = getPortDisplay(port, en);
@@ -123,7 +112,7 @@ public final class SpecialMode extends AbstractSpecial {
                     return true;
 
                 int tflags = en.visor.flags & SpecialDefault.MASK_MODE_VIBL;
-                int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_VIBL;
+                int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_VIBL;
                 if (!SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 24, port))
                     return true;
 
@@ -132,17 +121,19 @@ public final class SpecialMode extends AbstractSpecial {
                 u2 = u2.contdisplay;
 
                 tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
-                flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
+                flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG;
                 switch (tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) {
                     case SpecialDefault.MASK_DEBG_STIN:
                         break;
                     case SpecialDefault.MASK_DEBG_STVR:
                     case SpecialDefault.MASK_DEBG_STOT:
                         SupervisorTrace visortrace = (SupervisorTrace) en.visor;
-                        StackElement frame = visortrace.getSkipFrame();
-                        if (frame != null && frame.contskel == r2 &&
-                                frame.contdisplay == u2) {
-                            visortrace.setSkipFrame(null);
+                        StackElement frame = visortrace.skipframe;
+                        if (frame == null) {
+                            break;
+                        } else if (frame.contskel == r2 &&
+                                    frame.contdisplay == u2) {
+                            visortrace.skipframe = null;
                             break;
                         }
                         return true;
@@ -244,7 +235,7 @@ public final class SpecialMode extends AbstractSpecial {
      * @return True if there are previous choice points, otherwise false.
      */
     private static boolean isCutChoice(int num, CallFrame u2) {
-        while ((u2.flags & Directive.MASK_DIRE_NOBR) != 0)
+        while ((u2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0)
             u2 = u2.contdisplay;
         if (u2.number >= num)
             return false;
@@ -420,7 +411,7 @@ public final class SpecialMode extends AbstractSpecial {
      */
     public static boolean isDebug(Engine en) {
         int tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
-        int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
+        int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG;
         if ((tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) != 0 &&
                 (en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0)
             return true;

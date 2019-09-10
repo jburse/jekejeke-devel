@@ -81,28 +81,24 @@ public class Foyer extends Enforced {
     public final static String OP_SYS_COMMIT = "sys_commit";
     public final static String OP_SYS_SOFT_BEGIN = "sys_soft_begin";
     public final static String OP_SYS_SOFT_COMMIT = "sys_soft_commit";
+    public final static String OP_CALL = "call";
 
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
 
     public final static int MASK_FOYER_NIST = 0x00000010;
-    public final static int MASK_FOYER_NBCV = 0x00000040;
-    public final static int MASK_FOYER_CEXP = 0x00000080;
+    public final static int MASK_FOYER_CEXP = 0x00000020;
+    public final static int MASK_FOYER_NIDX = 0x00000040;
 
     public final static int MASK_FOYER_NBDY = 0x00000100;
-    public final static int MASK_FOYER_NLST = 0x00000200;
+    public final static int MASK_FOYER_NSTK = 0x00000200;
     public final static int MASK_FOYER_NHED = 0x00000400;
-    public final static int MASK_FOYER_NIDX = 0x00000800;
 
     public final static int MASK_FOYER_SMRY = 0x00001000;
     public final static int MASK_FOYER_DTLS = 0x00002000;
 
     public final static int IO_TERM = 0;
     public final static int IO_ANNO = 1;
-
-    public static final int HINT_CMD = 1;
-    public static final int HINT_GUI = 2;
-    public static final int HINT_WEB = 3;
 
     private final ListArray<Integer> hole = new ListArray<Integer>();
     private int nextseqid;
@@ -113,8 +109,6 @@ public class Foyer extends Enforced {
     public long timeout = 30000; /* half minute */
     public Random random = new Random();
     private int flags;
-    //    private int gensym;
-    private int hint;
 
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
@@ -131,10 +125,11 @@ public class Foyer extends Enforced {
             SkelVar.valueOf(0), SkelVar.valueOf(1));
     public final SkelCompound CELL_SUB = new SkelCompound(ATOM_SUB,
             SkelVar.valueOf(0), SkelVar.valueOf(1));
+    public final SkelCompound CELL_EQUAL = new SkelCompound(ATOM_EQUAL,
+            SkelVar.valueOf(0), SkelVar.valueOf(1));
 
     public SkelCompound CELL_COMMA;
 
-    public SkelAtom ATOM_CALL;
     public SkelAtom ATOM_COMMA;
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
@@ -148,10 +143,7 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SYS_COMMIT;
     public SkelAtom ATOM_SYS_SOFT_BEGIN;
     public SkelAtom ATOM_SYS_SOFT_COMMIT;
-
-    public Directive CLAUSE_CONT;
-    public Directive CLAUSE_CALL;
-    public Directive CLAUSE_TRAN;
+    public SkelAtom ATOM_CALL;
 
     public Directive CLAUSE_HOOK;
 
@@ -527,28 +519,6 @@ public class Foyer extends Enforced {
                 source.importvers = o;
             }
         }
-    }
-
-    /***********************************************************/
-    /* Advanced Configuration                                  */
-    /***********************************************************/
-
-    /**
-     * <p>Retrieve the hint.</p>
-     *
-     * @return The hint.
-     */
-    public int getHint() {
-        return hint;
-    }
-
-    /**
-     * <p>Set the hint.</p>
-     *
-     * @param h The hint.
-     */
-    public final void setHint(int h) {
-        hint = h;
     }
 
 }

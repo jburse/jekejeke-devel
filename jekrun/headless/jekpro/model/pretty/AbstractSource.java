@@ -360,8 +360,7 @@ public abstract class AbstractSource {
                     flags |= PrologWriter.FLAG_FILL;
                 if ((src.getBits() & AbstractSource.MASK_SRC_MKDT) != 0)
                     flags |= PrologWriter.FLAG_MKDT;
-                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 &&
-                        (en.store.foyer.getBits() & Foyer.MASK_FOYER_NBCV) != 0)
+                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
                     flags |= PrologReader.FLAG_NEWV;
                 if (rd == null ||
                         (rd.getFlags() & PrologWriter.FLAG_FILL) !=
@@ -1055,15 +1054,15 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param sa    The call-site, not null.
+     * @param sa    The call-site, non null.
      * @param en    The engine.
      * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
-    public final Predicate defineRoutine2(int arity, String fun,
-                                          SkelAtom sa,
-                                          Engine en, int copt)
+    public final Predicate defineRoutine(int arity, String fun,
+                                         SkelAtom sa,
+                                         Engine en, int copt)
             throws EngineMessage {
         Predicate pick = checkRoutine(arity, fun, sa, en);
         pick.usagePredicate(sa, en, copt);
@@ -1075,7 +1074,8 @@ public abstract class AbstractSource {
      *
      * @param arity The arity.
      * @param fun   The name.
-     * @param sa    The call-site, not null.
+     * @param sa    The call-site, non null.
+     * @param en    The engine.
      * @return Some previous predicate or the new neutral predicate.
      */
     public Predicate checkRoutine(int arity, String fun,
@@ -1187,32 +1187,32 @@ public abstract class AbstractSource {
     /**
      * <p>Define a neutral operator and register usage.</p>
      *
-     * @param type  The type.
-     * @param fun   The name.
-     * @param scope The call-site, not null.
-     * @param en    The engine.
+     * @param type The type.
+     * @param fun  The name.
+     * @param sa   The call-site, non null.
+     * @param en   The engine.
      * @return The operator.
      * @throws EngineMessage Shit happens.
      */
     public Operator defineOper(int type, String fun,
-                               AbstractSource scope,
-                               Engine en)
+                               SkelAtom sa, Engine en)
             throws EngineMessage {
-        Operator oper = checkOper(type, fun, scope);
-        oper.addDef(scope, en);
+        Operator oper = checkOper(type, fun, sa, en);
+        oper.addDef(sa, en);
         return oper;
     }
 
     /**
      * <p>Define a neutral operator.</p>
      *
-     * @param type  The type.
-     * @param fun   The name.
-     * @param scope The call-site, not null.
+     * @param type The type.
+     * @param fun  The name.
+     * @param sa   The call-site, non null.
+     * @param en   The engine.
      * @return The operator.
      */
     public Operator checkOper(int type, String fun,
-                              AbstractSource scope) {
+                              SkelAtom sa, Engine en) {
         Operator oper;
         synchronized (this) {
             AssocArray<Integer, Operator> map = ops.get(fun);
@@ -1222,9 +1222,10 @@ public abstract class AbstractSource {
                     return oper;
             }
             oper = store.foyer.createOperator(type, fun);
-            if ((scope.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
+            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+            if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPR);
-            if ((scope.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
+            if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPU);
             oper.setSource(this);
             if (map == null) {

@@ -57,14 +57,14 @@ public final class Predicate {
     public final static int MASK_PRED_VIRT = 0x00000004;
     public final static int MASK_PRED_AUTO = 0x00000008;
 
-    public final static int MASK_PRED_NOEX = 0x00000010;
-    public final static int MASK_PRED_NOMC = 0x00000020;
-    public final static int MASK_PRED_BODY = 0x00000040;
-    public final static int MASK_PRED_RULE = 0x00000080;
+    public final static int MASK_PRED_VSPR = 0x00000010;
+    public final static int MASK_PRED_VSPU = 0x00000020;
+    public final static int MASK_PRED_NOBR = 0x00000040;
+    public final static int MASK_PRED_NBCV = 0x00000080;
 
-    public final static int MASK_PRED_VSPR = 0x00000100;
-    public final static int MASK_PRED_VSPU = 0x00000200;
-    public final static int MASK_PRED_NOBR = 0x00000400;
+    public final static int MASK_PRED_NOEX = 0x00000100;
+    public final static int MASK_PRED_NOMC = 0x00000200;
+    public final static int MASK_PRED_TABL = 0x00000400;
 
     /* combine masks */
     public final static int MASK_PRED_VISI = MASK_PRED_VSPR | MASK_PRED_VSPU;
@@ -157,21 +157,6 @@ public final class Predicate {
         if (pick == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROCEDURE, t), d);
-    }
-
-    /**
-     * <p>Assure that the predicate is existent.</p>
-     *
-     * @param pick The predicate.
-     * @param t    The skel.
-     * @param d    The display.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void checkExistentProvable(Predicate pick, Object t, Display d)
-            throws EngineMessage {
-        if (pick == null)
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_PROVABLE, t), d);
     }
 
     /**
@@ -475,7 +460,7 @@ public final class Predicate {
      * <p>Add a source to a predicate.</p>
      * <p>Can veto that a non-multifile predicate is extended.</p>
      *
-     * @param sa   The call-site, not null.
+     * @param sa   The call-site, non null.
      * @param en   The engine.
      * @param copt The create flag.
      * @throws EngineMessage Shit happens.
@@ -617,34 +602,6 @@ public final class Predicate {
             f |= (!priv ? AbstractSource.MASK_IMPT_REEX : 0);
             CachePredicate.notifyImportvers(source, f);
         }
-    }
-
-    /*************************************************************/
-    /* Convenience Methods                                       */
-    /*************************************************************/
-
-    /**
-     * <p>Get predicate by indicator and possibly create it.</p>
-     *
-     * @param t    The indicator skel.
-     * @param d    The indicator display.
-     * @param en   The engine.
-     * @param copt The create flag.
-     * @return The predicate, or null.
-     * @throws EngineMessage Shit happens.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Predicate indicatorToPredicateDefined(Object t, Display d,
-                                                        Engine en, int copt)
-            throws EngineMessage, EngineException {
-        Integer arity = SpecialQuali.colonToIndicator(t, d, en);
-        SkelAtom sa = (SkelAtom) en.skel;
-        CachePredicate cp = CachePredicate.getPredicateDefined(sa,
-                arity.intValue(), en, copt);
-        en.skel = sa;
-        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
-            return null;
-        return cp.pick;
     }
 
     /***********************************************************/

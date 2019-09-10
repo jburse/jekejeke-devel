@@ -75,10 +75,8 @@ sys_boolean(false).
  * range -2^7 to 2^7-1.
  */
 :- public sys_integer8/1.
-sys_integer8(X) :-
-   integer(X),
-   -128 =< X,
-   X =< 127.
+sys_integer8(X) :- integer(X),
+   -128 =< X, X =< 127.
 
 /**
  * sys_char16(X):
@@ -86,8 +84,7 @@ sys_integer8(X) :-
  * range of 0 to 2^16-1.
  */
 :- public sys_char16/1.
-sys_char16(X) :-
-   atom(X),
+sys_char16(X) :- atom(X),
    atom_length(X, 1),
    atom_codes(X, [Y]),
    Y =< 65535.
@@ -98,10 +95,8 @@ sys_char16(X) :-
  * range -2^15 to 2^15-1.
  */
 :- public sys_integer16/1.
-sys_integer16(X) :-
-   integer(X),
-   -32768 =< X,
-   X =< 32767.
+sys_integer16(X) :- integer(X),
+   -32768 =< X, X =< 32767.
 
 /**
  * sys_integer32(X):
@@ -109,10 +104,8 @@ sys_integer16(X) :-
  * range -2^31 to 2^31-1.
  */
 :- public sys_integer32/1.
-sys_integer32(X) :-
-   integer(X),
-   -2147483648 =< X,
-   X =< 2147483647.
+sys_integer32(X) :- integer(X),
+   -2147483648 =< X, X =< 2147483647.
 
 /**
  * sys_integer64(X):
@@ -120,80 +113,64 @@ sys_integer32(X) :-
  * range -2^63 to 2^63-1.
  */
 :- public sys_integer64/1.
-sys_integer64(X) :-
-   integer(X),
-   -9223372036854775808 =< X,
-   X =< 9223372036854775807.
+sys_integer64(X) :- integer(X),
+   -9223372036854775808 =< X, X =< 9223372036854775807.
 
 /**
  * sys_integer32_or_float32(X):
  * The predicate succeeds when X is an 32-bit integer or a 32-bit float.
  */
 :- public sys_integer32_or_float32/1.
-sys_integer32_or_float32(X) :-
-   sys_integer32(X), !.
-sys_integer32_or_float32(X) :-
-   float32(X).
+sys_integer32_or_float32(X) :- sys_integer32(X), !.
+sys_integer32_or_float32(X) :- float32(X).
 
 /**
  * sys_integer64_or_float(X):
  * The predicate succeeds when X is an 64-bit integer or a float.
  */
 :- public sys_integer64_or_float/1.
-sys_integer64_or_float(X) :-
-   sys_integer64(X), !.
-sys_integer64_or_float(X) :-
-   float(X).
+sys_integer64_or_float(X) :- sys_integer64(X), !.
+sys_integer64_or_float(X) :- float(X).
 
 /**
  * sys_integer16_and_not_integer8(X):
  * The predicate succeeds when X is an 16-bit integer but not an 8-bit integer.
  */
 :- public sys_integer16_and_not_integer8/1.
-sys_integer16_and_not_integer8(X) :-
-   sys_integer8(X), !, fail.
-sys_integer16_and_not_integer8(X) :-
-   sys_integer16(X).
+sys_integer16_and_not_integer8(X) :- sys_integer8(X), !, fail.
+sys_integer16_and_not_integer8(X) :- sys_integer16(X).
 
 /**
  * sys_integer32_and_not_integer16(X):
  * The predicate succeeds when X is an 32-bit integer but not an 16-bit integer.
  */
 :- public sys_integer32_and_not_integer16/1.
-sys_integer32_and_not_integer16(X) :-
-   sys_integer16(X), !, fail.
-sys_integer32_and_not_integer16(X) :-
-   sys_integer32(X).
+sys_integer32_and_not_integer16(X) :- sys_integer16(X), !, fail.
+sys_integer32_and_not_integer16(X) :- sys_integer32(X).
 
 /**
  * sys_integer64_and_not_integer32(X):
  * The predicate succeeds when X is an 64-bit integer but not an 32-bit integer.
  */
 :- public sys_integer64_and_not_integer32/1.
-sys_integer64_and_not_integer32(X) :-
-   sys_integer32(X), !, fail.
-sys_integer64_and_not_integer32(X) :-
-   sys_integer64(X).
+sys_integer64_and_not_integer32(X) :- sys_integer32(X), !, fail.
+sys_integer64_and_not_integer32(X) :- sys_integer64(X).
 
 /**
  * sys_integer_and_not_integer64(X):
  * The predicate succeeds when X is an integer but not an 64-bit integer.
  */
 :- public sys_integer_and_not_integer64/1.
-sys_integer_and_not_integer64(X) :-
-   sys_integer64(X), !, fail.
-sys_integer_and_not_integer64(X) :-
-   integer(X).
+sys_integer_and_not_integer64(X) :- sys_integer64(X), !, fail.
+sys_integer_and_not_integer64(X) :- integer(X).
 
 /**
  * sys_atom_or_type_of(C, X):
  * The predicate succeeds when X is an atom or an instance of C.
  */
 :- public sys_atom_or_type_of/2.
-sys_atom_or_type_of(_, X) :-
-   atom(X), !.
-sys_atom_or_type_of(C, X) :-
-   sys_type_of(C, X).
+sys_atom_or_type_of(_, X) :- atom(X), !.
+sys_atom_or_type_of(C, X) :- sys_type_of(C, X).
 
 /**
  * sys_type_of(C, X):

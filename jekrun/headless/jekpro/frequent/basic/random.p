@@ -129,7 +129,7 @@ random(M, N) :-
 % random_next(+Random, +Number, -Number)
 :- public random_next/3.
 :- foreign(random_next/3, 'ForeignRandom',
-      sysRandomNext('Random','Number')).
+      sysRandomNext('Random', 'Number')).
 
 /****************************************************************/
 /* Counter Object                                               */
@@ -178,15 +178,14 @@ random_permutation(G, L, R) :-
 
 % add_random_keys(+List, +Random, -Pairs)
 :- private add_random_keys/3.
-add_random_keys(X, _, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+add_random_keys(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
 add_random_keys([X|L], G, [K-X|R]) :- !,
    random_next(G, K),
    add_random_keys(L, G, R).
 add_random_keys([], _, []) :- !.
 add_random_keys(X, _, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).
 
 % remove_keys(+Pairs, -List)
 :- private remove_keys/2.

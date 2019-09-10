@@ -86,12 +86,9 @@
  * integer X and the integer Y.
  */
 :- public lcm/3.
-lcm(_, 0, R) :- !,
-   R = 0.
-lcm(0, _, R) :- !,
-   R = 0.
-lcm(X, Y, R) :-
-   R is X//gcd(X,Y)*Y.
+lcm(_, 0, R) :- !, R = 0.
+lcm(0, _, R) :- !, R = 0.
+lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
 
 /**
  * modinv(B, M, R):
@@ -116,9 +113,8 @@ lcm(X, Y, R) :-
  */
 % isqrt(+Integer, -Integer)
 :- public isqrt/2.
-isqrt(X, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
+isqrt(X, _) :- X < 0,
+   throw(error(evaluation_error(undefined), _)).
 isqrt(X, Y) :-
    zimmerman(X, Y, _).
 
@@ -129,16 +125,14 @@ isqrt(X, Y) :-
  */
 % sqrtrem(+Integer, -Integer, -Integer)
 :- public sqrtrem/3.
-sqrtrem(X, _, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
+sqrtrem(X, _, _) :- X < 0,
+   throw(error(evaluation_error(undefined), _)).
 sqrtrem(X, Y, Z) :-
    zimmerman(X, Y, Z).
 
 % zimmerman(+Integer, -Integer, -Integer)
 :- private zimmerman/3.
-zimmerman(N, X, Y) :-
-   bitlength(N) =< 208, !,
+zimmerman(N, X, Y) :- bitlength(N) =< 208, !,
    newton(N, X, Y).
 zimmerman(N, X2, Y2) :-
    I is (bitlength(N)+1)//4,
@@ -153,8 +147,7 @@ zimmerman(N, X2, Y2) :-
 % newton(+Integer, -Integer, -Integer)
 :- private newton/3.
 newton(0, X, Y) :- !,
-   X = 0,
-   Y = 0.
+   X = 0, Y = 0.
 newton(N, X2, Y2) :-
    J is (bitlength(N)+1)//2,
    X is 1<<J,
@@ -163,8 +156,7 @@ newton(N, X2, Y2) :-
 
 % newton2(+Integer, +Integer, -Integer, -Integer)
 :- private newton2/4.
-newton2(X, Y, X3, Y3) :-
-   Y < 0, !,
+newton2(X, Y, X3, Y3) :- Y < 0, !,
    H is X<<1,
    Q is Y div H,
    X2 is X+Q,
@@ -181,12 +173,10 @@ newton2(X, Y, X, Y).
  */
 % iroot(+Integer, +Integer, -Integer)
 :- public iroot/3.
-iroot(X, _, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
-iroot(_, Y, _) :-
-   Y =< 0,
-   throw(error(evaluation_error(undefined),_)).
+iroot(X, _, _) :- X < 0,
+   throw(error(evaluation_error(undefined), _)).
+iroot(_, Y, _) :- Y =< 0,
+   throw(error(evaluation_error(undefined), _)).
 iroot(X, 1, Z) :- !,
    Z = X.
 iroot(X, 2, Z) :- !,
@@ -200,15 +190,12 @@ iroot(X, Y, Z) :-
  * and in T with the corresponding remainder.
  */
 :- public rootrem/4.
-rootrem(X, _, _, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
-rootrem(_, Y, _, _) :-
-   Y =< 0,
-   throw(error(evaluation_error(undefined),_)).
+rootrem(X, _, _, _) :- X < 0,
+   throw(error(evaluation_error(undefined), _)).
+rootrem(_, Y, _, _) :- Y =< 0,
+   throw(error(evaluation_error(undefined), _)).
 rootrem(X, 1, Z, T) :- !,
-   Z = X,
-   T = 0.
+   Z = X, T = 0.
 rootrem(X, 2, Z, T) :- !,
    zimmerman(X, Z, T).
 rootrem(X, Y, Z, T) :-
@@ -216,8 +203,7 @@ rootrem(X, Y, Z, T) :-
 
 % zimmerman(+Integer, +Integer, -Integer, -Integer)
 :- private zimmerman/4.
-zimmerman(N, M, X, Y) :-
-   bitlength(N) =< 2*M*52, !,
+zimmerman(N, M, X, Y) :- bitlength(N) =< 2*M*52, !,
    newton(N, M, X, Y).
 zimmerman(N, M, X2, Y2) :-
    I is (bitlength(N)-1+M)//(2*M),
@@ -233,8 +219,7 @@ zimmerman(N, M, X2, Y2) :-
 % newton(+Integer, +Integer, -Integer, -Integer)
 :- private newton/4.
 newton(0, _, X, Y) :- !,
-   X = 0,
-   Y = 0.
+   X = 0, Y = 0.
 newton(N, M, X2, Y2) :-
    J is (bitlength(N)+M-1)//M,
    X is 1<<J,
@@ -244,8 +229,7 @@ newton(N, M, X2, Y2) :-
 
 % newton2(+Integer, +Integer, +Integer, +Integer, -Integer, -Integer)
 :- private newton2/6.
-newton2(X, Y, F, M, X3, Y3) :-
-   Y < 0, !,
+newton2(X, Y, F, M, X3, Y3) :- Y < 0, !,
    Q is X*Y div(M*F),
    X2 is X+Q,
    F2 is X2^M,

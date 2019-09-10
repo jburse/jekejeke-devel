@@ -1,5 +1,6 @@
 package jekpro.frequent.standard;
 
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
@@ -147,13 +148,9 @@ public final class SpecialFind extends AbstractSpecial {
         AbstractUndo mark = en.bind;
         int snap = en.number;
         try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d3 = new Display(dire.size);
-            d3.bind[0].bindUniv(en.skel, en.display, en);
-            if (multi)
-                ref.remTab(en);
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d3 = en.display;
+
             CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
@@ -223,8 +220,8 @@ public final class SpecialFind extends AbstractSpecial {
     public static void pairValue(SkelCompound sc,
                                  Object t2, Display d2,
                                  Object t, Display d, Engine en) {
-        Object v2 = EngineCopy.getVar(t2);
-        Object v = EngineCopy.getVar(t);
+        Object v2 = SupervisorCopy.getVar(t2);
+        Object v = SupervisorCopy.getVar(t);
         if (v2 == null) {
             Object[] args = new Object[2];
             args[0] = t2;

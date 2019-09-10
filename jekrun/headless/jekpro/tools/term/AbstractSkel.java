@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -97,17 +97,12 @@ public abstract class AbstractSkel {
      * @return The new skeleton.
      */
     public static Object copySkel(Object m, Display d, Engine en) {
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         Object val = ec.copyTerm(m, d);
         ec.vars = null;
         return val;
     }
-
 
     /**
      * <p>Create a display for an error.</p>
@@ -116,11 +111,10 @@ public abstract class AbstractSkel {
      * @return The display.
      */
     public static Display createDisplay(Object t) {
-        int size = EngineCopy.displaySize(t);
+        int size = SupervisorCopy.displaySize(t);
         return (size != 0 ? new Display(size) :
                 Display.DISPLAY_CONST);
     }
-
 
     /**
      * <p>Create a new display.</p>
@@ -129,7 +123,7 @@ public abstract class AbstractSkel {
      * @return The display.
      */
     public static Display createMarker(Object val) {
-        int size = EngineCopy.displaySize(val);
+        int size = SupervisorCopy.displaySize(val);
         Display ref = (size != 0 ? new Display(size) :
                 Display.DISPLAY_CONST);
         if (size != 0)

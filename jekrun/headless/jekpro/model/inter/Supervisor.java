@@ -1,18 +1,21 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
+import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.LivestockEvent;
 import matula.util.wire.LivestockEventClose;
@@ -58,14 +61,16 @@ public class Supervisor extends AbstractLivestock {
     public Object curerror;
     public ListArray<LocalLockfree> privates;
     public Object attachedto;
-    public int breaklevel = -1;
+    public int breaklevel = 0;
     public ListArray<AbstractSource> modstack;
-    public Display query;
     public StoreKey lastsk;
     public LoadOpts cond;
     public Object proxy;
     public Engine inuse;
-    public AbstractMap<BindUniv, Integer> varmap;
+    public AbstractMap<BindUniv, Integer> varmap = new MapHash<BindUniv, Integer>();
+    private SupervisorCopy copy;
+    protected SupervisorCall call;
+    public Object printmap;
 
     /**
      * <p>Create a supervisor for a store.</p>
@@ -79,6 +84,36 @@ public class Supervisor extends AbstractLivestock {
         curinput = foyer.getFactory().toolinput;
         curoutput = foyer.getFactory().tooloutput;
         curerror = foyer.getFactory().toolerror;
+
+        printmap = foyer.ATOM_NIL;
+    }
+
+    /**
+     * <p>Retrieve a supervisor copy service object.</p>
+     *
+     * @return The supervisor copy service object.
+     */
+    public final SupervisorCopy getCopy() {
+        SupervisorCopy ec = copy;
+        if (ec == null) {
+            ec = new SupervisorCopy();
+            copy = ec;
+        }
+        return ec;
+    }
+
+    /**
+     * <p>Retrieve a supervisor call service object.</p>
+     *
+     * @return The supervisor call service object.
+     */
+    public SupervisorCall getCall() {
+        SupervisorCall ec = call;
+        if (ec == null) {
+            ec = new SupervisorCall();
+            call = ec;
+        }
+        return ec;
     }
 
     /***************************************************************/
@@ -121,7 +156,7 @@ public class Supervisor extends AbstractLivestock {
             AbstractTerm userClose = InterpreterMessage.systemError(EngineMessage.OP_SYSTEM_USER_CLOSE);
             ForeignThread.sysThreadAbort(t, userClose);
         } else if (e instanceof LivestockEventMemory) {
-            AbstractTerm memoryThreshold = InterpreterMessage.systemError(EngineMessage.OP_SYSTEM_MEMORY_THRESHOLD);
+            AbstractTerm memoryThreshold = InterpreterMessage.limitError(EngineMessage.OP_LIMIT_MEMORY_THRESHOLD);
             ForeignThread.sysThreadAbort(t, memoryThreshold);
         }
     }
@@ -188,6 +223,17 @@ public class Supervisor extends AbstractLivestock {
         return modstack.get(modstack.size() - 1);
     }
 
+    /**
+     * <p>Retrieve the size of the stack.</p>
+     *
+     * @return The size.
+     */
+    public int countStack() {
+        if (modstack == null)
+            return 0;
+        return modstack.size();
+    }
+
     /****************************************************************/
     /* Thread Statistics                                            */
     /****************************************************************/
@@ -227,6 +273,18 @@ public class Supervisor extends AbstractLivestock {
      */
     public boolean setIgnore(boolean f) {
         return false;
+    }
+
+
+    /**
+     * <p>Set the engine debug mode.</p>
+     *
+     * @param m The debug mode.
+     */
+    public void setThreadPrompt(int m) {
+        synchronized (this) {
+            flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
+        }
     }
 
 }

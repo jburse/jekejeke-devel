@@ -157,8 +157,34 @@ public final class ForeignConsole {
     }
 
     /****************************************************************/
-    /* Stack Trace Printing                                         */
+    /* Exception Utilities                                          */
     /****************************************************************/
+
+    /**
+     * <p>Format a term from properties.</p>
+     *
+     * @param inter  The interpreter.
+     * @param term   The message term.
+     * @param locstr The locale.
+     * @param obj    The properties.
+     * @return The formatted term.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static String sysErrorMake(Interpreter inter, Object term,
+                                      String locstr, Properties obj)
+            throws InterpreterMessage, InterpreterException {
+        try {
+            Locale locale = LangProperties.stringToLocale(locstr);
+            Engine en = (Engine) inter.getEngine();
+            return EngineException.errorMake(AbstractTerm.getSkel(term),
+                    AbstractTerm.getDisplay(term), locale, obj, en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
+    }
 
     /**
      * <p>Print an exception.</p>

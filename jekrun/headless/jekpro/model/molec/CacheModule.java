@@ -70,7 +70,7 @@ public final class CacheModule extends AbstractCache {
      * @param sa    The atom.
      * @param fun   The package, or null.
      * @param sole  The sole flag.
-     * @param scope The call-site, not null.
+     * @param scope The call-site, non null.
      * @return The module name.
      * @throws EngineMessage Shit happens.
      */
@@ -174,7 +174,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Dollar separators are generated.</p>
      *
      * @param relpath The path.
-     * @param scope   The call-site, not null.
+     * @param scope   The call-site, non null.
      * @param mask    The mask.
      * @return The prefixed path.
      * @throws IOException IO Error.
@@ -210,7 +210,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Find a prefix in the best way.</p>
      *
      * @param relpath The relative path.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The prefixed path or null.
      * @throws IOException Shit happens.
@@ -319,7 +319,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Dollar separators are preserved.</p>
      *
      * @param relpath The path.
-     * @param scope   The call-site, not null.
+     * @param scope   The call-site, non null.
      * @param mask    The mask.
      * @return The class.
      * @throws IOException IO Error.
@@ -349,7 +349,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Remove the prefix in the best way.</p>
      *
      * @param relpath The path.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The class.
      * @throws IOException Shit happens.
@@ -451,7 +451,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Find a prefix according to the child rule.</p>
      *
      * @param relpath The path.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @return The prefixed path or null.
      */
     public static String findChildPrefix(String relpath, AbstractSource src) {
@@ -465,7 +465,7 @@ public final class CacheModule extends AbstractCache {
      * <p>Remove the prefix according to the child rule.</p>
      *
      * @param relpath The path.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The prefixed path or null.
      */

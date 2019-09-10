@@ -13,12 +13,14 @@
  * Free Memory            444,184,792 Bytes
  * Uptime                      5,293 Millis
  * GC Time                        12 Millis
- * Thread Cpu Time             1,000 Millis
+ * Threads Time                1,000 Millis
  * Current Time           02/13/18 15:20:08
  *
- * Since Jekejeke Prolog is a multi-threaded interpreter, we also provide
- * statistics for the threads in the JVM. The predicate thread_statistics/3
- * returns some key figures concerning the given thread.
+ * The threads managed by a thread are determined from the thread
+ * groups owned by the thread. The managed time is determined from
+ * managed threads that are already dead, where-as the snapshot time is
+ * determined from managed threads that are still alive. The CPU time
+ * is determined from summing the thread, managed and snapshot CPU time.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -52,6 +54,8 @@
 :- use_module(library(system/locale)).
 :- use_module(library(system/zone)).
 :- use_module(library(system/thread)).
+:- use_module(library(advanced/aggregate)).
+:- use_module(library(system/group)).
 :- sys_load_resource(gestalt).
 
 /*********************************************************************/
@@ -73,13 +77,50 @@ statistics(K, V) :-
 statistics(K, V) :-
    sys_get_stat(K, V).
 
+% sys_current_stat(-Atom)
 :- private sys_current_stat/1.
 :- foreign(sys_current_stat/1, 'ForeignStatistics',
       sysCurrentStat('Interpreter','CallOut')).
 
+% sys_get_stat(+Atom, -Term)
 :- private sys_get_stat/2.
-:- foreign(sys_get_stat/2, 'ForeignStatistics',
+sys_get_stat(time, V) :- !,
+   sys_get_stat(sys_time_self, Self),
+   sys_get_stat(sys_time_managed, Managed),
+   sys_get_stat(sys_time_snapshot, Snapshot),
+   V is Self+Managed+Snapshot.
+sys_get_stat(sys_time_snapshot, V) :- !,
+   thread_current(Thread),
+   sys_snapshot_thread(Thread, V).
+sys_get_stat(K, V) :-
+   sys_sys_get_stat(K, V).
+
+% sys_sys_get_stat(+Atom, -Term)
+:- private sys_sys_get_stat/2.
+:- foreign(sys_sys_get_stat/2, 'ForeignStatistics',
       sysGetStat('Interpreter','String')).
+
+% sys_snapshot_thread(+Thread, -Integer)
+:- private sys_snapshot_thread/2.
+sys_snapshot_thread(Thread, V) :-
+   current_thread_flag(Thread, sys_thread_group, Group),
+   aggregate_all(sum(T),
+      (  current_group(Group, Group2),
+         current_group_flag(Group2, sys_group_thread, Thread),
+         sys_snapshot_group(Group2, T)), V).
+
+% sys_snapshot_group(+Group, -Integer)
+:- private sys_snapshot_group/2.
+sys_snapshot_group(Group, V) :-
+   aggregate_all(sum(T),
+      (  current_thread(Group, Thread),
+         thread_statistics(Thread, sys_time_self, T1),
+         thread_statistics(Thread, sys_time_managed, T2),
+         T is T1+T2), V1),
+   aggregate_all(sum(T),
+      (  current_group(Group, Group2),
+         sys_snapshot_group(Group2, T)), V2),
+   V is V1+V2.
 
 /**
  * statistics:
@@ -88,7 +129,7 @@ statistics(K, V) :-
 % statistics
 :- public statistics/0.
 statistics :-
-   sys_get_lang(gestalt, P),
+   get_properties(gestalt, P),
    statistics(K, V),
    sys_convert_stat(K, V, W),
    message_make(P, statistics(K,W), M),
@@ -117,26 +158,22 @@ sys_convert_stat(_, X, X).
 :- public time/1.
 :- meta_predicate time(0).
 time(G) :-
-   sys_make_time_record(T),
+   statistics(uptime, Uptime),
+   statistics(gctime, Gctime),
+   statistics(time, Time),
+   sys_new_time_record(Uptime, Gctime, Time, T),
    sys_time_call(T),
    current_prolog_flag(sys_choices, X), G,
    current_prolog_flag(sys_choices, Y),
-   (  X =:= Y
-   -> sys_show_time_record(T), !
-   ;  sys_time_redo(T)).
+   (  X =:= Y -> !; true),
+   sys_show_time_record(T).
 :- set_predicate_property(time/1, sys_notrace).
 
 % sys_time_call(+Record)
 :- private sys_time_call/1.
+sys_time_call(_).
 sys_time_call(T) :-
-   sys_start_time_record(T)
-;  sys_show_time_record(T), fail.
-
-% sys_time_redo(+Record)
-:- private sys_time_redo/1.
-sys_time_redo(T) :-
-   sys_show_time_record(T)
-;  sys_start_time_record(T), fail.
+   sys_show_time_record(T), fail.
 
 /****************************************************************/
 /* Time Record Access & Modification                            */
@@ -145,8 +182,11 @@ sys_time_redo(T) :-
 % sys_show_time_record(+TimeRecord)
 :- private sys_show_time_record/1.
 sys_show_time_record(T) :-
-   sys_end_time_record(T),
-   sys_get_lang(gestalt, P),
+   statistics(uptime, Uptime),
+   statistics(gctime, Gctime),
+   statistics(time, Time),
+   sys_measure_time_record(T, Uptime, Gctime, Time),
+   get_properties(gestalt, P),
    sys_current_record_stat(T, K, V),
    sys_convert_stat(K, V, W),
    message_make(P, time(K,W), M),
@@ -162,19 +202,16 @@ sys_current_record_stat(T, K, V) :-
 sys_current_record_stat(T, K, V) :-
    sys_get_record_stat(T, K, V).
 
-% sys_make_time_record(-Record)
-:- private sys_make_time_record/1.
-:- foreign_constructor(sys_make_time_record/1, 'TimeRecord', new).
+% sys_new_time_record(+Integer, +Integer, +Integer, -TimeRecord)
+:- private sys_new_time_record/4.
+:- foreign_constructor(sys_new_time_record/4, 'TimeRecord',
+      new('Number','Number','Number')).
 
-% sys_start_time_record(+Record)
-:- private sys_start_time_record/1.
-:- virtual sys_start_time_record/1.
-:- foreign(sys_start_time_record/1, 'TimeRecord', start('Interpreter')).
-
-% sys_end_time_record(+Record)
-:- private sys_end_time_record/1.
-:- virtual sys_end_time_record/1.
-:- foreign(sys_end_time_record/1, 'TimeRecord', end('Interpreter')).
+% sys_measure_time_record(+Record, +Integer, +Integer, +Integer)
+:- private sys_measure_time_record/4.
+:- virtual sys_measure_time_record/4.
+:- foreign(sys_measure_time_record/4, 'TimeRecord',
+      sysMeasure('Number','Number','Number')).
 
 % sys_current_record_stat(-Atom)
 :- private sys_current_record_stat/1.
@@ -225,3 +262,12 @@ thread_statistics(T, K, V) :-
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
 sys_apropos_table(library(swing/platform)).
+
+/****************************************************************/
+/* Thread Managed                                               */
+/****************************************************************/
+
+% sys_managed_add(+Thread, +Integer)
+:- public sys_managed_add/2.
+:- foreign(sys_managed_add/2, 'ForeignStatistics',
+      sysManagedAdd('Thread','Number')).

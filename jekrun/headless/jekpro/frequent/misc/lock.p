@@ -109,7 +109,7 @@
  */
 % lock_attempt(+Lock, +Integer)
 :- public lock_attempt/2.
-:- foreign(lock_attempt/2, 'ForeignLock', sysTryLock('Lock',long)).
+:- foreign(lock_attempt/2, 'ForeignLock', sysTryLock('Lock', long)).
 
 /**
  * lock_release(L):

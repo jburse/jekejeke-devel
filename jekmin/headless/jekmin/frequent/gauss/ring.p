@@ -80,7 +80,7 @@
 :- public reduced/3.
 reduced(A, R, F) :-
    X is A,
-   sys_poly_send(X, gen_red, [R,F]).
+   sys_poly_send(X, gen_red, [R, F]).
 
 /**
  * gen_red(A, R, F):
@@ -97,9 +97,8 @@ gen_red(A, R, F) :-
  */
 :- public quorem/4.
 quorem(A, B, Q, R) :-
-   X is A,
-   Y is B,
-   sys_poly_send(X, gen_div, [Y,Q,R]).
+   X is A, Y is B,
+   sys_poly_send(X, gen_div, [Y, Q, R]).
 
 /**
  * gen_div(A, B, Q, R):
@@ -136,12 +135,11 @@ sys_poly_div(F, _, 0, F).
  */
 % sys_poly_head(+Internal, -Monomial)
 :- public sys_poly_head/2.
-sys_poly_head(X, R) :-
-   sys_freezer(X), !,
-   R = polynom(X,[1-1]).
-sys_poly_head(polynom(A,[N-B|_]), R) :- !,
+sys_poly_head(X, R) :- sys_freezer(X), !,
+   R = polynom(X, [1-1]).
+sys_poly_head(polynom(A, [N-B|_]), R) :- !,
    sys_poly_head(B, C),
-   R = polynom(A,[N-C]).
+   R = polynom(A, [N-C]).
 sys_poly_head(X, X).
 
 /**
@@ -150,10 +148,9 @@ sys_poly_head(X, X).
  */
 % sys_poly_factor(+Internal, -Ordered)
 :- public sys_poly_factor/2.
-sys_poly_factor(X, R) :-
-   sys_freezer(X), !,
+sys_poly_factor(X, R) :- sys_freezer(X), !,
    R = 1.
-sys_poly_factor(polynom(_,[_-B|_]), R) :- !,
+sys_poly_factor(polynom(_, [_-B|_]), R) :- !,
    sys_poly_factor(B, R).
 sys_poly_factor(X, X).
 
@@ -168,29 +165,24 @@ sys_poly_factor(X, X).
  */
 % sys_poly_comb(+Internal, +Monomial, -Internal, -Internal)
 :- public sys_poly_comb/4.
-sys_poly_comb(A, polynom(C,D), K, M) :-
-   sys_freezer(A),
-   A @> C, !,
-   sys_coeff_comb([1-1], polynom(C,D), R, S),
+sys_poly_comb(A, polynom(C, D), K, M) :- sys_freezer(A), A @> C, !,
+   sys_coeff_comb([1-1], polynom(C, D), R, S),
    sys_make_poly(R, A, K),
    sys_make_poly(S, A, M).
-sys_poly_comb(A, polynom(A,[N-C]), K, M) :-
-   sys_freezer(A), !,
+sys_poly_comb(A, polynom(A, [N-C]), K, M) :- sys_freezer(A), !,
    sys_same_comb([1-1], N, C, R, S),
    sys_make_poly(R, A, K),
    sys_make_poly(S, A, M).
-sys_poly_comb(polynom(A,B), polynom(C,D), K, M) :-
-   A @> C, !,
-   sys_coeff_comb(B, polynom(C,D), R, S),
+sys_poly_comb(polynom(A, B), polynom(C, D), K, M) :- A @> C, !,
+   sys_coeff_comb(B, polynom(C, D), R, S),
    sys_make_poly(R, A, K),
    sys_make_poly(S, A, M).
-sys_poly_comb(polynom(A,B), polynom(A,[N-C]), K, M) :- !,
+sys_poly_comb(polynom(A, B), polynom(A, [N-C]), K, M) :- !,
    sys_same_comb(B, N, C, R, S),
    sys_make_poly(R, A, K),
    sys_make_poly(S, A, M).
-sys_poly_comb(X, polynom(_,_), K, M) :- !,
-   K = 0,
-   M = X.
+sys_poly_comb(X, polynom(_, _), K, M) :- !,
+   K = 0, M = X.
 sys_poly_comb(X, Y, K, 0) :-
    K is X/Y.
 
@@ -222,8 +214,7 @@ sys_coeff_comb([], _, [], []).
 :- public sys_poly_reduced/3.
 sys_poly_reduced(A, R, F) :-
    sys_poly_factor(A, K),
-   K \== 1,
-   K \== -1, !,
+   K \== 1, K \== -1, !,
    L is 1/K,
    B is L*A,
    sys_poly_reduced2(B, K, R, F).
@@ -241,19 +232,17 @@ sys_poly_reduced2(R, F, R, F).
 
 % sys_poly_sign(+Internal -Integer)
 :- public sys_poly_sign/2.
-sys_poly_sign(X, R) :-
-   integer(X), !,
+sys_poly_sign(X, R) :- integer(X), !,
    user:sign(X, R).
-sys_poly_sign(rational(A,_), R) :- !,
+sys_poly_sign(rational(A, _), R) :- !,
    user:sign(A, R).
-sys_poly_sign(radical(0,[_-S|_]), R) :- !,
+sys_poly_sign(radical(0, [_-S|_]), R) :- !,
    R = S.
-sys_poly_sign(radical(A,_), R) :- !,
+sys_poly_sign(radical(A, _), R) :- !,
    R is sign(A).
-sys_poly_sign(X, R) :-
-   sys_freezer(X), !,
+sys_poly_sign(X, R) :- sys_freezer(X), !,
    R = 1.
-sys_poly_sign(polynom(_,L), R) :-
+sys_poly_sign(polynom(_, L), R) :-
    last(L, _-B),
    sys_poly_sign(B, R).
 
@@ -277,10 +266,9 @@ variable:hipow(_, _, 0).
 
 % hipow(+Ordered, -Integer)
 :- public polynom:hipow/3.
-polynom:hipow(polynom(A,B), X, R) :-
-   A @> X, !,
-   R is max({hipow(C,X)|member(_-C, B)}).
-polynom:hipow(polynom(X,[N-_|_]), X, R) :- !,
+polynom:hipow(polynom(A, B), X, R) :- A @> X, !,
+   R is max({hipow(C, X) | member(_-C, B)}).
+polynom:hipow(polynom(X, [N-_|_]), X, R) :- !,
    R = N.
 polynom:hipow(_, _, 0).
 
@@ -298,8 +286,8 @@ variable:degree(_, 1).
 
 % degree(+Polynom, -Integer)
 :- public polynom:degree/2.
-polynom:degree(polynom(_,A), R) :-
-   R is max({N+degree(B)|member(N-B, A)}).
+polynom:degree(polynom(_, A), R) :-
+   R is max({N+degree(B) | member(N-B, A)}).
 
 /*********************************************************************/
 /* Random Polynomials                                                */
@@ -314,7 +302,6 @@ vector:randpoly(vector, Y) :- !,
    random(11, R),
    user: -(R, 5, Y).
 vector:randpoly(X, Z) :-
-   X =.. [F,V|L],
+   X =.. [F, V|L],
    Y =.. [F|L],
-   Z is sum({V^E*randpoly(Y)|between(1, 2, _),
-                             random(3, E)}).
+   Z is sum({V^E*randpoly(Y) | between(1, 2, _), random(3, E)}).

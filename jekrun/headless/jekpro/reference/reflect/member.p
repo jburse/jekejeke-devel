@@ -33,33 +33,26 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(700, xfx, =).
-:- set_oper_property(infix(=), visible(public)).
-
 /*************************************************************************/
 /* List Helper                                                           */
 /*************************************************************************/
 
 % sys_member(-Elem, +List)
-sys_member(X, [Y|Z]) :-
-   sys_member2(Z, X, Y).
+sys_member(X, [Y|Z]) :- sys_member2(Z, X, Y).
 :- set_predicate_property(sys_member/2, visible(public)).
 
 % sys_member2(+List, -Elem, +Elem)
 sys_member2(_, X, X).
-sys_member2([Y|Z], X, _) :-
-   sys_member2(Z, X, Y).
+sys_member2([Y|Z], X, _) :- sys_member2(Z, X, Y).
 :- set_predicate_property(sys_member2/3, visible(private)).
 
 % sys_oneof(+List, -Elem, -List)
-sys_oneof([X|Y], Z, T) :-
-   sys_oneof2(Y, Z, T, X).
+sys_oneof([X|Y], Z, T) :- sys_oneof2(Y, Z, T, X).
 :- set_predicate_property(sys_oneof/3, visible(public)).
 
 % sys_oneof2(+List, +Elem, -List, -Elem)
 sys_oneof2(Y, X, Y, X).
-sys_oneof2([X|Y], Z, [W|T], W) :-
-   sys_oneof2(Y, Z, T, X).
+sys_oneof2([X|Y], Z, [W|T], W) :- sys_oneof2(Y, Z, T, X).
 :- set_predicate_property(sys_oneof2/4, visible(private)).
 
 % =(+Term, +Term)
@@ -89,8 +82,7 @@ sys_oneof2([X|Y], Z, [W|T], W) :-
 :- set_predicate_property(ground/1, visible(public)).
 
 % functor(+-Term, -+Atomic, -+Integer)
-functor(T, F, A) :-
-   var(T), !,
+functor(T, F, A) :- var(T), !,
    sys_functor_to_term(F, A, T).
 functor(T, F, A) :-
    sys_term_to_functor(T, F, A).
@@ -101,3 +93,14 @@ functor(T, F, A) :-
 
 :- special(sys_term_to_functor/3, 'SpecialMember', 5).
 :- set_predicate_property(sys_term_to_functor/3, visible(private)).
+
+/*************************************************************************/
+/* Compare Helper                                                        */
+/*************************************************************************/
+
+% >(+Expr, +Expr)
+:- special(> /2, 'SpecialMember', 6).
+:- set_predicate_property(> /2, meta_predicate(>(#(1), #(1)))).
+:- sys_context_property(here, C),
+   set_predicate_property(> /2, sys_meta_predicate(C)).
+:- set_predicate_property(> /2, visible(public)).

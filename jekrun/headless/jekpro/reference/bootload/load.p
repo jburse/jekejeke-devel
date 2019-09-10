@@ -77,15 +77,12 @@
  * then it will consult the source.
  */
 % ensure_loaded(Path)
-ensure_loaded(Path) :-
-   var(Path),
-   throw(error(instantiation_error,_)).
-ensure_loaded(X) :-
-   X = user, !,
+ensure_loaded(Path) :- var(Path), throw(error(instantiation_error, _)).
+ensure_loaded(X) :- =(X, user), !,
    sys_import_file(X, []).
 ensure_loaded(Path) :-
    absolute_file_name(Path, Pin),
-   sys_load_file(Pin, [condition(on),sys_link(use_module)]).
+   sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(ensure_loaded/1, visible(public)).
 :- set_predicate_property(ensure_loaded/1, sys_notrace).
 
@@ -98,12 +95,9 @@ ensure_loaded(Path) :-
  * source path R.
  */
 % consult(Path)
-consult(Path) :-
-   var(Path),
-   throw(error(instantiation_error,_)).
-consult(user) :- !,
-   sys_set_context_property(U, '', user),
-   sys_import_file(U, []).
+consult(Path) :- var(Path), throw(error(instantiation_error, _)).
+consult(X) :- =(X, user), !,
+   sys_import_file(X, []).
 consult(Path) :-
    absolute_file_name(Path, Pin),
    sys_load_file(Pin, [sys_link(use_module)]).
@@ -128,22 +122,11 @@ unload_file(Path) :-
  * recognized path specifications see the API documentation.
  */
 % [Path|Goal]
-[Path|_] :-
-   var(Path),
-   throw(error(instantiation_error,_)).
-[+(Path)|Y] :- !,
-   consult(Path),
-   call(Y).
-[-(Path)|Y] :- !,
-   unload_file(Path),
-   call(Y).
-[Path|Y] :-
-   ensure_loaded(Path),
-   call(Y).
+[Path|_] :- var(Path), throw(error(instantiation_error, _)).
+[+(Path)|Y] :- !, consult(Path), call(Y).
+[-(Path)|Y] :- !, unload_file(Path), call(Y).
+[Path|Y] :- ensure_loaded(Path), call(Y).
 :- set_predicate_property('.'/2, visible(public)).
-:- set_predicate_property('.'/2, meta_predicate([0|0])).
-:- sys_context_property(here, C),
-   set_predicate_property('.'/2, sys_meta_predicate(C)).
 :- set_predicate_property('.'/2, sys_notrace).
 
 [].
@@ -225,23 +208,15 @@ include(Path) :-
  * The predicate sets the predicate indicator I to discontiguous.
  */
 % discontiguous(+Indicators)
-discontiguous [P|Q] :- !,
-   sys_discontiguous(P),
-   discontiguous(Q).
-discontiguous P,Q :- !,
-   sys_discontiguous(P),
-   discontiguous(Q).
+discontiguous [P|Q] :- !, sys_discontiguous(P), discontiguous(Q).
+discontiguous P, Q :- !, sys_discontiguous(P), discontiguous(Q).
 discontiguous [] :- !.
-discontiguous P :-
-   sys_discontiguous(P).
+discontiguous P :- sys_discontiguous(P).
 :- set_predicate_property((discontiguous)/1, visible(public)).
 
 % sys_discontiguous(+Indicator)
-sys_discontiguous(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_discontiguous(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_discontiguous(V) :- var(V), throw(error(instantiation_error, _)).
+sys_discontiguous(D) :- sys_declaration_indicator(D, I), !,
    sys_discontiguous(I),
    call(D).
 sys_discontiguous(I) :-
@@ -256,23 +231,15 @@ sys_discontiguous(I) :-
  * The predicate sets the predicate P to sys_notrace.
  */
 % sys_notrace +Indicators
-sys_notrace [P|Q] :- !,
-   sys_sys_notrace(P),
-   sys_notrace(Q).
-sys_notrace P,Q :- !,
-   sys_sys_notrace(P),
-   sys_notrace(Q).
+sys_notrace [P|Q] :- !, sys_sys_notrace(P), sys_notrace(Q).
+sys_notrace P, Q :- !, sys_sys_notrace(P), sys_notrace(Q).
 sys_notrace [] :- !.
-sys_notrace P :-
-   sys_sys_notrace(P).
+sys_notrace P :- sys_sys_notrace(P).
 :- set_predicate_property((sys_notrace)/1, visible(public)).
 
 % sys_sys_notrace(+Indicator)
-sys_sys_notrace(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_sys_notrace(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_sys_notrace(V) :- var(V), throw(error(instantiation_error, _)).
+sys_sys_notrace(D) :- sys_declaration_indicator(D, I), !,
    sys_sys_notrace(I),
    call(D).
 sys_sys_notrace(I) :-
@@ -285,32 +252,24 @@ sys_sys_notrace(I) :-
  * The predicate sets the predicate indicator I to multi-file.
  */
 % multifile(+Indicators)
-multifile [P|Q] :- !,
-   sys_multifile(P),
-   multifile(Q).
-multifile P,Q :- !,
-   sys_multifile(P),
-   multifile(Q).
+multifile [P|Q] :- !, sys_multifile(P), multifile(Q).
+multifile P, Q :- !, sys_multifile(P), multifile(Q).
 multifile [] :- !.
-multifile P :-
-   sys_multifile(P).
+multifile P :- sys_multifile(P).
 :- set_predicate_property((multifile)/1, visible(public)).
 
 % sys_multifile(+Indicator)
-sys_multifile(V) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_multifile(D) :-
-   sys_declaration_indicator(D, I), !,
+sys_multifile(V) :- var(V), throw(error(instantiation_error, _)).
+sys_multifile(D) :- sys_declaration_indicator(D, I), !,
    sys_multifile(I),
    call(D).
 sys_multifile(I) :-
    sys_make_indicator(F, _, I),
    sys_context_property(F, C),
-   once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+   once((predicate_property(I, sys_usage(D)),
+      \+ =(C, D))),
    \+ predicate_property(I, sys_multifile(D)),
-   throw(error(permission_error(promote,multifile,I),_)).
+   throw(error(permission_error(promote, multifile, I), _)).
 sys_multifile(I) :-
    sys_make_indicator(J, _, I),
    sys_context_property(J, C),
@@ -328,12 +287,9 @@ sys_multifile(I) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- sys_context_property(here, C),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
-sys_declaration_indicator(discontiguous(D), I) :-
-   sys_declaration_indicator(D, I).
-sys_declaration_indicator(sys_notrace(D), I) :-
-   sys_declaration_indicator(D, I).
-sys_declaration_indicator(multifile(D), I) :-
-   sys_declaration_indicator(D, I).
+sys_declaration_indicator(discontiguous(D), I) :- sys_declaration_indicator(D, I).
+sys_declaration_indicator(sys_notrace(D), I) :- sys_declaration_indicator(D, I).
+sys_declaration_indicator(multifile(D), I) :- sys_declaration_indicator(D, I).
 
 /***************************************************************/
 /* Listing Non-Automatic Members                               */
@@ -358,15 +314,15 @@ listing :-
  * non-automatic evaluable functions and predicates are listed.
  */
 % listing(+Indicator)
-listing(I) :-
-   ground(I), !,
+listing(I) :- ground(I), !,
    sys_listing2(I).
 listing(I) :-
-   bagof(I, (  sys_listing_user(U),
-               sys_listing_item_idx(U, I)), B),
+   bagof(I, (sys_listing_user(U),
+      sys_listing_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_listing_show(I, U), fail.
+   sys_listing_show(I, U),
+   fail.
 listing(_).
 :- set_predicate_property(listing/1, visible(public)).
 :- set_predicate_property(listing/1, sys_notrace).
@@ -377,7 +333,8 @@ sys_listing2(I) :-
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
    sys_short_base(U),
-   sys_listing_show(I, U), fail.
+   sys_listing_show(I, U),
+   fail.
 sys_listing2(_).
 :- set_predicate_property(sys_listing2/1, visible(private)).
 
@@ -406,8 +363,7 @@ sys_listing_user_chk(_).
  * succeeds for each usage source U.
  */
 % sys_listing_item_chk(+Indicator, -Source)
-sys_listing_item_chk(I, U) :-
-   sys_oper_indicator(I), !,
+sys_listing_item_chk(I, U) :- sys_oper_indicator(I), !,
    sys_syntax_property_chk(I, sys_usage/1, R),
    sys_member(sys_usage(U), R).
 sys_listing_item_chk(I, U) :-
@@ -437,14 +393,10 @@ sys_listing_item_idx(U, I) :-
  * has listable clauses.
  */
 % sys_listing_has_clause(+Indicator, +Source)
-sys_listing_has_clause(I, _) :-
-   sys_oper_indicator(I), !.
-sys_listing_has_clause(I, _) :-
-   predicate_property(I, built_in), !.
-sys_listing_has_clause(I, _) :-
-   predicate_property(I, static), !.
-sys_listing_has_clause(I, U) :-
-   sys_has_clause(I, U).
+sys_listing_has_clause(I, _) :- sys_oper_indicator(I), !.
+sys_listing_has_clause(I, _) :- predicate_property(I, built_in), !.
+sys_listing_has_clause(I, _) :- predicate_property(I, static), !.
+sys_listing_has_clause(I, U) :- sys_has_clause(I, U).
 :- set_predicate_property(sys_listing_has_clause/2, visible(public)).
 
 /**
@@ -453,8 +405,7 @@ sys_listing_has_clause(I, U) :-
  * slice of the listable indicator I.
  */
 % sys_listing_show(+Indicator, +Source)
-sys_listing_show(I, U) :-
-   sys_oper_indicator(I), !,
+sys_listing_show(I, U) :- sys_oper_indicator(I), !,
    sys_show_syntax_source(I, U).
 sys_listing_show(I, U) :-
    sys_show_provable_source(I, U).

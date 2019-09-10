@@ -1,13 +1,19 @@
 /**
  * By default the top-level shows the current unification equations.
- * An extension can show arbitrary constraints. It can do so by
- * defining further clauses for the multi-file predicates
- * sys_current_eq/2 and sys_unwrap_eq/3.
+ * An extension can show arbi-trary constraints. It can do so by
+ * efining further clauses for the multi-file predicates sys_current_eq/2
+ * and sys_unwrap_eq/3.
  *
- * The constraints that are related directly or indirectly to a term
- * can be retrieved by the predicate sys_term_eq_list/2. As a further
- * convenience the predicate call_residue/2 allows calling a goal and
- * retrieving the related constraints for each success.
+ * The predicate call_residue_var/2 can be used to determine the attributed
+ * variables that were freshly introduced while executing a goal. As
+ * a convenience, the predicate call_residue/2 will return the constraints
+ * of these variables. The later predicate is useful for writing test
+ * cases for uses of attributed variables.
+ *
+ * Terms that are directly instantiated to a variable can be customized
+ * by the multi-file predicate sys_printable_value/2 and queried by the
+ * predicate printable/2. The former predicate should fail if there is
+ * no custom form and the later predicate will then return the original.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -41,14 +47,11 @@
 :- package(library(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/frequent/misc)).
 :- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/model/molec)).
 
 :- module(residue, []).
 :- use_module(library(advanced/sets)).
 :- use_module(library(misc/residue)).
-
-/***********************************************************/
-/* Constraints Retrieval Hooks                             */
-/***********************************************************/
 
 /**
  * sys_current_eq(V, H):
@@ -73,92 +76,52 @@
 :- static sys_unwrap_eq/3.
 
 /***********************************************************/
-/* Constraint Display Algorithm                          */
+/* Constraint Retrieval API                                */
 /***********************************************************/
 
 /**
- * sys_follow_vars(H, V, W, L, R):
- * Succeeds with the equations R with variables unwrapped related
- * to the variables H and extending the equations L, and the visited
- * variables V extending the visited variables W.
+ * call_residue_vars(G, L):
+ * The predicate succeeds whenever the goal G succeeds and unifies L
+ * with the newly introduced attributed variables.
  */
-% sys_follow_vars(+Vars, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_vars/5.
-sys_follow_vars([U|H], V, W, L, R) :-
-   sys_follow_vars(H, V, Z, L, M),
-   sys_follow_vars2(U, Z, W, M, R).
-sys_follow_vars([], V, V, L, L).
+:- public call_residue_vars/2.
+:- meta_predicate call_residue_vars(0, ?).
+call_residue_vars(G, L) :-
+   sys_current_mark(M),
+   call(G),
+   sys_mark_attrs(M, L).
 
-% sys_follow_vars2(+Var, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_vars2/5.
-sys_follow_vars2(U, V, V, L, L) :-
-   contains(U, V), !.
-sys_follow_vars2(U, V, W, L, R) :-
-   findall(K, sys_current_eq(U, K), J),
-   sys_unwrap_eqs(J, K, []),
-   sys_follow_eqs(K, [U|V], W, L, R).
+% sys_current_mark(-Undo)
+:- public sys_current_mark/1.
+:- foreign(sys_current_mark/1, 'ForeignResidue',
+      sysCurrentMark('Interpreter')).
 
-/**
- * sys_follow_eqs(H, V, W, L, R):
- * Succeeds with the equations R with variables unwrapped related
- * to the equations H and extending the equations L, and the visited
- * variables V extending the visited variables W.
- */
-% sys_follow_eqs(+Goals, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_eqs/5.
-sys_follow_eqs([G|H], V, W, L, R) :-
-   sys_follow_eqs(H, V, Z, L, M),
-   sys_follow_eqs2(G, Z, W, M, R).
-sys_follow_eqs([], V, V, L, L).
-
-% sys_follow_eqs2(Goal, +Vars, -Vars, +Goals, -Goals)
-:- private sys_follow_eqs2/5.
-sys_follow_eqs2(G, V, V, L, L) :-
-   contains(G, L), !.
-sys_follow_eqs2(G, V, W, L, R) :-
-   safe_term_variables(G, U),
-   sys_follow_vars(U, V, W, [G|L], R).
-
-/***********************************************************/
-/* Consraint Selection API                                 */
-/***********************************************************/
-
-/**
- * sys_term_eq_list(T, L):
- * The predicate unifies L with the list of constraints that
- * depend directly or indirectly on the variables of T.
- */
-% sys_term_eq_list(+Term, -Goals)
-:- public sys_term_eq_list/2.
-sys_term_eq_list(T, L) :-
-   safe_term_variables(T, H),
-   sys_follow_vars(H, [], _, [], L).
+% sys_mark_attrs(+Undo, -List)
+:- public sys_mark_attrs/2.
+:- foreign(sys_mark_attrs/2, 'ForeignResidue',
+      sysMarkAttrs('Interpreter', 'AbstractUndo')).
 
 /**
  * call_residue(G, L):
- * The predicate succeeds whenever the goal G succeeds. The predicate
- * unifies L with the list of constraints that depend directly or
- * indirectly on the variables of G.
+ * The predicate succeeds whenever the goal G succeeds and unifies L
+ * with the constraints of the newly introduced attributed variables.
  */
 :- public call_residue/2.
-:- meta_predicate call_residue(0,?).
+:- meta_predicate call_residue(0, ?).
 call_residue(G, L) :-
-   call(G),
-   sys_term_eq_list(G, L).
-
-/***********************************************************/
-/* New Constraint Display API                              */
-/***********************************************************/
+   call_residue_vars(G, K),
+   sys_eq_list(K, L).
 
 /**
- * sys_eq_list(L):
- * The predicate unifies L with the list of constraints.
+ * sys_eq_list(K, L):
+ * The predicate unifies L with the list of constraints
+ * for the attributed variables K.
  */
-% sys_eq_list(-Goals)
-:- public sys_eq_list/1.
-sys_eq_list(L) :-
-   findall(E, (  sys_residue_attr(V),
-                 sys_current_eq(V, E)), H),
+% sys_eq_list(+List, -Goals)
+:- private sys_eq_list/2.
+sys_eq_list(K, L) :-
+   findall(E, (sys_member(V, K),
+      sys_current_eq(V, E)), H),
    sys_distinct(H, J),
    sys_unwrap_eqs(J, L, []).
 
@@ -168,17 +131,6 @@ sys_unwrap_eqs([G|L], I, O) :-
    sys_unwrap_eq(G, I, H),
    sys_unwrap_eqs(L, H, O).
 sys_unwrap_eqs([], L, L).
-
-/**
- * call_residue2(G, L):
- * The predicate succeeds whenever the goal G succeeds. The predicate
- * unifies L with the list of constraints, both shown and hidden.
- */
-:- public call_residue2/2.
-:- meta_predicate call_residue2(0,?).
-call_residue2(G, L) :-
-   call(G),
-   sys_eq_list(L).
 
 /***********************************************************/
 /* CAS Display Hook                                        */
@@ -190,8 +142,7 @@ call_residue2(G, L) :-
  */
 % printable(+Term, -Term)
 :- public printable/2.
-printable(E, F) :-
-   sys_printable_value(E, H), !,
+printable(E, F) :- sys_printable_value(E, H), !,
    F = H.
 printable(E, E).
 
@@ -213,10 +164,3 @@ printable(E, E).
 :- public surrogate_new/1.
 :- foreign_constructor(surrogate_new/1, 'Object', new).
 
-/**
- * sys_residue_attr(V):
- * The predicate succeeds in V with the residue attributed variables.
- */
-:- public sys_residue_attr/1.
-:- foreign(sys_residue_attr/1, 'ForeignResidue',
-      sysResidueAttr('CallOut','Interpreter')).

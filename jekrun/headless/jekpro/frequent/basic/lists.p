@@ -57,8 +57,7 @@
 % append(+List, +List, -List)
 :- public append/3.
 append([], X, X).
-append([X|Y], Z, [X|T]) :-
-   append(Y, Z, T).
+append([X|Y], Z, [X|T]) :- append(Y, Z, T).
 
 /**
  * reverse(L1, L2):
@@ -82,14 +81,12 @@ reverse2([X|Y], Z, T) :-
  */
 % member(-Elem, +List)
 :- public member/2.
-member(X, [Y|Z]) :-
-   member2(Z, X, Y).
+member(X, [Y|Z]) :- member2(Z, X, Y).
 
 % member2(+List, +Elem, -Elem)
 :- private member2/3.
 member2(_, X, X).
-member2([Y|Z], X, _) :-
-   member2(Z, X, Y).
+member2([Y|Z], X, _) :- member2(Z, X, Y).
 
 /**
  * select(E, L, R):
@@ -97,14 +94,12 @@ member2([Y|Z], X, _) :-
  */
 % select(-Elem, +List, -List)
 :- public select/3.
-select(Z, [X|Y], T) :-
-   select2(Y, X, Z, T).
+select(Z, [X|Y], T) :- select2(Y, X, Z, T).
 
 % select2(+List, +Elem, -Elem, -List)
 :- private select2/4.
 select2(Y, X, X, Y).
-select2([X|Y], W, Z, [W|T]) :-
-   select2(Y, X, Z, T).
+select2([X|Y], W, Z, [W|T]) :- select2(Y, X, Z, T).
 
 /**
  * last(L, E):
@@ -112,14 +107,12 @@ select2([X|Y], W, Z, [W|T]) :-
  */
 % last(+List, -Elem)
 :- public last/2.
-last([X|Y], Z) :-
-   last2(Y, X, Z).
+last([X|Y], Z) :- last2(Y, X, Z).
 
 % last2(+List, +Elem, -Elem)
 :- private last2/3.
 last2([], X, X).
-last2([X|Y], _, Z) :-
-   last2(Y, X, Z).
+last2([X|Y], _, Z) :- last2(Y, X, Z).
 
 /**
  * last(L, E, R):
@@ -128,14 +121,12 @@ last2([X|Y], _, Z) :-
  */
 % last(+List, -Elem, -List)
 :- public last/3.
-last([X|Y], Z, T) :-
-   last2(Y, X, Z, T).
+last([X|Y], Z, T) :- last2(Y, X, Z, T).
 
 % last2(+List, +Elem, -Elem, -List)
 :- private last2/4.
 last2([], X, X, []).
-last2([X|Y], U, Z, [U|T]) :-
-   last2(Y, X, Z, T).
+last2([X|Y], U, Z, [U|T]) :- last2(Y, X, Z, T).
 
 /**
  * length(L, N):
@@ -143,30 +134,20 @@ last2([X|Y], U, Z, [U|T]) :-
  */
 % length(+List, -Integer)
 :- public length/2.
-length(L, N) :-
-   var(N), !,
-   length2(L, N).
-length(L, N) :-
-   integer(N), !,
-   N >= 0,
-   length3(N, L).
-length(_, N) :-
-   throw(error(type_error(integer,N),_)).
+length(L, N) :- var(N), !, length2(L, N).
+length(L, N) :- integer(N), !, N >= 0, length3(N, L).
+length(_, N) :- throw(error(type_error(integer, N), _)).
 
 % length2(+List, -Integer)
 :- private length2/2.
 length2([], 0).
-length2([_|Y], N) :-
-   length2(Y, M),
-   N is M+1.
+length2([_|Y], N) :- length2(Y, M), N is M+1.
 
 % length3(+Integer, -List)
 :- private length3/2.
 length3(0, []) :- !.
 length3(0, _) :- !, fail.
-length3(N, [_|Y]) :-
-   M is N-1,
-   length3(M, Y).
+length3(N, [_|Y]) :- M is N-1, length3(M, Y).
 
 /**
  * nth0(I, L, E):
@@ -174,31 +155,20 @@ length3(N, [_|Y]) :-
  */
 % nth0(+Integer, +List, -Elem)
 :- public nth0/3.
-nth0(N, L, E) :-
-   var(N), !,
-   L = [X|Y],
-   nth02(Y, X, E, N).
-nth0(N, L, E) :-
-   integer(N), !,
-   N >= 0,
-   nth03(N, L, E).
-nth0(N, _, _) :-
-   throw(error(type_error(integer,N),_)).
+nth0(N, L, E) :- var(N), !, L = [X|Y], nth02(Y, X, E, N).
+nth0(N, L, E) :- integer(N), !, N >= 0, nth03(N, L, E).
+nth0(N, _, _) :- throw(error(type_error(integer, N), _)).
 
 % nth02(+List, +Elem, -Elem, -Integer)
 :- private nth02/4.
 nth02(_, X, X, 0).
-nth02([X|Y], _, Z, N) :-
-   nth02(Y, X, Z, M),
-   N is M+1.
+nth02([X|Y], _, Z, N) :- nth02(Y, X, Z, M), N is M+1.
 
 % nth03(+Integer, -List, -Elem)
 :- private nth03/3.
 nth03(0, [X|_], X) :- !.
 nth03(0, _, _) :- !, fail.
-nth03(N, [_|Y], X) :-
-   M is N-1,
-   nth03(M, Y, X).
+nth03(N, [_|Y], X) :- M is N-1, nth03(M, Y, X).
 
 /**
  * nth0(I, L, E, R):
@@ -207,31 +177,20 @@ nth03(N, [_|Y], X) :-
  */
 % nth0(+Integer, +List, -Elem, -List)
 :- public nth0/4.
-nth0(N, L, E, R) :-
-   var(N), !,
-   L = [X|Y],
-   nth02(Y, X, E, N, R).
-nth0(N, L, E, R) :-
-   integer(N), !,
-   N >= 0,
-   nth03(N, L, E, R).
-nth0(N, _, _, _) :-
-   throw(error(type_error(integer,N),_)).
+nth0(N, L, E, R) :- var(N), !, L = [X|Y], nth02(Y, X, E, N, R).
+nth0(N, L, E, R) :- integer(N), !, N >= 0, nth03(N, L, E, R).
+nth0(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 
 % nth02(+List, +Elem, -Elem, -Integer, -List)
 :- private nth02/5.
 nth02(Y, X, X, 0, Y).
-nth02([X|Y], H, Z, N, [H|T]) :-
-   nth02(Y, X, Z, M, T),
-   N is M+1.
+nth02([X|Y], H, Z, N, [H|T]) :- nth02(Y, X, Z, M, T), N is M+1.
 
 % nth03(+Integer, -List, -Elem, -List)
 :- private nth03/4.
 nth03(0, [X|Y], X, Y) :- !.
 nth03(0, _, _, _) :- !, fail.
-nth03(N, [H|Y], X, [H|T]) :-
-   M is N-1,
-   nth03(M, Y, X, T).
+nth03(N, [H|Y], X, [H|T]) :- M is N-1, nth03(M, Y, X, T).
 
 /**
  * nth1(I, L, E):
@@ -239,31 +198,20 @@ nth03(N, [H|Y], X, [H|T]) :-
  */
 % nth1(+Integer, +List, -Elem)
 :- public nth1/3.
-nth1(N, L, E) :-
-   var(N), !,
-   L = [X|Y],
-   nth12(Y, X, E, N).
-nth1(N, L, E) :-
-   integer(N), !,
-   N >= 1,
-   nth13(N, L, E).
-nth1(N, _, _) :-
-   throw(error(type_error(integer,N),_)).
+nth1(N, L, E) :- var(N), !, L = [X|Y], nth12(Y, X, E, N).
+nth1(N, L, E) :- integer(N), !, N >= 1, nth13(N, L, E).
+nth1(N, _, _) :- throw(error(type_error(integer, N), _)).
 
 % nth12(+List, +Elem, -Elem, -Integer)
 :- private nth12/4.
 nth12(_, X, X, 1).
-nth12([X|Y], _, Z, N) :-
-   nth12(Y, X, Z, M),
-   N is M+1.
+nth12([X|Y], _, Z, N) :- nth12(Y, X, Z, M), N is M+1.
 
 % nth13(+Integer, -List, -Elem)
 :- private nth13/3.
 nth13(1, [X|_], X) :- !.
 nth13(1, _, _) :- !, fail.
-nth13(N, [_|Y], X) :-
-   M is N-1,
-   nth13(M, Y, X).
+nth13(N, [_|Y], X) :- M is N-1, nth13(M, Y, X).
 
 /**
  * nth1(I, L, E, R):
@@ -272,31 +220,20 @@ nth13(N, [_|Y], X) :-
  */
 % nth1(+Integer, +List, -Elem, -List)
 :- public nth1/4.
-nth1(N, L, E, R) :-
-   var(N), !,
-   L = [X|Y],
-   nth12(Y, X, E, N, R).
-nth1(N, L, E, R) :-
-   integer(N), !,
-   N >= 1,
-   nth13(N, L, E, R).
-nth1(N, _, _, _) :-
-   throw(error(type_error(integer,N),_)).
+nth1(N, L, E, R) :- var(N), !, L = [X|Y], nth12(Y, X, E, N, R).
+nth1(N, L, E, R) :- integer(N), !, N >= 1, nth13(N, L, E, R).
+nth1(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 
 % nth12(+List, +Elem, -Elem, -Integer, -List)
 :- private nth12/5.
 nth12(Y, X, X, 1, Y).
-nth12([X|Y], H, Z, N, [H|T]) :-
-   nth12(Y, X, Z, M, T),
-   N is M+1.
+nth12([X|Y], H, Z, N, [H|T]) :- nth12(Y, X, Z, M, T), N is M+1.
 
 % nth13(+Integer, -List, -Elem, -List)
 :- private nth13/4.
 nth13(1, [X|Y], X, Y) :- !.
 nth13(1, _, _, _) :- !, fail.
-nth13(N, [H|Y], X, [H|T]) :-
-   M is N-1,
-   nth13(M, Y, X, T).
+nth13(N, [H|Y], X, [H|T]) :- M is N-1, nth13(M, Y, X, T).
 
 /**
  * maplist(C, L1, ..., Ln):
@@ -305,28 +242,28 @@ nth13(N, [H|Y], X, [H|T]) :-
  * defined for 1 ≤ n ≤ 4.
  */
 :- public maplist/2.
-:- meta_predicate maplist(1,?).
+:- meta_predicate maplist(1, ?).
 maplist(_, []).
 maplist(C, [X|L]) :-
    call(C, X),
    maplist(C, L).
 
 :- public maplist/3.
-:- meta_predicate maplist(2,?,?).
+:- meta_predicate maplist(2, ?, ?).
 maplist(_, [], []).
 maplist(C, [X|L], [Y|R]) :-
    call(C, X, Y),
    maplist(C, L, R).
 
 :- public maplist/4.
-:- meta_predicate maplist(3,?,?,?).
+:- meta_predicate maplist(3, ?, ?, ?).
 maplist(_, [], [], []).
 maplist(C, [X|L], [Y|R], [Z|S]) :-
    call(C, X, Y, Z),
    maplist(C, L, R, S).
 
 :- public maplist/5.
-:- meta_predicate maplist(4,?,?,?,?).
+:- meta_predicate maplist(4, ?, ?, ?, ?).
 maplist(_, [], [], [], []).
 maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
    call(C, X, Y, Z, U),
@@ -339,28 +276,28 @@ maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
  * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
  */
 :- public foldl/4.
-:- meta_predicate foldl(3,?,?,?).
+:- meta_predicate foldl(3, ?, ?, ?).
 foldl(_, [], P, P).
 foldl(C, [X|L], P, Q) :-
    call(C, X, P, H),
    foldl(C, L, H, Q).
 
 :- public foldl/5.
-:- meta_predicate foldl(4,?,?,?,?).
+:- meta_predicate foldl(4, ?, ?, ?, ?).
 foldl(_, [], [], P, P).
 foldl(C, [X|L], [Y|R], P, Q) :-
    call(C, X, Y, P, H),
    foldl(C, L, R, H, Q).
 
 :- public foldl/6.
-:- meta_predicate foldl(5,?,?,?,?,?).
+:- meta_predicate foldl(5, ?, ?, ?, ?, ?).
 foldl(_, [], [], [], P, P).
 foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
    call(C, X, Y, Z, P, H),
    foldl(C, L, R, S, H, Q).
 
 :- public foldl/7.
-:- meta_predicate foldl(6,?,?,?,?,?,?).
+:- meta_predicate foldl(6, ?, ?, ?, ?, ?, ?).
 foldl(_, [], [], [], [], P, P).
 foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
    call(C, X, Y, Z, U, P, H),

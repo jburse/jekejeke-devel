@@ -1,7 +1,7 @@
 package jekpro.frequent.experiment;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractDefined;
@@ -68,6 +68,7 @@ public final class SpecialRef extends AbstractSpecial {
     private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 8;
     private final static int SPECIAL_SET_REF_PROPERTY = 9;
     private final static int SPECIAL_RESET_REF_PROPERTY = 10;
+    private final static int SPECIAL_COMPILABLE_REF = 11;
 
     /**
      * <p>Create a special internal.</p>
@@ -192,6 +193,15 @@ public final class SpecialRef extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.resetRefProp(ptr, en.skel, en.display, en);
                 return true;
+            case SPECIAL_COMPILABLE_REF:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
+                        AbstractDefined.OPT_CHCK_DEFN, en);
+                if (!en.unifyTerm(temp[1], ref,
+                        clause, Display.DISPLAY_CONST))
+                    return false;
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -221,17 +231,14 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
+        Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[2], ref, en);
+            MapHashLink<Object, String> printmap =
+                    SpecialRef.decodeAssertOptions(temp[2], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;
@@ -415,10 +422,10 @@ public final class SpecialRef extends AbstractSpecial {
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static MapHashLink<Object, NamedDistance> decodeAssertOptions(Object t, Display d,
+    public static MapHashLink<Object, String> decodeAssertOptions(Object t, Display d,
                                                                          Engine en)
             throws EngineMessage {
-        MapHashLink<Object, NamedDistance> vars = null;
+        MapHashLink<Object, String> vars = null;
         en.skel = t;
         en.display = d;
         en.deref();

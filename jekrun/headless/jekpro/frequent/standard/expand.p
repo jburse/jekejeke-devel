@@ -89,19 +89,15 @@
 :- use_module(library(experiment/simp)).
 
 :- public sys_cond/2.
-:- meta_function sys_cond(?,0).
-sys_cond(_, _) :-
-   throw(error(existence_error(body,sys_cond/2),_)).
+:- meta_function sys_cond(?, 0).
+sys_cond(_, _) :- throw(error(existence_error(body, sys_cond/2), _)).
 
 :- public unit/0.
-unit :-
-   throw(error(existence_error(body,unit/0),_)).
+unit :- throw(error(existence_error(body, unit/0), _)).
 
 :- public /\ /2.
-:- meta_predicate /\(0,0).
-/\(_, _) :-
-   throw(error(existence_error(body,/\ /2),_)).
-:- set_predicate_property(/\ /2, sys_rule).
+:- meta_predicate /\(0, 0).
+/\(_, _) :- throw(error(existence_error(body, /\ /2), _)).
 
 /*******************************************************/
 /* Unpack & Pack                                       */
@@ -109,17 +105,15 @@ unit :-
 
 % sys_unpack_cond(+Rest, -Rest, -Goal)
 :- private sys_unpack_cond/3.
-sys_unpack_cond(X, X, true) :-
-   var(X), !.
-sys_unpack_cond(sys_cond(X,G), X, G) :- !.
+sys_unpack_cond(X, X, true) :- var(X), !.
+sys_unpack_cond(sys_cond(X, G), X, G) :- !.
 sys_unpack_cond(X, X, true).
 
 % sys_pack_cond(+Rest, +Goal, -Rest)
 :- private sys_pack_cond/3.
-sys_pack_cond(X, G, sys_cond(X,G)) :-
-   var(G), !.
+sys_pack_cond(X, G, sys_cond(X, G)) :- var(G), !.
 sys_pack_cond(X, true, X) :- !.
-sys_pack_cond(X, G, sys_cond(X,G)).
+sys_pack_cond(X, G, sys_cond(X, G)).
 
 /*******************************************************/
 /* Term Expand                                         */
@@ -133,7 +127,7 @@ sys_pack_cond(X, G, sys_cond(X,G)).
 % term_expansion(+Clause, -Clause)
 :- public term_expansion/2.
 :- multifile term_expansion/2.
-:- meta_predicate term_expansion(-1,-1).
+:- meta_predicate term_expansion(-1, -1).
 :- set_predicate_property(term_expansion/2, sys_noexpand).
 :- static term_expansion/2.
 
@@ -144,13 +138,10 @@ sys_pack_cond(X, G, sys_cond(X,G)).
  */
 % expand_term(+Clause, -Clause)
 :- public expand_term/2.
-:- meta_predicate expand_term(-1,-1).
+:- meta_predicate expand_term(-1, -1).
 :- set_predicate_property(expand_term/2, sys_noexpand).
-expand_term(P, P) :-
-   sys_var(P), !.
-expand_term(A, C) :-
-   term_expansion(A, B), !,
-   expand_term(B, C).
+expand_term(P, P) :- sys_var(P), !.
+expand_term(A, C) :- term_expansion(A, B), !, expand_term(B, C).
 expand_term(G, N) :-
    sys_callable(G),
    sys_functor(G, J, A),
@@ -181,7 +172,7 @@ sys_expand_term_args([], [], [], true).
 sys_expand_term_args([M|R], [A|L], [B|S], T) :-
    sys_expand_term_arg(M, A, B, P),
    sys_expand_term_args(R, L, S, Q),
-   simplify_goal((  P, Q), T).
+   simplify_goal((P, Q), T).
 
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_term_arg/4.
@@ -205,7 +196,7 @@ sys_expand_term_arg(_, X, Y, G) :-
 % goal_expansion(+Goal, -Goal)
 :- public goal_expansion/2.
 :- multifile goal_expansion/2.
-:- meta_predicate goal_expansion(0,0).
+:- meta_predicate goal_expansion(0, 0).
 :- set_predicate_property(goal_expansion/2, sys_noexpand).
 :- static goal_expansion/2.
 
@@ -216,13 +207,10 @@ sys_expand_term_arg(_, X, Y, G) :-
  */
 % expand_goal(+Goal, -Goal)
 :- public expand_goal/2.
-:- meta_predicate expand_goal(0,0).
+:- meta_predicate expand_goal(0, 0).
 :- set_predicate_property(expand_goal/2, sys_noexpand).
-expand_goal(P, P) :-
-   sys_var(P), !.
-expand_goal(A, C) :-
-   goal_expansion(A, B), !,
-   expand_goal(B, C).
+expand_goal(P, P) :- sys_var(P), !.
+expand_goal(A, C) :- goal_expansion(A, B), !, expand_goal(B, C).
 expand_goal(G, N) :-
    sys_callable(G),
    sys_functor(G, J, A),
@@ -230,7 +218,7 @@ expand_goal(G, N) :-
    \+ predicate_property(I, sys_noexpand), !,
    expand_goal_callable(G, I, H, U),
    simplify_goal(H, K),
-   simplify_goal((  U, K), N).
+   simplify_goal((U, K), N).
 expand_goal(G, H) :-
    simplify_goal(G, H).
 
@@ -253,7 +241,7 @@ sys_expand_goal_args([], [], [], true).
 sys_expand_goal_args([M|R], [A|L], [B|S], T) :-
    sys_expand_goal_arg(M, A, B, P),
    sys_expand_goal_args(R, L, S, Q),
-   simplify_goal((  P, Q), T).
+   simplify_goal((P, Q), T).
 
 % sys_expand_goal_arg(+Mode, +Arg, -Arg, -Goal)
 :- private sys_expand_goal_arg/4.
@@ -288,11 +276,8 @@ sys_expand_goal_arg(_, X, Y, G) :-
 % expand_rest(+Goal, -Goal)
 :- public expand_rest/2.
 :- set_predicate_property(expand_rest/2, sys_noexpand).
-expand_rest(P, P) :-
-   var(P), !.
-expand_rest(A, C) :-
-   rest_expansion(A, B), !,
-   expand_rest(B, C).
+expand_rest(P, P) :- var(P), !.
+expand_rest(A, C) :- rest_expansion(A, B), !, expand_rest(B, C).
 expand_rest(G, N) :-
    callable(G),
    functor(G, J, A),
@@ -324,4 +309,4 @@ sys_expand_rest_args([A|L], [B|S], T) :-
    expand_rest(A, H),
    sys_unpack_cond(H, B, P),
    sys_expand_rest_args(L, S, Q),
-   simplify_goal((  P, Q), T).
+   simplify_goal((P, Q), T).

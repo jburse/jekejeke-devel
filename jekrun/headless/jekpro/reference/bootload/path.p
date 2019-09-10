@@ -87,7 +87,9 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(200, fy, ../).
+:- sys_neutral_oper(prefix(../)).
+:- set_oper_property(prefix(../), op(200, fy)).
+:- set_oper_property(prefix(../), sys_nspr).
 :- set_oper_property(prefix(../), visible(public)).
 
 /****************************************************************/
@@ -101,7 +103,7 @@
  */
 % sys_add_path(+Path)
 :- foreign(sys_add_path/1, 'ForeignPath',
-      sysAddClassdPath('Interpreter','String')).
+      sysAddClassdPath('Interpreter', 'String')).
 :- set_predicate_property(sys_add_path/1, visible(public)).
 
 /**
@@ -126,7 +128,7 @@ sys_current_path(Path) :-
  * For a list of recognized database entries see the API documentation.
  */
 :- foreign(sys_add_file_extension/2, 'ForeignPath',
-      sysAddFileExtenstion('Interpreter','String','Object')).
+      sysAddFileExtenstion('Interpreter', 'String', 'Object')).
 :- set_predicate_property(sys_add_file_extension/2, visible(public)).
 
 /**
@@ -135,7 +137,7 @@ sys_current_path(Path) :-
  * with the name suffix E from the current knowledge base
  */
 :- foreign(sys_remove_file_extension/1, 'ForeignPath',
-      sysRemoveFileExtenstion('Interpreter','String')).
+      sysRemoveFileExtenstion('Interpreter', 'String')).
 :- set_predicate_property(sys_remove_file_extension/1, visible(public)).
 
 /**
@@ -146,7 +148,7 @@ sys_current_path(Path) :-
  */
 sys_current_file_extension(E, O) :-
    sys_get_file_extensions(L),
-   sys_member(-(E,O), L).
+   sys_member(-(E, O), L).
 :- set_predicate_property(sys_current_file_extension/2, visible(public)).
 
 :- foreign(sys_get_file_extensions/1, 'ForeignPath',
@@ -165,8 +167,7 @@ sys_current_file_extension(E, O) :-
  * path option. For a list of options see the API documentation.
  */
 % absolute_file_name(+Slash, -Pin)
-absolute_file_name(Slash, Pin) :-
-   ground(Slash), !,
+absolute_file_name(Slash, Pin) :- ground(Slash), !,
    absolute_file_name2(Slash, Pin).
 absolute_file_name(Slash, Pin) :-
    sys_absolute_file_name2(Pin, Slash).
@@ -180,8 +181,7 @@ absolute_file_name2(Slash, _) :-
 :- set_predicate_property(absolute_file_name2/2, visible(private)).
 
 % absolute_file_name(+Slash, -Pin, +Opt)
-absolute_file_name(Slash, Pin, Opt) :-
-   ground(Slash), !,
+absolute_file_name(Slash, Pin, Opt) :- ground(Slash), !,
    absolute_file_name2(Slash, Pin, Opt).
 absolute_file_name(Slash, Pin, Opt) :-
    sys_absolute_file_name2(Pin, Slash, Opt).
@@ -203,28 +203,28 @@ absolute_file_name2(Slash, _, _) :-
 sys_absolute_file_name(library(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library),file_extension(file)], J),
-   sys_find_key(J, C, [package(library),file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(library), file_extension(file)], J),
+   sys_find_key(J, C, [package(library), file_extension(file)], H),
    sys_set_context_property(Pin, C, H).
 /* verbatim */
 sys_absolute_file_name(verbatim(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library),file_extension(file),failure(child)], J),
-   sys_find_key(J, C, [package(library),file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(library), file_extension(file), failure(child)], J),
+   sys_find_key(J, C, [package(library), file_extension(file)], H),
    sys_set_context_property(Pin, C, H).
 /* foreign */
 sys_absolute_file_name(foreign(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(foreign),file_extension(file)], J),
-   sys_find_key(J, C, [package(foreign),file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(foreign), file_extension(file)], J),
+   sys_find_key(J, C, [package(foreign), file_extension(file)], H),
    sys_set_context_property(Pin, C, H).
 /* absolute and relative */
 sys_absolute_file_name(Slash, Pin) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_key(Path, C, [file_extension(file),failure(read)], H),
+   sys_find_key(Path, C, [file_extension(file), failure(read)], H),
    sys_set_context_property(Pin, C, H).
 :- set_predicate_property(sys_absolute_file_name/2, visible(private)).
 
@@ -248,15 +248,15 @@ sys_access_opt([_|L], V, W) :-
 :- set_predicate_property(sys_access_opt/3, visible(private)).
 
 :- foreign(sys_find_write/2, 'ForeignPath',
-      sysFindWrite('Interpreter','String')).
+      sysFindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_find_write/2, visible(private)).
 
 :- foreign(sys_find_prefix/4, 'ForeignPath',
-      sysFindPrefix('Interpreter','String','TermAtomic','Object')).
+      sysFindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_find_prefix/4, visible(private)).
 
 :- foreign(sys_find_key/4, 'ForeignPath',
-      sysFindKey('Interpreter','String','TermAtomic','Object')).
+      sysFindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_find_key/4, visible(private)).
 
 /****************************************************************/
@@ -266,16 +266,16 @@ sys_access_opt([_|L], V, W) :-
 % sys_absolute_file_name2(+Pin, -Spec)
 sys_absolute_file_name2(Pin, Slash) :-
    sys_context_property(Pin, C),
-   sys_unfind_key(Pin, C, [package(both),file_extension(file),failure(read)], H),
+   sys_unfind_key(Pin, C, [package(both), file_extension(file), failure(read)], H),
    sys_absolute_file_name3(H, C, Slash).
 :- set_predicate_property(sys_absolute_file_name2/2, visible(private)).
 
 % sys_absolute_file_name3(+Spec, +Context, -Spec)
 sys_absolute_file_name3(library(Path), C, Slash) :- !,
-   sys_unfind_prefix(Path, C, [package(library),file_extension(file),failure(child)], J),
+   sys_unfind_prefix(Path, C, [package(library), file_extension(file), failure(child)], J),
    sys_absolute_file_name4(J, C, Slash).
 sys_absolute_file_name3(foreign(Path), C, foreign(Slash)) :- !,
-   sys_unfind_prefix(Path, C, [package(foreign),file_extension(file)], J),
+   sys_unfind_prefix(Path, C, [package(foreign), file_extension(file)], J),
    sys_path_to_atom(H, J),
    sys_set_context_property(Slash, C, H).
 sys_absolute_file_name3(Path, C, Slash) :-
@@ -311,15 +311,15 @@ sys_absolute_file_name2(Pin, Slash, _) :-
 :- set_predicate_property(sys_is_relative_uri/1, visible(private)).
 
 :- foreign(sys_unfind_write/2, 'ForeignPath',
-      sysUnfindWrite('Interpreter','String')).
+      sysUnfindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_unfind_write/2, visible(private)).
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
-      sysUnfindKey('Interpreter','String','TermAtomic','Object')).
+      sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_unfind_key/4, visible(private)).
 
 :- foreign(sys_unfind_prefix/4, 'ForeignPath',
-      sysUnfindPrefix('Interpreter','String','TermAtomic','Object')).
+      sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
 :- set_predicate_property(sys_unfind_prefix/4, visible(private)).
 
 /****************************************************************/
@@ -340,13 +340,13 @@ absolute_resource_name(Slash, _) :-
 
 % sys_absolute_file_error(+Slash
 sys_absolute_file_error(library(Slash)) :-
-   throw(error(existence_error(library,Slash),_)).
+   throw(error(existence_error(library, Slash), _)).
 sys_absolute_file_error(foreign(Slash)) :-
-   throw(error(existence_error(class,Slash),_)).
+   throw(error(existence_error(class, Slash), _)).
 sys_absolute_file_error(verbatim(Slash)) :-
-   throw(error(existence_error(verbatim,Slash),_)).
+   throw(error(existence_error(verbatim, Slash), _)).
 sys_absolute_file_error(Slash) :-
-   throw(error(existence_error(source_sink,Slash),_)).
+   throw(error(existence_error(source_sink, Slash), _)).
 :- set_predicate_property(sys_absolute_file_error/1, visible(private)).
 
 /****************************************************************/
@@ -358,14 +358,14 @@ sys_absolute_file_error(Slash) :-
 sys_absolute_resource_name(library(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library),file_extension(resource)], J),
-   sys_find_key(J, C, [package(library),file_extension(resource)], H),
+   sys_find_prefix(Path, C, [package(library), file_extension(resource)], J),
+   sys_find_key(J, C, [package(library), file_extension(resource)], H),
    sys_set_context_property(Pin, C, H).
 /* absolute and relative */
 sys_absolute_resource_name(Slash, Pin) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_key(Path, C, [file_extension(resource),failure(read)], H),
+   sys_find_key(Path, C, [file_extension(resource), failure(read)], H),
    sys_set_context_property(Pin, C, H).
 :- set_predicate_property(sys_absolute_resource_name/2, visible(private)).
 
@@ -378,17 +378,15 @@ sys_absolute_resource_name(Slash, Pin) :-
  * Succeeds when B unifies with the atom representing the path A.
  */
 % sys_path_to_atom(+-Slash, -+Atom)
-sys_path_to_atom(Slash, Atom) :-
-   var(Atom), !,
+sys_path_to_atom(Slash, Atom) :- var(Atom), !,
    sys_path_to_atom1(Slash, Atom).
 sys_path_to_atom(Slash, Atom) :-
    sys_path_to_atom2(Atom, Slash).
 :- set_predicate_property(sys_path_to_atom/2, visible(private)).
 
 % sys_path_to_atom(+Slash, -Atom)
-sys_path_to_atom1(Slash, _) :-
-   var(Slash),
-   throw(error(instantiation_error,_)).
+sys_path_to_atom1(Slash, _) :- var(Slash),
+   throw(error(instantiation_error, _)).
 sys_path_to_atom1({Dir}, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(Y, [], Path).
@@ -399,11 +397,10 @@ sys_path_to_atom1(Dir/Name, Path) :- !,
 sys_path_to_atom1(../Dir, Path) :- !,
    sys_path_to_atom1(Dir, Y),
    sys_atom_concat(../, Y, Path).
-sys_path_to_atom1(X, Path) :-
-   sys_atom(X), !,
-   X = Path.
+sys_path_to_atom1(X, Path) :- sys_atom(X), !,
+   =(X, Path).
 sys_path_to_atom1(X, _) :-
-   throw(error(type_error(path,X),_)).
+   throw(error(type_error(path, X), _)).
 :- set_predicate_property(sys_path_to_atom1/2, visible(private)).
 
 % sys_path_to_atom2(+Atom, -Slash)
@@ -414,14 +411,14 @@ sys_path_to_atom2(Path, {Dir}) :-
 sys_path_to_atom2(Path, Dir/Name) :-
    last_sub_atom(Path, Before, _, After, /),
    sub_atom(Path, 0, Before, X),
-   \+ X = ..,
+   \+ =(X, ..),
    \+ last_sub_atom(X, _, 0, /..), !,
    last_sub_atom(Path, After, 0, Name),
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Path, ../Dir) :-
    sub_atom(Path, 0, _, After, ../),
    last_sub_atom(Path, After, 0, X),
-   \+ X = '', !,
+   \+ =(X, ''), !,
    sys_path_to_atom2(X, Dir).
 sys_path_to_atom2(Atom, Atom).
 :- set_predicate_property(sys_path_to_atom2/2, visible(private)).

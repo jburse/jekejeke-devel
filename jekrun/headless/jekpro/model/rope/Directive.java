@@ -1,11 +1,12 @@
 package jekpro.model.rope;
 
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -41,27 +42,28 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Directive extends Intermediate {
-    public final static int MASK_DIRE_NIST = 0x00000001;
+    public final static int MASK_DIRE_MORE = 0x00000001;
+    public final static int MASK_DIRE_LTGC = 0x00000002;
+    public final static int MASK_DIRE_SOFT = 0x00000004;
 
-    public final static int MASK_DIRE_NOBR = 0x00000010;
-    public final static int MASK_DIRE_STOP = 0x00000020;
-    public final static int MASK_DIRE_NBDY = 0x00000040;
-    public final static int MASK_DIRE_NLST = 0x00000080;
+    public final static int MASK_DIRE_PUSH = MASK_DIRE_LTGC |
+            AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
 
-    public final static int MASK_DIRE_LTGC = 0x00000100;
-    public final static int MASK_DIRE_MORE = 0x00000200;
-    public final static int MASK_DIRE_SOFT = 0x00000400;
-    public final static int MASK_DIRE_BACK = 0x00000800;
-
-    public final static int MASK_DIRE_CALL = MASK_DIRE_NOBR |
-            MASK_DIRE_STOP | MASK_DIRE_NBDY | MASK_DIRE_NLST |
-            MASK_DIRE_LTGC | MASK_DIRE_MORE | MASK_DIRE_SOFT |
-            MASK_DIRE_BACK;
+    public final static int MASK_DIRE_CALL = MASK_DIRE_MORE |
+            MASK_DIRE_LTGC | MASK_DIRE_SOFT | AbstractDefined.MASK_DEFI_NOBR |
+            AbstractDefined.MASK_DEFI_CALL | AbstractDefined.MASK_DEFI_NBCV |
+            AbstractDefined.MASK_DEFI_NIST | AbstractDefined.MASK_DEFI_NBDY |
+            AbstractDefined.MASK_DEFI_NHED;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;
 
-    public int size;
+    public final static int TYPE_CTRL_BEGN = 0;
+    public final static int TYPE_CTRL_CMMT = 1;
+    public final static int TYPE_CTRL_SBGN = 2;
+    public final static int TYPE_CTRL_SCMT = 3;
+    public final static int TYPE_CTRL_NONE = 4;
+
     public Intermediate last;
 
     /**
@@ -70,16 +72,7 @@ public class Directive extends Intermediate {
      * @param copt The directive option flags.
      */
     public Directive(int copt) {
-        if ((copt & AbstractDefined.MASK_DEFI_NLST) != 0)
-            flags |= MASK_DIRE_NLST;
-        if ((copt & AbstractDefined.MASK_DEFI_STOP) != 0)
-            flags |= MASK_DIRE_STOP;
-        if ((copt & AbstractDefined.MASK_DEFI_NBDY) != 0)
-            flags |= MASK_DIRE_NBDY;
-        if ((copt & AbstractDelegate.MASK_DELE_NOBR) != 0)
-            flags |= MASK_DIRE_NOBR;
-        if ((copt & AbstractDefined.MASK_DEFI_NIST) != 0)
-            flags |= MASK_DIRE_NIST;
+        flags = copt & Directive.MASK_DIRE_CALL;
     }
 
     /**
@@ -114,12 +107,32 @@ public class Directive extends Intermediate {
      * <p>Convert a body to intermediate form.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param body  The term list, or null.
+     * @param b     The body skeleton.
      * @param en    The engine.
      * @param close The close flag.
+     * @throws EngineMessage Shit happens.
      */
-    public void bodyToInter(Object body, Engine en, boolean close) {
-        Goal.bodyToInter(this, body, en);
+    public void bodyToInterSkel(Object b, Engine en, boolean close)
+            throws EngineMessage {
+        Goal.bodyToInterSkel(this, b, en);
+        if (close)
+            addInter(Success.DEFAULT, MASK_FIXUP_MARK);
+    }
+
+    /**
+     * <p>Convert a body to intermediate form.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param b     The body skeleton.
+     * @param c     The body display.
+     * @param en    The engine.
+     * @param close The close flag.
+     * @throws EngineMessage Shit happens.
+     */
+    public void bodyToInter(Object b, Display c, Engine en, boolean close)
+            throws EngineMessage {
+        SupervisorCall ec = en.visor.getCall();
+        ec.bodyToInter(this, b, c, en);
         if (close)
             addInter(Success.DEFAULT, MASK_FIXUP_MARK);
     }
@@ -153,12 +166,10 @@ public class Directive extends Intermediate {
         if (last != null) {
             do {
                 temp = temp.next;
-                Object left = temp.term;
+                Object left = ((Goal) temp).term;
                 if (isAlternative(left) || isGuard(left)) {
                     left = alternativeToDisjunction(left, en);
-                } else if (isBegin(left) || isSoftBegin(left)) {
-                    continue;
-                } else if (isCommit(left) || isSoftCommit(left)) {
+                } else if (controlType(left) != TYPE_CTRL_NONE) {
                     continue;
                 }
                 if (t != null) {
@@ -224,12 +235,13 @@ public class Directive extends Intermediate {
      * @return The vector.
      */
     private Object interToBranch(Engine en) {
-        if (last != null && isBegin(next.term)) {
+        int type = TYPE_CTRL_NONE;
+        if (last != null && (type = controlType(((Goal) next).term)) == TYPE_CTRL_BEGN) {
             Intermediate split = findSplit(this, last);
             Object left = interToBody(this, split, en);
             Object right = interToBody(split, last, en);
             return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
-        } else if (last != null && isSoftBegin(next.term)) {
+        } else if (last != null && type == TYPE_CTRL_SBGN) {
             Intermediate split = findSoftSplit(this, last);
             Object left = interToBody(this, split, en);
             Object right = interToBody(split, last, en);
@@ -251,7 +263,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (isCommit(temp.term))
+                if (controlType(((Goal) temp).term) == TYPE_CTRL_CMMT)
                     return back;
             } while (temp != last);
         }
@@ -270,7 +282,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (isSoftCommit(temp.term))
+                if (controlType(((Goal) temp).term) == TYPE_CTRL_SCMT)
                     return back;
             } while (temp != last);
         }
@@ -310,62 +322,26 @@ public class Directive extends Intermediate {
     }
 
     /**
-     * <p>Check whether the given term is an alternative.</p>
+     * <p>Determine the control type.</p>
      *
      * @param term The term.
-     * @return True if the term is an alterantive.
+     * @return The control type.
      */
-    public static boolean isBegin(Object term) {
+    public static int controlType(Object term) {
         if (term instanceof SkelAtom &&
                 ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a commit.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a commit.
-     */
-    public static boolean isCommit(Object term) {
-        if (term instanceof SkelAtom &&
+            return TYPE_CTRL_BEGN;
+        } else if (term instanceof SkelAtom &&
                 ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isSoftBegin(Object term) {
-        if (term instanceof SkelAtom &&
+            return TYPE_CTRL_CMMT;
+        } else if (term instanceof SkelAtom &&
                 ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a commit.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a commit.
-     */
-    public static boolean isSoftCommit(Object term) {
-        if (term instanceof SkelAtom &&
+            return TYPE_CTRL_SBGN;
+        } else if (term instanceof SkelAtom &&
                 ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
-            return true;
+            return TYPE_CTRL_SCMT;
         } else {
-            return false;
+            return TYPE_CTRL_NONE;
         }
     }
 
@@ -383,7 +359,7 @@ public class Directive extends Intermediate {
         if (last == null) {
             next = inter;
         } else {
-            Object term = last.term;
+            Object term = ((Goal) last).term;
             if (isAlternative(term) || isGuard(term)) {
                 while (isAlternative(term)) {
                     SkelCompound sc = (SkelCompound) term;
@@ -399,7 +375,7 @@ public class Directive extends Intermediate {
             }
             last.next = inter;
             if ((mask & MASK_FIXUP_MARK) != 0) {
-                if ((flags & Directive.MASK_DIRE_STOP) == 0)
+                if ((flags & AbstractDefined.MASK_DEFI_NLST) == 0)
                     last.flags |= Goal.MASK_GOAL_CEND;
             }
         }

@@ -1,14 +1,15 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
@@ -95,13 +96,10 @@ public final class SpecialQuali extends AbstractSpecial {
                 SkelAtom mod = modToAtom(obj, temp.args[0], ref, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToRoutine(mod, temp.sym, true, en);
-                ref = en.display;
-                boolean multi = ref.getAndReset();
-                Directive dire = en.store.foyer.CLAUSE_TRAN;
-                Display d3 = new Display(dire.size);
-                d3.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+
+                Directive dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                Display d3 = en.display;
+
                 CallFrame ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
@@ -120,13 +118,10 @@ public final class SpecialQuali extends AbstractSpecial {
                 mod = objToAtom(obj, recv, d2, en);
                 SpecialQuali.colonToCallable(temp.args[1], ref, true, en);
                 SpecialQuali.colonToMethod(mod, temp.sym, recv, d2, true, en);
-                ref = en.display;
-                multi = ref.getAndReset();
-                dire = en.store.foyer.CLAUSE_TRAN;
-                d3 = new Display(dire.size);
-                d3.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+
+                dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                d3 = en.display;
+
                 ref2 = CallFrame.getFrame(d3, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
@@ -489,7 +484,7 @@ public final class SpecialQuali extends AbstractSpecial {
      * <p>Convert an indicator to a qualified indicator.</p>
      *
      * @param fun   The name.
-     * @param scope The scope, not null.
+     * @param scope The scope, non null.
      * @param arity The length.
      * @param en    The engine.
      * @return The colon indictor
@@ -675,7 +670,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = d2;
             }
             en.deref();
-            if (EngineCopy.getVar(en.skel) != null) {
+            if (SupervisorCopy.getVar(en.skel) != null) {
                 countvar++;
                 if (last == Display.DISPLAY_CONST) {
                     last = en.display;
@@ -729,7 +724,7 @@ public final class SpecialQuali extends AbstractSpecial {
                 en.display = d2;
             }
             en.deref();
-            if (multi && EngineCopy.getVar(en.skel) != null) {
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
                 d4.bind[sv.id].bindUniv(en.skel, en.display, en);

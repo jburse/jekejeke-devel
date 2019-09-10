@@ -105,7 +105,7 @@
  * power of Y.
  */
 :- public ** /3.
-:- foreign_fun(** /3, 'Math', pow(double,double)).
+:- foreign_fun(** /3, 'Math', pow(double, double)).
 
 /**
  * exp(X): [ISO 9.3.5]
@@ -152,12 +152,10 @@
  * result is in radians.
  */
 :- public atan2/3.
-atan2(X, Y, _) :-
-   X =:= 0,
-   Y =:= 0,
-   throw(error(evaluation_error(undefined),_)).
+atan2(X, Y, _) :- X =:= 0, Y =:= 0,
+   throw(error(evaluation_error(undefined), _)).
 atan2(X, Y, Z) :-
-   Z is sys_atan2(X,Y).
+   Z is sys_atan2(X, Y).
 
 :- private sys_atan2/3.
-:- foreign_fun(sys_atan2/3, 'Math', atan2(double,double)).
+:- foreign_fun(sys_atan2/3, 'Math', atan2(double, double)).

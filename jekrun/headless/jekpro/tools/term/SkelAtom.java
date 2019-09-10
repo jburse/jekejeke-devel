@@ -57,7 +57,7 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
     /**
      * <p>Create an atom from a string.</p>
      *
-     * @param f The string, not null.
+     * @param f The string, non null.
      */
     public SkelAtom(String f) {
         if (f == null)
@@ -69,8 +69,8 @@ public class SkelAtom extends AbstractSkel implements Comparable<SkelAtom> {
     /**
      * <p>Create an atom from a string and a source.</p>
      *
-     * @param f The string, not null.
-     * @param s The source, not null.
+     * @param f The string, non null.
+     * @param s The source, non null.
      */
     public SkelAtom(String f, AbstractSource s) {
         if (f == null)

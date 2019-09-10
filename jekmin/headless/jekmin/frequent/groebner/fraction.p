@@ -78,7 +78,7 @@
 % -(+Fracton, -Fracton)
 :- override (-)/2.
 :- public (-)/2.
--(fraction(A,B), fraction(C,B)) :-
+-(fraction(A, B), fraction(C, B)) :-
    C is -A.
 
 /**
@@ -88,19 +88,17 @@
 % +(+Fracton, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, R) :-
-   integer(Y), !,
-   fraction: +(X, fraction(Y,1), R).
-+(X, rational(C,D), R) :- !,
-   fraction: +(X, fraction(rational(C,D),1), R).
-+(X, radical(C,D), R) :- !,
-   fraction: +(X, fraction(radical(C,D),1), R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   fraction: +(X, fraction(Y,1), R).
-+(X, polynom(C,D), R) :- !,
-   fraction: +(X, fraction(polynom(C,D),1), R).
-+(fraction(A,B), fraction(C,D), R) :-
++(X, Y, R) :- integer(Y), !,
+   fraction: +(X, fraction(Y, 1), R).
++(X, rational(C, D), R) :- !,
+   fraction: +(X, fraction(rational(C, D), 1), R).
++(X, radical(C, D), R) :- !,
+   fraction: +(X, fraction(radical(C, D), 1), R).
++(X, Y, R) :- sys_freezer(Y), !,
+   fraction: +(X, fraction(Y, 1), R).
++(X, polynom(C, D), R) :- !,
+   fraction: +(X, fraction(polynom(C, D), 1), R).
++(fraction(A, B), fraction(C, D), R) :-
    H is A*D+B*C,
    J is B*D,
    make_fraction(H, J, R).
@@ -112,19 +110,17 @@
 % -(+Fracton, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, R) :-
-   integer(Y), !,
-   fraction: -(X, fraction(Y,1), R).
--(X, rational(C,D), R) :- !,
-   fraction: -(X, fraction(rational(C,D),1), R).
--(X, radical(C,D), R) :- !,
-   fraction: -(X, fraction(radical(C,D),1), R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   fraction: -(X, fraction(Y,1), R).
--(X, polynom(C,D), R) :- !,
-   fraction: -(X, fraction(polynom(C,D),1), R).
--(fraction(A,B), fraction(C,D), R) :-
+-(X, Y, R) :- integer(Y), !,
+   fraction: -(X, fraction(Y, 1), R).
+-(X, rational(C, D), R) :- !,
+   fraction: -(X, fraction(rational(C, D), 1), R).
+-(X, radical(C, D), R) :- !,
+   fraction: -(X, fraction(radical(C, D), 1), R).
+-(X, Y, R) :- sys_freezer(Y), !,
+   fraction: -(X, fraction(Y, 1), R).
+-(X, polynom(C, D), R) :- !,
+   fraction: -(X, fraction(polynom(C, D), 1), R).
+-(fraction(A, B), fraction(C, D), R) :-
    H is A*D-B*C,
    J is B*D,
    make_fraction(H, J, R).
@@ -136,19 +132,17 @@
 % *(+Fracton, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(X, Y, R) :-
-   integer(Y), !,
-   fraction: *(X, fraction(Y,1), R).
-*(X, rational(C,D), R) :- !,
-   fraction: *(X, fraction(rational(C,D),1), R).
-*(X, radical(C,D), R) :- !,
-   fraction: *(X, fraction(radical(C,D),1), R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   fraction: *(X, fraction(Y,1), R).
-*(X, polynom(C,D), R) :- !,
-   fraction: *(X, fraction(polynom(C,D),1), R).
-*(fraction(A,B), fraction(C,D), R) :-
+*(X, Y, R) :- integer(Y), !,
+   fraction: *(X, fraction(Y, 1), R).
+*(X, rational(C, D), R) :- !,
+   fraction: *(X, fraction(rational(C, D), 1), R).
+*(X, radical(C, D), R) :- !,
+   fraction: *(X, fraction(radical(C, D), 1), R).
+*(X, Y, R) :- sys_freezer(Y), !,
+   fraction: *(X, fraction(Y, 1), R).
+*(X, polynom(C, D), R) :- !,
+   fraction: *(X, fraction(polynom(C, D), 1), R).
+*(fraction(A, B), fraction(C, D), R) :-
    H is A*C,
    J is B*D,
    make_fraction(H, J, R).
@@ -160,19 +154,17 @@
 % /(+Fracton, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(X, Y, R) :-
-   integer(Y), !,
-   fraction: /(X, fraction(Y,1), R).
-/(X, rational(C,D), R) :- !,
-   fraction: /(X, fraction(rational(C,D),1), R).
-/(X, radical(C,D), R) :- !,
-   fraction: /(X, fraction(radical(C,D),1), R).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
-   fraction: /(X, fraction(Y,1), R).
-/(X, polynom(C,D), R) :- !,
-   fraction: /(X, fraction(polynom(C,D),1), R).
-/(fraction(A,B), fraction(C,D), R) :-
+/(X, Y, R) :- integer(Y), !,
+   fraction: /(X, fraction(Y, 1), R).
+/(X, rational(C, D), R) :- !,
+   fraction: /(X, fraction(rational(C, D), 1), R).
+/(X, radical(C, D), R) :- !,
+   fraction: /(X, fraction(radical(C, D), 1), R).
+/(X, Y, R) :- sys_freezer(Y), !,
+   fraction: /(X, fraction(Y, 1), R).
+/(X, polynom(C, D), R) :- !,
+   fraction: /(X, fraction(polynom(C, D), 1), R).
+/(fraction(A, B), fraction(C, D), R) :-
    H is A*D,
    J is B*C,
    make_fraction(H, J, R).
@@ -184,14 +176,13 @@
 % ^(+Fracton, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(fraction(A,B), Y, R) :-
-   user:(Y < 0), !,
+^(fraction(A, B), Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    new_fraction(B, A, H),
    R is H^Z.
 ^(_, 0, R) :- !,
    R = 1.
-^(fraction(A,B), Y, fraction(H,J)) :-
+^(fraction(A, B), Y, fraction(H, J)) :-
    H is A^Y,
    J is B^Y.
 
@@ -222,26 +213,24 @@ sys_poly_norm(F, G, A, B) :-
 sys_poly_lcm(A, B, C) :-
    S is A*Z,
    T is B*(1-Z),
-   sys_poly_groeb([S,T], L),
+   sys_poly_groeb([S, T], L),
    sys_poly_min(L, C).
 
 % new_fraction(+Internal, +Internal, -Internal)
 :- public new_fraction/3.
 new_fraction(_, 0, _) :-
-   throw(error(evaluation_error(zero_divisor),_)).
+   throw(error(evaluation_error(zero_divisor), _)).
 new_fraction(0, _, R) :- !,
    R = 0.
-new_fraction(U, V, R) :-
-   integer(V), !,
+new_fraction(U, V, R) :- integer(V), !,
    R is U/V.
-new_fraction(U, rational(C,D), R) :- !,
-   R is U/rational(C,D).
-new_fraction(U, radical(C,D), R) :- !,
-   R is U/radical(C,D).
+new_fraction(U, rational(C, D), R) :- !,
+   R is U/rational(C, D).
+new_fraction(U, radical(C, D), R) :- !,
+   R is U/radical(C, D).
 new_fraction(U, V, R) :-
    sys_poly_factor(V, K),
-   K \== 1,
-   K \== -1, !,
+   K \== 1, K \== -1, !,
    L is 1/K,
    A is L*U,
    B is L*V,
@@ -256,8 +245,8 @@ new_fraction2(U, V, R) :-
    S \== 1, !,
    A is -U,
    B is -V,
-   R = fraction(A,B).
-new_fraction2(A, B, fraction(A,B)).
+   R = fraction(A, B).
+new_fraction2(A, B, fraction(A, B)).
 
 /*********************************************************************/
 /* Polynomial Groebner                                               */
@@ -295,7 +284,7 @@ sys_poly_groeb(L, P, V) :-
    nth0(J, U, M, S),
    sys_poly_groeb(U, P, V).
 sys_poly_groeb(L, P, R) :-
-   sys_pair_best(P, L, (I,J), _, H), !,
+   sys_pair_best(P, L, (I, J), _, H), !,
    nth0(I, L, X),
    nth0(J, L, Y),
    sys_poly_pair(X, Y, Z),
@@ -307,7 +296,7 @@ sys_poly_groeb(L, _, L).
 
 % sys_nudge_pairs(+List, -List)
 :- private sys_nudge_pairs/2.
-sys_nudge_pairs([(A,B)|L], [(C,D)|R]) :-
+sys_nudge_pairs([(A, B)|L], [(C, D)|R]) :-
    user: +(A, 1, C),
    user: +(B, 1, D),
    sys_nudge_pairs(L, R).
@@ -316,17 +305,17 @@ sys_nudge_pairs([], []).
 % sys_new_pairs(+Integer, +List, -List)
 :- private sys_new_pairs/3.
 sys_new_pairs(0, L, L) :- !.
-sys_new_pairs(N, L, [(0,N)|R]) :-
+sys_new_pairs(N, L, [(0, N)|R]) :-
    user: -(N, 1, M),
    sys_new_pairs(M, L, R).
 
 % sys_shrink_pairs(+List, +Integer, -List)
 :- private sys_shrink_pairs/3.
-sys_shrink_pairs([(K,_)|L], K, R) :- !,
+sys_shrink_pairs([(K, _)|L], K, R) :- !,
    sys_shrink_pairs(L, K, R).
-sys_shrink_pairs([(_,K)|L], K, R) :- !,
+sys_shrink_pairs([(_, K)|L], K, R) :- !,
    sys_shrink_pairs(L, K, R).
-sys_shrink_pairs([(A,B)|L], K, [(C,D)|R]) :-
+sys_shrink_pairs([(A, B)|L], K, [(C, D)|R]) :-
    sys_shrink_index(A, K, C),
    sys_shrink_index(B, K, D),
    sys_shrink_pairs(L, K, R).
@@ -334,8 +323,7 @@ sys_shrink_pairs([], _, []).
 
 % sys_shrink_index(+Integer, +Integer, -Integer)
 :- private sys_shrink_index/3.
-sys_shrink_index(A, K, C) :-
-   user:(A > K), !,
+sys_shrink_index(A, K, C) :- user:(A > K), !,
    user: -(A, 1, C).
 sys_shrink_index(A, _, A).
 
@@ -345,22 +333,18 @@ sys_shrink_index(A, _, A).
 
 % sys_pair_best(+List, +List, -Pair, -Integer, -List)
 :- private sys_pair_best/5.
-sys_pair_best([A,Q|R], L, C, F, J) :-
+sys_pair_best([A, Q|R], L, C, F, J) :-
    sys_pair_best([Q|R], L, B, E, H),
    sys_pair_score(A, L, D),
    (  sys_head_compare(>, D, E)
-   -> C = A,
-      F = D,
-      J = [B|H]
-   ;  C = B,
-      F = E,
-      J = [A|H]).
+   -> C = A, F = D, J = [B|H]
+   ;  C = B, F = E, J = [A|H]).
 sys_pair_best([A], L, A, D, []) :-
    sys_pair_score(A, L, D).
 
 % sys_pair_score(+Pair, +List, -Integer)
 :- private sys_pair_score/3.
-sys_pair_score((I,J), L, D) :-
+sys_pair_score((I, J), L, D) :-
    nth0(I, L, X),
    nth0(J, L, Y),
    sys_poly_score(X, Y, D).
@@ -388,38 +372,36 @@ sys_poly_pair(X, Y, Z) :-
 
 % sys_head_gcd(+Monomial, +Monomial, -Monomial)
 :- private sys_head_gcd/3.
-sys_head_gcd(polynom(A,[_-B]), polynom(C,D), R) :-
-   A @> C, !,
-   sys_head_gcd(B, polynom(C,D), R).
-sys_head_gcd(polynom(A,[N-B]), polynom(A,[M-D]), R) :- !,
+sys_head_gcd(polynom(A, [_-B]), polynom(C, D), R) :- A @> C, !,
+   sys_head_gcd(B, polynom(C, D), R).
+sys_head_gcd(polynom(A, [N-B]), polynom(A, [M-D]), R) :- !,
    sys_head_gcd(B, D, H),
    user:min(N, M, K),
-   R = polynom(A,[K-H]).
-sys_head_gcd(polynom(A,B), polynom(_,[_-D]), R) :- !,
-   sys_head_gcd(polynom(A,B), D, R).
-sys_head_gcd(polynom(_,[_-B]), Y, R) :- !,
+   R = polynom(A, [K-H]).
+sys_head_gcd(polynom(A, B), polynom(_, [_-D]), R) :- !,
+   sys_head_gcd(polynom(A, B), D, R).
+sys_head_gcd(polynom(_, [_-B]), Y, R) :- !,
    sys_head_gcd(B, Y, R).
-sys_head_gcd(X, polynom(_,[_-D]), R) :- !,
+sys_head_gcd(X, polynom(_, [_-D]), R) :- !,
    sys_head_gcd(X, D, R).
 sys_head_gcd(_, _, 1).
 
 % sys_head_div(+Monomial, +Monomial, -Internal)
 :- private sys_head_div/3.
-sys_head_div(polynom(A,[N-B]), polynom(C,D), R) :-
-   A @> C, !,
-   sys_head_div(B, polynom(C,D), H),
+sys_head_div(polynom(A, [N-B]), polynom(C, D), R) :- A @> C, !,
+   sys_head_div(B, polynom(C, D), H),
    sys_make_poly([N-H], A, R).
-sys_head_div(polynom(A,[N-B]), polynom(A,[M-D]), R) :- !,
+sys_head_div(polynom(A, [N-B]), polynom(A, [M-D]), R) :- !,
    sys_head_div(B, D, H),
    user: -(N, M, K),
    sys_make_poly([K-H], A, R).
-sys_head_div(polynom(_,_), polynom(_,_), _) :-
-   throw(error(illegal_state,_)).
-sys_head_div(polynom(A,[N-B]), Y, R) :- !,
+sys_head_div(polynom(_, _), polynom(_, _), _) :-
+   throw(error(illegal_state, _)).
+sys_head_div(polynom(A, [N-B]), Y, R) :- !,
    sys_head_div(B, Y, H),
    sys_make_poly([N-H], A, R).
-sys_head_div(_, polynom(_,_), _) :-
-   throw(error(illegal_state,_)).
+sys_head_div(_, polynom(_, _), _) :-
+   throw(error(illegal_state, _)).
 sys_head_div(X, _, X).
 
 /*********************************************************************/
@@ -428,7 +410,7 @@ sys_head_div(X, _, X).
 
 % sys_poly_min(+List, -Internal)
 :- private sys_poly_min/2.
-sys_poly_min([X,Y|L], R) :-
+sys_poly_min([X, Y|L], R) :-
    sys_poly_min([Y|L], H),
    sys_poly_compare(O, X, H),
    O \== <, !,
@@ -444,23 +426,21 @@ sys_poly_compare(O, F, G) :-
 
 % sys_head_compare(-Ordering, +Monominal, +Monomial)
 :- private sys_head_compare/3.
-sys_head_compare(O, polynom(A,_), polynom(C,_)) :-
-   A @> C, !,
+sys_head_compare(O, polynom(A, _), polynom(C, _)) :- A @> C, !,
    O = > .
-sys_head_compare(O, polynom(A,B), polynom(A,D)) :- !,
+sys_head_compare(O, polynom(A, B), polynom(A, D)) :- !,
    sys_coeff_compare(O, B, D).
-sys_head_compare(O, polynom(_,_), polynom(_,_)) :- !,
+sys_head_compare(O, polynom(_, _), polynom(_, _)) :- !,
    O = < .
-sys_head_compare(O, polynom(_,_), _) :- !,
+sys_head_compare(O, polynom(_, _), _) :- !,
    O = > .
-sys_head_compare(O, _, polynom(_,_)) :- !,
+sys_head_compare(O, _, polynom(_, _)) :- !,
    O = < .
 sys_head_compare(=, _, _).
 
 % sys_coeff_compare(-Ordering, +List, +List)
 :- private sys_coeff_compare/3.
-sys_coeff_compare(O, [N-_], [M-_]) :-
-   user:(N > M), !,
+sys_coeff_compare(O, [N-_], [M-_]) :- user:(N > M), !,
    O = > .
 sys_coeff_compare(O, [N-A], [N-B]) :- !,
    sys_head_compare(O, A, B).
@@ -478,35 +458,34 @@ sys_coeff_compare(<, _, _).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(fraction(A,B), F) :-
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(fraction(A, B), F) :-
    sys_poly_div(A, B, Q, R),
    Q \== 0, !,
    printable(Q, K),
-   sys_make_addition(K, fraction(R,B), F).
-residue:sys_printable_value(fraction(A,B), F) :-
+   sys_make_addition(K, fraction(R, B), F).
+residue:sys_printable_value(fraction(A, B), F) :-
    sys_poly_sign(A, S),
    S \== 1, !,
    C is -A,
    printable(C, H),
    printable(B, J),
    F = -H/J.
-residue:sys_printable_value(fraction(A,B), F) :- !,
+residue:sys_printable_value(fraction(A, B), F) :- !,
    printable(A, H),
    printable(B, J),
    F = H/J.
 
 % sys_make_addition(+External, +Fraction, -External)
 :- private sys_make_addition/3.
-sys_make_addition(K, fraction(R,B), F) :-
+sys_make_addition(K, fraction(R, B), F) :-
    sys_poly_sign(R, S),
    S \== 1, !,
    T is -R,
    printable(T, H),
    printable(B, J),
    F = K-H/J.
-sys_make_addition(K, fraction(R,B), F) :-
+sys_make_addition(K, fraction(R, B), F) :-
    printable(R, H),
    printable(B, J),
    F = K+H/J.
@@ -523,14 +502,13 @@ sys_make_addition(K, fraction(R,B), F) :-
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is fraction(A,B)) :- !,
-   X = fraction(A,B).
+generic:(X is fraction(A, B)) :- !,
+   X = fraction(A, B).
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(fraction(_,_)).
+generic:is_abnormal(fraction(_, _)).

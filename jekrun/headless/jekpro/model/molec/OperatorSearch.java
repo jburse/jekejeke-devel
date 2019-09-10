@@ -95,8 +95,8 @@ public final class OperatorSearch {
         String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             /* find name%oper */
             s = base.getFullName();
@@ -126,41 +126,43 @@ public final class OperatorSearch {
     /**
      * <p>Define an operator with module lookup.</p>
      *
-     * @param key    The operator name.
-     * @param type   The operator type.
-     * @param scope  The call-site, non-null.
-     * @param base   The lookup base, non-null.
-     * @param en     The engine.
-     * @param create The no create flag.
+     * @param sa   The operator name.
+     * @param type The operator type.
+     * @param src  The call-site, non-null.
+     * @param base The lookup base, non-null.
+     * @param en   The engine.
+     * @param copt The create flag.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Operator performLookupDefined(String key, int type,
-                                                 AbstractSource scope,
+    private static Operator performLookupDefined(SkelAtom sa, int type,
+                                                 AbstractSource src,
                                                  AbstractSource base,
-                                                 Engine en, boolean create)
+                                                 Engine en, int copt)
             throws InterruptedException, EngineMessage {
         String n;
-        if (!CacheFunctor.isQuali(key)) {
-            n = key;
+        if (!CacheFunctor.isQuali(sa.fun)) {
+            n = sa.fun;
         } else {
-            n = CacheFunctor.sepName(key);
+            n = CacheFunctor.sepName(sa.fun);
         }
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             String s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
-                /* create name%oper */
+                /* create name%oper §*/
                 s = CacheFunctor.composeQuali(s, n);
-                return (create ? base.defineOper(type, s, scope, en) :
+                return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
+                        base.defineOper(type, s, sa, en) :
                         base.getOper(type, s));
             } else {
                 /* create oper */
-                return (create ? defineOperUser(type, n, scope, en) :
-                        getOperUser(type, n, scope.getStore()));
+                return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
+                        defineOperUser(type, n, sa, src.getStore(), en) :
+                        getOperUser(type, n, src.getStore()));
             }
         } finally {
             base.getRead().unlock();
@@ -191,8 +193,8 @@ public final class OperatorSearch {
         String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.systemError(
-                    EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+            throw new EngineMessage(EngineMessage.limitError(
+                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
             s = base.getFullName();
             deps2 = base.snapshotDeps();
@@ -251,7 +253,7 @@ public final class OperatorSearch {
      *
      * @param key  The operator name.
      * @param type The operator type.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param deps The deps.
      * @return The resolved operator or null.
      * @throws EngineMessage        Shit happens.
@@ -272,8 +274,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
@@ -299,7 +301,7 @@ public final class OperatorSearch {
      *
      * @param fun     The name.
      * @param type    The type.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param deps    The deps.
      * @param visited The visited sources.
      * @return The operator or null.
@@ -321,8 +323,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
@@ -348,7 +350,7 @@ public final class OperatorSearch {
      *
      * @param key  The operator name.
      * @param type The operator type.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param deps The deps.
      * @return The resolved operator or null.
      * @throws EngineMessage        Shit happens.
@@ -369,8 +371,8 @@ public final class OperatorSearch {
             MapEntry<AbstractSource, Integer>[] deps2;
             /* wait for complete source */
             if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
@@ -429,28 +431,27 @@ public final class OperatorSearch {
     /**
      * <p>Define an operator with module lookup.</p>
      *
-     * @param sa     The atom skeleton.
-     * @param type   The type.
-     * @param en     The engine.
-     * @param create The no create flag.
+     * @param sa   The atom skeleton.
+     * @param type The type.
+     * @param en   The engine.
+     * @param copt The create flag.
      */
     public static Operator getOperDefined(SkelAtom sa, int type,
                                           Engine en,
-                                          boolean create)
+                                          int copt)
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             AbstractSource base = performBase(sa.fun, src, en);
-            Operator oper = performLookupDefined(sa.fun, type, src,
-                    base, en, create);
-            if (oper != null && OperatorSearch.visibleOper(oper, src))
-                return oper;
-            if (create)
+            Operator oper = performLookupDefined(sa, type, src,
+                    base, en, copt);
+            if ((copt & CachePredicate.MASK_CACH_CRTE) != 0 &&
+                    (oper == null || !OperatorSearch.visibleOper(oper, src)))
                 throw new EngineMessage(EngineMessage.permissionError(
                         EngineMessage.OP_PERMISSION_MODIFY,
                         EngineMessage.OP_PERMISSION_OPERATOR,
                         SpecialOper.operToColonSkel(type, sa, en)));
-            return null;
+            return oper;
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -484,20 +485,20 @@ public final class OperatorSearch {
      *
      * @param type  The type.
      * @param fun   The name.
-     * @param scope The call-site, not null.
+     * @param sa    The call-site, non null.
+     * @param store The store.
      * @param en    The engine.
      * @return The operator.
      * @throws EngineMessage Shit happens.
      */
     private static Operator defineOperUser(int type, String fun,
-                                           AbstractSource scope,
-                                           Engine en)
+                                           SkelAtom sa,
+                                           Store store, Engine en)
             throws EngineMessage {
-        Store store = scope.getStore();
         Operator oper = getOperUser(type, fun, store.parent);
         if (oper == null)
-            oper = store.user.checkOper(type, fun, scope);
-        oper.addDef(scope, en);
+            oper = store.user.checkOper(type, fun, sa, en);
+        oper.addDef(sa, en);
         return oper;
     }
 
@@ -525,8 +526,8 @@ public final class OperatorSearch {
     /**
      * <p>Check whether this source has the same home as another source.</p>
      *
-     * @param fst The first source, not null.
-     * @param snd The second source, not null.
+     * @param fst The first source, non null.
+     * @param snd The second source, non null.
      * @return True if the two sources share the same home, otherwise false.
      */
     public static boolean sameHome(AbstractSource fst, AbstractSource snd) {
@@ -548,8 +549,8 @@ public final class OperatorSearch {
     /**
      * <p>Check whether this source has the same package as another source.</p>
      *
-     * @param fst The first source, not null.
-     * @param snd The second source, not null.
+     * @param fst The first source, non null.
+     * @param snd The second source, non null.
      * @return True if the two sources share the same package, otherwise false.
      */
     public static boolean samePackage(AbstractSource fst, AbstractSource snd) {

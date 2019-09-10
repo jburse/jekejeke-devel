@@ -91,7 +91,7 @@ final class ChoiceForeign extends AbstractChoice {
         }
 
         Intermediate ir = goalskel;
-        Object term = ir.term;
+        Object term = ((Goal) ir).term;
         Display ref = goaldisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */

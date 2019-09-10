@@ -67,7 +67,7 @@ final class Index {
      * @return The indexing value, or null.
      */
     static Object indexValue(int at, Clause clause) {
-        SkelCompound tc = (SkelCompound) clause.term;
+        SkelCompound tc = (SkelCompound) clause.head;
         Object term = tc.args[at];
         if (term instanceof SkelVar) {
             return getGuard(clause.next, term);
@@ -103,7 +103,7 @@ final class Index {
      */
     private static Object getGuard(Intermediate list, Object sv) {
         while (list instanceof Goal) {
-            Object molec = list.term;
+            Object molec = ((Goal) list).term;
             if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 1 &&
                     ((SkelCompound) molec).sym.fun.equals(Index.OP_VAR)) {

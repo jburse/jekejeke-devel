@@ -15,7 +15,6 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -54,20 +53,24 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
          = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
 
     private final static String OP_OP = "op";
-    private final static String OP_NSPL = "nspl";
-    private final static String OP_NSPR = "nspr";
     private final static String OP_SYS_PORTRAY = "sys_portray";
     private final static String OP_SYS_ALIAS = "sys_alias";
+    private final static String OP_SYS_TABR = "sys_tabr";
+    private final static String OP_SYS_NSPL = "sys_nspl";
+    private final static String OP_SYS_NSPR = "sys_nspr";
+    private final static String OP_SYS_NEWR = "sys_newr";
 
     private static final int PROP_VISIBLE = 0;
     private static final int PROP_OP = 1;
-    private static final int PROP_NSPL = 2;
-    private static final int PROP_NSPR = 3;
-    private static final int PROP_OVERRIDE = 4;
-    private static final int PROP_SYS_USAGE = 5;
-    private static final int PROP_SYS_PORTRAY = 6;
-    private static final int PROP_SYS_ALIAS = 7;
-    private static final int PROP_FULL_NAME = 8;
+    private static final int PROP_OVERRIDE = 2;
+    private static final int PROP_SYS_USAGE = 3;
+    private static final int PROP_SYS_PORTRAY = 4;
+    private static final int PROP_SYS_ALIAS = 5;
+    private static final int PROP_SYS_TABR = 6;
+    private static final int PROP_SYS_NSPL = 7;
+    private static final int PROP_SYS_NSPR = 8;
+    private static final int PROP_SYS_NEWR = 9;
+    private static final int PROP_FULL_NAME = 10;
 
     static {
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE,
@@ -75,16 +78,16 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                         AbstractProperty.MASK_PROP_PRJF));
         DEFAULT.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        DEFAULT.add(new StoreKey(OP_NSPL, 0), new PropertyOperator(PROP_NSPL,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        DEFAULT.add(new StoreKey(OP_NSPR, 0), new PropertyOperator(PROP_NSPR,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
         DEFAULT.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(OP_SYS_ALIAS, 1), new PropertyOperator(PROP_SYS_ALIAS,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_TABR, 0), new PropertyOperator(PROP_SYS_TABR));
+        DEFAULT.add(new StoreKey(OP_SYS_NSPL, 0), new PropertyOperator(PROP_SYS_NSPL));
+        DEFAULT.add(new StoreKey(OP_SYS_NSPR, 0), new PropertyOperator(PROP_SYS_NSPR));
+        DEFAULT.add(new StoreKey(OP_SYS_NEWR, 0), new PropertyOperator(PROP_SYS_NEWR));
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
     }
 
@@ -140,18 +143,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_NSPL:
-                if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
-                    return new Object[]{new SkelAtom(OP_NSPL)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_NSPR:
-                if ((oper.getBits() & Operator.MASK_OPER_NSPR) != 0) {
-                    return new Object[]{new SkelAtom(OP_NSPR)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
             case PROP_OVERRIDE:
                 if ((oper.getBits() & Operator.MASK_OPER_OVRD) != 0) {
                     return new Object[]{new SkelAtom(PropertyPredicate.OP_OVERRIDE)};
@@ -182,6 +173,30 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     Object val = new SkelAtom(str);
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                             new SkelAtom(OP_SYS_ALIAS), val), Display.DISPLAY_CONST)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
+            case PROP_SYS_TABR:
+                if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_TABR)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
+            case PROP_SYS_NSPL:
+                if ((oper.getBits() & Operator.MASK_OPER_NSPL) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NSPL)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
+            case PROP_SYS_NSPR:
+                if ((oper.getBits() & Operator.MASK_OPER_NSPR) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NSPR)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
+            case PROP_SYS_NEWR:
+                if ((oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NEWR)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -219,12 +234,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     oper.resetBit(Operator.MASK_OPER_MODE);
                     oper.setBit(flags >> 16);
                     return true;
-                case PROP_NSPL:
-                    oper.setBit(Operator.MASK_OPER_NSPL);
-                    return true;
-                case PROP_NSPR:
-                    oper.setBit(Operator.MASK_OPER_NSPR);
-                    return true;
                 case PROP_OVERRIDE:
                     oper.setBit(Operator.MASK_OPER_OVRD);
                     return true;
@@ -238,6 +247,18 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_SYS_ALIAS:
                     str = PropertyOperator.derefAndCastAlias(m, d, en);
                     oper.setAlias(str);
+                    return true;
+                case PROP_SYS_TABR:
+                    oper.setBit(Operator.MASK_OPER_TABR);
+                    return true;
+                case PROP_SYS_NSPL:
+                    oper.setBit(Operator.MASK_OPER_NSPL);
+                    return true;
+                case PROP_SYS_NSPR:
+                    oper.setBit(Operator.MASK_OPER_NSPR);
+                    return true;
+                case PROP_SYS_NEWR:
+                    oper.setBit(Operator.MASK_OPER_NEWR);
                     return true;
                 case PROP_FULL_NAME:
                     /* can't modify */
@@ -272,12 +293,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     oper.setLevel(0);
                     oper.resetBit(Operator.MASK_OPER_MODE);
                     return true;
-                case PROP_NSPL:
-                    oper.resetBit(Operator.MASK_OPER_NSPL);
-                    return true;
-                case PROP_NSPR:
-                    oper.resetBit(Operator.MASK_OPER_NSPR);
-                    return true;
                 case PROP_OVERRIDE:
                     oper.resetBit(Operator.MASK_OPER_OVRD);
                     return true;
@@ -289,6 +304,18 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     return true;
                 case PROP_SYS_ALIAS:
                     oper.setAlias(null);
+                    return true;
+                case PROP_SYS_TABR:
+                    oper.resetBit(Operator.MASK_OPER_TABR);
+                    return true;
+                case PROP_SYS_NSPL:
+                    oper.resetBit(Operator.MASK_OPER_NSPL);
+                    return true;
+                case PROP_SYS_NSPR:
+                    oper.resetBit(Operator.MASK_OPER_NSPR);
+                    return true;
+                case PROP_SYS_NEWR:
+                    oper.resetBit(Operator.MASK_OPER_NEWR);
                     return true;
                 case PROP_FULL_NAME:
                     /* can't modify */
@@ -334,7 +361,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             res.toArray(vals);
             return vals;
         } else {
-            if (id < PROP_FULL_NAME || id > PROP_SYS_ALIAS)
+            if (id < PROP_VISIBLE || id > PROP_FULL_NAME)
                 throw new IllegalArgumentException("illegal prop");
             return null;
         }

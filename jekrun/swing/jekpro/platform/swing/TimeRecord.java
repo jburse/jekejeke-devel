@@ -36,48 +36,52 @@ public final class TimeRecord {
     private Number gctime;
     private Number time;
 
+    private Number uptime1;
+    private Number gctime1;
+    private Number time1;
+
     private final static String[] OP_STATISTICS = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_GCTIME,
+            ForeignStatistics.OP_TIME,
+            ForeignStatistics.OP_WALL};
 
     private final static String[] OP_STATISTICS_WEB = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_WALL};
 
     /**
-     * <p>Start time record measurement.</p>
+     * <p>Create a time record.</p>
      *
-     * @param inter The interpreter.
-     * @throws InterpreterMessage Shit happens.
-     * @throws InterpreterException Shit happens.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
-    public void start(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        uptime = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_GCTIME);
-        time = (Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME);
+    public TimeRecord(Number u, Number g, Number t) {
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
     }
 
     /**
      * <p>End time record measurement.</p>
      *
-     * @param inter The interpreter.
-     * @throws InterpreterMessage Shit happens.
-     * @throws InterpreterException Shit happens.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
-    public void end(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        uptime = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
-        gctime = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
-        time = subtract((Number) ForeignStatistics.sysGetStat(inter,
-                ForeignStatistics.OP_STATISTIC_TIME), time);
+    public void sysMeasure(Number u, Number g, Number t) {
+        uptime = uptime1;
+        gctime = gctime1;
+        time = time1;
+
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
+
+        uptime = subtract(uptime1, uptime);
+        gctime = subtract(gctime1, gctime);
+        time = subtract(time1, time);
     }
 
     /**
@@ -102,7 +106,7 @@ public final class TimeRecord {
      * @param inter The interpreter.
      * @param co    The call out.
      * @return The statistics key.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public static String sysCurrentStat(Interpreter inter, CallOut co)
@@ -139,14 +143,15 @@ public final class TimeRecord {
      */
     public Object getStat(Interpreter inter, String name)
             throws InterpreterMessage, InterpreterException {
-        if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
+        if (ForeignStatistics.OP_UPTIME.equals(name)) {
             return uptime;
-        } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
+        } else if (ForeignStatistics.OP_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
+        } else if (ForeignStatistics.OP_TIME.equals(name)) {
             return time;
-        } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
-            return ForeignStatistics.sysGetStat(inter, ForeignStatistics.OP_STATISTIC_WALL);
+        } else if (ForeignStatistics.OP_WALL.equals(name)) {
+            return ForeignStatistics.sysGetStat(inter,
+                    ForeignStatistics.OP_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));

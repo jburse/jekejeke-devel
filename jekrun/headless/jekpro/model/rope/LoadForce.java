@@ -251,8 +251,8 @@ public class LoadForce {
         try {
             /* wait for complete source */
             if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }

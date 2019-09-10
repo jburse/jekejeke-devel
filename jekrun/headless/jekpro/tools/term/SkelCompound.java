@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import matula.util.data.ListArray;
 
 /**
@@ -80,7 +80,7 @@ public final class SkelCompound extends AbstractSkel
         Object var = null;
         ListArray<SkelVar> vec = null;
         for (int i = 0; i < a.length; i++) {
-            Object newvar = EngineCopy.getVar(a[i]);
+            Object newvar = SupervisorCopy.getVar(a[i]);
             if (newvar == null)
                 continue;
             if (var == null) {
@@ -133,7 +133,7 @@ public final class SkelCompound extends AbstractSkel
     /**
      * <p>Concat the list to the spine.</p>
      *
-     * @param vec The list, not null.
+     * @param vec The list, non null.
      * @param var The spine.
      * @return The new spine.
      */
@@ -167,7 +167,7 @@ public final class SkelCompound extends AbstractSkel
      * <p>Add new variables from a spine in a list,
      * not already appearing in another spine.</p>
      *
-     * @param newvar The spine, not null.
+     * @param newvar The spine, non null.
      * @param vec    The list or null.
      * @param var    The other spine.
      * @return The new list or null.
@@ -207,7 +207,7 @@ public final class SkelCompound extends AbstractSkel
     /**
      * <p>Check whether we have already a spine for the variable.</p>
      *
-     * @param var The spine, not null.
+     * @param var The spine, non null.
      * @param mv  The variable.
      * @return Return index of the variable or -1.
      */

@@ -81,7 +81,7 @@ public class ChoiceDefined extends AbstractChoice {
             throw en.fault;
 
         Intermediate ir = goaldisplay.contskel;
-        Object t = ir.term;
+        Object t = ((Goal) ir).term;
         Display d = goaldisplay.contdisplay.disp;
         if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
             /* inlined deref */
@@ -101,7 +101,7 @@ public class ChoiceDefined extends AbstractChoice {
             d2.setSize(clause.sizerule);
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.intargs, en))
                 break;
 
@@ -118,7 +118,8 @@ public class ChoiceDefined extends AbstractChoice {
         d2.vars = clause.vars;
 
         if (at != list.length) {
-            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -127,13 +128,14 @@ public class ChoiceDefined extends AbstractChoice {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = goaldisplay.getFrame(en);
-            dc.flags &= ~Directive.MASK_DIRE_LTGC;
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0)
+                dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & AbstractDefined.MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }

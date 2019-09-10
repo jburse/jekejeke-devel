@@ -81,25 +81,20 @@
  */
 % meta_predicate +Callables
 :- public (meta_predicate)/1.
-meta_predicate [P|Q] :- !,
-   sys_meta_predicate(P),
-   meta_predicate(Q).
-meta_predicate P,Q :- !,
-   sys_meta_predicate(P),
-   meta_predicate(Q).
+meta_predicate [P|Q] :- !, sys_meta_predicate(P), meta_predicate(Q).
+meta_predicate P, Q :- !, sys_meta_predicate(P), meta_predicate(Q).
 meta_predicate [] :- !.
-meta_predicate P :-
-   sys_meta_predicate(P).
+meta_predicate P :- sys_meta_predicate(P).
 
 :- private sys_meta_predicate/1.
 sys_meta_predicate(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
-   once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+   once((predicate_property(I, sys_usage(D)),
+      \+ C = D)),
    \+ predicate_property(I, sys_meta_predicate(D)),
-   throw(error(permission_error(promote,meta_predicate,I),_)).
+   throw(error(permission_error(promote, meta_predicate, I), _)).
 sys_meta_predicate(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
@@ -118,25 +113,20 @@ sys_meta_predicate(P) :-
  */
 % meta_function +Callables
 :- public (meta_function)/1.
-meta_function [P|Q] :- !,
-   sys_meta_function(P),
-   meta_function(Q).
-meta_function P,Q :- !,
-   sys_meta_function(P),
-   meta_function(Q).
+meta_function [P|Q] :- !, sys_meta_function(P), meta_function(Q).
+meta_function P, Q :- !, sys_meta_function(P), meta_function(Q).
 meta_function [] :- !.
-meta_function P :-
-   sys_meta_function(P).
+meta_function P :- sys_meta_function(P).
 
 :- private sys_meta_function/1.
 sys_meta_function(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
-   once((  predicate_property(I, sys_usage(D)),
-           \+ C = D)),
+   once((predicate_property(I, sys_usage(D)),
+      \+ C = D)),
    \+ predicate_property(I, sys_meta_function(D)),
-   throw(error(permission_error(promote,meta_function,I),_)).
+   throw(error(permission_error(promote, meta_function, I), _)).
 sys_meta_function(P) :-
    sys_functor(P, F, A),
    sys_make_indicator(F, A, I),

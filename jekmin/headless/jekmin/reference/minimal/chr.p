@@ -68,7 +68,7 @@
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
+:- meta_predicate user:term_expansion(-1, -1).
 :- discontiguous user:term_expansion/2.
 
 /**
@@ -76,44 +76,33 @@
  * Propagation rules.
  */
 :- public ==> /2.
-:- meta_predicate (-1==> -1).
-_ ==> _ :-
-   throw(error(existence_error(body,==> /2),_)).
+:- meta_predicate (-1 ==> -1).
+_ ==> _ :- throw(error(existence_error(body, ==> /2), _)).
 
-user:term_expansion((  H ==> G | B), (  body_post(B) <=
-                                           head_posted(H), G)).
-user:term_expansion((  H ==> B), (  body_post(B) <=
-                                       head_posted(H))).
+user:term_expansion((H ==> G | B), (body_post(B) <= head_posted(H), G)).
+user:term_expansion((H ==> B), (body_post(B) <= head_posted(H))).
 
 :- private head_phaseout_posted/1.
 :- meta_predicate head_phaseout_posted(0).
-head_phaseout_posted(_) :-
-   throw(error(existence_error(body,head_phaseout_posted/1),_)).
+head_phaseout_posted(_) :- throw(error(existence_error(body, head_phaseout_posted/1), _)).
 
 /**
  * J <=> B:
  * Simpagation and simplification rules.
  */
 :- public <=> /2.
-:- meta_predicate (-1<=> -1).
-_ <=> _ :-
-   throw(error(existence_error(body,<=> /2),_)).
+:- meta_predicate (-1 <=> -1).
+_ <=> _ :- throw(error(existence_error(body, <=> /2), _)).
 
-user:term_expansion((  H \ J <=> G | B), (  body_post(B) <=
-                                               head_posted(H),
-                                               head_phaseout_posted(J), G)).
-user:term_expansion((  H \ J <=> B), (  body_post(B) <=
-                                           head_posted(H),
-                                           head_phaseout_posted(J))).
-user:term_expansion((  J <=> G | B), (  body_post(B) <=
-                                           head_phaseout_posted(J), G)).
-user:term_expansion((  J <=> B), (  body_post(B) <=
-                                       head_phaseout_posted(J))).
+user:term_expansion((H \ J <=> G | B), (body_post(B) <= head_posted(H), head_phaseout_posted(J), G)).
+user:term_expansion((H \ J <=> B), (body_post(B) <= head_posted(H), head_phaseout_posted(J))).
+user:term_expansion((J <=> G | B), (body_post(B) <= head_phaseout_posted(J), G)).
+user:term_expansion((J <=> B), (body_post(B) <= head_phaseout_posted(J))).
 
 % user:goal_expansion(+Goal, -Goal)
 :- public user:goal_expansion/2.
 :- multifile user:goal_expansion/2.
-:- meta_predicate user:goal_expansion(0,0).
+:- meta_predicate user:goal_expansion(0, 0).
 :- discontiguous user:goal_expansion/2.
 
 /**
@@ -123,13 +112,10 @@ user:term_expansion((  J <=> B), (  body_post(B) <=
  */
 :- private body_post/1.
 :- meta_predicate body_post(0).
-body_post(_) :-
-   throw(error(existence_error(body,body_post/1),_)).
+body_post(_) :- throw(error(existence_error(body, body_post/1), _)).
 
-user:goal_expansion(body_post(P), _) :-
-   sys_var(P), !, fail.
-user:goal_expansion(body_post((  A, B)), (  body_post(A),
-                                            body_post(B))).
+user:goal_expansion(body_post(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(body_post((A, B)), (body_post(A), body_post(B))).
 user:goal_expansion(body_post(true), true).
 user:goal_expansion(body_post(fail), fail).
 user:goal_expansion(body_post(P), Q) :-
@@ -143,13 +129,10 @@ user:goal_expansion(body_post(P), Q) :-
  */
 :- private head_posted/1.
 :- meta_predicate head_posted(0).
-head_posted(_) :-
-   throw(error(existence_error(body,head_posted/1),_)).
+head_posted(_) :- throw(error(existence_error(body, head_posted/1), _)).
 
-user:goal_expansion(head_posted(P), _) :-
-   sys_var(P), !, fail.
-user:goal_expansion(head_posted((  A, B)), (  head_posted(A),
-                                              head_posted(B))).
+user:goal_expansion(head_posted(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(head_posted((A, B)), (head_posted(A), head_posted(B))).
 user:goal_expansion(head_posted(P), Q) :-
    sys_replace_site(Q, P, posted(P)).
 
@@ -159,9 +142,7 @@ user:goal_expansion(head_posted(P), Q) :-
  * expansion wrapper, that wrappes the CHR delete head
  * with phaseout_posteds.
  */
-user:goal_expansion(head_phaseout_posted(P), _) :-
-   sys_var(P), !, fail.
-user:goal_expansion(head_phaseout_posted((  A, B)), (  head_phaseout_posted(A),
-                                                       head_phaseout_posted(B))).
+user:goal_expansion(head_phaseout_posted(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(head_phaseout_posted((A, B)), (head_phaseout_posted(A), head_phaseout_posted(B))).
 user:goal_expansion(head_phaseout_posted(P), Q) :-
    sys_replace_site(Q, P, phaseout_posted(P)).

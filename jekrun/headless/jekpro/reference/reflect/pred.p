@@ -76,7 +76,10 @@
 :- sys_context_property(here, C),
    reset_source_property(C, sys_source_visible(public)).
 
-:- sys_op(1150, fx, static).
+:- sys_neutral_oper(prefix(static)).
+:- set_oper_property(prefix(static), op(1150, fx)).
+:- set_oper_property(prefix(static), sys_newr).
+:- set_oper_property(prefix(static), sys_tabr).
 :- set_oper_property(prefix(static), visible(public)).
 
 /**
@@ -84,15 +87,10 @@
  * The predicate sets the predicate P to static.
  */
 % static +Indicators
-static [P|Q] :- !,
-   sys_static(P),
-   static(Q).
-static P,Q :- !,
-   sys_static(P),
-   static(Q).
+static [P|Q] :- !, sys_static(P), static(Q).
+static P, Q :- !, sys_static(P), static(Q).
 static [] :- !.
-static P :-
-   sys_static(P).
+static P :- sys_static(P).
 :- set_predicate_property((static)/1, visible(public)).
 
 sys_static(I) :-
@@ -108,8 +106,7 @@ sys_static(I) :-
  * The predicate succeeds for the visible predicates P.
  */
 % current_predicate(-Indicator)
-current_predicate(I) :-
-   ground(I), !,
+current_predicate(I) :- ground(I), !,
    sys_current_predicate_chk(I).
 current_predicate(I) :-
    sys_current_predicate(L),
@@ -117,7 +114,7 @@ current_predicate(I) :-
 :- set_predicate_property(current_predicate/1, visible(public)).
 
 :- special(sys_current_predicate/1, 'SpecialPred', 1).
-:- set_predicate_property(sys_current_predicate/1, visible(private)).
+:- set_predicate_property(sys_current_predicate/1, visible(public)).
 
 :- special(sys_current_predicate_chk/1, 'SpecialPred', 2).
 :- set_predicate_property(sys_current_predicate_chk/1, visible(private)).
@@ -127,11 +124,9 @@ current_predicate(I) :-
  * The predicate succeeds for the properties Q of the predicate P.
  */
 % predicate_property(+-Indicator, -+Property)
-predicate_property(I, R) :-
-   ground(I), !,
+predicate_property(I, R) :- ground(I), !,
    sys_predicate_property2(I, R).
-predicate_property(I, R) :-
-   var(R), !,
+predicate_property(I, R) :- var(R), !,
    sys_current_predicate(L),
    sys_member(I, L),
    sys_predicate_property(I, P),
@@ -142,8 +137,7 @@ predicate_property(I, R) :-
 :- set_predicate_property(predicate_property/2, visible(public)).
 
 % sys_predicate_property2(+Indicator, -Property)
-sys_predicate_property2(I, R) :-
-   var(R), !,
+sys_predicate_property2(I, R) :- var(R), !,
    sys_predicate_property(I, P),
    sys_member(R, P).
 sys_predicate_property2(I, R) :-
@@ -152,14 +146,17 @@ sys_predicate_property2(I, R) :-
    sys_member(R, P).
 :- set_predicate_property(sys_predicate_property2/2, visible(private)).
 
+% sys_predicate_property(+Indicator, -List)
 :- special(sys_predicate_property/2, 'SpecialPred', 3).
 :- set_predicate_property(sys_predicate_property/2, visible(private)).
 
+% sys_predicate_property_chk(+Indicator, +Indicator, -List)
 :- special(sys_predicate_property_chk/3, 'SpecialPred', 4).
 :- set_predicate_property(sys_predicate_property_chk/3, visible(private)).
 
+% sys_predicate_property_idx(+Term, -List)
 :- special(sys_predicate_property_idx/2, 'SpecialPred', 5).
-:- set_predicate_property(sys_predicate_property_idx/2, visible(private)).
+:- set_predicate_property(sys_predicate_property_idx/2, visible(public)).
 
 /**
  * set_predicate_property(P, Q):
@@ -192,43 +189,51 @@ sys_declaration_indicator(static(I), I).
 
 /**
  * sys_make_indicator(F, A, I):
- * The predicate succeeds when I is the indicator for the possibly
- * quantified name F and the arity A.
+ * The predicate succeeds when I is the possibly quantified indicator
+ * for the possibly quantified name F and the arity A.
  */
 % sys_make_indicator(+-NameColon, +-Integer, -+IndicatorColon)
-sys_make_indicator(F, A, I) :-
-   var(F), !,
+sys_make_indicator(F, A, I) :- var(F), !,
    sys_make_indicator2(I, F, A).
-sys_make_indicator(K, A, J) :-
-   K = :(M,F), !,
+sys_make_indicator(K, A, J) :- =(K, :(M, F)), !,
    sys_make_indicator(F, A, I),
-   sys_replace_site(J, K, :(M,I)).
+   sys_replace_site(J, K, :(M, I)).
 sys_make_indicator(F, A, F/A).
 :- set_predicate_property(sys_make_indicator/3, visible(public)).
 
 % sys_make_indicator2(+IndicatorColon, -NameColon, -Integer)
-sys_make_indicator2(I, _, _) :-
-   var(I),
-   throw(error(instantiation_error,_)).
-sys_make_indicator2(J, K, A) :-
-   J = :(M,I), !,
+sys_make_indicator2(I, _, _) :- var(I),
+   throw(error(instantiation_error, _)).
+sys_make_indicator2(J, K, A) :- =(J, :(M, I)), !,
    sys_make_indicator2(I, F, A),
-   sys_replace_site(K, J, :(M,F)).
+   sys_replace_site(K, J, :(M, F)).
 sys_make_indicator2(F/A, G, B) :- !,
-   F = G,
-   A = B.
+   =(F/A, G/B).
 sys_make_indicator2(I, _, _) :-
-   throw(error(type_error(predicate_indicator,I),_)).
+   throw(error(type_error(predicate_indicator, I), _)).
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).
+
+/**
+ * sys_is_indicator(I):
+ * The predicate succeeds when I is a possible quantified indicator.
+ */
+% sys_is_indicator(+IndicatorColon)
+sys_is_indicator(I) :- var(I), !, fail.
+sys_is_indicator(:(_, I)) :- !,
+   sys_is_indicator(I).
+sys_is_indicator(_/_).
+:- set_predicate_property(sys_is_indicator/1, visible(public)).
 
 /**********************************************************/
 /* Moved From Debugger                                    */
 /**********************************************************/
 
 % moved from provable.p in debugger
-:- special(sys_provable_property_chk/3, 'SpecialPred', 8).
-:- set_predicate_property(sys_provable_property_chk/3, visible(public)).
+% sys_provable_property_idx(+Term, -List)
+:- special(sys_provable_property_idx/2, 'SpecialPred', 6).
+:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
 
 % moved from provable.p in debugger
-:- special(sys_provable_property_idx/2, 'SpecialPred', 9).
-:- set_predicate_property(sys_provable_property_idx/2, visible(public)).
+% sys_provable_property_chk(+Indicator, +Indicator, -List)
+:- special(sys_provable_property_chk/3, 'SpecialPred', 7).
+:- set_predicate_property(sys_provable_property_chk/3, visible(public)).

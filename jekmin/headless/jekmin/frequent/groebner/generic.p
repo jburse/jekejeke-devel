@@ -104,19 +104,15 @@
 :- override is/2.
 :- multifile is/2.
 :- public is/2.
-:- meta_predicate is(?,#(1)).
-X is E :-
-   var(E), !,
+:- meta_predicate is(?, #(1)).
+X is E :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-X is E :-
-   sys_freezer(E), !,
+X is E :- sys_freezer(E), !,
    X = E.
-X is E :-
-   integer(E), !,
+X is E :- integer(E), !,
    X = E.
-X is E :-
-   \+ is_abnormal(E), !,
+X is E :- \+ is_abnormal(E), !,
    E =.. [F|L],
    sys_eval_list(L, [X], [Y|T]),
    sys_poly_send(Y, F, T).
@@ -138,13 +134,11 @@ sys_eval_list([], S, S).
  * and arguments T to the object Y.
  */
 :- public sys_poly_send/3.
-sys_poly_send(Y, F, T) :-
-   sys_freezer(Y), !,
-   M =.. [F,Y|T],
+sys_poly_send(Y, F, T) :- sys_freezer(Y), !,
+   M =.. [F, Y|T],
    variable:M.
-sys_poly_send(Y, F, T) :-
-   integer(Y), !,
-   M =.. [F,Y|T],
+sys_poly_send(Y, F, T) :- integer(Y), !,
+   M =.. [F, Y|T],
    integer:M.
 sys_poly_send(Y, F, T) :-
    M =.. [F|T],

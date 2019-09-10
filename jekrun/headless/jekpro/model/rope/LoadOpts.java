@@ -194,8 +194,8 @@ public final class LoadOpts extends LoadForce {
         try {
             /* wait for complete source */
             if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
         }
@@ -247,8 +247,8 @@ public final class LoadOpts extends LoadForce {
         try {
             /* wait for complete source */
             if (!source.getRead().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 deps = source.snapshotDeps();
             } finally {
@@ -411,8 +411,8 @@ public final class LoadOpts extends LoadForce {
         try {
             /* wait for complete source */
             if (!source.getRead().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 deps = source.snapshotDeps();
             } finally {
@@ -440,8 +440,8 @@ public final class LoadOpts extends LoadForce {
         try {
             /* unload with locking */
             if (!source.getWrite().tryLock(source.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-                throw new EngineMessage(EngineMessage.systemError(
-                        EngineMessage.OP_SYSTEM_DEADLOCK_TIMEOUT));
+                throw new EngineMessage(EngineMessage.limitError(
+                        EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
             try {
                 source.setTiming(-System.currentTimeMillis());
                 if ((source.getBits() & AbstractSource.MASK_SRC_SCND) != 0)

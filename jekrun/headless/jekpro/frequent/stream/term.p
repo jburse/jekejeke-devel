@@ -18,22 +18,24 @@
  * writeq	Yes	Yes	No
  * write_canonical	No	Yes	Yes
  *
- * The spacing is determined by the context type option. The context type
- * ‘?’ minimizes the spacing. The other context types use spacing for the
- * current compound and they also determine which meta-declaration should
- * be looked up in case of a closure. Here are some examples whereby
- * we assume a meta_predicate declaration solve(0):
+ * The spacing around operators determined by the operator properties
+ * sys_nspl/0 and sys_nspr/0. By default, the operators above level 699
+ * have spacing around them, and the operators below and including level
+ * 699 do not have spacing around them. With the exception that the
+ * operators (';') and (',') do not have a space in the front of them.
  *
- * Table 14: Context Dependent Spacing
- * Context	Example 1
- * ?	solve((_A,_B)):-solve(_A),solve(_B)
- * 0 or -1	solve((_A, _B)) :- solve(_A), solve(_B)
+ * Examples:
+ * ?- X = (a->b;c).
+ * X = (a -> b; c)
  *
- * If the format option is newline then the spacing is enhanced by new
- * lines and further spaces so that the output matches the Prolog coding
- * guidelines as published in [9]. Further the priority option determines
- * whether parentheses are needed around an operator expressions depending
- * on the level of the operator.
+ * ?- X = (1+2,3+4).
+ * X = (1+2, 3+4)
+ *
+ * If the format option is newline the operator properties sys_tabr/0
+ * and sys_newr/0 are also taken into consideration so that the output
+ * matches the Prolog coding guidelines as published in [9]. Further the
+ * priority option determines whether parentheses are needed around an
+ * operator expressions depending on the level of the operator.
  *
  * When double quotes or back quotes are set to ‘variable’ and quote is
  * true, then variable names are automatically set into the corresponding
@@ -114,16 +116,16 @@ write(Stream, Term) :-
 :- public writeq/1.
 writeq(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true), quoted(true)]).
 
 % writeq(+AliasOrStream, +Term)
 :- public writeq/2.
 writeq(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true), quoted(true)]).
 writeq(Stream, Term) :-
-   sys_write_term(Stream, Term, [numbervars(true),quoted(true)]).
+   sys_write_term(Stream, Term, [numbervars(true), quoted(true)]).
 
 /**
  * write_canonical(E): [ISO 8.14.2]
@@ -137,16 +139,16 @@ writeq(Stream, Term) :-
 :- public write_canonical/1.
 write_canonical(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true), ignore_ops(true)]).
 
 % write_canonical(+AliasOrStream, +Term)
 :- public write_canonical/2.
 write_canonical(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true), ignore_ops(true)]).
 write_canonical(Stream, Term) :-
-   sys_write_term(Stream, Term, [quoted(true),ignore_ops(true)]).
+   sys_write_term(Stream, Term, [quoted(true), ignore_ops(true)]).
 
 /**
  * write_term(E, O): [ISO 8.14.2]
@@ -171,8 +173,9 @@ write_term(Alias, Term, Opt) :-
 write_term(Stream, Term, Opt) :-
    sys_write_term(Stream, Term, Opt).
 
+:- private sys_write_term/3.
 :- foreign(sys_write_term/3, 'ForeignTerm',
-      sysWriteTerm('Interpreter','Writer','AbstractTerm','Object')).
+      sysWriteTerm('Interpreter', 'Writer', 'AbstractTerm', 'Object')).
 
 /**
  * read(E): [ISO 8.14.1]
@@ -224,4 +227,4 @@ read_term(Stream, Term, Opt) :-
 
 :- private sys_read_term/3.
 :- foreign(sys_read_term/3, 'ForeignTerm',
-      sysReadTerm('Interpreter','Reader','Object')).
+      sysReadTerm('Interpreter', 'Reader', 'Object')).

@@ -3,10 +3,9 @@ package jekpro.platform.android;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import jekpro.tools.term.TermCompound;
 
 /**
  * The value object for the module stats.
@@ -39,34 +38,49 @@ public final class TimeRecord {
     private Number gctime;
     private Number time;
 
+    private Number uptime1;
+    private Number gctime1;
+    private Number time1;
+
     private final static String[] OP_STATISTICS = {
-            ForeignStatistics.OP_STATISTIC_UPTIME,
-            ForeignStatistics.OP_STATISTIC_GCTIME,
-            ForeignStatistics.OP_STATISTIC_TIME,
-            ForeignStatistics.OP_STATISTIC_WALL};
+            ForeignStatistics.OP_UPTIME,
+            ForeignStatistics.OP_GCTIME,
+            ForeignStatistics.OP_TIME,
+            ForeignStatistics.OP_WALL};
 
     /**
-     * <p>Start time record measurement.</p>
+     * <p>Create a time record.</p>
      *
-     * @throws InterpreterMessage Shit happens.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
      */
-    public void start()
-            throws InterpreterMessage {
-        uptime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME);
-        gctime = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME);
-        time = (Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME);
+    public TimeRecord(Number u, Number g, Number t) {
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
     }
 
     /**
      * <p>End time record measurement.</p>
      *
-     * @throws InterpreterMessage Shit happens.
+     * @param u The up time.
+     * @param g The gc time.
+     * @param t The threads time.
+     *          time
      */
-    public void end()
-            throws InterpreterMessage {
-        uptime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_UPTIME), uptime);
-        gctime = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_GCTIME), gctime);
-        time = subtract((Number) ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_TIME), time);
+    public void sysMeasure(Number u, Number g, Number t) {
+        uptime = uptime1;
+        gctime = gctime1;
+        time = time1;
+
+        uptime1 = u;
+        gctime1 = g;
+        time1 = t;
+
+        uptime = subtract(uptime1, uptime);
+        gctime = subtract(gctime1, gctime);
+        time = subtract(time1, time);
     }
 
     /**
@@ -97,7 +111,7 @@ public final class TimeRecord {
             dc = new ArrayEnumeration<String>(OP_STATISTICS);
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>)co.getData();
+            dc = (ArrayEnumeration<String>) co.getData();
         }
         if (!dc.hasMoreElements())
             return null;
@@ -109,19 +123,22 @@ public final class TimeRecord {
     /**
      * <p>Retrieve a time record statistic.</p>
      *
-     * @param name The name.
+     * @param inter The interpreter.
+     * @param name  The name.
      * @return The value, or null.
      * @throws InterpreterMessage Shit happens.
      */
-    public Object getStat(String name) throws InterpreterMessage {
-        if (ForeignStatistics.OP_STATISTIC_UPTIME.equals(name)) {
+    public Object getStat(Interpreter inter, String name)
+            throws InterpreterMessage {
+        if (ForeignStatistics.OP_UPTIME.equals(name)) {
             return uptime;
-        } else if (ForeignStatistics.OP_STATISTIC_GCTIME.equals(name)) {
+        } else if (ForeignStatistics.OP_GCTIME.equals(name)) {
             return gctime;
-        } else if (ForeignStatistics.OP_STATISTIC_TIME.equals(name)) {
+        } else if (ForeignStatistics.OP_TIME.equals(name)) {
             return time;
-        } else if (ForeignStatistics.OP_STATISTIC_WALL.equals(name)) {
-            return ForeignStatistics.sysGetStat(ForeignStatistics.OP_STATISTIC_WALL);
+        } else if (ForeignStatistics.OP_WALL.equals(name)) {
+            return ForeignStatistics.sysGetStat(inter,
+                    ForeignStatistics.OP_WALL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));

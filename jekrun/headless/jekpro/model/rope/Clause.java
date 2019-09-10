@@ -3,7 +3,6 @@ package jekpro.model.rope;
 import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.term.AbstractSkel;
@@ -42,13 +41,14 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Clause extends Directive implements InterfaceReference {
-    public final static int MASK_CLAUSE_ASSE = 0x00001000;
-    public final static int MASK_CLAUSE_NHED = 0x00002000;
+    public final static int MASK_CLAUSE_ASSE = 0x00000010;
 
+    public Object head;
     public int sizerule;
     public int[] intargs;
     public AbstractDefined del;
     public MapHashLink<String, SkelVar> vars;
+    public int size;
 
     /**
      * <p>Create a clause.</p>
@@ -57,8 +57,6 @@ public class Clause extends Directive implements InterfaceReference {
      */
     public Clause(int copt) {
         super(copt);
-        if ((copt & AbstractDefined.MASK_DEFI_NHED) != 0)
-            flags |= Clause.MASK_CLAUSE_NHED;
     }
 
     /**
@@ -90,13 +88,13 @@ public class Clause extends Directive implements InterfaceReference {
         Optimization[] vars = Optimization.createHelper(rule);
 
         if (vars.length != 0) {
-            Optimization.setHead(term, this, vars);
+            Optimization.setHead(head, this, vars);
             if (body != null)
                 Optimization.setBody(body, vars);
             sizerule = Optimization.sortExtra(vars);
         }
 
-        intargs = Optimization.unifyArgs(term, vars);
+        intargs = Optimization.unifyArgs(head, vars);
     }
 
     /**********************************************************/

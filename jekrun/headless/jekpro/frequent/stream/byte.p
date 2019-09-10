@@ -63,8 +63,7 @@ put_byte(Byte) :-
 
 % put_byte(+AliasOrStream, +Byte)
 :- public put_byte/2.
-put_byte(Alias, Byte) :-
-   atom(Alias), !,
+put_byte(Alias, Byte) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_put_byte(Stream, Byte).
 put_byte(Stream, Byte) :-
@@ -72,7 +71,7 @@ put_byte(Stream, Byte) :-
 
 :- private sys_put_byte/2.
 :- foreign(sys_put_byte/2, 'ForeignByte',
-      sysPutByte('OutputStream','Integer')).
+      sysPutByte('OutputStream', 'Integer')).
 
 /**
  * get_byte(B): [ISO 8.13.1]
@@ -90,8 +89,7 @@ get_byte(Byte) :-
 
 % get_byte(+AliasOrStream, -Byte)
 :- public get_byte/2.
-get_byte(Alias, Byte) :-
-   atom(Alias), !,
+get_byte(Alias, Byte) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_get_byte(Stream, Byte).
 get_byte(Stream, Byte) :-
@@ -118,8 +116,7 @@ peek_byte(Byte) :-
 
 % peek_byte(+AliasOrStream, -Byte)
 :- public peek_byte/2.
-peek_byte(Alias, Byte) :-
-   atom(Alias), !,
+peek_byte(Alias, Byte) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_peek_byte(Stream, Byte).
 peek_byte(Stream, Byte) :-
@@ -148,13 +145,13 @@ flush_output :-
 
 % flush_output(+AliasOrPath)
 :- public flush_output/1.
-flush_output(Alias) :-
-   atom(Alias), !,
+flush_output(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_flush_output(Stream).
 flush_output(Stream) :-
    sys_flush_output(Stream).
 
+:- private sys_flush_output/1.
 :- virtual sys_flush_output/1.
 :- foreign(sys_flush_output/1, 'Flushable', flush).
 
@@ -173,8 +170,7 @@ at_end_of_stream :-
 
 % at_end_of_stream(+AliasOrPath)
 :- public at_end_of_stream/1.
-at_end_of_stream(Alias) :-
-   atom(Alias), !,
+at_end_of_stream(Alias) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_at_end_of_stream(Stream).
 at_end_of_stream(Stream) :-
@@ -201,8 +197,7 @@ read_block(Length, Block) :-
 
 % read_block(+Stream, +Integer, -Bytes)
 :- public read_block/3.
-read_block(Alias, Length, Block) :-
-   atom(Alias), !,
+read_block(Alias, Length, Block) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_read_block(Stream, Length, Block).
 read_block(Stream, Length, Block) :-
@@ -210,7 +205,7 @@ read_block(Stream, Length, Block) :-
 
 :- private sys_read_block/3.
 :- foreign(sys_read_block/3, 'ForeignByte',
-      sysReadBlock('InputStream','Integer')).
+      sysReadBlock('InputStream', 'Integer')).
 
 /**
  * write_block(B):
@@ -225,8 +220,7 @@ write_block(Block) :-
 
 % write_block(+Stream, +Bytes)
 :- public write_block/2.
-write_block(Alias, Block) :-
-   atom(Alias), !,
+write_block(Alias, Block) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_write_block(Stream, Block).
 write_block(Stream, Block) :-
@@ -234,4 +228,4 @@ write_block(Stream, Block) :-
 
 :- private sys_write_block/2.
 :- foreign(sys_write_block/2, 'ForeignByte',
-      sysWriteBlock('OutputStream',{byte})).
+      sysWriteBlock('OutputStream', {byte})).

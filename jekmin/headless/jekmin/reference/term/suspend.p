@@ -58,6 +58,93 @@
 :- use_module(library(experiment/cont)).
 
 /********************************************************/
+/* Constraint Posting                                   */
+/********************************************************/
+
+/**
+ * freeze(T, G):
+ * If T is a variable further checks are delayed until the
+ * variable is instantiated with a non-variable or another
+ * variable. Otherwise the goal G is directly called.
+ */
+% freeze(+Term, +Goal)
+:- public freeze/2.
+:- meta_predicate freeze(?,0).
+freeze(V, G) :-
+   var(V), !,
+   sys_freeze_var(W, R),
+   W = sys_data_freeze(G),
+   sys_ensure_serno(V),
+   sys_compile_hook(V, sys_hook_freeze(R), K),
+   depositz_ref(K).
+freeze(_, G) :-
+   call(G).
+
+/**
+ * when(C, G):
+ * If C simplifies to a non-trivial condition further simplifications
+ * are delayed until a variable in C is instantiated with a non-variable
+ * or another variable. Otherwise the goal G is directly called.
+ */
+:- public when/2.
+:- meta_predicate when(?,0).
+when(C, G) :-
+   sys_cond_simp(C, D),
+   D \== true, !,
+   sys_freeze_var(W, R),
+   W = sys_data_when(N,D,G),
+   term_variables(D, M),
+   sys_serno_hooks(M, sys_hook_when(R), N),
+   depositz_ref(N).
+when(_, G) :- G.
+
+/**
+ * sys_cond_simp(C, D):
+ * The predicate succeeds with a simplified version D of the
+ * condition C.
+ */
+% sys_cond_simp(+Term, -Term)
+:- private sys_cond_simp/2.
+sys_cond_simp(V, _) :-
+   var(V),
+   throw(error(instantiation_error,_)).
+sys_cond_simp((C,D), R) :- !,
+   sys_cond_simp(C, A),
+   sys_cond_simp(D, B),
+   sys_cond_and(A, B, R).
+sys_cond_simp((C;D), R) :- !,
+   sys_cond_simp(C, A),
+   sys_cond_simp(D, B),
+   sys_cond_or(A, B, R).
+sys_cond_simp(nonvar(X), nonvar(X)) :-
+   var(X), !.
+sys_cond_simp(nonvar(_), true) :- !.
+sys_cond_simp(ground(X), R) :- !,
+   term_variables(X, L),
+   sys_cond_ground(L, R).
+sys_cond_simp(T, _) :-
+   throw(error(type_error(when_cond,T),_)).
+
+% sys_cond_and(+Term, +Term, -Term)
+:- private sys_cond_and/3.
+sys_cond_and(true, X, X) :- !.
+sys_cond_and(X, true, X) :- !.
+sys_cond_and(X, Y, (X,Y)).
+
+% sys_cond_or(+Term, +Term, -Term)
+:- private sys_cond_or/3.
+sys_cond_or(true, _, true) :- !.
+sys_cond_or(_, true, true) :- !.
+sys_cond_or(X, Y, (X;Y)).
+
+% sys_cond_ground(+List, -Term)
+:- private sys_cond_ground/2.
+sys_cond_ground([X,Y|Z], (ground(X),R)) :-
+   sys_cond_ground([Y|Z], R).
+sys_cond_ground([X], ground(X)).
+sys_cond_ground([], true).
+
+/********************************************************/
 /* Attribute Hooks                                      */
 /********************************************************/
 
@@ -111,97 +198,3 @@ residue:sys_unwrap_eq(freeze(R,S), [freeze(V,G)|L], L) :-
    sys_melt_var(R, V).
 residue:sys_unwrap_eq(when(R), [when(C,G)|L], L) :-
    sys_melt_var(R, sys_data_when(_,C,G)).
-
-/********************************************************/
-/* Constraint Posting                                   */
-/********************************************************/
-
-/**
- * freeze(T, G):
- * If T is a variable further checks are delayed until the
- * variable is instantiated with a non-variable or another
- * variable. Otherwise the goal G is directly called.
- */
-% freeze(+Term, +Goal)
-:- public freeze/2.
-:- meta_predicate freeze(?,0).
-freeze(V, G) :-
-   var(V), !,
-   sys_freeze_var(W, R),
-   W = sys_data_freeze(G),
-   sys_compile_hook(V, sys_hook_freeze(R), K),
-   depositz_ref(K).
-freeze(_, G) :-
-   call(G).
-
-/**
- * when(C, G):
- * If C simplifies to a non-trivial condition further simplifications
- * are delayed until a variable in C is instantiated with a non-variable
- * or another variable. Otherwise the goal G is directly called.
- */
-:- public when/2.
-:- meta_predicate when(?,0).
-when(C, G) :-
-   sys_cond_simp(C, D),
-   D \== true, !,
-   sys_freeze_var(W, R),
-   W = sys_data_when(N,D,G),
-   term_variables(D, M),
-   sys_compile_hooks(M, R, N),
-   depositz_ref(N).
-when(_, G) :- G.
-
-% sys_compile_hooks(+List, +Ref, -List)
-:- private sys_compile_hooks/3.
-sys_compile_hooks([V|M], R, [K|W]) :-
-   sys_compile_hook(V, sys_hook_when(R), K),
-   sys_compile_hooks(M, R, W).
-sys_compile_hooks([], _, []).
-
-/**
- * sys_cond_simp(C, D):
- * The predicate succeeds with a simplified version D of the
- * condition C.
- */
-% sys_cond_simp(+Term, -Term)
-:- private sys_cond_simp/2.
-sys_cond_simp(V, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_cond_simp((C,D), R) :- !,
-   sys_cond_simp(C, A),
-   sys_cond_simp(D, B),
-   sys_cond_and(A, B, R).
-sys_cond_simp((C;D), R) :- !,
-   sys_cond_simp(C, A),
-   sys_cond_simp(D, B),
-   sys_cond_or(A, B, R).
-sys_cond_simp(nonvar(X), nonvar(X)) :-
-   var(X), !.
-sys_cond_simp(nonvar(_), true) :- !.
-sys_cond_simp(ground(X), R) :- !,
-   term_variables(X, L),
-   sys_cond_ground(L, R).
-sys_cond_simp(T, _) :-
-   throw(error(type_error(when_cond,T),_)).
-
-% sys_cond_and(+Term, +Term, -Term)
-:- private sys_cond_and/3.
-sys_cond_and(true, X, X) :- !.
-sys_cond_and(X, true, X) :- !.
-sys_cond_and(X, Y, (X,Y)).
-
-% sys_cond_or(+Term, +Term, -Term)
-:- private sys_cond_or/3.
-sys_cond_or(true, _, true) :- !.
-sys_cond_or(_, true, true) :- !.
-sys_cond_or(X, Y, (X;Y)).
-
-% sys_cond_ground(+List, -Term)
-:- private sys_cond_ground/2.
-sys_cond_ground([X,Y|Z], (ground(X),R)) :-
-   sys_cond_ground([Y|Z], R).
-sys_cond_ground([X], ground(X)).
-sys_cond_ground([], true).
-

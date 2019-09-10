@@ -64,8 +64,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_STYLE_CHECK = "sys_style_check";
     private final static String OP_SYS_PUBLIC = "sys_public";
     private final static String OP_SYS_PRIVATE = "sys_private";
-    private final static String OP_SYS_META_PREDICATE = "sys_meta_predicate";
-    private final static String OP_SYS_META_FUNCTION = "sys_meta_function";
     private final static String OP_SYS_DYNAMIC = "sys_dynamic";
     private final static String OP_SYS_THREAD_LOCAL = "sys_thread_local";
     private final static String OP_SYS_GROUP_LOCAL = "sys_group_local";
@@ -75,15 +73,9 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_ARITHMETIC = "sys_arithmetic";
     private final static String OP_AUTOMATIC = "automatic";
     private final static String OP_SYS_NOBARRIER = "sys_nobarrier";
+    private final static String OP_SYS_PROTO = "sys_proto";
 
-    private final static String OP_SYS_NOEXPAND = "sys_noexpand";
-    private final static String OP_SYS_NOMACRO = "sys_nomacro";
-    private final static String OP_SYS_BODY = "sys_body";
-    private final static String OP_SYS_RULE = "sys_rule";
     private final static String OP_SYS_NOTRACE = "sys_notrace";
-
-    private final static String OP_META_PREDICATE = "meta_predicate";
-    private final static String OP_META_FUNCTION = "meta_function";
 
     private final static String OP_BUILT_IN = "built_in";
     private final static String OP_STATIC = "static";
@@ -105,38 +97,30 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public final static int PROP_SYS_STYLE_CHECK = 4;
     public final static int PROP_SYS_PUBLIC = 5;
     public final static int PROP_SYS_PRIVATE = 6;
-    public final static int PROP_SYS_META_PREDICATE = 7;
-    public final static int PROP_SYS_META_FUNCTION = 8;
-    public final static int PROP_SYS_DYNAMIC = 9;
-    public final static int PROP_SYS_THREAD_LOCAL = 10;
-    public final static int PROP_SYS_GROUP_LOCAL = 11;
+    public final static int PROP_SYS_DYNAMIC = 7;
+    public final static int PROP_SYS_THREAD_LOCAL = 8;
+    public final static int PROP_SYS_GROUP_LOCAL = 9;
 
-    public final static int PROP_MULTIFILE = 12;
-    public final static int PROP_VIRTUAL = 13;
-    public final static int PROP_SYS_ARITHMETIC = 14;
-    public final static int PROP_AUTOMATIC = 15;
-    public final static int PROP_SYS_NOBARRIER = 16;
+    public final static int PROP_MULTIFILE = 10;
+    public final static int PROP_VIRTUAL = 11;
+    public final static int PROP_SYS_ARITHMETIC = 12;
+    public final static int PROP_AUTOMATIC = 13;
+    public final static int PROP_SYS_NOBARRIER = 14;
+    public final static int PROP_SYS_PROTO = 15;
 
-    public final static int PROP_SYS_NOEXPAND = 17;
-    public final static int PROP_SYS_NOMACRO = 18;
-    public final static int PROP_SYS_BODY = 19;
-    public final static int PROP_SYS_RULE = 20;
-    public final static int PROP_SYS_NOTRACE = 21;
+    public final static int PROP_SYS_NOTRACE = 16;
 
-    public final static int PROP_META_PREDICATE = 22;
-    public final static int PROP_META_FUNCTION = 23;
+    public final static int PROP_BUILT_IN = 17;
+    public final static int PROP_STATIC = 18;
+    public final static int PROP_DYNAMIC = 19;
+    public final static int PROP_THREAD_LOCAL = 20;
+    public final static int PROP_GROUP_LOCAL = 21;
 
-    public final static int PROP_BUILT_IN = 24;
-    public final static int PROP_STATIC = 25;
-    public final static int PROP_DYNAMIC = 26;
-    public final static int PROP_THREAD_LOCAL = 27;
-    public final static int PROP_GROUP_LOCAL = 28;
-
-    public final static int PROP_FULL_NAME = 29;
-    public final static int PROP_SYS_USAGE = 30;
-    public final static int PROP_SYS_NOBODY = 31;
-    public final static int PROP_SYS_NOSTACK = 32;
-    public final static int PROP_SYS_NOHEAD = 33;
+    public final static int PROP_FULL_NAME = 22;
+    public final static int PROP_SYS_USAGE = 23;
+    public final static int PROP_SYS_NOBODY = 24;
+    public final static int PROP_SYS_NOSTACK = 25;
+    public final static int PROP_SYS_NOHEAD = 26;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -153,8 +137,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_SYS_STYLE_CHECK, 1), new PropertyPredicate(PROP_SYS_STYLE_CHECK));
         DEFAULT.add(new StoreKey(OP_SYS_PUBLIC, 1), new PropertyPredicate(PROP_SYS_PUBLIC));
         DEFAULT.add(new StoreKey(OP_SYS_PRIVATE, 1), new PropertyPredicate(PROP_SYS_PRIVATE));
-        DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicate(PROP_SYS_META_PREDICATE));
-        DEFAULT.add(new StoreKey(OP_SYS_META_FUNCTION, 1), new PropertyPredicate(PROP_SYS_META_FUNCTION));
         DEFAULT.add(new StoreKey(OP_SYS_DYNAMIC, 1), new PropertyPredicate(PROP_SYS_DYNAMIC));
         DEFAULT.add(new StoreKey(OP_SYS_THREAD_LOCAL, 1), new PropertyPredicate(PROP_SYS_THREAD_LOCAL));
         DEFAULT.add(new StoreKey(OP_SYS_GROUP_LOCAL, 1), new PropertyPredicate(PROP_SYS_GROUP_LOCAL));
@@ -167,22 +149,11 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
         DEFAULT.add(new StoreKey(OP_SYS_NOBARRIER, 0), new PropertyPredicate(PROP_SYS_NOBARRIER,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
+        DEFAULT.add(new StoreKey(OP_SYS_PROTO, 0), new PropertyPredicate(PROP_SYS_PROTO,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
 
-        DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicate(PROP_SYS_NOEXPAND,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        DEFAULT.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicate(PROP_SYS_NOMACRO,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        DEFAULT.add(new StoreKey(OP_SYS_BODY, 0), new PropertyPredicate(PROP_SYS_BODY,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        DEFAULT.add(new StoreKey(OP_SYS_RULE, 0), new PropertyPredicate(PROP_SYS_RULE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-
-        DEFAULT.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicate(PROP_META_PREDICATE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        DEFAULT.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicate(PROP_META_FUNCTION,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
 
         DEFAULT.add(new StoreKey(OP_BUILT_IN, 0), new PropertyPredicate(PROP_BUILT_IN,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
@@ -228,10 +199,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      * @param pick The predicate.
      * @param en   The engine.
      * @return The predicate properties.
-     * @throws EngineMessage Shit happens.
      */
-    public Object[] getObjProps(Predicate pick, Engine en)
-            throws EngineMessage {
+    public Object[] getObjProps(Predicate pick, Engine en) {
         switch (id) {
             case PROP_VISIBLE:
                 int flags = pick.getBits();
@@ -288,20 +257,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
                         new SkelAtom(OP_SYS_PRIVATE), res);
-            case PROP_SYS_META_PREDICATE:
-                res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_PRED, en);
-                if (res == null)
-                    return AbstractBranch.FALSE_PROPERTY;
-                return PropertyPredicate.snapshotToVals(
-                        new SkelAtom(OP_SYS_META_PREDICATE), res);
-            case PROP_SYS_META_FUNCTION:
-                res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_FUNC, en);
-                if (res == null)
-                    return AbstractBranch.FALSE_PROPERTY;
-                return PropertyPredicate.snapshotToVals(
-                        new SkelAtom(OP_SYS_META_FUNCTION), res);
+
             case PROP_SYS_DYNAMIC:
                 res = PropertyPredicate.filterDefs(pick,
                         Predicate.MASK_TRCK_DYNA, en);
@@ -355,50 +311,16 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_PROTO:
+                if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_PROTO)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
 
-            case PROP_SYS_NOEXPAND:
-                if ((pick.getBits() & Predicate.MASK_PRED_NOEX) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOEXPAND)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_NOMACRO:
-                if ((pick.getBits() & Predicate.MASK_PRED_NOMC) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOMACRO)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_BODY:
-                if ((pick.getBits() & Predicate.MASK_PRED_BODY) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_BODY)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_RULE:
-                if ((pick.getBits() & Predicate.MASK_PRED_RULE) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_RULE)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
             case PROP_SYS_NOTRACE:
                 if ((pick.getBits() & Predicate.MASK_PRED_NOTR) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOTRACE)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_META_PREDICATE:
-                Object t = pick.meta_predicate;
-                if (t != null) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_META_PREDICATE), t), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_META_FUNCTION:
-                t = pick.meta_function;
-                if (t != null) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_META_FUNCTION), t), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -461,7 +383,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 if ((fun instanceof AbstractDefined) &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NLST) != 0) {
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NSTK) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOSTACK)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
@@ -499,67 +421,56 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 return true;
 
             case PROP_OVERRIDE:
-                AbstractSource src = derefAndCastDef(m, d, OP_OVERRIDE, en);
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
                 return true;
             case PROP_SYS_MULTIFILE:
-                src = derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_MULT, en);
                 return true;
             case PROP_DISCONTIGUOUS:
-                src = derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_DISC, en);
                 return true;
             case PROP_SYS_STYLE_CHECK:
-                src = derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_STYL, en);
                 return true;
             case PROP_SYS_PUBLIC:
-                src = derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_VSPU, en);
                 return true;
             case PROP_SYS_PRIVATE:
-                src = derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_VSPR, en);
                 return true;
-            case PROP_SYS_META_PREDICATE:
-                src = derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.addDef(src, Predicate.MASK_TRCK_PRED, en);
-                return true;
-            case PROP_SYS_META_FUNCTION:
-                src = derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.addDef(src, Predicate.MASK_TRCK_FUNC, en);
-                return true;
+
             case PROP_SYS_DYNAMIC:
-                src = derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_DYNA, en);
                 return true;
             case PROP_SYS_THREAD_LOCAL:
-                src = derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_TRLC, en);
                 return true;
             case PROP_SYS_GROUP_LOCAL:
-                src = derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_GRLC, en);
@@ -580,30 +491,12 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOBARRIER:
                 pick.setBit(Predicate.MASK_PRED_NOBR);
                 return true;
+            case PROP_SYS_PROTO:
+                pick.setBit(Predicate.MASK_PRED_NBCV);
+                return true;
 
-            case PROP_SYS_NOEXPAND:
-                pick.setBit(Predicate.MASK_PRED_NOEX);
-                return true;
-            case PROP_SYS_NOMACRO:
-                pick.setBit(Predicate.MASK_PRED_NOMC);
-                return true;
-            case PROP_SYS_BODY:
-                pick.setBit(Predicate.MASK_PRED_BODY);
-                return true;
-            case PROP_SYS_RULE:
-                pick.setBit(Predicate.MASK_PRED_RULE);
-                return true;
             case PROP_SYS_NOTRACE:
                 pick.setBit(Predicate.MASK_PRED_NOTR);
-                return true;
-
-            case PROP_META_PREDICATE:
-                pick.meta_predicate = derefAndCastMeta(pick,
-                        m, d, OP_META_PREDICATE, en);
-                return true;
-            case PROP_META_FUNCTION:
-                pick.meta_function = derefAndCastMeta(pick,
-                        m, d, OP_META_FUNCTION, en);
                 return true;
 
             case PROP_BUILT_IN:
@@ -636,7 +529,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NLST;
+                fun.subflags |= AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
@@ -666,67 +559,56 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 return true;
 
             case PROP_OVERRIDE:
-                AbstractSource src = derefAndCastDef(m, d, OP_OVERRIDE, en);
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_OVRD);
                 return true;
             case PROP_SYS_MULTIFILE:
-                src = derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_MULT);
                 return true;
             case PROP_DISCONTIGUOUS:
-                src = derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_DISC);
                 return true;
             case PROP_SYS_STYLE_CHECK:
-                src = derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_STYL);
                 return true;
             case PROP_SYS_PUBLIC:
-                src = derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_VSPU);
                 return true;
             case PROP_SYS_PRIVATE:
-                src = derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_VSPR);
                 return true;
-            case PROP_SYS_META_PREDICATE:
-                src = derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_PRED);
-                return true;
-            case PROP_SYS_META_FUNCTION:
-                src = derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_FUNC);
-                return true;
+
             case PROP_SYS_DYNAMIC:
-                src = derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_DYNA);
                 return true;
             case PROP_SYS_THREAD_LOCAL:
-                src = derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_TRLC);
                 return true;
             case PROP_SYS_GROUP_LOCAL:
-                src = derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_GRLC);
@@ -747,28 +629,12 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOBARRIER:
                 pick.resetBit(Predicate.MASK_PRED_NOBR);
                 return true;
+            case PROP_SYS_PROTO:
+                pick.resetBit(Predicate.MASK_PRED_NBCV);
+                return true;
 
-            case PROP_SYS_NOEXPAND:
-                pick.resetBit(Predicate.MASK_PRED_NOEX);
-                return true;
-            case PROP_SYS_NOMACRO:
-                pick.resetBit(Predicate.MASK_PRED_NOMC);
-                return true;
-            case PROP_SYS_BODY:
-                pick.resetBit(Predicate.MASK_PRED_BODY);
-                return true;
-            case PROP_SYS_RULE:
-                pick.resetBit(Predicate.MASK_PRED_RULE);
-                return true;
             case PROP_SYS_NOTRACE:
                 pick.resetBit(Predicate.MASK_PRED_NOTR);
-                return true;
-
-            case PROP_META_PREDICATE:
-                pick.meta_predicate = null;
-                return true;
-            case PROP_META_FUNCTION:
-                pick.meta_function = null;
                 return true;
 
             case PROP_BUILT_IN:
@@ -801,7 +667,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NLST;
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
@@ -825,7 +691,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public Predicate[] idxObjProp(Object m, Display d, Engine en)
             throws EngineMessage {
         if (id == PROP_SYS_USAGE) {
-            AbstractSource src = derefAndCastDef(m, d, OP_SYS_USAGE, en);
+            AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_USAGE, en);
             if (src == null || !Clause.ancestorSource(src, en))
                 return AbstractBranch.FALSE_PREDS;
             MapEntry<Predicate, Integer>[] snapshot = src.snapshotPredsInv();
@@ -955,37 +821,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
             source = source.getStore().getSource(sa.fun);
             return source;
-        } else {
-            EngineMessage.checkInstantiated(m);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
-
-    /**
-     * <p>Deref and cast to predicate meta.</p>
-     *
-     * @param pick The predicate.
-     * @param m    The term skeleton.
-     * @param d    The term display.
-     * @param op   The meat name.
-     * @param en   The engine.
-     * @return The meta term.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object derefAndCastMeta(Predicate pick, Object m, Display d,
-                                           String op, Engine en)
-            throws EngineMessage {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        m = en.skel;
-        d = en.display;
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(op)) {
-            m = ((SkelCompound) m).args[0];
-            return Predicate.checkMetaSpez(pick, m, d, en);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(

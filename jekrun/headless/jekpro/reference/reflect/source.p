@@ -74,8 +74,7 @@
  */
 % current_source(-+Pin)
 :- static current_source/1.
-current_source(X) :-
-   var(X), !,
+current_source(X) :- var(X), !,
    sys_current_source(L),
    sys_member(X, L).
 current_source(X) :-
@@ -93,8 +92,7 @@ current_source(X) :-
  * The predicate succeeds for the properties P of the source path S.
  */
 % source_property(+-Pin, -Property)
-source_property(I, R) :-
-   var(R), !,
+source_property(I, R) :- var(R), !,
    sys_source_property(I, P),
    sys_member(R, P).
 source_property(I, R) :-
@@ -151,8 +149,7 @@ current_resource(X) :-
  * The predicate succeeds for the modules M.
  */
 % current_module(-Name)
-current_module(M) :-
-   var(M), !,
+current_module(M) :- var(M), !,
    sys_current_module(L),
    sys_member(M, L).
 current_module(M) :-

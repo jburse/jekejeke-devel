@@ -56,7 +56,7 @@ public final class LookupBinary {
     public static Class keyToClass(String relpath, Store store) {
         MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
         if (entry != null) {
-            Object obj = ((Tracking)entry.value).getCanonCache(relpath);
+            Object obj = ((Tracking) entry.value).getCanonCache(relpath);
             if (obj != null)
                 return (Tracking.NOT_FOUND.equals(obj) ? null : (Class) obj);
         }
@@ -76,7 +76,7 @@ public final class LookupBinary {
         }
 
         if (entry != null)
-            ((Tracking)entry.value).setCanonCache(relpath, obj);
+            ((Tracking) entry.value).setCanonCache(relpath, obj);
         return (Tracking.NOT_FOUND.equals(obj) ? null : (Class) obj);
     }
 
@@ -88,7 +88,7 @@ public final class LookupBinary {
      * <p>Find a path suffix.</p>
      *
      * @param relpath The path, in slash notation.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The source key, or null.
      */
@@ -122,7 +122,7 @@ public final class LookupBinary {
      * <p>Unfind a path suffix.</p>
      *
      * @param relpath The path, in slash notation.
-     * @param src     The call-site, not null.
+     * @param src     The call-site, non null.
      * @param mask    The mask.
      * @return The source key, or null.
      */

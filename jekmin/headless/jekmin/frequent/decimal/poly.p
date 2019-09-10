@@ -63,12 +63,10 @@
  */
 % mp_sqrt(+Decimal, +Context, -Decimal)
 :- private mp_sqrt/3.
-mp_sqrt(X, _, Y) :-
-   X =:= 0d0, !,
+mp_sqrt(X, _, Y) :- X =:= 0d0, !,
    Y = 0d0.
-mp_sqrt(X, _, _) :-
-   X < 0d0,
-   throw(error(evaluation_error(undefined),_)).
+mp_sqrt(X, _, _) :- X < 0d0,
+   throw(error(evaluation_error(undefined), _)).
 mp_sqrt(X, P, Y) :-
    dec_decomp(X, D, M),
    bin_decomp(M, P, B, N),
@@ -76,11 +74,9 @@ mp_sqrt(X, P, Y) :-
 
 % mp_sqrt(+Integer, +Integer, +Decimal, +Context, -Decimal)
 :- private mp_sqrt/5.
-mp_sqrt(B, D, X, P, Y) :-
-   X =:= 0d1, !,
+mp_sqrt(B, D, X, P, Y) :- X =:= 0d1, !,
    bin_dec_sqrt(B, D, P, Y).
-mp_sqrt(B, D, X, P, Y) :-
-   X > 0d1.4, !,
+mp_sqrt(B, D, X, P, Y) :- X > 0d1.4, !,
    mp_math(0d2/X, P, M),
    L is B+1,
    mp_math(M-0d1, P, Z),
@@ -99,22 +95,22 @@ mp_sqrt(B, D, X, P, Y) :-
 
 % mp_sqrt(+Part, +Decimal, +Context, -Decimal)
 :- private mp_sqrt/4.
-mp_sqrt((0,S), _, _, S) :- !.
+mp_sqrt((0, S), _, _, S) :- !.
 mp_sqrt(U, X, P, Y) :-
    next_sqrt(U, X, P, V),
    mp_sqrt(V, X, P, Y).
 
 % init_sqrt(+Integer, +Decimal, +Context, -Part)
 :- private init_sqrt/4.
-init_sqrt(0, _, _, (0,0d1)) :- !.
-init_sqrt(K, _, P, (K,S)) :-
+init_sqrt(0, _, _, (0, 0d1)) :- !.
+init_sqrt(K, _, P, (K, S)) :-
    mp_math((3-2*K)/(2*K), P, S).
 
 % next_sqrt(+Part, +Decimal, +Context, -Part)
 :- private next_sqrt/4.
-next_sqrt((1,T), X, P, (0,S)) :- !,
+next_sqrt((1, T), X, P, (0, S)) :- !,
    mp_math(T*X+0d1, P, S).
-next_sqrt((L,T), X, P, (K,S)) :-
+next_sqrt((L, T), X, P, (K, S)) :-
    K is L-1,
    mp_math((T*X+0d1)*(3-2*K)/(2*K), P, S).
 
@@ -134,12 +130,11 @@ bin_dec_sqrt(B, D, P, X) :-
 /****************************************************************/
 
 % mp_math(+Expression, +Context, -Decimal)
-:- meta_predicate multi:mp_math(#(1),?,?).
+:- meta_predicate multi:mp_math(#(1), ?, ?).
 :- multifile multi:mp_math/3.
 :- public multi:mp_math/3.
-multi:mp_math(V, _, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
+multi:mp_math(V, _, _) :- var(V),
+   throw(error(instantiation_error, _)).
 
 /* conversion */
 multi:mp_math(decimal(X), P, R) :- !,

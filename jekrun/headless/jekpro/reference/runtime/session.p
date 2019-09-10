@@ -1,9 +1,16 @@
 /**
- * The query answer loop of the Prolog interpreter repeatedly prompts
- * a query and answers it by showing the variable bindings. The query
- * answer loop can be entered recursively by the predicate break/0.
- * The query answer loop can be terminated by issuing an end of file.
- * The query answer loop runs in its own input/output stream pair.
+ * The query answer loop of the Prolog interpreter repeatedly prompts a
+ * query and answers it by showing the variable bindings. The query
+ * answer loop can be started by the predicate prolog/0 and entered
+ * recursively by the predicate break/0. The query answer loop can be
+ * terminated by issuing an end of file.
+ *
+ * Examples:
+ * ?- break, p(X).
+ * [1] ?- assertz(p(a)).
+ * Yes
+ * [1] ?-
+ * X = a
  *
  * The system predicates abort/1, exit/1 and close/1 throw some well-known
  * system errors. The system predicate exit/1 allows terminating the query
@@ -54,6 +61,7 @@
 :- use_module(library(system/locale)).
 :- use_module(library(stream/console)).
 :- use_module(library(misc/residue)).
+:- use_module(library(system/thread)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/
@@ -66,8 +74,7 @@
  */
 % abort
 :- public abort/0.
-abort :-
-   throw(error(system_error(user_abort),_)).
+abort :- throw(error(system_error(user_abort), _)).
 :- set_predicate_property(abort/0, sys_notrace).
 
 /**
@@ -76,8 +83,7 @@ abort :-
  */
 % exit
 :- public exit/0.
-exit :-
-   throw(error(system_error(user_exit),_)).
+exit :- throw(error(system_error(user_exit), _)).
 :- set_predicate_property(exit/0, sys_notrace).
 
 /**
@@ -86,8 +92,7 @@ exit :-
  */
 % close
 :- public close/0.
-close :-
-   throw(error(system_error(user_close),_)).
+close :- throw(error(system_error(user_close), _)).
 :- set_predicate_property(close/0, sys_notrace).
 
 /**
@@ -98,120 +103,203 @@ close :-
  */
 % prolog
 :- public prolog/0.
-prolog :- break.
+prolog :-
+   call_cleanup(
+      sys_toplevel,
+      end_all_modules).
 :- set_predicate_property(prolog/0, sys_notrace).
 
+% break
 :- public break/0.
-:- special(break/0, 'SpecialSession', 1).
+break :-
+   current_prolog_flag(sys_break_level, X),
+   Y is X+1,
+   setup_call_cleanup(
+      set_prolog_flag(sys_break_level, Y),
+      sys_toplevel,
+      set_prolog_flag(sys_break_level, X)).
 :- set_predicate_property(break/0, sys_notrace).
 
-/***********************************************************/
-/* Display Variable Instantiations & Constraints           */
-/***********************************************************/
+% sys_toplevel
+:- private sys_toplevel/0.
+sys_toplevel :-
+   repeat,
+   sys_trap(sys_toplevel_ask, E,
+      (  sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail
+      ;  sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E)
+      ;  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  sys_error_stack(E), fail)), !.
+:- set_predicate_property(sys_toplevel/0, sys_notrace).
 
-/**
- * sys_show_vars:
- * Will show all variable instantiations and constraints related to
- * the current query or directive. Called by the interpreter for
- * each successful query.
- */
-% sys_show_vars
-:- public sys_show_vars/0.
-sys_show_vars :-
-   sys_get_variable_names(M),
-   sys_get_name_or_eq_list(R, M),
-   sys_show_name_or_eq_list(R, M).
-:- set_predicate_property(sys_show_vars/0, sys_notrace).
+% sys_toplevel_ask
+:- private sys_toplevel_ask/0.
+sys_toplevel_ask :-
+   sys_toplevel_level,
+   sys_toplevel_top,
+   write('?- '), flush_output,
+   read_term(G, [variable_names(N)]),
+   (  G == end_of_file -> true
+   ;  current_prolog_flag(sys_print_map, M),
+      setup_call_cleanup(set_prolog_flag(sys_print_map, N),
+         sys_answer(G, N),
+         set_prolog_flag(sys_print_map, M)), fail).
 
-/**
- * sys_get_name_or_eq_list(R, M):
- * Will retrieve all variable instantiations and constraints related
- * to the current query or directive. Called by the interpreter for
- * notebook queries, where M are the variable names.
- */
-% sys_get_name_or_eq_list(-List, +List)
-:- public sys_get_name_or_eq_list/2.
-sys_get_name_or_eq_list(R, M) :-
-   sys_get_raw_variables(N),
-   sys_term_eq_list(N, L),
-   sys_filter_variable_names(N, M, L, R).
+% sys_toplevel_level
+:- private sys_toplevel_level/0.
+sys_toplevel_level :-
+   current_prolog_flag(sys_break_level, X),
+   X > 0, !,
+   write('['), write(X), write('] ').
+sys_toplevel_level.
 
-/**
- * sys_filter_variable_names(L, M, R, S):
- * Succeeds with the list S which contains R and those variable
- * names of L that are not trivial, where M are the variable names.
- */
-% sys_filter_variable_names(+List, +List, +List, -List)
-:- private sys_filter_variable_names/4.
-sys_filter_variable_names([X=Y|L], M, R, S) :-
+% sys_toplevel_top
+:- private sys_toplevel_top/0.
+sys_toplevel_top :-
+   top_module(N), !,
+   write('('), writeq(N), write(') ').
+sys_toplevel_top.
+
+/****************************************************************/
+/* Answer Display                                               */
+/****************************************************************/
+
+% sys_answer(+Goal, +Assoc)
+:- private sys_answer/2.
+sys_answer(G, N) :-
+   current_prolog_flag(sys_choices, X),
+   expand_goal(G, H), call_residue(H, R),
+   current_prolog_flag(sys_choices, Y),
+   (  X =:= Y -> !, sys_filter_show(N, R), nl
+   ;  sys_answer_ask(N, R) -> !; true).
+sys_answer(_, _) :-
+   get_properties(runtime, P),
+   get_property(P, 'query.no', V),
+   write(V), nl.
+
+% sys_answer_ask(+Assoc, +List)
+:- private sys_answer_ask/2.
+sys_answer_ask(N, R) :-
+   repeat,
+   sys_trap(sys_answer_prompt(N, R, Response), E,
+      (  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  sys_error_message(E), fail)), !, Response == answer_cut.
+
+% sys_answer_prompt(+Assoc, +List, -Atom)
+:- private sys_answer_prompt/3.
+sys_answer_prompt(N, R, Response) :-
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_tprompt, Prompt),
+   setup_call_cleanup(
+      set_thread_flag(Thread, sys_tprompt, on),
+      sys_answer_show(N, R, Response),
+      set_thread_flag(Thread, sys_tprompt, Prompt)).
+
+% sys_answer_show(+Assoc, +List, -Atom)
+:- private sys_answer_show/3.
+sys_answer_show(N, R, Response) :-
+   sys_filter_show(N, R), write(' '), flush_output,
+   (read_line(L) -> true; exit),
+   thread_current(Thread),
+   (  L == ; -> set_thread_flag(Thread, sys_tprompt, off)
+   ;  L == '' -> set_thread_flag(Thread, sys_tprompt, answer_cut)
+   ;  L == ? -> sys_answer_help
+   ;  term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
+   current_thread_flag(Thread, sys_tprompt, Response), Response \== on.
+
+% sys_answer_help
+:- private sys_answer_help/0.
+sys_answer_help :-
+   get_properties(runtime, P),
+   get_property(P, 'query.help', V),
+   write(V), nl.
+
+/****************************************************************/
+/* Error Display                                                */
+/****************************************************************/
+
+% sys_error_cause(+Term)
+:- private sys_error_cause/1.
+sys_error_cause(cause(_, R)) :- !,
+   sys_error_stack(R).
+sys_error_cause(_).
+
+% sys_error_stack(+Term)
+:- private sys_error_stack/1.
+sys_error_stack(E) :-
+   current_error(T),
+   print_stack_trace(T, E).
+
+% sys_error_message(+Term)
+:- public sys_error_message/1.
+sys_error_message(E) :-
+   current_error(T),
+   error_make(E, S),
+   write(T, S), nl(T).
+
+/****************************************************************/
+/* Filter & Show Variables                                      */
+/****************************************************************/
+
+% sys_filter_show(+Assoc, +List)
+:- private sys_filter_show/2.
+sys_filter_show(N, R) :-
+   sys_filter_assoc(N, N, R, M),
+   sys_show_assoc(M, N).
+
+% sys_filter_assoc(+Assoc, +Assoc, +List, -Assoc)
+:- private sys_filter_assoc/4.
+sys_filter_assoc([X = Y|L], N, K, R) :-
    var(Y),
-   once((  sys_member(Z=T, M),
-           T == Y)),
+   sys_get_assoc(Y, N, Z),
    Z == X, !,
-   sys_filter_variable_names(L, M, R, S).
-sys_filter_variable_names([X=Y|L], M, R, [X is Z|S]) :-
-   sys_printable_value(Y, Z), !,
-   sys_filter_variable_names(L, M, R, S).
-sys_filter_variable_names([E|L], M, R, [E|S]) :-
-   sys_filter_variable_names(L, M, R, S).
-sys_filter_variable_names([], _, L, L).
+   sys_filter_assoc(L, N, K, R).
+sys_filter_assoc([X = Y|L], N, K, [X = Y|R]) :-
+   sys_filter_assoc(L, N, K, R).
+sys_filter_assoc([], _, K, K).
 
-/**
- * sys_show_name_or_eq_list(L, M):
- * Shows the variable assignments and constraints from L on the tty,
- * where M are the variable names.
- */
-% sys_show_name_or_eq_list(+List, +List)
-:- public sys_show_name_or_eq_list/2.
-sys_show_name_or_eq_list([], _) :-
-   sys_get_lang(runtime, P),
+% sys_get_assoc(+Var, +Assoc, -Atom)
+:- private sys_get_assoc/3.
+sys_get_assoc(Y, [_|L], Z) :-
+   sys_get_assoc(Y, L, Z), !.
+sys_get_assoc(Y, [Z = T|_], Z) :-
+   T == Y.
+
+% sys_show_assoc(+Assoc, +Assoc)
+:- private sys_show_assoc/2.
+sys_show_assoc([], _) :-
+   get_properties(runtime, P),
    get_property(P, 'query.yes', V),
    write(V).
-sys_show_name_or_eq_list([X,Y|Z], M) :- !,
-   sys_show_name_or_eq(X, M),
+sys_show_assoc([X, Y|Z], N) :- !,
+   sys_show_pair(X, N),
    write(','), nl,
-   sys_show_name_or_eq_list([Y|Z], M).
-sys_show_name_or_eq_list([X], M) :-
-   sys_show_name_or_eq(X, M).
+   sys_show_assoc([Y|Z], N).
+sys_show_assoc([X], N) :-
+   sys_show_pair(X, N).
 
-/**
- * sys_show_no:
- * Shows a no on the tty.
- */
-% sys_show_no
-:- public sys_show_no/0.
-sys_show_no :-
-   sys_get_lang(runtime, P),
-   get_property(P, 'query.no', V),
-   write(V).
-
-/**
- * sys_show_name_or_eq(E, M):
- * Shows the variable assignment or constraint E on the tty,
- * where M are the variable names.
- */
-% sys_show_name_or_eq(+Eq, +List)
-:- private sys_show_name_or_eq/2.
-:- meta_predicate sys_show_name_or_eq(0,?).
-sys_show_name_or_eq(X is T, M) :- !,
+% sys_show_pair(+Pair, +Assoc)
+:- private sys_show_pair/2.
+sys_show_pair(X = T, N) :- sys_printable_value(T, S), !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
-   sys_show_value(T, M).
-sys_show_name_or_eq(X = T, M) :- !,
+   sys_show_term(S, [priority(699), quoted(true), variable_names(N)]).
+sys_show_pair(X = T, N) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' = '),
-   sys_show_value(T, M).
-sys_show_name_or_eq(T, M) :-
-   write_term(T, [context(0),quoted(true),variable_names(M)]).
+   sys_show_term(T, [priority(699), quoted(true), variable_names(N)]).
+sys_show_pair(G, N) :-
+   sys_show_term(G, [context(0), quoted(true), variable_names(N)]).
 
-:- private sys_show_value/2.
-sys_show_value(T, M) :-
-   acyclic_term(T), !,
-   write_term(T, [priority(699),quoted(true),variable_names(M)]).
-sys_show_value(_, _) :-
-   write('<cyclic term>').
+% sys_show_term(+Term, +List)
+:- private sys_show_term/2.
+sys_show_term(T, L) :- acyclic_term(T), !,
+   write_term(T, L).
+sys_show_term(_, _) :-
+   get_properties(runtime, P),
+   get_property(P, 'query.cyclic', V),
+   write(V).
 
 /**
  * sys_quoted_var(V, Q):
@@ -219,13 +307,4 @@ sys_show_value(_, _) :-
  */
 % sys_quoted_var(+Atom, -Atom)
 :- public sys_quoted_var/2.
-:- special(sys_quoted_var/2, 'SpecialSession', 2).
-
-/**
- * sys_get_raw_variables(L):
- * The predicate succeeds in L the current variable names
- * from the top-level query including non-variables or duplicates.
- */
-% sys_get_raw_variables(-VariableNames)
-:- public sys_get_raw_variables/1.
-:- special(sys_get_raw_variables/1, 'SpecialSession', 3).
+:- special(sys_quoted_var/2, 'SpecialSession', 0).

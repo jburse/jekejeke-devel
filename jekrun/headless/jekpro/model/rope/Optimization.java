@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -48,7 +49,7 @@ public final class Optimization {
     final static int[][] unifyTermInt = new int[8][];
 
     int flags;
-    int minarg = -1;
+    int maxarg = -1;
     final SkelVar sort;
 
     /**
@@ -103,7 +104,7 @@ public final class Optimization {
      * @return The helper.
      */
     static Optimization[] createHelper(Object molec) {
-        Object var = EngineCopy.getVar(molec);
+        Object var = SupervisorCopy.getVar(molec);
         if (var == null)
             return VAR_VOID;
         Optimization[] helper;
@@ -133,26 +134,26 @@ public final class Optimization {
         if (!(m instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) m;
-        for (int i = mc.args.length - 1; i >= 0; i--) {
+        for (int i = 0; i < mc.args.length; i++) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
-                ov.minarg = i;
-                if ((clause.flags & Clause.MASK_CLAUSE_NHED) != 0)
+                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) != 0) {
                     ov.flags |= MASK_VAR_HSTR;
+                } else {
+                    ov.maxarg = i;
+                }
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
                     Optimization ov = helper[((SkelVar) var).id];
-                    ov.minarg = i;
                     ov.flags |= MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
                         Optimization ov = helper[temp[j].id];
-                        ov.minarg = i;
                         ov.flags |= MASK_VAR_HSTR;
                     }
                 }
@@ -168,7 +169,7 @@ public final class Optimization {
      * @param helper The helper.
      */
     static void setBody(Object m, Optimization[] helper) {
-        Object var = EngineCopy.getVar(m);
+        Object var = SupervisorCopy.getVar(m);
         if (var == null)
             return;
         if (var instanceof SkelVar) {
@@ -236,7 +237,7 @@ public final class Optimization {
                 break;
             Optimization ov = vars[((SkelVar) a).id];
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
+                if (ov.maxarg != i) {
                     break;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
                     break;
@@ -258,8 +259,8 @@ public final class Optimization {
             }
             Optimization ov = vars[((SkelVar) a).id];
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
-                    intargs[i] = ov.minarg;
+                if (ov.maxarg != i) {
+                    intargs[i] = ov.maxarg;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
                     intargs[i] = UNIFY_VAR;
                 } else {

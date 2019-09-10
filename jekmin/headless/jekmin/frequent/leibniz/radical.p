@@ -79,7 +79,7 @@
 % -(+Radical, -Radical)
 :- override (-)/2.
 :- public (-)/2.
--(radical(A,B), radical(C,D)) :-
+-(radical(A, B), radical(C, D)) :-
    C is -A,
    sys_radical_neg(B, D).
 
@@ -90,22 +90,20 @@
 % +(+Radical, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, R) :-
-   integer(Y), !,
-   radical: +(X, radical(Y,[]), R).
-+(X, rational(C,D), R) :- !,
-   radical: +(X, radical(rational(C,D),[]), R).
-+(radical(A,B), radical(C,D), R) :- !,
++(X, Y, R) :- integer(Y), !,
+   radical: +(X, radical(Y, []), R).
++(X, rational(C, D), R) :- !,
+   radical: +(X, radical(rational(C, D), []), R).
++(radical(A, B), radical(C, D), R) :- !,
    H is A+C,
    sys_radical_add(B, D, J),
    sys_new_radical(H, J, R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-+(X, polynom(C,D), R) :- !,
-   polynom: +(polynom(C,[0-X]), polynom(C,D), R).
-+(X, fraction(C,D), R) :-
-   fraction: +(fraction(X,1), fraction(C,D), R).
++(X, Y, R) :- sys_freezer(Y), !,
+   polynom: +(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
++(X, polynom(C, D), R) :- !,
+   polynom: +(polynom(C, [0-X]), polynom(C, D), R).
++(X, fraction(C, D), R) :-
+   fraction: +(fraction(X, 1), fraction(C, D), R).
 
 /**
  * -(P, Q, R):
@@ -114,22 +112,20 @@
 % -(+Radical, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, R) :-
-   integer(Y), !,
-   radical: -(X, radical(Y,[]), R).
--(X, rational(C,D), R) :- !,
-   radical: -(X, radical(rational(C,D),[]), R).
--(radical(A,B), radical(C,D), R) :- !,
+-(X, Y, R) :- integer(Y), !,
+   radical: -(X, radical(Y, []), R).
+-(X, rational(C, D), R) :- !,
+   radical: -(X, radical(rational(C, D), []), R).
+-(radical(A, B), radical(C, D), R) :- !,
    H is A-C,
    sys_radical_sub(B, D, J),
    sys_new_radical(H, J, R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
--(X, polynom(C,D), R) :- !,
-   polynom: -(polynom(C,[0-X]), polynom(C,D), R).
--(X, fraction(C,D), R) :-
-   fraction: -(fraction(X,1), fraction(C,D), R).
+-(X, Y, R) :- sys_freezer(Y), !,
+   polynom: -(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
+-(X, polynom(C, D), R) :- !,
+   polynom: -(polynom(C, [0-X]), polynom(C, D), R).
+-(X, fraction(C, D), R) :-
+   fraction: -(fraction(X, 1), fraction(C, D), R).
 
 /**
  * *(P, Q, R):
@@ -138,12 +134,11 @@
 % *(+Radical, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(X, Y, R) :-
-   integer(Y), !,
-   radical: *(X, radical(Y,[]), R).
-*(X, rational(C,D), R) :- !,
-   radical: *(X, radical(rational(C,D),[]), R).
-*(radical(A,B), radical(C,D), R) :- !,
+*(X, Y, R) :- integer(Y), !,
+   radical: *(X, radical(Y, []), R).
+*(X, rational(C, D), R) :- !,
+   radical: *(X, radical(rational(C, D), []), R).
+*(radical(A, B), radical(C, D), R) :- !,
    sys_radical_lift(A, D, K),
    sys_radical_lift(C, B, L),
    sys_radical_add(L, K, M),
@@ -151,13 +146,12 @@
    sys_radical_add(M, N, U),
    H is A*C+V,
    sys_new_radical(H, U, R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(polynom(Y,[0-X]), polynom(Y,[1-1]), R).
-*(X, polynom(C,D), R) :- !,
-   polynom: *(polynom(C,[0-X]), polynom(C,D), R).
-*(X, fraction(C,D), R) :-
-   fraction: *(fraction(X,1), fraction(C,D), R).
+*(X, Y, R) :- sys_freezer(Y), !,
+   polynom: *(polynom(Y, [0-X]), polynom(Y, [1-1]), R).
+*(X, polynom(C, D), R) :- !,
+   polynom: *(polynom(C, [0-X]), polynom(C, D), R).
+*(X, fraction(C, D), R) :-
+   fraction: *(fraction(X, 1), fraction(C, D), R).
 
 /**
  * /(P, Q, R):
@@ -166,24 +160,22 @@
 % /(+Integer, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(X, Y, R) :-
-   integer(Y), !,
+/(X, Y, R) :- integer(Y), !,
    R is X*(1/Y).
-/(X, rational(C,D), R) :- !,
-   R is X*(1/rational(C,D)).
-/(X, radical(0,[A-S]), R) :- !,
+/(X, rational(C, D), R) :- !,
+   R is X*(1/rational(C, D)).
+/(X, radical(0, [A-S]), R) :- !,
    B is 1/A,
-   R is X*radical(0,[B-S]).
-/(X, radical(C,D), Y) :- !,
-   sys_radical_triage(radical(C,D), P, Q),
+   R is X*radical(0, [B-S]).
+/(X, radical(C, D), Y) :- !,
+   sys_radical_triage(radical(C, D), P, Q),
    Y is X*(P-Q)/(P^2-Q^2).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
+/(X, Y, R) :- sys_freezer(Y), !,
    new_fraction(X, Y, R).
-/(X, polynom(C,D), R) :- !,
-   new_fraction(X, polynom(C,D), R).
-/(X, fraction(C,D), R) :-
-   fraction: /(fraction(X,1), fraction(C,D), R).
+/(X, polynom(C, D), R) :- !,
+   new_fraction(X, polynom(C, D), R).
+/(X, fraction(C, D), R) :-
+   fraction: /(fraction(X, 1), fraction(C, D), R).
 
 /**
  * ^(P, Q, R):
@@ -192,38 +184,35 @@
 % ^(+Radical, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(P, Y, R) :-
-   user:(Y < 0), !,
+^(P, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
 ^(P, 1, R) :- !,
    R = P.
-^(radical(0,[A-_]), 2, R) :- !,
+^(radical(0, [A-_]), 2, R) :- !,
    R = A.
 ^(X, 2, R) :- !,
    sys_radical_split(X, P, Q),
    R is P^2+2*P*Q+Q^2.
-^(P, N, R) :-
-   user:mod(N, 2, 1), !,
+^(P, N, R) :- user:mod(N, 2, 1), !,
    user: -(N, 1, M),
    R is P^M*P.
-^(P, N, R) :-
-   user: //(N, 2, M),
+^(P, N, R) :- user: //(N, 2, M),
    H is P^M,
    R is H^2.
 
 % sys_radical_split(+Radical, -Internal, -Internal)
 :- private sys_radical_split/3.
-sys_radical_split(radical(A,B), P, Q) :-
+sys_radical_split(radical(A, B), P, Q) :-
    sys_sqrt_split(B, U, V),
    sys_new_radical(A, U, P),
    sys_new_radical(0, V, Q).
 
 % sys_sqrt_split(+Map, -Map, -Map)
 :- private sys_sqrt_split/3.
-sys_sqrt_split([X,Y|L], [Y|P], [X|Q]) :- !,
+sys_sqrt_split([X, Y|L], [Y|P], [X|Q]) :- !,
    sys_sqrt_split(L, P, Q).
 sys_sqrt_split(L, [], L).
 
@@ -238,36 +227,32 @@ sys_sqrt_split(L, [], L).
 % sqrt(+Radical, -Radical)
 :- override sqrt/2.
 :- public sqrt/2.
-sqrt(X, _) :-
-   X < 0,
-   throw(error(evaluation_error(undefined),_)).
+sqrt(X, _) :- X < 0,
+   throw(error(evaluation_error(undefined), _)).
 sqrt(X, R) :-
    make_radical(X, R).
 
 % make_radical(+Radical, -Radical)
 :- public make_radical/2.
-make_radical(X, R) :-
-   integer(X),
+make_radical(X, R) :- integer(X),
    elem:sqrtrem(X, H, J),
    user:(J =:= 0), !,
    R = H.
-make_radical(rational(A,B), R) :-
-   make_radical(A, H),
-   integer(H),
-   make_radical(B, J),
-   integer(J), !,
-   R = rational(H,J).
-make_radical(radical(0,[A-S]), R) :- !,
-   R = radical(0,[radical(0,[A-S])-1]).
-make_radical(radical(A,B), Y) :-
-   sys_radical_triage(radical(A,B), P, Q),
+make_radical(rational(A, B), R) :-
+   make_radical(A, H), integer(H),
+   make_radical(B, J), integer(J), !,
+   R = rational(H, J).
+make_radical(radical(0, [A-S]), R) :- !,
+   R = radical(0, [radical(0, [A-S])-1]).
+make_radical(radical(A, B), Y) :-
+   sys_radical_triage(radical(A, B), P, Q),
    D is P^2-Q^2,
    D >= 0,
    sys_radical_level(D, V),
    make_radical(D, H),
    sys_radical_level(H, W),
    user:(W =< V),
-   sys_radical_midlevel(radical(A,B), N),
+   sys_radical_midlevel(radical(A, B), N),
    sys_radical_base(P, N, Z),
    S is (P+H)/2,
    sys_radical_base(S, N, O),
@@ -277,7 +262,7 @@ make_radical(radical(A,B), Y) :-
    make_radical(T, K),
    Y is J+sign(Q)*K.
 make_radical(X, R) :-
-   R = radical(0,[X-1]).
+   R = radical(0, [X-1]).
 
 /*********************************************************************/
 /* Arithmetic Helper                                                 */
@@ -307,9 +292,7 @@ sys_radical_add2(A, S, [B-T|L], U) :-
    user: *(T, S, V),
    K is A+2*V*H+B,
    (  K \== 0
-   -> (  V \== 1
-      -> W is T*sign(B-A)
-      ;  W = T),
+   -> (V \== 1 -> W is T*sign(B-A); W = T),
       sys_radical_insert(L, K, W, U)
    ;  U = L).
 sys_radical_add2(A, S, [B-T|L], U) :-
@@ -334,9 +317,7 @@ sys_radical_sub2(A, S, [B-T|L], U) :-
    user: *(T, S, V),
    K is A-2*V*H+B,
    (  K \== 0
-   -> (  V \== -1
-      -> W is T*sign(B-A)
-      ;  W = T),
+   -> (V \== -1 -> W is T*sign(B-A); W = T),
       sys_radical_insert(L, K, W, U)
    ;  U = L).
 sys_radical_sub2(A, S, [B-T|L], U) :-
@@ -364,14 +345,13 @@ sys_radical_scale([], _, _, [], 0).
 
 % sys_radical_plus(+Internal, +Map, +Internal, -Map, -Internal)
 :- private sys_radical_plus/5.
-sys_radical_plus(X, L, B, U, V) :-
-   integer(X), !,
+sys_radical_plus(X, L, B, U, V) :- integer(X), !,
    U = L,
    V is X+B.
-sys_radical_plus(rational(C,D), L, B, U, V) :- !,
+sys_radical_plus(rational(C, D), L, B, U, V) :- !,
    U = L,
-   V is rational(C,D)+B.
-sys_radical_plus(radical(C,D), L, B, U, V) :-
+   V is rational(C, D)+B.
+sys_radical_plus(radical(C, D), L, B, U, V) :-
    sys_radical_add(D, L, U),
    V is C+B.
 
@@ -384,10 +364,8 @@ sys_radical_plus(radical(C,D), L, B, U, V) :-
 sys_radical_insert([B-T|L], A, S, R) :-
    sys_radical_level(A, P),
    sys_radical_level(B, Q),
-   (  user:(P =:= Q)
-   -> A < B
-   ;  user:(P > Q)), !,
-   R = [A-S,B-T|L].
+   (user:(P =:= Q) -> A < B; user:(P > Q)), !,
+   R = [A-S, B-T|L].
 sys_radical_insert([B-T|L], A, S, [B-T|R]) :-
    sys_radical_insert(L, A, S, R).
 sys_radical_insert([], A, S, [A-S]).
@@ -425,15 +403,14 @@ sys_radical_up([], _, _, []).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(radical(0,[A- -1|L]), R) :- !,
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(radical(0, [A- -1|L]), R) :- !,
    printable(A, H),
    sys_radical_addition(L, -sqrt(H), R).
-residue:sys_printable_value(radical(0,[A-1|L]), R) :- !,
+residue:sys_printable_value(radical(0, [A-1|L]), R) :- !,
    printable(A, H),
    sys_radical_addition(L, sqrt(H), R).
-residue:sys_printable_value(radical(A,L), R) :- !,
+residue:sys_printable_value(radical(A, L), R) :- !,
    printable(A, H),
    sys_radical_addition(L, H, R).
 
@@ -459,14 +436,13 @@ sys_radical_addition([], A, A).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is radical(A,B)) :- !,
-   X = radical(A,B).
+generic:(X is radical(A, B)) :- !,
+   X = radical(A, B).
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(radical(_,_)).
+generic:is_abnormal(radical(_, _)).

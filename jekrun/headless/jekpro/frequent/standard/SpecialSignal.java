@@ -1,5 +1,6 @@
 package jekpro.frequent.standard;
 
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -44,8 +45,9 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSignal extends AbstractSpecial {
-    private final static int SPECIAL_SYS_ATOMIC = 0;
-    private final static int SPECIAL_SYS_CLEANUP = 1;
+    private final static int SPECIAL_SYS_CLEANUP = 0;
+    private final static int SPECIAL_SYS_ATOMIC = 1;
+    private final static int SPECIAL_SYS_IGNORE = 2;
 
     /**
      * <p>Create a signal special.</p>
@@ -70,29 +72,15 @@ public final class SpecialSignal extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         switch (id) {
-            case SPECIAL_SYS_ATOMIC:
+            case SPECIAL_SYS_CLEANUP:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_MASK))
-                    return false;
-                return true;
-            case SPECIAL_SYS_CLEANUP:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
 
-                boolean multi = en.wrapGoal();
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CALL;
-                Display d2 = new Display(dire.size);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+                Directive dire = SupervisorCall.callGoal(0, en);
+                Display d2 = en.display;
 
                 boolean mask = (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0;
                 boolean verify = (en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0;
@@ -100,6 +88,24 @@ public final class SpecialSignal extends AbstractSpecial {
                 CallFrame u = en.contdisplay;
                 en.choices = new ChoiceCleanup(en.choices, r, u, en.bind, mask, verify, d2, dire);
                 en.number++;
+                return true;
+            case SPECIAL_SYS_ATOMIC:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_MASK))
+                    return false;
+                return true;
+            case SPECIAL_SYS_IGNORE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_IGNR))
+                    return false;
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -122,13 +128,9 @@ public final class SpecialSignal extends AbstractSpecial {
         int backup = ChoiceAtomic.clearFlags(mask, en);
         int snap = en.number;
         try {
-            boolean multi = en.wrapGoal();
-            Display ref = en.display;
-            Directive dire = en.store.foyer.CLAUSE_CALL;
-            Display d2 = new Display(dire.size);
-            d2.bind[0].bindUniv(en.skel, ref, en);
-            if (multi)
-                ref.remTab(en);
+            Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+            Display d2 = en.display;
+
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;

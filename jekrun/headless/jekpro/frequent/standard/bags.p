@@ -66,10 +66,8 @@
 :- module(user, []).
 
 :- public ^ /2.
-:- meta_predicate ^(?,0).
-^(_, _) :-
-   throw(error(existence_error(body,^ /2),_)).
-:- set_predicate_property(^ /2, sys_body).
+:- meta_predicate ^(?, 0).
+^(_, _) :- throw(error(existence_error(body, ^ /2), _)).
 
 /**********************************************************/
 /* Bagof Predicates                                       */
@@ -84,7 +82,7 @@
  */
 % bagof(+Template, +QuantGoal, -List)
 :- public bagof/3.
-:- meta_predicate bagof(?,0,?).
+:- meta_predicate bagof(?, 0, ?).
 bagof(T, G, L) :-
    sys_goal_globals(T^G, W),
    W \== [], !,
@@ -105,7 +103,7 @@ bagof(T, G, L) :-
  */
 % setof(+Template, +QuantGoal, -List)
 :- public setof/3.
-:- meta_predicate setof(?,0,?).
+:- meta_predicate setof(?, 0, ?).
 setof(T, G, L) :-
    bagof(T, G, H),
    sort(H, L).
@@ -117,7 +115,7 @@ setof(T, G, L) :-
  */
 % sys_heapof(+Template, +QuantGoal, -List)
 :- public sys_heapof/3.
-:- meta_predicate sys_heapof(?,0,?).
+:- meta_predicate sys_heapof(?, 0, ?).
 sys_heapof(T, G, L) :-
    sys_goal_globals(T^G, W),
    W \== [], !,
@@ -158,8 +156,7 @@ sys_run_values_more([K-V|P], _, _, J, M) :-
 % sys_run_values_rest(+Pairs, +Key, -Values, -Pairs)
 :- private sys_run_values_rest/4.
 sys_run_values_rest([K-V|P], J, [V|L], Q) :-
-   K == J, !,
-   sys_run_values_rest(P, J, L, Q).
+   K == J, !, sys_run_values_rest(P, J, L, Q).
 sys_run_values_rest(P, _, [], P).
 
 /**********************************************************/
@@ -175,12 +172,12 @@ sys_run_values_rest(P, _, [], P).
  */
 % findall(+Template, +Goal, -List)
 :- public findall/3.
-:- meta_predicate findall(?,0,?).
+:- meta_predicate findall(?, 0, ?).
 :- special(findall/3, 'SpecialFind', 0).
 
 % findall(+Template, +Goal, -List, +List)
 :- public findall/4.
-:- meta_predicate findall(?,0,?,?).
+:- meta_predicate findall(?, 0, ?, ?).
 :- special(findall/4, 'SpecialFind', 1).
 
 /**
@@ -189,10 +186,8 @@ sys_run_values_rest(P, _, [], P).
  * such that B fails. Otherwise the predicate fails.
  */
 :- public forall/2.
-:- meta_predicate forall(0,0).
-forall(A, B) :-
-   \+ (  A,
-         \+ B).
+:- meta_predicate forall(0, 0).
+forall(A, B) :- \+ (A, \+ B).
 
 /**********************************************************/
 /* Copy Term                                              */
@@ -217,7 +212,7 @@ forall(A, B) :-
  */
 % foreach(+Generator, +Goal)
 :- public foreach/2.
-:- meta_predicate foreach(0,0).
+:- meta_predicate foreach(0, 0).
 foreach(F, G) :-
    sys_goal_kernel(G, B),
    sys_goal_globals(F^G, W),
@@ -240,7 +235,7 @@ sys_call_values([_-V|L]) :-
  */
 % foreach(+Generator, +Goal, +Term, -Term)
 :- public foreach/4.
-:- meta_predicate foreach(0,2,?,?).
+:- meta_predicate foreach(0, 2, ?, ?).
 foreach(F, G, I, O) :-
    sys_goal_kernel(G, B),
    sys_goal_globals(F^G, W),

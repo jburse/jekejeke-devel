@@ -43,6 +43,15 @@ public abstract class AbstractAssoc<K, V>
     }
 
     /**
+     * <p>Retrieve total size.</p>
+     *
+     * @return The total size.
+     */
+    public int totalSize() {
+        return size;
+    }
+
+    /**
      * <p>Find the key in the map.</p>
      *
      * @param key The key.

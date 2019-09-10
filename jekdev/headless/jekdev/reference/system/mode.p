@@ -43,17 +43,6 @@
 
 :- module(user, []).
 
-/**
- * sys_ignore(A):
- * The predicate succeeds whenever A succeeds. The goal A is invoked
- * with the mode cloak temporarily set to on.
- */
-% sys_ignore(+Goal)
-:- public sys_ignore/1.
-:- meta_predicate sys_ignore(0).
-:- special(sys_ignore/1, 'SpecialMode', 0).
-:- set_predicate_property(sys_ignore/1, sys_notrace).
-
 /******************************************************************/
 /* sys_in/0                                                       */
 /*   call: 0                                                      */
@@ -153,7 +142,7 @@ sys_at2 :-
  */
 % sys_notrace_chk(+Integer)
 :- private sys_notrace_chk/1.
-:- special(sys_notrace_chk/1, 'SpecialMode', 1).
+:- special(sys_notrace_chk/1, 'SpecialMode', 0).
 
 /**
  * sys_port_show(P):
@@ -163,7 +152,7 @@ sys_at2 :-
  * the trace goal user hook.
  */
 :- private sys_port_show/1.
-:- special(sys_port_show/1, 'SpecialMode', 2).
+:- special(sys_port_show/1, 'SpecialMode', 1).
 
 /**
  * sys_cut_chk(P):
@@ -171,7 +160,7 @@ sys_at2 :-
  * choice points in the current clause of port P.
  */
 :- private sys_cut_chk/1.
-:- special(sys_cut_chk/1, 'SpecialMode', 3).
+:- special(sys_cut_chk/1, 'SpecialMode', 2).
 
 /**
  * sys_goal_chk(P):
@@ -179,14 +168,14 @@ sys_at2 :-
  * a choice point of the call instrumentation of port P.
  */
 :- private sys_goal_chk/1.
-:- special(sys_goal_chk/1, 'SpecialMode', 4).
+:- special(sys_goal_chk/1, 'SpecialMode', 3).
 
 /**
  * sys_goal_cut:
  * The predicate succeeds in removing the current choice point.
  */
 :- private sys_goal_cut/0.
-:- special(sys_goal_cut/0, 'SpecialMode', 5).
+:- special(sys_goal_cut/0, 'SpecialMode', 4).
 
 /**
  * sys_clause_chk(P):
@@ -194,4 +183,4 @@ sys_at2 :-
  * is not a choice point for the current clause of port P.
  */
 :- private sys_clause_chk/1.
-:- special(sys_clause_chk/1, 'SpecialMode', 6).
+:- special(sys_clause_chk/1, 'SpecialMode', 5).

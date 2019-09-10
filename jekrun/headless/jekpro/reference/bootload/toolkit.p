@@ -41,7 +41,7 @@
 % sys_activate_capability(+Capa, +Key)
 :- public sys_activate_capability/2.
 :- foreign(sys_activate_capability/2, 'ForeignToolkit',
-      sysActivateCapability('Interpreter','String','String')).
+      sysActivateCapability('Interpreter', 'String', 'String')).
 
 /**
  * sys_calc_install_id(C, I):
@@ -51,7 +51,7 @@
 % sys_calc_install_id(+Capa, -ID)
 :- public sys_calc_install_id/2.
 :- foreign(sys_calc_install_id/2, 'ForeignToolkit',
-      sysCalcInstallID('Interpreter','String')).
+      sysCalcInstallID('Interpreter', 'String')).
 
 /**
  * sys_reg_license_text(C, T):
@@ -61,7 +61,7 @@
 % sys_reg_license_text(+Capa, +Text)
 :- public sys_reg_license_text/2.
 :- foreign(sys_reg_license_text/2, 'ForeignToolkit',
-      sysRegLicenseText('Interpreter','String','String')).
+      sysRegLicenseText('Interpreter', 'String', 'String')).
 
 /**
  * sys_reged_license_text(C, T):
@@ -71,7 +71,7 @@
 % sys_reged_license_text(+Capa, -Text)
 :- public sys_reged_license_text/2.
 :- foreign(sys_reged_license_text/2, 'ForeignToolkit',
-      sysRegedLicenseText('Interpreter','String')).
+      sysRegedLicenseText('Interpreter', 'String')).
 
 /**
  * sys_init_capability(C):
@@ -84,12 +84,12 @@
 % sys_init_capability(+Capa)
 :- public sys_init_capability/1.
 :- foreign(sys_init_capability/1, 'ForeignToolkit',
-      sysInitCapability('Interpreter','String')).
+      sysInitCapability('Interpreter', 'String')).
 
 % sys_init_capability(+Capa, +Opts)
 :- public sys_init_capability/2.
 :- foreign(sys_init_capability/2, 'ForeignToolkit',
-      sysInitCapabilityOpt('Interpreter','String','Object')).
+      sysInitCapabilityOpt('Interpreter', 'String', 'Object')).
 
 /**
  * sys_finit_capability(C):
@@ -98,7 +98,7 @@
 % sys_finit_capability(+Capa)
 :- public sys_finit_capability/1.
 :- foreign(sys_finit_capability/1, 'ForeignToolkit',
-      sysFiniCapability('Interpreter','String')).
+      sysFiniCapability('Interpreter', 'String')).
 
 /**
  * sys_current_capability(C):
@@ -122,8 +122,7 @@ sys_current_capability(Cap) :-
  */
 % sys_capability_property(+Capa, -Prop)
 :- public sys_capability_property/2.
-sys_capability_property(Cap, Prop) :-
-   var(Prop), !,
+sys_capability_property(Cap, Prop) :- var(Prop), !,
    sys_get_capability_properties(Cap, Props),
    sys_member(Prop, Props).
 sys_capability_property(Cap, Prop) :-
@@ -132,11 +131,11 @@ sys_capability_property(Cap, Prop) :-
 
 :- private sys_get_capability_properties/2.
 :- foreign(sys_get_capability_properties/2, 'ForeignToolkit',
-      sysGetCapabilityProperties('Interpreter','String')).
+      sysGetCapabilityProperties('Interpreter', 'String')).
 
 :- private sys_get_capability_property/3.
 :- foreign(sys_get_capability_property/3, 'ForeignToolkit',
-      sysGetCapabilityProperty('Interpreter','String','String')).
+      sysGetCapabilityProperty('Interpreter', 'String', 'String')).
 
 /**
  * sys_check_license(C):
@@ -146,7 +145,7 @@ sys_capability_property(Cap, Prop) :-
 % sys_check_license(+Capa)
 :- public sys_check_license/1.
 :- foreign(sys_check_license/1, 'ForeignToolkit',
-      sysCheckLicense('Interpreter','String')).
+      sysCheckLicense('Interpreter', 'String')).
 
 /**
  * sys_check_licenses:

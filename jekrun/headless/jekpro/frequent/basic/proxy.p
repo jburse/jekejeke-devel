@@ -122,4 +122,3 @@
 sys_instance_of(O, N) :-
    sys_get_module(O, M),
    sys_assignable_from(N, M).
-

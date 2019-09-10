@@ -9,28 +9,28 @@
  * code.properties:    The root and fall-back.
  * code_de.properties: The German member of the bundle.
  *
- * The predicates get_lang/2 and get_lang/3 allow retrieving a
- * member of a bundle. These predicates make use of the predicate
- * absolute_resource_name/2 to resolve the root so that the same
- * base name without an extension can be used for Prolog text and
- * for properties files.
+ * The predicates get_properties/[2,3] allow retrieving a locale
+ * properties file of a resource bun-dle. These predicates make use
+ * of the predicate absolute_resource_name/2 to resolve the root so
+ * that the same base name without an extension can be used for both
+ * Prolog text and resource bundles. The predicates get_property/[3,4]
+ * allow retrieving a property value.
  *
  * Examples:
- * test(Y) :- get_lang('code',X), get_property(X,'foo',Y).
+ * test(Y) :- get_properties('code',X), get_property(X,'foo',Y).
  * ?- test(X).
  * X = bar
  *
- * The lookup can be combined with sys_capture/1 to allow addressing
- * a properties file relative to the current Prolog text. The
- * predicates get_property/3 and get_property/4 allow retrieving a
- * property value from a properties file. The lookup and retrieval
- * is fast, since we memory load and cache properties files.
+ * The resource bundle of a properties file has to be loaded in advanced
+ * via the predicate sys_load_resource/1 and will then be cached for
+ * faster subsequent access. The predicates get_error_properties/[1,2]
+ * allow retrieving a union of those properties files, which were
+ * registered via sys_register_file/1 in advance.
  *
- * The predicate format_atom/[3,4] allows formatting a list of arguments
+ * The predicate atom_format/[3,4] allows formatting a list of arguments
  * based on a template and a locale. The predicates message_make/[3,4]
- * and error_make/[3,4] allow formatting a term based on properties
- * file and a locale. The predicates get_error_properties/[1,2] and
- * get_description_properties/[2,3] allow retrieving knowledgebase
+ * allows formatting a term based on properties file and a locale. The
+ * predicates get_descr_model/[2,3] and get_descr_platform/[2,3]
  * respective capability defined properties files.
  *
  * Warranty & Liability
@@ -70,29 +70,48 @@
 :- module(locale, []).
 
 /**
- * sys_get_lang(S, P):
- * sys_get_lang(S, L, P):
+ * get_properties(S, P):
+ * get_properties(S, L, P):
  * The predicate unifies P with the properties from the bundle S
  * for the current default locale. The ternary version of the
  * predicate allows specifying the locale L. The bundle S has
  * to be loaded in advance via sys_load_resource/1.
  */
-% sys_get_lang(+Slash, -Props)
-:- public sys_get_lang/2.
-sys_get_lang(Slash, Props) :-
+% get_properties(+Slash, -Props)
+:- public get_properties/2.
+get_properties(Slash, Props) :-
    absolute_resource_name(Slash, Pin),
    current_prolog_flag(sys_locale, Locale),
-   sys_sys_get_lang(Pin, Locale, Props).
+   sys_get_properties(Pin, Locale, Props).
 
-% sys_get_lang(+Slash, +Atom, -Props)
-:- public sys_get_lang/3.
-sys_get_lang(Slash, Locale, Props) :-
+% get_properties(+Slash, +Atom, -Props)
+:- public get_properties/3.
+get_properties(Slash, Locale, Props) :-
    absolute_resource_name(Slash, Pin),
-   sys_sys_get_lang(Pin, Locale, Props).
+   sys_get_properties(Pin, Locale, Props).
 
-:- private sys_sys_get_lang/3.
-:- foreign(sys_sys_get_lang/3, 'ForeignLocale',
-      sysGetLang('Interpreter','String','String')).
+:- private sys_get_properties/3.
+:- foreign(sys_get_properties/3, 'ForeignLocale',
+      sysGetLang('Interpreter', 'String', 'String')).
+
+/**
+ * get_error_properties(P):
+ * get_error_properties(L, P):
+ * The predicate unifies P with the error properties of the current
+ * knowledge base. The binary predicate allows specifying a locale L.
+ * The error resource bundles have to be loaded in advance via
+ * sys_load_resource/1 and registered via sys_register_file/1.
+ */
+% get_error_properties(-Props)
+:- public get_error_properties/1.
+get_error_properties(Props) :-
+   current_prolog_flag(sys_locale, Locale),
+   get_error_properties(Locale, Props).
+
+% get_error_properties(+Locale, -Props)
+:- public get_error_properties/2.
+:- foreign(get_error_properties/2, 'ForeignLocale',
+      sysGetErrorProperties('Interpreter', 'String')).
 
 /**
  * get_property(P, K, V):
@@ -104,12 +123,12 @@ sys_get_lang(Slash, Locale, Props) :-
 % get_property(+Props, +Atom, -Atom)
 :- public get_property/3.
 :- foreign(get_property/3, 'ForeignLocale',
-      sysGetProperty('Properties','String')).
+      sysGetProperty('Properties', 'String')).
 
 % get_property(+Props, +Atom, +Atom, -Atom)
 :- public get_property/4.
 :- foreign(get_property/4, 'ForeignLocale',
-      sysGetProperty('Properties','String','String')).
+      sysGetProperty('Properties', 'String', 'String')).
 
 /**
  * format_atom(F, A, S):
@@ -127,7 +146,7 @@ format_atom(Format, Arguments, Atom) :-
 % format_atom(+Locale, +Format, +List, -Atom)
 :- public format_atom/4.
 :- foreign(format_atom/4, 'ForeignLocale',
-      sysFormatToString('Interpreter','String','String','Object')).
+      sysFormatToString('Interpreter', 'String', 'String', 'Object')).
 
 /**
  * message_make(P, M, S):
@@ -145,53 +164,16 @@ message_make(Props, Term, Atom) :-
 % message_make(+Locale, +Props, +Term, -Atom)
 :- public message_make/4.
 :- foreign(message_make/4, 'ForeignLocale',
-      sysMessageMake('Interpreter','String','Properties','Object')).
-
-/**
- * error_make(P, E, S):
- * error_make(L, P, E, S):
- * The predicate formats the error term E without its context from
- * the properties P and unifies the result with S. The quaternary
- * predicate allows specifying a locale L.
- */
-% error_make(+Props, +Term, -Atom)
-:- public error_make/3.
-error_make(Props, Term, Atom) :-
-   current_prolog_flag(sys_locale, Locale),
-   error_make(Locale, Props, Term, Atom).
-
-% error_make(+Locale, +Props, +Term, -Atom)
-:- public error_make/4.
-:- foreign(error_make/4, 'ForeignLocale',
-      sysErrorMake('Interpreter','String','Properties','Object')).
-
-/**
- * get_error_properties(P):
- * get_error_properties(L, P):
- * The predicate unifies P with the error properties of the
- * current knowledge base. The binary predicate allows specifying
- * a locale L. The error resource bundles have to be loaded in
- * advance via sys_load_resource/1.
- */
-% get_error_properties(-Props)
-:- public get_error_properties/1.
-get_error_properties(Props) :-
-   current_prolog_flag(sys_locale, Locale),
-   get_error_properties(Locale, Props).
-
-% get_error_properties(+Locale, -Props)
-:- public get_error_properties/2.
-:- foreign(get_error_properties/2, 'ForeignLocale',
-      sysGetErrorProperties('Interpreter','String')).
+      sysMessageMake('Interpreter', 'String', 'Properties', 'Object')).
 
 /**
  * get_descr_model(C, P):
  * get_descr_model(L, C, P):
- * The predicate unifies P with the description properties of the
- * given capability C. The ternary predicate allows specifying
- * a locale L.
+ * The predicate unifies P with the model description properties
+ * of the given capability C. The ternary predicate allows
+ * specifying a locale L.
  */
-% get_decription_properties(+Capability, -Props)
+% get_descr_model(+Capability, -Props)
 :- public get_descr_model/2.
 get_descr_model(Capability, Props) :-
    current_prolog_flag(sys_locale, Locale),
@@ -200,16 +182,16 @@ get_descr_model(Capability, Props) :-
 % get_descr_model(+Locale, +Capability, -Props)
 :- public get_descr_model/3.
 :- foreign(get_descr_model/3, 'ForeignLocale',
-      sysGetDescrModel('Interpreter','String','String')).
+      sysGetDescrModel('Interpreter', 'String', 'String')).
 
 /**
  * get_descr_platform(C, P):
  * get_descr_platform(L, C, P):
- * The predicate unifies P with the description properties of the
- * given capability C. The ternary predicate allows specifying
- * a locale L.
+ * The predicate unifies P with the platform description properties
+ * of the given capability C. The ternary predicate allows
+ * specifying a locale L.
  */
-% get_decription_properties(+Capability, -Props)
+% get_descr_platform(+Capability, -Props)
 :- public get_descr_platform/2.
 get_descr_platform(Capability, Props) :-
    current_prolog_flag(sys_locale, Locale),
@@ -218,4 +200,4 @@ get_descr_platform(Capability, Props) :-
 % get_descr_platform(+Locale, +Capability, -Props)
 :- public get_descr_platform/3.
 :- foreign(get_descr_platform/3, 'ForeignLocale',
-      sysGetDescrPlatform('Interpreter','String','String')).
+      sysGetDescrPlatform('Interpreter', 'String', 'String')).

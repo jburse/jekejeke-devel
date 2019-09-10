@@ -90,15 +90,10 @@
  */
 % dynamic +Indicators
 :- public (dynamic)/1.
-dynamic [P|Q] :- !,
-   sys_dynamic(P),
-   dynamic(Q).
-dynamic P,Q :- !,
-   sys_dynamic(P),
-   dynamic(Q).
+dynamic [P|Q] :- !, sys_dynamic(P), dynamic(Q).
+dynamic P, Q :- !, sys_dynamic(P), dynamic(Q).
 dynamic [] :- !.
-dynamic P :-
-   sys_dynamic(P).
+dynamic P :- sys_dynamic(P).
 
 :- private sys_dynamic/1.
 sys_dynamic(I) :-
@@ -117,15 +112,10 @@ sys_dynamic(I) :-
  */
 % thread_local +Indicators
 :- public (thread_local)/1.
-thread_local [P|Q] :- !,
-   sys_thread_local(P),
-   thread_local(Q).
-thread_local P,Q :- !,
-   sys_thread_local(P),
-   thread_local(Q).
+thread_local [P|Q] :- !, sys_thread_local(P), thread_local(Q).
+thread_local P, Q :- !, sys_thread_local(P), thread_local(Q).
 thread_local [] :- !.
-thread_local P :-
-   sys_thread_local(P).
+thread_local P :- sys_thread_local(P).
 
 :- private sys_thread_local/1.
 sys_thread_local(I) :-
@@ -144,15 +134,10 @@ sys_thread_local(I) :-
  */
 % group_local +Indicators
 :- public (group_local)/1.
-group_local [P|Q] :- !,
-   sys_group_local(P),
-   group_local(Q).
-group_local P,Q :- !,
-   sys_group_local(P),
-   group_local(Q).
+group_local [P|Q] :- !, sys_group_local(P), group_local(Q).
+group_local P, Q :- !, sys_group_local(P), group_local(Q).
 group_local [] :- !.
-group_local P :-
-   sys_group_local(P).
+group_local P :- sys_group_local(P).
 
 :- private sys_group_local/1.
 sys_group_local(I) :-
@@ -180,7 +165,7 @@ sys_declaration_indicator(group_local(I), I).
  */
 % clause(-Term, -Goal)
 :- public clause/2.
-:- meta_predicate clause(-1,0).
+:- meta_predicate clause(-1, 0).
 :- special(clause/2, 'SpecialDynamic', 3).
 
 /**
@@ -197,8 +182,7 @@ retract(C) :-
 
 % retract2(+Ref)
 :- private retract2/1.
-retract2(R) :-
-   erase_ref(R), !.
+retract2(R) :- erase_ref(R), !.
 retract2(_).
 
 /**
@@ -211,7 +195,8 @@ retract2(_).
 :- meta_predicate retractall(-1).
 retractall(H) :-
    clause_ref(H, _, R),
-   erase_ref(R), fail.
+   erase_ref(R),
+   fail.
 retractall(_).
 
 /**

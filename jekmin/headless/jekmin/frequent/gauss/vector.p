@@ -82,7 +82,7 @@
 :- override '.'/3.
 :- public '.'/3.
 '.'(X, L, Z) :-
-   Z =.. [matrice,X|L].
+   Z =.. [matrice, X|L].
 
 /**
  * X[Y, Z]:
@@ -92,8 +92,7 @@
 % +Vector [+Integer, -Element]
 :- override sys_index/3.
 :- public sys_index/3.
-X [Y, Z] :-
-   integer(Y),
+X[Y, Z] :- integer(Y),
    arg(Y, X, Z).
 
 /**
@@ -115,9 +114,7 @@ len(X, Y) :-
 :- public sum/2.
 sum(X, Y) :-
    X =.. [_|L],
-   (  L = [A|B]
-   -> sys_sum_vector(B, A, Y)
-   ;  Y = 0).
+   (L = [A|B] -> sys_sum_vector(B, A, Y); Y = 0).
 
 % sys_sum_vector(+List, +Internal, -Internal)
 :- private sys_sum_vector/3.
@@ -134,13 +131,12 @@ sys_sum_vector([], R, R).
 % min(+Vector, -Internal)
 :- public min/2.
 min(X, Y) :-
-   X =.. [_,A|L],
-   sys_min_vector(L, A, Y).
+   X =.. [_, A|L], sys_min_vector(L, A, Y).
 
 % sys_min_vector(+List, +Internal, -Internal)
 :- private sys_min_vector/3.
 sys_min_vector([X|L], A, R) :-
-   H is min(A,X),
+   H is min(A, X),
    sys_min_vector(L, H, R).
 sys_min_vector([], R, R).
 
@@ -152,13 +148,12 @@ sys_min_vector([], R, R).
 % max(+Vector, -Internal)
 :- public max/2.
 max(X, Y) :-
-   X =.. [_,A|L],
-   sys_max_vector(L, A, Y).
+   X =.. [_, A|L], sys_max_vector(L, A, Y).
 
 % sys_max_vector(+List, +Internal, -Internal)
 :- private sys_max_vector/3.
 sys_max_vector([X|L], A, R) :-
-   H is max(A,X),
+   H is max(A, X),
    sys_max_vector(L, H, R).
 sys_max_vector([], R, R).
 
@@ -174,8 +169,7 @@ sys_max_vector([], R, R).
 :- override (-)/2.
 :- public (-)/2.
 -(X, Y) :-
-   L is len(X),
-   Y is {-(X[I])|between(1, L, I)}.
+   L is len(X), Y is {-(X[I]) | between(1, L, I)}.
 
 /**
  * +(X, Y, Z):
@@ -185,11 +179,8 @@ sys_max_vector([], R, R).
 % +(+Vector, +Internal, -Vector)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, Z) :-
-   functor(Y, vector, _),
-   L is len(X),
-   L =:= len(Y),
-   Z is {X[I]+Y[I]|between(1, L, I)}.
++(X, Y, Z) :- functor(Y, vector, _), L is len(X), L =:= len(Y),
+   Z is {X[I]+Y[I] | between(1, L, I)}.
 
 /**
  * -(X, Y, Z):
@@ -199,11 +190,8 @@ sys_max_vector([], R, R).
 % -(+Vector, +Internal, -Vector)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, Z) :-
-   functor(Y, vector, _),
-   L is len(X),
-   L =:= len(Y),
-   Z is {X[I]-Y[I]|between(1, L, I)}.
+-(X, Y, Z) :- functor(Y, vector, _), L is len(X), L =:= len(Y),
+   Z is {X[I]-Y[I] | between(1, L, I)}.
 
 /***********************************************************/
 /* CAS Display Hook                                        */
@@ -217,10 +205,8 @@ sys_max_vector([], R, R).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(F, G) :-
-   functor(F, vector, _), !,
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(F, G) :- functor(F, vector, _), !,
    F =.. [_|H],
    sys_portray_vector(H, G).
 
@@ -243,16 +229,13 @@ sys_portray_vector([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is E) :-
-   functor(E, vector, _), !,
+generic:(X is E) :- functor(E, vector, _), !,
    X = E.
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(E) :-
-   functor(E, vector, _).
+generic:is_abnormal(E) :- functor(E, vector, _).

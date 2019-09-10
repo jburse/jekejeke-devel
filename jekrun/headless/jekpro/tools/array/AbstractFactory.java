@@ -82,7 +82,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      * <p>Create an abstract factor.</p>
      */
     public AbstractFactory() {
-        addPrologFlags(FlagFactory.defineFlags());
+        addPrologFlags(FlagFactory.DEFAULT);
     }
 
     /**

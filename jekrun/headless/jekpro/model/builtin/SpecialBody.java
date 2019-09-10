@@ -1,11 +1,10 @@
 package jekpro.model.builtin;
 
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.tools.term.SkelCompound;
 
@@ -78,13 +77,10 @@ public final class SpecialBody extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                boolean multi = en.wrapGoal();
-                ref = en.display;
-                Directive dire = en.store.foyer.CLAUSE_CONT;
-                Display d2 = new Display(dire.size);
-                d2.bind[0].bindUniv(en.skel, ref, en);
-                if (multi)
-                    ref.remTab(en);
+
+                Directive dire = SupervisorCall.callGoal(0, en);
+                Display d2 = en.display;
+
                 CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
                 en.contskel = dire;
                 en.contdisplay = ref2;
@@ -106,9 +102,9 @@ public final class SpecialBody extends AbstractSpecial {
             case SPECIAL_SYS_BEGIN:
                 ChoiceAlter cp = (ChoiceAlter) en.choices;
                 ref2 = en.contdisplay;
-                if ((ref2.flags & Directive.MASK_DIRE_NOBR) != 0) {
-                    cp.flags |= Directive.MASK_DIRE_BACK;
-                    ref2.flags &= ~Directive.MASK_DIRE_NOBR;
+                if ((ref2.flags & AbstractDefined.MASK_DEFI_NOBR) != 0) {
+                    cp.flags |= ChoiceAlter.MASK_CALT_BACK;
+                    ref2.flags &= ~AbstractDefined.MASK_DEFI_NOBR;
                 }
                 cp.number = ref2.number;
                 ref2.number = en.number;
@@ -123,7 +119,7 @@ public final class SpecialBody extends AbstractSpecial {
             case SPECIAL_SYS_SOFT_BEGIN:
                 ref2 = en.contdisplay;
                 ref2 = new CallFrame(ref2.disp, en);
-                ref2.flags |= Directive.MASK_DIRE_NBDY;
+                ref2.flags |= Directive.MASK_DIRE_PUSH;
                 en.contdisplay = ref2;
                 return true;
             case SPECIAL_SYS_SOFT_COMMIT:

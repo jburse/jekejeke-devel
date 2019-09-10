@@ -3,8 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>The class provides a varmap number undo.</p>
@@ -50,21 +48,26 @@ public final class UndoSerno extends AbstractUndo {
     }
 
     /**
+     * <p>Retrieve the univ.</p>
+     *
+     * @return The univ.
+     */
+    public BindUniv getUniv() {
+        return univ;
+    }
+
+    /**
      * <p>Reset the varmap.</p>
      *
      * @param en The engine.
      */
     public void unbind(Engine en) {
-        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
-        MapEntry<BindUniv, Integer> e = m.getEntry(univ);
-        if (e == null)
+        AbstractMap<BindUniv, Integer> map = en.visor.varmap;
+        MapEntry<BindUniv, Integer> entry = map.getEntry(univ);
+        if (entry == null)
             throw new IllegalStateException("value missing");
-        m.removeEntry(e);
-        if (m.size() == 0) {
-            en.visor.varmap = null;
-        } else {
-            m.resize();
-        }
+        map.removeEntry(entry);
+        map.resize();
 
         removeBind(en);
     }
@@ -72,18 +75,14 @@ public final class UndoSerno extends AbstractUndo {
     /**
      * <p>Set a new varmap.</p>
      *
-     * @param bc  The bind univ.
+     * @param bc The bind univ.
      * @param en The engine.
      * @return The new varmap.
      */
     public static Integer bindSerno(BindUniv bc, Engine en) {
-        AbstractMap<BindUniv, Integer> m = en.visor.varmap;
-        if (m == null) {
-            m = new MapHashLink<BindUniv, Integer>();
-            en.visor.varmap = m;
-        }
-        Integer val = Integer.valueOf(m.size());
-        m.add(bc, val);
+        AbstractMap<BindUniv, Integer> map = en.visor.varmap;
+        Integer val = Integer.valueOf(map.totalSize());
+        map.add(bc, val);
 
         UndoSerno bs = new UndoSerno(bc);
         bs.addBind(en);

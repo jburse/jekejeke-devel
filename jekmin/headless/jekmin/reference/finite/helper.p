@@ -30,7 +30,6 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-% :- package(library(ordered)).
 :- package(library(jekmin/reference/finite)).
 :- use_package(library(jekmin/reference/minimal)).
 
@@ -71,7 +70,7 @@ sys_melt_hook(X, H) :-
 
 % sys_ensure_hook(+Attr, +Closure)
 :- private sys_ensure_hook/2.
-:- meta_predicate sys_ensure_hook(?,2).
+:- meta_predicate sys_ensure_hook(?, 2).
 sys_ensure_hook(V, H) :-
    sys_clause_hook(V, H, _), !.
 sys_ensure_hook(V, H) :-

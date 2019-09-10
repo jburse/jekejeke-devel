@@ -8,8 +8,8 @@
  *
  * Examples:
  * ?- [user].
- * foo:verify_attributes(V, _, true) :-
- *     get_atts(V, foo, L), write('L='), write(L), nl.
+ * foo:verify_attributes(L, _) :-
+ *     write('L='), write(L), nl.
  * ^D
  * Yes
  * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), [X,Y]=[1,2].
@@ -18,12 +18,11 @@
  * ?- put_atts(X, foo, [X,Y]), put_atts(Y, foo, [X,Y]), X=Y.
  * L=[_A,_B]
  *
- * The verify hook verify_attributes/3 has to be declared inside
- * the module of the key. The hook is called before the variable
- * has been instantiated and it should return a goal which gets
- * scheduled. The hook is allowed to fail or succeed, but it is
- * called only once. If the hook fails the surrounding unification
- * will also fail.
+ * The verify hook verify_attributes/2 has to be declared inside the
+ * module of the key. The hook is called before the variable has
+ * been instantiated and receive the attribute value in its first
+ * argument. The hook is allowed to fail or succeed, but it is called
+ * only once. If the hook fails the surrounding unification will also fail.
  *
  * The goals hook portray_attributes/3 has to be optionally declared
  * inside the module of the key. When needed the hook is called
@@ -86,8 +85,9 @@ put_atts(V, K, W) :-
    del_atts(V, K),
    sys_freeze_var(H, F),
    H = wrap(W),
+   sys_ensure_serno(V),
    sys_compile_hook(V, atts(K, F), R),
-   depositz_ref(R).
+   deposita_ref(R).
 
 /**
  * get_atts(V, K, W):
@@ -106,17 +106,16 @@ get_atts(V, K, W) :-
  */
 % del_atts(+Var, +Term)
 :- public del_atts/2.
-del_atts(V, K) :-
-   ground(K), !,
+del_atts(V, K) :- ground(K), !,
    del_atts2(V, K).
 del_atts(_, _) :-
-   throw(error(instantiation_error,_)).
+   throw(error(instantiation_error, _)).
 
 % del_atts2(+Var, +Term)
 :- private del_atts2/2.
 del_atts2(V, K) :-
    sys_clause_hook(V, atts(K, _), R), !,
-   withdrawz_ref(R).
+   withdrawa_ref(R).
 del_atts2(_, _).
 
 /**************************************************************/
@@ -132,9 +131,9 @@ del_atts2(_, _).
  */
 % atts(+Key, +Ref, +Var, +Term)
 :- private atts/4.
-atts(K, _, V, T) :-
-   K:verify_attributes(V, T, G),
-   sys_assume_cont(G).
+atts(K, F, _, T) :-
+   sys_melt_var(F, wrap(W)),
+   K:verify_attributes(W, T).
 
 /**
  * sys_current_eq(V, H):
@@ -145,7 +144,7 @@ atts(K, _, V, T) :-
 % sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-residue:sys_current_eq(V, atts(R,K,F)) :-
+residue:sys_current_eq(V, atts(R, K, F)) :-
    sys_clause_hook(V, atts(K, F), _),
    sys_freeze_var(V, R).
 
@@ -159,10 +158,10 @@ residue:sys_current_eq(V, atts(R,K,F)) :-
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(atts(R,K,_), I, O) :-
+residue:sys_unwrap_eq(atts(R, K, _), I, O) :-
    current_predicate(K:portray_attributes/3),
    sys_melt_var(R, V),
    K:portray_attributes(V, I, O), !.
-residue:sys_unwrap_eq(atts(R,K,F), [put_atts(V,K,W)|L], L) :-
+residue:sys_unwrap_eq(atts(R, K, F), [put_atts(V, K, W)|L], L) :-
    sys_melt_var(R, V),
    sys_melt_var(F, wrap(W)).

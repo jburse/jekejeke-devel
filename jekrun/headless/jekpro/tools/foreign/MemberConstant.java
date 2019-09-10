@@ -166,7 +166,7 @@ final class MemberConstant extends AbstractMember {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The spec.
      * @throws EngineMessage FFI error.
      */

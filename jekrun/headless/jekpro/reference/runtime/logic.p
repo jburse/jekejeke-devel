@@ -57,15 +57,13 @@
 
 :- public infix(;).
 :- op(1100, xfy, ;).
-:- set_oper_property(infix(;), nspl).
+:- set_oper_property(infix(;), sys_nspl).
 
 :- public infix(->).
 :- op(1050, xfy, ->).
 
 :- public infix(*->).
 :- op(1050, xfy, *->).
-
-:- set_prolog_flag(sys_body_convert, off).
 
 /**
  * A; B: [ISO 7.8.6]
@@ -86,15 +84,13 @@
  */
 % +Goal ; +Goal
 :- public ;/2.
-:- meta_predicate ;(0,0).
-:- set_predicate_property(;/2, sys_body).
-:- set_predicate_property(;/2, sys_notrace).
+:- meta_predicate ;(0, 0).
 :- set_predicate_property(;/2, sys_nobarrier).
-A -> B; C :- sys_local_cut,
-   (  A -> B; C).                                 % Proto
-A *-> B; C :- sys_local_cut,
-   (  A *-> B; C).                                % Proto
-A; B :- A; B.                                     % Proto
+:- set_predicate_property(;/2, sys_proto).
+A -> B; C :- sys_local_cut, (A -> B; C).                % Proto
+A *-> B; C :- sys_local_cut, (A *-> B; C).              % Proto
+A; B :- A; B.                                           % Proto
+:- set_predicate_property(;/2, sys_notrace).
 
 /**
  * A -> B: [ISO 7.8.7]
@@ -103,11 +99,11 @@ A; B :- A; B.                                     % Proto
  */
 % +Goal -> +Goal
 :- public -> /2.
-:- meta_predicate ->(0,0).
-:- set_predicate_property(-> /2, sys_body).
-:- set_predicate_property(-> /2, sys_notrace).
+:- meta_predicate ->(0, 0).
 :- set_predicate_property(-> /2, sys_nobarrier).
-A -> B :- A -> B.                                 % Proto
+:- set_predicate_property(-> /2, sys_proto).
+A -> B :- A -> B.                                       % Proto
+:- set_predicate_property(-> /2, sys_notrace).
 
 /**
  * A *-> B:
@@ -116,26 +112,26 @@ A -> B :- A -> B.                                 % Proto
  */
 % +Goal *-> +Goal
 :- public *-> /2.
-:- meta_predicate *->(0,0).
-:- set_predicate_property(*-> /2, sys_body).
-:- set_predicate_property(*-> /2, sys_notrace).
+:- meta_predicate *->(0, 0).
 :- set_predicate_property(*-> /2, sys_nobarrier).
-A *-> B :- A *-> B.
+:- set_predicate_property(*-> /2, sys_proto).
+A *-> B :- A *-> B.                                     % Proto
+:- set_predicate_property(*-> /2, sys_notrace).
 
 /**
  * sys_local_cut:
  * The predicate removes pending choice points between the direct parent
  * goal invocation and this goal and then succeeds once.
  */
+% sys_local_cut
 :- private sys_local_cut/0.
 :- special(sys_local_cut/0, 'SpecialLogic', 0).
-
-:- set_prolog_flag(sys_body_convert, on).
 
 /**
  * repeat: [ISO 8.15.3]
  * The predicate succeeds repeatedly.
  */
+% repeat
 :- public repeat/0.
 repeat.
 repeat :- repeat.

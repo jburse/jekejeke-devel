@@ -90,11 +90,11 @@ sys_show_all(_).
 
 :- private sys_show_answer/1.
 sys_show_answer(the(R)) :-
-   sys_get_variable_names(M),
+   sys_get_printmap(M),
    sys_show_name_or_eq_list(R, M),
    write(' ;'), nl.
 sys_show_answer(last(R)) :-
-   sys_get_variable_names(M),
+   sys_get_printmap(M),
    sys_show_name_or_eq_list(R, M), nl.
 sys_show_answer(no) :- sys_show_no, nl.
 sys_show_answer(ball(E)) :-
@@ -115,7 +115,7 @@ sys_get_answer2(G, A) :-
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   sys_get_variable_names(M),
+   sys_get_printmap(M),
    sys_get_name_or_eq_list(R, M),
    (  X == Y -> !,
       A = last(R)
@@ -135,7 +135,7 @@ user:term_expansion(V, _) :-
    var(V), !, fail.
 user:term_expansion(S, T) :-
    S = '.'(T), !,
-   sys_get_variable_names(N),
+   sys_get_printmap(N),
    write_term(S, [context(-1),quoted(true),
                     variable_names(N),annotation((makedot|filler))]), flush_output.
 user:term_expansion(?-(G), unit) :-

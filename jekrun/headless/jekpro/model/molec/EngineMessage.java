@@ -1,7 +1,7 @@
 package jekpro.model.molec;
 
 import derek.util.protect.LicenseError;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -187,10 +187,12 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYSTEM_USER_ABORT = "user_abort";
     public static final String OP_SYSTEM_USER_EXIT = "user_exit";
     public static final String OP_SYSTEM_USER_CLOSE = "user_close";
-    public static final String OP_SYSTEM_MEMORY_THRESHOLD = "memory_threshold";
-    public static final String OP_SYSTEM_DEADLOCK_TIMEOUT = "deadlock_timeout";
-    public static final String OP_SYSTEM_TIMELIMIT_EXCEEDED = "timelimit_exceeded";
     public static final String OP_SYSTEM_READ_PROBLEM = "read_problem";
+
+    public static final String OP_LIMIT_ERROR = "limit_error";
+    public static final String OP_LIMIT_MEMORY_THRESHOLD = "memory_threshold";
+    public static final String OP_LIMIT_DEADLOCK_TIMEOUT = "deadlock_timeout";
+    public static final String OP_LIMIT_TIMELIMIT_EXCEEDED = "timelimit_exceeded";
 
     private static final String OP_RESOURCE_ERROR = "resource_error"; /* ISO */
     public static final String OP_RESOURCE_SOCKET_TIMEOUT = "socket_timeout";
@@ -263,7 +265,7 @@ public final class EngineMessage extends Exception {
      * @param m The message skeleton.
      */
     public EngineMessage(Object m) {
-        if (EngineCopy.getVar(m) != null)
+        if (SupervisorCopy.getVar(m) != null)
             throw new IllegalArgumentException("needs display");
         template = m;
     }
@@ -275,7 +277,7 @@ public final class EngineMessage extends Exception {
      * @param d The message display.
      */
     public EngineMessage(Object t, Display d) {
-        EngineCopy ec = new EngineCopy();
+        SupervisorCopy ec = new SupervisorCopy();
         template = ec.copyTerm(t, d);
     }
 
@@ -455,6 +457,17 @@ public final class EngineMessage extends Exception {
      */
     public static SkelCompound systemError(String type) {
         return new SkelCompound(new SkelAtom(OP_SYSTEM_ERROR),
+                new SkelAtom(type));
+    }
+
+    /**
+     * <p>Create a limit error message.</p>
+     *
+     * @param type The error type.
+     * @return The limit error message.
+     */
+    public static SkelCompound limitError(String type) {
+        return new SkelCompound(new SkelAtom(OP_LIMIT_ERROR),
                 new SkelAtom(type));
     }
 

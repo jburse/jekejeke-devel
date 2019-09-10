@@ -1,9 +1,12 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.experiment.SpecialRef;
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.FileText;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
@@ -62,13 +65,21 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_ASSE =
             MASK_DEFI_DYNA | MASK_DEFI_THLC | MASK_DEFI_GRLC;
 
-    /* clause compilation */
-    public final static int MASK_DEFI_STOP = 0x00000100;
-    public final static int MASK_DEFI_NIST = 0x00000200;
+    /* predicate compilation */
+    public final static int MASK_DEFI_NOBR = 0x00000100;
+    public final static int MASK_DEFI_STOP = 0x00000200;
+    public final static int MASK_DEFI_NBCV = 0x00000400;
+    public final static int MASK_DEFI_NIST = 0x00000800;
 
     public final static int MASK_DEFI_NBDY = 0x00001000;
     public final static int MASK_DEFI_NLST = 0x00002000;
     public final static int MASK_DEFI_NHED = 0x00004000;
+    public final static int MASK_DEFI_NSTK = 0x00008000;
+
+    public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
+            AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
+    public final static int MASK_DEFI_TRAN = AbstractDefined.MASK_DEFI_NOBR |
+            AbstractDefined.MASK_DEFI_NBCV;
 
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
@@ -108,8 +119,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
     AbstractDefined(int flags) {
         if ((flags & Foyer.MASK_FOYER_NBDY) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NBDY;
-        if ((flags & Foyer.MASK_FOYER_NLST) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NLST;
+        if ((flags & Foyer.MASK_FOYER_NSTK) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NSTK;
         if ((flags & Foyer.MASK_FOYER_NHED) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NHED;
         if ((flags & Foyer.MASK_FOYER_NIST) != 0)
@@ -144,7 +155,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_STAT;
             pick.del = del;
         }
@@ -179,7 +192,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_DYNA;
             pick.del = del;
         }
@@ -188,7 +203,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     /**
      * <p>Promote predicate to thread locale.</p>
-     * <p>Explicit by thread_locale directive.</p>
+     * <p>Explicit by thread_local directive.</p>
      *
      * @param pick  The predicate.
      * @param store The store.
@@ -211,7 +226,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_THLC;
             pick.del = del;
         }
@@ -243,7 +260,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= AbstractDelegate.MASK_DELE_NOBR;
+                del.subflags |= MASK_DEFI_NOBR;
+            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
+                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_GRLC;
             pick.del = del;
         }
@@ -289,7 +308,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             }
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.intargs, en))
                 break;
 
@@ -308,6 +327,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
@@ -317,11 +338,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }
@@ -348,10 +371,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
-            if (n >= 0) {
-                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
-                    return false;
-            } else if (n == Optimization.UNIFY_TERM) {
+            if (n == Optimization.UNIFY_TERM) {
                 if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
                     return false;
             } else if (n == Optimization.UNIFY_VAR) {
@@ -365,6 +385,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 }
                 bc = ref2.bind[((SkelVar) t2[i]).id];
                 bc.bindUniv(alfa, d1, en);
+            } else if (n != Optimization.UNIFY_SKIP) {
+                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
+                    return false;
             }
         }
         return true;
@@ -459,17 +482,14 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
-        EngineCopy ec = en.enginecopy;
-        if (ec == null) {
-            ec = new EngineCopy();
-            en.enginecopy = ec;
-        }
+        SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyTermAndWrap(temp[0], ref, en);
+        Object molec = ec.copyRest(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, NamedDistance> printmap = SpecialRef.decodeAssertOptions(temp[1], ref, en);
+            MapHashLink<Object, String> printmap =
+                    SpecialRef.decodeAssertOptions(temp[1], ref, en);
             vars = FileText.copyVars(ec.vars, printmap);
         } else {
             vars = null;
@@ -580,9 +600,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 ref1.setSize(clause.size);
             }
-            if (!(clause.term instanceof SkelCompound) ||
+            if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.term).args, ref1, en)) {
+                            ((SkelCompound) clause.head).args, ref1, en)) {
                 Object end = clause.interToBody(en);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {

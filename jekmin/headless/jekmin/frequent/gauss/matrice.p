@@ -91,8 +91,7 @@
 % +Matrice [+Integer, -Vector]
 :- override sys_index/3.
 :- public sys_index/3.
-X [Y, Z] :-
-   integer(Y),
+X[Y, Z] :- integer(Y),
    arg(Y, X, Z).
 
 /**
@@ -103,9 +102,7 @@ X [Y, Z] :-
 % +Matrice [+Integer, +Integer, -Element]
 :- override sys_index/4.
 :- public sys_index/4.
-X [Y, Z, T] :-
-   integer(Y),
-   integer(Z),
+X[Y, Z, T] :- integer(Y), integer(Z),
    arg(Y, X, H),
    arg(Z, H, T).
 
@@ -131,8 +128,7 @@ len(X, Y) :-
 :- override (-)/2.
 :- public (-)/2.
 -(X, Y) :-
-   L is len(X),
-   Y is {-(X[I])|between(1, L, I)}.
+   L is len(X), Y is {-(X[I]) | between(1, L, I)}.
 
 /**
  * +(X, Y, Z):
@@ -142,11 +138,8 @@ len(X, Y) :-
 % +(+Matrice, +Internal, -Matrice)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, Z) :-
-   functor(Y, matrice, _),
-   L is len(X),
-   L =:= len(Y),
-   Z is {X[I]+Y[I]|between(1, L, I)}.
++(X, Y, Z) :- functor(Y, matrice, _), L is len(X), L =:= len(Y),
+   Z is {X[I]+Y[I] | between(1, L, I)}.
 
 /**
  * -(X, Y, Z):
@@ -156,11 +149,8 @@ len(X, Y) :-
 % -(+Matrice, +Internal, -Matrice)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, Z) :-
-   functor(Y, matrice, _),
-   L is len(X),
-   L =:= len(Y),
-   Z is {X[I]-Y[I]|between(1, L, I)}.
+-(X, Y, Z) :- functor(Y, matrice, _), L is len(X), L =:= len(Y),
+   Z is {X[I]-Y[I] | between(1, L, I)}.
 
 /**
  * *(X, Y, Z):
@@ -170,13 +160,11 @@ len(X, Y) :-
 % *(+Matrice, +Internal, -Matrice)
 :- override * /3.
 :- public * /3.
-*(X, Y, Z) :-
-   functor(Y, matrice, _),
-   L is len(X[1]),
-   L =:= len(Y),
-   M is len(X),
-   N is len(Y[1]),
-   Z is {{sum({X[I,K]*Y[K,J]|between(1, L, K)})|between(1, N, J)}|between(1, M, I)}.
+*(X, Y, Z) :- functor(Y, matrice, _), L is len(X[1]), L =:= len(Y),
+   M is len(X), N is len(Y[1]),
+   Z is {{sum({X[I, K]*Y[K, J] | between(1, L, K)})
+   |  between(1, N, J)}
+   |  between(1, M, I)}.
 
 /**
  * /(X, Y, Z):
@@ -186,34 +174,26 @@ len(X, Y) :-
 % /(+Matrice, +Internal, -Matrice)
 :- override / /3.
 :- public / /3.
-/(X, Y, Z) :-
-   functor(Y, matrice, _),
+/(X, Y, Z) :- functor(Y, matrice, _),
    sys_matrice_inv(Y, H),
    Z is X*H.
 
 % sys_matrice_inv(+Matrice, -Matrice)
 :- private sys_matrice_inv/2.
-sys_matrice_inv(X, R) :-
-   L is len(X[1]),
-   L =:= len(X),
+sys_matrice_inv(X, R) :- L is len(X[1]), L =:= len(X),
    sys_matrice_step(1, X, R).
 
 % sys_matrice_step(+Integer, +Matrice, -Matrice)
 :- private sys_matrice_step/3.
-sys_matrice_step(K, X, R) :-
-   N is len(X),
-   user: =<(K, N), !,
+sys_matrice_step(K, X, R) :- N is len(X), user: =<(K, N), !,
    L = K,
-   P is 1/X[K,L],
-   Y is {{V|between(1, N, J),
-            (  user:(I =:= K)
-            -> (  user:(J =:= L)
-               -> V = P
-               ;  V is -X[I,J]*P)
-            ;  user:(J =:= L)
-            -> V = Q
-            ;  V is X[I,J]-X[K,J]*Q)}|between(1, N, I),
-                                      Q is X[I,L]*P},
+   P is 1/X[K, L],
+   Y is {{V | between(1, N, J), (  user:(I =:= K)
+      -> (  user:(J =:= L) -> V = P
+         ;  V is -X[I, J]*P)
+      ;  user:(J =:= L) -> V = Q
+      ;  V is X[I, J]-X[K, J]*Q)}
+   |  between(1, N, I), Q is X[I, L]*P},
    M is K+1,
    sys_matrice_step(M, Y, R).
 sys_matrice_step(_, X, X).
@@ -225,24 +205,18 @@ sys_matrice_step(_, X, X).
 % ^(+Matrice, +Integer, -Matrice)
 :- override ^ /3.
 :- public ^ /3.
-^(X, Y, R) :-
-   user:(Y < 0), !,
+^(X, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    H is X^Z,
    sys_matrice_inv(H, R).
-^(X, 0, R) :- !,
-   L is len(X),
-   L =:= len(X[1]),
-   R is {{V|between(1, L, J),
-            (  user:(I =:= J)
-            -> V = 1
-            ;  V = 0)}|between(1, L, I)}.
+^(X, 0, R) :- !, L is len(X), L =:= len(X[1]),
+   R is {{V | between(1, L, J), (user:(I =:= J) -> V = 1; V = 0)}
+   |  between(1, L, I)}.
 ^(P, 1, R) :- !,
    R = P.
 ^(P, 2, R) :- !,
    R is P*P.
-^(X, Y, R) :-
-   user:mod(Y, 2, 1), !,
+^(X, Y, R) :- user:mod(Y, 2, 1), !,
    user: -(Y, 1, Z),
    R is X^Z*X.
 ^(X, Y, R) :-
@@ -262,10 +236,8 @@ sys_matrice_step(_, X, X).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(F, G) :-
-   functor(F, matrice, _), !,
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(F, G) :- functor(F, matrice, _), !,
    F =.. [_|H],
    sys_portray_matrice(H, G).
 
@@ -288,16 +260,13 @@ sys_portray_matrice([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is E) :-
-   functor(E, matrice, _), !,
+generic:(X is E) :- functor(E, matrice, _), !,
    X = E.
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(E) :-
-   functor(E, matrice, _).
+generic:is_abnormal(E) :- functor(E, matrice, _).

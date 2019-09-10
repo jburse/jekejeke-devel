@@ -1,12 +1,13 @@
 package jekpro.tools.array;
 
-import jekpro.frequent.standard.EngineCopy;
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractTerm;
@@ -61,7 +62,6 @@ public abstract class AbstractDelegate {
     public final static int MASK_DELE_VIRT = 0x00000001;
     public final static int MASK_DELE_ARIT = 0x00000002;
     public final static int MASK_DELE_MULT = 0x00000004;
-    public final static int MASK_DELE_NOBR = 0x00000008;
 
     public int subflags;
 
@@ -227,7 +227,7 @@ public abstract class AbstractDelegate {
         int n = args.length - 1;
         for (int i = 0; i < n; i++) {
             Object temp = AbstractTerm.getSkel(args[i]);
-            if (EngineCopy.getVar(temp) != null)
+            if (SupervisorCopy.getVar(temp) != null)
                 countvar++;
         }
         return new Display(countvar + 1);
@@ -251,7 +251,7 @@ public abstract class AbstractDelegate {
         for (int i = 0; i < n; i++) {
             Object obj = args[i];
             Object temp = AbstractTerm.getSkel(obj);
-            if (EngineCopy.getVar(temp) != null) {
+            if (SupervisorCopy.getVar(temp) != null) {
                 Display d = AbstractTerm.getDisplay(obj);
                 SkelVar sv = vars[countvar];
                 countvar++;
@@ -280,13 +280,10 @@ public abstract class AbstractDelegate {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         int snap = en.number;
-        boolean multi = en.wrapGoal();
-        Display ref = en.display;
-        Directive dire = en.store.foyer.CLAUSE_CALL;
-        Display d2 = new Display(dire.size);
-        d2.bind[0].bindUniv(en.skel, ref, en);
-        if (multi)
-            ref.remTab(en);
+
+        Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
+        Display d2 = en.display;
+
         CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
         en.contskel = dire;
         en.contdisplay = ref2;
@@ -323,7 +320,7 @@ public abstract class AbstractDelegate {
     /**
      * <p>Generate the spec of this delegate.</p>
      *
-     * @param source The source, not null.
+     * @param source The source, non null.
      * @return The spec.
      * @throws EngineMessage FFI error.
      */

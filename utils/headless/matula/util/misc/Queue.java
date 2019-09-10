@@ -66,6 +66,28 @@ public final class Queue<T> implements InterfacePipe<T> {
     }
 
     /**
+     * <p>Enquee an element.</p>
+     *
+     * @param t The element.
+     */
+    private void equene(T t) {
+        list.add(t);
+        this.notifyAll();
+    }
+
+    /**
+     * <p>Dequeue an element.</p>
+     *
+     * @return The element.
+     */
+    private T dequeue() {
+        T t = (T) list.get(0);
+        list.remove(0);
+        this.notifyAll();
+        return t;
+    }
+
+    /**
      * <p>Post an object.</p>
      * <p>Blocks if queue is full.</p>
      *
@@ -79,8 +101,7 @@ public final class Queue<T> implements InterfacePipe<T> {
         synchronized (this) {
             while (list.size() >= max)
                 this.wait();
-            list.add(t);
-            this.notifyAll();
+            equene(t);
         }
     }
 
@@ -95,7 +116,7 @@ public final class Queue<T> implements InterfacePipe<T> {
             throw new NullPointerException("null_element");
         synchronized (this) {
             if (list.size() < max) {
-                list.add(t);
+                equene(t);
                 return true;
             } else {
                 return false;
@@ -121,8 +142,7 @@ public final class Queue<T> implements InterfacePipe<T> {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                list.add(t);
-                this.notifyAll();
+                equene(t);
                 return true;
             } else {
                 return false;
@@ -142,10 +162,7 @@ public final class Queue<T> implements InterfacePipe<T> {
         synchronized (this) {
             while (list.size() == 0)
                 this.wait();
-            T t = (T)list.get(0);
-            list.remove(0);
-            this.notifyAll();
-            return t;
+            return dequeue();
         }
     }
 
@@ -158,9 +175,7 @@ public final class Queue<T> implements InterfacePipe<T> {
     public T poll() {
         synchronized (this) {
             if (list.size() != 0) {
-                T t = (T)list.get(0);
-                list.remove(0);
-                return t;
+                return dequeue();
             } else {
                 return null;
             }
@@ -183,10 +198,7 @@ public final class Queue<T> implements InterfacePipe<T> {
                 sleep = when - System.currentTimeMillis();
             }
             if (sleep > 0) {
-                T t = (T)list.get(0);
-                list.remove(0);
-                this.notifyAll();
-                return t;
+                return dequeue();
             } else {
                 return null;
             }

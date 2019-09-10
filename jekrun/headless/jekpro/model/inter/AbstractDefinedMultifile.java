@@ -89,7 +89,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             }
             if (clause.intargs == null ||
                     AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.term).args, d2,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.intargs, en))
                 break;
 
@@ -119,6 +119,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefinedMultifile(en.choices, at, list, dc, mark);
@@ -128,11 +130,13 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
+            if ((clause.flags & MASK_DEFI_NBDY) != 0)
+                dc.flags |= Directive.MASK_DIRE_LTGC;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & Directive.MASK_DIRE_NBDY) == 0) {
+            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
                 if (d2.bind.length > 0)
                     d2.remTab(en);
             }
@@ -182,9 +186,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 ref1.setSize(clause.size);
             }
-            if (!(clause.term instanceof SkelCompound) ||
+            if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.term).args, ref1, en)) {
+                            ((SkelCompound) clause.head).args, ref1, en)) {
                 Object end = clause.interToBody(en);
                 if (en.unifyTerm(temp[1], ref, end, ref1)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
@@ -244,7 +248,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * @return True if the clause is multifile visible.
      */
     static boolean multiVisible(Clause clause, Engine en) {
-        SkelAtom sa = StackElement.callableToName(clause.term);
+        SkelAtom sa = StackElement.callableToName(clause.head);
         return Clause.ancestorSource(sa.scope, en);
     }
 

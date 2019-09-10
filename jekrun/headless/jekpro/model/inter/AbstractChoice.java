@@ -84,11 +84,9 @@ public abstract class AbstractChoice {
         while (u != en.contdisplay && (((u.flags & Directive.MASK_DIRE_MORE) != 0) ?
                 u.number + 1 : u.number) >= en.number) {
             if ((u.flags & Directive.MASK_DIRE_LTGC) == 0) {
-                if ((u.flags & Directive.MASK_DIRE_NBDY) == 0) {
-                    Display d = u.disp;
-                    if (d.bind.length > 0)
-                        d.remTab(en);
-                }
+                Display d = u.disp;
+                if (d.bind.length > 0)
+                    d.remTab(en);
                 u.flags |= Directive.MASK_DIRE_LTGC;
             }
             u = u.contdisplay;

@@ -81,10 +81,7 @@
 % forward +Indicators
 :- public (forward)/1.
 :- meta_predicate forward(0).
-forward L :-
-   (discontiguous L),
-   (sys_notrace L),
-   (static L).
+forward L :- (discontiguous L), (sys_notrace L), (static L).
 
 /**********************************************************/
 /* Continuation Forwarder                                 */
@@ -101,23 +98,24 @@ forward L :-
 :- meta_predicate post(-1).
 post(X) :-
    findall(U, call(X, U), L),
-   withdraw_delta(L, assumez(X), R, Y), !, Y, R.
+   withdraw_delta(L, assumez(X), R, Y), !,
+   Y, R.
 post(X) :-
-   throw(error(permission_error(remove,delta,X),_)).
+   throw(error(permission_error(remove, delta, X), _)).
 
 % withdraw_delta(+Deltas, +Goal, -Goal, -Goal)
 :- private withdraw_delta/4.
-withdraw_delta([sys_delta(Z,S)|Y], X, (Z,T), W) :- !,
-   withdrawz_ref(S),
+withdraw_delta([sys_delta(Z, S)|Y], X, (Z, T), W) :-
+   !, withdrawz_ref(S),
    withdraw_delta(Y, X, T, W).
-withdraw_delta([sys_nabla(Z,S)|Y], _, (Z,T), true) :-
+withdraw_delta([sys_nabla(Z, S)|Y], _, (Z, T), true) :-
    withdrawz_ref(S),
    withdraw_delta2(Y, T).
 withdraw_delta([], X, true, X).
 
 % withdraw_delta2(+Deltas, -Goal)
 :- private withdraw_delta2/2.
-withdraw_delta2([sys_delta(Z,S)|Y], (Z,T)) :-
+withdraw_delta2([sys_delta(Z, S)|Y], (Z, T)) :-
    withdrawz_ref(S),
    withdraw_delta2(Y, T).
 withdraw_delta2([], true).
@@ -128,28 +126,28 @@ withdraw_delta2([], true).
 
 % post(+Term, +Goal)
 :- public post/2.
-:- meta_predicate post(-1,0).
+:- meta_predicate post(-1, 0).
 post(X, H) :-
    findall(U, call(X, U), L),
    withdraw_delta(L, assumez(X), R, Y), !,
-   call((  Y, R), H),
+   call((Y, R), H),
    depositz_delta(L).
 post(X, _) :-
-   throw(error(permission_error(remove,delta,X),_)).
+   throw(error(permission_error(remove, delta, X), _)).
 
 % depositz_delta(+Deltas)
 :- private depositz_delta/1.
-depositz_delta([sys_delta(_,S)|Y]) :- !,
-   depositz_ref(S),
+depositz_delta([sys_delta(_, S)|Y]) :-
+   !, depositz_ref(S),
    depositz_delta(Y).
-depositz_delta([sys_nabla(_,S)|Y]) :-
+depositz_delta([sys_nabla(_, S)|Y]) :-
    depositz_ref(S),
    depositz_delta2(Y).
 depositz_delta([]).
 
 % depositz_delta2(+Deltas)
 :- private depositz_delta2/1.
-depositz_delta2([sys_delta(_,S)|Y]) :-
+depositz_delta2([sys_delta(_, S)|Y]) :-
    depositz_ref(S),
    depositz_delta2(Y).
 depositz_delta2([]).
@@ -161,58 +159,47 @@ depositz_delta2([]).
 % simp:goal_simplification(+Goal, -Goal)
 :- public simp:goal_simplification/2.
 :- multifile simp:goal_simplification/2.
-:- meta_predicate simp:goal_simplification(0,0).
+:- meta_predicate simp:goal_simplification(0, 0).
 :- discontiguous simp:goal_simplification/2.
 
 % sys_keep(+Term, +Goal)
 :- private sys_keep/2.
-:- meta_predicate sys_keep(-1,0).
-sys_keep(_, _) :-
-   throw(error(existence_error(body,sys_keep/2),_)).
+:- meta_predicate sys_keep(-1, 0).
+sys_keep(_, _) :- throw(error(existence_error(body, sys_keep/2), _)).
 
 % sys_drop(+Term, +Goal)
 :- private sys_drop/2.
-:- meta_predicate sys_drop(-1,0).
-sys_drop(_, _) :-
-   throw(error(existence_error(body,sys_drop/2),_)).
+:- meta_predicate sys_drop(-1, 0).
+sys_drop(_, _) :- throw(error(existence_error(body, sys_drop/2), _)).
 
 % sys_special(+Goal)
 :- private sys_special/1.
-sys_special(A) :-
-   var(A), !, fail.
-sys_special(sys_keep(_,_)).
-sys_special(sys_drop(_,_)).
-sys_special((A,_)) :-
-   var(A), !, fail.
-sys_special((sys_keep(_,_),_)).
-sys_special((sys_drop(_,_),_)).
-sys_special((A;_)) :-
-   sys_special(A).
-sys_special((_;A)) :-
-   sys_special(A).
+sys_special(A) :- var(A), !, fail.
+sys_special(sys_keep(_, _)).
+sys_special(sys_drop(_, _)).
+sys_special((A, _)) :- var(A), !, fail.
+sys_special((sys_keep(_, _), _)).
+sys_special((sys_drop(_, _), _)).
+sys_special((A; _)) :- sys_special(A).
+sys_special((_; A)) :- sys_special(A).
 
 % disjunction + sys_none reduction
-simp:goal_simplification((  sys_none; C), C).
-simp:goal_simplification((  C; sys_none), C).
+simp:goal_simplification((sys_none; C), C).
+simp:goal_simplification((C; sys_none), C).
 
 % conjunction + sys_none reduction
-simp:goal_simplification((  sys_none, _), sys_none).
-simp:goal_simplification((  _, sys_none), sys_none).
+simp:goal_simplification((sys_none, _), sys_none).
+simp:goal_simplification((_, sys_none), sys_none).
 
 % conjunction + disjunction distribution
-simp:goal_simplification((  (  A; B), C), R) :-
-   (  sys_special(A)
-   ;  sys_special(B)),
-   simplify_goal((  A, C), H),
-   simplify_goal((  B, C), J),
-   simplify_goal((  H; J), R).
-simp:goal_simplification((  A,
-                            (  B; C)), R) :-
-   (  sys_special(B)
-   ;  sys_special(C)),
-   simplify_goal((  A, B), H),
-   simplify_goal((  A, C), J),
-   simplify_goal((  H; J), R).
+simp:goal_simplification(((A; B), C), R) :- (sys_special(A); sys_special(B)),
+   simplify_goal((A, C), H),
+   simplify_goal((B, C), J),
+   simplify_goal((H; J), R).
+simp:goal_simplification((A, (B; C)), R) :- (sys_special(B); sys_special(C)),
+   simplify_goal((A, B), H),
+   simplify_goal((A, C), J),
+   simplify_goal((H; J), R).
 
 /**********************************************************/
 /* New, Old & OldNew Reduction                            */
@@ -226,11 +213,9 @@ simp:goal_simplification((  A,
 % sys_new(+Goal)
 :- private sys_new/1.
 :- meta_predicate sys_new(0).
-sys_new(_) :-
-   throw(error(existence_error(body,sys_new/1),_)).
+sys_new(_) :- throw(error(existence_error(body, sys_new/1), _)).
 
-simp:goal_simplification(sys_new(A), _) :-
-   var(A), !, fail.
+simp:goal_simplification(sys_new(A), _) :- var(A), !, fail.
 
 /**
  * phaseout(P):
@@ -239,8 +224,7 @@ simp:goal_simplification(sys_new(A), _) :-
  */
 :- public phaseout/1.
 :- meta_predicate phaseout(-1).
-phaseout(_) :-
-   throw(error(existence_error(body,phaseout/1),_)).
+phaseout(_) :- throw(error(existence_error(body, phaseout/1), _)).
 
 simp:goal_simplification(sys_new(phaseout(_)), sys_none).
 
@@ -250,8 +234,7 @@ simp:goal_simplification(sys_new(phaseout(_)), sys_none).
  */
 :- public posted/1.
 :- meta_predicate posted(-1).
-posted(_) :-
-   throw(error(existence_error(body,posted/1),_)).
+posted(_) :- throw(error(existence_error(body, posted/1), _)).
 
 simp:goal_simplification(sys_new(posted(H)), sys_keep(H, true)).
 
@@ -262,8 +245,7 @@ simp:goal_simplification(sys_new(posted(H)), sys_keep(H, true)).
  */
 :- public phaseout_posted/1.
 :- meta_predicate phaseout_posted(-1).
-phaseout_posted(_) :-
-   throw(error(existence_error(body,phaseout_posted/1),_)).
+phaseout_posted(_) :- throw(error(existence_error(body, phaseout_posted/1), _)).
 
 simp:goal_simplification(sys_new(phaseout_posted(H)), sys_drop(H, true)).
 
@@ -271,23 +253,23 @@ simp:goal_simplification(sys_new(phaseout_posted(H)), sys_drop(H, true)).
  * A, B:
  * The condition reacts when A or B react, and the other succeeds, or both react.
  */
-simp:goal_simplification(sys_new((  A, B)), R) :-
+simp:goal_simplification(sys_new((A, B)), R) :-
    simplify_goal(sys_new(A), U),
    simplify_goal(sys_old(B), V),
-   simplify_goal((  U, V), J),
+   simplify_goal((U, V), J),
    simplify_goal(sys_oldnew(A), P),
    simplify_goal(sys_new(B), Q),
-   simplify_goal((  P, Q), H),
-   simplify_goal((  J; H), R).
+   simplify_goal((P, Q), H),
+   simplify_goal((J; H), R).
 
 /**
  * A; B:
  * The condition reacts when A or B react.
  */
-simp:goal_simplification(sys_new((  A; B)), R) :-
+simp:goal_simplification(sys_new((A; B)), R) :-
    simplify_goal(sys_new(A), U),
    simplify_goal(sys_new(B), V),
-   simplify_goal((  U; V), R).
+   simplify_goal((U; V), R).
 
 /**
  * P:
@@ -303,8 +285,7 @@ simp:goal_simplification(sys_new(_), sys_none).
 % sys_old(+Goal)
 :- private sys_old/1.
 :- meta_predicate sys_old(0).
-sys_old(_) :-
-   throw(error(existence_error(body,sys_old/1),_)).
+sys_old(_) :- throw(error(existence_error(body, sys_old/1), _)).
 
 /**
  * sys_check(A):
@@ -314,8 +295,7 @@ sys_old(_) :-
 % sys_check(+Term)
 :- private sys_check/1.
 :- meta_predicate sys_check(-1).
-sys_check(_) :-
-   throw(error(existence_error(body,sys_check/1),_)).
+sys_check(_) :- throw(error(existence_error(body, sys_check/1), _)).
 
 /**
  * sys_withdraw(A):
@@ -325,22 +305,20 @@ sys_check(_) :-
 % sys_withdraw(+Term)
 :- private sys_withdraw/1.
 :- meta_predicate sys_withdraw(-1).
-sys_withdraw(_) :-
-   throw(error(existence_error(body,sys_withdraw/1),_)).
+sys_withdraw(_) :- throw(error(existence_error(body, sys_withdraw/1), _)).
 
-simp:goal_simplification(sys_old(A), _) :-
-   var(A), !, fail.
+simp:goal_simplification(sys_old(A), _) :- var(A), !, fail.
 simp:goal_simplification(sys_old(phaseout(H)), sys_withdraw(H)).
 simp:goal_simplification(sys_old(posted(H)), sys_check(H)).
 simp:goal_simplification(sys_old(phaseout_posted(H)), sys_withdraw(H)).
-simp:goal_simplification(sys_old((  A, B)), R) :-
+simp:goal_simplification(sys_old((A, B)), R) :-
    simplify_goal(sys_old(A), U),
    simplify_goal(sys_old(B), V),
-   simplify_goal((  U, V), R).
-simp:goal_simplification(sys_old((  A; B)), R) :-
+   simplify_goal((U, V), R).
+simp:goal_simplification(sys_old((A; B)), R) :-
    simplify_goal(sys_old(A), U),
    simplify_goal(sys_old(B), V),
-   simplify_goal((  U; V), R).
+   simplify_goal((U; V), R).
 simp:goal_simplification(sys_old(H), H).
 
 /**
@@ -352,24 +330,20 @@ simp:goal_simplification(sys_old(H), H).
 % sys_oldnew(+Goal)
 :- private sys_oldnew/1.
 :- meta_predicate sys_oldnew(0).
-sys_oldnew(_) :-
-   throw(error(existence_error(body,sys_oldnew/1),_)).
+sys_oldnew(_) :- throw(error(existence_error(body, sys_oldnew/1), _)).
 
-simp:goal_simplification(sys_oldnew(A), _) :-
-   var(A), !, fail.
+simp:goal_simplification(sys_oldnew(A), _) :- var(A), !, fail.
 simp:goal_simplification(sys_oldnew(phaseout(H)), sys_withdraw(H)).
-simp:goal_simplification(sys_oldnew(posted(H)), (  sys_check(H)
-                                                ;  sys_keep(H, true))).
-simp:goal_simplification(sys_oldnew(phaseout_posted(H)), (  sys_withdraw(H)
-                                                         ;  sys_drop(H, true))).
-simp:goal_simplification(sys_oldnew((  A, B)), R) :-
+simp:goal_simplification(sys_oldnew(posted(H)), (sys_check(H); sys_keep(H, true))).
+simp:goal_simplification(sys_oldnew(phaseout_posted(H)), (sys_withdraw(H); sys_drop(H, true))).
+simp:goal_simplification(sys_oldnew((A, B)), R) :-
    simplify_goal(sys_oldnew(A), U),
    simplify_goal(sys_oldnew(B), V),
-   simplify_goal((  U, V), R).
-simp:goal_simplification(sys_oldnew((  A; B)), R) :-
+   simplify_goal((U, V), R).
+simp:goal_simplification(sys_oldnew((A; B)), R) :-
    simplify_goal(sys_oldnew(A), U),
    simplify_goal(sys_oldnew(B), V),
-   simplify_goal((  U; V), R).
+   simplify_goal((U; V), R).
 simp:goal_simplification(sys_oldnew(H), H).
 
 /**********************************************************/
@@ -377,84 +351,63 @@ simp:goal_simplification(sys_oldnew(H), H).
 /**********************************************************/
 
 % usual blockers
-simp:goal_simplification((  _, A, _), _) :-
-   var(A), !, fail.
+simp:goal_simplification((_, A, _), _) :- var(A), !, fail.
 
 % replace sys_keep/sys_keep by sys_keep
-simp:goal_simplification((  sys_keep(B, P),
-                            sys_keep(C, Q)), sys_keep(B, H)) :-
+simp:goal_simplification((sys_keep(B, P), sys_keep(C, Q)), sys_keep(B, H)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_keep(_, _),
-                            sys_keep(_, _)), sys_none).
-simp:goal_simplification((  sys_keep(B, P),
-                            sys_keep(C, Q), D), (  sys_keep(B, H), D)) :-
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_keep(_, _), sys_keep(_, _)), sys_none).
+simp:goal_simplification((sys_keep(B, P), sys_keep(C, Q), D), (sys_keep(B, H), D)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_keep(_, _),
-                            sys_keep(_, _), _), sys_none).
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_keep(_, _), sys_keep(_, _), _), sys_none).
 
 % replace sys_keep/sys_drop by sys_drop
-simp:goal_simplification((  sys_keep(B, P),
-                            sys_drop(C, Q)), sys_drop(B, H)) :-
+simp:goal_simplification((sys_keep(B, P), sys_drop(C, Q)), sys_drop(B, H)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_keep(_, _),
-                            sys_drop(_, _)), sys_none).
-simp:goal_simplification((  sys_keep(B, P),
-                            sys_drop(C, Q), D), (  sys_drop(B, H), D)) :-
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_keep(_, _), sys_drop(_, _)), sys_none).
+simp:goal_simplification((sys_keep(B, P), sys_drop(C, Q), D), (sys_drop(B, H), D)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_keep(_, _),
-                            sys_drop(_, _), _), sys_none).
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_keep(_, _), sys_drop(_, _), _), sys_none).
 
 % replace sys_drop/sys_keep by sys_drop
-simp:goal_simplification((  sys_drop(B, P),
-                            sys_keep(C, Q)), sys_drop(B, H)) :-
+simp:goal_simplification((sys_drop(B, P), sys_keep(C, Q)), sys_drop(B, H)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_drop(_, _),
-                            sys_keep(_, _)), sys_none).
-simp:goal_simplification((  sys_drop(B, P),
-                            sys_keep(C, Q), D), (  sys_drop(B, H), D)) :-
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_drop(_, _), sys_keep(_, _)), sys_none).
+simp:goal_simplification((sys_drop(B, P), sys_keep(C, Q), D), (sys_drop(B, H), D)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_drop(_, _),
-                            sys_keep(_, _), _), sys_none).
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_drop(_, _), sys_keep(_, _), _), sys_none).
 
 % replace sys_drop/sys_drop by sys_drop
-simp:goal_simplification((  sys_drop(B, P),
-                            sys_drop(C, Q)), sys_drop(B, H)) :-
+simp:goal_simplification((sys_drop(B, P), sys_drop(C, Q)), sys_drop(B, H)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_drop(_, _),
-                            sys_drop(_, _)), sys_none).
-simp:goal_simplification((  sys_drop(B, P),
-                            sys_drop(C, Q), D), (  sys_drop(B, H), D)) :-
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_drop(_, _), sys_drop(_, _)), sys_none).
+simp:goal_simplification((sys_drop(B, P), sys_drop(C, Q), D), (sys_drop(B, H), D)) :-
    sys_unify(B, C, C, true, L),
-   simplify_goal((  Q, L), J),
-   simplify_goal((  P, J), H).
-simp:goal_simplification((  sys_drop(_, _),
-                            sys_drop(_, _), _), sys_none).
+   simplify_goal((Q, L), J),
+   simplify_goal((P, J), H).
+simp:goal_simplification((sys_drop(_, _), sys_drop(_, _), _), sys_none).
 
 % move sys_keep to front
-simp:goal_simplification((  A,
-                            sys_keep(C, Q)), (  sys_keep(C, Q), A)).
-simp:goal_simplification((  A,
-                            sys_keep(C, Q), D), (  sys_keep(C, Q), A, D)).
+simp:goal_simplification((A, sys_keep(C, Q)), (sys_keep(C, Q), A)).
+simp:goal_simplification((A, sys_keep(C, Q), D), (sys_keep(C, Q), A, D)).
 
 % move sys_drop to front
-simp:goal_simplification((  A,
-                            sys_drop(C, Q)), (  sys_drop(C, Q), A)).
-simp:goal_simplification((  A,
-                            sys_drop(C, Q), D), (  sys_drop(C, Q), A, D)).
+simp:goal_simplification((A, sys_drop(C, Q)), (sys_drop(C, Q), A)).
+simp:goal_simplification((A, sys_drop(C, Q), D), (sys_drop(C, Q), A, D)).
 
 /**********************************************************/
 /* Unification Reduction                                  */
@@ -470,12 +423,12 @@ simp:goal_simplification((  A,
 :- private sys_unify/5.
 sys_unify(A, B, D, L, R) :-
    var(A), !,
-   sys_replace_site(G, D, sys_eq(A,B)),
-   simplify_goal((  L, G), R).
+   sys_replace_site(G, D, sys_eq(A, B)),
+   simplify_goal((L, G), R).
 sys_unify(A, B, D, L, R) :-
    var(B), !,
-   sys_replace_site(G, D, sys_eq(A,B)),
-   simplify_goal((  L, G), R).
+   sys_replace_site(G, D, sys_eq(A, B)),
+   simplify_goal((L, G), R).
 sys_unify(A, B, _, _, _) :-
    functor(A, P, Q),
    functor(B, R, S),
@@ -504,16 +457,15 @@ sys_unify_list([X|Y], [Z|T], D, P, Q) :-
  */
 % sys_minus(+Goal, +List, -List, -Goal)
 :- private sys_minus/4.
-sys_minus(A, I, I, A) :-
-   var(A), !.
+sys_minus(A, I, I, A) :- var(A), !.
 sys_minus(sys_check(A), I, I, Q) :- !,
-   sys_replace_site(Q, A, clause(A,true)).
+   sys_replace_site(Q, A, clause(A, true)).
 sys_minus(sys_withdraw(A), I, [R|I], Q) :- !,
-   sys_replace_site(Q, A, clause_ref(A,true,R)).
-sys_minus((A,B), I, O, J) :- !,
+   sys_replace_site(Q, A, clause_ref(A, true, R)).
+sys_minus((A, B), I, O, J) :- !,
    sys_minus(A, I, H, P),
    sys_minus(B, H, O, Q),
-   simplify_goal((  P, Q), J).
+   simplify_goal((P, Q), J).
 sys_minus(A, I, I, A).
 
 /**********************************************************/
@@ -528,18 +480,17 @@ sys_minus(A, I, I, A).
 % sys_plus(+Term)
 :- private sys_plus/1.
 :- meta_predicate sys_plus(-1).
-sys_plus(_) :-
-   throw(error(existence_error(body,sys_plus/1),_)).
+sys_plus(_) :- throw(error(existence_error(body, sys_plus/1), _)).
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
+:- meta_predicate user:term_expansion(-1, -1).
 
 % simp:term_simplification(+Term, -Term)
 :- public simp:term_simplification/2.
 :- multifile simp:term_simplification/2.
-:- meta_predicate simp:term_simplification(-1,-1).
+:- meta_predicate simp:term_simplification(-1, -1).
 :- discontiguous simp:term_simplification/2.
 
 /**
@@ -549,59 +500,50 @@ sys_plus(_) :-
  * delta computations.
  */
 :- public <= /2.
-:- meta_predicate <=(-1,-1).
-<=(_, _) :-
-   throw(error(existence_error(body,<= /2),_)).
+:- meta_predicate <=(-1, -1).
+<=(_, _) :- throw(error(existence_error(body, <= /2), _)).
 
-user:term_expansion((  H <= B), (  sys_plus(H) :-
-                                      sys_new(B))).
+user:term_expansion((H <= B), (sys_plus(H) :- sys_new(B))).
 
 % The usual blocking
-simp:term_simplification((  _ :- A, _), _) :-
-   var(A), !, fail.
+simp:term_simplification((_ :- A, _), _) :- var(A), !, fail.
 
 % Or Distribution
-simp:term_simplification((  A :- D; E), J) :-
-   (  sys_special(D)
-   ;  sys_special(E)),
-   simplify_term((  A :- D), U),
-   simplify_term((  A :- E), H),
-   simplify_term(U /\ H, J).
+simp:term_simplification((A :- D; E), J) :- (sys_special(D); sys_special(E)),
+   simplify_term((A :- D), U),
+   simplify_term((A :- E), H),
+   simplify_term(U/\H, J).
 
 % Detect Keep & Minus and Drop & Minus Combination
-simp:term_simplification((  sys_plus(B) :-
-                               sys_keep(D, Q)),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  E :- H)) :-
-   sys_replace_site(G, D, sys_eq(M,sys_delta(B,[]))),
-   simplify_goal((  Q, G), H),
+simp:term_simplification((sys_plus(B) :- sys_keep(D, Q)),
+   (:- discontiguous I)/\(:- sys_notrace I)/\(E :- H)) :-
+   sys_replace_site(G, D, sys_eq(M, sys_delta(B, []))),
+   simplify_goal((Q, G), H),
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_drop(D, Q)),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  E :- H)) :-
-   sys_replace_site(G, D, sys_eq(M,sys_nabla(B,[]))),
-   simplify_goal((  Q, G), H),
+simp:term_simplification((sys_plus(B) :- sys_drop(D, Q)),
+   (:- discontiguous I)/\(:- sys_notrace I)/\(E :- H)) :-
+   sys_replace_site(G, D, sys_eq(M, sys_nabla(B, []))),
+   simplify_goal((Q, G), H),
    sys_modext_args(D, M, E),
    sys_functor(E, F, A),
    sys_make_indicator(F, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_keep(D, Q), P),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  F :- N)) :-
+simp:term_simplification((sys_plus(B) :- sys_keep(D, Q), P),
+   (:- discontiguous I)/\(:- sys_notrace I)/\(F :- N)) :-
    sys_minus(P, [], R, E),
-   sys_replace_site(G, D, sys_eq(M,sys_delta(B,R))),
-   simplify_goal((  Q, E), O),
-   simplify_goal((  O, G), N),
+   sys_replace_site(G, D, sys_eq(M, sys_delta(B, R))),
+   simplify_goal((Q, E), O),
+   simplify_goal((O, G), N),
    sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).
-simp:term_simplification((  sys_plus(B) :-
-                               sys_drop(D, Q), P),
-        (:- discontiguous I) /\ (:- sys_notrace I) /\ (  F :- N)) :-
+simp:term_simplification((sys_plus(B) :- sys_drop(D, Q), P),
+   (:- discontiguous I)/\(:- sys_notrace I)/\(F :- N)) :-
    sys_minus(P, [], R, E),
-   sys_replace_site(G, D, sys_eq(M,sys_nabla(B,R))),
-   simplify_goal((  Q, E), O),
-   simplify_goal((  O, G), N),
+   sys_replace_site(G, D, sys_eq(M, sys_nabla(B, R))),
+   simplify_goal((Q, E), O),
+   simplify_goal((O, G), N),
    sys_modext_args(D, M, F),
    sys_functor(F, H, A),
    sys_make_indicator(H, A, I).

@@ -68,7 +68,7 @@
 % -(+Variable, -Polynom)
 :- override (-)/2.
 :- public (-)/2.
--(A, polynom(A,[1- -1])).
+-(A, polynom(A, [1- -1])).
 
 /**
  * +(P, Q, R):
@@ -77,21 +77,19 @@
 % +(+Variable, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(X, Y, R) :-
-   integer(Y), !,
++(X, Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: +(polynom(X,[1-1]), polynom(X,L), R).
-+(X, rational(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
-+(X, radical(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-+(X, polynom(A,B), R) :- !,
-   polynom: +(polynom(X,[1-1]), polynom(A,B), R).
-+(X, fraction(A,B), R) :- !,
-   fraction: +(fraction(X,1), fraction(A,B), R).
+   polynom: +(polynom(X, [1-1]), polynom(X, L), R).
++(X, rational(A, B), R) :- !,
+   polynom: +(polynom(X, [1-1]), polynom(X, [0-rational(A, B)]), R).
++(X, radical(A, B), R) :- !,
+   polynom: +(polynom(X, [1-1]), polynom(X, [0-radical(A, B)]), R).
++(X, Y, R) :- sys_freezer(Y), !,
+   polynom: +(polynom(X, [1-1]), polynom(Y, [1-1]), R).
++(X, polynom(A, B), R) :- !,
+   polynom: +(polynom(X, [1-1]), polynom(A, B), R).
++(X, fraction(A, B), R) :- !,
+   fraction: +(fraction(X, 1), fraction(A, B), R).
 
 /**
  * -(P, Q, R):
@@ -100,21 +98,19 @@
 % -(+Variable, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(X, Y, R) :-
-   integer(Y), !,
+-(X, Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: -(polynom(X,[1-1]), polynom(X,L), R).
--(X, rational(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
--(X, radical(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(polynom(X,[1-1]), polynom(Y,[1-1]), R).
--(X, polynom(A,B), R) :- !,
-   polynom: -(polynom(X,[1-1]), polynom(A,B), R).
--(X, fraction(A,B), R) :- !,
-   fraction: -(fraction(X,1), fraction(A,B), R).
+   polynom: -(polynom(X, [1-1]), polynom(X, L), R).
+-(X, rational(A, B), R) :- !,
+   polynom: -(polynom(X, [1-1]), polynom(X, [0-rational(A, B)]), R).
+-(X, radical(A, B), R) :- !,
+   polynom: -(polynom(X, [1-1]), polynom(X, [0-radical(A, B)]), R).
+-(X, Y, R) :- sys_freezer(Y), !,
+   polynom: -(polynom(X, [1-1]), polynom(Y, [1-1]), R).
+-(X, polynom(A, B), R) :- !,
+   polynom: -(polynom(X, [1-1]), polynom(A, B), R).
+-(X, fraction(A, B), R) :- !,
+   fraction: -(fraction(X, 1), fraction(A, B), R).
 
 /**
  * *(P, Q, R):
@@ -123,21 +119,19 @@
 % *(+Variable, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(X, Y, R) :-
-   integer(Y), !,
+*(X, Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: *(polynom(X,[1-1]), polynom(X,L), R).
-*(X, rational(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(X,[0-rational(A,B)]), R).
-*(X, radical(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(X,[0-radical(A,B)]), R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(polynom(X,[1-1]), polynom(Y,[1-1]), R).
-*(X, polynom(A,B), R) :- !,
-   polynom: *(polynom(X,[1-1]), polynom(A,B), R).
-*(X, fraction(A,B), R) :- !,
-   fraction: *(fraction(X,1), fraction(A,B), R).
+   polynom: *(polynom(X, [1-1]), polynom(X, L), R).
+*(X, rational(A, B), R) :- !,
+   polynom: *(polynom(X, [1-1]), polynom(X, [0-rational(A, B)]), R).
+*(X, radical(A, B), R) :- !,
+   polynom: *(polynom(X, [1-1]), polynom(X, [0-radical(A, B)]), R).
+*(X, Y, R) :- sys_freezer(Y), !,
+   polynom: *(polynom(X, [1-1]), polynom(Y, [1-1]), R).
+*(X, polynom(A, B), R) :- !,
+   polynom: *(polynom(X, [1-1]), polynom(A, B), R).
+*(X, fraction(A, B), R) :- !,
+   fraction: *(fraction(X, 1), fraction(A, B), R).
 
 /**
  * /(P, Q, R):
@@ -146,20 +140,18 @@
 % /(+Variable, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(X, Y, R) :-
-   integer(Y), !,
+/(X, Y, R) :- integer(Y), !,
    R is X*(1/Y).
-/(X, rational(A,B), R) :- !,
-   R is X*(1/rational(A,B)).
-/(X, radical(A,B), R) :- !,
-   R is X*(1/radical(A,B)).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
+/(X, rational(A, B), R) :- !,
+   R is X*(1/rational(A, B)).
+/(X, radical(A, B), R) :- !,
+   R is X*(1/radical(A, B)).
+/(X, Y, R) :- sys_freezer(Y), !,
    make_fraction(X, Y, R).
-/(X, polynom(A,B), R) :- !,
-   make_fraction(X, polynom(A,B), R).
-/(X, fraction(A,B), R) :- !,
-   fraction: /(fraction(X,1), fraction(A,B), R).
+/(X, polynom(A, B), R) :- !,
+   make_fraction(X, polynom(A, B), R).
+/(X, fraction(A, B), R) :- !,
+   fraction: /(fraction(X, 1), fraction(A, B), R).
 
 /**
  * ^(P, Q, R):
@@ -168,8 +160,7 @@
 % ^(+Variable, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(X, Y, R) :-
-   user:(Y < 0), !,
+^(X, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    R is (1/X)^Z.
 ^(X, Y, R) :-
@@ -187,6 +178,5 @@
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(E, F) :-
-   sys_freezer(E), !,
+residue:sys_printable_value(E, F) :- sys_freezer(E), !,
    sys_melt_var(E, F).

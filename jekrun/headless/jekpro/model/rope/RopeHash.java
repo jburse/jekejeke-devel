@@ -122,7 +122,7 @@ public final class RopeHash
         int len = 0;
         for (SetEntry<Clause> entry = getFirstEntry();
              entry != null; entry = successor(entry)) {
-            SkelAtom sa = StackElement.callableToName(entry.value.term);
+            SkelAtom sa = StackElement.callableToName(entry.value.head);
             if (Clause.ancestorSource(sa.scope, en))
                 len++;
         }

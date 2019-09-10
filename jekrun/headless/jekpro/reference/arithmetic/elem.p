@@ -125,8 +125,6 @@
 
 :- public infix(^).
 :- op(200, xfy, ^).
-:- set_oper_property(infix(^), nspl).
-:- set_oper_property(infix(^), nspr).
 
 /**
  * - X: [ISO 9.1.7]

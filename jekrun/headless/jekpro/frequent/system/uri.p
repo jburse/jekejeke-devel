@@ -87,10 +87,7 @@
  */
 % make_query(+-Atom, +-Atom, +-Atom, -+Atom)
 :- public make_query/4.
-make_query(N, V, R, Q) :-
-   (  var(N)
-   ;  var(V)
-   ;  var(R)), !,
+make_query(N, V, R, Q) :- (var(N); var(V); var(R)), !,
    sys_query_name(Q, N),
    sys_query_value(Q, V),
    sys_query_rest(Q, R).
@@ -111,7 +108,7 @@ make_query(N, V, R, Q) :-
 
 :- private sys_query_make/4.
 :- foreign(sys_query_make/4, 'ForeignUri',
-      sysQueryMake('String','String','String')).
+      sysQueryMake('String', 'String', 'String')).
 
 /**
  * make_spec(E, A, P, S):
@@ -122,10 +119,7 @@ make_query(N, V, R, Q) :-
  */
 % make_spec(+-Atom, +-Atom, +-Atom, -+Atom)
 :- public make_spec/4.
-make_spec(E, A, P, S) :-
-   (  var(E)
-   ;  var(A)
-   ;  var(P)), !,
+make_spec(E, A, P, S) :- (var(E); var(A); var(P)), !,
    sys_spec_scheme(S, E),
    sys_spec_authority(S, A),
    sys_spec_path(S, P).
@@ -146,7 +140,7 @@ make_spec(E, A, P, S) :-
 
 :- private sys_spec_make/4.
 :- foreign(sys_spec_make/4, 'ForeignUri',
-      sysSpecMake('String','String','String')).
+      sysSpecMake('String', 'String', 'String')).
 
 /**
  * make_uri(S, Q, H, U):
@@ -157,10 +151,7 @@ make_spec(E, A, P, S) :-
  */
 % make_uri(+-Atom, +-Atom, +-Atom, -+Atom)
 :- public make_uri/4.
-make_uri(S, Q, H, U) :-
-   (  var(S)
-   ;  var(Q)
-   ;  var(H)), !,
+make_uri(S, Q, H, U) :- (var(S); var(Q); var(H)), !,
    sys_uri_spec(U, S),
    sys_uri_query(U, Q),
    sys_uri_hash(U, H).
@@ -181,7 +172,7 @@ make_uri(S, Q, H, U) :-
 
 :- private sys_uri_make/4.
 :- foreign(sys_uri_make/4, 'ForeignUri',
-      sysUriMake('String','String','String')).
+      sysUriMake('String', 'String', 'String')).
 
 /************************************************************/
 /* Uri Following                                            */
@@ -204,19 +195,16 @@ make_uri(S, Q, H, U) :-
  * from B by following R.
  */
 :- public follow_uri/3.
-follow_uri(B, R, A) :-
-   var(R), !,
-   sys_uri_relative(B, A, R).
-follow_uri(B, R, A) :-
-   sys_uri_absolute(B, R, A).
+follow_uri(B, R, A) :- var(R), !, sys_uri_relative(B, A, R).
+follow_uri(B, R, A) :- sys_uri_absolute(B, R, A).
 
 :- private sys_uri_absolute/3.
 :- foreign(sys_uri_absolute/3, 'ForeignUri',
-      sysUriAbsolute('String','String')).
+      sysUriAbsolute('String', 'String')).
 
 :- private sys_uri_relative/3.
 :- foreign(sys_uri_relative/3, 'ForeignUri',
-      sysUriRelative('String','String')).
+      sysUriRelative('String', 'String')).
 
 /************************************************************/
 /* Canonical URI                                            */
@@ -243,11 +231,8 @@ follow_uri(B, R, A) :-
  */
 % uri_encode(+-Atom, -+Atom)
 :- public uri_encode/2.
-uri_encode(X, Y) :-
-   var(X), !,
-   sys_uri_decode(Y, X).
-uri_encode(X, Y) :-
-   sys_uri_encode(X, Y).
+uri_encode(X, Y) :- var(X), !, sys_uri_decode(Y, X).
+uri_encode(X, Y) :- sys_uri_encode(X, Y).
 
 :- private sys_uri_encode/2.
 :- foreign(sys_uri_encode/2, 'ForeignUri',
@@ -269,8 +254,7 @@ uri_encode(X, Y) :-
  */
 % make_link(-+Atom, -+List, -+Atom, +-Atom)
 :- public make_link/4.
-make_link(Spec, Parameter, Hash, URI) :-
-   var(URI), !,
+make_link(Spec, Parameter, Hash, URI) :- var(URI), !,
    make_parameter2(Parameter, Query),
    make_uri(Spec, Query, Hash, URI).
 make_link(Spec, Parameter, Hash, URI) :-
@@ -286,12 +270,11 @@ make_parameter(Query, [Key-Value|List]) :-
 
 % make_parameter2(+List, -Atom)
 :- private make_parameter2/2.
-make_parameter2(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+make_parameter2(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 make_parameter2([], '') :- !.
 make_parameter2([Key-Value|List], Query) :- !,
    make_parameter2(List, Rest),
    make_query(Key, Value, Rest, Query).
 make_parameter2(X, _) :-
-   throw(error(type_error(list,X),_)).
+   throw(error(type_error(list, X), _)).

@@ -101,7 +101,7 @@ public final class LookupBase {
      * <p>Find a read path.</p>
      *
      * @param path The path, in slash notation.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param en   The engine or null.
      * @return The source key, or null.
      * @throws IOException Shit happens.
@@ -178,7 +178,7 @@ public final class LookupBase {
      * <p>Find a read path.</p>
      *
      * @param path The path.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param mask The mask.
      * @param en   The engine.
      * @return The source key, or null.
@@ -247,7 +247,7 @@ public final class LookupBase {
      * <p>Remove the suffix in the best way.</p>
      *
      * @param path The path.
-     * @param src  The call-site, not null.
+     * @param src  The call-site, non null.
      * @param mask The mask.
      * @param en   The engine.
      * @return The path without suffix.

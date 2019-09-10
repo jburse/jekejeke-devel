@@ -62,11 +62,10 @@ public final class SpecialStruc extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineException {
         switch (id) {
             case SPECIAL_SYS_TERM_KERNEL:
                 Object[] temp = ((SkelCompound) en.skel).args;

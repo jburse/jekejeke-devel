@@ -110,10 +110,11 @@ assumea(C) :-
 
 % assumea(+Term, +Goal)
 :- public assumea/2.
-:- meta_predicate assumea(-1,0).
+:- meta_predicate assumea(-1, 0).
 assumea(C, G) :-
    assumable_ref(C, R),
-   deposita_ref(R), G,
+   deposita_ref(R),
+   G,
    withdrawa_ref(R).
 
 /**
@@ -130,10 +131,11 @@ assumez(C) :-
 
 % assumez(+Term, +Goal)
 :- public assumez/2.
-:- meta_predicate assumez(-1,0).
+:- meta_predicate assumez(-1, 0).
 assumez(C, G) :-
    assumable_ref(C, R),
-   depositz_ref(R), G,
+   depositz_ref(R),
+   G,
    withdrawz_ref(R).
 
 /**
@@ -151,22 +153,22 @@ retire(C) :-
 
 % retire2(+Ref)
 :- private retire2/1.
-retire2(R) :-
-   withdrawz_ref(R), !.
+retire2(R) :- withdrawz_ref(R), !.
 retire2(_).
 
 % retire(-Term, +Goal)
 :- public retire/2.
-:- meta_predicate retire(-1,0).
+:- meta_predicate retire(-1, 0).
 retire(C, G) :-
    clause_ref(C, R),
    retire2(R, G).
 
 % retire2(+Ref, +Goal)
 :- private retire2/2.
-:- meta_predicate retire2(?,0).
+:- meta_predicate retire2(?, 0).
 retire2(R, G) :-
-   withdrawz_ref(R), !, G,
+   withdrawz_ref(R), !,
+   G,
    depositz_ref(R).
 retire2(_, G) :- G.
 
@@ -185,10 +187,11 @@ retireall(H) :-
 
 % retireall(+Term, +Goal)
 :- public retireall/2.
-:- meta_predicate retireall(-1,0).
+:- meta_predicate retireall(-1, 0).
 retireall(H, G) :-
    findall(R, clause_ref(H, _, R), L),
-   withdrawz_ref(L), G,
+   withdrawz_ref(L),
+   G,
    depositz_ref(L).
 
 /**
@@ -202,9 +205,9 @@ retireall(H, G) :-
 
 % ','(+Hypo, +Hypo, +Goal)
 :- public ','/3.
-:- meta_predicate ','(1,1,0).
+:- meta_predicate ','(1, 1, 0).
 ','(A, B, G) :-
-   call(A, call(B,G)).
+   call(A, call(B, G)).
 
 /**
  * ;(A, B, G):
@@ -219,7 +222,7 @@ retireall(H, G) :-
 
 % ;(+Hypo, +Hypo, +Goal)
 :- public ;/3.
-:- meta_predicate ;(1,1,0).
+:- meta_predicate ;(1, 1, 0).
 ;(A, _, G) :-
    call(A, G).
 ;(_, B, G) :-

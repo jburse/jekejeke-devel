@@ -72,7 +72,7 @@
 % -(+Polynom, -Internal)
 :- override (-)/2.
 :- public (-)/2.
--(polynom(A,B), R) :-
+-(polynom(A, B), R) :-
    sys_poly_neg(B, H),
    sys_make_poly(H, A, R).
 
@@ -83,29 +83,26 @@
 % +(+Polynom, +Internal, -Internal)
 :- override (+)/3.
 :- public (+)/3.
-+(polynom(A,B), Y, R) :-
-   integer(Y), !,
++(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: +(polynom(A,B), polynom(A,L), R).
-+(polynom(A,B), rational(C,D), R) :- !,
-   polynom: +(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
-+(polynom(A,B), radical(C,D), R) :- !,
-   polynom: +(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
-+(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: +(X, polynom(Y,[1-1]), R).
-+(polynom(A,B), polynom(C,D), R) :-
-   A @> C, !,
-   sys_poly_add(B, [0-polynom(C,D)], H),
+   polynom: +(polynom(A, B), polynom(A, L), R).
++(polynom(A, B), rational(C, D), R) :- !,
+   polynom: +(polynom(A, B), polynom(A, [0-rational(C, D)]), R).
++(polynom(A, B), radical(C, D), R) :- !,
+   polynom: +(polynom(A, B), polynom(A, [0-radical(C, D)]), R).
++(X, Y, R) :- sys_freezer(Y), !,
+   polynom: +(X, polynom(Y, [1-1]), R).
++(polynom(A, B), polynom(C, D), R) :- A @> C, !,
+   sys_poly_add(B, [0-polynom(C, D)], H),
    sys_make_poly(H, A, R).
-+(polynom(A,B), polynom(A,D), R) :- !,
++(polynom(A, B), polynom(A, D), R) :- !,
    sys_poly_add(B, D, H),
    sys_make_poly(H, A, R).
-+(X, polynom(A,B), R) :- !,
++(X, polynom(A, B), R) :- !,
    sys_poly_add([0-X], B, H),
    sys_make_poly(H, A, R).
-+(X, fraction(C,D), R) :-
-   fraction: +(fraction(X,1), fraction(C,D), R).
++(X, fraction(C, D), R) :-
+   fraction: +(fraction(X, 1), fraction(C, D), R).
 
 /**
  * -(P, Q, R):
@@ -114,29 +111,26 @@
 % -(+Polynom, +Internal, -Internal)
 :- override (-)/3.
 :- public (-)/3.
--(polynom(A,B), Y, R) :-
-   integer(Y), !,
+-(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: -(polynom(A,B), polynom(A,L), R).
--(polynom(A,B), rational(C,D), R) :- !,
-   polynom: -(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
--(polynom(A,B), radical(C,D), R) :- !,
-   polynom: -(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
--(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: -(X, polynom(Y,[1-1]), R).
--(polynom(A,B), polynom(C,D), R) :-
-   A @> C, !,
-   sys_poly_sub(B, [0-polynom(C,D)], H),
+   polynom: -(polynom(A, B), polynom(A, L), R).
+-(polynom(A, B), rational(C, D), R) :- !,
+   polynom: -(polynom(A, B), polynom(A, [0-rational(C, D)]), R).
+-(polynom(A, B), radical(C, D), R) :- !,
+   polynom: -(polynom(A, B), polynom(A, [0-radical(C, D)]), R).
+-(X, Y, R) :- sys_freezer(Y), !,
+   polynom: -(X, polynom(Y, [1-1]), R).
+-(polynom(A, B), polynom(C, D), R) :- A @> C, !,
+   sys_poly_sub(B, [0-polynom(C, D)], H),
    sys_make_poly(H, A, R).
--(polynom(A,B), polynom(A,D), R) :- !,
+-(polynom(A, B), polynom(A, D), R) :- !,
    sys_poly_sub(B, D, H),
    sys_make_poly(H, A, R).
--(X, polynom(A,B), R) :- !,
+-(X, polynom(A, B), R) :- !,
    sys_poly_sub([0-X], B, H),
    sys_make_poly(H, A, R).
--(X, fraction(C,D), R) :-
-   fraction: -(fraction(X,1), fraction(C,D), R).
+-(X, fraction(C, D), R) :-
+   fraction: -(fraction(X, 1), fraction(C, D), R).
 
 /**
  * *(P, Q, R):
@@ -145,29 +139,26 @@
 % *(+Polynom, +Internal, -Internal)
 :- override * /3.
 :- public * /3.
-*(polynom(A,B), Y, R) :-
-   integer(Y), !,
+*(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
-   polynom: *(polynom(A,B), polynom(A,L), R).
-*(polynom(A,B), rational(C,D), R) :- !,
-   polynom: *(polynom(A,B), polynom(A,[0-rational(C,D)]), R).
-*(polynom(A,B), radical(C,D), R) :- !,
-   polynom: *(polynom(A,B), polynom(A,[0-radical(C,D)]), R).
-*(X, Y, R) :-
-   sys_freezer(Y), !,
-   polynom: *(X, polynom(Y,[1-1]), R).
-*(polynom(A,B), polynom(C,D), R) :-
-   A @> C, !,
-   sys_poly_mul(B, [0-polynom(C,D)], H),
+   polynom: *(polynom(A, B), polynom(A, L), R).
+*(polynom(A, B), rational(C, D), R) :- !,
+   polynom: *(polynom(A, B), polynom(A, [0-rational(C, D)]), R).
+*(polynom(A, B), radical(C, D), R) :- !,
+   polynom: *(polynom(A, B), polynom(A, [0-radical(C, D)]), R).
+*(X, Y, R) :- sys_freezer(Y), !,
+   polynom: *(X, polynom(Y, [1-1]), R).
+*(polynom(A, B), polynom(C, D), R) :- A @> C, !,
+   sys_poly_mul(B, [0-polynom(C, D)], H),
    sys_make_poly(H, A, R).
-*(polynom(A,B), polynom(A,D), R) :- !,
+*(polynom(A, B), polynom(A, D), R) :- !,
    sys_poly_mul(B, D, H),
    sys_make_poly(H, A, R).
-*(X, polynom(A,B), R) :- !,
+*(X, polynom(A, B), R) :- !,
    sys_poly_mul([0-X], B, H),
    sys_make_poly(H, A, R).
-*(X, fraction(C,D), R) :-
-   fraction: *(fraction(X,1), fraction(C,D), R).
+*(X, fraction(C, D), R) :-
+   fraction: *(fraction(X, 1), fraction(C, D), R).
 
 /**
  * /(P, Q, R):
@@ -176,20 +167,18 @@
 % /(+Polynom, +Internal, -Internal)
 :- override / /3.
 :- public / /3.
-/(X, Y, R) :-
-   integer(Y), !,
+/(X, Y, R) :- integer(Y), !,
    R is X*(1/Y).
-/(X, rational(C,D), R) :- !,
-   R is X*(1/rational(C,D)).
-/(X, radical(C,D), R) :- !,
-   R is X*(1/radical(C,D)).
-/(X, Y, R) :-
-   sys_freezer(Y), !,
+/(X, rational(C, D), R) :- !,
+   R is X*(1/rational(C, D)).
+/(X, radical(C, D), R) :- !,
+   R is X*(1/radical(C, D)).
+/(X, Y, R) :- sys_freezer(Y), !,
    make_fraction(X, Y, R).
-/(X, polynom(C,D), R) :- !,
-   make_fraction(X, polynom(C,D), R).
-/(X, fraction(C,D), R) :-
-   fraction: /(fraction(X,1), fraction(C,D), R).
+/(X, polynom(C, D), R) :- !,
+   make_fraction(X, polynom(C, D), R).
+/(X, fraction(C, D), R) :-
+   fraction: /(fraction(X, 1), fraction(C, D), R).
 
 /**
  * ^(P, Q, R):
@@ -198,40 +187,37 @@
 % ^(+Polynom, +Integer, -Internal)
 :- override ^ /3.
 :- public ^ /3.
-^(P, Y, R) :-
-   user:(Y < 0), !,
+^(P, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    R is (1/P)^Z.
 ^(_, 0, R) :- !,
    R = 1.
 ^(P, 1, R) :- !,
    R = P.
-^(polynom(A,[N-B]), 2, R) :- !,
+^(polynom(A, [N-B]), 2, R) :- !,
    user: *(N, 2, M),
    C is B^2,
-   R = polynom(A,[M-C]).
+   R = polynom(A, [M-C]).
 ^(X, 2, R) :- !,
    sys_poly_split(X, P, Q),
    R is P^2+2*P*Q+Q^2.
-^(P, N, R) :-
-   user:mod(N, 2, 1), !,
+^(P, N, R) :- user:mod(N, 2, 1), !,
    user: -(N, 1, M),
    R is P^M*P.
-^(P, N, R) :-
-   user: //(N, 2, M),
+^(P, N, R) :- user: //(N, 2, M),
    H is P^M,
    R is H^2.
 
 % sys_poly_split(+Polynom, -Internal, -Internal)
 :- private sys_poly_split/3.
-sys_poly_split(polynom(A,B), P, Q) :-
+sys_poly_split(polynom(A, B), P, Q) :-
    sys_coeff_split(B, U, V),
    sys_make_poly(U, A, P),
    sys_make_poly(V, A, Q).
 
 % sys_coeff_split(+Map, -Map, -Map)
 :- private sys_coeff_split/3.
-sys_coeff_split([X,Y|L], [X|P], [Y|Q]) :- !,
+sys_coeff_split([X, Y|L], [X|P], [Y|Q]) :- !,
    sys_coeff_split(L, P, Q).
 sys_coeff_split(L, [], L).
 
@@ -248,8 +234,7 @@ sys_poly_neg([], []).
 
 % sys_poly_add(+Map, +Map, -Map)
 :- private sys_poly_add/3.
-sys_poly_add([N-A|L], [M-B|R], [N-A|S]) :-
-   user:(N > M), !,
+sys_poly_add([N-A|L], [M-B|R], [N-A|S]) :- user:(N > M), !,
    sys_poly_add(L, [M-B|R], S).
 sys_poly_add([N-A|L], [N-B|R], T) :- !,
    C is A+B,
@@ -262,8 +247,7 @@ sys_poly_add(L, [], L).
 
 % sys_poly_sub(+Map, +Map, -Map)
 :- private sys_poly_sub/3.
-sys_poly_sub([N-A|L], [M-B|R], [N-A|S]) :-
-   user:(N > M), !,
+sys_poly_sub([N-A|L], [M-B|R], [N-A|S]) :- user:(N > M), !,
    sys_poly_sub(L, [M-B|R], S).
 sys_poly_sub([N-A|L], [N-B|R], T) :- !,
    C is A-B,
@@ -306,7 +290,7 @@ sys_make_poly([1-1], A, R) :- !,
    R = A.
 sys_make_poly([0-A], _, R) :- !,
    R = A.
-sys_make_poly(B, A, polynom(A,B)).
+sys_make_poly(B, A, polynom(A, B)).
 
 /*********************************************************************/
 /* CAS Display Hook                                                  */
@@ -320,9 +304,8 @@ sys_make_poly(B, A, polynom(A,B)).
 % sys_printable_value(+Term, -Term)
 :- public residue:sys_printable_value/2.
 :- multifile residue:sys_printable_value/2.
-residue:sys_printable_value(X, _) :-
-   var(X), !, fail.
-residue:sys_printable_value(polynom(A,B), F) :- !,
+residue:sys_printable_value(X, _) :- var(X), !, fail.
+residue:sys_printable_value(polynom(A, B), F) :- !,
    sys_pretty_poly(B, A, H),
    sys_melt_expr(H, F).
 
@@ -338,17 +321,15 @@ sys_pretty_poly([], _, 0).
 
 % sys_pretty_expr(+Internal, -Expression)
 :- private sys_pretty_expr/2.
-sys_pretty_expr(E, X) :-
-   sys_freezer(E), !,
+sys_pretty_expr(E, X) :- sys_freezer(E), !,
    X = E.
-sys_pretty_expr(E, X) :-
-   integer(E), !,
+sys_pretty_expr(E, X) :- integer(E), !,
    printable(E, X).
-sys_pretty_expr(rational(A,B), X) :- !,
-   printable(rational(A,B), X).
-sys_pretty_expr(radical(A,B), X) :- !,
-   printable(radical(A,B), X).
-sys_pretty_expr(polynom(A,B), X) :-
+sys_pretty_expr(rational(A, B), X) :- !,
+   printable(rational(A, B), X).
+sys_pretty_expr(radical(A, B), X) :- !,
+   printable(radical(A, B), X).
+sys_pretty_expr(polynom(A, B), X) :-
    sys_pretty_poly(B, A, X).
 
 % sys_make_power(+Var, +Integer, -Expression)
@@ -361,8 +342,7 @@ sys_make_power(Y, N, Y^N).
 :- private sys_make_mul/3.
 sys_make_mul(X, 1, X) :- !.
 sys_make_mul(1, X, X) :- !.
-sys_make_mul(X, Y, -H) :-
-   sys_has_sign(X), !,
+sys_make_mul(X, Y, -H) :- sys_has_sign(X), !,
    sys_make_neg(X, Z),
    sys_make_mul(Z, Y, H).
 sys_make_mul(X, Y, X*Y).
@@ -370,18 +350,14 @@ sys_make_mul(X, Y, X*Y).
 % sys_has_sign(+Expression)
 :- private sys_has_sign/1.
 sys_has_sign(-_).
-sys_has_sign(X-_) :-
-   sys_has_sign(X).
-sys_has_sign(X+_) :-
-   sys_has_sign(X).
+sys_has_sign(X-_) :- sys_has_sign(X).
+sys_has_sign(X+_) :- sys_has_sign(X).
 
 % sys_make_neg(+Expression, -Expression)
 :- private sys_make_neg/2.
 sys_make_neg(-X, X).
-sys_make_neg(X-Y, Z+Y) :-
-   sys_make_neg(X, Z).
-sys_make_neg(X+Y, Z-Y) :-
-   sys_make_neg(X, Z).
+sys_make_neg(X-Y, Z+Y) :- sys_make_neg(X, Z).
+sys_make_neg(X+Y, Z-Y) :- sys_make_neg(X, Z).
 
 % sys_make_add(+Expression, +Expression, -Expression)
 :- private sys_make_add/3.
@@ -401,11 +377,9 @@ sys_make_add(X, Y, X+Y).
 
 % sys_melt_expr(+Expression, -Expression)
 :- private sys_melt_expr/2.
-sys_melt_expr(E, X) :-
-   sys_freezer(E), !,
+sys_melt_expr(E, X) :- sys_freezer(E), !,
    sys_melt_var(E, X).
-sys_melt_expr(E, X) :-
-   integer(E), !,
+sys_melt_expr(E, X) :- integer(E), !,
    X = E.
 sys_melt_expr(E, X) :-
    E =.. [F|L],
@@ -431,14 +405,13 @@ sys_melt_list([], []).
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?,#(1)).
-generic:(X is E) :-
-   var(E), !,
+:- meta_predicate generic:is(?, #(1)).
+generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).
-generic:(X is polynom(A,B)) :- !,
-   X = polynom(A,B).
+generic:(X is polynom(A, B)) :- !,
+   X = polynom(A, B).
 
 :- multifile generic:is_abnormal/1.
 :- public generic:is_abnormal/1.
-generic:is_abnormal(polynom(_,_)).
+generic:is_abnormal(polynom(_, _)).

@@ -62,17 +62,6 @@
 :- module(user, []).
 
 /**
- * sys_cleanup(A):
- * The predicate creates a choice point and succeeds once. The goal
- * A is called upon redo or when the choice point is removed.
- */
-% sys_cleanup(+Goal)
-:- public sys_cleanup/1.
-:- meta_predicate sys_cleanup(0).
-:- set_predicate_property(sys_cleanup/1, sys_notrace).
-:- special(sys_cleanup/1, 'SpecialSignal', 1).
-
-/**
  * call_cleanup(B, C):
  * The predicate succeeds whenever B succeeds. Additionally the
  * clean-up C is called when B fails or deterministically succeeds.
@@ -81,25 +70,14 @@
  */
 % call_cleanup(+Goal, +Goal)
 :- public call_cleanup/2.
-:- meta_predicate call_cleanup(0,0).
+:- meta_predicate call_cleanup(0, 0).
 :- set_predicate_property(call_cleanup/2, sys_notrace).
 call_cleanup(G, C) :-
    sys_atomic(sys_cleanup(C)),
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   (  X =:= Y, !; true).
-
-/**
- * sys_atomic(A):
- * The predicate succeeds whenever A succeeds. The goal A is
- * invoked with the signal mask temporarily set to off.
- */
-% sys_atomic(+Goal)
-:- public sys_atomic/1.
-:- meta_predicate sys_atomic(0).
-:- set_predicate_property(sys_atomic/1, sys_notrace).
-:- special(sys_atomic/1, 'SpecialSignal', 0).
+   (X =:= Y, !; true).
 
 /**
  * setup_call_cleanup(A, B, C):
@@ -112,12 +90,44 @@ call_cleanup(G, C) :-
  */
 % setup_call_cleanup(+Goal, +Goal, +Goal)
 :- public setup_call_cleanup/3.
-:- meta_predicate setup_call_cleanup(0,0,0).
+:- meta_predicate setup_call_cleanup(0, 0, 0).
 :- set_predicate_property(setup_call_cleanup/3, sys_notrace).
 setup_call_cleanup(A, G, C) :-
-   sys_atomic((  once(A),
-                 sys_cleanup(C))),
+   sys_atomic((once(A), sys_cleanup(C))),
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
-   (  X =:= Y, !; true).
+   (X =:= Y, !; true).
+
+/**
+ * sys_cleanup(A):
+ * The predicate creates a choice point and succeeds once. The goal
+ * A is called upon redo or when the choice point is removed.
+ */
+% sys_cleanup(+Goal)
+:- public sys_cleanup/1.
+:- meta_predicate sys_cleanup(0).
+:- set_predicate_property(sys_cleanup/1, sys_notrace).
+:- special(sys_cleanup/1, 'SpecialSignal', 0).
+
+/**
+ * sys_atomic(A):
+ * The predicate succeeds whenever A succeeds. The goal A is
+ * invoked with the signal mask temporarily set to off.
+ */
+% sys_atomic(+Goal)
+:- public sys_atomic/1.
+:- meta_predicate sys_atomic(0).
+:- set_predicate_property(sys_atomic/1, sys_notrace).
+:- special(sys_atomic/1, 'SpecialSignal', 1).
+
+/**
+ * sys_ignore(A):
+ * The predicate succeeds whenever A succeeds. The goal A is
+ * invoked with the mode cloak temporarily set to on.
+ */
+% sys_ignore(+Goal)
+:- public sys_ignore/1.
+:- meta_predicate sys_ignore(0).
+:- special(sys_ignore/1, 'SpecialSignal', 2).
+:- set_predicate_property(sys_ignore/1, sys_notrace).

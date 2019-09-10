@@ -3,11 +3,8 @@ package jekpro.reference.runtime;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
-import jekpro.model.rope.Clause;
-import jekpro.model.rope.Directive;
-import jekpro.tools.term.SkelCompound;
+import jekpro.model.molec.EngineMessage;
 
 /**
  * <p>Provides built-in predicates for logic predicates.</p>
@@ -63,7 +60,7 @@ public final class SpecialLogic extends AbstractSpecial {
      * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineException {
+            throws EngineException, EngineMessage {
         switch (id) {
             case SPECIAL_SYS_LOCAL_CUT:
                 CallFrame ref2 = en.contdisplay;

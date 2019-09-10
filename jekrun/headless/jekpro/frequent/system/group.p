@@ -70,7 +70,7 @@
  */
 % group_new(-Group)
 :- public group_new/1.
-:- foreign(group_new/1, 'ForeignGroup', sysGroupNew('Interpreter')).
+:- foreign(group_new/1, 'ForeignGroup', sysGroupNew).
 
 /**
  * thread_new(G, C, T):
@@ -79,9 +79,9 @@
  */
 % thread_new(+Group, +Goal, -Thread)
 :- public thread_new/3.
-:- meta_predicate thread_new(?,0,?).
+:- meta_predicate thread_new(?, 0, ?).
 :- foreign(thread_new/3, 'ForeignGroup',
-      sysThreadNew('Interpreter','ThreadGroup','AbstractTerm')).
+      sysThreadNew('Interpreter', 'ThreadGroup', 'AbstractTerm')).
 
 /****************************************************************/
 /* Group Enumeration                                            */
@@ -106,7 +106,7 @@
 % current_thread(+Group, -Thread)
 :- public current_thread/2.
 :- foreign(current_thread/2, 'ForeignGroup',
-      sysCurrentThread('CallOut','ThreadGroup')).
+      sysCurrentThread('CallOut', 'ThreadGroup')).
 
 /**
  * current_group(G, H):
@@ -116,7 +116,7 @@
 % current_group(+Group, -Group)
 :- public current_group/2.
 :- foreign(current_group/2, 'ForeignGroup',
-      sysCurrentGroup('CallOut','ThreadGroup')).
+      sysCurrentGroup('CallOut', 'ThreadGroup')).
 
 /****************************************************************/
 /* Group Flags                                                  */
@@ -130,8 +130,7 @@
  */
 % current_group_flag(+Group, +Atom, -Atomic)
 :- public current_group_flag/3.
-current_group_flag(T, K, V) :-
-   var(K), !,
+current_group_flag(T, K, V) :- var(K), !,
    sys_current_group_flag(K),
    sys_get_group_flag(T, K, V).
 current_group_flag(T, K, V) :-
@@ -145,7 +144,7 @@ current_group_flag(T, K, V) :-
 % sys_get_group_flag(+Group, +Atom, -Atomic)
 :- private sys_get_group_flag/3.
 :- foreign(sys_get_group_flag/3, 'ForeignGroup',
-      sysGetGroupFlag('ThreadGroup','String')).
+      sysGetGroupFlag('ThreadGroup', 'String')).
 
 /****************************************************************/
 /* Managed Threads                                              */
@@ -157,19 +156,18 @@ current_group_flag(T, K, V) :-
  */
 % current_thread(-Thread)
 :- public current_thread/1.
-current_thread(X) :-
-   var(X), !,
+current_thread(X) :- var(X), !,
    sys_current_thread(X).
 current_thread(X) :-
    sys_current_thread_chk(X).
 
 :- private sys_current_thread/1.
 :- foreign(sys_current_thread/1, 'ForeignGroup',
-      sysCurrentThread('CallOut','Interpreter')).
+      sysCurrentThread('CallOut', 'Interpreter')).
 
 :- private sys_current_thread_chk/1.
 :- foreign(sys_current_thread_chk/1, 'ForeignGroup',
-      sysCurrentThreadChk('Interpreter','Thread')).
+      sysCurrentThreadChk('Interpreter', 'Thread')).
 
 /**
  * threads:
@@ -177,29 +175,35 @@ current_thread(X) :-
  */
 % threads
 :- public threads/0.
-threads :- thread_show_keys,
+threads :-
+   thread_show_keys,
    current_thread(T),
-   thread_show_values(T), fail.
+   thread_show_values(T),
+   fail.
 threads.
 
 % thread_show_keys
 :- private thread_show_keys/0.
 thread_show_keys :-
-   sys_get_lang(show, P),
+   get_properties(show, P),
    sys_current_show_stat(K),
    message_make(P, thread_show_key(K), M),
-   write(M), fail.
-thread_show_keys :- nl.
+   write(M),
+   fail.
+thread_show_keys :-
+   nl.
 
 % thread_show_values(+Thread)
 :- private thread_show_values/1.
 thread_show_values(T) :-
-   sys_get_lang(show, P),
+   get_properties(show, P),
    sys_current_show_stat(K),
    sys_get_show_stat(T, K, V),
-   message_make(P, thread_show_value(K,V), M),
-   write(M), fail.
-thread_show_values(_) :- nl.
+   message_make(P, thread_show_value(K, V), M),
+   write(M),
+   fail.
+thread_show_values(_) :-
+   nl.
 
 % sys_current_show_stat(-Atom)
 :- private sys_current_show_stat/1.
@@ -216,17 +220,3 @@ sys_get_show_stat(T, sys_thread_state, V) :-
 sys_get_show_stat(T, sys_thread_group_name, V) :-
    current_thread_flag(T, sys_thread_group, H),
    current_group_flag(H, sys_group_name, V).
-
-/****************************************************************/
-/* Debug Threads                                                */
-/****************************************************************/
-
-/**
- * thread_stack(T, S):
- * The predicate succeeds in S with the JVM stack of T.
- */
-/*
-:- public thread_stack/2.
-:- foreign(thread_stack/2, 'ForeignGroup',
-           sysThreadStack('Interpreter', 'Thread')).
-*/

@@ -1,6 +1,7 @@
 package matula.util.config;
 
 import derek.util.protect.LicenseError;
+import matula.comp.sharik.Enforced;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 

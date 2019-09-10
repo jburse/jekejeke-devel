@@ -66,9 +66,8 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_RETRY_FLOW = " retry_flow";
     private final static String CODE_TRUST_FLOW = " trust_flow";
 
-    private final static String CODE_IF_FLOW = " if_flow";
-    private final static String CODE_ELSE_FLOW = " else_flow";
     private final static String CODE_THEN_FLOW = " then_flow";
+    private final static String CODE_SOFT_THEN_FLOW = " soft_then_flow";
 
     /**
      * <p>Create a index dump special.</p>
@@ -175,7 +174,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.term);
+            SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
             Object t = PreClause.interToClause(clause, en);
@@ -206,24 +205,13 @@ public final class SpecialFriendly extends AbstractSpecial {
             if (clause.intargs != null) {
                 for (int l = 0; l < clause.intargs.length; l++) {
                     int n = clause.intargs[l];
-                    if (n >= 0) {
-                        if (n != Integer.MIN_VALUE) {
-                            fp.friendlyCount();
-                            wr.write(SpecialFriendly.CODE_UNIFY_TERM);
-                            wr.write(" _");
-                            wr.write(Integer.toString(n));
-                            wr.write(", _");
-                            wr.write(Integer.toString(l));
-                            wr.write('\n');
-                            wr.flush();
-                        }
-                    } else if (n == Optimization.UNIFY_TERM) {
+                    if (n == Optimization.UNIFY_TERM) {
                         fp.friendlyCount();
                         wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
                         wr.write('\n');
                         wr.flush();
                     } else if (n == Optimization.UNIFY_VAR) {
@@ -232,7 +220,16 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write(" _");
                         wr.write(Integer.toString(l));
                         wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.term).args[l], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
+                        wr.write('\n');
+                        wr.flush();
+                    } else if (n != Optimization.UNIFY_SKIP) {
+                        fp.friendlyCount();
+                        wr.write(SpecialFriendly.CODE_UNIFY_TERM);
+                        wr.write(" _");
+                        wr.write(Integer.toString(n));
+                        wr.write(", _");
+                        wr.write(Integer.toString(l));
                         wr.write('\n');
                         wr.flush();
                     }
@@ -250,72 +247,81 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param dire The directive.
      * @param ref  The display.
      * @param fp   The firendly printer.
-     * @throws IOException IO error.
+     * @throws IOException     IO error.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     private static void friendlyBody(Directive dire,
                                      Display ref,
                                      FriendlyPrinter fp)
             throws IOException, EngineException, EngineMessage {
-        if (fp.lastDirective(dire) == null)
-            return;
-        Intermediate temp = fp.nextDirective(dire);
-        for (; ; ) {
-            Object branch = temp.term;
-            if (Directive.isAlternative(branch) || Directive.isGuard(branch)) {
-                while (Directive.isAlternative(branch)) {
-                    SkelCompound sc = (SkelCompound) branch;
-                    Directive help = (Directive) sc.args[0];
-                    friendlyBranch(help, ref, fp, branch == temp.term);
-                    branch = sc.args[1];
+        Intermediate temp = dire;
+        if (fp.lastDirective(dire) != null) {
+            do {
+                if (temp instanceof Directive) {
+                    temp = fp.nextDirective((Directive) temp);
+                } else {
+                    temp = fp.nextGoal(temp);
                 }
-                if (Directive.isGuard(branch)) {
-                    SkelCompound sc = (SkelCompound) branch;
-                    Directive help = (Directive) sc.args[0];
-                    friendlyBranch(help, ref, fp, branch == temp.term);
+                Object branch = ((Goal) temp).term;
+                int type;
+                if (Directive.isAlternative(branch) || Directive.isGuard(branch)) {
+                    while (Directive.isAlternative(branch)) {
+                        SkelCompound sc = (SkelCompound) branch;
+                        Directive help = (Directive) sc.args[0];
+                        friendlyBranch(help, ref, fp, branch == ((Goal) temp).term);
+                        branch = sc.args[1];
+                    }
+                    if (Directive.isGuard(branch)) {
+                        SkelCompound sc = (SkelCompound) branch;
+                        Directive help = (Directive) sc.args[0];
+                        friendlyBranch(help, ref, fp, branch == ((Goal) temp).term);
+                    } else {
+                        Writer wr = fp.pw.getWriter();
+                        fp.friendlyCount();
+                        wr.write(SpecialFriendly.CODE_TRUST_FLOW);
+                        wr.write('\n');
+                        wr.flush();
+                        fp.level++;
+                        friendlyBody((Directive) branch, ref, fp);
+                        fp.level--;
+                    }
+                } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
+                        || type == Directive.TYPE_CTRL_SBGN) {
+                    /* */
+                } else if (type == Directive.TYPE_CTRL_CMMT
+                        || type == Directive.TYPE_CTRL_SCMT) {
+                    Writer wr = fp.pw.getWriter();
+                    fp.friendlyCount();
+                    if (type == Directive.TYPE_CTRL_CMMT) {
+                        wr.write(SpecialFriendly.CODE_THEN_FLOW);
+                    } else {
+                        wr.write(SpecialFriendly.CODE_SOFT_THEN_FLOW);
+                    }
+                    wr.write('\n');
+                    wr.flush();
                 } else {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
-                    wr.write(SpecialFriendly.CODE_TRUST_FLOW);
+                    if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
+                        if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                            wr.write(SpecialFriendly.CODE_CALL_GOAL);
+                        } else {
+                            wr.write(SpecialFriendly.CODE_CALL_META);
+                        }
+                    } else {
+                        if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
+                            wr.write(SpecialFriendly.CODE_LAST_GOAL);
+                        } else {
+                            wr.write(SpecialFriendly.CODE_LAST_META);
+                        }
+                    }
+                    wr.write(' ');
+                    fp.pw.unparseStatement(branch, ref);
                     wr.write('\n');
                     wr.flush();
-                    fp.level++;
-                    friendlyBody((Directive) branch, ref, fp);
-                    fp.level--;
                 }
-            } else if (Directive.isBegin(branch)) {
-                /* */
-            } else if (Directive.isCommit(branch)) {
-                Writer wr = fp.pw.getWriter();
-                fp.friendlyCount();
-                wr.write(SpecialFriendly.CODE_THEN_FLOW);
-                wr.write('\n');
-                wr.flush();
-            } else {
-                Writer wr = fp.pw.getWriter();
-                fp.friendlyCount();
-                if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                    if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                        wr.write(SpecialFriendly.CODE_CALL_GOAL);
-                    } else {
-                        wr.write(SpecialFriendly.CODE_CALL_META);
-                    }
-                } else {
-                    if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                        wr.write(SpecialFriendly.CODE_LAST_GOAL);
-                    } else {
-                        wr.write(SpecialFriendly.CODE_LAST_META);
-                    }
-                }
-                wr.write(' ');
-                fp.pw.unparseStatement(branch, ref);
-                wr.write('\n');
-                wr.flush();
-            }
-            if (fp.lastDirective(dire) == temp)
-                break;
-            temp = fp.nextGoal(temp);
+            } while (temp != fp.lastDirective(dire));
         }
     }
 
@@ -325,9 +331,9 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param help The branch.
      * @param ref  The display.
      * @param fp   The firendly printer.
-     * @throws IOException IO error.
+     * @throws IOException     IO error.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     private static void friendlyBranch(Directive help,
                                        Display ref,
@@ -336,18 +342,10 @@ public final class SpecialFriendly extends AbstractSpecial {
             throws IOException, EngineException, EngineMessage {
         Writer wr = fp.pw.getWriter();
         fp.friendlyCount();
-        if (help.last != null && Directive.isBegin(help.next.term)) {
-            if (first) {
-                wr.write(SpecialFriendly.CODE_IF_FLOW);
-            } else {
-                wr.write(SpecialFriendly.CODE_ELSE_FLOW);
-            }
+        if (first) {
+            wr.write(SpecialFriendly.CODE_TRY_FLOW);
         } else {
-            if (first) {
-                wr.write(SpecialFriendly.CODE_TRY_FLOW);
-            } else {
-                wr.write(SpecialFriendly.CODE_RETRY_FLOW);
-            }
+            wr.write(SpecialFriendly.CODE_RETRY_FLOW);
         }
         wr.write('\n');
         wr.flush();

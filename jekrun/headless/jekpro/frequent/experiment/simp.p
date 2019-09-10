@@ -68,7 +68,7 @@
 % term_simplification(+Clause, -Clause)
 :- public term_simplification/2.
 :- multifile term_simplification/2.
-:- meta_predicate term_simplification(-1,-1).
+:- meta_predicate term_simplification(-1, -1).
 :- set_predicate_property(term_simplification/2, sys_noexpand).
 
 /**
@@ -78,31 +78,26 @@
  */
 % simplify_term(+Clause, -Clause)
 :- public simplify_term/2.
-:- meta_predicate simplify_term(-1,-1).
+:- meta_predicate simplify_term(-1, -1).
 :- set_predicate_property(simplify_term/2, sys_noexpand).
-simplify_term(A, B) :-
-   term_simplification(A, B), !.
+simplify_term(A, B) :- term_simplification(A, B), !.
 simplify_term(T, T).
 
 /* Predefined term simplifications */
 /* (/\)/2 flattening */
-simp:term_simplification(_ /\ A, _) :-
-   var(A), !, fail.
-simp:term_simplification(C /\ unit, C).
-simp:term_simplification(A /\ (B /\ C), J) :-
-   simplify_term(A /\ B, H),
-   simplify_term(H /\ C, J).
-simp:term_simplification(A /\ _, _) :-
-   var(A), !, fail.
-simp:term_simplification(unit /\ C, C).
+simp:term_simplification(_/\A, _) :- var(A), !, fail.
+simp:term_simplification(C/\unit, C).
+simp:term_simplification(A/\(B/\C), J) :-
+   simplify_term(A/\B, H),
+   simplify_term(H/\C, J).
+simp:term_simplification(A/\_, _) :- var(A), !, fail.
+simp:term_simplification(unit/\C, C).
 
 /* (:-)/2 flattening */
-term_simplification((A :- _), _) :-
-   var(A), !, fail.
+term_simplification((A :- _), _) :- var(A), !, fail.
 term_simplification(((A :- B) :- C), (A :- H)) :-
-   simplify_goal((  C, B), H).
-term_simplification((_ :- A), _) :-
-   var(A), !, fail.
+   simplify_goal((C, B), H).
+term_simplification((_ :- A), _) :- var(A), !, fail.
 term_simplification((C :- true), C).
 
 /*******************************************************/
@@ -117,7 +112,7 @@ term_simplification((C :- true), C).
 % goal_simplification(+Goal, -Goal)
 :- public goal_simplification/2.
 :- multifile goal_simplification/2.
-:- meta_predicate goal_simplification(0,0).
+:- meta_predicate goal_simplification(0, 0).
 :- set_predicate_property(goal_simplification/2, sys_noexpand).
 
 /**
@@ -127,35 +122,29 @@ term_simplification((C :- true), C).
  */
 % simplify_goal(+Goal, -Goal)
 :- public simplify_goal/2.
-:- meta_predicate simplify_goal(0,0).
+:- meta_predicate simplify_goal(0, 0).
 :- set_predicate_property(simplify_goal/2, sys_noexpand).
-simplify_goal(A, B) :-
-   goal_simplification(A, B), !.
+simplify_goal(A, B) :- goal_simplification(A, B), !.
 simplify_goal(G, G).
 
 /* Predefined goal implifications */
 /* (,)/2 flattening */
-goal_simplification((  A, _), _) :-
-   var(A), !, fail.
-goal_simplification((  true, C), C).
-goal_simplification((  _, A), _) :-
-   var(A), !, fail.
-goal_simplification((  C, true), C).
-goal_simplification((  U, C), J) :-
-   U = (A,B),
-   sys_replace_site(P, U, (B,C)),
+goal_simplification((A, _), _) :- var(A), !, fail.
+goal_simplification((true, C), C).
+goal_simplification((U, C), J) :- U = (A, B),
+   sys_replace_site(P, U, (B, C)),
    simplify_goal(P, H),
-   sys_replace_site(Q, U, (A,H)),
+   sys_replace_site(Q, U, (A, H)),
    simplify_goal(Q, J).
+goal_simplification((_, A), _) :- var(A), !, fail.
+goal_simplification((C, true), C).
 
 /* (;)/2 flattening */
-goal_simplification((  A; _), _) :-
-   var(A), !, fail.
-goal_simplification((  U; C), J) :-
-   U = (A;B),
-   sys_replace_site(P, U, (B;C)),
+goal_simplification((A; _), _) :- var(A), !, fail.
+goal_simplification((U; C), J) :- U = (A; B),
+   sys_replace_site(P, U, (B; C)),
    simplify_goal(P, H),
-   sys_replace_site(Q, U, (A;H)),
+   sys_replace_site(Q, U, (A; H)),
    simplify_goal(Q, J).
 
 /*******************************************************/
@@ -181,8 +170,7 @@ goal_simplification((  U; C), J) :-
 % simplify_rest(+Goal, -Goal)
 :- public simplify_rest/2.
 :- set_predicate_property(simplify_rest/2, sys_noexpand).
-simplify_rest(A, B) :-
-   rest_simplification(A, B), !.
+simplify_rest(A, B) :- rest_simplification(A, B), !.
 simplify_rest(G, G).
 
 /*******************************************************/
@@ -197,7 +185,7 @@ simplify_rest(G, G).
 % term_rebuilding(+Clause, -Clause)
 :- public term_rebuilding/2.
 :- multifile term_rebuilding/2.
-:- meta_predicate term_rebuilding(-1,-1).
+:- meta_predicate term_rebuilding(-1, -1).
 :- set_predicate_property(term_rebuilding/2, sys_noexpand).
 :- static term_rebuilding/2.
 
@@ -208,13 +196,10 @@ simplify_rest(G, G).
  */
 % rebuild_term(+Clause, -Clause)
 :- public rebuild_term/2.
-:- meta_predicate rebuild_term(-1,-1).
+:- meta_predicate rebuild_term(-1, -1).
 :- set_predicate_property(rebuild_term/2, sys_noexpand).
-rebuild_term(P, P) :-
-   sys_var(P), !.
-rebuild_term(A, C) :-
-   term_rebuilding(A, B), !,
-   rebuild_term(B, C).
+rebuild_term(P, P) :- sys_var(P), !.
+rebuild_term(A, C) :- term_rebuilding(A, B), !, rebuild_term(B, C).
 rebuild_term(G, H) :-
    sys_callable(G),
    sys_functor(G, J, A),
@@ -245,12 +230,9 @@ rebuild_term_args([M|R], [A|L], [B|S]) :-
 
 % rebuild_term_arg(+Mode, +Arg, -Arg)
 :- private rebuild_term_arg/3.
-rebuild_term_arg(0, X, Y) :- !,
-   rebuild_term(X, Y).
-rebuild_term_arg(-1, X, Y) :- !,
-   rebuild_goal(X, Y).
-rebuild_term_arg(_, X, Y) :-
-   rebuild_rest(X, Y).
+rebuild_term_arg(0, X, Y) :- !, rebuild_term(X, Y).
+rebuild_term_arg(-1, X, Y) :- !, rebuild_goal(X, Y).
+rebuild_term_arg(_, X, Y) :- rebuild_rest(X, Y).
 
 /*******************************************************/
 /* Goal Rebuild                                        */
@@ -264,7 +246,7 @@ rebuild_term_arg(_, X, Y) :-
 % goal_rebuilding(+Goal, -Goal)
 :- public goal_rebuilding/2.
 :- multifile goal_rebuilding/2.
-:- meta_predicate goal_rebuilding(0,0).
+:- meta_predicate goal_rebuilding(0, 0).
 :- set_predicate_property(goal_rebuilding/2, sys_noexpand).
 :- static goal_rebuilding/2.
 
@@ -275,13 +257,10 @@ rebuild_term_arg(_, X, Y) :-
  */
 % rebuild_goal(+Goal, -Goal)
 :- public rebuild_goal/2.
-:- meta_predicate rebuild_goal(0,0).
+:- meta_predicate rebuild_goal(0, 0).
 :- set_predicate_property(rebuild_goal/2, sys_noexpand).
-rebuild_goal(P, P) :-
-   sys_var(P), !.
-rebuild_goal(A, C) :-
-   goal_rebuilding(A, B), !,
-   rebuild_goal(B, C).
+rebuild_goal(P, P) :- sys_var(P), !.
+rebuild_goal(A, C) :- goal_rebuilding(A, B), !, rebuild_goal(B, C).
 rebuild_goal(G, H) :-
    sys_callable(G),
    sys_functor(G, J, A),
@@ -312,12 +291,9 @@ rebuild_goal_args([M|R], [A|L], [B|S]) :-
 
 % rebuild_goal_arg(+Mode, +Arg, -Arg)
 :- public rebuild_goal_arg/3.
-rebuild_goal_arg(0, X, Y) :- !,
-   rebuild_goal(X, Y).
-rebuild_goal_arg(-1, X, Y) :- !,
-   rebuild_term(X, Y).
-rebuild_goal_arg(_, X, Y) :-
-   rebuild_rest(X, Y).
+rebuild_goal_arg(0, X, Y) :- !, rebuild_goal(X, Y).
+rebuild_goal_arg(-1, X, Y) :- !, rebuild_term(X, Y).
+rebuild_goal_arg(_, X, Y) :- rebuild_rest(X, Y).
 
 /*******************************************************/
 /* Rest Rebuild                                        */
@@ -342,11 +318,8 @@ rebuild_goal_arg(_, X, Y) :-
 % rebuild_rest(+Goal, -Goal)
 :- public rebuild_rest/2.
 :- set_predicate_property(rebuild_rest/2, sys_noexpand).
-rebuild_rest(P, P) :-
-   var(P), !.
-rebuild_rest(A, C) :-
-   rest_rebuilding(A, B), !,
-   rebuild_rest(B, C).
+rebuild_rest(P, P) :- var(P), !.
+rebuild_rest(A, C) :- rest_rebuilding(A, B), !, rebuild_rest(B, C).
 rebuild_rest(G, H) :-
    callable(G),
    functor(G, J, A),

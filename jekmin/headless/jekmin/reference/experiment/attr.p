@@ -80,8 +80,22 @@
  * the compiled reference of the hook H unifies with R.
  */
 :- public sys_compile_hook/3.
-:- meta_predicate sys_compile_hook(?,2,?).
+:- meta_predicate sys_compile_hook(?, 2, ?).
 :- special(sys_compile_hook/3, 'SpecialAttr', 1).
+
+/**
+ * sys_serno_hooks(L, H, R):
+ * The predicate promotes the variables from the list L to attribute
+ * variables, ensures their serial number and compiles their hooks H,
+ * returning the later references in the list R.
+ */
+% sys_serno_hooks(+List, +Ref, -List)
+:- public sys_serno_hooks/3.
+sys_serno_hooks([V|M], R, [K|W]) :-
+   sys_ensure_serno(V),
+   sys_compile_hook(V, R, K),
+   sys_serno_hooks(M, R, W).
+sys_serno_hooks([], _, []).
 
 /**
  * sys_clause_hook(V, H, R):
@@ -90,5 +104,5 @@
  * with the hooks and references of the attribute variable V.
  */
 :- public sys_clause_hook/3.
-:- meta_predicate sys_clause_hook(?,2,?).
+:- meta_predicate sys_clause_hook(?, 2, ?).
 :- special(sys_clause_hook/3, 'SpecialAttr', 2).
