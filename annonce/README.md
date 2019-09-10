@@ -22,3 +22,7 @@ Kontakt: Jan Burse, +41 76 489 04 03
 
 [Nachmieterformular](https://github.com/jburse/jekejeke-devel/raw/master/annonce/nachmieter_freischuetz.pdf)<br/>
 Betreibungsauszug
+
+# URL für diese Anzeige
+
+[https://github.com/jburse/jekejeke-devel/tree/master/annonce](https://github.com/jburse/jekejeke-devel/tree/master/annonce)
