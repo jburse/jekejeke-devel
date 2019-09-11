@@ -178,19 +178,14 @@ sys_declaration_indicator(group_local(I), I).
 :- meta_predicate retract(-1).
 retract(C) :-
    clause_ref(C, R),
-   retract2(R).
-
-% retract2(+Ref)
-:- private retract2/1.
-retract2(R) :- erase_ref(R), !.
-retract2(_).
+   erase_ref(R).
 
 /**
  * retractall(H): [Corr.2 8.9.5]
- * The predicate succeeds and removes the user clauses that match
+ * The predicate succeeds and removes all the user clauses that match
  * the head H. The head predicate must be dynamic, thread local or group local.
  */
-% retractall(+Term)
+% retractall(+Callable)
 :- public retractall/1.
 :- meta_predicate retractall(-1).
 retractall(H) :-

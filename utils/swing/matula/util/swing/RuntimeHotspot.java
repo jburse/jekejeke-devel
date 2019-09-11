@@ -50,6 +50,11 @@ public final class RuntimeHotspot extends AbstractRuntime {
     private static Field ucp;
     private static Method geturls;
 
+    /**
+     * <p>Allows reading a private field in >JDK 9.</p>
+     * <p>Requires command line option --add-opens java.base/jdk.internal.loader=ALL-UNNAMED</p>
+     * <p>See also: https://stackoverflow.com/questions/41265266/</p>
+     */
     static {
         try {
             Class<?> clazz = Class.forName("jdk.internal.loader.BuiltinClassLoader");
