@@ -4,14 +4,14 @@
 <h2>Nachmieter gesucht für</h2>
 
 ab 01.10.2019<br/>
-Appartment 2.2,<br/>
+Apartment 2.2,<br/>
 Freischützgasse 14,<br/>
 8004 Zürich
 </td>
 <td>
 <h2>Beschreibung</h2>
 
-Zentrale Lage, Helles Appartment<br/>
+Zentrale Lage, helles Apartment<br/>
 WC/Dusche und Küche, möbliert<br/>
 Eigenes Estrichabteil<br/>
 Gemeinsame Waschmaschine/Tumbler<br/>
