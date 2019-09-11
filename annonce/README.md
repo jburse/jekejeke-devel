@@ -34,8 +34,15 @@ Fax: +41-43-268 04 03
 <h2>Erforderliche Unterlagen</h2>
 
 [Nachmieterformular](https://github.com/jburse/jekejeke-devel/raw/master/annonce/nachmieter_freischuetz.pdf)<br/>
-Betreibungsauszug
-
+Betreibungsauszug<br/>
+Verwaltung: Wincasa AG<br/>
+Reitergasse 9<br/>
+Postfach<br/>
+8021 Zürich
+</td>
+</tr>
+<tr>
+<td colspan="2">
 <h2>URL für diese Anzeige</h2>
 
 [https://github.com/jburse/jekejeke-devel/tree/master/annonce](https://github.com/jburse/jekejeke-devel/tree/master/annonce)
