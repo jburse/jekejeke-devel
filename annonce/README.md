@@ -31,7 +31,7 @@ Mobile: +41-76-489 04 03<br/>
 Fax: +41-43-268 04 03
 </td>
 <td>
-<h2>Erforderliche Unterlagen / Einsendeschluss</h2>
+<h2>Unterlagen / Einsendeschluss</h2>
 
 [Nachmieterformular](https://github.com/jburse/jekejeke-devel/raw/master/annonce/nachmieter_freischuetz.pdf)<br/>
 Betreibungsauszug<br/>
