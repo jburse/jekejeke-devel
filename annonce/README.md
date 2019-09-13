@@ -6,7 +6,8 @@
 ab 01.10.2019<br/>
 Apartment 2.2,<br/>
 Freischützgasse 14,<br/>
-8004 Zürich
+8004 Zürich<br/>
+Verwaltung: Wincasa AG
 </td>
 <td>
 <h2>Beschreibung</h2>
