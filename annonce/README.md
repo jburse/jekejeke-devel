@@ -35,7 +35,7 @@ Fax: +41-43-268 04 03
 
 [Nachmieterformular](https://github.com/jburse/jekejeke-devel/raw/master/annonce/nachmieter_freischuetz.pdf)<br/>
 Betreibungsauszug<br/>
-Bis 16.09.2019 Unterschreiben an:<br/>
+Bis 16.09.2019 unterschreiben an:<br/>
 Jan Burse<br/>
 Mittlere Mühlestrasse 2<br/>
 8598 Bottighofen
