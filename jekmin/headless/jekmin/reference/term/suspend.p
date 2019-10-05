@@ -69,16 +69,14 @@
  */
 % freeze(+Term, +Goal)
 :- public freeze/2.
-:- meta_predicate freeze(?,0).
-freeze(V, G) :-
-   var(V), !,
+:- meta_predicate freeze(?, 0).
+freeze(V, G) :- var(V), !,
    sys_freeze_var(W, R),
    W = sys_data_freeze(G),
    sys_ensure_serno(V),
    sys_compile_hook(V, sys_hook_freeze(R), K),
    depositz_ref(K).
-freeze(_, G) :-
-   call(G).
+freeze(_, G) :- call(G).
 
 /**
  * when(C, G):
@@ -87,12 +85,10 @@ freeze(_, G) :-
  * or another variable. Otherwise the goal G is directly called.
  */
 :- public when/2.
-:- meta_predicate when(?,0).
-when(C, G) :-
-   sys_cond_simp(C, D),
-   D \== true, !,
+:- meta_predicate when(?, 0).
+when(C, G) :- sys_cond_simp(C, D), D \== true, !,
    sys_freeze_var(W, R),
-   W = sys_data_when(N,D,G),
+   W = sys_data_when(N, D, G),
    term_variables(D, M),
    sys_serno_hooks(M, sys_hook_when(R), N),
    depositz_ref(N).
@@ -105,41 +101,38 @@ when(_, G) :- G.
  */
 % sys_cond_simp(+Term, -Term)
 :- private sys_cond_simp/2.
-sys_cond_simp(V, _) :-
-   var(V),
-   throw(error(instantiation_error,_)).
-sys_cond_simp((C,D), R) :- !,
+sys_cond_simp(V, _) :- var(V), throw(error(instantiation_error, _)).
+sys_cond_simp((C, D), R) :- !,
    sys_cond_simp(C, A),
    sys_cond_simp(D, B),
    sys_cond_and(A, B, R).
-sys_cond_simp((C;D), R) :- !,
+sys_cond_simp((C; D), R) :- !,
    sys_cond_simp(C, A),
    sys_cond_simp(D, B),
    sys_cond_or(A, B, R).
-sys_cond_simp(nonvar(X), nonvar(X)) :-
-   var(X), !.
+sys_cond_simp(nonvar(X), nonvar(X)) :- var(X), !.
 sys_cond_simp(nonvar(_), true) :- !.
 sys_cond_simp(ground(X), R) :- !,
    term_variables(X, L),
    sys_cond_ground(L, R).
 sys_cond_simp(T, _) :-
-   throw(error(type_error(when_cond,T),_)).
+   throw(error(type_error(when_cond, T), _)).
 
 % sys_cond_and(+Term, +Term, -Term)
 :- private sys_cond_and/3.
 sys_cond_and(true, X, X) :- !.
 sys_cond_and(X, true, X) :- !.
-sys_cond_and(X, Y, (X,Y)).
+sys_cond_and(X, Y, (X, Y)).
 
 % sys_cond_or(+Term, +Term, -Term)
 :- private sys_cond_or/3.
 sys_cond_or(true, _, true) :- !.
 sys_cond_or(_, true, true) :- !.
-sys_cond_or(X, Y, (X;Y)).
+sys_cond_or(X, Y, (X; Y)).
 
 % sys_cond_ground(+List, -Term)
 :- private sys_cond_ground/2.
-sys_cond_ground([X,Y|Z], (ground(X),R)) :-
+sys_cond_ground([X, Y|Z], (ground(X), R)) :-
    sys_cond_ground([Y|Z], R).
 sys_cond_ground([X], ground(X)).
 sys_cond_ground([], true).
@@ -163,7 +156,7 @@ sys_hook_freeze(R, V, _) :-
 % sys_hook_when(+Ref, +Var, +Term)
 :- private sys_hook_when/3.
 sys_hook_when(R, _, _) :-
-   sys_melt_var(R, sys_data_when(L,C,G)),
+   sys_melt_var(R, sys_data_when(L, C, G)),
    withdrawz_ref(L),
    sys_assume_cont(when(C, G)).
 
@@ -179,7 +172,7 @@ sys_hook_when(R, _, _) :-
 % sys_current_eq(+Var, -Handle)
 :- public residue:sys_current_eq/2.
 :- multifile residue:sys_current_eq/2.
-residue:sys_current_eq(V, freeze(R,S)) :-
+residue:sys_current_eq(V, freeze(R, S)) :-
    sys_clause_hook(V, sys_hook_freeze(S), _),
    sys_freeze_var(V, R).
 residue:sys_current_eq(V, when(R)) :-
@@ -193,8 +186,8 @@ residue:sys_current_eq(V, when(R)) :-
 % sys_unwrap_eq(+Handle, -Goals, +Goals)
 :- public residue:sys_unwrap_eq/3.
 :- multifile residue:sys_unwrap_eq/3.
-residue:sys_unwrap_eq(freeze(R,S), [freeze(V,G)|L], L) :-
+residue:sys_unwrap_eq(freeze(R, S), [freeze(V, G)|L], L) :-
    sys_melt_var(S, sys_data_freeze(G)),
    sys_melt_var(R, V).
-residue:sys_unwrap_eq(when(R), [when(C,G)|L], L) :-
-   sys_melt_var(R, sys_data_when(_,C,G)).
+residue:sys_unwrap_eq(when(R), [when(C, G)|L], L) :-
+   sys_melt_var(R, sys_data_when(_, C, G)).

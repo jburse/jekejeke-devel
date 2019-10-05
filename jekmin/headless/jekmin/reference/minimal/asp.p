@@ -63,7 +63,47 @@
 
 :- module(asp, []).
 :- use_module(library(basic/random)).
+:- use_module(library(basic/lists)).
 :- reexport(library(minimal/delta)).
+
+/**************************************************************/
+/* Minimum Choice                                             */
+/**************************************************************/
+
+% min_choose(+Integer, +List)
+:- public min_choose/2.
+min_choose(N, L) :-
+   length(L, K), N =< K, !,
+   J is K+1-N,
+   combination(J, L, R),
+   min_choose2(R).
+
+% min_choose(+Matrice)
+:- private min_choose2/1.
+min_choose2([X|L]) :-
+   choose(X),
+   min_choose2(L).
+min_choose2([]).
+
+% random_min_choose(+Integer, +List)
+:- public random_min_choose/2.
+random_min_choose(N, L) :-
+   length(L, K), N =< K, !,
+   J is K+1-N,
+   combination(J, L, H),
+   random_permutation(H, R),
+   random_min_choose2(R).
+
+% random_min_choose2(+Matrice)
+:- private random_min_choose2/1.
+random_min_choose2([X|L]) :-
+   random_choose(X),
+   random_min_choose2(L).
+random_min_choose2([]).
+
+/**************************************************************/
+/* Primitive Choice                                           */
+/**************************************************************/
 
 /**
  * choose(L):
@@ -129,3 +169,30 @@ choose2([A|L], _, G) :- choose2(L, A, G).
 :- private sys_least_one/1.
 sys_least_one([A|_]) :- clause(A, true), !.
 sys_least_one([_|L]) :- sys_least_one(L).
+
+/**************************************************************/
+/* Combination                                                */
+/* https://stackoverflow.com/q/10388109/502187                */
+/**************************************************************/
+
+% combination(+Integer, +List, -Matrice)
+:- private combination/3.
+combination(N, L, R) :-
+   reverse(L, H),
+   combination2(N, H, [], R, []).
+
+% combination2(+Integer, +List, +List, -Matrice, +Matrice)
+:- private combination2/5.
+combination2(0, _, H, [H|J], J) :-
+   !.
+combination2(N, L, H, P, Q) :-
+   N > 0,
+   M is N-1,
+   combination3(N, M, L, H, P, Q).
+
+% combination3(+Integer, +Integer, +List, +List, -Matrice, +Matrice)
+:- private combination3/6.
+combination3(N, M, [X|L], H, P, R) :-
+   combination3(N, M, L, H, P, Q),
+   combination2(M, L, [X|H], Q, R).
+combination3(_, _, [], _, Q, Q).
