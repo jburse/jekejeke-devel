@@ -67,41 +67,6 @@
 :- reexport(library(minimal/delta)).
 
 /**************************************************************/
-/* Minimum Choice                                             */
-/**************************************************************/
-
-% min_choose(+Integer, +List)
-:- public min_choose/2.
-min_choose(N, L) :-
-   length(L, K), N =< K, !,
-   J is K+1-N,
-   combination(J, L, R),
-   min_choose2(R).
-
-% min_choose(+Matrice)
-:- private min_choose2/1.
-min_choose2([X|L]) :-
-   choose(X),
-   min_choose2(L).
-min_choose2([]).
-
-% random_min_choose(+Integer, +List)
-:- public random_min_choose/2.
-random_min_choose(N, L) :-
-   length(L, K), N =< K, !,
-   J is K+1-N,
-   combination(J, L, H),
-   random_permutation(H, R),
-   random_min_choose2(R).
-
-% random_min_choose2(+Matrice)
-:- private random_min_choose2/1.
-random_min_choose2([X|L]) :-
-   random_choose(X),
-   random_min_choose2(L).
-random_min_choose2([]).
-
-/**************************************************************/
 /* Primitive Choice                                           */
 /**************************************************************/
 
@@ -114,14 +79,18 @@ random_min_choose2([]).
  */
 % choose(+List)
 :- public choose/1.
-choose(L) :- sys_least_one(L), !.
-choose([A|L]) :- choose2(L, A).
+choose(L) :- sys_least(L), !.
+choose(L) :-
+   member(A, L),
+   post(A).
 
 % choose(+List, +Goal)
 :- public choose/2.
 :- meta_predicate choose(?, 0).
-choose(L, G) :- sys_least_one(L), !, G.
-choose([A|L], G) :- choose2(L, A, G).
+choose(L, G) :- sys_least(L), !, G.
+choose(L, G) :-
+   member(A, L),
+   post(A, G).
 
 /**
  * random_choose(L):
@@ -132,67 +101,140 @@ choose([A|L], G) :- choose2(L, A, G).
  */
 % random_choose(+List)
 :- public random_choose/1.
-random_choose(L) :- sys_least_one(L), !.
-random_choose(L) :- random_permutation(L, [A|H]), choose2(H, A).
+random_choose(L) :- sys_least(L), !.
+random_choose(L) :-
+   random_permutation(L, H),
+   member(A, H),
+   post(A).
 
 % random_choose(+List, +Goal)
 :- public random_choose/2.
 :- meta_predicate random_choose(?, 0).
-random_choose(L, G) :- sys_least_one(L), !, G.
-random_choose(L, G) :- random_permutation(L, [A|H]), choose2(H, A, G).
+random_choose(L, G) :- sys_least(L), !, G.
+random_choose(L, G) :-
+   random_permutation(L, H),
+   member(A, H),
+   post(A, G).
 
 /**
- * choose2(L, A):
- * choose2(L, A, G):
- * The predicate posts the positive literal A and then each positive
- * literal from L in input order before further solving.
- */
-% choose2(+List, +Term)
-:- private choose2/2.
-choose2([], A) :- !, post(A).
-choose2([_|_], A) :- post(A).
-choose2([A|L], _) :- choose2(L, A).
-
-% choose2(+List, +Term, +Goal)
-:- private choose2/3.
-:- meta_predicate choose2(?, -1, 0).
-choose2([], A, G) :- !, post(A, G).
-choose2([_|_], A, G) :- post(A, G).
-choose2([A|L], _, G) :- choose2(L, A, G).
-
-/**
- * sys_last_one(L):
+ * sys_least(L):
  * The predicate succeeds when at least one positive literal
  * from L already exists in the forward store.
  */
-% sys_least_one(+List)
-:- private sys_least_one/1.
-sys_least_one([A|_]) :- clause(A, true), !.
-sys_least_one([_|L]) :- sys_least_one(L).
+% sys_least(+List)
+:- private sys_least/1.
+sys_least([A|_]) :- clause(A, true), !.
+sys_least([_|L]) :- sys_least(L).
 
 /**************************************************************/
-/* Combination                                                */
-/* https://stackoverflow.com/q/10388109/502187                */
+/* Minimum Choice                                             */
 /**************************************************************/
 
-% combination(+Integer, +List, -Matrice)
-:- private combination/3.
-combination(N, L, R) :-
-   reverse(L, H),
-   combination2(N, H, [], R, []).
+/**
+ * min_choose(N, L):
+ * min_choose(N, L, G):
+ * If N positive literals from L are already satisfied, the construct
+ * does nothing before further solving. Otherwise, the construct posts
+ * N positive literals from L in input order before further solving.
+ */
+% min_choose(+Integer, +List)
+:- public min_choose/2.
+min_choose(N, L) :-
+   sys_filter(N, L, M, R),
+   min_choose2(M, R).
 
-% combination2(+Integer, +List, +List, -Matrice, +Matrice)
-:- private combination2/5.
-combination2(0, _, H, [H|J], J) :-
-   !.
-combination2(N, L, H, P, Q) :-
-   N > 0,
+% min_choose2(+Integer, +List)
+:- private min_choose2/2.
+min_choose2(0, _) :- !.
+min_choose2(N, L) :-
    M is N-1,
-   combination3(N, M, L, H, P, Q).
+   length(L, K),
+   J is K-N,
+   min_member(J, A, L, R),
+   post(A),
+   min_choose(M, R).
 
-% combination3(+Integer, +Integer, +List, +List, -Matrice, +Matrice)
-:- private combination3/6.
-combination3(N, M, [X|L], H, P, R) :-
-   combination3(N, M, L, H, P, Q),
-   combination2(M, L, [X|H], Q, R).
-combination3(_, _, [], _, Q, Q).
+% min_choose(+Integer, +List, +Goal)
+:- public min_choose/3.
+:- meta_predicate min_choose(?, ?, 0).
+min_choose(N, L, G) :-
+   sys_filter(N, L, M, R),
+   min_choose2(M, R, G).
+
+% min_choose2(+Integer, +List, +Goal)
+:- private min_choose2/3.
+:- meta_predicate min_choose2(?, ?, 0).
+min_choose2(0, _, G) :- !, G.
+min_choose2(N, L, G) :-
+   M is N-1,
+   length(L, K),
+   J is K-N,
+   min_member(J, A, L, R),
+   post(A, min_choose(M, R, G)).
+
+/**
+ * random_min_choose(N, L):
+ * random_min_choose(N, L, G):
+ * If N positive literal from L are already satisfied, the construct
+ * does nothing before further solving. Otherwise, the construct posts
+ * N positive literals from L in random order before further solving.
+ */
+% random_min_choose(+Integer, +List)
+:- public random_min_choose/2.
+random_min_choose(N, L) :-
+   sys_filter(N, L, M, R),
+   random_min_choose2(M, R).
+
+% random_min_choose2(+Integer, +List)
+:- private random_min_choose2/2.
+random_min_choose2(0, _) :- !.
+random_min_choose2(N, L) :-
+   M is N-1,
+   length(L, K),
+   J is K-N,
+   random_permutation(L, H),
+   min_member(J, A, H, R),
+   post(A),
+   min_choose(M, R).
+
+% random_min_choose(+Integer, +List, +Goal)
+:- public random_min_choose/3.
+:- meta_predicate random_min_choose(?, ?, 0).
+random_min_choose(N, L, G) :-
+   sys_filter(N, L, M, R),
+   random_min_choose2(M, R, G).
+
+% random_min_choose2(+Integer, +List, +Goal)
+:- public random_min_choose2/3.
+:- meta_predicate random_min_choose2(?, ?, 0).
+random_min_choose2(0, _, G) :- !, G.
+random_min_choose2(N, L, G) :-
+   M is N-1,
+   length(L, K),
+   J is K-N,
+   random_permutation(L, H),
+   min_member(J, A, H, R),
+   post(A, random_min_choose(M, R, G)).
+
+% min_member(+Integer, -Elem, +List, -List)
+% https://stackoverflow.com/q/10388109/502187
+:- private min_member/4.
+min_member(0, X, [X|L], L) :- !.
+min_member(_, X, [X|L], L).
+min_member(N, X, [_|L], R) :-
+   M is N-1,
+   min_member(M, X, L, R).
+
+/**
+ * sys_filter(N, L, M, R):
+ * The predicate succeeds in M and R after filtering maximally
+ * N positive literals from the list L.
+ */
+:- private sys_filter/4.
+sys_filter(0, L, 0, L) :- !.
+sys_filter(N, [], N, []) :- !.
+sys_filter(N, [A|L], M, R) :- clause(A, true), !,
+   H is N-1,
+   sys_filter(H, L, M, R).
+sys_filter(N, [A|L], M, [A|R]) :-
+   sys_filter(N, L, M, R).
