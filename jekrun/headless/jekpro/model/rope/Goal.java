@@ -11,6 +11,7 @@ import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.ListArray;
 import matula.util.wire.AbstractLivestock;
 
 /**
@@ -52,6 +53,10 @@ public class Goal extends Intermediate {
     public final static int TYPE_ALTR_COND = 1;
     public final static int TYPE_ALTR_SOFT = 2;
     public final static int TYPE_ALTR_NONE = 3;
+
+    public final static int TYPE_SEQN_CONJ = 0;
+    public final static int TYPE_SEQN_TRUE = 1;
+    public final static int TYPE_SEQN_NONE = 2;
 
     public Object term;
     public Intermediate back;
@@ -144,13 +149,20 @@ public class Goal extends Intermediate {
      */
     static void bodyToInterSkel(Directive dire, Object b, Engine en)
             throws EngineMessage {
-        do {
-            Object t = bodyToGoalSkel(b);
-            if (t != null) {
-                if (alterType(t) != TYPE_ALTR_NONE) {
+        ListArray<Object> stack = null;
+        for (; ; ) {
+            if (!Goal.noBody(b)) {
+                Object t = Goal.bodyToGoalSkel(b);
+                if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
                     t = disjToAlterSkel(dire, t, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
+                    if (stack == null)
+                        stack = new ListArray<Object>();
+                    stack.add(b);
+                    b = t;
+                    continue;
                 } else if (Directive.controlType(t) != Directive.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -160,9 +172,18 @@ public class Goal extends Intermediate {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 }
+            } else if (stack != null) {
+                b = stack.get(stack.size() - 1);
+                if (stack.size() == 1) {
+                    stack = null;
+                } else {
+                    stack.remove(stack.size() - 1);
+                }
+            } else {
+                break;
             }
-            b = bodyToRestSkel(b);
-        } while (b != null);
+            b = Goal.bodyToRestSkel(b, en);
+        }
     }
 
     /**
@@ -178,34 +199,42 @@ public class Goal extends Intermediate {
                                          Object t, Engine en)
             throws EngineMessage {
         SkelCompound back = null;
-        int type = alterType(t);
-        while (type == TYPE_ALTR_DISJ) {
-            SkelCompound sc = (SkelCompound) t;
-            Object b = sc.args[0];
-            Directive left;
-            type = alterType(b);
-            if (type == TYPE_ALTR_COND) {
-                left = condToInterSkel(dire, b, en);
-            } else if (type == TYPE_ALTR_SOFT) {
-                left = softCondToInterSkel(dire, b, en);
-            } else {
-                left = goalToInterSkel(dire, b, en);
+        L1:
+        for (; ; ) {
+            switch (Goal.alterType(t)) {
+                case Goal.TYPE_ALTR_DISJ:
+                    SkelCompound sc = (SkelCompound) t;
+                    Object b = sc.args[0];
+                    Directive left;
+                    switch (Goal.alterType(b)) {
+                        case Goal.TYPE_ALTR_COND:
+                            left = condToInterSkel(dire, b, en);
+                            break;
+                        case Goal.TYPE_ALTR_SOFT:
+                            left = softCondToInterSkel(dire, b, en);
+                            break;
+                        default:
+                            left = goalToInterSkel(dire, b, en);
+                            break;
+                    }
+                    Object[] args = new Object[2];
+                    args[0] = left;
+                    args[1] = back;
+                    back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
+                    t = sc.args[1];
+                    break;
+                case Goal.TYPE_ALTR_COND:
+                    t = condToInterSkel(dire, t, en);
+                    t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
+                    break L1;
+                case Goal.TYPE_ALTR_SOFT:
+                    t = softCondToInterSkel(dire, t, en);
+                    t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
+                    break L1;
+                default:
+                    t = goalToInterSkel(dire, t, en);
+                    break L1;
             }
-            Object[] args = new Object[2];
-            args[0] = left;
-            args[1] = back;
-            back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
-            t = sc.args[1];
-            type = alterType(t);
-        }
-        if (type == TYPE_ALTR_COND) {
-            t = condToInterSkel(dire, t, en);
-            t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
-        } else if (type == TYPE_ALTR_SOFT) {
-            t = softCondToInterSkel(dire, t, en);
-            t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
-        } else {
-            t = goalToInterSkel(dire, t, en);
         }
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
@@ -274,7 +303,7 @@ public class Goal extends Intermediate {
     }
 
     /**************************************************************/
-    /* Skel Utilities                                             */
+    /* Body Types                                                 */
     /**************************************************************/
 
     /**
@@ -302,7 +331,41 @@ public class Goal extends Intermediate {
     }
 
     /**
-     * <p>Convert a body to a goal.</p>
+     * <p>Determine the sequen type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The sequen type.
+     */
+    public static int sequenType(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            return TYPE_SEQN_CONJ;
+        } else if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
+            return TYPE_SEQN_TRUE;
+        } else {
+            return TYPE_SEQN_NONE;
+        }
+    }
+
+    /**************************************************************/
+    /* Body Iterator                                              */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the body has no goal.</p>
+     *
+     * @param t The body skeleton.
+     * @return True if the body has no goal, false otherwise.
+     */
+    public static boolean noBody(Object t) {
+        return (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE));
+    }
+
+    /**
+     * <p>Convert a body to a first goal.</p>
      *
      * @param t The body skeleton.
      * @return The goal skeleton.
@@ -313,31 +376,26 @@ public class Goal extends Intermediate {
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
             SkelCompound sc = (SkelCompound) t;
             return sc.args[0];
-        } else if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
-            return null;
         } else {
             return t;
         }
     }
 
     /**
-     * <p>Convert a body to a rest.</p>
+     * <p>Convert a body to a rest body.</p>
      *
-     * @param t The body skeleton.
-     * @return The rest skeleton.
+     * @param t  The body skeleton.
+     * @param en The engine.
+     * @return The body skeleton.
      */
-    public static Object bodyToRestSkel(Object t) {
+    public static Object bodyToRestSkel(Object t, Engine en) {
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
             SkelCompound sc = (SkelCompound) t;
             return sc.args[1];
-        } else if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
-            return null;
         } else {
-            return null;
+            return en.store.foyer.ATOM_TRUE;
         }
     }
 

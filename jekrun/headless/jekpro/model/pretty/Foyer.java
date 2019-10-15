@@ -82,6 +82,7 @@ public class Foyer extends Enforced {
     public final static String OP_SYS_SOFT_BEGIN = "sys_soft_begin";
     public final static String OP_SYS_SOFT_COMMIT = "sys_soft_commit";
     public final static String OP_CALL = "call";
+    public final static String OP_BOTT = "unit";
 
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
@@ -144,6 +145,7 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SYS_SOFT_BEGIN;
     public SkelAtom ATOM_SYS_SOFT_COMMIT;
     public SkelAtom ATOM_CALL;
+    public SkelAtom ATOM_BOTT;
 
     public Directive CLAUSE_HOOK;
 

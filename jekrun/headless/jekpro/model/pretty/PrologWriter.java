@@ -1183,8 +1183,8 @@ public class PrologWriter {
     /**
      * <p>Determine whether the operator needs parenthesis.</p>
      *
-     * @param op       The operator.
-     * @param level    The level.
+     * @param op    The operator.
+     * @param level The level.
      * @return True if the operator needs parenthesis.
      */
     private boolean needsParen(Operator op, int level) {

@@ -410,7 +410,8 @@ public abstract class AbstractSource {
                     } else {
                         if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) == 0)
                             PrologReader.checkSingleton(lr, pre.anon, en);
-                        Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, pre.molec, en);
+                        Clause clause = PreClause.determineCompiled(
+                                AbstractDefined.OPT_PERF_CNLT, pre.molec, en);
                         clause.vars = pre.vars;
                         clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
                     }
