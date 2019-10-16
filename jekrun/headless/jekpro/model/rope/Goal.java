@@ -149,7 +149,6 @@ public class Goal extends Intermediate {
      */
     static void bodyToInterSkel(Directive dire, Object b, Engine en)
             throws EngineMessage {
-        ListArray<Object> stack = null;
         for (; ; ) {
             if (!Goal.noBody(b)) {
                 Object t = Goal.bodyToGoalSkel(b);
@@ -158,11 +157,9 @@ public class Goal extends Intermediate {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
-                    if (stack == null)
-                        stack = new ListArray<Object>();
-                    stack.add(b);
-                    b = t;
-                    continue;
+                    t = conjToSequenSkel(dire, t, en);
+                    Goal goal = new Goal(t);
+                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else if (Directive.controlType(t) != Directive.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -171,13 +168,6 @@ public class Goal extends Intermediate {
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                }
-            } else if (stack != null) {
-                b = stack.get(stack.size() - 1);
-                if (stack.size() == 1) {
-                    stack = null;
-                } else {
-                    stack.remove(stack.size() - 1);
                 }
             } else {
                 break;
@@ -243,6 +233,23 @@ public class Goal extends Intermediate {
             t = back;
             back = jack;
         }
+        return t;
+    }
+
+    /**
+     * <p>Convert a conjunction to a sequent.</p>
+     *
+     * @param dire The directive.
+     * @param t    The conjunction skeleton.
+     * @param en   The engine.
+     * @return The sequent.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object conjToSequenSkel(Directive dire,
+                                          Object t, Engine en)
+            throws EngineMessage {
+        t = goalToInterSkel(dire, t, en);
+        t = new SkelCompound(en.store.foyer.ATOM_SYS_SEQUEN, t);
         return t;
     }
 

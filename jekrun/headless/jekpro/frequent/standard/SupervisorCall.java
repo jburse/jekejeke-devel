@@ -133,7 +133,6 @@ public class SupervisorCall {
      * @param en The engine.
      */
     private void countBody(Object b, Display c, Engine en) {
-        ListArray<Object> stack = null;
         BindUniv bc;
         while (b instanceof SkelVar &&
                 (bc = c.bind[((SkelVar) b).id]).display != null) {
@@ -152,12 +151,7 @@ public class SupervisorCall {
                 if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
                     countDisj(t, d, en);
                 } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
-                    if (stack == null)
-                        stack = new ListArray<Object>();
-                    stack.add(AbstractTerm.createMolec(b, c));
-                    b = t;
-                    c = d;
-                    continue;
+                    countBody(t, d, en);
                 } else {
                     if (SupervisorCopy.getVar(t) != null) {
                         countvar++;
@@ -167,15 +161,6 @@ public class SupervisorCall {
                             flags |= MASK_CALL_MLTI;
                         }
                     }
-                }
-            } else if (stack != null) {
-                Object h = stack.get(stack.size() - 1);
-                b = AbstractTerm.getSkel(h);
-                c = AbstractTerm.getDisplay(h);
-                if (stack.size() == 1) {
-                    stack = null;
-                } else {
-                    stack.remove(stack.size() - 1);
                 }
             } else {
                 break;
@@ -266,7 +251,6 @@ public class SupervisorCall {
     public final void bodyToInter(Directive dire, Object b,
                                   Display c, Engine en)
             throws EngineMessage {
-        ListArray<Object> stack = null;
         BindUniv bc;
         while (b instanceof SkelVar &&
                 (bc = c.bind[((SkelVar) b).id]).display != null) {
@@ -287,12 +271,9 @@ public class SupervisorCall {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
-                    if (stack == null)
-                        stack = new ListArray<Object>();
-                    stack.add(AbstractTerm.createMolec(b, c));
-                    b = t;
-                    c = d;
-                    continue;
+                    t = conjToSequen(dire, t, d, en);
+                    Goal goal = new Goal(t);
+                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else if (Directive.controlType(t) != Directive.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -308,15 +289,6 @@ public class SupervisorCall {
                     }
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                }
-            } else if (stack != null) {
-                Object h = stack.get(stack.size() - 1);
-                b = AbstractTerm.getSkel(h);
-                c = AbstractTerm.getDisplay(h);
-                if (stack.size() == 1) {
-                    stack = null;
-                } else {
-                    stack.remove(stack.size() - 1);
                 }
             } else {
                 break;
@@ -403,6 +375,23 @@ public class SupervisorCall {
         return t;
     }
 
+    /**
+     * <p>Convert a conjunction to a sequent.</p>
+     *
+     * @param dire The directive.
+     * @param t    The conjunction skeleton.
+     * @param d    The conjunction display.
+     * @param en   The engine.
+     * @return The alternative.
+     * @throws EngineMessage Shit happens.
+     */
+    public final Object conjToSequen(Directive dire,
+                                    Object t, Display d, Engine en)
+            throws EngineMessage {
+        t = goalToInter(dire, t, d, en);
+        t = new SkelCompound(en.store.foyer.ATOM_SYS_SEQUEN, t);
+        return t;
+    }
 
     /**
      * <p>Convert a condition branch to intermediate form.</p>

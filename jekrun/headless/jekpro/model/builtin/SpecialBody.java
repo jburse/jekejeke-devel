@@ -43,10 +43,11 @@ public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_CALL = 0;
     private final static int SPECIAL_SYS_ALTER = 1;
     private final static int SPECIAL_SYS_GUARD = 2;
-    private final static int SPECIAL_SYS_BEGIN = 3;
-    private final static int SPECIAL_SYS_COMMIT = 4;
-    private final static int SPECIAL_SYS_SOFT_BEGIN = 5;
-    private final static int SPECIAL_SYS_SOFT_COMMIT = 6;
+    private final static int SPECIAL_SYS_SEQUEN = 3;
+    private final static int SPECIAL_SYS_BEGIN = 4;
+    private final static int SPECIAL_SYS_COMMIT = 5;
+    private final static int SPECIAL_SYS_SOFT_BEGIN = 6;
+    private final static int SPECIAL_SYS_SOFT_COMMIT = 7;
 
     /**
      * <p>Create a body special.</p>
@@ -97,6 +98,10 @@ public final class SpecialBody extends AbstractSpecial {
                 en.choices = new ChoiceAlter(en.choices, null, en.contskel,
                         en.contdisplay, en.bind);
                 en.number++;
+                en.contskel = (Directive) temp[0];
+                return true;
+            case SPECIAL_SYS_SEQUEN:
+                temp = ((SkelCompound) en.skel).args;
                 en.contskel = (Directive) temp[0];
                 return true;
             case SPECIAL_SYS_BEGIN:

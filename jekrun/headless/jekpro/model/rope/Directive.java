@@ -167,8 +167,10 @@ public class Directive extends Intermediate {
             do {
                 temp = temp.next;
                 Object left = ((Goal) temp).term;
-                if (isAlternative(left) || isGuard(left)) {
-                    left = alternativeToDisjunction(left, en);
+                if (isAlter(left) || isGuard(left)) {
+                    left = alterToDisjSkel(left, en);
+                } else if (isSequen(left)) {
+                    left = sequenToConjSkel(left, en);
                 } else if (controlType(left) != TYPE_CTRL_NONE) {
                     continue;
                 }
@@ -196,13 +198,13 @@ public class Directive extends Intermediate {
     /**
      * <p>Convert an alternative to a disjunction.</p>
      *
-     * @param term The alternative.
+     * @param term The alternative skeleton.
      * @param en   The engine.
-     * @return The disjunction.
+     * @return The disjunction skeleton.
      */
-    private static Object alternativeToDisjunction(Object term, Engine en) {
+    private static Object alterToDisjSkel(Object term, Engine en) {
         SkelCompound back = null;
-        while (isAlternative(term)) {
+        while (isAlter(term)) {
             SkelCompound sc = (SkelCompound) term;
             Object left = ((Directive) sc.args[0]).interToBranch(en);
             Object[] args = new Object[2];
@@ -225,6 +227,19 @@ public class Directive extends Intermediate {
             t = back;
             back = jack;
         }
+        return t;
+    }
+
+    /**
+     * <p>Convert a sequent to a conjunction.</p>
+     *
+     * @param term The sequent skeleton.
+     * @param en   The engine.
+     * @return The conjunction skeleton.
+     */
+    private static Object sequenToConjSkel(Object term, Engine en) {
+        SkelCompound sc = (SkelCompound) term;
+        Object t = ((Directive) sc.args[0]).interToBranch(en);
         return t;
     }
 
@@ -295,7 +310,7 @@ public class Directive extends Intermediate {
      * @param term The term.
      * @return True if the term is an alterantive.
      */
-    public static boolean isAlternative(Object term) {
+    public static boolean isAlter(Object term) {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 2 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
@@ -315,6 +330,22 @@ public class Directive extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 1 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a sequent.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a sequent.
+     */
+    public static boolean isSequen(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
             return true;
         } else {
             return false;
@@ -360,8 +391,8 @@ public class Directive extends Intermediate {
             next = inter;
         } else {
             Object term = ((Goal) last).term;
-            if (isAlternative(term) || isGuard(term)) {
-                while (isAlternative(term)) {
+            if (isAlter(term) || isGuard(term)) {
+                while (isAlter(term)) {
                     SkelCompound sc = (SkelCompound) term;
                     ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
                     term = sc.args[1];
@@ -372,6 +403,9 @@ public class Directive extends Intermediate {
                 } else {
                     ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
                 }
+            } else if (isSequen(term)) {
+                SkelCompound sc = (SkelCompound) term;
+                ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
             }
             last.next = inter;
             if ((mask & MASK_FIXUP_MARK) != 0) {

@@ -135,18 +135,22 @@ A, B :- A, B.                                           % Proto
 :- special(sys_guard/1, 'SpecialBody', 2).
 :- set_predicate_property(sys_guard/1, visible(public)).
 
+% sys_sequen(+Directive)
+:- special(sys_sequen/1, 'SpecialBody', 3).
+:- set_predicate_property(sys_sequen/1, visible(public)).
+
 % sys_begin
-:- special(sys_begin/0, 'SpecialBody', 3).
+:- special(sys_begin/0, 'SpecialBody', 4).
 :- set_predicate_property(sys_begin/0, visible(public)).
 
 % sys_commit
-:- special(sys_commit/0, 'SpecialBody', 4).
+:- special(sys_commit/0, 'SpecialBody', 5).
 :- set_predicate_property(sys_commit/0, visible(public)).
 
 % sys_soft_begin
-:- special(sys_soft_begin/0, 'SpecialBody', 5).
+:- special(sys_soft_begin/0, 'SpecialBody', 6).
 :- set_predicate_property(sys_soft_begin/0, visible(public)).
 
 % sys_soft_commit
-:- special(sys_soft_commit/0, 'SpecialBody', 6).
+:- special(sys_soft_commit/0, 'SpecialBody', 7).
 :- set_predicate_property(sys_soft_commit/0, visible(public)).
