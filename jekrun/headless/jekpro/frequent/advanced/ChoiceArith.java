@@ -89,19 +89,8 @@ final class ChoiceArith extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        Intermediate ir = goalskel;
-        Object t = ((Goal) ir).term;
+        Object[] temp = ((SkelCompound) ((Goal) goalskel).term).args;
         Display d = goaldisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv b1;
-            while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
-                t = b1.skel;
-                d = b1.display;
-            }
-        }
-        Object[] temp = ((SkelCompound) t).args;
 
         switch (id) {
             case SpecialArith.SPECIAL_BETWEEN:

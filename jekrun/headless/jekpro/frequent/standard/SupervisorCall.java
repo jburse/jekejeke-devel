@@ -278,9 +278,8 @@ public class SupervisorCall {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
-                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar) {
+                    if (t instanceof SkelVar)
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
-                    }
                     if ((flags & MASK_CALL_MLTI) != 0 && SupervisorCopy.getVar(t) != null) {
                         SkelVar sv = SkelVar.valueOf(countvar);
                         countvar++;

@@ -16,20 +16,12 @@
  *     q(X),
  *     call(X).
  *
- * Body conversion is also in effect when goals are executed, either
- * directly or deferred via meta-arguments. The body conversion can
- * be switched off via the flag sys_body_convert. The flag only affects
- * the body conversion for the Prolog session queries, for the Prolog
- * text clauses and for the Prolog text directives. The dynamic clause
- * assertions and the deferred meta-arguments are not affected by the
- * flag, these places will still do body conversion.
- *
- * The body conversion is table driven. The meta-predicate declarations
- * and determine how arguments are traversed. The predicate properties
- * sys_body/0 and sys_rule/0 will indicate that the meta-predicates
- * should be traversed during body conversion respectively rule conversion.
- * To facilitate the declaration the predicate sys_neutral_predicate/1 allows
- * defining dictionary entries that are not yet completely defined.
+ * Body conversion is also in effect when call/1 is invoked or other
+ * predicates that have meta-arguments and that internally use call/1.
+ * Body conversion is implemented as per ISO core standard in that it
+ * traverses the conjunction (,)/2, the disjunction (;)/2 and the
+ * if-then (->)/2, with the extension that it also traverses the
+ * soft-if-then (*->)/2.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -106,9 +98,7 @@
 
 % (+Goal, +Goal)
 :- sys_neutral_predicate(','/2).
-:- set_predicate_property(','/2, sys_nobarrier).
-:- set_predicate_property(','/2, sys_proto).
-A, B :- A, B.                                           % Proto
+_, _ :- throw(error(existence_error(body, ','/2), _)).
 :- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
 :- set_predicate_property(','/2, meta_predicate((0, 0))).

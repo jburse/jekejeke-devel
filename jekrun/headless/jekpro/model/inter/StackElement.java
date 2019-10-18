@@ -106,8 +106,6 @@ public class StackElement {
         if (r instanceof Goal) {
             en.skel = ((Goal) r).term;
             en.display = u.disp;
-            if ((r.flags & Goal.MASK_GOAL_NAKE) != 0)
-                en.deref();
         } else if (r instanceof Clause) {
             callGoal(u.contskel, u.contdisplay, en);
             Clause clause = (Clause) r;

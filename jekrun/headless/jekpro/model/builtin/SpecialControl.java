@@ -193,14 +193,8 @@ public final class SpecialControl extends AbstractSpecial {
      */
     static boolean handleException(Engine en)
             throws EngineException {
-        Intermediate ir = en.contskel;
-        en.skel = ((Goal) ir).term;
-        en.display = en.contdisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0)
-            en.deref();
-
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
+        Object[] temp = ((SkelCompound) ((Goal) en.contskel).term).args;
+        Display ref = en.contdisplay.disp;
         EngineException y = en.fault;
         if (!unifyException(temp[1], ref, y, en))
             throw y;

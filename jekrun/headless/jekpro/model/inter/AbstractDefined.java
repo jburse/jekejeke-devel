@@ -68,8 +68,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /* predicate compilation */
     public final static int MASK_DEFI_NOBR = 0x00000100;
     public final static int MASK_DEFI_STOP = 0x00000200;
-    public final static int MASK_DEFI_NBCV = 0x00000400;
-    public final static int MASK_DEFI_NIST = 0x00000800;
+    public final static int MASK_DEFI_NIST = 0x00000400;
 
     public final static int MASK_DEFI_NBDY = 0x00001000;
     public final static int MASK_DEFI_NLST = 0x00002000;
@@ -78,8 +77,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
             AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
-    public final static int MASK_DEFI_TRAN = AbstractDefined.MASK_DEFI_NOBR |
-            AbstractDefined.MASK_DEFI_NBCV;
+    public final static int MASK_DEFI_TRAN = AbstractDefined.MASK_DEFI_NOBR;
 
     /* predicate check flags */
     public final static int OPT_CHCK_MASK = 0x0000000F;
@@ -154,10 +152,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
-            if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= MASK_DEFI_NOBR;
-            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
-                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_STAT;
             pick.del = del;
         }
@@ -191,10 +185,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
-            if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= MASK_DEFI_NOBR;
-            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
-                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_DYNA;
             pick.del = del;
         }
@@ -225,10 +215,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
-            if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= MASK_DEFI_NOBR;
-            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
-                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_THLC;
             pick.del = del;
         }
@@ -259,10 +245,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
-            if ((pick.getBits() & Predicate.MASK_PRED_NOBR) != 0)
-                del.subflags |= MASK_DEFI_NOBR;
-            if ((pick.getBits() & Predicate.MASK_PRED_NBCV) != 0)
-                del.subflags |= MASK_DEFI_NBCV;
             del.subflags |= AbstractDefined.MASK_DEFI_GRLC;
             pick.del = del;
         }

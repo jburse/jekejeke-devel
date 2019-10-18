@@ -51,9 +51,8 @@ public class Directive extends Intermediate {
 
     public final static int MASK_DIRE_CALL = MASK_DIRE_MORE |
             MASK_DIRE_LTGC | MASK_DIRE_SOFT | AbstractDefined.MASK_DEFI_NOBR |
-            AbstractDefined.MASK_DEFI_CALL | AbstractDefined.MASK_DEFI_NBCV |
-            AbstractDefined.MASK_DEFI_NIST | AbstractDefined.MASK_DEFI_NBDY |
-            AbstractDefined.MASK_DEFI_NHED;
+            AbstractDefined.MASK_DEFI_CALL | AbstractDefined.MASK_DEFI_NIST |
+            AbstractDefined.MASK_DEFI_NBDY | AbstractDefined.MASK_DEFI_NHED;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;

@@ -75,18 +75,8 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         if (en.fault != null)
             throw en.fault;
 
-        Intermediate ir = goaldisplay.contskel;
-        Object t = ((Goal) ir).term;
+        Object t = ((Goal) goaldisplay.contskel).term;
         Display d = goaldisplay.contdisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv b1;
-            while (t instanceof SkelVar &&
-                    (b1 = d.bind[((SkelVar) t).id]).display != null) {
-                t = b1.skel;
-                d = b1.display;
-            }
-        }
 
         Clause clause;
         Display d2 = goaldisplay.disp;

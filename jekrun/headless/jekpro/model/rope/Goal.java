@@ -46,7 +46,6 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Goal extends Intermediate {
-    public final static int MASK_GOAL_NAKE = 0x00000010;
     public final static int MASK_GOAL_CEND = 0x00000020;
 
     public final static int TYPE_ALTR_DISJ = 0;
@@ -67,12 +66,12 @@ public class Goal extends Intermediate {
      * @param t The term.
      */
     public Goal(Object t) throws EngineMessage {
+        if (t instanceof SkelVar)
+            throw new RuntimeException("shouldn't happen");
         if (!(t instanceof AbstractSkel))
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
         term = t;
-        if (t instanceof SkelVar)
-            flags = Goal.MASK_GOAL_NAKE;
     }
 
     /**
@@ -90,19 +89,7 @@ public class Goal extends Intermediate {
             throw (EngineMessage) AbstractLivestock.sysThreadClear();
 
         /* current term */
-        CallFrame u = en.contdisplay;
         Object alfa = term;
-        Display d1 = u.disp;
-
-        if ((flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv b;
-            while (alfa instanceof SkelVar &&
-                    (b = d1.bind[((SkelVar) alfa).id]).display != null) {
-                alfa = b.skel;
-                d1 = b.display;
-            }
-        }
         CachePredicate cp;
         if (alfa instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) alfa;
@@ -131,7 +118,7 @@ public class Goal extends Intermediate {
                     SpecialQuali.indicatorToColonSkel(sa, arity, en)));
         }
         en.skel = alfa;
-        en.display = d1;
+        en.display = en.contdisplay.disp;
         return fun.moniFirst(en);
     }
 
@@ -164,7 +151,7 @@ public class Goal extends Intermediate {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
-                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
+                    if (t instanceof SkelVar)
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
