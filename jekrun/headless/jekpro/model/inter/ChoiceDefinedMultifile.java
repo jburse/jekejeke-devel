@@ -77,6 +77,13 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
 
         Object t = ((Goal) goaldisplay.contskel).term;
         Display d = goaldisplay.contdisplay.disp;
+        /* inlined deref */
+        BindUniv b1;
+        while (t instanceof SkelVar &&
+            (b1 = d.bind[((SkelVar) t).id]).display != null) {
+            t = b1.skel;
+            d = b1.display;
+        }
 
         Clause clause;
         Display d2 = goaldisplay.disp;

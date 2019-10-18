@@ -106,6 +106,7 @@ public class StackElement {
         if (r instanceof Goal) {
             en.skel = ((Goal) r).term;
             en.display = u.disp;
+            en.deref();
         } else if (r instanceof Clause) {
             callGoal(u.contskel, u.contdisplay, en);
             Clause clause = (Clause) r;

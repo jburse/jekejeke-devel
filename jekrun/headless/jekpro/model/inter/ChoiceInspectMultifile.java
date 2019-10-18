@@ -87,8 +87,16 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
         if (en.fault != null)
             throw en.fault;
 
-        Object[] temp = ((SkelCompound) ((Goal) goalskel).term).args;
+        Object t = ((Goal) goalskel).term;
         Display d = goaldisplay.disp;
+        /* inlined deref */
+        BindUniv b1;
+        while (t instanceof SkelVar &&
+                (b1 = d.bind[((SkelVar) t).id]).display != null) {
+            t = b1.skel;
+            d = b1.display;
+        }
+        Object[] temp = ((SkelCompound) t).args;
 
         /* detect term and body */
         SpecialQuali.colonToCallable(temp[0], d, true, en);

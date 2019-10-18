@@ -7,6 +7,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
+import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -278,8 +279,11 @@ public class SupervisorCall {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
-                    if (t instanceof SkelVar)
+                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                    if (!(t instanceof AbstractSkel))
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
                     if ((flags & MASK_CALL_MLTI) != 0 && SupervisorCopy.getVar(t) != null) {
                         SkelVar sv = SkelVar.valueOf(countvar);
                         countvar++;

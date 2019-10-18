@@ -65,12 +65,7 @@ public class Goal extends Intermediate {
      *
      * @param t The term.
      */
-    public Goal(Object t) throws EngineMessage {
-        if (t instanceof SkelVar)
-            throw new RuntimeException("shouldn't happen");
-        if (!(t instanceof AbstractSkel))
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
+    public Goal(Object t) {
         term = t;
     }
 
@@ -90,6 +85,15 @@ public class Goal extends Intermediate {
 
         /* current term */
         Object alfa = term;
+        Display d1 = en.contdisplay.disp;
+        /* inlined deref */
+        BindUniv b;
+        while (alfa instanceof SkelVar &&
+                (b = d1.bind[((SkelVar) alfa).id]).display != null) {
+            alfa = b.skel;
+            d1 = b.display;
+        }
+
         CachePredicate cp;
         if (alfa instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) alfa;
@@ -118,7 +122,7 @@ public class Goal extends Intermediate {
                     SpecialQuali.indicatorToColonSkel(sa, arity, en)));
         }
         en.skel = alfa;
-        en.display = en.contdisplay.disp;
+        en.display = d1;
         return fun.moniFirst(en);
     }
 
@@ -151,8 +155,11 @@ public class Goal extends Intermediate {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
-                    if (t instanceof SkelVar)
+                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
                         t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                    if (!(t instanceof AbstractSkel))
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 }
