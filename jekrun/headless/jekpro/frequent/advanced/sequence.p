@@ -113,7 +113,7 @@ call_nth2(G, N) :-
  * The predicate succeeds in P with a new pivot.
  */
 % pivot_new(-Pivot)
-:- foreign_constructor(pivot_new/1, 'VariantKey', new).
+:- foreign_constructor(pivot_new/1, 'SetEntry', new).
 
 /**
  * pivot_set(P, O):

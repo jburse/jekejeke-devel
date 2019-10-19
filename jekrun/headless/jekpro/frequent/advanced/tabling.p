@@ -68,6 +68,7 @@
 :- package(library(jekpro/frequent/advanced)).
 
 :- module(tabling, []).
+:- use_package(foreign(jekpro/frequent/advanced)).
 :- use_module(library(advanced/sequence)).
 :- use_module(library(advanced/aggregate)).
 :- use_module(library(basic/lists)).
@@ -188,7 +189,7 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
    Body = (sys_goal_globals(A^Descr, W),
-      pivot_new(P),
+      variant_key(P),
       pivot_set(P, Key),
       (  Test -> true
       ;  Q,
@@ -316,3 +317,11 @@ sys_table_aux(F, H) :-
 :- meta_predicate user:term_expansion(-1, -1).
 user:term_expansion(A, _) :- var(A), !, fail.
 user:term_expansion(A, B) :- sys_table_head(A, B), !.
+
+/**
+ * variant_key(P):
+ * The predicate succeeds in P with a variant_key.
+ */
+% variant_key(-Key)
+:- private variant_key/1.
+:- foreign_constructor(variant_key/1, 'VariantKey', new).

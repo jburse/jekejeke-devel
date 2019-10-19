@@ -43,7 +43,7 @@ public final class VariantKey extends SetEntry
      * @return The hash code.
      */
     public int hashCode() {
-        return value.hashCode();
+        return (value != null ? value.hashCode() : 0);
     }
 
     /**
@@ -55,7 +55,8 @@ public final class VariantKey extends SetEntry
     public boolean equals(Object obj) {
         if (!(obj instanceof SetEntry))
             return false;
-        return value.equals(((SetEntry)obj).value);
+        return (value != null ? value.equals(((SetEntry) obj).value) :
+                null == ((SetEntry) obj).value);
     }
 
     /**
@@ -65,7 +66,9 @@ public final class VariantKey extends SetEntry
      * @return <0 less, 0 equal, >0 greater
      */
     public int compareTo(VariantKey o) {
-        return AbstractSkel.compareSkel(value, o.value);
+        return (value != null ?
+                (o.value != null ? AbstractSkel.compareSkel(value, o.value) : 1) :
+                (o.value != null ? -1 : 0));
     }
 
 }
