@@ -1,9 +1,9 @@
 /**
- * When a goal belonging to a defined predicate is invoked a new frame
- * is created. When the interpreter encounters a cut (!) it will remove
- * the choice points inside the frame. To instruct the interpreter that
- * cuts can nevertheless propagate a defined predicate can be marked as
- * cut transparent via the predicate property sys_nobarrier/1.
+ * When a goal belonging to a defined predicate is invoked a new
+ * frame is created. When the interpreter encounters a cut (!) it
+ * will remove all choice points inside this frame. The cut (!) will
+ * also remove choice points that were created by disjunction (;)/2.
+ * On these grounds the predicate (;)/2 is called cut transparent.
  *
  * Examples:
  * ?- X = a; X = b.
@@ -12,12 +12,11 @@
  * ?- X = a, !; X = b.
  * X = a
  *
- * Some of the predefined logical predicates are cut transparent in all
- * arguments. This includes the predicates (,)/2 and (;)/2. Others are
- * only cut transparent in a few arguments. This includes the predicates
- * (->)/2 and (*->)/2, and also the special forms in connection with the
- * predicate (;)/2. Others are not cut transparent at all. This includes
- * the predicates sys_call/1, call/1, once/1 and (\+)/1.
+ * Some of the predefined logical predicates are cut transparent in
+ * all arguments. This includes the predicates (,)/2 and (;)/2.
+ * Others are only cut transparent in the second argument. This
+ * includes the predicates (->)/2 and (*->)/2. Other predicates,
+ * such as call/1, once/1 and (\+)/1, are not cut transparent at all.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
