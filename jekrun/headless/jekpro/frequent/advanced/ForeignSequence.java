@@ -2,9 +2,16 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import matula.util.data.AbstractMap;
+import matula.util.data.AbstractSet;
+import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
 
 /**
@@ -66,6 +73,29 @@ public final class ForeignSequence {
             return null;
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
+    }
+
+    /**
+     * <p>Place a copy into the drawer.</p>
+     *
+     * @param inter The interpreter.
+     * @param set   The set.
+     * @param val   The key.
+     */
+    public static boolean sysDrawerLookup(Interpreter inter,
+                                          AbstractSet set, Object val) {
+        Engine en = (Engine) inter.getEngine();
+        Display d = AbstractTerm.getDisplay(val);
+        val = AbstractTerm.getSkel(val);
+        val = AbstractSkel.copySkel(val, d, en);
+        SetEntry h = set.getEntry(val);
+        if (h == null) {
+            h = set.newEntry(val);
+            set.putEntry(h);
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

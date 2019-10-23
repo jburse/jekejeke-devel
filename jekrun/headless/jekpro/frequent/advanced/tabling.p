@@ -69,6 +69,8 @@
 
 :- module(tabling, []).
 :- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(matula/util/data)).
+:- use_package(foreign(jekpro/tools/call)).
 :- use_module(library(advanced/sequence)).
 :- use_module(library(advanced/aggregate)).
 :- use_module(library(basic/lists)).
@@ -167,7 +169,7 @@ sys_table_declare(I) :-
    set_predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, M),
-   sys_make_indicator(M, 2, J),
+   sys_make_indicator(M, 3, J),
    (  predicate_property(I, visible(public)) -> public(J)
    ;  predicate_property(I, visible(private)) -> private(J)
    ;  true),
@@ -183,8 +185,8 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    sys_table_aux(F, G),
    sys_univ(Goal, [G|L]),
    sys_table_test(F, N, M),
-   sys_univ(Test, [M, P, R]),
-   sys_table_revolve(O, A, Goal, W, R, Q),
+   sys_univ(Test, [M, P, R, Flag]),
+   sys_table_revolve(O, W, R, Q),
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
@@ -193,8 +195,12 @@ sys_table_wrapper(F, T, L, A, S, O) :-
       pivot_set(P, Key),
       (  Test -> true
       ;  Q,
-         assertz(Test)),
-      sys_revolve_list(W, R, S)),
+         pivot_new(Flag),
+         assertz(Test),
+         sys_goal_kernel(Goal, B),
+         sys_revolve_run(A, B, W, R),
+         pivot_set(Flag, eager)),
+      sys_table_list(Flag, W, R, S)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -207,12 +213,20 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    ;  true),
    static(J).
 
-% sys_table_revolve(+Atom, +Aggregate, +Goal, +List, +Ref, -Goal)
-:- private sys_table_revolve/6.
-sys_table_revolve(hash, A, Goal, W, R,
-   sys_revolve_hash(A, Goal, W, R)).
-sys_table_revolve(tree, A, Goal, W, R,
-   sys_revolve_tree(A, Goal, W, R)).
+% sys_table_revolve(+Atom, +List, +Ref, -Goal)
+:- private sys_table_revolve/4.
+sys_table_revolve(hash, W, R,
+   sys_revolve_hash(W, R)).
+sys_table_revolve(tree, W, R,
+   sys_revolve_tree(W, R)).
+
+% sys_table_list(+Pivot, +List, +Ref, -Value)
+:- private sys_table_list/4.
+sys_table_list(Flag, W, R, S) :-
+   pivot_get(Flag, eager), !,
+   sys_revolve_eager(W, R, S).
+sys_table_list(_, W, R, S) :-
+   sys_revolve_lazy(W, R, S).
 
 /**********************************************************/
 /* Table Inspection                                       */
@@ -232,7 +246,7 @@ current_table(V, R) :-
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, _]),
+   sys_univ(Test, [H, P, _, _]),
    clause_ref(Test, true, R),
    pivot_get(P, Key),
    Key =.. [_|L],
@@ -241,12 +255,17 @@ current_table(V, R) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, _]),
+   sys_univ(Test, [H, P, _, _]),
    clause_ref(Test, true, R),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
 
+/**
+ * sys_table_test(F, A, N):
+ * The predicate succeeds in N with the name of the tabling
+ * cached for the predicate indicator F/N.
+ */
 % sys_table_test(+Atom, -Integer, -Atom)
 :- private sys_table_test/3.
 sys_table_test(K, N, J) :- K = M:F, !,
@@ -318,6 +337,10 @@ sys_table_aux(F, H) :-
 user:term_expansion(A, _) :- var(A), !, fail.
 user:term_expansion(A, B) :- sys_table_head(A, B), !.
 
+/*************************************************************/
+/* Key Datatype                                              */
+/*************************************************************/
+
 /**
  * variant_key(P):
  * The predicate succeeds in P with a variant_key.
@@ -325,3 +348,20 @@ user:term_expansion(A, B) :- sys_table_head(A, B), !.
 % variant_key(-Key)
 :- private variant_key/1.
 :- foreign_constructor(variant_key/1, 'VariantKey', new).
+
+% sys_revolve_lazy(+List, +Ref, -Value)
+:- private sys_revolve_lazy/3.
+sys_revolve_lazy([], P, S) :- !,
+   pivot_get(P, S).
+sys_revolve_lazy(W, R, S) :-
+   revolve_lazy(R, W-Q),
+   pivot_get(Q, S).
+
+/**
+ * revolve_lazy(R, U):
+ * The predicate succeeds lazy in U with the key value pairs of the revolve R.
+ */
+% revolve_lazy(+Revolve, +Pair)
+:- private revolve_lazy/2.
+:- foreign(revolve_lazy/2, 'VariantKey',
+      sysRevolveLazy('CallOut', 'AbstractMap')).

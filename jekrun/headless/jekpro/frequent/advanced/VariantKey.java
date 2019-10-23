@@ -1,6 +1,14 @@
 package jekpro.frequent.advanced;
 
+import jekpro.model.molec.Display;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import matula.util.data.AbstractMap;
+import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
 
 /**
@@ -69,6 +77,30 @@ public final class VariantKey extends SetEntry
         return (value != null ?
                 (o.value != null ? AbstractSkel.compareSkel(value, o.value) : 1) :
                 (o.value != null ? -1 : 0));
+    }
+
+    /**
+     * <p>Lazy enumerate the revolve.</p>
+     *
+     * @param co The call out.
+     * @param map  The map.
+     * @return The pair.
+     */
+    public static Object sysRevolveLazy(CallOut co, AbstractMap map) {
+        MapEntry at;
+        if (co.getFirst()) {
+            at = map.getFirstEntry();
+        } else {
+            at = (MapEntry) co.getData();
+            at = map.successor(at);
+        }
+        if (at == null)
+            return null;
+        co.setRetry(true);
+        co.setData(at);
+        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
+        Display ref = AbstractSkel.createMarker(val);
+        return AbstractTerm.createMolec(val, ref);
     }
 
 }

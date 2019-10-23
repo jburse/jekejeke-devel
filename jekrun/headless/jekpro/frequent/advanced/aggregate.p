@@ -108,8 +108,10 @@ aggregate_all2(_, _, _).
 :- meta_predicate aggregate(?, 0, ?).
 aggregate(A, G, S) :-
    sys_goal_globals(A^G, W),
-   sys_revolve_tree(A, G, W, P),
-   sys_revolve_list(W, P, S).
+   sys_revolve_tree(W, P),
+   sys_goal_kernel(G, B),
+   sys_revolve_run(A, B, W, P),
+   sys_revolve_eager(W, P, S).
 
 % aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
 :- private aggregate2/4.
@@ -133,41 +135,40 @@ aggregate2(_, _, _, _).
 :- meta_predicate sys_collect(?, 0, ?).
 sys_collect(A, G, S) :-
    sys_goal_globals(A^G, W),
-   sys_revolve_hash(A, G, W, P),
-   sys_revolve_list(W, P, S).
+   sys_revolve_hash(W, P),
+   sys_goal_kernel(G, B),
+   sys_revolve_run(A, B, W, P),
+   sys_revolve_eager(W, P, S).
 
 /*************************************************************/
 /* Revolve Helper                                            */
 /*************************************************************/
 
-% sys_revolve_tree(+Aggregate, +QuantGoal, +List, -Ref)
-:- meta_predicate sys_revolve_tree(?, 0, ?, ?).
-sys_revolve_tree(A, G, [], P) :- !,
-   sys_goal_kernel(G, B),
-   pivot_new(P),
-   aggregate_all2(A, B, P).
-sys_revolve_tree(A, G, W, R) :-
-   sys_goal_kernel(G, B),
+% sys_revolve_tree(+List, -Ref)
+sys_revolve_tree([], P) :- !,
+   pivot_new(P).
+sys_revolve_tree(_, R) :-
    variant_comparator(C),
-   revolve_new(C, R),
-   aggregate2(W, A, B, R).
+   revolve_new(C, R).
 
-% sys_revolve_hash(+Aggregate, +QuantGoal, +List, -Ref)
-:- meta_predicate sys_revolve_hash(?, 0, ?, ?).
-sys_revolve_hash(A, G, [], P) :- !,
-   sys_goal_kernel(G, B),
-   pivot_new(P),
+% sys_revolve_hash(+List, -Ref)
+sys_revolve_hash([], P) :- !,
+   pivot_new(P).
+sys_revolve_hash(_, R) :-
+   revolve_new(R).
+
+% sys_revolve_run(+Aggregate, +Goal, +List, +Ref)
+:- meta_predicate sys_revolve_run(?, 0, ?, ?).
+sys_revolve_run(A, B, [], P) :- !,
    aggregate_all2(A, B, P).
-sys_revolve_hash(A, G, W, R) :-
-   sys_goal_kernel(G, B),
-   revolve_new(R),
+sys_revolve_run(A, B, W, R) :-
    aggregate2(W, A, B, R).
 
-% sys_revolve_list(+List, +Ref, -Value)
-sys_revolve_list([], P, S) :- !,
+% sys_revolve_eager(+List, +Ref, -Value)
+sys_revolve_eager([], P, S) :- !,
    pivot_get(P, S).
-sys_revolve_list(W, R, S) :-
-   revolve_pair(R, W-Q),
+sys_revolve_eager(W, R, S) :-
+   revolve_eager(R, W-Q),
    pivot_get(Q, S).
 
 /*************************************************************/
@@ -266,13 +267,13 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
       sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
 
 /**
- * revolve_pair(R, U):
- * The predicate succeeds in U with the key value pairs of the revolve R.
+ * revolve_eager(R, U):
+ * The predicate succeeds eager in U with the key value pairs of the revolve R.
  */
-% revolve_pair(+Revolve, +Pair)
-:- private revolve_pair/2.
-:- foreign(revolve_pair/2, 'ForeignAggregate',
-      sysRevolvePair('CallOut', 'AbstractMap')).
+% revolve_eager(+Revolve, +Pair)
+:- private revolve_eager/2.
+:- foreign(revolve_eager/2, 'ForeignAggregate',
+      sysRevolveEager('CallOut', 'AbstractMap')).
 
 /**
  * variant_comparator(C):

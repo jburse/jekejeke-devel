@@ -99,10 +99,23 @@ call_nth(G, C) :-
 call_nth2(G, N) :-
    pivot_new(P),
    pivot_set(P, 0),
-   call(G),
+   G,
    pivot_get(P, M),
    N is M+1,
    pivot_set(P, N).
+
+/**
+ * distinct(X1^…^Xn^G):
+ * The predicates succeeds with only the first solutions of G according to the witnesses.
+ */
+:- public distinct/1.
+:- meta_predicate distinct(0).
+distinct(G) :-
+   sys_goal_globals(G, L),
+   sys_goal_kernel(G, B),
+   drawer_new(R),
+   B,
+   \+ drawer_lookup(R, L).
 
 /*************************************************************/
 /* Pivot Datatype                                            */
@@ -129,3 +142,21 @@ call_nth2(G, N) :-
  */
 % pivot_get(+Pivot, -Term)
 :- foreign(pivot_get/2, 'ForeignSequence', sysPivotGet('SetEntry')).
+
+/**
+ * drawer_new(R):
+ * Thre predicate succeeds in R with a new drawer.
+ */
+% drawer_new(-Revolve)
+:- private drawer_new/1.
+:- foreign_constructor(drawer_new/1, 'SetHashLink', new).
+
+/**
+ * drawer_lookup(R, K):
+ * The predicate succeeds when the copy of the key
+ * K is already found in the drawer R.
+ */
+% drawer_lookup(+Drawer, +Term)
+:- private drawer_lookup/2.
+:- foreign(drawer_lookup/2, 'ForeignSequence',
+      sysDrawerLookup('Interpreter', 'AbstractSet', 'Object')).
