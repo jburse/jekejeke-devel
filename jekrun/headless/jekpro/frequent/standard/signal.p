@@ -75,7 +75,7 @@
 call_cleanup(G, C) :-
    sys_atomic(sys_cleanup(C)),
    current_prolog_flag(sys_choices, X),
-   call(G),
+   G,
    current_prolog_flag(sys_choices, Y),
    (X =:= Y, !; true).
 
@@ -95,7 +95,7 @@ call_cleanup(G, C) :-
 setup_call_cleanup(A, G, C) :-
    sys_atomic((once(A), sys_cleanup(C))),
    current_prolog_flag(sys_choices, X),
-   call(G),
+   G,
    current_prolog_flag(sys_choices, Y),
    (X =:= Y, !; true).
 

@@ -1,8 +1,8 @@
 /**
  * This module is inspired by SQL query options such as TOP. Providing
  * such a module was recently pioneered by SWI-Prolog. Currently predicates
- * limit/2 and offset/2 are provided. The predicates solely work tuple
- * oriented and it is possible to cascade these predicates:
+ * limit/2, offset/2, call_nth/2 and distinct/1 are provided. The predicates
+ * solely work tuple oriented and it is possible to cascade these predicates:
  *
  * Example:
  * ?- limit(5, offset(3, between(1, 10, X))).
@@ -12,10 +12,11 @@
  * X = 7 ;
  * X = 8
  *
- * The current implementation is based on call_nth/2, which is also
- * provided through this module. call_nth/2 is in turn implemented with
- * pivots, an alternative to nb_setarg/3 which does not destruct a
- * Prolog term, but instead a Java object.
+ * The current implementation of limit/2 and offset/2 is based on
+ * call_nth/2. The predicate call_nth/2 is in turn implemented with pivots,
+ * an alternative to nb_setarg/3 which does not destruct a Prolog term, but
+ * instead a Java object. The implementation of distinct/1 uses a custom
+ * Java object as well.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -106,7 +107,8 @@ call_nth2(G, N) :-
 
 /**
  * distinct(X1^…^Xn^G):
- * The predicates succeeds with only the first solutions of G according to the witnesses.
+ * The predicates succeeds with only the first solutions of G
+ * according to the witnesses.
  */
 :- public distinct/1.
 :- meta_predicate distinct(0).
@@ -115,7 +117,7 @@ distinct(G) :-
    sys_goal_kernel(G, B),
    drawer_new(R),
    B,
-   \+ drawer_lookup(R, L).
+   drawer_lookup(R, L).
 
 /*************************************************************/
 /* Pivot Datatype                                            */

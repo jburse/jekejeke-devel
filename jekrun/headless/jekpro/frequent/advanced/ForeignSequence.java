@@ -81,6 +81,7 @@ public final class ForeignSequence {
      * @param inter The interpreter.
      * @param set   The set.
      * @param val   The key.
+     * @return True if the key is fresh, otherwise false.
      */
     public static boolean sysDrawerLookup(Interpreter inter,
                                           AbstractSet set, Object val) {
@@ -92,9 +93,9 @@ public final class ForeignSequence {
         if (h == null) {
             h = set.newEntry(val);
             set.putEntry(h);
-            return false;
-        } else {
             return true;
+        } else {
+            return false;
         }
     }
 
