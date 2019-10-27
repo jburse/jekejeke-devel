@@ -1,10 +1,12 @@
 package matula.util.data;
 
+import qa.norm.anon.bean.Sort;
+
 import java.util.Comparator;
 
 /**
- * <p>Refinement of the list array data type which supports inter-
- * section and union. Basically the ordset datatype from Prolog
+ * <p>Refinement of the assoc array data type which supports inter-
+ * section and union. Basically the ordmap datatype from Prolog
  * implemented in Java, except that we can do binary search.
  * </p>
  * Warranty & Liability
@@ -35,15 +37,18 @@ import java.util.Comparator;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ListSorted<E> extends ListArray<E> {
-    private final Comparator<E> comparator;
+public final class AssocSorted<K, V> extends AssocArray<K, V> {
+    public static final AssocSorted<String, AssocSorted> FULL_SET
+            = new AssocSorted<String, AssocSorted>(Sort.STR_ASC);
+
+    private final Comparator<K> comparator;
 
     /**
-     * <p>Create a sorted list.</p>
+     * <p>Create a sorted asssoc.</p>
      *
      * @param c The comparator.
      */
-    public ListSorted(Comparator<E> c) {
+    public AssocSorted(Comparator<K> c) {
         comparator = c;
     }
 
@@ -62,7 +67,7 @@ public final class ListSorted<E> extends ListArray<E> {
         int high = size;
         while (low + 1 < high) {
             int mid = (low + high) / 2;
-            int k = comparator.compare((E) o, get(mid));
+            int k = comparator.compare((K) o, getKey(mid));
             if (k < 0) {
                 high = mid;
             } else if (k == 0) {
@@ -71,7 +76,7 @@ public final class ListSorted<E> extends ListArray<E> {
                 low = mid;
             }
         }
-        int k = (low < size ? comparator.compare((E) o, get(low)) : -1);
+        int k = (low < size ? comparator.compare((K) o, getKey(low)) : -1);
         if (k < 0) {
             return -low - 1;
         } else if (k == 0) {
@@ -86,21 +91,23 @@ public final class ListSorted<E> extends ListArray<E> {
     /************************************************************/
 
     /**
-     * <p>Intersect this sorted list with another sorted list.</p>
+     * <p>Intersect this sorted assoc with another sorted assoc.</p>
      *
-     * @param b The other sorted list.
-     * @return The result sorted list.
+     * @param b The other sorted assoc.
+     * @return The result sorted assoc.
      */
-    public ListSorted<E> intersect(ListSorted<E> b) {
-        ListSorted<E> res = new ListSorted<E>(comparator);
+    public AssocSorted<K, V> intersect(AssocSorted<K, V> b) {
+        AssocSorted<K, V> res = new AssocSorted<K, V>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {
-            int k = comparator.compare(get(i), b.get(j));
+            int k = comparator.compare(getKey(i), b.getKey(j));
             if (k < 0) {
                 i++;
             } else if (k == 0) {
-                res.add(get(i));
+                AssocSorted value = AssocSorted.intersect((AssocSorted) getValue(i), (AssocSorted) b.getValue(j));
+                if (value == FULL_SET || value.size != 0)
+                    res.add(getKey(i), (V) value);
                 i++;
                 j++;
             } else {
@@ -111,38 +118,77 @@ public final class ListSorted<E> extends ListArray<E> {
     }
 
     /**
-     * <p>Union this sorted list with another sorted list.</p>
+     * <p>Compute intersection where null means the full domain.</p>
+     *
+     * @param a The first sorted array, can be null.
+     * @param b The second sorted array, can be null.
+     * @return The result, can be null.
+     */
+    public static AssocSorted<String, AssocSorted> intersect(
+            AssocSorted<String, AssocSorted> a,
+            AssocSorted<String, AssocSorted> b) {
+        if (a == FULL_SET) {
+            return b;
+        } else if (b == FULL_SET) {
+            return a;
+        } else {
+            return a.intersect(b);
+        }
+    }
+
+    /**
+     * <p>Union this sorted assoc with another sorted assoc.</p>
      *
      * @param b The other sorted list.
      * @return The result sorted list.
      */
-    public ListSorted<E> union(ListSorted<E> b) {
-        ListSorted<E> res = new ListSorted<E>(comparator);
+    public AssocSorted<K, V> union(AssocSorted<K, V> b) {
+        AssocSorted<K, V> res = new AssocSorted<K, V>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {
-            int k = comparator.compare(get(i), b.get(j));
+            int k = comparator.compare(getKey(i), b.getKey(j));
             if (k < 0) {
-                res.add(get(i));
+                res.add(getKey(i), getValue(i));
                 i++;
             } else if (k == 0) {
-                res.add(get(i));
+                AssocSorted value = AssocSorted.union((AssocSorted) getValue(i), (AssocSorted) b.getValue(j));
+                res.add(getKey(i), (V) value);
                 i++;
                 j++;
             } else {
-                res.add(b.get(j));
+                res.add(b.getKey(j), b.getValue(j));
                 j++;
             }
         }
         while (i < size) {
-            res.add(get(i));
+            res.add(getKey(i), getValue(i));
             i++;
         }
         while (j < b.size) {
-            res.add(b.get(j));
+            res.add(b.getKey(j), b.getValue(j));
             j++;
         }
         return res;
+    }
+
+    /**
+     * <p>Compute union where null means the full domain.</p>
+     *
+     * @param a The first sorted array, can be null.
+     * @param b The second sorted array, can be null.
+     * @return The result, can be null.
+     */
+    public static AssocSorted<String, AssocSorted> union(
+            AssocSorted<String, AssocSorted> a,
+            AssocSorted<String, AssocSorted> b) {
+        if (a == FULL_SET) {
+            return FULL_SET;
+        } else if (b == FULL_SET) {
+            return FULL_SET;
+        } else {
+            return a.union(b);
+        }
     }
 
 }
