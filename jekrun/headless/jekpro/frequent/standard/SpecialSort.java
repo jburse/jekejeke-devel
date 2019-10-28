@@ -7,15 +7,21 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.WriteOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.*;
+import matula.util.regex.IgnoreCase;
+import matula.util.wire.LangProperties;
 
+import java.text.Collator;
 import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * <p>Provides built-in predicates for the sort predicates.</p>
@@ -49,15 +55,25 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSort extends AbstractSpecial {
+    private static final String OP_TYPE = "type";
+    private static final String OP_TYPE_TREE = "tree";
+    private static final String OP_TYPE_HASH = "hash";
+    private static final String OP_TYPE_COLLATOR = "collator";
+
+    private static final String OP_IGNORE_CASE = "ignore_case";
+    private static final String OP_LOCALE = "locale";
+
     private final static int SPECIAL_SORT = 0;
-    private final static int SPECIAL_SYS_DISTINCT = 1;
+    private final static int SPECIAL_SORT_OPT = 1;
     private final static int SPECIAL_KEYSORT = 2;
-    private final static int SPECIAL_SYS_KEYGROUP = 3;
+    private final static int SPECIAL_KEYSORT_OPT = 3;
     private final static int SPECIAL_HASH_CODE = 4;
     private final static int SPECIAL_SYS_GROUND = 5;
     private final static int SPECIAL_SYS_HASH_CODE = 6;
-    private final static int SPECIAL_LOCALE_SORT = 7;
-    private final static int SPECIAL_LOCALE_KEYSORT = 8;
+
+    protected final static int TYPE_HASH = 1;
+    protected final static int TYPE_TREE = 2;
+    protected final static int TYPE_COLLATOR = 3;
 
     /**
      * <p>Create a sort special.</p>
@@ -86,7 +102,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    SpecialSort.sort(en, temp[0], ref, en);
+                    sort(new SetTree<Object>(en), temp[0], ref, en);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -94,10 +110,15 @@ public final class SpecialSort extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     return true;
-                case SPECIAL_SYS_DISTINCT:
+                case SPECIAL_SORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    SpecialSort.distinct(temp[0], ref, en);
+                    Comparator<Object> cmp = decodeSortOpts(temp[2], ref, en);
+                    if (cmp != null) {
+                        sort(new SetTree<Object>(cmp), temp[0], ref, en);
+                    } else {
+                        sort(new SetHashLink<Object>(), temp[0], ref, en);
+                    }
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -108,7 +129,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    SpecialSort.keySort(en, temp[0], ref, en);
+                    keySort(new MapTree<Object, ListArray<Object>>(en), temp[0], ref, en);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -116,10 +137,15 @@ public final class SpecialSort extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     return true;
-                case SPECIAL_SYS_KEYGROUP:
+                case SPECIAL_KEYSORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    SpecialSort.keyGroup(temp[0], ref, en);
+                    cmp = decodeSortOpts(temp[2], ref, en);
+                    if (cmp != null) {
+                        keySort(new MapTree<Object, ListArray<Object>>(cmp), temp[0], ref, en);
+                    } else {
+                        keySort(new MapHashLink<Object, ListArray<Object>>(), temp[0], ref, en);
+                    }
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -150,30 +176,6 @@ public final class SpecialSort extends AbstractSpecial {
                     if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
                         return false;
                     return true;
-                case SPECIAL_LOCALE_SORT:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    Comparator<Object> cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
-                    SpecialSort.sort(cmp, temp[1], ref, en);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[2], ref, en.skel, d))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
-                case SPECIAL_LOCALE_KEYSORT:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
-                    SpecialSort.keySort(cmp, temp[1], ref, en);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[2], ref, en.skel, en.display))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
@@ -190,35 +192,18 @@ public final class SpecialSort extends AbstractSpecial {
     /**
      * <p>Sort a list.</p>
      *
-     * @param cmp The comparator.
+     * @param set The set.
      * @param m   The skeleton.
      * @param d   The display.
      * @param en  The engine.
      */
-    private static void sort(Comparator<Object> cmp,
+    private static void sort(AbstractSet<Object> set,
                              Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractSet<Object> set = new SetTree<Object>(cmp);
         SpecialSort.sortSet(set, m, d, en);
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        createSet(set, en);
-    }
-
-    /**
-     * <p>Distinct a list.</p>
-     *
-     * @param m  The skeleton.
-     * @param d  The display.
-     * @param en The engine.
-     */
-    private static void distinct(Object m, Display d, Engine en)
-            throws EngineMessage {
-        AbstractSet<Object> set = new SetHashLink<Object>();
-        SpecialSort.sortSet(set, m, d, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        createSet(set, en);
+        SpecialSort.createSet(set, en);
     }
 
     /**
@@ -298,31 +283,17 @@ public final class SpecialSort extends AbstractSpecial {
      * <p>Key sort a pair list.</p>
      * <p>The result is returned in skel and display of the engine.</p>
      *
-     * @param cmp The comparator.
+     * @param map The map.
      * @param m   The skeletion.
      * @param d   The display.
      * @param en  The engine.
      */
-    private static void keySort(Comparator<Object> cmp,
+    private static void keySort(AbstractMap<Object, ListArray<Object>> map,
                                 Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(cmp);
         SpecialSort.sortMap(map, m, d, en);
-        SpecialSort.createMap(map, en);
-    }
-
-    /**
-     * <p>Key group a pair list.</p>
-     * <p>The result is returned in skel and display of the engine.</p>
-     *
-     * @param m  The skeletion.
-     * @param d  The display.
-     * @param en The engine.
-     */
-    private static void keyGroup(Object m, Display d, Engine en)
-            throws EngineMessage {
-        AbstractMap<Object, ListArray<Object>> map = new MapHashLink<Object, ListArray<Object>>();
-        SpecialSort.sortMap(map, m, d, en);
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
         SpecialSort.createMap(map, en);
     }
 
@@ -406,8 +377,6 @@ public final class SpecialSort extends AbstractSpecial {
      */
     private static void createMap(AbstractMap<Object, ListArray<Object>> map,
                                   Engine en) {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
         for (MapEntry<Object, ListArray<Object>> entry = map.getLastEntry();
              entry != null; entry = map.predecessor(entry)) {
             Object elem2 = entry.key;
@@ -529,6 +498,136 @@ public final class SpecialSort extends AbstractSpecial {
             for (; i < tc.length - 1; i++)
                 res = termHash(tc[i], d, depth, res);
             t = tc[i];
+        }
+    }
+
+    /*************************************************************/
+    /* Sort Options                                              */
+    /*************************************************************/
+
+    /**
+     * <p>Decode the sort options.</p>
+     *
+     * @param t  The option skeleton.
+     * @param d  The option display.
+     * @param en The engine.
+     * @return The sort options.
+     * @throws EngineMessage Type Error.
+     */
+    private Comparator<Object> decodeSortOpts(Object t, Display d, Engine en)
+            throws EngineMessage {
+        Locale locale = en.store.foyer.locale;
+        boolean ignore = false;
+        int type = TYPE_TREE;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_TYPE)) {
+                type = atomToType(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_CASE)) {
+                ignore = WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(OP_LOCALE)) {
+                locale = atomToLocale(((SkelCompound) en.skel).args[0], en.display);
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_SORT_OPTION,
+                        en.skel), en.display);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        switch (type) {
+            case TYPE_HASH:
+                return null;
+            case TYPE_TREE:
+                return (ignore ? new EngineLexical(IgnoreCase.DEFAULT, en) : en);
+            case TYPE_COLLATOR:
+                Collator col = Collator.getInstance(locale);
+                col.setStrength(ignore ? Collator.SECONDARY : Collator.TERTIARY);
+                return new EngineLexical((Comparator) col, en);
+            default:
+                throw new IllegalArgumentException("illegal type");
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a type.</p>
+     *
+     * @param m The type skeleton.
+     * @param d The type display.
+     * @return The type.
+     * @throws EngineMessage Domain Error.
+     */
+    private static int atomToType(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(OP_TYPE_HASH)) {
+            return TYPE_HASH;
+        } else if (fun.equals(OP_TYPE_TREE)) {
+            return TYPE_TREE;
+        } else if (fun.equals(OP_TYPE_COLLATOR)) {
+            return TYPE_COLLATOR;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_TYPE_OPTION, m), d);
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a collator.</p>
+     *
+     * @param m The collator skeleton.
+     * @param d The collator display.
+     * @return The collator.
+     * @throws EngineMessage Domain Error.
+     */
+    public static Locale atomToLocale(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        return LangProperties.stringToLocale(fun);
+    }
+
+    /**
+     * <p>Convert an atom to a collator.</p>
+     *
+     * @param m The collator skeleton.
+     * @param d The collator display.
+     * @return The collator.
+     * @throws EngineMessage Domain Error.
+     */
+    public static Comparator<String> atomToCollator(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if ("IGNORE_CASE".equals(fun)) {
+            return IgnoreCase.DEFAULT;
+        } else {
+            Locale loc = LangProperties.stringToLocale(fun);
+            Collator col = Collator.getInstance(loc);
+            return (Comparator) col;
         }
     }
 

@@ -122,7 +122,7 @@ call_residue(G, L) :-
 sys_eq_list(K, L) :-
    findall(E, (sys_member(V, K),
       sys_current_eq(V, E)), H),
-   sys_distinct(H, J),
+   sort(H, J, [type(hash)]),
    sys_unwrap_eqs(J, L, []).
 
 % sys_unwrap_eqs(+Goals, -Goals, +Goals)

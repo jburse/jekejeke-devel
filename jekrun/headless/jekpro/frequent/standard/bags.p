@@ -122,7 +122,7 @@ sys_heapof(T, G, L) :-
    sys_goal_kernel(G, B),
    findall(W-T, B, H),
    sys_key_variables(H, _),
-   sys_keygroup(H, J),
+   keysort(H, J, [type(hash)]),
    sys_run_values(J, W, L).
 sys_heapof(T, G, L) :-
    sys_goal_kernel(G, B),

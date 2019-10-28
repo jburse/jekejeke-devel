@@ -198,9 +198,8 @@ sys_table_wrapper(F, T, L, A, S, O) :-
          pivot_new(Flag),
          assertz(Test),
          sys_goal_kernel(Goal, B),
-         sys_revolve_run(A, B, W, R),
-         pivot_set(Flag, eager)),
-      sys_table_list(Flag, W, R, S)),
+         sys_revolve_run(A, B, W, R)),
+      sys_revolve_list(W, R, S)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -219,14 +218,6 @@ sys_table_revolve(hash, W, R,
    sys_revolve_hash(W, R)).
 sys_table_revolve(tree, W, R,
    sys_revolve_tree(W, R)).
-
-% sys_table_list(+Pivot, +List, +Ref, -Value)
-:- private sys_table_list/4.
-sys_table_list(Flag, W, R, S) :-
-   pivot_get(Flag, eager), !,
-   sys_revolve_eager(W, R, S).
-sys_table_list(_, W, R, S) :-
-   sys_revolve_lazy(W, R, S).
 
 /**********************************************************/
 /* Table Inspection                                       */
@@ -348,20 +339,3 @@ user:term_expansion(A, B) :- sys_table_head(A, B), !.
 % variant_key(-Key)
 :- private variant_key/1.
 :- foreign_constructor(variant_key/1, 'VariantKey', new).
-
-% sys_revolve_lazy(+List, +Ref, -Value)
-:- private sys_revolve_lazy/3.
-sys_revolve_lazy([], P, S) :- !,
-   pivot_get(P, S).
-sys_revolve_lazy(W, R, S) :-
-   revolve_lazy(R, W-Q),
-   pivot_get(Q, S).
-
-/**
- * revolve_lazy(R, U):
- * The predicate succeeds lazy in U with the key value pairs of the revolve R.
- */
-% revolve_lazy(+Revolve, +Pair)
-:- private revolve_lazy/2.
-:- foreign(revolve_lazy/2, 'VariantKey',
-      sysRevolveLazy('CallOut', 'AbstractMap')).

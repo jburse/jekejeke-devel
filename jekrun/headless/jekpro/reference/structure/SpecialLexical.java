@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -139,7 +140,7 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_LOCALE_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    EngineLexical cmp = EngineLexical.comparatorAtom(temp[0], ref, en);
+                    EngineLexical cmp = new EngineLexical(SpecialSort.atomToCollator(temp[0], ref), en);
                     witmolec = SpecialLexical.comparisonAtom(
                             cmp.localeCompareTerm(temp[2], ref, temp[3], ref), en);
                     if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))

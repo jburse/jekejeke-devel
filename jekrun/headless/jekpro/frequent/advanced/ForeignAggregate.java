@@ -76,7 +76,7 @@ public final class ForeignAggregate {
      * @param map  The map.
      * @return The pair.
      */
-    public static Object sysRevolveEager(CallOut co, AbstractMap map) {
+    public static Object sysRevolvePair(CallOut co, AbstractMap map) {
         MapEntry at;
         if (co.getFirst()) {
             at = map.getFirstEntry();

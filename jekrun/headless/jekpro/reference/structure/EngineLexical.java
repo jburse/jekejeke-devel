@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
@@ -56,7 +57,7 @@ public final class EngineLexical implements Comparator<Object> {
      *
      * @param c The comparator.
      */
-    private EngineLexical(Comparator<String> c, Engine en) {
+    public EngineLexical(Comparator<String> c, Engine en) {
         if (c == null)
             throw new NullPointerException("comparator missing");
         cmpstr = c;
@@ -129,28 +130,6 @@ public final class EngineLexical implements Comparator<Object> {
                     throw new IllegalArgumentException("unknown type");
             }
         }
-    }
-
-    /**
-     * <p>Compute the collator from an atom.</p>
-     *
-     * @param m  The skeleton.
-     * @param d  The display.
-     * @param en The engine.
-     * @return The collator.
-     * @throws EngineMessage Shit happens.
-     */
-    public static EngineLexical comparatorAtom(Object m, Display d, Engine en)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(m, d);
-        Comparator<String> cmpstr;
-        if ("IGNORE_CASE".equals(fun)) {
-            cmpstr = IgnoreCase.DEFAULT;
-        } else {
-            Locale loc = LangProperties.stringToLocale(fun);
-            cmpstr = (Comparator) Collator.getInstance(loc);
-        }
-        return new EngineLexical(cmpstr, en);
     }
 
     /**

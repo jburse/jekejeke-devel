@@ -90,17 +90,14 @@ final class ChoiceForeign extends AbstractChoice {
                 throw en.fault;
         }
 
-        Intermediate ir = goalskel;
-        Object term = ((Goal) ir).term;
+        Object term = ((Goal) goalskel).term;
         Display ref = goaldisplay.disp;
-        if ((ir.flags & Goal.MASK_GOAL_NAKE) != 0) {
-            /* inlined deref */
-            BindUniv b1;
-            while (term instanceof SkelVar &&
-                    (b1 = ref.bind[((SkelVar) term).id]).display != null) {
-                term = b1.skel;
-                ref = b1.display;
-            }
+        /* inlined deref */
+        BindUniv b1;
+        while (term instanceof SkelVar &&
+                (b1 = ref.bind[((SkelVar) term).id]).display != null) {
+            term = b1.skel;
+            ref = b1.display;
         }
 
         co.flags &= ~CallOut.MASK_CALL_FIRST;

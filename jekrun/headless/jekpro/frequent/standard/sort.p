@@ -1,21 +1,22 @@
 /**
- * The predicate sys_distinct/1 will remove duplicates from a list
- * using a hash set in the current implementation, thus relying only
- * on equality among the elements. On the other hand the predicate
- * sort/2 will sort a list by using a tree in the current implementation
- * and also requires comparison among the elements.
+ * The predicate sort/2 will sort a list by using a set data structure
+ * and a comparison among elements. The default implementation use a
+ * tree data structure and ISO Prolog lexical compari-son for its
+ * sorting. The predicate sort/3 allows specifying other comparisons
+ * or a hash data structure. The hash data structure will preserve
+ * the input order.
  *
  * Examples:
- * ?- sys_distinct([2,1,3,1], X).
- * X = [2,1,3]
  * ?- sort([2,1,3,1], X).
- * X = [1,2,3]
+ * X = [1, 2, 3]
+ * ?- sort([2,1,3,1], X, [type(hash)]).
+ * X = [2, 1, 3]
  *
- * The predicate sys_keygroup/2 will key group a list using a hash
- * table in the current implementation, thus relying only on equality
- * among the keys. On the other hand the predicate keysort/2 will key
- * sort a list by using a tree in the current implementation, thus also
- * requiring comparison among the keys.
+ * The predicate keysort/2 will key sort an association list by using
+ * a map data structure and a comparison among keys. Again, the predicate
+ * keysort/3 allows specifying further options. The ignore_case/1 option
+ * is only in effect for the type "tree" or "collator". The locale/1
+ * option is only in effect for the type "collator".
  *
  * Examples:
  * ?- hash_code(f, R).
@@ -64,35 +65,33 @@
 
 /**
  * sort(L, R): [TC2 8.4.3]
+ * sort(L, R, O):
  * The predicate sorts the list L and unifies the result with R.
+ * The ternary predicate takes additional sort options as argument.
+ * For a list of options see the API documentation.
  */
 % sort(+List, -List)
 :- public sort/2.
 :- special(sort/2, 'SpecialSort', 0).
 
-/**
- * sys_distinct(L, R):
- * The predicate distincts the list L and unifies the result with R.
- */
-% sys_distinct(+List, -List)
-:- public sys_distinct/2.
-:- special(sys_distinct/2, 'SpecialSort', 1).
+% sort(+List, -List, +List)
+:- public sort/3.
+:- special(sort/3, 'SpecialSort', 1).
 
 /**
  * keysort(L, R): [TC2 8.4.4]
+ * keysort(L, R, O):
  * The predicate key-sorts the pair list L and unifies the result with R.
+ * The ternary predicate takes additional sort options as argument.
+ * For a list of options see the API documentation.
  */
-% keysort(+Pairs, -Pairs)
+% keysort(+Assoc, -Assoc)
 :- public keysort/2.
 :- special(keysort/2, 'SpecialSort', 2).
 
-/**
- * sys_keygroup(L, R):
- * The predicate key-groups the pair list L and unifies the result with R.
- */
-% sys_keygroup(+Pairs, -Pairs)
-:- public sys_keygroup/2.
-:- special(sys_keygroup/2, 'SpecialSort', 3).
+% keysort(+Assoc, -Assoc, +List)
+:- public keysort/3.
+:- special(keysort/3, 'SpecialSort', 3).
 
 /**
  * hash_code(T, H):
@@ -119,35 +118,3 @@
  */
 :- public sys_hash_code/3.
 :- special(sys_hash_code/3, 'SpecialSort', 6).
-
-/**
- * locale_sort(L, R):
- * locale_sort(C, L, R):
- * The predicate local sorts the list L and unifies the result with R.
- * The ternary predicate allows specifying a locale C.
- */
-% locale_sort(+List, -List)
-:- public locale_sort/2.
-locale_sort(L, R) :-
-   current_prolog_flag(sys_locale, C),
-   locale_sort(C, L, R).
-
-% locale_sort(+Atom, +List, -List)
-:- public locale_sort/3.
-:- special(locale_sort/3, 'SpecialSort', 7).
-
-/**
- * locale_keysort(L, R):
- * locale_keysort(C, L, R):
- * The predicate locale key-sorts the pair list L and unifies the result
- * with R. The ternary predicate allows specifying a locale C.
- */
-% locale_keysort(+Pairs, -Pairs)
-:- public locale_keysort/2.
-locale_keysort(L, R) :-
-   current_prolog_flag(sys_locale, C),
-   locale_keysort(C, L, R).
-
-% locale_keysort(+Atom, +Pairs, -Pairs)
-:- public locale_keysort/3.
-:- special(locale_keysort/3, 'SpecialSort', 8).
