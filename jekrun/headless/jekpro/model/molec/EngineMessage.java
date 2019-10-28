@@ -100,6 +100,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_ASSERT_OPTION = "assert_option";
     public static final String OP_DOMAIN_IO_MODE = "io_mode";
     public static final String OP_DOMAIN_CONSULT_OPTION = "consult_option";
+    public static final String OP_DOMAIN_SORT_OPTION = "sort_option";
     public static final String OP_DOMAIN_REF = "ref";
     public static final String OP_DOMAIN_PROLOG_PROPERTY = "prolog_property";
     public static final String OP_DOMAIN_META_ARG = "meta_arg";
@@ -108,6 +109,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_DOMAIN_VARIABLE_NAME = "variable_name";
     public static final String OP_DOMAIN_VERBOSE_OPTION = "verbose_option";
     public static final String OP_DOMAIN_LINK_OPTION = "link_option";
+    public static final String OP_DOMAIN_TYPE_OPTION = "type_option";
     public static final String OP_DOMAIN_ACTION_OPTION = "action_option";
     public final static String OP_DOMAIN_ARITY_MISMATCH = "arity_mismatch";
     public static final String OP_DOMAIN_FIX_OPTION = "fix_option";

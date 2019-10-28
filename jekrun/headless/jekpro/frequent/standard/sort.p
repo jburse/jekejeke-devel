@@ -12,23 +12,23 @@
  * ?- sort([2,1,3,1], X, [type(hash)]).
  * X = [2, 1, 3]
  *
- * The predicate keysort/2 will key sort an association list by using
- * a map data structure and a comparison among keys. Again, the predicate
- * keysort/3 allows specifying further options. The ignore_case/1 option
- * is only in effect for the type "tree" or "collator". The locale/1
- * option is only in effect for the type "collator".
+ * The predicate keysort/2 will key sort an association list by using a
+ * map data structure and a comparison among keys. For duplicate keys,
+ * the values will retain their input order. Again, the predicate
+ * keysort/3 allows specifying further sort options. The hash data
+ * structure will further preserve the input order of the keys.
  *
  * Examples:
  * ?- hash_code(f, R).
  * R = 102
- * ?- term_hash(f(X), 1, 1000, R).
+ * ?- sys_hash_code(f(X), 1, R).
  * R = 102
  *
- * The hash code that is the basis for the removal and grouping predicates
- * can be queried by the predicates hash_code/2. The hash code is
- * recursively computed along the structure of the given term. The
- * hash code that forms the basis of our clause indexing can be
- * queried by the predicates term_hash/[2,4].
+ * The hash code that is the basis for the hash data type can be
+ * queried by the predicates hash_code/2. The hash code is recursively
+ * computed along the structure of the given term. Reference data
+ * types can implement their own Java hashCode() method. The predicates
+ * sys_ground/2 and sys_hash_code/3 provide limited depth versions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

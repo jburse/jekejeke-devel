@@ -7,12 +7,19 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.WriteOpts;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.regex.IgnoreCase;
+import matula.util.wire.LangProperties;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.Locale;
 
 /**
  * <p>Provides built-in predicates for lexical comparison.</p>
@@ -46,6 +53,17 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLexical extends AbstractSpecial {
+    private static final String OP_TYPE = "type";
+    private static final String OP_TYPE_TREE = "tree";
+    private static final String OP_TYPE_HASH = "hash";
+    private static final String OP_TYPE_COLLATOR = "collator";
+    private static final String OP_IGNORE_CASE = "ignore_case";
+    private static final String OP_LOCALE = "locale";
+
+    private static final int TYPE_HASH = 1;
+    private static final int TYPE_TREE = 2;
+    private static final int TYPE_COLLATOR = 3;
+
     private final static int SPECIAL_LEX_EQ = 0;
     private final static int SPECIAL_LEX_NQ = 1;
     private final static int SPECIAL_LEX_LS = 2;
@@ -53,7 +71,7 @@ public final class SpecialLexical extends AbstractSpecial {
     private final static int SPECIAL_LEX_GR = 4;
     private final static int SPECIAL_LEX_GQ = 5;
     private final static int SPECIAL_COMPARE = 6;
-    private final static int SPECIAL_LOCALE_COMPARE = 7;
+    private final static int SPECIAL_COMPARE_OPT = 7;
 
     /* the syntactic equality categories */
     public final static int EQ_TYPE_VAR = 0;
@@ -132,18 +150,22 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_COMPARE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Object witmolec = SpecialLexical.comparisonAtom(
-                            en.compareTerm(temp[1], ref, temp[2], ref), en);
-                    if (!en.unifyTerm(temp[0], ref, witmolec, Display.DISPLAY_CONST))
+                    int res = en.compareTerm(temp[1], ref, temp[2], ref);
+                    if (!en.unifyTerm(temp[0], ref,
+                            SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST))
                         return false;
                     return true;
-                case SPECIAL_LOCALE_COMPARE:
+                case SPECIAL_COMPARE_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    EngineLexical cmp = new EngineLexical(SpecialSort.atomToCollator(temp[0], ref), en);
-                    witmolec = SpecialLexical.comparisonAtom(
-                            cmp.localeCompareTerm(temp[2], ref, temp[3], ref), en);
-                    if (!en.unifyTerm(temp[1], ref, witmolec, Display.DISPLAY_CONST))
+                    Comparator<Object> cmp = decodeSortOpts(temp[3], ref, en);
+                    if (cmp instanceof EngineLexical) {
+                        res = ((EngineLexical) cmp).localeCompareTerm(temp[1], ref, temp[2], ref);
+                    } else {
+                        res = en.compareTerm(temp[1], ref, temp[2], ref);
+                    }
+                    if (!en.unifyTerm(temp[0], ref,
+                            SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST))
                         return false;
                     return true;
                 default:
@@ -161,7 +183,7 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param en  The engine.
      * @return The comparison atom.
      */
-    private static SkelAtom comparisonAtom(int res, Engine en) {
+    private static SkelAtom compAtom(int res, Engine en) {
         if (res < 0) {
             return en.store.foyer.ATOM_LESS;
         } else if (res == 0) {
@@ -332,6 +354,116 @@ public final class SpecialLexical extends AbstractSpecial {
                 return unscaled1.compareTo(unscaled2);
             }
         }
+    }
+
+    /*************************************************************/
+    /* Comparison Options                                        */
+    /*************************************************************/
+
+    /**
+     * <p>Decode the sort options.</p>
+     *
+     * @param t  The option skeleton.
+     * @param d  The option display.
+     * @param en The engine.
+     * @return The sort options.
+     * @throws EngineMessage Type Error.
+     */
+    public static Comparator<Object> decodeSortOpts(Object t, Display d, Engine en)
+            throws EngineMessage {
+        Locale locale = en.store.foyer.locale;
+        boolean ignore = false;
+        int type = SpecialLexical.TYPE_TREE;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(SpecialLexical.OP_TYPE)) {
+                type = atomToType(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(SpecialLexical.OP_IGNORE_CASE)) {
+                ignore = WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(SpecialLexical.OP_LOCALE)) {
+                locale = atomToLocale(((SkelCompound) en.skel).args[0], en.display);
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_SORT_OPTION,
+                        en.skel), en.display);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        switch (type) {
+            case SpecialLexical.TYPE_HASH:
+                return null;
+            case SpecialLexical.TYPE_TREE:
+                return (ignore ? new EngineLexical(IgnoreCase.DEFAULT, en) : en);
+            case SpecialLexical.TYPE_COLLATOR:
+                Collator col = Collator.getInstance(locale);
+                col.setStrength(ignore ? Collator.SECONDARY : Collator.TERTIARY);
+                return new EngineLexical((Comparator) col, en);
+            default:
+                throw new IllegalArgumentException("illegal type");
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a type.</p>
+     *
+     * @param m The type skeleton.
+     * @param d The type display.
+     * @return The type.
+     * @throws EngineMessage Domain Error.
+     */
+    private static int atomToType(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(SpecialLexical.OP_TYPE_HASH)) {
+            return SpecialLexical.TYPE_HASH;
+        } else if (fun.equals(SpecialLexical.OP_TYPE_TREE)) {
+            return SpecialLexical.TYPE_TREE;
+        } else if (fun.equals(SpecialLexical.OP_TYPE_COLLATOR)) {
+            return SpecialLexical.TYPE_COLLATOR;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_TYPE_OPTION, m), d);
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a collator.</p>
+     *
+     * @param m The collator skeleton.
+     * @param d The collator display.
+     * @return The collator.
+     * @throws EngineMessage Domain Error.
+     */
+    public static Locale atomToLocale(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        return LangProperties.stringToLocale(fun);
     }
 
 }

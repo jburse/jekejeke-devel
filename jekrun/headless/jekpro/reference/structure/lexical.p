@@ -130,27 +130,17 @@
 :- special(@>= /2, 'SpecialLexical', 5).
 
 /**
- * compare(O, X, Y): [TC2 8.4.2]
- * The predicate succeeds when O unifies with the result of comparing
- * X to Y. The result is one of the following atoms <, = or >.
+ * compare(C, X, Y): [TC2 8.4.2]
+ * compare(C, X, Y, O):
+ * The predicate succeeds when C unifies with the result of comparing
+ * X to Y. The result is one of the following atoms <, = or >. The
+ * quaternary predicate takes additional sort options as argument.
+ * For a list of options see the API documentation.
  */
 % compare(-Atom, +Term, +Term)
 :- public compare/3.
 :- special(compare/3, 'SpecialLexical', 6).
 
-/**
- * locale_compare(O, X, Y):
- * locale_compare(C, O, X, Y):
- * The predicate succeeds when O unifies with the result of locale
- * comparing X to Y. The result is one of the following atoms <, =
- * or >. The quaternary predicate allows specifying a locale C.
- */
-% locale_compare(-Atom, +Term, +Term)
-:- public locale_compare/3.
-locale_compare(O, X, Y) :-
-   current_prolog_flag(sys_locale, C),
-   locale_compare(C, O, X, Y).
-
-% locale_compare(+Atom, -Atom, +Term, +Term)
-:- public locale_compare/4.
-:- special(locale_compare/4, 'SpecialLexical', 7).
+% compare(-Ato, +Term, +Term, +List)
+:- public compare/4.
+:- special(compare/4, 'SpecialLexical', 7).

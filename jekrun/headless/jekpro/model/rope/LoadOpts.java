@@ -466,7 +466,7 @@ public final class LoadOpts extends LoadForce {
      * @param t  The options skel.
      * @param d  The options display.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Type Error.
      */
     public final void decodeLoadOpts(Object t, Display d, Engine en)
             throws EngineMessage {
