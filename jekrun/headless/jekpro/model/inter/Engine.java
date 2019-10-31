@@ -179,7 +179,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @return True if the term list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
-    public boolean runLoop2(int snap, boolean found)
+    public boolean runLoop(int snap, boolean found)
             throws EngineException, EngineMessage {
         for (; ; ) {
             if (found) {
@@ -322,13 +322,13 @@ public class Engine extends StackElement implements Comparator<Object> {
      * <p>Compare two terms lexically.</p>
      * <p>As a side effect will dynamically allocate display serial numbers.</p>
      * <p>Teil recursive solution.</p>
-     * <p>Throws a runtime exception for uncomparable references.</p>
      *
      * @param alfa The skeleton of the first term.
      * @param d1   The display of the first term.
      * @param beta The skeleton of the second term.
      * @param d2   The display of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     * @throws ArithmeticException Incomparable reference.
      */
     public int compareTerm(Object alfa, Display d1,
                            Object beta, Display d2)

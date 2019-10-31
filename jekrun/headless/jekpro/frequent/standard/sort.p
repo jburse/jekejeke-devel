@@ -68,7 +68,6 @@
  * sort(L, R, O):
  * The predicate sorts the list L and unifies the result with R.
  * The ternary predicate takes additional sort options as argument.
- * For a list of options see the API documentation.
  */
 % sort(+List, -List)
 :- public sort/2.
@@ -83,7 +82,6 @@
  * keysort(L, R, O):
  * The predicate key-sorts the pair list L and unifies the result with R.
  * The ternary predicate takes additional sort options as argument.
- * For a list of options see the API documentation.
  */
 % keysort(+Assoc, -Assoc)
 :- public keysort/2.

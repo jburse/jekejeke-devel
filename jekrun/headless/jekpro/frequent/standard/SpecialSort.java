@@ -8,19 +8,12 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.structure.SpecialLexical;
-import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.*;
-import matula.util.regex.IgnoreCase;
-import matula.util.wire.LangProperties;
-
-import java.text.Collator;
-import java.util.Comparator;
-import java.util.Locale;
 
 /**
  * <p>Provides built-in predicates for the sort predicates.</p>
@@ -89,7 +82,11 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    sort(new SetTree<Object>(en), temp[0], ref, en);
+                    AbstractSet<Object> set = new SetTree<Object>(en);
+                    SpecialSort.sortSet(set, temp[0], ref, en);
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createSet(set, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -100,12 +97,19 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Comparator<Object> cmp = SpecialLexical.decodeSortOpts(temp[2], ref, en);
-                    if (cmp != null) {
-                        sort(new SetTree<Object>(cmp), temp[0], ref, en);
+                    EngineLexical el = new EngineLexical();
+                    el.decodeSortOpts(temp[2], ref, en);
+                    if (el.getComparator() == null) {
+                        set = new SetHashLink<Object>();
+                        SpecialSort.sortSet(set, temp[0], ref, en);
                     } else {
-                        sort(new SetHashLink<Object>(), temp[0], ref, en);
+                        el.setEngine(en);
+                        set = new SetTree<Object>(el);
+                        SpecialSort.sortSet(set, temp[0], ref, en);
                     }
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createSet(set, en, el.getReverse());
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -116,7 +120,11 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    keySort(new MapTree<Object, ListArray<Object>>(en), temp[0], ref, en);
+                    AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(en);
+                    SpecialSort.sortMap(map, temp[0], ref, en);
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createMap(map, en, false);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -127,12 +135,19 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    cmp = SpecialLexical.decodeSortOpts(temp[2], ref, en);
-                    if (cmp != null) {
-                        keySort(new MapTree<Object, ListArray<Object>>(cmp), temp[0], ref, en);
+                    el = new EngineLexical();
+                    el.decodeSortOpts(temp[2], ref, en);
+                    if (el.getComparator() == null) {
+                        map = new MapHashLink<Object, ListArray<Object>>();
+                        SpecialSort.sortMap(map, temp[0], ref, en);
                     } else {
-                        keySort(new MapHashLink<Object, ListArray<Object>>(), temp[0], ref, en);
+                        el.setEngine(en);
+                        map = new MapTree<Object, ListArray<Object>>(el);
+                        SpecialSort.sortMap(map, temp[0], ref, en);
                     }
+                    en.skel = en.store.foyer.ATOM_NIL;
+                    en.display = Display.DISPLAY_CONST;
+                    SpecialSort.createMap(map, en, el.getReverse());
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -175,23 +190,6 @@ public final class SpecialSort extends AbstractSpecial {
     /************************************************************************/
     /* Sort Predicate                                                       */
     /************************************************************************/
-
-    /**
-     * <p>Sort a list.</p>
-     *
-     * @param set The set.
-     * @param m   The skeleton.
-     * @param d   The display.
-     * @param en  The engine.
-     */
-    private static void sort(AbstractSet<Object> set,
-                             Object m, Display d, Engine en)
-            throws EngineMessage {
-        SpecialSort.sortSet(set, m, d, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        SpecialSort.createSet(set, en);
-    }
 
     /**
      * <p>Sort the list.</p>
@@ -243,46 +241,45 @@ public final class SpecialSort extends AbstractSpecial {
 
     /**
      * <p>Create the set.</p>
+     * <p>End is passed in engine skel and display.</p>
+     * <p>Result is returned in engine skel and display.</p>
      *
      * @param set The abstract map.
      * @param en  The engine.
+     * @param reverse The reverse flag.
      */
-    public static void createSet(AbstractSet<Object> set, Engine en) {
+    public static void createSet(AbstractSet<Object> set, Engine en,
+                                 boolean reverse) {
         if (set == null)
             return;
-        for (SetEntry<Object> entry = set.getLastEntry();
-             entry != null; entry = set.predecessor(entry)) {
-            Object t4 = en.skel;
-            Display d2 = en.display;
-            Object elem = entry.value;
-            Object val = AbstractTerm.getSkel(elem);
-            Display ref = AbstractTerm.getDisplay(elem);
-            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
-                    val, ref, t4, d2, en);
+        if (reverse) {
+            for (SetEntry<Object> entry = set.getFirstEntry();
+                 entry != null; entry = set.successor(entry)) {
+                Object t4 = en.skel;
+                Display d2 = en.display;
+                Object elem = entry.value;
+                Object val = AbstractTerm.getSkel(elem);
+                Display ref = AbstractTerm.getDisplay(elem);
+                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                        val, ref, t4, d2, en);
+            }
+        } else {
+            for (SetEntry<Object> entry = set.getLastEntry();
+                 entry != null; entry = set.predecessor(entry)) {
+                Object t4 = en.skel;
+                Display d2 = en.display;
+                Object elem = entry.value;
+                Object val = AbstractTerm.getSkel(elem);
+                Display ref = AbstractTerm.getDisplay(elem);
+                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                        val, ref, t4, d2, en);
+            }
         }
     }
 
     /************************************************************************/
     /* Key Sort Predicate                                                   */
     /************************************************************************/
-
-    /**
-     * <p>Key sort a pair list.</p>
-     * <p>The result is returned in skel and display of the engine.</p>
-     *
-     * @param map The map.
-     * @param m   The skeletion.
-     * @param d   The display.
-     * @param en  The engine.
-     */
-    private static void keySort(AbstractMap<Object, ListArray<Object>> map,
-                                Object m, Display d, Engine en)
-            throws EngineMessage {
-        SpecialSort.sortMap(map, m, d, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        SpecialSort.createMap(map, en);
-    }
 
     /**
      * <p>Key the list.</p>
@@ -358,30 +355,56 @@ public final class SpecialSort extends AbstractSpecial {
 
     /**
      * <p>Create the map.</p>
+     * <p>End is passed in engine skel and display.</p>
+     * <p>Result is returned in engine skel and display.</p>
      *
      * @param map The abstract map.
      * @param en  The engine.
+     * @param reverse The reverse flag.
      */
     private static void createMap(AbstractMap<Object, ListArray<Object>> map,
-                                  Engine en) {
-        for (MapEntry<Object, ListArray<Object>> entry = map.getLastEntry();
-             entry != null; entry = map.predecessor(entry)) {
-            Object elem2 = entry.key;
-            Object val2 = AbstractTerm.getSkel(elem2);
-            Display ref2 = AbstractTerm.getDisplay(elem2);
-            ListArray<Object> list = entry.value;
-            for (int i = list.size() - 1; i >= 0; i--) {
-                Object t4 = en.skel;
-                Display d2 = en.display;
-                Object elem = list.get(i);
-                Object val = AbstractTerm.getSkel(elem);
-                Display ref = AbstractTerm.getDisplay(elem);
-                SpecialFind.pairValue(en.store.foyer.CELL_SUB,
-                        val2, ref2, val, ref, en);
-                val = en.skel;
-                ref = en.display;
-                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
-                        val, ref, t4, d2, en);
+                                  Engine en, boolean reverse) {
+        if (reverse) {
+            for (MapEntry<Object, ListArray<Object>> entry = map.getFirstEntry();
+                 entry != null; entry = map.successor(entry)) {
+                Object elem2 = entry.key;
+                Object val2 = AbstractTerm.getSkel(elem2);
+                Display ref2 = AbstractTerm.getDisplay(elem2);
+                ListArray<Object> list = entry.value;
+                for (int i = list.size() - 1; i >= 0; i--) {
+                    Object t4 = en.skel;
+                    Display d2 = en.display;
+                    Object elem = list.get(i);
+                    Object val = AbstractTerm.getSkel(elem);
+                    Display ref = AbstractTerm.getDisplay(elem);
+                    SpecialFind.pairValue(en.store.foyer.CELL_SUB,
+                            val2, ref2, val, ref, en);
+                    val = en.skel;
+                    ref = en.display;
+                    SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                            val, ref, t4, d2, en);
+                }
+            }
+        } else {
+            for (MapEntry<Object, ListArray<Object>> entry = map.getLastEntry();
+                 entry != null; entry = map.predecessor(entry)) {
+                Object elem2 = entry.key;
+                Object val2 = AbstractTerm.getSkel(elem2);
+                Display ref2 = AbstractTerm.getDisplay(elem2);
+                ListArray<Object> list = entry.value;
+                for (int i = list.size() - 1; i >= 0; i--) {
+                    Object t4 = en.skel;
+                    Display d2 = en.display;
+                    Object elem = list.get(i);
+                    Object val = AbstractTerm.getSkel(elem);
+                    Display ref = AbstractTerm.getDisplay(elem);
+                    SpecialFind.pairValue(en.store.foyer.CELL_SUB,
+                            val2, ref2, val, ref, en);
+                    val = en.skel;
+                    ref = en.display;
+                    SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                            val, ref, t4, d2, en);
+                }
             }
         }
     }

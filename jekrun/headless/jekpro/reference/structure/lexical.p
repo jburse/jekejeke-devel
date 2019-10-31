@@ -2,20 +2,18 @@
  * Lexical comparison allows comparing terms without an attempt to
  * instantiate the terms. These predicates are therefore meta-logical.
  * The predicates (==)/2 and (\==)/2 perform an equality test. The
- * predicates (@<)/2, (@=<)/2, (@>)/2 and (@>=)/2 use a linear ordering
- * based on a lexical comparison. The lexical comparison first looks
- * on the basic type of the involved terms. The ordering of the basic
- * types is as follows:
+ * predicates (@<)/2, (@=<)/2, (@>)/2 and (@>=)/2 use a linear
+ * ordering  based on a lexical comparison. The ordering of the
+ * basic types is as follows:
  *
- * variable < decimal < float < integer < reference < atom < compound
+ * variable < decimal < float32 < float64 < integer < reference < atom < compound
  *
  * Variables are ordered according to their internal instantiation
- * numbering. Integers, floats and decimals are arithmetically ordered.
- * But there is no mixing of integers, floats and decimals. Atoms are
- * ordered according to their internal character representation. For
- * compounds first the arity is compared, then the functor is compared
- * and finally the arguments from left to right. The predicate
- * compare/3 returns <, = or >.
+ * numbering. Integers, float32s, float64s and decimals are
+ * arithmetically ordered, but there is no mixing. Atoms are ordered
+ * according to their internal character representation. For compounds
+ * first the arity is compared, then the functor is compared and
+ * finally the arguments:
  *
  * Examples:
  * ?- 1 @< 2.0.

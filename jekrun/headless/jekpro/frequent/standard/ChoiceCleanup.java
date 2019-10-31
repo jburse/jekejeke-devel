@@ -151,7 +151,7 @@ final class ChoiceCleanup extends AbstractChoice {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop2(snap, true))
+            if (!en.runLoop(snap, true))
                 throw new EngineMessage(EngineMessage.syntaxError(
                         EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
         } catch (EngineException x) {

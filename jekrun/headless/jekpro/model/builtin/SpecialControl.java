@@ -154,7 +154,7 @@ public final class SpecialControl extends AbstractSpecial {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop2(snap, true))
+            if (!en.runLoop(snap, true))
                 return false;
             en.contskel = r;
             en.contdisplay = u;

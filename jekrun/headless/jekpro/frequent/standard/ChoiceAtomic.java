@@ -79,7 +79,7 @@ public final class ChoiceAtomic extends AbstractChoice {
         int backup = clearFlags(mask, en);
 
         try {
-            if (!en.runLoop2(snap, false)) {
+            if (!en.runLoop(snap, false)) {
                 setFlags(mask, backup, en);
                 return false;
             }

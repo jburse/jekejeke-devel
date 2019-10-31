@@ -64,7 +64,7 @@ public final class EngineYield extends Engine {
      * @return True if the term list succeeded, otherwise false.
      * @throws EngineException Shit happens.
      */
-    public final boolean runLoop2(int snap, boolean found)
+    public final boolean runLoop(int snap, boolean found)
             throws EngineException, EngineMessage {
         for (; ; ) {
             if (found) {

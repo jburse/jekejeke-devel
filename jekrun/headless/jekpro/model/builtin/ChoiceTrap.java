@@ -76,7 +76,7 @@ final class ChoiceTrap extends AbstractChoice {
         en.number--;
 
         try {
-            if (!en.runLoop2(snap, false))
+            if (!en.runLoop(snap, false))
                 return false;
             en.contskel = goalskel;
             en.contdisplay = goaldisplay;

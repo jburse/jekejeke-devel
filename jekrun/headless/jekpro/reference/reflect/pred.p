@@ -215,7 +215,7 @@ sys_make_indicator2(I, _, _) :-
 
 /**
  * sys_is_indicator(I):
- * The predicate succeeds when I is a possible quantified indicator.
+ * The predicate succeeds when I is a possibly quantified indicator.
  */
 % sys_is_indicator(+IndicatorColon)
 sys_is_indicator(I) :- var(I), !, fail.

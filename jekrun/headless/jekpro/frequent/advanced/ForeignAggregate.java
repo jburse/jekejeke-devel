@@ -2,18 +2,17 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.data.AbstractMap;
-import matula.util.data.MapEntry;
-import matula.util.data.SetEntry;
-
-import java.util.Comparator;
+import matula.util.data.*;
 
 /**
  * <p>Provides built-in predicates for the module aggregate.</p>
@@ -49,11 +48,45 @@ import java.util.Comparator;
 public final class ForeignAggregate {
 
     /**
+     * <p>Create a new revolve.</p>
+     *
+     * @return The revolve.
+     */
+    public static AbstractMap sysRevolveNew() {
+        return new MapTree(AbstractSkel.DEFAULT);
+    }
+
+    /**
+     * <p>Create a new revolve.</p>
+     *
+     * @param inter The interpreter.
+     * @param opt   The options.
+     * @return The revolve.
+     * @throws InterpreterMessage Type Error.
+     */
+    public static AbstractMap sysRevolveNew(Interpreter inter, Object opt)
+            throws InterpreterMessage {
+        Engine engine = (Engine) inter.getEngine();
+        EngineLexical el = new EngineLexical();
+        try {
+            el.decodeSortOpts(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        if (el.getComparator() == null) {
+            return new MapHashLink();
+        } else {
+            return new MapTree(el);
+        }
+    }
+
+    /**
      * <p>Place a copy into the revolve.</p>
      *
      * @param inter The interpreter.
-     * @param map     The map.
-     * @param val     The key.
+     * @param map   The map.
+     * @param val   The key.
      */
     public static SetEntry sysRevolveLookup(Interpreter inter,
                                             AbstractMap map, Object val) {
@@ -72,8 +105,8 @@ public final class ForeignAggregate {
     /**
      * <p>Enumerate the revolve.</p>
      *
-     * @param co The call out.
-     * @param map  The map.
+     * @param co  The call out.
+     * @param map The map.
      * @return The pair.
      */
     public static Object sysRevolvePair(CallOut co, AbstractMap map) {
@@ -94,12 +127,47 @@ public final class ForeignAggregate {
     }
 
     /**
-     * <p>Retrieve the variant comparator.</p>
+     * <p>Enumerate the revolve.</p>
      *
-     * @return The variant comparator.
+     * @param co  The call out.
+     * @param map The map.
+     * @return The pair.
+     * @throws InterpreterMessage Type Error.
      */
-    public static Comparator<Object> sysVariantComparator() {
-        return AbstractSkel.DEFAULT;
+    public static Object sysRevolvePair(CallOut co, AbstractMap map,
+                                        Interpreter inter, Object opt)
+            throws InterpreterMessage {
+        Engine engine = (Engine) inter.getEngine();
+        EngineLexical el = new EngineLexical();
+        try {
+            el.decodeSortOpts(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        MapEntry at;
+        if (co.getFirst()) {
+            if (el.getReverse()) {
+                at = map.getLastEntry();
+            } else {
+                at = map.getFirstEntry();
+            }
+        } else {
+            at = (MapEntry) co.getData();
+        }
+        if (at == null)
+            return null;
+        MapEntry next;
+        if (el.getReverse()) {
+            next = map.predecessor(at);
+        } else {
+            next = map.successor(at);
+        }
+        co.setRetry(next != null);
+        co.setData(next);
+        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
+        Display ref = AbstractSkel.createMarker(val);
+        return AbstractTerm.createMolec(val, ref);
     }
 
 }

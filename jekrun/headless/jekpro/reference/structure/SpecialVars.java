@@ -92,7 +92,7 @@ public final class SpecialVars extends AbstractSpecial {
                     en.skel = temp[2];
                     en.display = ref;
                     en.deref();
-                    SpecialSort.createSet(ev.vars, en);
+                    SpecialSort.createSet(ev.vars, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -107,7 +107,7 @@ public final class SpecialVars extends AbstractSpecial {
                     ev.singsOf(temp[0], ref);
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createSet(ev.anon, en);
+                    SpecialSort.createSet(ev.anon, en, false);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -129,7 +129,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialVars.goalGlobals(temp[0], ref, ev);
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createSet(ev.vars, en);
+                    SpecialSort.createSet(ev.vars, en, false);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -175,7 +175,7 @@ public final class SpecialVars extends AbstractSpecial {
                     en.skel = temp[2];
                     en.display = ref;
                     en.deref();
-                    SpecialSort.createSet(ev.vars, en);
+                    SpecialSort.createSet(ev.vars, en, false);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))

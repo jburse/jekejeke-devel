@@ -13,10 +13,10 @@
  * ?- bagof(X,Y^p(X,Y),L).
  * L = [a, a, b]
  *
- * The predicate bagof/3 will do a sorting of the witnesses but not of
- * the resulting lists. The var-iation setof/3 will sort the witnesses
- * and the resulting lists. Finally the variation sys_heapof/3 will
- * neither sort the witnesses nor the resulting lists.
+ * The predicate bagof/3 will do a sorting of the witnesses but not
+ * of the resulting lists. The varia-tion setof/3 will sort the
+ * witnesses and the resulting lists. The variations bagof/4 and
+ * setof/4 allow specifying sort options.
  *
  * Examples:
  * p(a). p(b).
@@ -75,10 +75,12 @@
 
 /**
  * bagof(T, X1^…^Xn^G, L): [ISO 8.10.2]
+ * bagof(T, X1^…^Xn^G, L, O):
  * The predicate determines all the solutions to the matrix G, whereby
  * collecting copies of the template T sorted by the witnesses in a list.
- * The predicate then repeatedly succeeds by unifying the witnesses and when L
- * unifies with the corresponding list.
+ * The predicate then repeatedly succeeds by unifying the witnesses
+ * and when L unifies with the corresponding list. The quaternary
+ * predicate takes additional sort options as argument.
  */
 % bagof(+Template, +QuantGoal, -List)
 :- public bagof/3.
@@ -96,10 +98,29 @@ bagof(T, G, L) :-
    findall(T, B, L),
    L \== [].
 
+% bagof(+Template, +QuantGoal, -List, +List)
+:- public bagof/4.
+:- meta_predicate bagof(?, 0, ?, ?).
+bagof(T, G, L, O) :-
+   sys_goal_globals(T^G, W),
+   W \== [], !,
+   sys_goal_kernel(G, B),
+   findall(W-T, B, H),
+   sys_key_variables(H, _),
+   keysort(H, J, O),
+   sys_run_values(J, W, L).
+bagof(T, G, L, _) :-
+   sys_goal_kernel(G, B),
+   findall(T, B, L),
+   L \== [].
+
 /**
- * setof(T, X1^…^Xn^G, L): [ISO 8.10.2]
+ * setof(T, X1^…^Xn^G, L): [ISO 8.10.3]
+ * setof(T, X1^…^Xn^G, L, O):
  * The predicate determines the same lists as the predicate bagof/3. But
- * before returning them the lists are sorted by means of the predicate sort/2.
+ * before returning them the lists are sorted by means of the predicate
+ * sort/2. The quaternary predicate takes additional sort options as
+ * argument.
  */
 % setof(+Template, +QuantGoal, -List)
 :- public setof/3.
@@ -108,26 +129,12 @@ setof(T, G, L) :-
    bagof(T, G, H),
    sort(H, L).
 
-/**
- * sys_heapof(T, X1^…^Xn^G, L):
- * The predicate determines the same lists as the predicate bagof/3. But
- * the lists are grouped by the witnesses instead of sorted by the witnesses.
- */
-% sys_heapof(+Template, +QuantGoal, -List)
-:- public sys_heapof/3.
-:- meta_predicate sys_heapof(?, 0, ?).
-sys_heapof(T, G, L) :-
-   sys_goal_globals(T^G, W),
-   W \== [], !,
-   sys_goal_kernel(G, B),
-   findall(W-T, B, H),
-   sys_key_variables(H, _),
-   keysort(H, J, [type(hash)]),
-   sys_run_values(J, W, L).
-sys_heapof(T, G, L) :-
-   sys_goal_kernel(G, B),
-   findall(T, B, L),
-   L \== [].
+% setof(+Template, +QuantGoal, -List, +List)
+:- public setof/4.
+:- meta_predicate setof(?, 0, ?, ?).
+setof(T, G, L, O) :-
+   bagof(T, G, H, O),
+   sort(H, L, O).
 
 /**********************************************************/
 /* Grouping Utilities                                     */

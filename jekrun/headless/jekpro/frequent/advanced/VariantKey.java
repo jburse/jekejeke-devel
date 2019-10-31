@@ -1,14 +1,6 @@
 package jekpro.frequent.advanced;
 
-import jekpro.model.molec.Display;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import matula.util.data.AbstractMap;
-import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
 
 /**
@@ -75,7 +67,7 @@ public final class VariantKey extends SetEntry
      */
     public int compareTo(VariantKey o) {
         return (value != null ?
-                (o.value != null ? AbstractSkel.compareSkel(value, o.value) : 1) :
+                (o.value != null ? AbstractSkel.compareTermSkel(value, o.value) : 1) :
                 (o.value != null ? -1 : 0));
     }
 

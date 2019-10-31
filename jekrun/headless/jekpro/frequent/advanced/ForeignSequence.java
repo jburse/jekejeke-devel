@@ -2,16 +2,10 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import matula.util.data.AbstractMap;
 import matula.util.data.AbstractSet;
-import matula.util.data.MapEntry;
 import matula.util.data.SetEntry;
 
 /**

@@ -79,8 +79,8 @@
 :- public prefix(table).
 :- op(1150, fx, table).
 
-:- public prefix(sys_sorter).
-:- op(1150, fx, sys_sorter).
+:- public infix(as).
+:- op(700, xfx, as).
 
 /**
  * table P, ..:
@@ -97,34 +97,26 @@
  *   last(C):      The result is the C last of the argument.
  *   reduce(I,A):  The result is the I and A reduct of the argument.
  */
-% table(+Indicators)
+% table(+IndicatorOrCallable)
 :- public (table)/1.
-table [P|Q] :- !, sys_table(P, hash), table(Q).
-table P, Q :- !, sys_table(P, hash), table(Q).
-table [] :- !.
-table P :- sys_table(P, hash).
+table P :- sys_table_dire(P, []).
 
-/**
- * sys_sorter P, ..:
- * The predicate sets the predicate P to tabled. The predicate can be
- * specified via a predicate indicator or a callable. The result is
- * sorted by the witnesses.
- */
-% sys_sorter(+Indicators)
-:- public (sys_sorter)/1.
-sys_sorter [P|Q] :- !, sys_table(P, tree), sys_sorter(Q).
-sys_sorter P, Q :- !, sys_table(P, tree), sys_sorter(Q).
-sys_sorter [] :- !.
-sys_sorter P :- sys_table(P, tree).
+% sys_table_dire(+IndicatorOrCallable, +List)
+:- private sys_table_dire/2.
+sys_table_dire(P as O, _) :- !, sys_table_dire(P, O).
+sys_table_dire([P|Q], O) :- !, sys_table_def(P, O), sys_table_dire(Q, O).
+sys_table_dire((P, Q), O) :- !, sys_table_def(P, O), sys_table_dire(Q, O).
+sys_table_dire([], _) :- !.
+sys_table_dire(P, O) :- sys_table_def(P, O).
 
-% sys_table(+IndicatorOrCallable, +Atom)
-:- private sys_table/2.
-sys_table(I, O) :- sys_is_indicator(I), !,
+% sys_table_def(+IndicatorOrCallable, +List)
+:- private sys_table_def/2.
+sys_table_def(I, O) :- sys_is_indicator(I), !,
    sys_table_declare(I),
    sys_make_indicator(F, N, I),
    length(L, N),
    sys_table_wrapper(F, L, L, nil, nil, O).
-sys_table(C, O) :-
+sys_table_def(C, O) :-
    sys_callable(C),
    sys_functor(C, F, N),
    sys_make_indicator(F, N, I),
@@ -177,7 +169,7 @@ sys_table_declare(I) :-
    ;  true),
    thread_local(J).
 
-% sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Atom)
+% sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +List)
 :- private sys_table_wrapper/6.
 sys_table_wrapper(F, T, L, A, S, O) :-
    length(T, N),
@@ -186,7 +178,8 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    sys_univ(Goal, [G|L]),
    sys_table_test(F, N, M),
    sys_univ(Test, [M, P, R, Flag]),
-   sys_table_revolve(O, W, R, Q),
+   sys_table_new(O, W, R, New),
+   sys_table_list(O, W, R, S, List),
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
@@ -194,12 +187,12 @@ sys_table_wrapper(F, T, L, A, S, O) :-
       variant_key(P),
       pivot_set(P, Key),
       (  Test -> true
-      ;  Q,
+      ;  New,
          pivot_new(Flag),
          assertz(Test),
          sys_goal_kernel(Goal, B),
          sys_revolve_run(A, B, W, R)),
-      sys_revolve_list(W, R, S)),
+      List),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -212,12 +205,19 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    ;  true),
    static(J).
 
-% sys_table_revolve(+Atom, +List, +Ref, -Goal)
-:- private sys_table_revolve/4.
-sys_table_revolve(hash, W, R,
-   sys_revolve_hash(W, R)).
-sys_table_revolve(tree, W, R,
-   sys_revolve_tree(W, R)).
+% sys_table_new(+List, +List, +Ref, -Goal)
+:- private sys_table_new/4.
+sys_table_new([], W, R, G) :- !,
+   G = sys_revolve_new(W, R).
+sys_table_new(O, W, R, G) :-
+   G = sys_revolve_new(W, R, O).
+
+% sys_table_list(+List, +List, +Ref, -Value, -Goal)
+:- private sys_table_list/5.
+sys_table_list([], W, R, S, G) :- !,
+   G = sys_revolve_list(W, R, S).
+sys_table_list(O, W, R, S, G) :-
+   G = sys_revolve_list(W, R, S, O).
 
 /**********************************************************/
 /* Table Inspection                                       */

@@ -134,7 +134,7 @@ public final class SpecialSignal extends AbstractSpecial {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop2(snap, true)) {
+            if (!en.runLoop(snap, true)) {
                 ChoiceAtomic.setFlags(mask, backup, en);
                 return false;
             }

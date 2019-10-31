@@ -876,7 +876,7 @@ public final class SpecialLoad extends AbstractSpecial {
             CallFrame ref = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref;
-            if (!en.runLoop2(snap, true))
+            if (!en.runLoop(snap, true))
                 throw new EngineMessage(
                         EngineMessage.syntaxError(EngineMessage.OP_SYNTAX_REBUILD_FAILED));
         } catch (EngineException x) {

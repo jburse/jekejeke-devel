@@ -1,9 +1,9 @@
 /**
  * The aggregate predicates take a set of solutions and compute an
- * aggregate on it. The predicate aggregate_all/3 aggregates the
+ * aggregate on it. The predi-cate aggregate_all/3 aggregates the
  * solution that is produced by findall/3. The predicate aggregate/3
- * respectively sys_collect/3 aggregates the solutions that are
- * produced by bagof/3 respectively sys_heapof/3.
+ * respectively aggregate/4 aggregates the solutions that are
+ * produced by bagof/3 respectively bagof/4.
  *
  * Examples:
  * ?- [user].
@@ -100,18 +100,30 @@ aggregate_all2(_, _, _).
 
 /**
  * aggregate(A, X1^…^Xn^G, S):
+ * aggregate(A, X1^…^Xn^G, S, O):
  * The predicates aggregates the aggregate A for the solutions of G and
- * unifies the result with S. The result is sorted by the witnesses.
+ * unifies the result with S. The result is sorted by the witnesses. The
+ * quaternary predicate takes additional sort options as argument.
  */
 % aggregate(+Aggregate, +QuantGoal, -Value)
 :- public aggregate/3.
 :- meta_predicate aggregate(?, 0, ?).
 aggregate(A, G, S) :-
    sys_goal_globals(A^G, W),
-   sys_revolve_tree(W, P),
+   sys_revolve_new(W, P),
    sys_goal_kernel(G, B),
    sys_revolve_run(A, B, W, P),
    sys_revolve_list(W, P, S).
+
+% aggregate(+Aggregate, +QuantGoal, -Value, +List)
+:- public aggregate/4.
+:- meta_predicate aggregate(?, 0, ?, ?).
+aggregate(A, G, S, O) :-
+   sys_goal_globals(A^G, W),
+   sys_revolve_new(W, P, O),
+   sys_goal_kernel(G, B),
+   sys_revolve_run(A, B, W, P),
+   sys_revolve_list(W, P, S, O).
 
 % aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
 :- private aggregate2/4.
@@ -125,37 +137,21 @@ aggregate2(W, A, G, R) :-
    fail.
 aggregate2(_, _, _, _).
 
-/**
- * sys_collect(A, X1^…^Xn^G, S):
- * The predicates aggregates the aggregate A for the solutions of G and
- * unifies the result with S. The result is grouped by the witnesses.
- */
-% sys_collect(+Aggregate, +QuantGoal, -Value)
-:- public sys_collect/3.
-:- meta_predicate sys_collect(?, 0, ?).
-sys_collect(A, G, S) :-
-   sys_goal_globals(A^G, W),
-   sys_revolve_hash(W, P),
-   sys_goal_kernel(G, B),
-   sys_revolve_run(A, B, W, P),
-   sys_revolve_list(W, P, S).
-
 /*************************************************************/
 /* Revolve Helper                                            */
 /*************************************************************/
 
-% sys_revolve_tree(+List, -Ref)
-sys_revolve_tree([], P) :- !,
+% sys_revolve_new(+List, -Ref)
+sys_revolve_new([], P) :- !,
    pivot_new(P).
-sys_revolve_tree(_, R) :-
-   variant_comparator(C),
-   revolve_new(C, R).
-
-% sys_revolve_hash(+List, -Ref)
-sys_revolve_hash([], P) :- !,
-   pivot_new(P).
-sys_revolve_hash(_, R) :-
+sys_revolve_new(_, R) :-
    revolve_new(R).
+
+% sys_revolve_new(+List, -Ref, +List)
+sys_revolve_new([], P, _) :- !,
+   pivot_new(P).
+sys_revolve_new(_, R, O) :-
+   revolve_new(O, R).
 
 % sys_revolve_run(+Aggregate, +Goal, +List, +Ref)
 :- meta_predicate sys_revolve_run(?, 0, ?, ?).
@@ -169,6 +165,13 @@ sys_revolve_list([], P, S) :- !,
    pivot_get(P, S).
 sys_revolve_list(W, R, S) :-
    revolve_pair(R, W-Q),
+   pivot_get(Q, S).
+
+% sys_revolve_list(+List, +Ref, -Value, +list)
+sys_revolve_list([], P, S, _) :- !,
+   pivot_get(P, S).
+sys_revolve_list(W, R, S, O) :-
+   revolve_pair(R, O, W-Q),
    pivot_get(Q, S).
 
 /*************************************************************/
@@ -246,15 +249,17 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
  */
 % revolve_new(-Revolve)
 :- private revolve_new/1.
-:- foreign_constructor(revolve_new/1, 'MapHashLink', new).
+:- foreign(revolve_new/1, 'ForeignAggregate', sysRevolveNew).
 
 /**
  * revolve_new(C, R):
- * The predicate succeeds in R with a new revolve for the comparator C.
+ * The predicate succeeds in R with a new revolve
+ * for the sort options O.
  */
-% revolve_new(+Comparator, -Revolve)
+% revolve_new(+List, -Revolve)
 :- private revolve_new/2.
-:- foreign_constructor(revolve_new/2, 'MapTree', new(java/util/'Comparator')).
+:- foreign(revolve_new/2, 'ForeignAggregate',
+      sysRevolveNew('Interpreter', 'Object')).
 
 /**
  * revolve_lookup(R, K, P):
@@ -268,17 +273,20 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 
 /**
  * revolve_pair(R, U):
- * The predicate succeeds eager in U with the key value pairs of the revolve R.
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R.
  */
-% revolve_pair(+Revolve, +Pair)
+% revolve_pair(+Revolve, -Pair)
 :- private revolve_pair/2.
 :- foreign(revolve_pair/2, 'ForeignAggregate',
       sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**
- * variant_comparator(C):
- * The predicate succeeds in C with the variant comparator.
+ * revolve_pair(R, O, U):
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R for the sort options O.
  */
-% variant_comparator(-Comparator)
-:- private variant_comparator/1.
-:- foreign(variant_comparator/1, 'ForeignAggregate', sysVariantComparator).
+% revolve_pair(+Revolve, +List, -Pair)
+:- private revolve_pair/3.
+:- foreign(revolve_pair/3, 'ForeignAggregate',
+      sysRevolvePair('CallOut', 'AbstractMap', 'Interpreter', 'Object')).
