@@ -364,7 +364,7 @@ public final class CallIn implements Runnable {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (en.runLoop2(snap, true)) {
+            if (en.runLoop(snap, true)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);
@@ -417,7 +417,7 @@ public final class CallIn implements Runnable {
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
-            if (en.runLoop2(snap, false)) {
+            if (en.runLoop(snap, false)) {
                 en.contskel = r;
                 en.contdisplay = u;
                 en.visor.setFence(backthread);

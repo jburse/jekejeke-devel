@@ -1,5 +1,6 @@
 package matula.util.regex;
 
+import java.text.Collator;
 import java.util.Comparator;
 
 /**
@@ -34,12 +35,18 @@ import java.util.Comparator;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class IgnoreCase implements Comparator<String> {
-    public static final Comparator<String> DEFAULT = new IgnoreCase();
+    private final int strength;
+
+    public static final Comparator<String> DEFAULT = new IgnoreCase(Collator.SECONDARY);
+    public static final Comparator<String> DEFAULT_TERTIARY = new IgnoreCase(Collator.TERTIARY);
 
     /**
      * <p>Create a ignore case comparator.</p>
+     *
+     * @param s The strength.
      */
-    private IgnoreCase() {
+    private IgnoreCase(int s) {
+        strength = s;
     }
 
     /**
@@ -52,15 +59,31 @@ public final class IgnoreCase implements Comparator<String> {
     public int compare(String o1, String o2) {
         int k1 = 0;
         int k2 = 0;
-        while (k1 < o1.length() && k2 < o2.length()) {
-            int ch1 = o1.codePointAt(k1);
-            int ch2 = o2.codePointAt(k2);
-            k1 += Character.charCount(ch1);
-            k2 += Character.charCount(ch2);
-            ch1 = Character.toLowerCase(ch1);
-            ch2 = Character.toLowerCase(ch2);
-            if (ch1 != ch2)
-                return ch1 - ch2;
+        switch (strength) {
+            case Collator.SECONDARY:
+                while (k1 < o1.length() && k2 < o2.length()) {
+                    int ch1 = o1.codePointAt(k1);
+                    int ch2 = o2.codePointAt(k2);
+                    k1 += Character.charCount(ch1);
+                    k2 += Character.charCount(ch2);
+                    ch1 = Character.toLowerCase(ch1);
+                    ch2 = Character.toLowerCase(ch2);
+                    if (ch1 != ch2)
+                        return ch1 - ch2;
+                }
+                break;
+            case Collator.TERTIARY:
+                while (k1 < o1.length() && k2 < o2.length()) {
+                    int ch1 = o1.codePointAt(k1);
+                    int ch2 = o2.codePointAt(k2);
+                    k1 += Character.charCount(ch1);
+                    k2 += Character.charCount(ch2);
+                    if (ch1 != ch2)
+                        return ch1 - ch2;
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("illegal strength");
         }
         if (!(k1 < o1.length())) {
             if (!(k2 < o2.length())) {

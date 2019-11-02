@@ -34,7 +34,7 @@
  * calls. Recursive tabled predicate calls are allowed and when completed
  * extend the memorization store. The memorization store can be queried
  * by the predicate current_table/2. Variant keys are not checked whether
- * they subsume, so that different modes result in new variant keys.
+ * they subsume, so that specializations result in new variant keys.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -84,9 +84,12 @@
 
 /**
  * table P, ..:
+ * table (P, ..) as O:
  * The predicate sets the predicate P to tabled. The predicate can be
  * specified via a predicate indicator or a callable. The result is
- * grouped by the witnesses. The following aggregates are recognized:
+ * grouped by the witnesses. The as/2 construct can be used to specify
+ * sort options. The following aggregates are recognized when a
+ * callable is specified:
  *
  *   _:            The argument is not aggregated.
  *   sum:          The result is the sum of the argument.

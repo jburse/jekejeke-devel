@@ -100,7 +100,7 @@ public final class SkelCompound extends AbstractSkel
      * @return The hash code.
      */
     public int hashCode() {
-        return AbstractSkel.hashSkel(this, 0);
+        return AbstractSkel.hashCodeSkel(this, 0);
     }
 
     /**
@@ -113,7 +113,7 @@ public final class SkelCompound extends AbstractSkel
             return true;
         if (!(o instanceof SkelCompound))
             return false;
-        return AbstractSkel.equalSkel(this, o);
+        return AbstractSkel.equalTermSkel(this, o);
     }
 
     /**
@@ -123,7 +123,7 @@ public final class SkelCompound extends AbstractSkel
      * @return <0 less, 0 equal, >0 greater
      */
     public int compareTo(SkelCompound o) {
-        return AbstractSkel.compareSkel(this, o);
+        return AbstractSkel.compareTermSkel(this, o);
     }
 
     /*****************************************************************/

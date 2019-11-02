@@ -287,7 +287,7 @@ public abstract class AbstractDelegate {
         CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
         en.contskel = dire;
         en.contdisplay = ref2;
-        if (!en.runLoop2(snap, true))
+        if (!en.runLoop(snap, true))
             throw new EngineMessage(EngineMessage.evaluationError(
                     EngineMessage.OP_EVALUATION_PARTIAL_FUNCTION));
         en.contskel = r;
