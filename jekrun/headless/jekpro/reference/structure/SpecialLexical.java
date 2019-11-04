@@ -154,7 +154,7 @@ public final class SpecialLexical extends AbstractSpecial {
                         el.setEngine(en);
                         res = el.compareTerm(temp[1], ref, temp[2], ref);
                     }
-                    if (el.getReverse())
+                    if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0)
                         res = -res;
                     if (!en.unifyTerm(temp[0], ref,
                             SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST))

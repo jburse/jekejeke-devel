@@ -104,30 +104,33 @@
 :- public (table)/1.
 table P :- sys_table_dire(P, []).
 
-% sys_table_dire(+IndicatorOrCallable, +List)
+% sys_table_dire(+IndicatorOrCallable, +NilOrComparator)
 :- private sys_table_dire/2.
-sys_table_dire(P as O, _) :- !, sys_table_dire(P, O).
-sys_table_dire([P|Q], O) :- !, sys_table_def(P, O), sys_table_dire(Q, O).
-sys_table_dire((P, Q), O) :- !, sys_table_def(P, O), sys_table_dire(Q, O).
+sys_table_dire(P as O, _) :- !,
+   variant_comparator(O, C), sys_table_dire(P, C).
+sys_table_dire([P|Q], C) :- !,
+   sys_table_def(P, C), sys_table_dire(Q, C).
+sys_table_dire((P, Q), C) :- !,
+   sys_table_def(P, C), sys_table_dire(Q, C).
 sys_table_dire([], _) :- !.
-sys_table_dire(P, O) :- sys_table_def(P, O).
+sys_table_dire(P, C) :- sys_table_def(P, C).
 
-% sys_table_def(+IndicatorOrCallable, +List)
+% sys_table_def(+IndicatorOrCallable, +NilOrComparator)
 :- private sys_table_def/2.
-sys_table_def(I, O) :- sys_is_indicator(I), !,
+sys_table_def(I, C) :- sys_is_indicator(I), !,
    sys_table_declare(I),
    sys_make_indicator(F, N, I),
    length(L, N),
-   sys_table_wrapper(F, L, L, nil, nil, O).
-sys_table_def(C, O) :-
-   sys_callable(C),
-   sys_functor(C, F, N),
+   sys_table_wrapper(F, L, L, nil, nil, C).
+sys_table_def(M, C) :-
+   sys_callable(M),
+   sys_functor(M, F, N),
    sys_make_indicator(F, N, I),
    sys_table_declare(I),
    length(L, N),
-   C =.. [_|R],
+   M =.. [_|R],
    sys_table_aggregate(R, L, T, A, S),
-   sys_table_wrapper(F, T, L, A, S, O).
+   sys_table_wrapper(F, T, L, A, S, C).
 
 /**********************************************************/
 /* Aggregate Helper                                       */
@@ -172,17 +175,18 @@ sys_table_declare(I) :-
    ;  true),
    thread_local(J).
 
-% sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +List)
+% sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +NilOrComparator)
 :- private sys_table_wrapper/6.
-sys_table_wrapper(F, T, L, A, S, O) :-
+sys_table_wrapper(F, T, L, A, S, C) :-
    length(T, N),
    sys_univ(Head, [F|T]),
    sys_table_aux(F, G),
    sys_univ(Goal, [G|L]),
    sys_table_test(F, N, M),
    sys_univ(Test, [M, P, R, Flag]),
-   sys_table_new(O, W, R, New),
-   sys_table_list(O, W, R, S, List),
+   sys_table_new(C, W, R, New),
+   sys_table_list(C, W, R, S, List),
+   sys_table_run(C, A, Goal, W, R, S, Flag, List, Run),
    Key =.. [''|T],
    Descr =.. [''|L],
    sys_make_indicator(F, N, I),
@@ -192,10 +196,15 @@ sys_table_wrapper(F, T, L, A, S, O) :-
       (  Test -> true
       ;  New,
          pivot_new(Flag),
-         assertz(Test),
-         sys_goal_kernel(Goal, B),
-         sys_revolve_run(A, B, W, R)),
-      List),
+         pivot_set(Flag, incomplete),
+         assertz(Test)),
+      pivot_get(Flag, Status),
+      (  Status = inprogress
+      -> sys_loop_hit(Flag),
+         List
+      ;  Status = complete
+      -> List
+      ;  Run)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -208,49 +217,158 @@ sys_table_wrapper(F, T, L, A, S, O) :-
    ;  true),
    static(J).
 
-% sys_table_new(+List, +List, +Ref, -Goal)
+% sys_table_new(+NilOrComparator, +List, +Ref, -Goal)
 :- private sys_table_new/4.
 sys_table_new([], W, R, G) :- !,
    G = sys_revolve_new(W, R).
-sys_table_new(O, W, R, G) :-
-   G = sys_revolve_new(W, R, O).
+sys_table_new(C, W, R, G) :-
+   G = sys_revolve_new(W, R, C).
 
-% sys_table_list(+List, +List, +Ref, -Value, -Goal)
+% sys_table_list(+NilOrComparator, +List, +Ref, -Value, -Goal)
 :- private sys_table_list/5.
 sys_table_list([], W, R, S, G) :- !,
    G = sys_revolve_list(W, R, S).
-sys_table_list(O, W, R, S, G) :-
-   G = sys_revolve_list(W, R, S, O).
+sys_table_list(C, W, R, S, G) :-
+   G = sys_revolve_list(W, R, S, C).
 
 /**********************************************************/
-/* Table Inspection                                       */
+/* Lazy & Eager Runner                                    */
+/**********************************************************/
+
+% sys_table_run(+NilOrComparator, +Aggregate, +Goal, +List, +Ref, +Value, +Pivot, +Goal, -Goal)
+:- private sys_table_run/9.
+sys_table_run(C, A, Goal, W, R, S, Flag, List, G) :-
+   C \== [], variant_eager(C), !,
+   G = (  List
+      ;  sys_revolve_eager(A, Goal, W, R, S, Flag)
+      ;  sys_loop_end(Flag),
+         fail).
+sys_table_run(_, A, Goal, W, R, _, Flag, List, G) :-
+   G = (sys_revolve_lazy(A, Goal, W, R, Flag),
+      sys_loop_end(Flag),
+      List).
+
+% sys_revolve_eager(+Aggregate, +Goal, +List, +Ref, +Value, +Pivot)
+:- private sys_revolve_eager/6.
+:- meta_predicate sys_revolve_eager(?, 0, ?, ?, ?, ?).
+sys_revolve_eager(A, Goal, W, R, S, Flag) :-
+   (sys_loop_push(Flag); sys_loop_pop(Flag), fail),
+   sys_revolve_run(A, Goal, W, R, J),
+   S = J,
+   (sys_loop_pop(Flag); sys_loop_push(Flag), fail).
+
+% sys_revolve_lazy(+Aggregate, +Goal, +List, +Ref, +Pivot)
+:- private sys_revolve_lazy/5.
+:- meta_predicate sys_revolve_lazy(?, 0, ?, ?, ?).
+sys_revolve_lazy(A, Goal, W, R, Flag) :-
+   sys_loop_push(Flag),
+   (sys_revolve_run(A, Goal, W, R, _), fail; true),
+   sys_loop_pop(Flag).
+
+/**********************************************************/
+/* SCC Computation                                        */
+/**********************************************************/
+
+% sys_fresh(+Pivot)
+:- private sys_fresh/1.
+:- thread_local sys_fresh/1.
+% sys_recurse(+Pivot, +Pivot)
+:- private sys_recurse/2.
+:- thread_local sys_recurse/2.
+
+% sys_loop_hit(+Pivot)
+:- private sys_loop_hit/1.
+sys_loop_hit(Flag) :-
+   once(sys_fresh(Flag2)),
+   (sys_recurse(Flag2, Flag) -> true; assertz(sys_recurse(Flag2, Flag))).
+
+% sys_loop_push(+Pivot)
+:- private sys_loop_push/1.
+sys_loop_push(Flag) :-
+   pivot_set(Flag, inprogress),
+   asserta(sys_fresh(Flag)).
+
+% sys_loop_pop(+Pivot)
+:- private sys_loop_pop/1.
+sys_loop_pop(Flag) :-
+   retract(sys_fresh(Flag)),
+   pivot_set(Flag, incomplete).
+
+% sys_loop_end(+Pivot)
+:- private sys_loop_end/1.
+sys_loop_end(Flag) :-
+   sys_recurse(Flag, Flag3), sys_fresh(Flag3)
+-> once(sys_fresh(Flag2)),
+   (retract(sys_recurse(Flag, Flag4)),
+   \+ sys_recurse(Flag2, Flag4),
+   assertz(sys_recurse(Flag2, Flag4)), fail; true),
+   (sys_recurse(Flag2, Flag) -> true; assertz(sys_recurse(Flag2, Flag)))
+;  pivot_set(Flag, complete),
+   (retract(sys_recurse(Flag, Flag4)), pivot_set(Flag4, complete), fail; true).
+
+/**********************************************************/
+/* Table Inspection & Modification                        */
 /**********************************************************/
 
 /**
- * current_table(V, R):
+ * current_table(V, S):
  * The predicate succeeds in V with the cached variant keys
- * and in R with the cache clause reference.
+ * and in S with the cache status of the variant key.
  */
-% current_table(-Callable, -Ref)
+% current_table(-Callable, -Atom)
 :- public current_table/2.
 % :- meta_predicate current_table(-1,?).
-current_table(V, R) :-
+current_table(V, S) :-
+   sys_current_table(V, _, S).
+
+/**
+ * retract_table(V):
+ * The predicate succeeds with and removes the cached
+ * variant keys that match V.
+ */
+% retract_table(-Callable)
+:- public retract_table/1.
+% :- meta_predicate retract_table(-1).
+retract_table(V) :-
+   sys_current_table(V, R, _),
+   erase_ref(R).
+
+/**
+ * retractall_table(V):
+ * The predicate succeeds and removes all the cached
+ * variant keys that match V.
+ */
+% retractall_table(+Callable)
+:- public retractall_table/1.
+% :- meta_predicate retractall_table(-1).
+retractall_table(V) :-
+   sys_current_table(V, R, _),
+   erase_ref(R),
+   fail.
+retractall_table(_).
+
+% sys_current_table(-Callable, -Ref, -Atom)
+:- private sys_current_table/3.
+% :- meta_predicate sys_current_table(-1,?,?).
+sys_current_table(V, R, S) :-
    sys_callable(V), !,
    sys_functor(V, F, N),
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, _, _]),
+   sys_univ(Test, [H, P, _, E]),
    clause_ref(Test, true, R),
+   pivot_get(E, S),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
-current_table(V, R) :-
+sys_current_table(V, R, S) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
-   sys_univ(Test, [H, P, _, _]),
+   sys_univ(Test, [H, P, _, E]),
    clause_ref(Test, true, R),
+   pivot_get(E, S),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
@@ -269,36 +387,6 @@ sys_table_test(F, N, H) :-
    atom_number(U, N),
    atom_split(G, '_', [F, U, m]),
    sys_replace_site(H, F, G).
-
-/**********************************************************/
-/* Table Modification                                     */
-/**********************************************************/
-
-/**
- * retract_table(V):
- * The predicate succeeds with and removes the cached
- * variant keys that match V.
- */
-% retract_table(-Callable)
-:- public retract_table/1.
-% :- meta_predicate retract_table(-1).
-retract_table(V) :-
-   current_table(V, R),
-   erase_ref(R).
-
-/**
- * retractall_table(V):
- * The predicate succeeds and removes all the cached
- * variant keys that match V.
- */
-% retractall_table(+Callable)
-:- public retractall_table/1.
-% :- meta_predicate retractall_table(-1).
-retractall_table(V) :-
-   current_table(V, R),
-   erase_ref(R),
-   fail.
-retractall_table(_).
 
 /**********************************************************/
 /* Term Rewriting                                         */

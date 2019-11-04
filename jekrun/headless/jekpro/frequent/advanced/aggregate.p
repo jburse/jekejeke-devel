@@ -54,6 +54,7 @@
 
 :- package(library(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(matula/util/data)).
 :- use_package(foreign(jekpro/tools/call)).
 :- use_package(foreign(jekpro/tools/term)).
@@ -62,41 +63,53 @@
 :- use_module(library(advanced/sequence)).
 :- use_module(library(basic/lists)).
 
+/*************************************************************/
+/* Non-Grouping Aggregate                                    */
+/*************************************************************/
+
 /**
  * aggregate_all(A, G, S):
+ * aggregate_all(A, G, S, O):
  * The predicates aggregates the aggregate A for the solutions of G and
- * unifies the result with S. The following aggregates are recognized:
- *
- *   count:		    The result is the number of solutions.
- *   sum(X):	    The result is the sum of the X values.
- *   mul(X):	    The result is the product of the X values.
- *   min(X):	    The result is the minimum of the X values.
- *   max(X):	    The result is the maximum of the X values.
- *   (X,Y):		    The result is the aggregate X paired by the aggregate Y.
- *   nil:           The result is always nil.
- *   first(C,X):    The result is the C first of the X values.
- *   last(C,X):     The result is the C last of the X values.
- *   reduce(I,A,X): The result is the I and A reduct of the X values.
+ * unifies the result with S. The quaternary predicate takes additional
+ * sort options as argument. For a list of aggregates see the API
+ * documentation.
  */
 % aggregate_all(+Aggregate, +Goal, -Value)
 :- public aggregate_all/3.
 :- meta_predicate aggregate_all(?, 0, ?).
 aggregate_all(A, G, S) :-
    pivot_new(P),
-   aggregate_all2(A, G, P),
+   (sys_aggregate_all(A, G, P, _), fail; true),
    pivot_get_default(P, A, H),
    S = H.
 
-% aggregate_all2(+Aggregate, +Goal, +Pivot)
-:- private aggregate_all2/3.
-:- meta_predicate aggregate_all2(?, 0, ?).
-aggregate_all2(A, G, P) :-
+% aggregate_all(+Aggregate, +Goal, -Value, +List)
+:- public aggregate_all/4.
+:- meta_predicate aggregate_all(?, 0, ?, ?).
+aggregate_all(A, G, S, O) :-
+   pivot_new(P),
+   variant_comparator(O, C),
+   (  variant_eager(C)
+   -> sys_aggregate_all(A, G, P, J),
+      S = J
+   ;  (sys_aggregate_all(A, G, P, _), fail; true),
+      pivot_get_default(P, A, H),
+      S = H).
+
+% sys_aggregate_all(+Aggregate, +Goal, +Pivot, -Value)
+:- private sys_aggregate_all/4.
+:- meta_predicate sys_aggregate_all(?, 0, ?, ?).
+sys_aggregate_all(A, G, P, J) :-
    G,
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J),
-   fail.
-aggregate_all2(_, _, _).
+   \+ pivot_get(P, J),
+   pivot_set(P, J).
+
+/*************************************************************/
+/* Grouping Aggregate                                        */
+/*************************************************************/
 
 /**
  * aggregate(A, X1^…^Xn^G, S):
@@ -108,34 +121,44 @@ aggregate_all2(_, _, _).
 % aggregate(+Aggregate, +QuantGoal, -Value)
 :- public aggregate/3.
 :- meta_predicate aggregate(?, 0, ?).
-aggregate(A, G, S) :-
-   sys_goal_globals(A^G, W),
+aggregate(A, Goal, S) :-
+   sys_goal_globals(A^Goal, W),
    sys_revolve_new(W, P),
-   sys_goal_kernel(G, B),
-   sys_revolve_run(A, B, W, P),
+   (sys_revolve_run(A, Goal, W, P, _), fail; true),
    sys_revolve_list(W, P, S).
 
 % aggregate(+Aggregate, +QuantGoal, -Value, +List)
 :- public aggregate/4.
 :- meta_predicate aggregate(?, 0, ?, ?).
-aggregate(A, G, S, O) :-
-   sys_goal_globals(A^G, W),
-   sys_revolve_new(W, P, O),
-   sys_goal_kernel(G, B),
-   sys_revolve_run(A, B, W, P),
-   sys_revolve_list(W, P, S, O).
+aggregate(A, Goal, S, O) :-
+   sys_goal_globals(A^Goal, W),
+   variant_comparator(O, C),
+   sys_revolve_new(W, P, C),
+   (  variant_eager(C)
+   -> sys_revolve_run(A, Goal, W, P, J),
+      S = J
+   ;  (sys_revolve_run(A, Goal, W, P, _), fail; true),
+      sys_revolve_list(W, P, S, C)).
 
-% aggregate2(+Vars, +Aggregate, +Goal, +Revolve)
-:- private aggregate2/4.
-:- meta_predicate aggregate2(?, ?, 0, ?).
-aggregate2(W, A, G, R) :-
+% sys_aggregate(+Vars, +Aggregate, +Goal, +Revolve, -Value)
+:- private sys_aggregate/5.
+:- meta_predicate sys_aggregate(?, ?, 0, ?, ?).
+sys_aggregate(W, A, G, R, J) :-
    G,
    revolve_lookup(R, W, P),
    pivot_get_default(P, A, H),
    next_state(A, H, J),
-   pivot_set(P, J),
-   fail.
-aggregate2(_, _, _, _).
+   \+ pivot_get(P, J),
+   pivot_set(P, J).
+
+% sys_revolve_run(+Aggregate, +Goal, +List, +Ref, -Value)
+:- meta_predicate sys_revolve_run(?, 0, ?, ?, ?).
+sys_revolve_run(A, Goal, [], P, J) :- !,
+   sys_goal_kernel(Goal, B),
+   sys_aggregate_all(A, B, P, J).
+sys_revolve_run(A, Goal, W, R, J) :-
+   sys_goal_kernel(Goal, B),
+   sys_aggregate(W, A, B, R, J).
 
 /*************************************************************/
 /* Revolve Helper                                            */
@@ -147,18 +170,11 @@ sys_revolve_new([], P) :- !,
 sys_revolve_new(_, R) :-
    revolve_new(R).
 
-% sys_revolve_new(+List, -Ref, +List)
+% sys_revolve_new(+List, -Ref, +Comparator)
 sys_revolve_new([], P, _) :- !,
    pivot_new(P).
-sys_revolve_new(_, R, O) :-
-   revolve_new(O, R).
-
-% sys_revolve_run(+Aggregate, +Goal, +List, +Ref)
-:- meta_predicate sys_revolve_run(?, 0, ?, ?).
-sys_revolve_run(A, B, [], P) :- !,
-   aggregate_all2(A, B, P).
-sys_revolve_run(A, B, W, R) :-
-   aggregate2(W, A, B, R).
+sys_revolve_new(_, R, C) :-
+   revolve_new(C, R).
 
 % sys_revolve_list(+List, +Ref, -Value)
 sys_revolve_list([], P, S) :- !,
@@ -167,11 +183,11 @@ sys_revolve_list(W, R, S) :-
    revolve_pair(R, W-Q),
    pivot_get(Q, S).
 
-% sys_revolve_list(+List, +Ref, -Value, +list)
+% sys_revolve_list(+List, +Ref, -Value, +Comparator)
 sys_revolve_list([], P, S, _) :- !,
    pivot_get(P, S).
-sys_revolve_list(W, R, S, O) :-
-   revolve_pair(R, O, W-Q),
+sys_revolve_list(W, R, S, C) :-
+   revolve_pair(R, C, W-Q),
    pivot_get(Q, S).
 
 /*************************************************************/
@@ -244,6 +260,23 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 /*************************************************************/
 
 /**
+ * variant_comparator(O, C):
+ * The predicate succeeds in C with the variant comparator
+ * for the sort options O.
+ */
+% variant_comparator(+List, -Comparator)
+:- foreign(variant_comparator/2, 'ForeignAggregate',
+      sysVariantComparator('Interpreter', 'Object')).
+
+/**
+ * variant_eager(C):
+ * The predicate succeeds if the variant comparator is eager.
+ */
+% variant_eager(+Comparator)
+:- foreign(variant_eager/1, 'ForeignAggregate',
+      sysVariantEager('EngineLexical')).
+
+/**
  * revolve_new(R):
  * Thre predicate succeeds in R with a new revolve.
  */
@@ -254,12 +287,12 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 /**
  * revolve_new(C, R):
  * The predicate succeeds in R with a new revolve
- * for the sort options O.
+ * for the variant comparator C.
  */
-% revolve_new(+List, -Revolve)
+% revolve_new(+Comparator, -Revolve)
 :- private revolve_new/2.
 :- foreign(revolve_new/2, 'ForeignAggregate',
-      sysRevolveNew('Interpreter', 'Object')).
+      sysRevolveNew('EngineLexical')).
 
 /**
  * revolve_lookup(R, K, P):
@@ -282,11 +315,11 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
       sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**
- * revolve_pair(R, O, U):
+ * revolve_pair(R, C, U):
  * The predicate succeeds in U with the key value pairs
- * of the revolve R for the sort options O.
+ * of the revolve R for the variant comparator C.
  */
-% revolve_pair(+Revolve, +List, -Pair)
+% revolve_pair(+Revolve, +Comparator, -Pair)
 :- private revolve_pair/3.
 :- foreign(revolve_pair/3, 'ForeignAggregate',
-      sysRevolvePair('CallOut', 'AbstractMap', 'Interpreter', 'Object')).
+      sysRevolvePair('CallOut', 'AbstractMap', 'EngineLexical')).

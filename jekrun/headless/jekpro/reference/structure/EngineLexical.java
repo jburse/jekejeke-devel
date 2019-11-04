@@ -57,7 +57,11 @@ public final class EngineLexical implements Comparator<Object> {
     private static final String OP_TYPE_COLLATOR = "collator";
     private static final String OP_IGNORE_CASE = "ignore_case";
     private static final String OP_REVERSE = "reverse";
+    private static final String OP_EAGER = "eager";
     private static final String OP_LOCALE = "locale";
+
+    public static final int MASK_FLAG_RVRS = 0x00000001;
+    public static final int MASK_FLAG_EAGR = 0x00000002;
 
     private static final int TYPE_HASH = 1;
     private static final int TYPE_TREE = 2;
@@ -65,7 +69,7 @@ public final class EngineLexical implements Comparator<Object> {
 
     private Comparator<String> cmpstr;
     private Engine engine;
-    private boolean reverse;
+    private int flags;
 
     /**
      * <p>Retrieve the comparator.</p>
@@ -86,12 +90,12 @@ public final class EngineLexical implements Comparator<Object> {
     }
 
     /**
-     * <p>Retrieve the reverse flag.</p>
+     * <p>Retrieve the flags.</p>
      *
-     * @return The reverse flag.
+     * @return The the flags.
      */
-    public boolean getReverse() {
-        return reverse;
+    public int getFlags() {
+        return flags;
     }
 
     /**
@@ -255,8 +259,8 @@ public final class EngineLexical implements Comparator<Object> {
             throws EngineMessage {
         Locale locale = en.store.foyer.locale;
         boolean ignore = false;
-        reverse = false;
         int type = EngineLexical.TYPE_TREE;
+        flags = 0;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -278,7 +282,19 @@ public final class EngineLexical implements Comparator<Object> {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(EngineLexical.OP_REVERSE)) {
-                reverse = WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display);
+                if (WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    flags |= MASK_FLAG_RVRS;
+                } else {
+                    flags &= ~MASK_FLAG_RVRS;
+                }
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(EngineLexical.OP_EAGER)) {
+                if (WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    flags |= MASK_FLAG_EAGR;
+                } else {
+                    flags &= ~MASK_FLAG_EAGR;
+                }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(EngineLexical.OP_LOCALE)) {

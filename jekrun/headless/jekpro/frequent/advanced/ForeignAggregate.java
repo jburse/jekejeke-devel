@@ -48,6 +48,37 @@ import matula.util.data.*;
 public final class ForeignAggregate {
 
     /**
+     * <p>Create a new variant comparator.</p>
+     *
+     * @param opt The sort options.
+     * @return The variant comparator.
+     * @throws InterpreterMessage Type Error.
+     */
+    public static EngineLexical sysVariantComparator(Interpreter inter,
+                                                     Object opt)
+            throws InterpreterMessage {
+        Engine engine = (Engine) inter.getEngine();
+        EngineLexical el = new EngineLexical();
+        try {
+            el.decodeSortOpts(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return el;
+    }
+
+    /**
+     * <p>Check if the variant comparator is eager.</p>
+     *
+     * @param el The variant comparator.
+     * @return True if the variant comparator is eager, otherwise false.
+     */
+    public static boolean sysVariantEager(EngineLexical el) {
+        return ((el.getFlags() & EngineLexical.MASK_FLAG_EAGR) != 0);
+    }
+    
+    /**
      * <p>Create a new revolve.</p>
      *
      * @return The revolve.
@@ -59,21 +90,10 @@ public final class ForeignAggregate {
     /**
      * <p>Create a new revolve.</p>
      *
-     * @param inter The interpreter.
-     * @param opt   The options.
+     * @param el The variant comparator.
      * @return The revolve.
-     * @throws InterpreterMessage Type Error.
      */
-    public static AbstractMap sysRevolveNew(Interpreter inter, Object opt)
-            throws InterpreterMessage {
-        Engine engine = (Engine) inter.getEngine();
-        EngineLexical el = new EngineLexical();
-        try {
-            el.decodeSortOpts(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), engine);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
+    public static AbstractMap sysRevolveNew(EngineLexical el) {
         if (el.getComparator() == null) {
             return new MapHashLink();
         } else {
@@ -131,23 +151,14 @@ public final class ForeignAggregate {
      *
      * @param co  The call out.
      * @param map The map.
+     * @param el The variant comparator.
      * @return The pair.
-     * @throws InterpreterMessage Type Error.
      */
     public static Object sysRevolvePair(CallOut co, AbstractMap map,
-                                        Interpreter inter, Object opt)
-            throws InterpreterMessage {
-        Engine engine = (Engine) inter.getEngine();
-        EngineLexical el = new EngineLexical();
-        try {
-            el.decodeSortOpts(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), engine);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
+                                        EngineLexical el) {
         MapEntry at;
         if (co.getFirst()) {
-            if (el.getReverse()) {
+            if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0) {
                 at = map.getLastEntry();
             } else {
                 at = map.getFirstEntry();
@@ -158,7 +169,7 @@ public final class ForeignAggregate {
         if (at == null)
             return null;
         MapEntry next;
-        if (el.getReverse()) {
+        if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0) {
             next = map.predecessor(at);
         } else {
             next = map.successor(at);

@@ -109,7 +109,7 @@ public final class SpecialSort extends AbstractSpecial {
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createSet(set, en, el.getReverse());
+                    SpecialSort.createSet(set, en, (el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -147,7 +147,7 @@ public final class SpecialSort extends AbstractSpecial {
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createMap(map, en, el.getReverse());
+                    SpecialSort.createMap(map, en, (el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
