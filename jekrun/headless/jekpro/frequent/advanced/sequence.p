@@ -107,17 +107,38 @@ call_nth2(G, N) :-
 
 /**
  * distinct(X1^…^Xn^G):
- * The predicates succeeds with only the first solutions of G
- * according to the witnesses.
+ * The predicates succeeds eagerly with only the first solutions
+ * of G according to the witnesses.
  */
+% distinct(+QuantGoal)
 :- public distinct/1.
 :- meta_predicate distinct(0).
-distinct(G) :-
-   sys_goal_globals(G, L),
-   sys_goal_kernel(G, B),
-   drawer_new(R),
+distinct(Goal) :-
+   sys_goal_globals(Goal, W),
+   drawer_new(P),
+   sys_drawer_run(Goal, W, P).
+
+/**
+ * order_by(X1^…^Xn^G):
+ * The predicates succeeds lazily with only the first solutions
+ * of G according to the witnesses.
+ */
+% order_by(+QuantGoal)
+:- public order_by/1.
+:- meta_predicate order_by(0).
+order_by(Goal) :-
+   sys_goal_globals(Goal, W),
+   drawer_new(P),
+   (sys_drawer_run(Goal, W, P), fail; true),
+   drawer_elem(P, W).
+
+% sys_drawer_run(+Goal, +List, +Ref)
+:- private sys_drawer_run/3.
+:- meta_predicate sys_drawer_run(0, ?, ?).
+sys_drawer_run(Goal, W, P) :-
+   sys_goal_kernel(Goal, B),
    B,
-   drawer_lookup(R, L).
+   drawer_lookup(P, W).
 
 /*************************************************************/
 /* Pivot Datatype                                            */
@@ -149,9 +170,9 @@ distinct(G) :-
  * drawer_new(R):
  * Thre predicate succeeds in R with a new drawer.
  */
-% drawer_new(-Revolve)
+% drawer_new(-Drawer)
 :- private drawer_new/1.
-:- foreign_constructor(drawer_new/1, 'SetHashLink', new).
+:- foreign(drawer_new/1, 'ForeignSequence', sysDrawerNew).
 
 /**
  * drawer_lookup(R, K):
@@ -162,3 +183,13 @@ distinct(G) :-
 :- private drawer_lookup/2.
 :- foreign(drawer_lookup/2, 'ForeignSequence',
       sysDrawerLookup('Interpreter', 'AbstractSet', 'Object')).
+
+/**
+ * drawer_elem(R, U):
+ * The predicate succeeds in U with the elements
+ * of the drawer R.
+ */
+% drawer_elem(+Drawer, -Term)
+:- private drawer_elem/2.
+:- foreign(drawer_elem/2, 'ForeignSequence',
+      sysDrawerElem('CallOut', 'AbstractSet')).

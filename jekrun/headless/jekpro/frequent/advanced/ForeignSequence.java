@@ -2,11 +2,14 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
-import matula.util.data.AbstractSet;
-import matula.util.data.SetEntry;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import matula.util.data.*;
 
 /**
  * <p>Provides built-in predicates for the module sequence.</p>
@@ -70,6 +73,15 @@ public final class ForeignSequence {
     }
 
     /**
+     * <p>Create a new drawer.</p>
+     *
+     * @return The drawer.
+     */
+    public static AbstractSet sysDrawerNew() {
+        return new SetTree(AbstractSkel.DEFAULT);
+    }
+
+    /**
      * <p>Place a copy into the drawer.</p>
      *
      * @param inter The interpreter.
@@ -91,6 +103,30 @@ public final class ForeignSequence {
         } else {
             return false;
         }
+    }
+
+    /**
+     * <p>Enumerate the drawer.</p>
+     *
+     * @param co  The call out.
+     * @param set   The set.
+     * @return The pair.
+     */
+    public static Object sysDrawerElem(CallOut co, AbstractSet set) {
+        SetEntry at;
+        if (co.getFirst()) {
+            at = set.getFirstEntry();
+        } else {
+            at = (SetEntry) co.getData();
+        }
+        if (at == null)
+            return null;
+        SetEntry next = set.successor(at);
+        co.setRetry(next != null);
+        co.setData(next);
+        Object val = at.value;
+        Display ref = AbstractSkel.createMarker(val);
+        return AbstractTerm.createMolec(val, ref);
     }
 
 }

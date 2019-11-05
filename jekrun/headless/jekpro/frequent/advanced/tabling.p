@@ -272,6 +272,7 @@ sys_revolve_lazy(A, Goal, W, R, Flag) :-
 % sys_fresh(+Pivot)
 :- private sys_fresh/1.
 :- thread_local sys_fresh/1.
+
 % sys_recurse(+Pivot, +Pivot)
 :- private sys_recurse/2.
 :- thread_local sys_recurse/2.
@@ -315,11 +316,13 @@ sys_loop_end(Flag) :-
  * The predicate succeeds in V with the cached variant keys
  * and in S with the cache status of the variant key.
  */
-% current_table(-Callable, -Atom)
+% current_table(-Callable, -Pair)
 :- public current_table/2.
 % :- meta_predicate current_table(-1,?).
-current_table(V, S) :-
-   sys_current_table(V, _, S).
+current_table(V, S-L) :-
+   sys_current_table(V, _, E),
+   pivot_get(E, S),
+   findall(U, sys_recurse(E, U), L).
 
 /**
  * retract_table(V):
@@ -330,8 +333,9 @@ current_table(V, S) :-
 :- public retract_table/1.
 % :- meta_predicate retract_table(-1).
 retract_table(V) :-
-   sys_current_table(V, R, _),
-   erase_ref(R).
+   sys_current_table(V, R, E),
+   erase_ref(R),
+   retractall(sys_recurse(E, _)).
 
 /**
  * retractall_table(V):
@@ -342,15 +346,16 @@ retract_table(V) :-
 :- public retractall_table/1.
 % :- meta_predicate retractall_table(-1).
 retractall_table(V) :-
-   sys_current_table(V, R, _),
+   sys_current_table(V, R, E),
    erase_ref(R),
+   retractall(sys_recurse(E, _)),
    fail.
 retractall_table(_).
 
-% sys_current_table(-Callable, -Ref, -Atom)
+% sys_current_table(-Callable, -Ref, -Pivot)
 :- private sys_current_table/3.
 % :- meta_predicate sys_current_table(-1,?,?).
-sys_current_table(V, R, S) :-
+sys_current_table(V, R, E) :-
    sys_callable(V), !,
    sys_functor(V, F, N),
    sys_make_indicator(F, N, I),
@@ -358,17 +363,15 @@ sys_current_table(V, R, S) :-
    sys_table_test(F, N, H),
    sys_univ(Test, [H, P, _, E]),
    clause_ref(Test, true, R),
-   pivot_get(E, S),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
-sys_current_table(V, R, S) :-
+sys_current_table(V, R, E) :-
    predicate_property(I, sys_tabled),
    sys_make_indicator(F, N, I),
    sys_table_test(F, N, H),
    sys_univ(Test, [H, P, _, E]),
    clause_ref(Test, true, R),
-   pivot_get(E, S),
    pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).

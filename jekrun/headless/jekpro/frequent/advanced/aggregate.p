@@ -156,9 +156,9 @@ sys_aggregate(W, A, G, R, J) :-
 sys_revolve_run(A, Goal, [], P, J) :- !,
    sys_goal_kernel(Goal, B),
    sys_aggregate_all(A, B, P, J).
-sys_revolve_run(A, Goal, W, R, J) :-
+sys_revolve_run(A, Goal, W, P, J) :-
    sys_goal_kernel(Goal, B),
-   sys_aggregate(W, A, B, R, J).
+   sys_aggregate(W, A, B, P, J).
 
 /*************************************************************/
 /* Revolve Helper                                            */
