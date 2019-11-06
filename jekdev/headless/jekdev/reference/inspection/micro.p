@@ -47,7 +47,7 @@
  */
 % micro_new(+Goal, -Micro)
 :- public micro_new/2.
-:- foreign(micro_new/2, 'ForeignMicro', sysMicroNew('Interpreter','AbstractTerm')).
+:- foreign(micro_new/2, 'ForeignMicro', sysMicroNew('Interpreter', 'AbstractTerm')).
 
 /**
  * micro_cont(M):

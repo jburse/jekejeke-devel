@@ -65,20 +65,18 @@
  */
 % with_output_to(+Container, +Goal)
 :- public with_output_to/2.
-:- meta_predicate with_output_to(?,0).
+:- meta_predicate with_output_to(?, 0).
 with_output_to(atom(A), G) :- !,
    current_output(S),
    try_call_finally(
       redirect_output([]),
-      (  G,
-         fetch_output(A)),
+      (G, fetch_output(A)),
       set_output(S)).
 with_output_to(bytes(L), G) :- !,
    current_output(S),
    try_call_finally(
       redirect_output([type(binary)]),
-      (  G,
-         fetch_output(B)),
+      (G, fetch_output(B)),
       set_output(S)),
    atom_block(A, B),
    atom_codes(A, L).
@@ -91,7 +89,7 @@ with_output_to(bytes(L), G) :- !,
   */
 % with_input_from(+Container, +Goal)
 :- public with_input_from/2.
-:- meta_predicate with_input_from(?,0).
+:- meta_predicate with_input_from(?, 0).
 with_input_from(atom(A), G) :- !,
    current_input(S),
    memory_read(A, [], T),
@@ -133,22 +131,14 @@ fetch_output(D) :-
  */
 % try_call_finally(+Goal, +Goal, +Goal)
 :- private try_call_finally/3.
-:- meta_predicate try_call_finally(0,0,0).
+:- meta_predicate try_call_finally(0, 0, 0).
 try_call_finally(S, G, T) :-
-   sys_or_fail(S, T),
+   (S; T, fail),
    sys_trap(G, E, sys_before_ball(T, E)),
-   sys_or_fail(T, S).
-
-% sys_or_fail(+Goal, +Goal)
-:- private sys_or_fail/2.
-:- meta_predicate sys_or_fail(0,0).
-sys_or_fail(S, _) :- S.
-sys_or_fail(_, T) :- T, fail.
-:- set_predicate_property(sys_or_fail/2, visible(private)).
+   (T; S, fail).
 
 % sys_before_ball(+Goal, +Term)
 :- private sys_before_ball/2.
-:- meta_predicate sys_before_ball(0,?).
-sys_before_ball(T, E) :- T,
-   sys_raise(E).
+:- meta_predicate sys_before_ball(0, ?).
+sys_before_ball(T, E) :- T, sys_raise(E).
 :- set_predicate_property(sys_before_ball/2, visible(private)).

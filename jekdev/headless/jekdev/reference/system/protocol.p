@@ -64,7 +64,7 @@ protocol(_) :-
    current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
    Protocol \== null,
-   throw(error(permission_error(protocol,state,Protocol),_)).
+   throw(error(permission_error(protocol, state, Protocol), _)).
 protocol(Name) :-
    open(Name, append, Protocol),
    current_prolog_flag(sys_cur_input, Input),
@@ -86,7 +86,7 @@ noprotocol :-
    current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
    Protocol == null,
-   throw(error(permission_error(protocol,state,Protocol),_)).
+   throw(error(permission_error(protocol, state, Protocol), _)).
 noprotocol :-
    current_prolog_flag(sys_cur_input, Input),
    sys_get_stream_protocol(Input, Protocol),
@@ -104,4 +104,4 @@ noprotocol :-
 
 :- private sys_set_stream_protocol/2.
 :- foreign(sys_set_stream_protocol/2, 'ForeignProtocol',
-      sysSetStreamProtocol('Object','Object')).
+      sysSetStreamProtocol('Object', 'Object')).

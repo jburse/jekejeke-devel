@@ -60,7 +60,7 @@
 notebook :-
    sys_parent_goal(G),
    sys_context_property(G, C),
-   set_source_property(C, sys_source_annotation((makedot|filler))).
+   set_source_property(C, sys_source_annotation((makedot | filler))).
 
 /**
  * sys_parent_goal(B):
@@ -78,65 +78,65 @@ notebook :-
  */
 :- public (?-)/1.
 :- meta_predicate ?-(-1).
-?-(_) :-
-   throw(error(existence_error(body,(?-)/1),_)).
+?-(_) :- throw(error(existence_error(body, (?-)/1), _)).
 
 :- private sys_show_all/1.
 :- meta_predicate sys_show_all(0).
 sys_show_all(G) :-
    sys_get_answer(G, A),
-   sys_show_answer(A), fail.
+   sys_show_answer(A),
+   fail.
 sys_show_all(_).
 
 :- private sys_show_answer/1.
 sys_show_answer(the(R)) :-
    sys_get_printmap(M),
    sys_show_name_or_eq_list(R, M),
-   write(' ;'), nl.
+   write(' ;'),
+   nl.
 sys_show_answer(last(R)) :-
    sys_get_printmap(M),
-   sys_show_name_or_eq_list(R, M), nl.
-sys_show_answer(no) :- sys_show_no, nl.
+   sys_show_name_or_eq_list(R, M),
+   nl.
+sys_show_answer(no) :-
+   sys_show_no,
+   nl.
 sys_show_answer(ball(E)) :-
    print_stack_trace(E).
 
 :- private sys_get_answer/2.
-:- meta_predicate sys_get_answer(0,?).
+:- meta_predicate sys_get_answer(0, ?).
 sys_get_answer(G, A) :-
    sys_trap(sys_get_answer2(G, A),
       E,
-      (  E == error(system_error(user_close),_)
-      -> sys_raise(E)
+      (  E == error(system_error(user_close), _) -> sys_raise(E)
       ;  A = ball(E))).
 
 :- private sys_get_answer2/2.
-:- meta_predicate sys_get_answer2(0,?).
+:- meta_predicate sys_get_answer2(0, ?).
 sys_get_answer2(G, A) :-
    current_prolog_flag(sys_choices, X),
    call(G),
    current_prolog_flag(sys_choices, Y),
    sys_get_printmap(M),
    sys_get_name_or_eq_list(R, M),
-   (  X == Y -> !,
-      A = last(R)
-   ;  A = the(R)).
+   (X == Y -> !, A = last(R); A = the(R)).
 sys_get_answer2(_, A) :-
    A = no.
 
 :- public '.'/1.
 :- meta_predicate '.'(0).
-'.'(_) :-
-   throw(error(existence_error(body,'.'/1),_)).
+'.'(_) :- throw(error(existence_error(body, '.'/1), _)).
 
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
-user:term_expansion(V, _) :-
-   var(V), !, fail.
-user:term_expansion(S, T) :-
-   S = '.'(T), !,
+:- meta_predicate user:term_expansion(-1, -1).
+user:term_expansion(V, _) :- var(V), !, fail.
+user:term_expansion(S, T) :- S = '.'(T), !,
    sys_get_printmap(N),
-   write_term(S, [context(-1),quoted(true),
-                    variable_names(N),annotation((makedot|filler))]), flush_output.
+   write_term(S, [context(-1), quoted(true),
+      
+      variable_names(N), annotation((makedot | filler))]),
+   flush_output.
 user:term_expansion(?-(G), unit) :-
    sys_show_all(G).

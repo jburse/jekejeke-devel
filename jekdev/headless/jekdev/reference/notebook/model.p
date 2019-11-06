@@ -120,7 +120,7 @@
  */
 % text_set_data(+DomText, +Atom)
 :- public text_set_data/2.
-:- foreign(text_set_data/2, 'ForeignModel', sysSetData('DomText','Object')).
+:- foreign(text_set_data/2, 'ForeignModel', sysSetData('DomText', 'Object')).
 
 /*******************************************************************/
 /* Element Access & Modification                                   */
@@ -168,7 +168,7 @@
 % elem_set_attr(+DomElement, +Atom, +Atom)
 :- public elem_set_attr/3.
 :- virtual elem_set_attr/3.
-:- foreign(elem_set_attr/3, 'DomElement', setAttrDom('String','AbstractDom')).
+:- foreign(elem_set_attr/3, 'DomElement', setAttrDom('String', 'AbstractDom')).
 
 /**
  * elem_reset_attr(D, A):
@@ -185,7 +185,7 @@
  */
 % elem_attr(+DomElement, -Atom)
 :- public elem_attr/2.
-:- foreign(elem_attr/2, 'ForeignModel', sysElemAttr('CallOut','DomElement')).
+:- foreign(elem_attr/2, 'ForeignModel', sysElemAttr('CallOut', 'DomElement')).
 
 /**
  * elem_add_node(D, C):
@@ -212,4 +212,4 @@
  */
 % elem_node(+DomElement, -AbstractDom)
 :- public elem_node/2.
-:- foreign(elem_node/2, 'ForeignModel', sysElemNode('CallOut','DomElement')).
+:- foreign(elem_node/2, 'ForeignModel', sysElemNode('CallOut', 'DomElement')).

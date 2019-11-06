@@ -1,6 +1,7 @@
 package jekdev.reference.debug;
 
 import jekpro.model.inter.*;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -58,9 +59,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_UNIFY_VAR = " unify_var";
 
     private final static String CODE_CALL_GOAL = " call_goal";
-    private final static String CODE_CALL_META = " call_meta";
     private final static String CODE_LAST_GOAL = " last_goal";
-    private final static String CODE_LAST_META = " last_meta";
 
     private final static String CODE_TRY_FLOW = " try_flow";
     private final static String CODE_RETRY_FLOW = " retry_flow";
@@ -95,7 +94,8 @@ public final class SpecialFriendly extends AbstractSpecial {
             case SPECIAL_SYS_FRIENDLY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
 
@@ -122,7 +122,8 @@ public final class SpecialFriendly extends AbstractSpecial {
             case SPECIAL_SYS_INSTRUMENTED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
 
@@ -265,8 +266,8 @@ public final class SpecialFriendly extends AbstractSpecial {
                 }
                 Object branch = ((Goal) temp).term;
                 int type;
-                if (Directive.isAlternative(branch) || Directive.isGuard(branch)) {
-                    while (Directive.isAlternative(branch)) {
+                if (Directive.isAlter(branch) || Directive.isGuard(branch)) {
+                    while (Directive.isAlter(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
                         friendlyBranch(help, ref, fp, branch == ((Goal) temp).term);
@@ -286,6 +287,10 @@ public final class SpecialFriendly extends AbstractSpecial {
                         friendlyBody((Directive) branch, ref, fp);
                         fp.level--;
                     }
+                } else if (Directive.isSequen(branch)) {
+                    SkelCompound sc = (SkelCompound) branch;
+                    Directive help = (Directive) sc.args[0];
+                    friendlyBody(help, ref, fp);
                 } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
                         || type == Directive.TYPE_CTRL_SBGN) {
                     /* */
@@ -304,17 +309,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
                     if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                        if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                            wr.write(SpecialFriendly.CODE_CALL_GOAL);
-                        } else {
-                            wr.write(SpecialFriendly.CODE_CALL_META);
-                        }
+                        wr.write(SpecialFriendly.CODE_CALL_GOAL);
                     } else {
-                        if ((temp.flags & Goal.MASK_GOAL_NAKE) == 0) {
-                            wr.write(SpecialFriendly.CODE_LAST_GOAL);
-                        } else {
-                            wr.write(SpecialFriendly.CODE_LAST_META);
-                        }
+                        wr.write(SpecialFriendly.CODE_LAST_GOAL);
                     }
                     wr.write(' ');
                     fp.pw.unparseStatement(branch, ref);

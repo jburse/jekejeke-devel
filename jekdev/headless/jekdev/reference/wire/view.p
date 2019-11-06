@@ -118,18 +118,20 @@ meta_both(Thread, Headers) :-
    current_thread_flag(Thread, sys_thread_lastmod, Millis1),
    current_thread_flag(Thread, sys_thread_store, Store),
    store_property(Store, sys_lastmod(Millis2)),
-   Millis is max(Millis1,Millis2),
+   Millis is max(Millis1, Millis2),
    make_header_all(Millis, Headers, []).
 
 % make_header_all(+Integer, -List, +List)
 :- private make_header_all/3.
 make_header_all(0, Headers, Headers) :- !.
 make_header_all(Millis, ['Content-Type'-'text/html; charset=UTF-8',
-                           'Last-Modified'-Formatted,
-                           'ETag'-Quoted|Rest], Rest) :-
+   
+   'Last-Modified'-Formatted,
+   
+   'ETag'-Quoted|Rest], Rest) :-
    rfc1123_atom(Millis, Formatted),
    atom_number(Atom, Millis),
-   atom_split(Quoted, '', ['"',Atom,'"']).
+   atom_split(Quoted, '', ['"', Atom, '"']).
 
 /***************************************************************/
 /* HTML Response Text                                          */
@@ -162,9 +164,7 @@ raw_begin(Response, Title, Opt) :-
    write(Response, '  <head>\r\n'),
    write(Response, '      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\r\n'),
    write(Response, '      <meta name="viewport" content="width=device-width, initial-scale=1.0">\r\n'),
-   write(Response, '      <title>'),
-   html_escape(Response, Title),
-   write(Response, '</title>\r\n'),
+   write(Response, '      <title>'), html_escape(Response, Title), write(Response, '</title>\r\n'),
    html_begin_opt(Response, Opt),
    write(Response, '  </head>\r\n').
 

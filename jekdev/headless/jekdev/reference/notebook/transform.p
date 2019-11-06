@@ -92,7 +92,7 @@
 % schema_digest(+XSDSchema, +DomElement)
 :- public schema_digest/2.
 :- foreign(schema_digest/2, 'ForeignTransform',
-      sysXsdDigest('Interpreter','XSDSchema','DomElement')).
+      sysXsdDigest('Interpreter', 'XSDSchema', 'DomElement')).
 
 /**
  * data_check(D, S, O):
@@ -102,7 +102,7 @@
 % data_check(+AbstractDom, +XSDSchema, +List)
 :- public data_check/3.
 :- foreign(data_check/3, 'ForeignTransform',
-      sysXMLCheck('AbstractDom','XSDSchema','Object')).
+      sysXMLCheck('AbstractDom', 'XSDSchema', 'Object')).
 
 /**
  * sheet_transform(T, S, C, O):
@@ -113,7 +113,7 @@
 :- public sheet_transform/4.
 :- foreign(sheet_transform/4, 'ForeignTransform',
       sysXSLTransform('Interpreter',
-         'AbstractDom','Writer','String','Object')).
+      'AbstractDom', 'Writer', 'String', 'Object')).
 
 /**
  * sheet_check(T, O):
@@ -123,4 +123,4 @@
 % sheet_check(+AbstractDom, +List)
 :- public sheet_check/2.
 :- foreign(sheet_check/2, 'ForeignTransform',
-      sysXSLCheck('Interpreter','AbstractDom','Object')).
+      sysXSLCheck('Interpreter', 'AbstractDom', 'Object')).

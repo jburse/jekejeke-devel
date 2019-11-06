@@ -57,8 +57,7 @@
  */
 % is_json(+Term)
 :- public is_json/1.
-is_json(X) :-
-   var(X), !, fail.
+is_json(X) :- var(X), !, fail.
 is_json({}) :- !.
 is_json({_}).
 
@@ -69,36 +68,31 @@ is_json({_}).
  */
 % get_json(+Term, +Json, -Term)
 :- public get_json/3.
-get_json(_, T, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
+get_json(_, T, _) :- var(T),
+   throw(error(instantiation_error, _)).
 get_json(_, {}, _) :- !, fail.
-get_json(_, {M}, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
-get_json(K, {M}, W) :-
-   ground(K), !,
+get_json(_, {M}, _) :- var(M),
+   throw(error(instantiation_error, _)).
+get_json(K, {M}, W) :- ground(K), !,
    get_json_unord(M, K, W).
 get_json(K, {M}, W) :- !,
    get_json_enum(M, K, W).
 get_json(_, T, _) :-
-   throw(error(type_error(json,T),_)).
+   throw(error(type_error(json, T), _)).
 
 % get_json_unord(+Map, +Term, -Term)
 % See experiment/maps:get/3
 :- private get_json_unord/3.
-get_json_unord(K:V, K, W) :- !,
-   W = V.
-get_json_unord((K:V,_), K, W) :- !,
-   W = V.
-get_json_unord((_,M), K, V) :-
+get_json_unord(K:V, K, W) :- !, W = V.
+get_json_unord((K:V, _), K, W) :- !, W = V.
+get_json_unord((_, M), K, V) :-
    get_json_unord(M, K, V).
 
 % get_json_enum(+Map, +Term, -Term)
 :- private get_json_enum/3.
 get_json_enum(K:V, K, V).
-get_json_enum((K:V,_), K, V).
-get_json_enum((_,M), K, V) :-
+get_json_enum((K:V, _), K, V).
+get_json_enum((_, M), K, V) :-
    get_json_enum(M, K, V).
 
 /**
@@ -108,41 +102,37 @@ get_json_enum((_,M), K, V) :-
  */
 % select_json(+Json, +Json, -Json)
 :- public select_json/3.
-select_json(_, T, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
+select_json(_, T, _) :- var(T),
+   throw(error(instantiation_error, _)).
 select_json(S, {}, R) :- !,
    select_json2(S, true, R).
-select_json(_, {M}, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
+select_json(_, {M}, _) :- var(M),
+   throw(error(instantiation_error, _)).
 select_json(S, {M}, R) :- !,
    select_json2(S, M, R).
 select_json(_, T, _) :-
-   throw(error(type_error(json,T),_)).
+   throw(error(type_error(json, T), _)).
 
 % select_json2(+Json, +Map, -Json)
 :- private select_json2/3.
-select_json2(S, _, _) :-
-   var(S),
-   throw(error(instantiation_error,_)).
+select_json2(S, _, _) :- var(S),
+   throw(error(instantiation_error, _)).
 select_json2({}, M, R) :- !,
    make_json(M, R).
-select_json2({M}, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
+select_json2({M}, _, _) :- var(M),
+   throw(error(instantiation_error, _)).
 select_json2({N}, M, R) :- !,
    del_json_unord(N, M, O),
    make_json(O, R).
 select_json2(S, _, _) :-
-   throw(error(type_error(json,S),_)).
+   throw(error(type_error(json, S), _)).
 
 % del_json_unord(+Map, +Map, -Map)
 :- private del_json_unord/3.
 del_json_unord(_, true, _) :- !, fail.
 del_json_unord(K:V, M, N) :-
    del_json_unord(M, K, V, N).
-del_json_unord((K:V,M), N, O) :-
+del_json_unord((K:V, M), N, O) :-
    del_json_unord(N, K, V, H),
    del_json_unord(M, H, O).
 
@@ -153,46 +143,41 @@ del_json_unord((K:V,M), N, O) :-
  */
 % del_json(+Term, +Json, -Term, -Json)
 :- public del_json/4.
-del_json(_, T, _, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
+del_json(_, T, _, _) :- var(T),
+   throw(error(instantiation_error, _)).
 del_json(_, {}, _, _) :- !, fail.
-del_json(_, {M}, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
-del_json(K, {M}, V, R) :-
-   ground(K), !,
+del_json(_, {M}, _, _) :- var(M),
+   throw(error(instantiation_error, _)).
+del_json(K, {M}, V, R) :- ground(K), !,
    del_json_unord(M, K, V, N),
    make_json(N, R).
 del_json(K, {M}, V, R) :- !,
    del_json_enum(M, K, V, N),
    make_json(N, R).
 del_json(_, T, _, _) :-
-   throw(error(type_error(json,T),_)).
+   throw(error(type_error(json, T), _)).
 
 % del_json_unord(+Map, +Term, -Term, -Map)
 % See experiment/maps:remove/3
 :- private del_json_unord/4.
-del_json_unord(K:V, K, W, true) :- !,
-   W = V.
-del_json_unord((K:V,M), K, W, M) :- !,
-   W = V.
-del_json_unord((X,M), K, V, R) :-
+del_json_unord(K:V, K, W, true) :- !, W = V.
+del_json_unord((K:V, M), K, W, M) :- !, W = V.
+del_json_unord((X, M), K, V, R) :-
    del_json_unord(M, K, V, N),
    make_and(N, X, R).
 
 % del_json_enum(+Map, +Term, -Term, -Map)
 :- private del_json_enum/4.
 del_json_enum(K:V, K, V, true).
-del_json_enum((K:V,M), K, V, M).
-del_json_enum((X,M), K, V, R) :-
+del_json_enum((K:V, M), K, V, M).
+del_json_enum((X, M), K, V, R) :-
    del_json_enum(M, K, V, N),
    make_and(N, X, R).
 
 % make_and(+Map, +Pair, -Map)
 :- private make_and/3.
 make_and(true, X, X) :- !.
-make_and(M, X, (X,M)).
+make_and(M, X, (X, M)).
 
 /**
  * put_json(S, T, R):
@@ -201,41 +186,37 @@ make_and(M, X, (X,M)).
  */
 % put_json(+Json, +Json, -Json)
 :- public put_json/3.
-put_json(_, T, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
+put_json(_, T, _) :- var(T),
+   throw(error(instantiation_error, _)).
 put_json(S, {}, R) :- !,
    put_json2(S, true, R).
-put_json(_, {M}, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
+put_json(_, {M}, _) :- var(M),
+   throw(error(instantiation_error, _)).
 put_json(S, {M}, R) :- !,
    put_json2(S, M, R).
 put_json(_, T, _) :-
-   throw(error(type_error(json,T),_)).
+   throw(error(type_error(json, T), _)).
 
 % put_json2(+Json, +Map, -Json)
 :- private put_json2/3.
-put_json2(S, _, _) :-
-   var(S),
-   throw(error(instantiation_error,_)).
+put_json2(S, _, _) :- var(S),
+   throw(error(instantiation_error, _)).
 put_json2({}, M, R) :- !,
    make_json(M, R).
-put_json2({M}, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
+put_json2({M}, _, _) :- var(M),
+   throw(error(instantiation_error, _)).
 put_json2({N}, M, R) :- !,
    put_json_unord(N, M, O),
    make_json(O, R).
 put_json2(S, _, _) :-
-   throw(error(type_error(json,S),_)).
+   throw(error(type_error(json, S), _)).
 
 % put_json_unord(+Map, +Map, -Map)
 :- private put_json_unord/3.
 put_json_unord(N, true, N) :- !.
 put_json_unord(K:V, M, N) :-
    put_json_unord(M, K, V, N).
-put_json_unord((K:V,M), N, O) :-
+put_json_unord((K:V, M), N, O) :-
    put_json_unord(N, K, V, H),
    put_json_unord(M, H, O).
 
@@ -246,34 +227,30 @@ put_json_unord((K:V,M), N, O) :-
  */
 % put_json(+Term, +Json, +Term, -Json)
 :- public put_json/4.
-put_json(_, T, _, _) :-
-   var(T),
-   throw(error(instantiation_error,_)).
-put_json(K, _, _, _) :-
-   \+ ground(K),
-   throw(error(instantiation_error,_)).
+put_json(_, T, _, _) :- var(T),
+   throw(error(instantiation_error, _)).
+put_json(K, _, _, _) :- \+ ground(K),
+   throw(error(instantiation_error, _)).
 put_json(K, {}, V, R) :- !,
    make_json(K:V, R).
-put_json(_, {M}, _, _) :-
-   var(M),
-   throw(error(instantiation_error,_)).
+put_json(_, {M}, _, _) :- var(M),
+   throw(error(instantiation_error, _)).
 put_json(K, {M}, V, R) :- !,
    put_json_unord(M, K, V, N),
    make_json(N, R).
 put_json(_, T, _, _) :-
-   throw(error(type_error(json,T),_)).
+   throw(error(type_error(json, T), _)).
 
 % put_json_unord(+Map, +Term, +Term, -Map)
 % See experiment/maps:put/4
 :- private put_json_unord/4.
 put_json_unord(K:_, K, W, K:W) :- !.
-put_json_unord(K:V, J, W, (K:V,J:W)).
-put_json_unord((K:_,M), K, W, (K:W,M)) :- !.
-put_json_unord((X,M), K, V, (X,N)) :-
+put_json_unord(K:V, J, W, (K:V, J:W)).
+put_json_unord((K:_, M), K, W, (K:W, M)) :- !.
+put_json_unord((X, M), K, V, (X, N)) :-
    put_json_unord(M, K, V, N).
 
 % make_json(+Map, -Json)
 :- private make_json/2.
-make_json(true, R) :- !,
-   R = {}.
+make_json(true, R) :- !, R = {}.
 make_json(M, {M}).

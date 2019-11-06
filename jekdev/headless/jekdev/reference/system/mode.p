@@ -58,18 +58,15 @@
 :- static sys_in/0.
 :- set_predicate_property(sys_in/0, sys_noinstrument).
 :- set_predicate_property(sys_in/0, sys_nostack).
-sys_in :-
-   sys_notrace_chk(0), !.
-sys_in :-
-   sys_port_show(0), sys_in2.
+sys_in :- sys_notrace_chk(0), !.
+sys_in :- sys_port_show(0), sys_in2.
 
 :- private sys_in2/0.
 :- static sys_in2/0.
 :- set_predicate_property(sys_in2/0, sys_noinstrument).
 :- set_predicate_property(sys_in2/0, sys_nostack).
 sys_in2.
-sys_in2 :-
-   sys_port_show(1), fail.
+sys_in2 :- sys_port_show(1), fail.
 
 /******************************************************************/
 /* sys_out/0                                                      */
@@ -86,22 +83,17 @@ sys_in2 :-
 :- static sys_out/0.
 :- set_predicate_property(sys_out/0, sys_noinstrument).
 :- set_predicate_property(sys_out/0, sys_nostack).
-sys_out :-
-   sys_notrace_chk(2), !.
-sys_out :-
-   sys_port_show(2), sys_out2.
+sys_out :- sys_notrace_chk(2), !.
+sys_out :- sys_port_show(2), sys_out2.
 
 :- private sys_out2/0.
 :- static sys_out2/0.
 :- set_predicate_property(sys_out2/0, sys_noinstrument).
 :- set_predicate_property(sys_out2/0, sys_nostack).
-sys_out2 :-
-   sys_cut_chk(3), !.
-sys_out2 :-
-   sys_goal_chk(3), !, sys_goal_cut.
+sys_out2 :- sys_cut_chk(3), !.
+sys_out2 :- sys_goal_chk(3), !, sys_goal_cut.
 sys_out2.
-sys_out2 :-
-   sys_port_show(3), fail.
+sys_out2 :- sys_port_show(3), fail.
 
 /******************************************************************/
 /* sys_at/0                                                       */
@@ -119,20 +111,16 @@ sys_out2 :-
 :- static sys_at/0.
 :- set_predicate_property(sys_at/0, sys_noinstrument).
 :- set_predicate_property(sys_at/0, sys_nostack).
-sys_at :-
-   sys_notrace_chk(4), !.
-sys_at :-
-   sys_port_show(4), sys_at2.
+sys_at :- sys_notrace_chk(4), !.
+sys_at :- sys_port_show(4), sys_at2.
 
 :- private sys_at2/0.
 :- static sys_at2/0.
 :- set_predicate_property(sys_at2/0, sys_noinstrument).
 :- set_predicate_property(sys_at2/0, sys_nostack).
-sys_at2 :-
-   sys_clause_chk(5), !.
+sys_at2 :- sys_clause_chk(5), !.
 sys_at2.
-sys_at2 :-
-   sys_port_show(5), fail.
+sys_at2 :- sys_port_show(5), fail.
 
 /**
  * sys_notrace_chk(P):

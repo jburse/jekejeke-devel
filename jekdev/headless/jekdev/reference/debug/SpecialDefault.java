@@ -1,39 +1,18 @@
 package jekdev.reference.debug;
 
-import jekdev.model.builtin.SupervisorTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.inspection.SpecialFrame;
+import jekdev.reference.inspection.SpecialProvable;
 import jekdev.reference.system.SpecialMode;
-import jekpro.frequent.standard.SupervisorCall;
-import jekpro.frequent.stream.ForeignConsole;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
-import jekpro.model.rope.Directive;
-import jekpro.model.rope.Intermediate;
-import jekpro.model.rope.LoadOpts;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialQuali;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
-import matula.util.data.MapHashLink;
-import matula.util.regex.ScannerError;
-import matula.util.system.ConnectionReader;
-import matula.util.system.OpenOpts;
-import matula.util.wire.LangProperties;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.Writer;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>Provides a special predicate for default debugger.</p>
@@ -126,15 +105,17 @@ public final class SpecialDefault extends AbstractSpecial {
                 case SPECIAL_SPY:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                    Predicate.checkExistentProvable(pick, temp[0], ref);
+                    Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                            ref, en, CachePredicate.MASK_CACH_UCHK);
+                    SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                     ((StoreTrace) en.store).addSpyPoint(pick.getArity(), pick.getFun());
                     return true;
                 case SPECIAL_NOSPY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                    Predicate.checkExistentProvable(pick, temp[0], ref);
+                    pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                            ref, en, CachePredicate.MASK_CACH_UCHK);
+                    SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                     ((StoreTrace) en.store).removeSpyPoint(pick.getArity(), pick.getFun());
                     return true;
                 case SPECIAL_SYS_SPYING:

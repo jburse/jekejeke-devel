@@ -40,6 +40,9 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FlagFactoryTrace extends AbstractFlag<Engine> {
+    public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
+            = new MapHash<String, AbstractFlag<Engine>>();
+
     public final static String OP_SYS_MONITOR_CONFIG = "sys_monitor_config";
     public final static String OP_SYS_MONITOR_RUNNING = "sys_monitor_running";
     public final static String OP_SYS_MONITOR_LOGGING = "sys_monitor_logging";
@@ -57,17 +60,10 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
         super(i);
     }
 
-    /**
-     * <p>Define the prolog flags.</p>
-     *
-     * @return The prolog flags.
-     */
-    static MapHash<String, AbstractFlag<Engine>> defineFlags() {
-        MapHash<String, AbstractFlag<Engine>> prologflags = new MapHash<String, AbstractFlag<Engine>>();
-        prologflags.add(OP_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
-        prologflags.add(OP_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
-        prologflags.add(OP_SYS_MONITOR_LOGGING, new FlagFactoryTrace(FLAG_SYS_MONITOR_LOGGING));
-        return prologflags;
+    static {
+        DEFAULT.add(OP_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
+        DEFAULT.add(OP_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
+        DEFAULT.add(OP_SYS_MONITOR_LOGGING, new FlagFactoryTrace(FLAG_SYS_MONITOR_LOGGING));
     }
 
     /**

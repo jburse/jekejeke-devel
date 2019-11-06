@@ -2,10 +2,7 @@ package jekdev.reference.inspection;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Operator;
@@ -48,10 +45,8 @@ public final class SpecialSyntax extends AbstractSpecial {
     private final static int SPECIAL_SYS_CURRENT_SYNTAX = 0;
     private final static int SPECIAL_SYS_CURRENT_SYNTAX_CHK = 1;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY = 2;
-    /* private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 3; */
-    /* private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 4; */
-    private final static int SPECIAL_SET_SYNTAX_PROPERTY = 5;
-    private final static int SPECIAL_RESET_SYNTAX_PROPERTY = 6;
+    private final static int SPECIAL_SET_SYNTAX_PROPERTY = 3;
+    private final static int SPECIAL_RESET_SYNTAX_PROPERTY = 4;
 
     /**
      * <p>Create a syntax direct access builtin.</p>
@@ -86,17 +81,19 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Operator op = SpecialOper.operToSyntax(temp[0], ref, en);
-                if (op == null)
+                Operator oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (oper == null)
                     return false;
                 return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialOper.operToSyntax(temp[0], ref, en);
-                if (op == null)
+                oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (oper == null)
                     return false;
-                SpecialOper.operToProperties(op, en);
+                SpecialOper.operToProperties(oper, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -107,24 +104,26 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialOper.operToSyntax(temp[0], ref, en);
-                Operator.checkExistentSyntax(op, temp[0], ref);
+                oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialSyntax.checkExistentSyntax(oper, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.setOperProp(op, en.skel, en.display, en);
+                SpecialOper.setOperProp(oper, en.skel, en.display, en);
                 return true;
             case SPECIAL_RESET_SYNTAX_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                op = SpecialOper.operToSyntax(temp[0], ref, en);
-                Operator.checkExistentSyntax(op, temp[0], ref);
+                oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialSyntax.checkExistentSyntax(oper, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                SpecialOper.resetOperProp(op, en.skel, en.display, en);
+                SpecialOper.resetOperProp(oper, en.skel, en.display, en);
                 return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
@@ -156,6 +155,21 @@ public final class SpecialSyntax extends AbstractSpecial {
             store = store.parent;
         }
         return res;
+    }
+
+    /**
+     * <p>Assure that the operator is existent.</p>
+     *
+     * @param op The operator.
+     * @param t  The skel.
+     * @param d  The display.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void checkExistentSyntax(Operator op, Object t, Display d)
+            throws EngineMessage {
+        if (op == null)
+            throw new EngineMessage(EngineMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_SYNTAX, t), d);
     }
 
 }

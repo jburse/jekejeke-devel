@@ -63,7 +63,7 @@
 % memory_read(+Term, +Options, -Stream)
 :- public memory_read/3.
 :- foreign(memory_read/3, 'ForeignMemory',
-      sysMemoryRead('Object','Object')).
+      sysMemoryRead('Object', 'Object')).
 
 /**
  * memory_write(O, S):

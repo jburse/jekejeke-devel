@@ -63,8 +63,7 @@
  */
 % store_property(+Frame, -Property)
 :- public store_property/2.
-store_property(I, R) :-
-   var(R), !,
+store_property(I, R) :- var(R), !,
    sys_store_property(I, P),
    sys_member(R, P).
 store_property(I, R) :-
@@ -74,11 +73,11 @@ store_property(I, R) :-
 
 :- private sys_store_property/2.
 :- foreign(sys_store_property/2, 'ForeignStore',
-      sysStoreProperty('Interpreter','Knowledgebase')).
+      sysStoreProperty('Interpreter', 'Knowledgebase')).
 
 :- private sys_store_property_chk/3.
 :- foreign(sys_store_property_chk/3, 'ForeignStore',
-      sysStorePropertyChk('Interpreter','Knowledgebase','Object')).
+      sysStorePropertyChk('Interpreter', 'Knowledgebase', 'Object')).
 
 /**
  * set_store_property(S, Q):
@@ -87,7 +86,7 @@ store_property(I, R) :-
 % set_store_property(+Oper, +Property)
 :- public set_store_property/2.
 :- foreign(set_store_property/2, 'ForeignStore',
-      sysSetStoreProperty('Interpreter','Knowledgebase','Object')).
+      sysSetStoreProperty('Interpreter', 'Knowledgebase', 'Object')).
 
 /**
  * reset_store_property(S, Q):
@@ -96,7 +95,7 @@ store_property(I, R) :-
 % reset_store_property(+Oper, +Property)
 :- public reset_store_property/2.
 :- foreign(reset_store_property/2, 'ForeignStore',
-      sysResetStoreProperty('Interpreter','Knowledgebase','Object')).
+      sysResetStoreProperty('Interpreter', 'Knowledgebase', 'Object')).
 
 /**
  * current_store(T):
@@ -104,19 +103,18 @@ store_property(I, R) :-
  */
 % current_store(-Thread)
 :- public current_store/1.
-current_store(X) :-
-   var(X), !,
+current_store(X) :- var(X), !,
    sys_current_store(X).
 current_store(X) :-
    sys_current_store_chk(X).
 
 :- private sys_current_store/1.
 :- foreign(sys_current_store/1, 'ForeignStore',
-      sysCurrentStore('CallOut','Interpreter')).
+      sysCurrentStore('CallOut', 'Interpreter')).
 
 :- private sys_current_store_chk/1.
 :- foreign(sys_current_store_chk/1, 'ForeignStore',
-      sysCurrentStoreChk('Interpreter','Knowledgebase')).
+      sysCurrentStoreChk('Interpreter', 'Knowledgebase')).
 
 /**
  * stores:

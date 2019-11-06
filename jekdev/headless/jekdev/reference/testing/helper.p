@@ -73,9 +73,7 @@ report_begin_html(P, T, Y) :-
    write('<html author=''7''>'), nl,
    write('  <head>'), nl,
    write('    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">'), nl,
-   write('    <title editable="comment">'),
-   html_escape(T),
-   write('</title>'), nl,
+   write('    <title editable="comment">'), html_escape(T), write('</title>'), nl,
    write('  </head>'), nl,
    write('  <body>'), nl.
 
@@ -108,30 +106,20 @@ html_functor_type(_) :-
 
 % html_zebra_row(+Integer)
 html_zebra_row(N) :-
-   1 =:= N mod 2, !,
-   write('  <tr class="normrow">'), nl.
+   1 =:= N mod 2, !, write('  <tr class="normrow">'), nl.
 html_zebra_row(_) :-
    write('  <tr class="oddrow">'), nl.
 
 % html_pairs_data(+Pair)
 html_pairs_data(A-B) :-
-   write('    <td style="text-align: right;">'),
-   write(A),
-   write('</td>'), nl,
-   write('    <td style="text-align: right;">'),
-   write(B),
-   write('</td>'), nl,
-   S is A+B,
-   A1 is (A*200+S)//(2*S),
-   B1 is 100-A1,
+   write('    <td style="text-align: right;">'), write(A), write('</td>'), nl,
+   write('    <td style="text-align: right;">'), write(B), write('</td>'), nl,
+   S is A+B, A1 is (A*200+S)//(2*S), B1 is 100-A1,
    write('    <td style="text-align: center;">'),
    write('<div class="perfrom" style=''width: '),
-   write(A1),
-   write('%''>&#8203;</div>'),
+   write(A1), write('%''>&#8203;</div>'),
    write('<div class="perto" style=''width: '),
-   write(B1),
-   write('%''>&#8203;</div>'),
+   write(B1), write('%''>&#8203;</div>'),
    write('<div class="perover">'),
-   write(A1),
-   write('%</div>'),
+   write(A1), write('%</div>'),
    write('</td>'), nl.

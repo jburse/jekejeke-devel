@@ -41,8 +41,7 @@
 % some frame property
 :- public sys_call_goal/1.
 :- meta_predicate sys_call_goal(0).
-sys_call_goal(_) :-
-   throw(error(existence_error(body,sys_call_goal/1),_)).
+sys_call_goal(_) :- throw(error(existence_error(body, sys_call_goal/1), _)).
 
 /**
  * rule_ref(H, B, F):
@@ -52,7 +51,7 @@ sys_call_goal(_) :-
  */
 % rule_ref(+Term, -Goal, -Frame)
 :- public rule_ref/3.
-:- meta_predicate rule_ref(-1,0,?).
+:- meta_predicate rule_ref(-1, 0, ?).
 :- set_predicate_property(rule_ref/3, sys_noexpand).
 :- special(rule_ref/3, 'SpecialFrame', 0).
 
@@ -62,10 +61,9 @@ sys_call_goal(_) :-
  */
 % frame_property(+Frame, -Property)
 :- public frame_property/2.
-:- meta_predicate frame_property(?,0).
+:- meta_predicate frame_property(?, 0).
 :- set_predicate_property(frame_property/2, sys_noexpand).
-frame_property(I, R) :-
-   var(R), !,
+frame_property(I, R) :- var(R), !,
    sys_frame_property(I, P),
    sys_member(R, P).
 frame_property(I, R) :-

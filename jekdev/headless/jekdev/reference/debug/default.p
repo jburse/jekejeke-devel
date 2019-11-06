@@ -144,11 +144,9 @@ debug :-
  */
 % visible(+AtomOrList)
 :- public visible/1.
-visible(Name) :-
-   var(Name),
-   throw(error(instantiation_error,_)).
-visible(Name) :-
-   sys_name_flags(Name, Flags), !,
+visible(Name) :- var(Name),
+   throw(error(instantiation_error, _)).
+visible(Name) :- sys_name_flags(Name, Flags), !,
    set_prolog_flag(sys_visible, Flags).
 visible(Flags) :-
    set_prolog_flag(sys_visible, Flags).
@@ -158,10 +156,10 @@ visible(Flags) :-
 :- public sys_name_flags/2.
 sys_name_flags(off, []).
 sys_name_flags(loose, [call]).
-sys_name_flags(half, [call,redo]).
-sys_name_flags(tight, [call,redo,fail]).
-sys_name_flags(full, [call,exit,redo,fail]).
-sys_name_flags(all, [call,exit,redo,fail,head]).
+sys_name_flags(half, [call, redo]).
+sys_name_flags(tight, [call, redo, fail]).
+sys_name_flags(full, [call, exit, redo, fail]).
+sys_name_flags(all, [call, exit, redo, fail, head]).
 
 /***********************************************************************/
 /* Spy & Break Points                                                  */
@@ -175,24 +173,34 @@ sys_name_flags(all, [call,exit,redo,fail,head]).
 :- public debugging/0.
 debugging :-
    current_prolog_flag(debug, X),
-   write_term((:-set_prolog_flag(debug,X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- set_prolog_flag(debug, X)), [context(0)]),
+   write('.'),
+   nl,
+   fail.
 debugging :-
    current_prolog_flag(sys_visible, X),
-   write_term((:-visible(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- visible(X)), [context(0)]),
+   write('.'),
+   nl,
+   fail.
 debugging :-
    current_prolog_flag(sys_leash, X),
-   write_term((:-leash(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- leash(X)), [context(0)]),
+   write('.'),
+   nl,
+   fail.
 debugging :-
    spying(X),
-   write_term((:-spy(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- spy(X)), [context(0)]),
+   write('.'),
+   nl,
+   fail.
 debugging :-
    breaking(X, Y),
-   write_term((:-break(X,Y)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- break(X, Y)), [context(0)]),
+   write('.'),
+   nl,
+   fail.
 debugging.
 :- set_predicate_property(debugging/0, sys_notrace).
 
@@ -238,7 +246,7 @@ break(P, L) :-
    absolute_file_name(P, Q),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_store, Store),
-   set_store_property(Store, sys_break(Q,L)),
+   set_store_property(Store, sys_break(Q, L)),
    change_store(Store).
 :- set_predicate_property(break/2, sys_notrace).
 
@@ -252,7 +260,7 @@ nobreak(P, L) :-
    absolute_file_name(P, Q),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_store, Store),
-   reset_store_property(Store, sys_break(Q,L)),
+   reset_store_property(Store, sys_break(Q, L)),
    change_store(Store).
 :- set_predicate_property(nobreak/2, sys_notrace).
 
@@ -266,7 +274,7 @@ nobreak(P, L) :-
 breaking(P, L) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_store, Store),
-   store_property(Store, sys_break(Q,L)),
+   store_property(Store, sys_break(Q, L)),
    absolute_file_name(P, Q).
 
 /***********************************************************************/
@@ -288,10 +296,10 @@ sys_debug(Port, Frame) :-
  * prompts the user for actions, and then continues debugging.
  */
 % sys_debug_ask(+Atom, +Frame)
-sys_debug_ask(Port, Frame) :- repeat,
+sys_debug_ask(Port, Frame) :-
+   repeat,
    sys_trap(sys_debug_prompt(Port, Frame), E,
-      (  sys_error_type(E, system_error(_))
-      -> sys_raise(E)
+      (  sys_error_type(E, system_error(_)) -> sys_raise(E)
       ;  sys_error_message(E), fail)), !.
 
 % sys_debug_prompt(+Atom, +Frame)
@@ -307,17 +315,13 @@ sys_debug_prompt(Port, Frame) :-
 % sys_debug_prompt(+Atom, +Frame)
 :- private sys_debug_prompt/2.
 sys_debug_show(Port, Frame) :-
-   sys_goal_show(Port, Frame),
-   write(' ? '), flush_output,
-   (  read_line(L) -> true; exit),
+   sys_goal_show(Port, Frame), write(' ? '), flush_output,
+   (read_line(L) -> true; exit),
    thread_current(Thread),
-   (  L == ''
-   -> set_thread_flag(Thread, sys_tprompt, off)
+   (  L == '' -> set_thread_flag(Thread, sys_tprompt, off)
    ;  L == ? -> sys_debug_help
-   ;  term_atom(G, L, [terminator(period)]),
-      once(sys_ignore(G))),
-   current_thread_flag(Thread, sys_tprompt, Response),
-   Response \== ask_debug.
+   ;  term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
+   current_thread_flag(Thread, sys_tprompt, Response), Response \== ask_debug.
 
 % sys_debug_help
 :- private sys_debug_help/0.
@@ -343,13 +347,10 @@ sys_goal_show(Port, Frame) :-
    frame_property(Frame, sys_call_goal(Goal)),
    rebuild_goal(Goal, Rebuild),
    current_prolog_flag(sys_print_map, N),
-   write(V1),
-   write(' '),
-   write(D),
-   write(' '),
-   write(V2),
-   write(' '),
-   write_term(Rebuild, [context(0),quoted(true),variable_names(N)]).
+   write(V1), write(' '),
+   write(D), write(' '),
+   write(V2), write(' '),
+   write_term(Rebuild, [context(0), quoted(true), variable_names(N)]).
 
 % sys_goal_depth(+Frame, +Integer, -Integer)
 :- private sys_goal_depth/3.

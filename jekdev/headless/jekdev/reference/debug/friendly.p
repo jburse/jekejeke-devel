@@ -100,15 +100,15 @@ friendly :-
  */
 % friendly(+Indicator)
 :- public friendly/1.
-friendly(I) :-
-   ground(I), !,
+friendly(I) :- ground(I), !,
    friendly2(I).
 friendly(I) :-
-   bagof(I, (  sys_listing_user(U),
-               sys_intermediate_item_idx(U, I)), B),
+   bagof(I, (sys_listing_user(U),
+      sys_intermediate_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_friendly(I, U), fail.
+   sys_friendly(I, U),
+   fail.
 friendly(_).
 :- set_predicate_property(friendly/1, sys_notrace).
 
@@ -119,7 +119,8 @@ friendly2(I) :-
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
    sys_short_base(U),
-   sys_friendly(I, U), fail.
+   sys_friendly(I, U),
+   fail.
 friendly2(_).
 
 :- private sys_friendly/2.
@@ -143,15 +144,15 @@ instrumented :-
  */
 % instrumented(+Indicator)
 :- public instrumented/1.
-instrumented(I) :-
-   ground(I), !,
+instrumented(I) :- ground(I), !,
    instrumented2(I).
 instrumented(I) :-
-   bagof(I, (  sys_listing_user(U),
-               sys_intermediate_item_idx(U, I)), B),
+   bagof(I, (sys_listing_user(U),
+      sys_intermediate_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_instrumented(I, U), fail.
+   sys_instrumented(I, U),
+   fail.
 instrumented(_).
 :- set_predicate_property(instrumented/1, sys_notrace).
 
@@ -162,7 +163,8 @@ instrumented2(I) :-
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
    sys_short_base(U),
-   sys_instrumented(I, U), fail.
+   sys_instrumented(I, U),
+   fail.
 instrumented2(_).
 
 :- private sys_instrumented/2.

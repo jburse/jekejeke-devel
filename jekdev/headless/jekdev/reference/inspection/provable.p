@@ -71,8 +71,7 @@
  */
 % current_provable(-Indicator)
 :- public current_provable/1.
-current_provable(I) :-
-   ground(I), !,
+current_provable(I) :- ground(I), !,
    sys_current_provable_chk(I).
 current_provable(I) :-
    sys_current_provable(L),
@@ -86,16 +85,14 @@ current_provable(I) :-
 
 /**
  * provable_property(I, Q):
- * The predicate succeeds for the properties Q of the predicate I. The predicate
- * will also try to access invisible predicates.
+ * The predicate succeeds for the properties Q of the predicate I. The
+ * predicate will also access invisible predicates.
  */
 % provable_property(+-Indicator, -+Property)
 :- public provable_property/2.
-provable_property(I, R) :-
-   ground(I), !,
+provable_property(I, R) :- ground(I), !,
    provable_property2(I, R).
-provable_property(I, R) :-
-   var(R), !,
+provable_property(I, R) :- var(R), !,
    sys_current_provable(L),
    sys_member(I, L),
    sys_provable_property(I, P),
@@ -106,8 +103,7 @@ provable_property(I, R) :-
 
 % provable_property2(+Indicator, -Property)
 :- private provable_property2/2.
-provable_property2(I, R) :-
-   var(R), !,
+provable_property2(I, R) :- var(R), !,
    sys_provable_property(I, P),
    sys_member(R, P).
 provable_property2(I, R) :-
@@ -115,16 +111,15 @@ provable_property2(I, R) :-
    sys_provable_property_chk(I, F/A, P),
    sys_member(R, P).
 
+% already defined in pred.p of runtime
+% :- private sys_provable_property_chk/3.
+
+% already defined in pred.p of runtime
+% :- private sys_provable_property_idx/2.
+
+% sys_provable_property(+Indicator, -List)
 :- private sys_provable_property/2.
 :- special(sys_provable_property/2, 'SpecialProvable', 2).
-
-% already defined in body.p of runtime
-% :- private sys_provable_property_chk/3.
-% :- special(sys_provable_property_chk/3, 'SpecialProvable', 3).
-
-% already defined in body.p of runtime
-% :- private sys_provable_property_idx/2.
-% :- special(sys_provable_property_idx/2, 'SpecialProvable', 4).
 
 /**
  * set_provable_property(I, Q):
@@ -133,7 +128,7 @@ provable_property2(I, R) :-
  */
 % set_provable_property(+Oper, +Property)
 :- public set_provable_property/2.
-:- special(set_provable_property/2, 'SpecialProvable', 5).
+:- special(set_provable_property/2, 'SpecialProvable', 3).
 
 /**
  * reset_provable_property(I, Q):
@@ -142,7 +137,7 @@ provable_property2(I, R) :-
  */
 % reset_provable_property(+Oper, +Property)
 :- public reset_provable_property/2.
-:- special(reset_provable_property/2, 'SpecialProvable', 6).
+:- special(reset_provable_property/2, 'SpecialProvable', 4).
 
 /**
  * callable_property(C, Q):
@@ -150,8 +145,7 @@ provable_property2(I, R) :-
  */
 % callable_property(+Callable, -Property)
 :- public callable_property/2.
-callable_property(I, R) :-
-   var(R), !,
+callable_property(I, R) :- var(R), !,
    sys_callable_property(I, P),
    sys_member(R, P).
 callable_property(I, R) :-
@@ -160,10 +154,10 @@ callable_property(I, R) :-
    sys_member(R, P).
 
 :- private sys_callable_property/2.
-:- special(sys_callable_property/2, 'SpecialProvable', 7).
+:- special(sys_callable_property/2, 'SpecialProvable', 5).
 
 :- private sys_callable_property_chk/3.
-:- special(sys_callable_property_chk/3, 'SpecialProvable', 8).
+:- special(sys_callable_property_chk/3, 'SpecialProvable', 6).
 
 /**
  * set_callable_property(B, Q, A):
@@ -172,7 +166,7 @@ callable_property(I, R) :-
  */
 % reset_callable_property(-Callable, +Property, +Callable)
 :- public set_callable_property/3.
-:- special(set_callable_property/3, 'SpecialProvable', 9).
+:- special(set_callable_property/3, 'SpecialProvable', 7).
 
 /**
  * reset_callable_property(B, Q, A):
@@ -181,4 +175,4 @@ callable_property(I, R) :-
  */
 % reset_callable_property(-Callable, +Property, +Callable)
 :- public reset_callable_property/3.
-:- special(reset_callable_property/3, 'SpecialProvable', 10).
+:- special(reset_callable_property/3, 'SpecialProvable', 8).

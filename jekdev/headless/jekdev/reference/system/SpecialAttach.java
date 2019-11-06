@@ -1,9 +1,11 @@
 package jekdev.reference.system;
 
 import jekdev.model.builtin.SupervisorTrace;
+import jekdev.reference.inspection.SpecialProvable;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -82,8 +84,9 @@ public final class SpecialAttach extends AbstractSpecial {
             case SPECIAL_TSPY:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 ((SupervisorTrace) en.visor).addThreadSpyPoint(pick.getArity(), pick.getFun());
                 return true;
             case SPECIAL_SYS_TSPYING:
@@ -95,8 +98,9 @@ public final class SpecialAttach extends AbstractSpecial {
             case SPECIAL_TNOSPY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 ((SupervisorTrace) en.visor).removeThreadSpyPoint(pick.getArity(), pick.getFun());
                 return true;
             case SPECIAL_SYS_TBREAK:

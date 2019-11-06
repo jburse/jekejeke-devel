@@ -63,12 +63,10 @@ summary_batch :-
 
 % summary_batch(+Atom)
 :- public summary_batch/1.
+summary_batch(C) :- var(C),
+   throw(error(instantiation_error, _)).
 summary_batch(C) :-
-   var(C),
-   throw(error(instantiation_error,_)).
-summary_batch(C) :-
-   write('Generating '),
-   write('.'), nl,
+   write('Generating '), write('.'), nl,
    get_properties(testing, P),
    get_property(P, 'summary.summary.title', V),
    setup_call_cleanup(report_begin_html('06_summary.html', V, Y),
@@ -78,25 +76,20 @@ summary_batch(C) :-
 % html_page(+Atom)
 :- private html_page/1.
 html_page(true) :- !,
-   write('<h1 date='''),
-   get_time(T),
-   format_atom('%1$tF %1$tT', [T], TStr),
-   write(TStr),
+   write('<h1 date='''), get_time(T),
+   format_atom('%1$tF %1$tT', [T], TStr), write(TStr),
    get_properties(testing, P),
    get_property(P, 'summary.cover_and_result.h1', V1),
-   write('''>'),
-   html_escape(V1),
-   write('</h1>'), nl, html_cover_list, html_result_list.
+   write('''>'), html_escape(V1), write('</h1>'), nl,
+   html_cover_list,
+   html_result_list.
 html_page(_) :-
-   write('<h1 date='''),
-   get_time(T),
-   format_atom('%1$tF %1$tT', [T], TStr),
-   write(TStr),
+   write('<h1 date='''), get_time(T),
+   format_atom('%1$tF %1$tT', [T], TStr), write(TStr),
    get_properties(testing, P),
    get_property(P, 'summary.result.h1', V1),
-   write('''>'),
-   html_escape(V1),
-   write('</h1>'), nl, html_result_list.
+   write('''>'), html_escape(V1), write('</h1>'), nl,
+   html_result_list.
 
 /*************************************************************/
 /* Result Summary                                            */
@@ -107,53 +100,42 @@ html_page(_) :-
 html_result_list :-
    get_properties(testing, P),
    get_property(P, 'summary.result.h2', V1),
-   write('<h2>'),
-   html_escape(V1),
-   write('</h2>'), nl,
+   write('<h2>'), html_escape(V1), write('</h2>'), nl,
    result_summary(Z),
    write('<table class="rowtable">'), nl,
    write('  <tr class="headrow">'), nl,
    get_property(P, 'summary.result.table.1', V3),
-   write('  <th style="width: 20em">'),
-   html_escape(V3),
-   write('</th>'), nl,
+   write('  <th style="width: 20em">'), html_escape(V3), write('</th>'), nl,
    get_property(P, 'summary.result.table.2', V4),
-   write('  <th style="width: 4em">'),
-   html_escape(V4),
-   write('</th>'), nl,
+   write('  <th style="width: 4em">'), html_escape(V4), write('</th>'), nl,
    get_property(P, 'summary.result.table.3', V5),
-   write('  <th style="width: 4em">'),
-   html_escape(V5),
-   write('</th>'), nl,
+   write('  <th style="width: 4em">'), html_escape(V5), write('</th>'), nl,
    get_property(P, 'summary.result.table.4', V6),
-   write('  <th style="width: 12em">'),
-   html_escape(V6),
-   write('</th>'), nl,
-   write('  </tr>'), nl, html_result_member,
+   write('  <th style="width: 12em">'), html_escape(V6), write('</th>'), nl,
+   write('  </tr>'), nl,
+   html_result_member,
    write('  <tr class="headrow">'), nl,
    write('  <td>Total</td>'), nl,
    html_pairs_data(Z),
    write('  </tr>'), nl,
-   write('</table>'), nl, fail.
+   write('</table>'), nl,
+   fail.
 html_result_list.
 
 % html_result_member
 :- private html_result_member/0.
 html_result_member :-
    call_nth(bagof(N, U^result_suite_view(D, N, U), L), I),
-   findall(W, (  member(N, L),
-                 result_suite_view(D, N, W)), V),
+   findall(W, (member(N, L), result_suite_view(D, N, W)), V),
    sys_sum_oknok(V, Z),
    html_zebra_row(I),
    make_uri('09_results/package.html', '', D, DUri),
    uri_encode(DUri, DUriEnc),
-   write('  <td><a href="'),
-   html_escape(DUriEnc),
-   write('">'),
-   html_escape(D),
-   write('</a></td>'), nl,
+   write('  <td><a href="'), html_escape(DUriEnc),
+   write('">'), html_escape(D), write('</a></td>'), nl,
    html_pairs_data(Z),
-   write('  </tr>'), nl, fail.
+   write('  </tr>'), nl,
+   fail.
 html_result_member.
 
 /*************************************************************/
@@ -165,52 +147,41 @@ html_result_member.
 html_cover_list :-
    get_properties(testing, P),
    get_property(P, 'summary.cover.h2', V1),
-   write('<h2>'),
-   html_escape(V1),
-   write('</h2>'), nl,
+   write('<h2>'), html_escape(V1), write('</h2>'), nl,
    cover_summary(Z),
    write('<table class="rowtable">'), nl,
    write('  <tr class="headrow">'), nl,
    get_property(P, 'summary.cover.table.1', V3),
-   write('  <th style="width: 20em">'),
-   html_escape(V3),
-   write('</th>'), nl,
+   write('  <th style="width: 20em">'), html_escape(V3), write('</th>'), nl,
    get_property(P, 'summary.cover.table.2', V4),
-   write('  <th style="width: 4em">'),
-   html_escape(V4),
-   write('</th>'), nl,
+   write('  <th style="width: 4em">'), html_escape(V4), write('</th>'), nl,
    get_property(P, 'summary.cover.table.3', V5),
-   write('  <th style="width: 4em">'),
-   html_escape(V5),
-   write('</th>'), nl,
+   write('  <th style="width: 4em">'), html_escape(V5), write('</th>'), nl,
    get_property(P, 'summary.cover.table.4', V6),
-   write('  <th style="width: 12em">'),
-   html_escape(V6),
-   write('</th>'), nl,
-   write('  </tr>'), nl, html_cover_member,
+   write('  <th style="width: 12em">'), html_escape(V6), write('</th>'), nl,
+   write('  </tr>'), nl,
+   html_cover_member,
    write('  <tr class="headrow">'), nl,
    write('  <td>Total</td>'), nl,
    html_pairs_data(Z),
    write('  </tr>'), nl,
-   write('</table>'), nl, fail.
+   write('</table>'), nl,
+   fail.
 html_cover_list.
 
 % html_cover_member
 :- private html_cover_member/0.
 html_cover_member :-
    call_nth(bagof(S, U^N^cover_source_view(S, D, N, U), L), I),
-   findall(W, (  member(S, L),
-                 cover_source_view(S, D, N, W)), V),
+   findall(W, (member(S, L), cover_source_view(S, D, N, W)), V),
    sys_sum_oknok(V, Z),
    html_zebra_row(I),
    make_uri('07_coverage/package.html', '', D, DUri),
    uri_encode(DUri, DUriEnc),
-   write('  <td><a href="'),
-   html_escape(DUriEnc),
-   write('">'),
-   html_escape(D),
-   write('</a></td>'), nl,
+   write('  <td><a href="'), html_escape(DUriEnc),
+   write('">'), html_escape(D), write('</a></td>'), nl,
    html_pairs_data(Z),
-   write('  </tr>'), nl, fail.
+   write('  </tr>'), nl,
+   fail.
 html_cover_member.
 

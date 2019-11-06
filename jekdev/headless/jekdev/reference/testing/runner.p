@@ -232,27 +232,36 @@ sys_test_body_debug(_, 0-1) :-
  */
 % runner_batch
 :- public runner_batch/0.
-runner_batch :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
+runner_batch :-
+   sys_remove_result,
+   sys_remove_predicate,
+   sys_remove_suite,
+   sys_remove_summary,
    rule_ref(case(Fun, Arity, Suite, Case), Body, _),
-%   write('Case='), write(Case), nl,
+   %   write('Case='), write(Case), nl,
    sys_test_body(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
    sys_update_predicate(Fun, Arity, Suite, OkNok),
    sys_update_suite(Suite, OkNok),
-   sys_update_summary(OkNok), fail.
+   sys_update_summary(OkNok),
+   fail.
 runner_batch.
 
 % runner_batch_debug
 :- public runner_batch_debug/0.
-runner_batch_debug :- sys_remove_result, sys_remove_predicate, sys_remove_suite, sys_remove_summary,
+runner_batch_debug :-
+   sys_remove_result,
+   sys_remove_predicate,
+   sys_remove_suite,
+   sys_remove_summary,
    rule_ref(case(Fun, Arity, Suite, Case), Body, _),
-   write('Case='),
-   write(Case-Body),
+   write('Case='), write(Case-Body),
    sys_test_body_debug(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
    sys_update_predicate(Fun, Arity, Suite, OkNok),
    sys_update_suite(Suite, OkNok),
-   sys_update_summary(OkNok), fail.
+   sys_update_summary(OkNok),
+   fail.
 runner_batch_debug.
 
 /***************************************************************/
@@ -260,18 +269,17 @@ runner_batch_debug.
 /***************************************************************/
 
 % result_suite_view(-+Atom, -+Atom, --Pair)
-result_suite_view(Directory, Name, OkNok) :-
-   var(Directory),
-   var(Name), !,
+result_suite_view(Directory, Name, OkNok) :- var(Directory), !,
+   result_suite(Suite, OkNok),
+   split_suite(Suite, Directory, Name).
+result_suite_view(Directory, Name, OkNok) :- var(Name), !,
    result_suite(Suite, OkNok),
    split_suite(Suite, Directory, Name).
 result_suite_view(Directory, Name, OkNok) :-
-   atom_split(Suite, '_', [Directory,Name]),
+   split_suite(Suite, Directory, Name),
    result_suite(Suite, OkNok).
 
 % split_suite(+Atom, +Atom, -Atom)
 split_suite(Suite, Directory, Name) :-
-   sub_atom(Suite, A, _, B, '_'),
-   sub_atom(Suite, 0, A, _, Directory),
-   sub_atom(Suite, _, B, 0, Name).
+   atom_split(Suite, '_', [Directory, Name]).
 

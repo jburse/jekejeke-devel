@@ -140,12 +140,18 @@ sys_cover_body_debug(_) :-
  */
 % tracker_batch
 :- public tracker_batch/0.
-tracker_batch :- reset_texts, reset_cover_hit,
-   visible([head,exit]), trace,
+tracker_batch :-
+   reset_texts,
+   reset_cover_hit,
+   visible([head, exit]),
+   trace,
    rule_ref(case(_, _, _, _), Body, _),
-   sys_cover_body(Body), fail.
-tracker_batch :- nodebug,
-   visible([call,exit,redo,fail]), set_texts.
+   sys_cover_body(Body),
+   fail.
+tracker_batch :-
+   nodebug,
+   visible([call, exit, redo, fail]),
+   set_texts.
 
 /**
  * tracker_batch_debug:
@@ -153,21 +159,27 @@ tracker_batch :- nodebug,
  */
 % tracker_batch_debug
 :- public tracker_batch_debug/0.
-tracker_batch_debug :- reset_texts, reset_cover_hit,
-   visible([head,exit]), trace,
+tracker_batch_debug :-
+   reset_texts,
+   reset_cover_hit,
+   visible([head, exit]),
+   trace,
    rule_ref(case(_, _, _, Case), Body, _),
-   write('Case='),
-   write(Case-Body),
-   sys_cover_body_debug(Body), fail.
-tracker_batch_debug :- nodebug,
-   visible([call,exit,redo,fail]), set_texts.
+   write('Case='), write(Case-Body),
+   sys_cover_body_debug(Body),
+   fail.
+tracker_batch_debug :-
+   nodebug,
+   visible([call, exit, redo, fail]),
+   set_texts.
 
 % reset_texts
 :- private reset_texts/0.
 reset_texts :-
    text(X),
    absolute_file_name(X, Y),
-   reset_source_property(Y, sys_notrace), fail.
+   reset_source_property(Y, sys_notrace),
+   fail.
 reset_texts.
 
 % set_texts
@@ -175,7 +187,8 @@ reset_texts.
 set_texts :-
    text(X),
    absolute_file_name(X, Y),
-   set_source_property(Y, sys_notrace), fail.
+   set_source_property(Y, sys_notrace),
+   fail.
 set_texts.
 
 /****************************************************************/
@@ -301,8 +314,9 @@ sys_analyze_text(InName) :-
 
 % sys_analyze_text(+Stream, +Atom, +Atom)
 :- private sys_analyze_text/3.
-sys_analyze_text(InStream, SrcPin, OrigSrcPin) :- repeat,
-   read_term(InStream, Term, [source(SrcPin),line_no(Line1)]),
+sys_analyze_text(InStream, SrcPin, OrigSrcPin) :-
+   repeat,
+   read_term(InStream, Term, [source(SrcPin), line_no(Line1)]),
    (  Term == end_of_file -> !
    ;  (  at_end_of_stream(InStream)
       -> stream_property(InStream, line_no(L)),
@@ -314,10 +328,12 @@ sys_analyze_text(InStream, SrcPin, OrigSrcPin) :- repeat,
       sys_update_predicate(Fun, Arity, OrigSrcPin, OkNok),
       sys_update_source(OrigSrcPin, OkNok),
       sys_update_summary(OkNok),
-      (  Term = (:-begin_module(Module))
+      (  Term = (:- begin_module(Module))
       -> absolute_file_name(verbatim(Module), LocalSrcPin),
-         sys_analyze_text(InStream, LocalSrcPin, OrigSrcPin), fail
-      ;  Term = (:-end_module) -> !; fail)).
+         sys_analyze_text(InStream, LocalSrcPin, OrigSrcPin),
+         fail
+      ;  Term = (:- end_module) -> !
+      ;  fail)).
 
 /**
  * analyze_batch:
@@ -325,9 +341,14 @@ sys_analyze_text(InStream, SrcPin, OrigSrcPin) :- repeat,
  */
 % analyze_batch
 :- public analyze_batch/0.
-analyze_batch :- sys_remove_cover, sys_remove_predicate, sys_remove_source, sys_remove_summary,
+analyze_batch :-
+   sys_remove_cover,
+   sys_remove_predicate,
+   sys_remove_source,
+   sys_remove_summary,
    text(X),
-   sys_analyze_text(X), fail.
+   sys_analyze_text(X),
+   fail.
 analyze_batch.
 
 /*************************************************************/
@@ -337,24 +358,18 @@ analyze_batch.
 % list_cover_source
 :- public list_cover_source/0.
 list_cover_source :-
-   write('Ok\tNok\tSource'), nl, list_cover_source_data,
+   write('Ok\tNok\tSource'), nl,
+   list_cover_source_data,
    cover_summary(Ok-Nok),
-   write(Ok),
-   write('\t'),
-   write(Nok),
-   write('\tTotal'), nl.
+   write(Ok), write('\t'), write(Nok), write('\tTotal'), nl.
 
 % list_cover_source_data
 :- private list_cover_source_data/0.
 list_cover_source_data :-
    cover_source_view(_, Directory, Name, Ok-Nok),
-   write(Ok),
-   write('\t'),
-   write(Nok),
-   write('\t'),
-   write(Directory),
-   write(/),
-   write(Name), nl, fail.
+   write(Ok), write('\t'), write(Nok), write('\t'),
+   write(Directory), write(/), write(Name), nl,
+   fail.
 list_cover_source_data.
 
 /***************************************************************/

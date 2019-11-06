@@ -62,7 +62,7 @@ start_monitor :-
 :- private start_monitor/1.
 start_monitor(-1) :- !.
 start_monitor(P) :-
-   submit((  run_http(wire/monitor, P), fail; true), _).
+   submit((run_http(wire/monitor, P), fail; true), _).
 
 /**
  * initialized(O, S):

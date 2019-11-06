@@ -1,9 +1,11 @@
 package jekdev.reference.debug;
 
+import jekdev.reference.inspection.SpecialProvable;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -76,8 +78,9 @@ public final class SpecialDump extends AbstractSpecial {
             case SPECIAL_SYS_DUMP:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 AbstractDelegate fun = pick.del;
                 AbstractDefined.checkDefinedRead(fun, pick, en);
                 Object obj = en.visor.curoutput;

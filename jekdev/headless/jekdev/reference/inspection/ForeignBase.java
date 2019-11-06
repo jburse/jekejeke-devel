@@ -4,7 +4,9 @@ import jekdev.model.pretty.LocatorTrace;
 import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
@@ -13,10 +15,7 @@ import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.call.ArrayEnumeration;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.term.*;
 
 /**
@@ -149,20 +148,23 @@ public final class ForeignBase {
      * @param provable The provable indicator.
      * @param source   The source.
      * @return The provable hash.
-     * @throws InterpreterMessage Shit happens
+     * @throws InterpreterMessage   Shit happens
+     * @throws InterpreterException Shit happens
      */
     public static Object sysProvableHash(Interpreter inter,
                                          Object provable, TermAtomic source)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         try {
             Engine engine = (Engine) inter.getEngine();
-            Predicate pick = SpecialPred.indicatorToProvable(AbstractTerm.getSkel(provable),
-                    AbstractTerm.getDisplay(provable), engine);
+            Predicate pick = SpecialPred.indicatorToPredicateDefined(AbstractTerm.getSkel(provable),
+                    AbstractTerm.getDisplay(provable), engine, CachePredicate.MASK_CACH_UCHK);
             if (pick == null)
                 return null;
             AbstractSource src = derefAndCastSource(source, engine);
             Object t = SpecialModel.provableToColonSkel(pick, src);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -175,19 +177,24 @@ public final class ForeignBase {
      * @param syntax The syntax indicator.
      * @param source The source.
      * @return The provable hash.
-     * @throws InterpreterMessage Shit happens
+     * @throws InterpreterMessage   Shit happens
+     * @throws InterpreterException Shit happens
      */
     public static Object sysSyntaxHash(Interpreter inter,
                                        Object syntax, TermAtomic source)
-            throws InterpreterMessage {
+            throws InterpreterMessage, InterpreterException {
         try {
             Engine engine = (Engine) inter.getEngine();
-            Operator oper = derefAndCastSyntax(AbstractTerm.getSkel(syntax),
-                    AbstractTerm.getDisplay(syntax), engine);
+            Operator oper = SpecialOper.operToOperatorDefined(AbstractTerm.getSkel(syntax),
+                    AbstractTerm.getDisplay(syntax), engine, CachePredicate.MASK_CACH_UCHK);
+            if (oper == null)
+                return null;
             AbstractSource src = derefAndCastSource(source, engine);
             Object t = SpecialModel.syntaxToColonSkel(oper, src);
             t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -212,22 +219,6 @@ public final class ForeignBase {
         src = src.getStore().getSource(sa.fun);
         AbstractSource.checkExistentSource(src, sa);
         return src;
-    }
-
-    /**
-     * <p>Deref and cast a syntax.</p>
-     *
-     * @param m  The syntax skeleton.
-     * @param d  The syntax display.
-     * @param en The engine.
-     * @return The syntax.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Operator derefAndCastSyntax(Object m, Display d, Engine en)
-            throws EngineMessage {
-        Operator oper = SpecialOper.operToSyntax(m, d, en);
-        Operator.checkExistentOperator(oper, m, d);
-        return oper;
     }
 
 }

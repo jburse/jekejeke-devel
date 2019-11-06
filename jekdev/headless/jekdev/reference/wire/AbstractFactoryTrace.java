@@ -39,7 +39,7 @@ public abstract class AbstractFactoryTrace extends AbstractFactory {
      * <p>Create an abstract factory trace.</p>
      */
     public AbstractFactoryTrace() {
-        addPrologFlags(FlagFactoryTrace.defineFlags());
+        addPrologFlags(FlagFactoryTrace.DEFAULT);
     }
 
 }

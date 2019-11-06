@@ -76,8 +76,7 @@
  */
 % sys_atom_slash(+-Atom, -+Term)
 :- public sys_atom_slash/2.
-sys_atom_slash(A, T) :-
-   var(A), !,
+sys_atom_slash(A, T) :- var(A), !,
    sys_slash_to_module(T, A).
 sys_atom_slash(A, T) :-
    sys_module_to_slash(A, T).
@@ -96,8 +95,7 @@ sys_atom_slash(A, T) :-
  */
 % sys_callable_colon(+-Callable, -+Term):
 :- public sys_callable_colon/2.
-sys_callable_colon(A, T) :-
-   var(A), !,
+sys_callable_colon(A, T) :- var(A), !,
    sys_colon_to_callable(T, A).
 sys_callable_colon(A, T) :-
    sys_callable_to_colon(A, T).
@@ -116,8 +114,7 @@ sys_callable_colon(A, T) :-
  */
 % sys_indicator_colon(+-Indicator, -+Term):
 :- public sys_indicator_colon/2.
-sys_indicator_colon(A, T) :-
-   ground(T), !,
+sys_indicator_colon(A, T) :- ground(T), !,
    sys_colon_to_indicator(T, A).
 sys_indicator_colon(A, T) :-
    sys_indicator_to_colon(A, T).

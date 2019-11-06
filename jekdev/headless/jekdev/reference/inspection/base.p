@@ -53,8 +53,8 @@
 % sys_first_location(+Atom, +Atom, +Integer, -Indicator)
 :- public sys_first_location/4.
 :- foreign(sys_first_location/4, 'ForeignBase',
-      sysFirstLocation('Interpreter','CallOut','TermAtomic',
-         'String',int)).
+      sysFirstLocation('Interpreter', 'CallOut', 'TermAtomic',
+      'String', int)).
 
 /**
  * sys_location(S, O, L, I):
@@ -64,8 +64,8 @@
 % sys_location(+Atom, +Atom, +Integer, -Indicator)
 :- public sys_location/4.
 :- foreign(sys_location/4, 'ForeignBase',
-      sysLocation('Interpreter','CallOut','TermAtomic',
-         'String',int)).
+      sysLocation('Interpreter', 'CallOut', 'TermAtomic',
+      'String', int)).
 
 /**
  * sys_provable_hash(I, S, J):
@@ -75,7 +75,7 @@
 % sys_provable_hash(+Indicator, +Atom, -Indicator)
 :- public sys_provable_hash/3.
 :- foreign(sys_provable_hash/3, 'ForeignBase',
-      sysProvableHash('Interpreter','Object','TermAtomic')).
+      sysProvableHash('Interpreter', 'Object', 'TermAtomic')).
 
 /**
  * sys_syntax_hash(I, S, J):
@@ -85,4 +85,4 @@
 % sys_syntax_hash(+Indicator, +Atom, -Indicator)
 :- public sys_syntax_hash/3.
 :- foreign(sys_syntax_hash/3, 'ForeignBase',
-      sysSyntaxHash('Interpreter','Object','TermAtomic')).
+      sysSyntaxHash('Interpreter', 'Object', 'TermAtomic')).

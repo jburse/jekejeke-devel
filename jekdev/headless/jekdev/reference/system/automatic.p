@@ -94,15 +94,14 @@ generated :-
  */
 % generated(-Indicator)
 :- public generated/1.
-generated(I) :-
-   ground(I), !,
+generated(I) :- ground(I), !,
    generated2(I).
 generated(I) :-
-   bagof(I, (  sys_listing_user(U),
-               sys_automatic_item_idx(U, I)), B),
+   bagof(I, (sys_listing_user(U), sys_automatic_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_show_provable_source(I, U), fail.
+   sys_show_provable_source(I, U),
+   fail.
 generated(_).
 :- set_predicate_property(generated/1, sys_notrace).
 
@@ -111,7 +110,8 @@ generated2(I) :-
    sys_automatic_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_short_base(U),
-   sys_show_provable_source(I, U), fail.
+   sys_show_provable_source(I, U),
+   fail.
 generated2(_).
 
 /**

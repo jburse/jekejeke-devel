@@ -7,9 +7,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
@@ -56,14 +54,12 @@ public final class SpecialProvable extends AbstractSpecial {
     private final static int SPECIAL_SYS_CURRENT_PROVABLE = 0;
     private final static int SPECIAL_SYS_CURRENT_PROVABLE_CHK = 1;
     private final static int SPECIAL_SYS_PROVABLE_PROPERTY = 2;
-    /* private final static int SPECIAL_SYS_PROVABLE_PROPERTY_CHK = 3; */
-    /* private final static int SPECIAL_SYS_PROVABLE_PROPERTY_IDX = 4; */
-    private final static int SPECIAL_SET_PROVABLE_PROPERTY = 5;
-    private final static int SPECIAL_RESET_PROVABLE_PROPERTY = 6;
-    private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 7;
-    private final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 8;
-    private final static int SPECIAL_SET_CALLABLE_PROPERTY = 9;
-    private final static int SPECIAL_RESET_CALLABLE_PROPERTY = 10;
+    private final static int SPECIAL_SET_PROVABLE_PROPERTY = 3;
+    private final static int SPECIAL_RESET_PROVABLE_PROPERTY = 4;
+    private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 5;
+    private final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 6;
+    private final static int SPECIAL_SET_CALLABLE_PROPERTY = 7;
+    private final static int SPECIAL_RESET_CALLABLE_PROPERTY = 8;
 
     /**
      * <p>Create a provable direct access builtin.</p>
@@ -98,14 +94,16 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PROVABLE_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Predicate pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
                 SpecialPred.predicateToProperties(pick, en);
@@ -119,8 +117,9 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_SET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -130,8 +129,9 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_RESET_PROVABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                pick = SpecialPred.indicatorToProvable(temp[0], ref, en);
-                Predicate.checkExistentProvable(pick, temp[0], ref);
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 en.skel = temp[1];
                 en.display = ref;
                 en.deref();
@@ -368,6 +368,21 @@ public final class SpecialProvable extends AbstractSpecial {
             store = store.parent;
         }
         return res;
+    }
+
+    /**
+     * <p>Assure that the predicate is existent.</p>
+     *
+     * @param pick The predicate.
+     * @param t    The skel.
+     * @param d    The display.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void checkExistentProvable(Predicate pick, Object t, Display d)
+            throws EngineMessage {
+        if (pick == null)
+            throw new EngineMessage(EngineMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_PROVABLE, t), d);
     }
 
 }

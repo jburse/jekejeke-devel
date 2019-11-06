@@ -125,8 +125,7 @@
 :- op(50, xf, ()).
 
 :- public := /2.
-:=(_, _) :-
-   throw(error(existence_error(body,:= /2),_)).
+:=(_, _) :- throw(error(existence_error(body, := /2), _)).
 
 /**
  * D.F:
@@ -136,14 +135,10 @@
 % user:rest_expansion(+Rest, -Rest)
 :- public user:rest_expansion/2.
 :- multifile user:rest_expansion/2.
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.F),
-   var(F),
-   sys_replace_site(H, G, sys_get_obj_var(F,D,X)).
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.F),
-   atomic(F),
-   sys_replace_site(H, G, sys_get_obj_atomic(F,D,X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.F), var(F),
+   sys_replace_site(H, G, sys_get_obj_var(F, D, X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.F), atomic(F),
+   sys_replace_site(H, G, sys_get_obj_atomic(F, D, X)).
 
 /**
  * D.get(K):
@@ -153,15 +148,12 @@ user:rest_expansion(G, sys_cond(X,H)) :-
  * respectively D.put(K,V) by a side condition to perform a field
  * operation get/3, put/3 respectively put/4.
  */
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.get(F)),
-   sys_replace_site(H, G, sys_get_obj(F,D,X)).
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.put(F)),
-   sys_replace_site(H, G, sys_put_obj(F,D,X)).
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.put(F,V)),
-   sys_replace_site(H, G, sys_put_obj(F,D,V,X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.get(F)),
+   sys_replace_site(H, G, sys_get_obj(F, D, X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.put(F)),
+   sys_replace_site(H, G, sys_put_obj(F, D, X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.put(F, V)),
+   sys_replace_site(H, G, sys_put_obj(F, D, V, X)).
 
 /**
  * D.F():
@@ -170,12 +162,10 @@ user:rest_expansion(G, sys_cond(X,H)) :-
  * D.F(X1, .., Xn) by a side condition to invoke the definition
  * of F/0 respectively F/n.
  */
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.F()),
-   sys_replace_site(H, G, sys_call_obj(F,D,X)).
-user:rest_expansion(G, sys_cond(X,H)) :-
-   sys_eq(G, D.F),
-   sys_replace_site(H, G, sys_call_obj(F,D,X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.F()),
+   sys_replace_site(H, G, sys_call_obj(F, D, X)).
+user:rest_expansion(G, sys_cond(X, H)) :- sys_eq(G, D.F),
+   sys_replace_site(H, G, sys_call_obj(F, D, X)).
 
 /**
  * D.F() := X:
@@ -187,27 +177,24 @@ user:rest_expansion(G, sys_cond(X,H)) :-
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1,-1).
-user:term_expansion(A := _, _) :-
-   var(A),
-   throw(error(instantiation_error,_)).
-user:term_expansion(_.A := _, _) :-
-   var(A),
-   throw(error(instantiation_error,_)).
+:- meta_predicate user:term_expansion(-1, -1).
+user:term_expansion(A := _, _) :- var(A),
+   throw(error(instantiation_error, _)).
+user:term_expansion(_.A := _, _) :- var(A),
+   throw(error(instantiation_error, _)).
 user:term_expansion(D.F() := X, H) :- !,
    make_def(D, F, X, H).
-user:term_expansion(D.F := X, H) :-
-   compound(F), !,
+user:term_expansion(D.F := X, H) :- compound(F), !,
    make_def(D, F, X, H).
 user:term_expansion(_.A := _, _) :-
-   throw(error(type_error(compound,A),_)).
+   throw(error(type_error(compound, A), _)).
 
 % make_def(+Obj, +Term, +Term, -Term)
 :- private make_def/4.
 make_def(D, F, X, H) :-
    F =.. [G|L],
    append(L, [X], R),
-   H =.. [G,D|R].
+   H =.. [G, D|R].
 
 /***********************************************************/
 /* Runtime Support                                         */
@@ -215,17 +202,16 @@ make_def(D, F, X, H) :-
 
 % sys_call_obj(+Term, +Obj, -Term)
 :- public sys_call_obj/3.
-sys_call_obj(F, D, X) :-
-   is_dict(D, T), !,
+sys_call_obj(F, D, X) :- is_dict(D, T), !,
    make_def(D, F, X, H),
    T:H.
 sys_call_obj(F, D, X) :-
-   make_def(D, F, X, H), H.
+   make_def(D, F, X, H),
+   H.
 
 % sys_get_obj_var(+Term, +Obj, -Term)
 :- public sys_get_obj_var/3.
-sys_get_obj_var(F, D, X) :-
-   var(F), !,
+sys_get_obj_var(F, D, X) :- var(F), !,
    sys_get_obj(F, D, X).
 sys_get_obj_var(F, D, X) :-
    sys_get_obj_atomic(F, D, X).
@@ -233,29 +219,24 @@ sys_get_obj_var(F, D, X) :-
 % sys_get_obj_atomic(+Term, +Obj, -Term)
 :- public sys_get_obj_atomic/3.
 sys_get_obj_atomic(F, D, X) :-
-   sys_get_obj(F, D, Y), !,
-   X = Y.
+   sys_get_obj(F, D, Y), !, X = Y.
 sys_get_obj_atomic(F, _, _) :-
-   throw(error(existence_error(key,F),_)).
+   throw(error(existence_error(key, F), _)).
 
 % sys_get_obj(+Term, +Obj, -Term)
 :- public sys_get_obj/3.
-sys_get_obj(K, D, V) :-
-   is_dict(D), !,
+sys_get_obj(K, D, V) :- is_dict(D), !,
    get_dict(K, D, V).
-sys_get_obj(K, D, V) :-
-   is_json(D), !,
+sys_get_obj(K, D, V) :- is_json(D), !,
    get_json('$STR'(K), D, V).
 sys_get_obj(K, D, V) :-
    nth0(K, D, V).
 
 % sys_put_obj(+Term, +Obj, +Term, -Obj)
 :- public sys_put_obj/4.
-sys_put_obj(K, D, V, E) :-
-   is_dict(D), !,
+sys_put_obj(K, D, V, E) :- is_dict(D), !,
    put_dict(K, D, V, E).
-sys_put_obj(K, D, V, E) :-
-   is_json(D), !,
+sys_put_obj(K, D, V, E) :- is_json(D), !,
    put_json('$STR'(K), D, V, E).
 sys_put_obj(K, D, V, E) :-
    nth0(K, D, _, H),
@@ -263,8 +244,7 @@ sys_put_obj(K, D, V, E) :-
 
 % sys_put_obj(+Obj, +Obj, -Obj)
 :- public sys_put_obj/3.
-sys_put_obj(E, D, F) :-
-   is_dict(D), !,
+sys_put_obj(E, D, F) :- is_dict(D), !,
    put_dict(E, D, F).
 sys_put_obj(E, D, F) :-
    put_json(E, D, F).

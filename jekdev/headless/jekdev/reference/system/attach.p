@@ -118,11 +118,9 @@ tnodebug :-
  */
 % tleash(+AtomOrList)
 :- public tleash/1.
-tleash(Name) :-
-   var(Name),
-   throw(error(instantiation_error,_)).
-tleash(Name) :-
-   sys_name_flags(Name, Flags), !,
+tleash(Name) :- var(Name),
+   throw(error(instantiation_error, _)).
+tleash(Name) :- sys_name_flags(Name, Flags), !,
    thread_current(Thread),
    set_thread_flag(Thread, sys_tleash, Flags).
 tleash(Flags) :-
@@ -139,11 +137,9 @@ tleash(Flags) :-
  */
 % tvisible(+AtomOrList)
 :- public tvisible/1.
-tvisible(Name) :-
-   var(Name),
-   throw(error(instantiation_error,_)).
-tvisible(Name) :-
-   sys_name_flags(Name, Flags), !,
+tvisible(Name) :- var(Name),
+   throw(error(instantiation_error, _)).
+tvisible(Name) :- sys_name_flags(Name, Flags), !,
    thread_current(Thread),
    set_thread_flag(Thread, sys_tvisible, Flags).
 tvisible(Flags) :-
@@ -165,26 +161,31 @@ tdebugging :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tdebug, X),
    tdebugging_tdebug(X, C),
-   write_term((:-C), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- C), [context(0)]),
+   write('.'), nl,
+   fail.
 tdebugging :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tleash, X),
-   write_term((:-tleash(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- tleash(X)), [context(0)]),
+   write('.'), nl,
+   fail.
 tdebugging :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_tvisible, X),
-   write_term((:-tvisible(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- tvisible(X)), [context(0)]),
+   write('.'), nl,
+   fail.
 tdebugging :-
    tspying(X),
-   write_term((:-tspy(X)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- tspy(X)), [context(0)]),
+   write('.'), nl,
+   fail.
 tdebugging :-
    tbreaking(X, Y),
-   write_term((:-tbreak(X,Y)), [context(0)]),
-   write('.'), nl, fail.
+   write_term((:- tbreak(X, Y)), [context(0)]),
+   write('.'), nl,
+   fail.
 tdebugging.
 :- set_predicate_property(tdebugging/0, sys_notrace).
 

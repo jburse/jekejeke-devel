@@ -50,8 +50,7 @@
  */
 % current_syntax(-Indicator)
 :- public current_syntax/1.
-current_syntax(I) :-
-   ground(I), !,
+current_syntax(I) :- ground(I), !,
    sys_current_syntax_chk(I).
 current_syntax(I) :-
    sys_current_syntax(L),
@@ -66,15 +65,13 @@ current_syntax(I) :-
 /**
  * syntax_property(O, Q):
  * The predicate succeeds for the properties Q of the syntax operator O. The
- * predicate will also try to access invisible syntax operators.
+ * predicate will also access invisible syntax operators.
  */
 % syntax_property(+-Oper, -+Property)
 :- public syntax_property/2.
-syntax_property(I, R) :-
-   ground(I), !,
+syntax_property(I, R) :- ground(I), !,
    syntax_property2(I, R).
-syntax_property(I, R) :-
-   var(R), !,
+syntax_property(I, R) :- var(R), !,
    sys_current_syntax(L),
    sys_member(I, L),
    sys_syntax_property(I, P),
@@ -85,8 +82,7 @@ syntax_property(I, R) :-
 
 % syntax_property2(+Oper, -Property)
 :- private syntax_property2/2.
-syntax_property2(I, R) :-
-   var(R), !,
+syntax_property2(I, R) :- var(R), !,
    sys_syntax_property(I, P),
    sys_member(R, P).
 syntax_property2(I, R) :-
@@ -94,16 +90,15 @@ syntax_property2(I, R) :-
    sys_syntax_property_chk(I, F/A, P),
    sys_member(R, P).
 
+% already defined in oper.p of runtime
+% :- private sys_syntax_property_idx/2.
+
+% already defined in oper.p of runtime
+% :- private sys_syntax_property_chk/3.
+
+% sys_syntax_property(+Oper, -List)
 :- private sys_syntax_property/2.
 :- special(sys_syntax_property/2, 'SpecialSyntax', 2).
-
-% already defined in body.p of runtime
-% :- private sys_syntax_property_chk/3.
-% :- special(sys_syntax_property_chk/3, 'SpecialSyntax', 3).
-
-% already defined in body.p of runtime
-% :- private sys_syntax_property_idx/2.
-% :- special(sys_syntax_property_idx/2, 'SpecialSyntax', 4).
 
 /**
  * set_syntax_property(O, Q):
@@ -112,7 +107,7 @@ syntax_property2(I, R) :-
  */
 % set_syntax_property(+Oper, +Property)
 :- public set_syntax_property/2.
-:- special(set_syntax_property/2, 'SpecialSyntax', 5).
+:- special(set_syntax_property/2, 'SpecialSyntax', 3).
 
 /**
  * reset_syntax_property(O, Q):
@@ -121,4 +116,4 @@ syntax_property2(I, R) :-
  */
 % reset_syntax_property(+Oper, +Property)
 :- public reset_syntax_property/2.
-:- special(reset_syntax_property/2, 'SpecialSyntax', 6).
+:- special(reset_syntax_property/2, 'SpecialSyntax', 4).

@@ -65,8 +65,7 @@ node_read(Stream, Node) :-
 
 % node_read(+Stream, -AbstractDom, +List)
 :- public node_read/3.
-node_read(Alias, Node, Opt) :-
-   atom(Alias), !,
+node_read(Alias, Node, Opt) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    elem_new(Node),
    elem_set_name(Node, array),
@@ -79,7 +78,7 @@ node_read(Stream, Node, Opt) :-
 % sys_node_read(+Stream, +List, +AbstractDom)
 :- private sys_node_read/3.
 :- foreign(sys_node_read/3, 'ForeignSerialize',
-      sysNodeRead('Interpreter','Reader','Object','AbstractDom')).
+      sysNodeRead('Interpreter', 'Reader', 'Object', 'AbstractDom')).
 
 /**
  * node_write(S, N):
@@ -95,8 +94,7 @@ node_write(Stream, Node) :-
 
 % node_write(+Stream, +AbstractDom, +List)
 :- public node_write/3.
-node_write(Alias, Node, Opt) :-
-   atom(Alias), !,
+node_write(Alias, Node, Opt) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
    sys_node_write(Stream, Opt, Node).
 node_write(Stream, Node, Opt) :-
@@ -105,7 +103,7 @@ node_write(Stream, Node, Opt) :-
 % node_write(+Stream, +List, +AbstractDom)
 :- private sys_node_write/3.
 :- foreign(sys_node_write/3, 'ForeignSerialize',
-      sysNodeWrite('Writer','Object','AbstractDom')).
+      sysNodeWrite('Writer', 'Object', 'AbstractDom')).
 
 /**
  * node_term(N, T):
@@ -121,19 +119,16 @@ node_term(Node, Term) :-
 
 % node_term(-+AbstractDom, +-Term, +List)
 :- public node_term/3.
-node_term(Node, Term, Opt) :-
-   var(Node), !,
+node_term(Node, Term, Opt) :- var(Node), !,
    node_term2(Term, Node, Opt).
-node_term(Node, Term, Opt) :-
-   sys_member(format(xml), Opt), !,
+node_term(Node, Term, Opt) :- sys_member(format(xml), Opt), !,
    xml_get_term(Node, Term).
 node_term(Node, Term, _) :-
    json_get_term(Node, Term).
 
 % node_term2(+Term, -AbstractDom, +List)
 :- private node_term2/3.
-node_term2(Term, Node, Opt) :-
-   sys_member(format(xml), Opt), !,
+node_term2(Term, Node, Opt) :- sys_member(format(xml), Opt), !,
    xml_set_term(Term, Node).
 node_term2(Term, Node, _) :-
    json_set_term(Term, Node).
@@ -144,17 +139,15 @@ node_term2(Term, Node, _) :-
 
 % xml_get_term(+Node, -Value)
 :- private xml_get_term/2.
-xml_get_term(N, R) :-
-   node_is_text(N), !,
+xml_get_term(N, R) :- node_is_text(N), !,
    text_get_data(N, X),
    xml_get_data(X, R).
-xml_get_term(N, K) :-
-   elem_get_name(N, D),
+xml_get_term(N, K) :- elem_get_name(N, D),
    findall(K, elem_attr(N, K), L),
    xml_get_object(L, N, H),
    findall(M, elem_node(N, M), R),
    xml_get_array(R, J),
-   K = element(D,H,J).
+   K = element(D, H, J).
 
 % xml_get_object(+List, +Node, -Object)
 :- private xml_get_object/3.
@@ -171,23 +164,20 @@ xml_get_pair(N, K, K-V) :-
 
 % xml_get_attr(+Node, -Value)
 :- private xml_get_attr/2.
-xml_get_attr(N, R) :-
-   node_is_text(N), !,
+xml_get_attr(N, R) :- node_is_text(N), !,
    text_get_data(N, X),
    xml_get_value(X, R).
 xml_get_attr(_, _) :-
-   throw(error(syntax_error(dom_illegal_value),_)).
+   throw(error(syntax_error(dom_illegal_value), _)).
 
 % xml_get_value(+Data, -Value)
 :- private xml_get_value/2.
-xml_get_value(X, R) :-
-   atom(X), !,
+xml_get_value(X, R) :- atom(X), !,
    R = X.
-xml_get_value(X, R) :-
-   number(X), !,
+xml_get_value(X, R) :- number(X), !,
    R = X.
 xml_get_value(_, _) :-
-   throw(error(syntax_error(dom_illegal_value),_)).
+   throw(error(syntax_error(dom_illegal_value), _)).
 
 % xml_get_array(+List, -Array)
 :- private xml_get_array/2.
@@ -198,11 +188,10 @@ xml_get_array([N|M], [A|B]) :-
 
 % xml_get_data(+Data, -Value)
 :- private xml_get_data/2.
-xml_get_data(X, R) :-
-   atom(X), !,
+xml_get_data(X, R) :- atom(X), !,
    R = X.
 xml_get_data(_, _) :-
-   throw(error(syntax_error(dom_missing_text),_)).
+   throw(error(syntax_error(dom_missing_text), _)).
 
 /***************************************************************/
 /* XML Internalize                                             */
@@ -210,26 +199,23 @@ xml_get_data(_, _) :-
 
 % xml_set_term(+Value, -Node)
 :- private xml_set_term/2.
-xml_set_term(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-xml_set_term(X, N) :-
-   atom(X), !,
+xml_set_term(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+xml_set_term(X, N) :- atom(X), !,
    text_new(N),
    text_set_data(N, X).
-xml_set_term(element(D,L,R), N) :- !,
+xml_set_term(element(D, L, R), N) :- !,
    elem_new(N),
    elem_set_name(N, D),
    xml_set_object(L, N),
    xml_set_array(R, N).
 xml_set_term(_, _) :-
-   throw(error(syntax_error(dom_missing_elem),_)).
+   throw(error(syntax_error(dom_missing_elem), _)).
 
 % xml_set_object(+Object, +Node)
 :- private xml_set_object/2.
-xml_set_object(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+xml_set_object(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 xml_set_object([], _) :- !.
 xml_set_object([A|B], N) :- !,
    xml_set_pair(A, N, H),
@@ -237,50 +223,44 @@ xml_set_object([A|B], N) :- !,
    elem_set_attr(N, K, H),
    xml_set_object(B, N).
 xml_set_object(_, _) :-
-   throw(error(syntax_error(dom_missing_end),_)).
+   throw(error(syntax_error(dom_missing_end), _)).
 
 % xml_set_array(+Array, +Node)
 :- private xml_set_array/2.
-xml_set_array(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+xml_set_array(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 xml_set_array([], _) :- !.
 xml_set_array([A|B], N) :- !,
    xml_set_term(A, H),
    elem_add_node(N, H),
    xml_set_array(B, N).
 xml_set_array(_, _) :-
-   throw(error(syntax_error(dom_missing_end),_)).
+   throw(error(syntax_error(dom_missing_end), _)).
 
 % xml_set_pair(+Pair, +Node, -Node)
 :- private xml_set_pair/3.
-xml_set_pair(X, _, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-xml_set_pair(X-_, H, _) :-
-   elem_get_attr(H, X, _),
-   throw(error(syntax_error(xml_duplicate_attr),_)).
+xml_set_pair(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+xml_set_pair(X-_, H, _) :- elem_get_attr(H, X, _),
+   throw(error(syntax_error(xml_duplicate_attr), _)).
 xml_set_pair(X-Y, _, N) :- !,
    xml_set_attr(Y, N),
    node_set_key(N, X).
 xml_set_pair(_, _, _) :-
-   throw(error(syntax_error(xml_illegal_attr),_)).
+   throw(error(syntax_error(xml_illegal_attr), _)).
 
 % xml_set_attr(+Value, -Node)
 :- private xml_set_attr/2.
-xml_set_attr(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-xml_set_attr(X, N) :-
-   atom(X), !,
+xml_set_attr(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+xml_set_attr(X, N) :- atom(X), !,
    text_new(N),
    text_set_data(N, X).
-xml_set_attr(X, N) :-
-   number(X), !,
+xml_set_attr(X, N) :- number(X), !,
    text_new(N),
    text_set_data(N, X).
 xml_set_attr(_, _) :-
-   throw(error(syntax_error(dom_illegal_value),_)).
+   throw(error(syntax_error(dom_illegal_value), _)).
 
 /***************************************************************/
 /* JSON Externalize                                            */
@@ -288,12 +268,10 @@ xml_set_attr(_, _) :-
 
 % json_get_term(+Node, -Value)
 :- private json_get_term/2.
-json_get_term(N, R) :-
-   node_is_text(N), !,
+json_get_term(N, R) :- node_is_text(N), !,
    text_get_data(N, X),
    json_get_data(X, R).
-json_get_term(N, R) :-
-   elem_get_name(N, D),
+json_get_term(N, R) :- elem_get_name(N, D),
    json_get_name(D, N, R).
 
 % json_get_name(+Name, +Node, -Value)
@@ -307,7 +285,7 @@ json_get_name(array, N, R) :- !,
    json_get_array(L, H),
    R = array(H).
 json_get_name(_, _, _) :-
-   throw(error(syntax_error(json_element_missing),_)).
+   throw(error(syntax_error(json_element_missing), _)).
 
 % json_get_object(+List, +Node, -Object)
 :- private json_get_object/3.
@@ -331,14 +309,12 @@ json_get_array([N|M], [A|B]) :-
 
 % json_get_data(+Data, -Value)
 :- private json_get_data/2.
-json_get_data(X, R) :-
-   atom(X), !,
+json_get_data(X, R) :- atom(X), !,
    R = X.
-json_get_data(X, R) :-
-   number(X), !,
+json_get_data(X, R) :- number(X), !,
    R = X.
 json_get_data(_, _) :-
-   throw(error(syntax_error(json_element_missing),_)).
+   throw(error(syntax_error(json_element_missing), _)).
 
 /***************************************************************/
 /* JSON Internalize                                            */
@@ -346,15 +322,12 @@ json_get_data(_, _) :-
 
 % json_set_term(+Value, -Node)
 :- private json_set_term/2.
-json_set_term(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-json_set_term(X, N) :-
-   atom(X), !,
+json_set_term(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+json_set_term(X, N) :- atom(X), !,
    text_new(N),
    text_set_data(N, X).
-json_set_term(X, N) :-
-   number(X), !,
+json_set_term(X, N) :- number(X), !,
    text_new(N),
    text_set_data(N, X).
 json_set_term(object(L), N) :- !,
@@ -366,13 +339,12 @@ json_set_term(array(L), N) :- !,
    elem_set_name(N, array),
    json_set_array(L, N).
 json_set_term(_, _) :-
-   throw(error(syntax_error(json_element_missing),_)).
+   throw(error(syntax_error(json_element_missing), _)).
 
 % json_set_object(+Object, +Node)
 :- private json_set_object/2.
-json_set_object(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+json_set_object(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 json_set_object([], _) :- !.
 json_set_object([A|B], N) :- !,
    json_set_pair(A, N, H),
@@ -380,31 +352,28 @@ json_set_object([A|B], N) :- !,
    elem_set_attr(N, K, H),
    json_set_object(B, N).
 json_set_object(_, _) :-
-   throw(error(syntax_error(json_unblanced_object),_)).
+   throw(error(syntax_error(json_unblanced_object), _)).
 
 % json_set_array(+Array, +Node)
 :- private json_set_array/2.
-json_set_array(X, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
+json_set_array(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 json_set_array([], _) :- !.
 json_set_array([A|B], N) :- !,
    json_set_term(A, H),
    elem_add_node(N, H),
    json_set_array(B, N).
 json_set_array(_, _) :-
-   throw(error(syntax_error(json_unblanced_array),_)).
+   throw(error(syntax_error(json_unblanced_array), _)).
 
 % json_set_pair(+Pair, +Node, -Node)
 :- private json_set_pair/3.
-json_set_pair(X, _, _) :-
-   var(X),
-   throw(error(instantiation_error,_)).
-json_set_pair(X-_, H, _) :-
-   elem_get_attr(H, X, _),
-   throw(error(syntax_error(json_duplicate_key),_)).
+json_set_pair(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+json_set_pair(X-_, H, _) :- elem_get_attr(H, X, _),
+   throw(error(syntax_error(json_duplicate_key), _)).
 json_set_pair(X-Y, _, N) :- !,
    json_set_term(Y, N),
    node_set_key(N, X).
 json_set_pair(_, _, _) :-
-   throw(error(syntax_error(json_colon_missing),_)).
+   throw(error(syntax_error(json_colon_missing), _)).

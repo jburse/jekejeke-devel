@@ -112,11 +112,9 @@ change_store(_).
  */
 % leash(+AtomOrList)
 :- public leash/1.
-leash(Name) :-
-   var(Name),
-   throw(error(instantiation_error,_)).
-leash(Name) :-
-   sys_name_flags(Name, Flags), !,
+leash(Name) :- var(Name),
+   throw(error(instantiation_error, _)).
+leash(Name) :- sys_name_flags(Name, Flags), !,
    set_prolog_flag(sys_leash, Flags).
 leash(Flags) :-
    set_prolog_flag(sys_leash, Flags).

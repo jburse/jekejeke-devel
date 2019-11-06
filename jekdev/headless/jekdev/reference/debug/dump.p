@@ -102,13 +102,13 @@ dump :-
  */
 % dump(+Pattern)
 :- public dump/1.
-dump(I) :-
-   ground(I), !,
+dump(I) :- ground(I), !,
    dump2(I).
 dump(I) :-
    sys_dump_item_idx(I),
    \+ provable_property(I, built_in),
-   sys_dump(I), fail.
+   sys_dump(I),
+   fail.
 dump(_).
 :- set_predicate_property(dump/1, sys_notrace).
 
@@ -116,7 +116,8 @@ dump(_).
 dump2(I) :-
    \+ provable_property(I, built_in),
    sys_dump_item_chk(I),
-   sys_dump(I), fail.
+   sys_dump(I),
+   fail.
 dump2(_).
 
 :- private sys_dump/1.
@@ -139,6 +140,5 @@ sys_dump_item_chk(I) :-
 % sys_dump_item_idx(-Indicator)
 :- private sys_dump_item_idx/1.
 sys_dump_item_idx(I) :-
-   setof(I, U^(  sys_listing_user(U),
-                 provable_property(I, sys_usage(U))), B),
+   setof(I, U^(sys_listing_user(U), provable_property(I, sys_usage(U))), B),
    sys_member(I, B).

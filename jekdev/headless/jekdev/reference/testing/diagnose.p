@@ -43,31 +43,49 @@
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/provable)).
 :- use_module(runner).
+:- use_module(helper).
+
+/*************************************************************/
+/* List Summary                                              */
+/*************************************************************/
+
+% list_result_summary
+:- private list_result_summary/0.
+list_result_summary :-
+   write('Ok\tNok\tPackage'), nl,
+   list_result_summary_data,
+   result_summary(Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\tTotal'), nl.
+
+% list_result_summary_data
+:- private list_result_summary_data/0.
+list_result_summary_data :-
+   bagof(W, N^result_suite_view(D, N, W), L),
+   sys_sum_oknok(L, Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\t'), write(D), nl,
+   fail.
+list_result_summary_data.
 
 /*************************************************************/
 /* List Suites                                               */
 /*************************************************************/
 
-% list_result_suite
-:- private list_result_suite/0.
-list_result_suite :-
-   write('Ok\tNok\tSuite'), nl, list_result_suite_data,
-   result_summary(Ok-Nok),
-   write(Ok),
-   write('\t'),
-   write(Nok),
-   write('\tTotal'), nl.
+% list_result_suite(+Atom)
+:- private list_result_suite/1.
+list_result_suite(D) :-
+   write('Ok\tNok\tSuite'), nl,
+   list_result_suite_data(D),
+   findall(W, result_suite_view(D, _, W), L),
+   sys_sum_oknok(L, Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\tTotal'), nl.
 
-% list_result_suite_data
-:- private list_result_suite_data/0.
-list_result_suite_data :-
-   result_suite(Suite, Ok-Nok),
-   write(Ok),
-   write('\t'),
-   write(Nok),
-   write('\t'),
-   write(Suite), nl, fail.
-list_result_suite_data.
+% list_result_suite_data(+Atom)
+:- private list_result_suite_data/1.
+list_result_suite_data(D) :-
+   result_suite_view(D, N, Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\t'), write(N), nl,
+   fail.
+list_result_suite_data(_).
 
 /*************************************************************/
 /* List Predicates                                           */
@@ -76,13 +94,15 @@ list_result_suite_data.
 % list_result_predicate(+Atom)
 :- private list_result_predicate/1.
 list_result_predicate(Suite) :-
-   write('Ok\tNok\tPredicate'), nl,
+   write('Ok\tNok\tPredicate'),
+   nl,
    list_result_predicate_data(Suite),
    result_suite(Suite, Ok-Nok),
    write(Ok),
    write('\t'),
    write(Nok),
-   write('\tTotal'), nl.
+   write('\tTotal'),
+   nl.
 
 % list_result_predicate_data(+Atom)
 :- private list_result_predicate_data/1.
@@ -92,7 +112,9 @@ list_result_predicate_data(Suite) :-
    write('\t'),
    write(Nok),
    write('\t'),
-   writeq(Fun/Arity), nl, fail.
+   writeq(Fun/Arity),
+   nl,
+   fail.
 list_result_predicate_data(_).
 
 /*************************************************************/
@@ -102,14 +124,17 @@ list_result_predicate_data(_).
 % list_result(+Atom, +Integer, +Atom)
 :- private list_result/3.
 list_result(Fun, Arity, Suite) :-
-   write('Ok\tNok\tCase'), nl,
-   write('Body'), nl,
+   write('Ok\tNok\tCase'),
+   nl,
+   write('Body'),
+   nl,
    list_result_data(Fun, Arity, Suite),
    result_predicate(Fun, Arity, Suite, Ok-Nok),
    write(Ok),
    write('\t'),
    write(Nok),
-   write('\tTotal'), nl.
+   write('\tTotal'),
+   nl.
 
 % list_result_data(+Atom,+Integer,+Atom)
 :- private list_result_data/3.
@@ -119,9 +144,12 @@ list_result_data(Fun, Arity, Suite) :-
    write('\t'),
    write(Nok),
    write('\t'),
-   write(Case), nl,
+   write(Case),
+   nl,
    write('\t\t'),
-   list_test_case_data(Fun, Arity, Suite, Case), nl, fail.
+   list_test_case_data(Fun, Arity, Suite, Case),
+   nl,
+   fail.
 list_result_data(_, _, _).
 
 % list_test_case_data(+Atom,+Integer,+Atom,+Integer)
@@ -129,8 +157,9 @@ list_result_data(_, _, _).
 list_test_case_data(Fun, Arity, Suite, Case) :-
    rule_ref(case(Fun, Arity, Suite, Case), Body, _),
    callable_property(Body, sys_variable_names(N)),
-   write_term(Body, [quoted(true),context(0),variable_names(N)]),
-   write('. '), fail.
+   write_term(Body, [quoted(true), context(0), variable_names(N)]),
+   write('. '),
+   fail.
 list_test_case_data(_, _, _, _).
 
 /**
@@ -139,9 +168,14 @@ list_test_case_data(_, _, _, _).
  */
 % diagnose_online
 :- public diagnose_online/0.
-diagnose_online :- list_result_suite,
+diagnose_online :-
+   list_result_summary,
+   write('Package: '), flush_output,
+   read(Directory),
+   list_result_suite(Directory),
    write('Suite: '), flush_output,
-   read(Suite),
+   read(Name),
+   split_suite(Suite, Directory, Name),
    list_result_predicate(Suite),
    write('Functor/Arity: '), flush_output,
    read(Fun/Arity),
