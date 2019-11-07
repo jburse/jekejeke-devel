@@ -1,8 +1,9 @@
 /**
  * This module is inspired by SQL query options such as TOP. Providing
  * such a module was recently pioneered by SWI-Prolog. Currently predicates
- * limit/2, offset/2, call_nth/2 and distinct/1 are provided. The predicates
- * solely work tuple oriented and it is possible to cascade these predicates:
+ * limit/2, offset/2, call_nth/2, distinct/2 and order_by/2 are provided.
+ * The predicates solely work tuple oriented and it is possible to
+ * cascade these predicates:
  *
  * Example:
  * ?- limit(5, offset(3, between(1, 10, X))).
@@ -15,8 +16,8 @@
  * The current implementation of limit/2 and offset/2 is based on
  * call_nth/2. The predicate call_nth/2 is in turn implemented with pivots,
  * an alternative to nb_setarg/3 which does not destruct a Prolog term, but
- * instead a Java object. The implementation of distinct/1 uses a custom
- * Java object as well.
+ * instead a Java object. The implementation of distinct/2 and order_by/2
+ * use a custom Java object as well.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -106,39 +107,40 @@ call_nth2(G, N) :-
    pivot_set(P, N).
 
 /**
- * distinct(X1^…^Xn^G):
+ * distinct(W, G):
  * The predicates succeeds eagerly with only the first solutions
- * of G according to the witnesses.
+ * of G according to the witnesses W.
  */
-% distinct(+QuantGoal)
-:- public distinct/1.
-:- meta_predicate distinct(0).
-distinct(Goal) :-
-   sys_goal_globals(Goal, W),
-   drawer_new(P),
-   sys_drawer_run(Goal, W, P).
+% distinct(+Term, +Goal)
+:- public distinct/2.
+:- meta_predicate distinct(?, 0).
+distinct(W, Goal) :-
+   revolve_new(R),
+   sys_revolve_run(Goal, W, R, nil).
 
 /**
- * order_by(X1^…^Xn^G):
- * The predicates succeeds lazily with only the first solutions
- * of G according to the witnesses.
+ * order_by(W, G):
+ * The predicates succeeds lazily and sorted with only the first
+ * solutions of G according to the witnesses W.
  */
-% order_by(+QuantGoal)
-:- public order_by/1.
-:- meta_predicate order_by(0).
-order_by(Goal) :-
-   sys_goal_globals(Goal, W),
-   drawer_new(P),
-   (sys_drawer_run(Goal, W, P), fail; true),
-   drawer_elem(P, W).
+% order_by(+Term, +Goal)
+:- public order_by/2.
+:- meta_predicate order_by(?, 0).
+order_by(W, Goal) :-
+   sys_goal_globals(W^Goal, J),
+   revolve_new(R),
+   (sys_revolve_run(Goal, W, R, J), fail; true),
+   revolve_pair(R, W-P),
+   pivot_get(P, J).
 
-% sys_drawer_run(+Goal, +List, +Ref)
-:- private sys_drawer_run/3.
-:- meta_predicate sys_drawer_run(0, ?, ?).
-sys_drawer_run(Goal, W, P) :-
-   sys_goal_kernel(Goal, B),
-   B,
-   drawer_lookup(P, W).
+% sys_revolve_run(+Goal, +List, +Ref, +Term)
+:- private sys_revolve_run/4.
+:- meta_predicate sys_revolve_run(0, ?, ?, ?).
+sys_revolve_run(Goal, W, R, J) :-
+   Goal,
+   revolve_lookup(R, W, P),
+   \+ pivot_get(P, _),
+   pivot_set(P, J).
 
 /*************************************************************/
 /* Pivot Datatype                                            */
@@ -167,29 +169,26 @@ sys_drawer_run(Goal, W, P) :-
 :- foreign(pivot_get/2, 'ForeignSequence', sysPivotGet('SetEntry')).
 
 /**
- * drawer_new(R):
- * Thre predicate succeeds in R with a new drawer.
+ * revolve_new(R):
+ * Thre predicate succeeds in R with a new revolve.
  */
-% drawer_new(-Drawer)
-:- private drawer_new/1.
-:- foreign(drawer_new/1, 'ForeignSequence', sysDrawerNew).
+% revolve_new(-Revolve)
+:- foreign(revolve_new/1, 'ForeignSequence', sysRevolveNew).
 
 /**
- * drawer_lookup(R, K):
- * The predicate succeeds when the copy of the key
- * K is already found in the drawer R.
+ * revolve_lookup(R, K, P):
+ * The predicate succeeds in P with the old or new pivot
+ * for a copy of the key K in the revolve R.
  */
-% drawer_lookup(+Drawer, +Term)
-:- private drawer_lookup/2.
-:- foreign(drawer_lookup/2, 'ForeignSequence',
-      sysDrawerLookup('Interpreter', 'AbstractSet', 'Object')).
+% revolve_lookup(+Revolve, +Term, -Pivot)
+:- foreign(revolve_lookup/3, 'ForeignSequence',
+      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
 
 /**
- * drawer_elem(R, U):
- * The predicate succeeds in U with the elements
- * of the drawer R.
+ * revolve_pair(R, U):
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R.
  */
-% drawer_elem(+Drawer, -Term)
-:- private drawer_elem/2.
-:- foreign(drawer_elem/2, 'ForeignSequence',
-      sysDrawerElem('CallOut', 'AbstractSet')).
+% revolve_pair(+Revolve, -Pair)
+:- foreign(revolve_pair/2, 'ForeignSequence',
+      sysRevolvePair('CallOut', 'AbstractMap')).

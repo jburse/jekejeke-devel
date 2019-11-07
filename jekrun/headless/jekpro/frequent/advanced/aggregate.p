@@ -277,14 +277,6 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
       sysVariantEager('EngineLexical')).
 
 /**
- * revolve_new(R):
- * Thre predicate succeeds in R with a new revolve.
- */
-% revolve_new(-Revolve)
-:- private revolve_new/1.
-:- foreign(revolve_new/1, 'ForeignAggregate', sysRevolveNew).
-
-/**
  * revolve_new(C, R):
  * The predicate succeeds in R with a new revolve
  * for the variant comparator C.
@@ -293,26 +285,6 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 :- private revolve_new/2.
 :- foreign(revolve_new/2, 'ForeignAggregate',
       sysRevolveNew('EngineLexical')).
-
-/**
- * revolve_lookup(R, K, P):
- * The predicate succeeds in P with the old or new pivot
- * for a copy of the key K in the revolve R.
- */
-% revolve_lookup(+Revolve, +Term, -Pivot)
-:- private revolve_lookup/3.
-:- foreign(revolve_lookup/3, 'ForeignAggregate',
-      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
-
-/**
- * revolve_pair(R, U):
- * The predicate succeeds in U with the key value pairs
- * of the revolve R.
- */
-% revolve_pair(+Revolve, -Pair)
-:- private revolve_pair/2.
-:- foreign(revolve_pair/2, 'ForeignAggregate',
-      sysRevolvePair('CallOut', 'AbstractMap')).
 
 /**
  * revolve_pair(R, C, U):

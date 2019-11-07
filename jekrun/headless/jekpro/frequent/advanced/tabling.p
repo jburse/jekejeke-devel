@@ -173,7 +173,8 @@ sys_table_declare(I) :-
    ;  true),
    (  predicate_property(I, multifile) -> multifile(J)
    ;  true),
-   thread_local(J).
+   thread_local(J),
+   set_predicate_property(J, sys_notrace).
 
 % sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +NilOrComparator)
 :- private sys_table_wrapper/6.
@@ -199,12 +200,12 @@ sys_table_wrapper(F, T, L, A, S, C) :-
          pivot_set(Flag, incomplete),
          assertz(Test)),
       pivot_get(Flag, Status),
-      (  Status = inprogress
+      (  Status = incomplete
+      -> Run
+      ;  Status = inprogress
       -> sys_loop_hit(Flag),
          List
-      ;  Status = complete
-      -> List
-      ;  Run)),
+      ;  List)),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -215,7 +216,8 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    ;  true),
    (  predicate_property(I, multifile) -> multifile(J)
    ;  true),
-   static(J).
+   static(J),
+   set_predicate_property(J, sys_notrace).
 
 % sys_table_new(+NilOrComparator, +List, +Ref, -Goal)
 :- private sys_table_new/4.
@@ -240,30 +242,38 @@ sys_table_list(C, W, R, S, G) :-
 sys_table_run(C, A, Goal, W, R, S, Flag, List, G) :-
    C \== [], variant_eager(C), !,
    G = (  List
-      ;  sys_revolve_eager(A, Goal, W, R, S, Flag)
-      ;  sys_loop_end(Flag),
-         fail).
+      ;  sys_revolve_eager(A, Goal, W, R, S, Flag)).
 sys_table_run(_, A, Goal, W, R, _, Flag, List, G) :-
    G = (sys_revolve_lazy(A, Goal, W, R, Flag),
-      sys_loop_end(Flag),
       List).
 
 % sys_revolve_eager(+Aggregate, +Goal, +List, +Ref, +Value, +Pivot)
 :- private sys_revolve_eager/6.
 :- meta_predicate sys_revolve_eager(?, 0, ?, ?, ?, ?).
 sys_revolve_eager(A, Goal, W, R, S, Flag) :-
-   (sys_loop_push(Flag); sys_loop_pop(Flag), fail),
-   sys_revolve_run(A, Goal, W, R, J),
-   S = J,
-   (sys_loop_pop(Flag); sys_loop_push(Flag), fail).
+   pivot_new(Dirty),
+   repeat,
+   pivot_set(Dirty, no),
+   (  (sys_loop_push(Flag); sys_loop_pop(Flag), fail),
+      sys_revolve_run(A, Goal, W, R, J),
+      pivot_set(Dirty, yes),
+      S = J,
+      (sys_loop_pop(Flag); sys_loop_push(Flag), fail)
+   ;  sys_loop_end(Flag, Dirty), !, fail).
 
 % sys_revolve_lazy(+Aggregate, +Goal, +List, +Ref, +Pivot)
 :- private sys_revolve_lazy/5.
 :- meta_predicate sys_revolve_lazy(?, 0, ?, ?, ?).
 sys_revolve_lazy(A, Goal, W, R, Flag) :-
+   pivot_new(Dirty),
+   repeat,
+   pivot_set(Dirty, no),
    sys_loop_push(Flag),
-   (sys_revolve_run(A, Goal, W, R, _), fail; true),
-   sys_loop_pop(Flag).
+   (sys_revolve_run(A, Goal, W, R, _),
+   pivot_set(Dirty, yes),
+   fail; true),
+   sys_loop_pop(Flag),
+   sys_loop_end(Flag, Dirty), !.
 
 /**********************************************************/
 /* SCC Computation                                        */
@@ -293,19 +303,32 @@ sys_loop_push(Flag) :-
 :- private sys_loop_pop/1.
 sys_loop_pop(Flag) :-
    retract(sys_fresh(Flag)),
-   pivot_set(Flag, incomplete).
+   pivot_set(Flag, visited).
 
-% sys_loop_end(+Pivot)
-:- private sys_loop_end/1.
-sys_loop_end(Flag) :-
-   sys_recurse(Flag, Flag3), sys_fresh(Flag3)
--> once(sys_fresh(Flag2)),
+% sys_loop_end(+Pivot, +Pivot)
+:- private sys_loop_end/2.
+/* follower */
+sys_loop_end(Flag, _) :-
+   sys_recurse(Flag, Flag3), sys_fresh(Flag3), !,
+   once(sys_fresh(Flag2)),
    (retract(sys_recurse(Flag, Flag4)),
    \+ sys_recurse(Flag2, Flag4),
-   assertz(sys_recurse(Flag2, Flag4)), fail; true),
-   (sys_recurse(Flag2, Flag) -> true; assertz(sys_recurse(Flag2, Flag)))
-;  pivot_set(Flag, complete),
-   (retract(sys_recurse(Flag, Flag4)), pivot_set(Flag4, complete), fail; true).
+   assertz(sys_recurse(Flag2, Flag4)),
+   fail; true),
+   (sys_recurse(Flag2, Flag) -> true; assertz(sys_recurse(Flag2, Flag))).
+/* leader, stable */
+sys_loop_end(Flag, Dirty) :-
+   (\+ sys_recurse(Flag, _); pivot_get(Dirty, no)), !,
+   pivot_set(Flag, complete),
+   (retract(sys_recurse(Flag, Flag4)),
+   pivot_set(Flag4, complete),
+   fail; true).
+/* leader, changes */
+sys_loop_end(Flag, _) :-
+   pivot_set(Flag, incomplete),
+   (sys_recurse(Flag, Flag4),
+   pivot_set(Flag4, incomplete),
+   fail; true), fail.
 
 /**********************************************************/
 /* Table Inspection & Modification                        */

@@ -73,58 +73,55 @@ public final class ForeignSequence {
     }
 
     /**
-     * <p>Create a new drawer.</p>
+     * <p>Create a new revolve.</p>
      *
-     * @return The drawer.
+     * @return The revolve.
      */
-    public static AbstractSet sysDrawerNew() {
-        return new SetTree(AbstractSkel.DEFAULT);
+    public static AbstractMap sysRevolveNew() {
+        return new MapTree(AbstractSkel.DEFAULT);
     }
 
     /**
-     * <p>Place a copy into the drawer.</p>
+     * <p>Place a copy into the revolve.</p>
      *
      * @param inter The interpreter.
-     * @param set   The set.
+     * @param map   The map.
      * @param val   The key.
-     * @return True if the key is fresh, otherwise false.
      */
-    public static boolean sysDrawerLookup(Interpreter inter,
-                                          AbstractSet set, Object val) {
+    public static SetEntry sysRevolveLookup(Interpreter inter,
+                                            AbstractMap map, Object val) {
         Engine en = (Engine) inter.getEngine();
         Display d = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         val = AbstractSkel.copySkel(val, d, en);
-        SetEntry h = set.getEntry(val);
+        MapEntry h = map.getEntry(val);
         if (h == null) {
-            h = set.newEntry(val);
-            set.putEntry(h);
-            return true;
-        } else {
-            return false;
+            h = map.newEntry(val, null);
+            map.putEntry(h);
         }
+        return h;
     }
 
     /**
-     * <p>Enumerate the drawer.</p>
+     * <p>Enumerate the revolve.</p>
      *
      * @param co  The call out.
-     * @param set   The set.
+     * @param map The map.
      * @return The pair.
      */
-    public static Object sysDrawerElem(CallOut co, AbstractSet set) {
-        SetEntry at;
+    public static Object sysRevolvePair(CallOut co, AbstractMap map) {
+        MapEntry at;
         if (co.getFirst()) {
-            at = set.getFirstEntry();
+            at = map.getFirstEntry();
         } else {
-            at = (SetEntry) co.getData();
+            at = (MapEntry) co.getData();
         }
         if (at == null)
             return null;
-        SetEntry next = set.successor(at);
+        MapEntry next = map.successor(at);
         co.setRetry(next != null);
         co.setData(next);
-        Object val = at.value;
+        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
     }

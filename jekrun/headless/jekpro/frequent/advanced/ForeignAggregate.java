@@ -77,15 +77,6 @@ public final class ForeignAggregate {
     public static boolean sysVariantEager(EngineLexical el) {
         return ((el.getFlags() & EngineLexical.MASK_FLAG_EAGR) != 0);
     }
-    
-    /**
-     * <p>Create a new revolve.</p>
-     *
-     * @return The revolve.
-     */
-    public static AbstractMap sysRevolveNew() {
-        return new MapTree(AbstractSkel.DEFAULT);
-    }
 
     /**
      * <p>Create a new revolve.</p>
@@ -99,51 +90,6 @@ public final class ForeignAggregate {
         } else {
             return new MapTree(el);
         }
-    }
-
-    /**
-     * <p>Place a copy into the revolve.</p>
-     *
-     * @param inter The interpreter.
-     * @param map   The map.
-     * @param val   The key.
-     */
-    public static SetEntry sysRevolveLookup(Interpreter inter,
-                                            AbstractMap map, Object val) {
-        Engine en = (Engine) inter.getEngine();
-        Display d = AbstractTerm.getDisplay(val);
-        val = AbstractTerm.getSkel(val);
-        val = AbstractSkel.copySkel(val, d, en);
-        MapEntry h = map.getEntry(val);
-        if (h == null) {
-            h = map.newEntry(val, null);
-            map.putEntry(h);
-        }
-        return h;
-    }
-
-    /**
-     * <p>Enumerate the revolve.</p>
-     *
-     * @param co  The call out.
-     * @param map The map.
-     * @return The pair.
-     */
-    public static Object sysRevolvePair(CallOut co, AbstractMap map) {
-        MapEntry at;
-        if (co.getFirst()) {
-            at = map.getFirstEntry();
-        } else {
-            at = (MapEntry) co.getData();
-        }
-        if (at == null)
-            return null;
-        MapEntry next = map.successor(at);
-        co.setRetry(next != null);
-        co.setData(next);
-        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
-        Display ref = AbstractSkel.createMarker(val);
-        return AbstractTerm.createMolec(val, ref);
     }
 
     /**

@@ -46,6 +46,7 @@ import java.io.Writer;
 final class Index {
     public final static String OP_VAR = "var";
     public final static String OP_SYS_EQ = "sys_eq";
+    public final static String OP_IDENTITY = "==";
     public final static String OP_FUNCTOR = "functor";
 
     static final Object VALUE_GUARD = new Object();
@@ -113,7 +114,8 @@ final class Index {
             } else if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 2 &&
                     (((SkelCompound) molec).sym.fun.equals(Foyer.OP_EQUAL) ||
-                            ((SkelCompound) molec).sym.fun.equals(Index.OP_SYS_EQ))) {
+                            ((SkelCompound) molec).sym.fun.equals(Index.OP_SYS_EQ) ||
+                            ((SkelCompound) molec).sym.fun.equals(Index.OP_IDENTITY))) {
                 SkelCompound sc = (SkelCompound) molec;
                 if (sc.args[0] == sv) {
                     Object term = sc.args[1];
