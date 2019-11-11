@@ -1,18 +1,16 @@
 package jekpro.frequent.advanced;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.call.CallOut;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.data.*;
+import matula.util.data.AbstractMap;
+import matula.util.data.MapEntry;
+import matula.util.regex.IgnoreCase;
 
 /**
  * <p>Provides built-in predicates for the module aggregate.</p>
@@ -48,27 +46,6 @@ import matula.util.data.*;
 public final class ForeignAggregate {
 
     /**
-     * <p>Create a new variant comparator.</p>
-     *
-     * @param opt The sort options.
-     * @return The variant comparator.
-     * @throws InterpreterMessage Type Error.
-     */
-    public static EngineLexical sysVariantComparator(Interpreter inter,
-                                                     Object opt)
-            throws InterpreterMessage {
-        Engine engine = (Engine) inter.getEngine();
-        EngineLexical el = new EngineLexical();
-        try {
-            el.decodeSortOpts(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), engine);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return el;
-    }
-
-    /**
      * <p>Check if the variant comparator is eager.</p>
      *
      * @param el The variant comparator.
@@ -79,17 +56,23 @@ public final class ForeignAggregate {
     }
 
     /**
-     * <p>Create a new revolve.</p>
+     * <p>Check if the variant comparator is natural.</p>
      *
      * @param el The variant comparator.
-     * @return The revolve.
+     * @return True if the variant comparator is natural, otherwise false.
      */
-    public static AbstractMap sysRevolveNew(EngineLexical el) {
-        if (el.getComparator() == null) {
-            return new MapHashLink();
-        } else {
-            return new MapTree(el);
-        }
+    public static boolean sysVariantNatural(EngineLexical el) {
+        return (el.getComparator() == IgnoreCase.DEFAULT_TERTIARY);
+    }
+
+    /**
+     * <p>Check if the variant comparator is reverse.</p>
+     *
+     * @param el The variant comparator.
+     * @return True if the variant comparator is reverse, otherwise false.
+     */
+    public static boolean sysVariantReverse(EngineLexical el) {
+        return ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
     }
 
     /**
@@ -97,7 +80,7 @@ public final class ForeignAggregate {
      *
      * @param co  The call out.
      * @param map The map.
-     * @param el The variant comparator.
+     * @param el  The variant comparator.
      * @return The pair.
      */
     public static Object sysRevolvePair(CallOut co, AbstractMap map,
@@ -109,11 +92,11 @@ public final class ForeignAggregate {
             } else {
                 at = map.getFirstEntry();
             }
+            if (at == null)
+                return null;
         } else {
             at = (MapEntry) co.getData();
         }
-        if (at == null)
-            return null;
         MapEntry next;
         if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0) {
             next = map.predecessor(at);

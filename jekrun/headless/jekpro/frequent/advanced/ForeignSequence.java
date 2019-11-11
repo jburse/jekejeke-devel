@@ -2,9 +2,12 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.structure.EngineLexical;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -73,12 +76,47 @@ public final class ForeignSequence {
     }
 
     /**
+     * <p>Create a new variant comparator.</p>
+     *
+     * @param opt The sort options.
+     * @return The variant comparator.
+     * @throws InterpreterMessage Type Error.
+     */
+    public static EngineLexical sysVariantComparator(Interpreter inter,
+                                                     Object opt)
+            throws InterpreterMessage {
+        Engine engine = (Engine) inter.getEngine();
+        EngineLexical el = new EngineLexical();
+        try {
+            el.decodeSortOpts(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return el;
+    }
+
+    /**
      * <p>Create a new revolve.</p>
      *
      * @return The revolve.
      */
     public static AbstractMap sysRevolveNew() {
         return new MapTree(AbstractSkel.DEFAULT);
+    }
+
+    /**
+     * <p>Create a new revolve.</p>
+     *
+     * @param el The variant comparator.
+     * @return The revolve.
+     */
+    public static AbstractMap sysRevolveNew(EngineLexical el) {
+        if (el.getComparator() == null) {
+            return new MapHashLink();
+        } else {
+            return new MapTree(el);
+        }
     }
 
     /**
@@ -106,18 +144,18 @@ public final class ForeignSequence {
      * <p>Enumerate the revolve.</p>
      *
      * @param co  The call out.
-     * @param map The map.
+     * @param map The revolve.
      * @return The pair.
      */
     public static Object sysRevolvePair(CallOut co, AbstractMap map) {
         MapEntry at;
         if (co.getFirst()) {
             at = map.getFirstEntry();
+            if (at == null)
+                return null;
         } else {
             at = (MapEntry) co.getData();
         }
-        if (at == null)
-            return null;
         MapEntry next = map.successor(at);
         co.setRetry(next != null);
         co.setData(next);

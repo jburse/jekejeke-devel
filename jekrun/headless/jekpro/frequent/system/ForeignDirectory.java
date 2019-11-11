@@ -123,12 +123,12 @@ public final class ForeignDirectory {
             String[] res = new String[list.size()];
             list.toArray(res);
             dc = new ArrayEnumeration<String>(res);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
@@ -208,12 +208,12 @@ public final class ForeignDirectory {
             String[] names = new String[keys.size()];
             keys.toArray(names);
             dc = new ArrayEnumeration<String>(names);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
@@ -245,12 +245,12 @@ public final class ForeignDirectory {
             String[] res = new String[list.size()];
             list.toArray(res);
             dc = new ArrayEnumeration<String>(res);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;

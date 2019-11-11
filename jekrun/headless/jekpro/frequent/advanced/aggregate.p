@@ -133,12 +133,14 @@ aggregate(A, Goal, S) :-
 aggregate(A, Goal, S, O) :-
    sys_goal_globals(A^Goal, W),
    variant_comparator(O, C),
-   sys_revolve_new(W, P, C),
+   (  variant_natural(C) -> sys_revolve_new(W, P)
+   ;  sys_revolve_new(W, P, C)),
    (  variant_eager(C)
    -> sys_revolve_run(A, Goal, W, P, J),
       S = J
    ;  (sys_revolve_run(A, Goal, W, P, _), fail; true),
-      sys_revolve_list(W, P, S, C)).
+      (  variant_reverse(C) -> sys_revolve_list(W, P, S, C)
+      ;  sys_revolve_list(W, P, S))).
 
 % sys_aggregate(+Vars, +Aggregate, +Goal, +Revolve, -Value)
 :- private sys_aggregate/5.
@@ -156,9 +158,9 @@ sys_aggregate(W, A, G, R, J) :-
 sys_revolve_run(A, Goal, [], P, J) :- !,
    sys_goal_kernel(Goal, B),
    sys_aggregate_all(A, B, P, J).
-sys_revolve_run(A, Goal, W, P, J) :-
+sys_revolve_run(A, Goal, W, R, J) :-
    sys_goal_kernel(Goal, B),
-   sys_aggregate(W, A, B, P, J).
+   sys_aggregate(W, A, B, R, J).
 
 /*************************************************************/
 /* Revolve Helper                                            */
@@ -260,15 +262,6 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
 /*************************************************************/
 
 /**
- * variant_comparator(O, C):
- * The predicate succeeds in C with the variant comparator
- * for the sort options O.
- */
-% variant_comparator(+List, -Comparator)
-:- foreign(variant_comparator/2, 'ForeignAggregate',
-      sysVariantComparator('Interpreter', 'Object')).
-
-/**
  * variant_eager(C):
  * The predicate succeeds if the variant comparator is eager.
  */
@@ -277,14 +270,20 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
       sysVariantEager('EngineLexical')).
 
 /**
- * revolve_new(C, R):
- * The predicate succeeds in R with a new revolve
- * for the variant comparator C.
+ * variant_natural(C):
+ * The predicate succeeds if the variant comparator is natural.
  */
-% revolve_new(+Comparator, -Revolve)
-:- private revolve_new/2.
-:- foreign(revolve_new/2, 'ForeignAggregate',
-      sysRevolveNew('EngineLexical')).
+% variant_natural(+Comparator)
+:- foreign(variant_natural/1, 'ForeignAggregate',
+      sysVariantNatural('EngineLexical')).
+
+/**
+ * variant_reverse(C):
+ * The predicate succeeds if the variant comparator is reverse.
+ */
+% variant_reverse(+Comparator)
+:- foreign(variant_reverse/1, 'ForeignAggregate',
+      sysVariantReverse('EngineLexical')).
 
 /**
  * revolve_pair(R, C, U):

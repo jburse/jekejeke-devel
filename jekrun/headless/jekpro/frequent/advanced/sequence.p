@@ -50,6 +50,7 @@
 
 :- package(library(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(matula/util/data)).
 :- use_package(foreign(jekpro/tools/call)).
 
@@ -115,7 +116,8 @@ call_nth2(G, N) :-
 :- public distinct/2.
 :- meta_predicate distinct(?, 0).
 distinct(W, Goal) :-
-   revolve_new(R),
+   variant_comparator([type(hash)], C),
+   revolve_new(C, R),
    sys_revolve_run(Goal, W, R, nil).
 
 /**
@@ -166,7 +168,17 @@ sys_revolve_run(Goal, W, R, J) :-
  * The predicate succeeds in O with a copy of the pivot P.
  */
 % pivot_get(+Pivot, -Term)
-:- foreign(pivot_get/2, 'ForeignSequence', sysPivotGet('SetEntry')).
+:- foreign(pivot_get/2, 'ForeignSequence',
+      sysPivotGet('SetEntry')).
+
+/**
+ * variant_comparator(O, C):
+ * The predicate succeeds in C with the variant comparator
+ * for the sort options O.
+ */
+% variant_comparator(+List, -Comparator)
+:- foreign(variant_comparator/2, 'ForeignSequence',
+      sysVariantComparator('Interpreter', 'Object')).
 
 /**
  * revolve_new(R):
@@ -174,6 +186,15 @@ sys_revolve_run(Goal, W, R, J) :-
  */
 % revolve_new(-Revolve)
 :- foreign(revolve_new/1, 'ForeignSequence', sysRevolveNew).
+
+/**
+ * revolve_new(C, R):
+ * The predicate succeeds in R with a new revolve
+ * for the variant comparator C.
+ */
+% revolve_new(+Comparator, -Revolve)
+:- foreign(revolve_new/2, 'ForeignSequence',
+      sysRevolveNew('EngineLexical')).
 
 /**
  * revolve_lookup(R, K, P):

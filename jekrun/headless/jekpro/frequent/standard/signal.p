@@ -77,7 +77,7 @@ call_cleanup(G, C) :-
    current_prolog_flag(sys_choices, X),
    G,
    current_prolog_flag(sys_choices, Y),
-   (X =:= Y, !; true).
+   (X == Y, !; true).
 
 /**
  * setup_call_cleanup(A, B, C):
@@ -97,7 +97,7 @@ setup_call_cleanup(A, G, C) :-
    current_prolog_flag(sys_choices, X),
    G,
    current_prolog_flag(sys_choices, Y),
-   (X =:= Y, !; true).
+   (X == Y, !; true).
 
 /**
  * sys_cleanup(A):

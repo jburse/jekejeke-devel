@@ -111,12 +111,12 @@ public final class ForeignGroup {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
             dc = new ArrayEnumeration<Thread>(snapshotThreadsOfGroup(tg));
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Thread>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         Thread res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
@@ -151,12 +151,12 @@ public final class ForeignGroup {
         ArrayEnumeration<ThreadGroup> dc;
         if (co.getFirst()) {
             dc = new ArrayEnumeration<ThreadGroup>(snapshotGroupsOfGroup(tg));
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<ThreadGroup>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         ThreadGroup res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
@@ -194,12 +194,12 @@ public final class ForeignGroup {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             dc = new ArrayEnumeration<String>(OP_PROPS);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
@@ -245,12 +245,12 @@ public final class ForeignGroup {
         if (co.getFirst()) {
             Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
             dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(foyer));
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Thread>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         Thread res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;

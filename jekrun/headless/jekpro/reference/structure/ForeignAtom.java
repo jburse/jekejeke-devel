@@ -185,12 +185,12 @@ public final class ForeignAtom {
         AtomCursor ac;
         if (co.getFirst()) {
             ac = new AtomCursor(str, 0, from, to);
+            if (!ac.hasMoreElements())
+                return null;
             co.setData(ac);
         } else {
             ac = (AtomCursor) co.getData();
         }
-        if (!ac.hasMoreElements())
-            return null;
         Integer res = ac.nextElement();
         co.setRetry(ac.hasMoreElements());
         return res;

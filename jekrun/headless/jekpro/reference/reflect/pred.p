@@ -214,15 +214,15 @@ sys_make_indicator2(I, _, _) :-
 :- set_predicate_property(sys_make_indicator2/3, visible(private)).
 
 /**
- * sys_is_indicator(I):
+ * sys_indicator(I):
  * The predicate succeeds when I is a possibly quantified indicator.
  */
-% sys_is_indicator(+IndicatorColon)
-sys_is_indicator(I) :- var(I), !, fail.
-sys_is_indicator(:(_, I)) :- !,
-   sys_is_indicator(I).
-sys_is_indicator(_/_).
-:- set_predicate_property(sys_is_indicator/1, visible(public)).
+% sys_indicator(+IndicatorColon)
+sys_indicator(I) :- var(I), !, fail.
+sys_indicator(:(_, I)) :- !,
+   sys_indicator(I).
+sys_indicator(_/_).
+:- set_predicate_property(sys_indicator/1, visible(public)).
 
 /**********************************************************/
 /* Moved From Debugger                                    */

@@ -80,12 +80,12 @@ public final class ForeignEngine {
             String[] arr = new String[list.size()];
             list.toArray(arr);
             dc = new ArrayEnumeration<String>(arr);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<String>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;

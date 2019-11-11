@@ -64,12 +64,12 @@ public final class ForeignResidue {
             Object[] res = new Object[list.size()];
             list.toArray(res);
             dc = new ArrayEnumeration<Object>(res);
+            if (!dc.hasMoreElements())
+                return null;
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Object>) co.getData();
         }
-        if (!dc.hasMoreElements())
-            return null;
         Object res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
         return res;
