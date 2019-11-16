@@ -232,7 +232,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
          (  Res == det
          -> retractall(Blank),
             assertz(Test)
-         ;  Res = fail
+         ;  Res == fail
          -> retractall(Blank),
             assertz(Test), fail
          ;  true))),

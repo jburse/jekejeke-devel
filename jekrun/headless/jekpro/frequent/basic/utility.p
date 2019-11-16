@@ -132,11 +132,17 @@ sys_enum_apropos(N, row(I, E, T)) :-
       open_resource(N, S),
       (repeat,
       (  read_line(S, L)
-      -> atom_split(L, '\t', U),
-         sys_split_line(U, H, E, T),
-         sys_split_indicator(H, I)
+      -> (  sys_comment_line(L) -> fail
+         ;  atom_split(L, '\t', U),
+            sys_split_line(U, H, E, T),
+            sys_split_indicator(H, I))
       ;  !, fail)),
       close(S)).
+
+% sys_comment_line(+Atom)
+:- private sys_comment_line/1.
+sys_comment_line(L) :-
+   sub_atom(L, 0, _, #).
 
 % sys_split_line(+List, -Atom, -Atom)
 :- private sys_split_line/4.

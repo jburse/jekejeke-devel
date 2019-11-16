@@ -1,0 +1,267 @@
+# Warranty & Liability
+# To the extent permitted by applicable law and unless explicitly
+# otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+# regarding the provided information. XLOG Technologies GmbH assumes
+# no liability that any problems might be solved with the information
+# provided by XLOG Technologies GmbH.
+#
+# Rights & License
+# All industrial property rights regarding the information - copyright
+# and patent rights in particular - are the sole property of XLOG
+# Technologies GmbH. If the company was not the originator of some
+# excerpts, XLOG Technologies GmbH has at least obtained the right to
+# reproduce, change and translate the information.
+#
+# Reproduction is restricted to the whole unaltered document. Reproduction
+# of the information is only allowed for non-commercial uses. Selling,
+# giving away or letting of the execution of the library is prohibited.
+# The library can be distributed as part of your applications and libraries
+# for execution provided this comment remains unchanged.
+#
+# Restrictions
+# Only to be distributed with programs that add significant and primary
+# functionality to the library. Not to be distributed with additional
+# software intended to replace any components of the library.
+#
+# Trademarks
+# Jekejeke is a registered trademark of XLOG Technologies GmbH.
+public
+* /3	yes	arithmetic/elem
+** /3	yes	arithmetic/trigo
+*-> /2	no	runtime/logic
+(+)/2	yes	arithmetic/elem
+(+)/3	yes	arithmetic/elem
+(-)/2	yes	arithmetic/elem
+(-)/3	yes	arithmetic/elem
+-> /2	no	runtime/logic
+'.'/2	no	bootload/load
+/ /3	yes	arithmetic/elem
+// /3	yes	arithmetic/round
+/\ /3	yes	arithmetic/bits
+: /2	no	runtime/quali
+: /3	yes	runtime/quali
+:: /2	no	runtime/quali
+:: /3	yes	runtime/quali
+;/2	no	runtime/logic
+< /2	no	arithmetic/compare
+<< /3	yes	arithmetic/bits
+=.. /2	no	structure/univ
+=:= /2	no	arithmetic/compare
+=< /2	no	arithmetic/compare
+== /2	no	structure/lexical
+=\= /2	no	arithmetic/compare
+>= /2	no	arithmetic/compare
+>> /3	yes	arithmetic/bits
+@< /2	no	structure/lexical
+@=< /2	no	structure/lexical
+@> /2	no	structure/lexical
+@>= /2	no	structure/lexical
+[]/0	no	bootload/load
+(\)/2	yes	arithmetic/bits
+\/ /3	yes	arithmetic/bits
+\= /2	no	structure/univ
+\== /2	no	structure/lexical
+^ /3	yes	arithmetic/elem
+abolish/1	no	runtime/dynamic
+abort/0	no	runtime/session
+abs/2	yes	arithmetic/elem
+absolute_file_name/2	no	bootload/path
+absolute_file_name/3	no	bootload/path
+absolute_resource_name/2	no	bootload/path
+acos/2	yes	arithmetic/trigo
+acyclic_term/1	no	structure/vars
+arg/3	no	structure/univ
+asin/2	yes	arithmetic/trigo
+asserta/1	no	runtime/dynamic
+assertz/1	no	runtime/dynamic
+atan/2	yes	arithmetic/trigo
+atan2/3	no	arithmetic/trigo
+atom/1	no	structure/type
+atom_block/2	no	structure/atom
+atom_chars/2	no	structure/atom
+atom_codes/2	no	structure/atom
+atom_concat/3	no	structure/atom
+atom_integer/3	no	structure/atom
+atom_length/2	no	structure/atom
+atom_number/2	no	structure/atom
+atom_split/3	no	structure/atom
+atomic/1	no	structure/type
+balance/1	no	runtime/distributed
+balance/2	no	runtime/distributed
+begin_module/1	no	bootload/engine
+break/0	no	runtime/session
+callable/1	no	structure/type
+cancel/1	no	runtime/distributed
+ceiling/2	yes	arithmetic/round
+char_code/2	no	structure/atom
+clause/2	no	runtime/dynamic
+close/0	no	runtime/session
+compare/3	no	structure/lexical
+compare/4	no	structure/lexical
+compound/1	no	structure/type
+consult/1	no	bootload/load
+cos/2	yes	arithmetic/trigo
+current_module/1	no	reflect/source
+current_op/3	no	reflect/oper
+current_oper/1	no	reflect/oper
+current_predicate/1	no	reflect/pred
+current_prolog_flag/2	no	bootload/engine
+current_resource/1	no	reflect/source
+current_source/1	no	reflect/source
+decimal/1	no	structure/type
+decimal/2	yes	arithmetic/elem
+(discontiguous)/1	no	bootload/load
+div/3	yes	arithmetic/round
+(dynamic)/1	no	runtime/dynamic
+e/1	yes	arithmetic/trigo
+end_all_modules/0	no	bootload/engine
+end_module/0	no	bootload/engine
+ensure_loaded/1	no	bootload/load
+epsilon/1	yes	arithmetic/compare
+epsilon32/1	yes	arithmetic/compare
+exit/0	no	runtime/session
+exp/2	yes	arithmetic/trigo
+float/1	no	structure/type
+float/2	yes	arithmetic/elem
+float32/1	no	structure/type
+float32/2	yes	arithmetic/elem
+float64/1	no	structure/type
+floor/2	yes	arithmetic/round
+foreign/3	no	reflect/foreign
+foreign_const/3	no	reflect/foreign
+foreign_constructor/3	no	reflect/foreign
+foreign_fun/3	no	reflect/foreign
+foreign_getter/3	no	reflect/foreign
+foreign_setter/3	no	reflect/foreign
+(group_local)/1	no	runtime/dynamic
+halt/0	no	bootload/engine
+halt/1	no	bootload/engine
+horde/1	no	runtime/distributed
+horde/2	no	runtime/distributed
+include/1	no	bootload/load
+integer/1	no	structure/type
+integer/2	yes	arithmetic/round
+integer_chars/3	no	structure/atom
+integer_codes/3	no	structure/atom
+is/2	no	arithmetic/eval
+last_atom_concat/3	no	structure/atom
+last_sub_atom/4	no	structure/atom
+last_sub_atom/5	no	structure/atom
+listing/0	no	bootload/load
+listing/1	no	bootload/load
+log/2	yes	arithmetic/trigo
+make/0	no	bootload/load
+max/3	yes	arithmetic/compare
+(meta_function)/1	no	runtime/meta
+(meta_predicate)/1	no	runtime/meta
+min/3	yes	arithmetic/compare
+mod/3	yes	arithmetic/round
+module/2	no	bootload/module
+(multifile)/1	no	bootload/load
+number/1	no	structure/type
+number_chars/2	no	structure/atom
+number_codes/2	no	structure/atom
+numbervars/3	no	structure/vars
+op/3	no	reflect/oper
+oper_property/2	no	reflect/oper
+(override)/1	no	bootload/module
+package/1	no	bootload/module
+pi/1	yes	arithmetic/trigo
+predicate_property/2	no	reflect/pred
+(private)/1	no	bootload/module
+prolog/0	no	runtime/session
+(public)/1	no	bootload/module
+rebuild/0	no	bootload/load
+reexport/1	no	bootload/module
+reference/1	no	structure/type
+rem/3	yes	arithmetic/round
+repeat/0	no	runtime/logic
+reset_oper_property/2	no	reflect/oper
+retract/1	no	runtime/dynamic
+retractall/1	no	runtime/dynamic
+round/2	yes	arithmetic/round
+safe_term_variables/2	no	structure/vars
+safe_term_variables/3	no	structure/vars
+set_arg/4	no	structure/univ
+set_prolog_flag/2	no	bootload/engine
+setup_balance/1	no	runtime/distributed
+setup_balance/2	no	runtime/distributed
+sign/2	yes	arithmetic/elem
+sin/2	yes	arithmetic/trigo
+source_property/2	no	reflect/source
+sqrt/2	yes	arithmetic/trigo
+(static)/1	no	reflect/pred
+sub_atom/4	no	structure/atom
+sub_atom/5	no	structure/atom
+submit/2	no	runtime/distributed
+sys_activate_capability/2	no	bootload/toolkit
+sys_add_file_extension/2	no	bootload/path
+sys_add_path/1	no	bootload/path
+sys_add_resource/1	no	bootload/module
+sys_auto_load/1	no	bootload/module
+sys_calc_install_id/2	no	bootload/toolkit
+sys_callable/1	no	runtime/quali
+sys_capability_property/2	no	bootload/toolkit
+sys_check_license/1	no	bootload/toolkit
+sys_check_licenses/0	no	bootload/toolkit
+sys_current_capability/1	no	bootload/toolkit
+sys_current_file_extension/2	no	bootload/path
+sys_current_path/1	no	bootload/path
+sys_current_predicate/1	no	reflect/pred
+sys_declaration_indicator/2	no	bootload/load
+sys_declaration_indicator/2	no	bootload/module
+sys_declaration_indicator/2	no	reflect/foreign
+sys_declaration_indicator/2	no	reflect/oper
+sys_declaration_indicator/2	no	reflect/pred
+sys_declaration_indicator/2	no	runtime/dynamic
+sys_declaration_indicator/2	no	runtime/meta
+sys_error_message/1	no	runtime/session
+sys_finit_capability/1	no	bootload/toolkit
+sys_functor/3	no	runtime/quali
+sys_get_module/2	no	runtime/quali
+sys_goal_globals/2	no	structure/vars
+sys_goal_kernel/2	no	structure/vars
+sys_indicator/1	no	reflect/pred
+sys_init_capability/1	no	bootload/toolkit
+sys_init_capability/2	no	bootload/toolkit
+sys_listing_has_clause/2	no	bootload/load
+sys_listing_user/1	no	bootload/load
+sys_listing_user_chk/1	no	bootload/load
+sys_load_resource/1	no	bootload/module
+sys_make_indicator/3	no	reflect/pred
+sys_make_oper/3	no	reflect/oper
+(sys_notrace)/1	no	bootload/load
+sys_number_variables/4	no	structure/vars
+sys_predicate_property_idx/2	no	reflect/pred
+sys_provable_property_chk/3	no	reflect/pred
+sys_provable_property_idx/2	no	reflect/pred
+sys_quoted_var/2	no	runtime/session
+sys_reg_license_text/2	no	bootload/toolkit
+sys_reged_license_text/2	no	bootload/toolkit
+sys_remove_file_extension/1	no	bootload/path
+sys_replace_site/3	no	runtime/quali
+sys_set_context_property/3	no	reflect/source
+sys_short_base/1	no	bootload/load
+sys_show_base/1	no	bootload/load
+sys_show_provable_source/2	no	bootload/load
+sys_syntax_property_chk/3	no	reflect/oper
+sys_syntax_property_idx/2	no	reflect/oper
+sys_term_singletons/2	no	structure/vars
+sys_univ/2	no	runtime/quali
+sys_var/1	no	runtime/quali
+tan/2	yes	arithmetic/trigo
+term_atom/2	no	structure/atom
+term_atom/3	no	structure/atom
+term_variables/2	no	structure/vars
+term_variables/3	no	structure/vars
+(thread_local)/1	no	runtime/dynamic
+top_module/1	no	bootload/engine
+truncate/2	yes	arithmetic/round
+unify_with_occurs_check/2	no	structure/univ
+unload_file/1	no	bootload/load
+use_module/1	no	bootload/module
+use_package/1	no	bootload/module
+version/0	no	bootload/engine
+welcome/0	no	bootload/engine
+xor/3	yes	arithmetic/bits
+
