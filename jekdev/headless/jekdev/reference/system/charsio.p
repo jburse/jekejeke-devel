@@ -111,6 +111,22 @@ with_input_from(bytes(L), G) :- !,
 /* Helper Predicates                                           */
 /***************************************************************/
 
+/**
+ * try_call_finally(S, G, T):
+ * The predicate succeeds whenever G succeeds. Calling T on the
+ * exit, fail or exception port. and calling S on the call and
+ * redo port.
+ */
+% try_call_finally(+Goal, +Goal, +Goal)
+:- private try_call_finally/3.
+:- meta_predicate try_call_finally(0, 0, 0).
+try_call_finally(S, G, T) :-
+   (S; T, fail),
+   current_prolog_flag(sys_choices, X),
+   sys_trap(G, E, (T, sys_raise(E))),
+   current_prolog_flag(sys_choices, Y),
+   (X == Y, !, T; T; S, fail).
+
 % redirect_output(+Options)
 :- private redirect_output/1.
 redirect_output(O) :-
@@ -122,23 +138,3 @@ redirect_output(O) :-
 fetch_output(D) :-
    current_output(T),
    memory_get(T, D).
-
-/**
- * try_call_finally(S, G, T):
- * The predicate succeeds whenever G succeeds. Calling S on the
- * call and redo port, and calling T on the exit, fail and exception
- * port. The predicate can also handle reserved exception.
- */
-% try_call_finally(+Goal, +Goal, +Goal)
-:- private try_call_finally/3.
-:- meta_predicate try_call_finally(0, 0, 0).
-try_call_finally(S, G, T) :-
-   (S; T, fail),
-   sys_trap(G, E, sys_before_ball(T, E)),
-   (T; S, fail).
-
-% sys_before_ball(+Goal, +Term)
-:- private sys_before_ball/2.
-:- meta_predicate sys_before_ball(0, ?).
-sys_before_ball(T, E) :- T, sys_raise(E).
-:- set_predicate_property(sys_before_ball/2, visible(private)).
