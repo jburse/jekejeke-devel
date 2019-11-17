@@ -81,7 +81,7 @@ public final class SpecialStruc extends AbstractSpecial {
                 SpecialStruc.termGlobals(temp[0], ref, ev);
                 en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                SpecialSort.createSet(ev.vars, en);
+                SpecialSort.createSet(ev.vars, en, false);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))

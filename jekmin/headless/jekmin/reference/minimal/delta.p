@@ -184,19 +184,19 @@ sys_special((A; _)) :- sys_special(A).
 sys_special((_; A)) :- sys_special(A).
 
 % disjunction + sys_none reduction
-simp:goal_simplification((sys_none; C), C).
-simp:goal_simplification((C; sys_none), C).
+simp:goal_simplification((U; C), C) :- U == sys_none.
+simp:goal_simplification((C; U), C) :- U == sys_none.
 
 % conjunction + sys_none reduction
-simp:goal_simplification((sys_none, _), sys_none).
-simp:goal_simplification((_, sys_none), sys_none).
+simp:goal_simplification((U, _), U) :- U == sys_none.
+simp:goal_simplification((_, U), U) :- U == sys_none.
 
 % conjunction + disjunction distribution
-simp:goal_simplification(((A; B), C), R) :- (sys_special(A); sys_special(B)),
+simp:goal_simplification((U, C), R) :- nonvar(U), U = (A; B), (sys_special(A); sys_special(B)),
    simplify_goal((A, C), H),
    simplify_goal((B, C), J),
    simplify_goal((H; J), R).
-simp:goal_simplification((A, (B; C)), R) :- (sys_special(B); sys_special(C)),
+simp:goal_simplification((A, U), R) :- nonvar(U), U = (B; C), (sys_special(B); sys_special(C)),
    simplify_goal((A, B), H),
    simplify_goal((A, C), J),
    simplify_goal((H; J), R).
@@ -351,6 +351,8 @@ simp:goal_simplification(sys_oldnew(H), H).
 /**********************************************************/
 
 % usual blockers
+simp:goal_simplification((A, _), _) :- var(A), !, fail.
+simp:goal_simplification((_, A), _) :- var(A), !, fail.
 simp:goal_simplification((_, A, _), _) :- var(A), !, fail.
 
 % replace sys_keep/sys_keep by sys_keep
@@ -505,14 +507,16 @@ sys_plus(_) :- throw(error(existence_error(body, sys_plus/1), _)).
 
 user:term_expansion((H <= B), (sys_plus(H) :- sys_new(B))).
 
-% The usual blocking
-simp:term_simplification((_ :- A, _), _) :- var(A), !, fail.
-
 % Or Distribution
-simp:term_simplification((A :- D; E), J) :- (sys_special(D); sys_special(E)),
-   simplify_term((A :- D), U),
-   simplify_term((A :- E), H),
-   simplify_term(U/\H, J).
+simp:term_simplification((A :- U), K) :- nonvar(U), U = (D; E), (sys_special(D); sys_special(E)),
+   simplify_term((A :- D), H),
+   simplify_term((A :- E), J),
+   simplify_term(H/\J, K).
+
+% The usual blocking
+simp:term_simplification((A :- _), _) :- var(A), !, fail.
+simp:term_simplification((_ :- A), _) :- var(A), !, fail.
+simp:term_simplification((_ :- A, _), _) :- var(A), !, fail.
 
 % Detect Keep & Minus and Drop & Minus Combination
 simp:term_simplification((sys_plus(B) :- sys_keep(D, Q)),

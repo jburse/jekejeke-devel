@@ -1,0 +1,164 @@
+# Warranty & Liability
+# To the extent permitted by applicable law and unless explicitly
+# otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+# regarding the provided information. XLOG Technologies GmbH assumes
+# no liability that any problems might be solved with the information
+# provided by XLOG Technologies GmbH.
+#
+# Rights & License
+# All industrial property rights regarding the information - copyright
+# and patent rights in particular - are the sole property of XLOG
+# Technologies GmbH. If the company was not the originator of some
+# excerpts, XLOG Technologies GmbH has at least obtained the right to
+# reproduce, change and translate the information.
+#
+# Reproduction is restricted to the whole unaltered document. Reproduction
+# of the information is only allowed for non-commercial uses. Selling,
+# giving away or letting of the execution of the library is prohibited.
+# The library can be distributed as part of your applications and libraries
+# for execution provided this comment remains unchanged.
+#
+# Restrictions
+# Only to be distributed with programs that add significant and primary
+# functionality to the library. Not to be distributed with additional
+# software intended to replace any components of the library.
+#
+# Trademarks
+# Jekejeke is a registered trademark of XLOG Technologies GmbH.
+public
+#/\ /2	no	finite/reify
+#< /2	no	finite/linform
+#<== /2	no	finite/reify
+#<==> /2	no	finite/reify
+#= /2	no	finite/linform
+#=< /2	no	finite/linform
+#==> /2	no	finite/reify
+#> /2	no	finite/linform
+#>= /2	no	finite/linform
+(#\)/1	no	finite/reify
+#\/ /2	no	finite/reify
+#\= /2	no	finite/linform
+','/3	no	minimal/hypo
+;/3	no	minimal/hypo
+<= /2	no	minimal/delta
+<=> /2	no	minimal/chr
+==: /2	no	minimal/chart
+==> /2	no	minimal/chr
+all_different/1	no	finite/linform
+assumea/1	no	minimal/hypo
+assumea/2	no	minimal/hypo
+assumez/1	no	minimal/hypo
+assumez/2	no	minimal/hypo
+attr_unify_hook/2	no	finite/clpb
+attribute_goals/3	no	finite/clpb
+b_delete/1	no	term/state
+b_setval/2	no	term/state
+bitcount/2	yes	misc/bits
+bitlength/2	yes	misc/bits
+chart/3	no	minimal/chart
+choose/1	no	minimal/asp
+choose/2	no	minimal/asp
+clearbit/3	yes	misc/bits
+count/2	no	finite/clpb
+del_attr/2	no	term/unify
+del_atts/2	no	term/verify
+deposita_ref/1	no	minimal/assume
+depositz_ref/1	no	minimal/assume
+dif/2	no	term/herbrand
+divmod/4	no	misc/elem
+expr_vars/2	no	finite/tree
+fail/1	no	minimal/hypo
+(forward)/1	no	minimal/delta
+freeze/2	no	term/suspend
+gcd/3	yes	misc/elem
+get_attr/3	no	term/unify
+get_atts/3	no	term/verify
+user:goal_expansion/2	no	minimal/chart
+user:goal_expansion/2	no	minimal/chr
+simp:goal_simplification/2	no	minimal/delta
+in/2	no	finite/intset
+indomain/1	no	finite/enum
+ins/2	no	finite/intset
+iroot/3	no	misc/elem
+isqrt/2	no	misc/elem
+label/1	no	finite/enum
+label_maximum/2	no	finite/enum
+labeling/1	no	finite/clpb
+lcm/3	no	misc/elem
+lowestsetbit/2	yes	misc/bits
+min_choose/2	no	minimal/asp
+min_choose/3	no	minimal/asp
+modinv/3	yes	misc/elem
+modpow/4	yes	misc/elem
+nb_current/2	no	term/state
+phaseout/1	no	minimal/delta
+phaseout_posted/1	no	minimal/delta
+portray_attributes/3	no	finite/tree
+post/1	no	minimal/delta
+post/2	no	minimal/delta
+posted/1	no	minimal/delta
+pseudo/4	no	finite/clpb
+put_attr/3	no	term/unify
+put_atts/3	no	term/verify
+random_choose/1	no	minimal/asp
+random_choose/2	no	minimal/asp
+random_indomain/1	no	finite/enum
+random_label/1	no	finite/enum
+random_labeling/1	no	finite/clpb
+random_min_choose/2	no	minimal/asp
+random_min_choose/3	no	minimal/asp
+random_min_choose2/3	no	minimal/asp
+retire/1	no	minimal/hypo
+retire/2	no	minimal/hypo
+retireall/1	no	minimal/hypo
+retireall/2	no	minimal/hypo
+rootrem/4	no	misc/elem
+sat/1	no	finite/clpb
+setbit/3	yes	misc/bits
+sqrtrem/3	no	misc/elem
+sto/1	no	term/herbrand
+sys_apropos_table/1	no	experiment/dummy
+sys_assume_cont/1	no	experiment/cont
+sys_bound_var/1	no	experiment/trail
+sys_clause_hook/3	no	experiment/attr
+sys_compile_hook/3	no	experiment/attr
+residue:sys_current_eq/2	no	finite/clpfd
+residue:sys_current_eq/2	no	finite/intset
+residue:sys_current_eq/2	no	finite/linform
+residue:sys_current_eq/2	no	finite/reify
+residue:sys_current_eq/2	no	term/herbrand
+residue:sys_current_eq/2	no	term/suspend
+residue:sys_current_eq/2	no	term/unify
+residue:sys_current_eq/2	no	term/verify
+sys_ensure_serno/1	no	experiment/attr
+sys_freeze_var/2	no	experiment/trail
+sys_freezer/1	no	experiment/trail
+sys_melt_var/2	no	experiment/trail
+sys_ripple/1	no	experiment/cont
+sys_serno_hooks/3	no	experiment/attr
+sys_term_globals/2	no	misc/struc
+sys_term_kernel/2	no	misc/struc
+sys_unbind/1	no	experiment/trail
+residue:sys_unwrap_eq/3	no	finite/clpfd
+residue:sys_unwrap_eq/3	no	finite/intset
+residue:sys_unwrap_eq/3	no	finite/linform
+residue:sys_unwrap_eq/3	no	finite/reify
+residue:sys_unwrap_eq/3	no	term/herbrand
+residue:sys_unwrap_eq/3	no	term/suspend
+residue:sys_unwrap_eq/3	no	term/unify
+residue:sys_unwrap_eq/3	no	term/verify
+user:term_expansion/2	no	minimal/chart
+user:term_expansion/2	no	minimal/chr
+user:term_expansion/2	no	minimal/delta
+simp:term_simplification/2	no	minimal/delta
+testbit/2	no	misc/bits
+true/1	no	minimal/hypo
+ulp/2	yes	misc/elem
+verify_attributes/2	no	finite/tree
+weighted_maximum/3	no	finite/clpb
+when/2	no	term/suspend
+withdrawa_ref/1	no	minimal/assume
+withdrawz_ref/1	no	minimal/assume
+words/3	no	minimal/chart
+words/4	no	minimal/chart
+
