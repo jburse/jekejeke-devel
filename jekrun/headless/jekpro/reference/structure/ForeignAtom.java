@@ -1,5 +1,6 @@
 package jekpro.reference.structure;
 
+import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -15,6 +16,7 @@ import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -650,8 +652,10 @@ public final class ForeignAtom {
      *
      * @param str The atom.
      * @return The block.
+     * @throws InterpreterMessage Representation error.
      */
-    public static byte[] sysAtomToBlock(String str) throws InterpreterMessage {
+    public static byte[] sysAtomToBlock(String str)
+            throws InterpreterMessage {
         int n = str.length();
         byte[] buf = new byte[n];
         for (int i = 0; i < n; i++) {
@@ -664,6 +668,79 @@ public final class ForeignAtom {
             }
         }
         return buf;
+    }
+
+    /**
+     * <p>Convert a block to an atom.</p>
+     *
+     * @param buf The block.
+     * @param opt The block options term.
+     * @return The atom.
+     * @throws InterpreterMessage           Validation error.
+     * @throws UnsupportedEncodingException Unsupported encoding.
+     */
+    public static String sysBlockToAtom(byte[] buf, Object opt)
+            throws InterpreterMessage, UnsupportedEncodingException {
+        String encoding = decodeBlockOptions(opt);
+        if (encoding == null) {
+            return sysBlockToAtom(buf);
+        } else {
+            return new String(buf, encoding);
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a block.</p>
+     *
+     * @param str The atom.
+     * @param opt The block options term.
+     * @return The block.
+     * @throws InterpreterMessage           Validation error.
+     * @throws UnsupportedEncodingException Unsupported encoding.
+     */
+    public static byte[] sysAtomToBlock(String str, Object opt)
+            throws InterpreterMessage, UnsupportedEncodingException {
+        String encoding = decodeBlockOptions(opt);
+        if (encoding == null) {
+            return sysAtomToBlock(str);
+        } else {
+            return str.getBytes(encoding);
+        }
+    }
+
+    /**
+     * <p>Decode the block options.</p>
+     *
+     * @param opt The block options term.
+     * @throws InterpreterMessage Validation error.
+     */
+    private static String decodeBlockOptions(Object opt)
+            throws InterpreterMessage {
+        String encoding = null;
+        while (opt instanceof TermCompound &&
+                ((TermCompound) opt).getArity() == 2 &&
+                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
+            Object temp = ((TermCompound) opt).getArg(0);
+            if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_ENCODING)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                encoding = InterpreterMessage.castString(help);
+            } else {
+                InterpreterMessage.checkInstantiated(temp);
+                throw new InterpreterMessage(InterpreterMessage.domainError(
+                        ForeignStream.OP_OPEN_OPTION, temp));
+            }
+            opt = ((TermCompound) opt).getArg(1);
+        }
+        if (opt.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            InterpreterMessage.checkInstantiated(opt);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    InterpreterMessage.OP_TYPE_LIST, opt));
+        }
+        return encoding;
     }
 
     /****************************************************************/

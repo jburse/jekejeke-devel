@@ -58,6 +58,10 @@
 
 :- module(socket, []).
 
+/********************************************************************/
+/* TCP/IP Sockets                                                   */
+/********************************************************************/
+
 /**
  * server_new(P, S):
  * The predicate succeeds in S with a new server socket for port P.
@@ -67,7 +71,7 @@
 
 /**
  * server_port(S, P):
- * The predicate succeeds in P with the port of the server socket S.
+ * The predicate succeeds in P with the local port of the server socket S.
  */
 :- public server_port/2.
 :- foreign(server_port/2, 'ForeignSocket', sysServerPort('ServerSocket')).
@@ -92,4 +96,39 @@
  */
 :- public websock_new/2.
 :- foreign_constructor(websock_new/2, 'Framed', new('Socket')).
+
+/********************************************************************/
+/* UDP/IP Sockets                                                   */
+/********************************************************************/
+
+/**
+ * endpoint_new(P, S):
+ * The predicate succeeds in S with a new datagram socket for port P.
+ */
+:- public endpoint_new/2.
+:- foreign(endpoint_new/2, 'ForeignSocket', sysEndpointNew(int)).
+
+/**
+ * endpoint_port(S, P):
+ * The predicate succeeds in P with the local port of the datagram socket S.
+ */
+:- public endpoint_port/2.
+:- foreign(endpoint_port/2, 'ForeignSocket', sysEndpointPort('DatagramSocket')).
+
+/**
+ * endpoint_receive(S, B):
+ * The predicate succceeds in B with the data received
+ * from the datagram socket S.
+ */
+:- public endpoint_receive/2.
+:- foreign(endpoint_receive/2, 'ForeignSocket', sysEndpointReceive('DatagramSocket')).
+
+/**
+ * endpoint_send(S, B, D, P):
+ * The predicate succeeds in sending the data B to the destination
+ * host D and destination port P on the datagram socket S.
+ */
+:- public endpoint_send/4.
+:- foreign(endpoint_send/4, 'ForeignSocket', sysEndpointSend('DatagramSocket', {byte}, 'String', int)).
+
 

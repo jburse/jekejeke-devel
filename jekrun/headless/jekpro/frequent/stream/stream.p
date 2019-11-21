@@ -159,27 +159,20 @@ open(Path, Mode, Stream) :-
 
 /**
  * close(S): [ISO 8.11.6]
- * close(S, O): [ISO 8.11.6]
- * The unary predicate closes the closeable S. The binary predicate
- * additionally recognizes the following close options. For a list
- * of options see the API documentation.
+ * The predicate closes the closeable S.
  */
-% close(+AliasOrPath, +Opt)
-:- public close/2.
-close(Alias, Opt) :- atom(Alias), !,
-   sys_get_alias(Alias, Stream),
-   sys_close(Stream, Opt),
-   sys_remove_alias(Alias, Stream).
-close(Stream, Opt) :-
-   sys_close(Stream, Opt).
-
 % close(+AliasOrPath)
 :- public close/1.
-close(Stream) :- close(Stream, []).
+close(Alias) :- atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_close(Stream),
+   sys_remove_alias(Alias, Stream).
+close(Stream) :-
+   sys_close(Stream).
 
-:- private sys_close/2.
-:- foreign(sys_close/2, 'ForeignStream',
-      sysClose('Closeable', 'Object')).
+:- private sys_close/1.
+:- virtual sys_close/1.
+:- foreign(sys_close/1, 'Closeable', close).
 
 /**
  * stream_property(S, P): [ISO 8.11.8]

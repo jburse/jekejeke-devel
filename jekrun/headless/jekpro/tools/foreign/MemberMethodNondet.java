@@ -167,11 +167,6 @@ final class MemberMethodNondet extends AbstractMember {
                     if (en.fault != null)
                         throw en.fault;
                 }
-                co.flags &= ~CallOut.MASK_CALL_FIRST;
-
-                co.flags &= ~CallOut.MASK_CALL_RETRY;
-                co.flags &= ~CallOut.MASK_CALL_SPECI;
-                co.flags &= ~CallOut.MASK_CALL_CUTTR;
             } else {
                 if (ext)
                     d.remTab(en);
@@ -189,6 +184,11 @@ final class MemberMethodNondet extends AbstractMember {
                 }
                 return true;
             }
+            co.flags &= ~CallOut.MASK_CALL_FIRST;
+
+            co.flags &= ~CallOut.MASK_CALL_RETRY;
+            co.flags &= ~CallOut.MASK_CALL_SPECI;
+            co.flags &= ~CallOut.MASK_CALL_CUTTR;
         }
     }
 

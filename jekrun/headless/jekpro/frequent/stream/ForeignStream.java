@@ -201,30 +201,6 @@ public final class ForeignStream {
         }
     }
 
-    /**
-     * <p>Close the closeable with the given option.</p>
-     *
-     * @param str The closeable.
-     * @param opt The options.
-     * @throws InterpreterMessage Validation error.
-     * @throws IOException        IO error.
-     * @throws InterpreterMessage Validation error.
-     */
-    public static void sysClose(Closeable str, Object opt)
-            throws InterpreterMessage, IOException {
-        int res = decodeCloseOpts(opt);
-        if ((res & OpenOpts.MASK_CLSE_FRCE) != 0) {
-            try {
-                str.close();
-            } catch (IOException x) {
-                if (OpenCheck.isInterrupt(x))
-                    throw x;
-            }
-        } else {
-            str.close();
-        }
-    }
-
     /****************************************************************/
     /* Length & Position Properties                                 */
     /****************************************************************/

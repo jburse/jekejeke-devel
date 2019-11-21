@@ -665,9 +665,11 @@ atom_integer(Atom, Radix, Integer) :-
 
 /**
  * atom_block(A, B):
- * If A is a variable, then the predicate succeeds in A
- * with the atom for the block B. Otherwise the predicate
- * succeeds in B with the atom for the block B.
+ * atom_block(A, B, O):
+ * If A is a variable, then the predicate succeeds in A with the
+ * atom for the block B. Otherwise the predicate succeeds in B
+ * with the atom for the block B. The ternary predicate allows
+ * specifying encoding options.
  */
 % atom_block(+-Atom, -+Bytes)
 :- public atom_block/2.
@@ -683,6 +685,21 @@ atom_block(A, B) :-
 :- private sys_atom_to_block/2.
 :- foreign(sys_atom_to_block/2, 'ForeignAtom',
       sysAtomToBlock('String')).
+
+% atom_block(+-Atom, -+Bytes, +List)
+:- public atom_block/3.
+atom_block(A, B, O) :- var(A), !,
+   sys_block_to_atom(B, O, A).
+atom_block(A, B, O) :-
+   sys_atom_to_block(A, O, B).
+
+:- private sys_block_to_atom/3.
+:- foreign(sys_block_to_atom/3, 'ForeignAtom',
+      sysBlockToAtom({byte}, 'Object')).
+
+:- private sys_atom_to_block/3.
+:- foreign(sys_atom_to_block/3, 'ForeignAtom',
+      sysAtomToBlock('String', 'Object')).
 
 /****************************************************************/
 /* Term Conversion                                              */

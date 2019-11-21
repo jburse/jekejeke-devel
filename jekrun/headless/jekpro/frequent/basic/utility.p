@@ -121,7 +121,7 @@ sys_apropos_value(row(_, _, M), path, M).
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
-sys_apropos_table(library(builtin/reference)).
+sys_apropos_table(library(builtin/kernel)).
 sys_apropos_table(library(bootload/reference)).
 sys_apropos_table(library(stream/frequent)).
 

@@ -5,7 +5,8 @@ import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.regex.ScannerError;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -92,7 +93,7 @@ public final class ForeignCache {
      * @param adr    The URI.
      * @param locstr The locale prefixed by underscore.
      * @param know   The recognizer.
-     * @param param The param or null.
+     * @param param  The param or null.
      * @param mask   The mask.
      * @throws InterruptedIOException IO Interrupted.
      */

@@ -700,7 +700,7 @@ public final class ForeignUri {
                     if (buf != null)
                         buf.appendCodePoint(ch);
                 }
-                pos += Character.charCount(pos);
+                pos += Character.charCount(ch);
             }
             if (enc != null)
                 hexDigits(buf, enc, cset);
@@ -823,6 +823,24 @@ public final class ForeignUri {
             return -1;
         }
     }
+
+    /**
+     * <p>Some test.</p>
+     *
+     * @param args The arguments, unused.
+     * @throws MalformedURLException    Spec assembling problem.
+     * @throws CharacterCodingException File canonization problem.
+     */
+    /*
+    public static void main(String[] args) throws UnsupportedEncodingException {
+        String str = "a\uD834\uDD1Eb";
+        String str2 = sysUriEncode(str);
+        System.out.println("encode(" + str + ")=" + str2);
+
+        str2 = URLEncoder.encode(str, "utf-8");
+        System.out.println("encode(" + str + ")=" + str2);
+    }
+    */
 
     /**
      * <p>Some test.</p>

@@ -5,8 +5,7 @@ import matula.util.wire.Interruptible;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.channels.ClosedByInterruptException;
 
 /**
@@ -41,6 +40,11 @@ import java.nio.channels.ClosedByInterruptException;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignSocket {
+    private static final int MAX_DATA = 4096;
+
+    /*************************************************************/
+    /* TCP/IP Sockets                                            */
+    /*************************************************************/
 
     /**
      * <p>Open a server socket.</p>
@@ -55,13 +59,13 @@ public final class ForeignSocket {
     }
 
     /**
-     * <p>Retrieve the server port.</p>
+     * <p>Retrieve the local server socket port.</p>
      *
-     * @param server The server.
-     * @return The port.
+     * @param socket The server socket.
+     * @return The local port.
      */
-    public static int sysServerPort(ServerSocket server) {
-        return server.getLocalPort();
+    public static int sysServerPort(ServerSocket socket) {
+        return socket.getLocalPort();
     }
 
     /**
@@ -102,6 +106,93 @@ public final class ForeignSocket {
             throws IOException {
         Socket sock = new Socket(host, port);
         return new Interruptible(sock);
+    }
+
+    /*************************************************************/
+    /* UDP/IP Sockets                                            */
+    /*************************************************************/
+
+    /**
+     * <p>Open a datagram socket.</p>
+     *
+     * @param port The port.
+     * @return The socket.
+     * @throws SocketException Socket error.
+     */
+    public static DatagramSocket sysEndpointNew(int port) throws SocketException {
+        return new DatagramSocket(port);
+    }
+
+    /**
+     * <p>Retrieve the local datagram socket port.</p>
+     *
+     * @param socket The datagram socket.
+     * @return The local port.
+     */
+    public static int sysEndpointPort(DatagramSocket socket) {
+        return socket.getLocalPort();
+    }
+
+    /**
+     * <p>Receive data from a datagram socket.</p>
+     *
+     * @param socket The datagram socket.
+     * @return The data.
+     * @throws IOException IO Error
+     */
+    public static byte[] sysEndpointReceive(DatagramSocket socket)
+            throws IOException {
+        byte[] buf = new byte[MAX_DATA];
+        DatagramPacket packet = new DatagramPacket(buf, 0, buf.length);
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
+        if (live != null)
+            live.closer = socket;
+        try {
+            socket.receive(packet);
+        } finally {
+            if (live != null)
+                live.closer = null;
+            if (Thread.interrupted())
+                throw new InterruptedIOException();
+        }
+        int len = packet.getLength();
+        if (len != buf.length) {
+            byte[] res = new byte[len];
+            System.arraycopy(buf, 0, res, 0, len);
+            return res;
+        } else {
+            return buf;
+        }
+    }
+
+    /**
+     * <p>Send data on a datagram socket.</p>
+     *
+     * @param socket The datagram socket.
+     * @param buf    The data.
+     * @param host   The destination host.
+     * @param port   The destination port.
+     * @throws IOException IO Error
+     */
+    public static void sysEndpointSend(DatagramSocket socket, byte[] buf, String host, int port)
+            throws IOException {
+        if (buf.length > MAX_DATA)
+            throw new IllegalArgumentException("data too long");
+        InetAddress address = InetAddress.getByName(host);
+        DatagramPacket packet = new DatagramPacket(buf, 0, buf.length, address, port);
+        AbstractLivestock live = AbstractLivestock.currentLivestock(
+                Thread.currentThread());
+        if (live != null)
+            live.closer = socket;
+        try {
+            socket.send(packet);
+        } finally {
+            if (live != null)
+                live.closer = null;
+            if (Thread.interrupted())
+                throw new InterruptedIOException();
+        }
     }
 
 }

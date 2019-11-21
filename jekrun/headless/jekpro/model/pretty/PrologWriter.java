@@ -1559,7 +1559,7 @@ public class PrologWriter {
                 return;
             }
         }
-        if (engine != null && (flags & FLAG_IGNO) == 0) {
+        if (engine != null && (flags & PrologWriter.FLAG_IGNO) == 0) {
             if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
                 writeSet(sc, ref, mod, nsa);
                 return;
