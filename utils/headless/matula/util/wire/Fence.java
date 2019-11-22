@@ -157,11 +157,16 @@ public final class Fence {
             throws InterruptedException {
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            while (hasActive(e) && sleep > 0) {
-                this.wait(sleep);
-                sleep = when - System.currentTimeMillis();
+            for (; ; ) {
+                if (!hasActive(e)) {
+                    return true;
+                } else if (sleep > 0) {
+                    this.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return false;
+                }
             }
-            return (sleep > 0);
         }
     }
 

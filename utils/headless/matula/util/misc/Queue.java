@@ -137,15 +137,16 @@ public final class Queue<T> implements InterfacePipe<T> {
             throw new NullPointerException("null_element");
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            while (list.size() >= max && sleep > 0) {
-                this.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                equene(t);
-                return true;
-            } else {
-                return false;
+            for (; ; ) {
+                if (list.size() < max) {
+                    equene(t);
+                    return true;
+                } else if (sleep > 0) {
+                    this.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return false;
+                }
             }
         }
     }
@@ -193,14 +194,15 @@ public final class Queue<T> implements InterfacePipe<T> {
             throws InterruptedException {
         long when = System.currentTimeMillis() + sleep;
         synchronized (this) {
-            while (list.size() == 0 && sleep > 0) {
-                this.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                return dequeue();
-            } else {
-                return null;
+            for (; ; ) {
+                if (list.size() != 0) {
+                    return dequeue();
+                } else if (sleep > 0) {
+                    this.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return null;
+                }
             }
         }
     }

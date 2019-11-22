@@ -101,15 +101,16 @@ public final class Mutex implements Lock {
         synchronized (this) {
             if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while (locked != null && sleep > 0) {
-                this.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                locked = thread;
-                return true;
-            } else {
-                return false;
+            for (; ; ) {
+                if (locked == null) {
+                    locked = thread;
+                    return true;
+                } else if (sleep > 0) {
+                    this.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return false;
+                }
             }
         }
     }

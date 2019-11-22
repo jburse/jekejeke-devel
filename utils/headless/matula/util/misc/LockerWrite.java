@@ -112,16 +112,17 @@ final class LockerWrite implements Lock {
         synchronized (parent) {
             if (locked == thread)
                 throw new IllegalStateException("alread_locked");
-            while ((parent.read.otherReaders(thread) != 0 ||
-                    locked != null) && sleep > 0) {
-                parent.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                locked = thread;
-                return true;
-            } else {
-                return false;
+            for (; ; ) {
+                if (parent.read.otherReaders(thread) == 0 &&
+                        locked == null) {
+                    locked = thread;
+                    return true;
+                } else if (sleep > 0) {
+                    parent.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return false;
+                }
             }
         }
     }

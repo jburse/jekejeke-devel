@@ -42,6 +42,8 @@ import java.security.NoSuchAlgorithmException;
  */
 public final class ForeignDomain {
     private static final char CHAR_AT = '@';
+    private static final char CHAR_COLON = ':';
+
     private static Method toascii;
     private static Method tounicode;
 
@@ -59,48 +61,90 @@ public final class ForeignDomain {
         }
     }
 
+    /************************************************************/
+    /* Authority Make                                           */
+    /************************************************************/
+
     /**
-     * <p>Determine the user of a domain.</p>
+     * <p>Determine the user of an authority.</p>
      *
-     * @param dom The domain.
+     * @param au The authority.
      * @return The user.
      */
-    public static String sysDomainUser(String dom) {
-        int k = dom.lastIndexOf(CHAR_AT);
+    public static String sysAuthorityUser(String au) {
+        int k = au.lastIndexOf(CHAR_AT);
         if (k == -1)
             return "";
-        return dom.substring(0, k);
+        return au.substring(0, k);
     }
 
     /**
-     * <p>Determine the host of a domain.</p>
+     * <p>Determine the host of an authority.</p>
      *
-     * @param dom The domain.
+     * @param au The authority.
      * @return The host.
      */
-    public static String sysDomainHost(String dom) {
-        int k = dom.lastIndexOf(CHAR_AT);
-        if (k == -1)
-            return dom;
-        return dom.substring(k + 1);
+    public static String sysAuthorityHost(String au) {
+        int k = au.lastIndexOf(CHAR_AT);
+        String hp;
+        if (k == -1) {
+            hp = au;
+        } else {
+            hp = au.substring(k + 1);
+        }
+        k = hp.indexOf(CHAR_COLON);
+        if (k == -1) {
+            return hp;
+        } else {
+            return hp.substring(0, k);
+        }
     }
 
     /**
-     * <p>Create a domain from user and host.</p>
+     * <p>Determine the port of an authority.</p>
+     *
+     * @param au The authority.
+     * @return The port.
+     */
+    public static int sysAuthorityPort(String au) {
+        int k = au.lastIndexOf(CHAR_AT);
+        String hp;
+        if (k == -1) {
+            hp = au;
+        } else {
+            hp = au.substring(k + 1);
+        }
+        k = hp.indexOf(CHAR_COLON);
+        if (k == -1) {
+            return -1;
+        } else {
+            return Integer.parseInt(hp.substring(k + 1));
+        }
+    }
+
+    /**
+     * <p>Create a domain from user, host and port.</p>
      *
      * @param user The user.
      * @param host The host.
-     * @return The domain.
-     * @throws MalformedURLException Domain assembling problem.
+     * @param port The port.
+     * @return The authority.
+     * @throws MalformedURLException Authority assembling problem.
      */
-    public static String sysDomainMake(String user, String host)
+    public static String sysAuthorityMake(String user, String host, int port)
             throws MalformedURLException {
-        if ("".equals(user)) {
-            return host;
+        if (!ForeignDomain.isHost(host))
+            throw new MalformedURLException("illegal host");
+        String hp;
+        if (port != -1) {
+            hp = host + ":" + port;
         } else {
-            if (!ForeignDomain.isHost(host))
-                throw new MalformedURLException("illegal host");
-            return user + "@" + host;
+            hp = host;
+        }
+        if ("".equals(user)) {
+            return hp;
+        } else {
+            return user + "@" + hp;
         }
     }
 
@@ -123,10 +167,8 @@ public final class ForeignDomain {
      *
      * @param host The host.
      * @return The forward host, or null.
-     * @throws MalformedURLException Domain assembling problem.
      */
-    public static String sysForwardLookup(String host)
-            throws MalformedURLException {
+    public static String sysForwardLookup(String host) {
         InetAddress ia;
         try {
             ia = InetAddress.getByName(host);
@@ -143,10 +185,8 @@ public final class ForeignDomain {
      *
      * @param host The host.
      * @return The reverse host, or null.
-     * @throws MalformedURLException Domain assembling problem.
      */
-    public static String sysReverseLookup(String host)
-            throws MalformedURLException {
+    public static String sysReverseLookup(String host) {
         InetAddress ia;
         try {
             ia = InetAddress.getByName(host);
@@ -228,27 +268,38 @@ public final class ForeignDomain {
      * @param spec The spec.
      * @return The encoded spec.
      */
-    private static String sysSpecPuny(String spec) {
+    public static String sysSpecPuny(String spec) {
         try {
             String scheme = ForeignUri.sysSpecScheme(spec);
-            String authority = ForeignUri.sysSpecAuthority(spec);
             if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+                String authority = ForeignUri.sysSpecAuthority(spec);
                 String path = ForeignUri.sysSpecPath(spec);
                 int k = path.lastIndexOf(ForeignUri.JAR_SEP);
                 if (k != -1) {
-                    spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                    String subspec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
                             authority, path.substring(0, k));
-                    spec = ForeignDomain.sysUriPuny(spec);
-                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
-                            ForeignFile.STRING_EMPTY, spec + path.substring(k));
+                    String newsubspec = ForeignDomain.sysUriPuny(subspec);
+                    if (!subspec.equals(newsubspec)) {
+                        spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                                ForeignFile.STRING_EMPTY, newsubspec + path.substring(k));
+                    }
                 } else {
-                    spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                    String subspec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
                             authority, path);
-                    spec = ForeignDomain.sysUriPuny(spec);
-                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
-                            ForeignFile.STRING_EMPTY, spec);
+                    String newsubspec = ForeignDomain.sysUriPuny(subspec);
+                    if (!subspec.equals(newsubspec)) {
+                        spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                                ForeignFile.STRING_EMPTY, newsubspec);
+                    }
+                }
+            } else if (ForeignUri.SCHEME_MAILTO.equals(scheme)) {
+                String path = ForeignUri.sysSpecPath(spec);
+                String newpath = sysDomainPuny(path);
+                if (!path.equals(newpath)) {
+                    spec = ForeignUri.sysSpecMake(scheme, ForeignFile.STRING_EMPTY, newpath);
                 }
             } else {
+                String authority = ForeignUri.sysSpecAuthority(spec);
                 String newauthority = sysDomainPuny(authority);
                 if (!authority.equals(newauthority)) {
                     String path = ForeignUri.sysSpecPath(spec);
@@ -271,24 +322,35 @@ public final class ForeignDomain {
     private static String sysSpecUnpuny(String spec)
             throws MalformedURLException {
         String scheme = ForeignUri.sysSpecScheme(spec);
-        String authority = ForeignUri.sysSpecAuthority(spec);
         if (ForeignUri.SCHEME_JAR.equals(scheme)) {
+            String authority = ForeignUri.sysSpecAuthority(spec);
             String path = ForeignUri.sysSpecPath(spec);
             int k = path.lastIndexOf(ForeignUri.JAR_SEP);
             if (k != -1) {
-                spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                String subspec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
                         authority, path.substring(0, k));
-                spec = ForeignDomain.sysUriUnpuny(spec);
-                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
-                        ForeignFile.STRING_EMPTY, spec + path.substring(k));
+                String newsubspec = ForeignDomain.sysUriUnpuny(subspec);
+                if (!subspec.equals(newsubspec)) {
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                            ForeignFile.STRING_EMPTY, newsubspec + path.substring(k));
+                }
             } else {
-                spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
+                String subspec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY,
                         authority, path);
-                spec = ForeignDomain.sysUriUnpuny(spec);
-                spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
-                        ForeignFile.STRING_EMPTY, spec);
+                String newsubspec = ForeignDomain.sysUriUnpuny(subspec);
+                if (!subspec.equals(newsubspec)) {
+                    spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_JAR,
+                            ForeignFile.STRING_EMPTY, newsubspec);
+                }
+            }
+        } else if (ForeignUri.SCHEME_MAILTO.equals(scheme)) {
+            String path = ForeignUri.sysSpecPath(spec);
+            String newpath = sysDomainUnpuny(path);
+            if (!path.equals(newpath)) {
+                spec = ForeignUri.sysSpecMake(scheme, ForeignFile.STRING_EMPTY, newpath);
             }
         } else {
+            String authority = ForeignUri.sysSpecAuthority(spec);
             String newauthority = sysDomainUnpuny(authority);
             if (!authority.equals(newauthority)) {
                 String path = ForeignUri.sysSpecPath(spec);
@@ -308,11 +370,12 @@ public final class ForeignDomain {
         if (toascii == null)
             return dom;
         try {
-            String host = sysDomainHost(dom);
+            String host = sysAuthorityHost(dom);
             String newhost = (String) toascii.invoke(null, host);
             if (!host.equals(newhost)) {
-                String user = sysDomainUser(dom);
-                dom = sysDomainMake(user, newhost);
+                String user = sysAuthorityUser(dom);
+                int port = sysAuthorityPort(dom);
+                dom = sysAuthorityMake(user, newhost, port);
             }
         } catch (MalformedURLException x) {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
@@ -336,11 +399,12 @@ public final class ForeignDomain {
         if (tounicode == null)
             return dom;
         try {
-            String host = sysDomainHost(dom);
+            String host = sysAuthorityHost(dom);
             String newhost = (String) tounicode.invoke(null, host);
             if (!host.equals(newhost)) {
-                String user = sysDomainUser(dom);
-                dom = sysDomainMake(user, newhost);
+                String user = sysAuthorityUser(dom);
+                int port = sysAuthorityPort(dom);
+                dom = sysAuthorityMake(user, newhost, port);
             }
         } catch (IllegalAccessException x) {
             throw new RuntimeException(ForeignUri.SHOULDNT_HAPPEN, x);
@@ -368,6 +432,43 @@ public final class ForeignDomain {
             return null;
         }
     }
+
+    /**
+     * <p>Some tests.</p>
+     *
+     * @param args The arguments, unused.
+     * @throws IOException Domain assembling problem.
+     */
+    /*
+    public static void main(String[] args)
+            throws IOException {
+        String adr = "mailto:foo@zürich.ch";
+        System.out.println("adr=" + adr);
+        adr = sysSpecPuny(adr);
+        System.out.println("puny(adr)=" + adr);
+
+        System.out.println();
+
+        adr = "mailto:foo@xn--zrich-kva.ch";
+        System.out.println("adr=" + adr);
+        adr = sysSpecUnpuny(adr);
+        System.out.println("unpuny(adr)=" + adr);
+
+        System.out.println();
+
+        adr = "jar:http://zürich.ch/archive.jar!/entry.txt";
+        System.out.println("adr=" + adr);
+        adr = sysSpecPuny(adr);
+        System.out.println("puny(adr)=" + adr);
+
+        System.out.println();
+
+        adr = "jar:http://xn--zrich-kva.ch/archive.jar!/entry.txt";
+        System.out.println("adr=" + adr);
+        adr = sysSpecUnpuny(adr);
+        System.out.println("unpuny(adr)=" + adr);
+    }
+    */
 
     /**
      * <p>Some tests.</p>
