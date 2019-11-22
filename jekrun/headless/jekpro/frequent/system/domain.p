@@ -60,31 +60,36 @@
 :- module(domain, []).
 
 /**
- * make_domain(U, H, D):
- * If U and H are variables, then the predicate succeeds when
- * U and H unify with the user and the host of the domain D.
- * Otherwise the predicates succeeds when D unifies with the
- * constructed domain.
+ * make_authority(U, H, P, A):
+ * If U, H or P are variables, then the predicate succeeds when
+ * U, H and P unify with the user, the host and the port of the
+ * authority A. Otherwise the predicates succeeds when A unifies
+ * with the constructed authority.
  */
-% make_domain(+-Atom, +-Atom, -+Atom)
-:- public make_domain/3.
-make_domain(U, H, D) :- (var(U); var(H)), !,
-   sys_domain_user(D, U),
-   sys_domain_host(D, H).
-make_domain(U, H, D) :-
-   sys_domain_make(U, H, D).
+% make_authority(+-Atom, +-Atom, +-Atom, -+Atom)
+:- public make_authority/4.
+make_authority(U, H, P, A) :- (var(U); var(H); var(P)), !,
+   sys_authority_user(A, U),
+   sys_authority_host(A, H),
+   sys_authority_port(A, P).
+make_authority(U, H, P, A) :-
+   sys_authority_make(U, H, P, A).
 
-:- private sys_domain_user/2.
-:- foreign(sys_domain_user/2, 'ForeignDomain',
-      sysDomainUser('String')).
+:- private sys_authority_user/2.
+:- foreign(sys_authority_user/2, 'ForeignDomain',
+      sysAuthorityUser('String')).
 
-:- private sys_domain_host/2.
-:- foreign(sys_domain_host/2, 'ForeignDomain',
-      sysDomainHost('String')).
+:- private sys_authority_host/2.
+:- foreign(sys_authority_host/2, 'ForeignDomain',
+      sysAuthorityHost('String')).
 
-:- private sys_domain_make/3.
-:- foreign(sys_domain_make/3, 'ForeignDomain',
-      sysDomainMake('String', 'String')).
+:- private sys_authority_port/2.
+:- foreign(sys_authority_port/2, 'ForeignDomain',
+      sysAuthorityPort('String')).
+
+:- private sys_authority_make/4.
+:- foreign(sys_authority_make/4, 'ForeignDomain',
+      sysAuthorityMake('String', 'String', int)).
 
 /************************************************************/
 /* Domain Lookup                                            */

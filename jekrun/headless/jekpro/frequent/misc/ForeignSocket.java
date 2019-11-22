@@ -120,7 +120,10 @@ public final class ForeignSocket {
      * @throws SocketException Socket error.
      */
     public static DatagramSocket sysEndpointNew(int port) throws SocketException {
-        return new DatagramSocket(port);
+        DatagramSocket socket = new DatagramSocket(null);
+        socket.setReuseAddress(true);
+        socket.bind(new InetSocketAddress(port));
+        return socket;
     }
 
     /**

@@ -65,6 +65,7 @@
 /**
  * server_new(P, S):
  * The predicate succeeds in S with a new server socket for port P.
+ * A zero port number lets the operating system choose a port number.
  */
 :- public server_new/2.
 :- foreign(server_new/2, 'ForeignSocket', sysServerNew(int)).
@@ -104,6 +105,7 @@
 /**
  * endpoint_new(P, S):
  * The predicate succeeds in S with a new datagram socket for port P.
+ * A zero port number lets the operating system choose a port number.
  */
 :- public endpoint_new/2.
 :- foreign(endpoint_new/2, 'ForeignSocket', sysEndpointNew(int)).
@@ -113,15 +115,17 @@
  * The predicate succeeds in P with the local port of the datagram socket S.
  */
 :- public endpoint_port/2.
-:- foreign(endpoint_port/2, 'ForeignSocket', sysEndpointPort('DatagramSocket')).
+:- foreign(endpoint_port/2, 'ForeignSocket',
+      sysEndpointPort('DatagramSocket')).
 
 /**
  * endpoint_receive(S, B):
- * The predicate succceeds in B with the data received
+ * The predicate succeeds in B with the data received
  * from the datagram socket S.
  */
 :- public endpoint_receive/2.
-:- foreign(endpoint_receive/2, 'ForeignSocket', sysEndpointReceive('DatagramSocket')).
+:- foreign(endpoint_receive/2, 'ForeignSocket',
+      sysEndpointReceive('DatagramSocket')).
 
 /**
  * endpoint_send(S, B, D, P):
@@ -129,6 +133,5 @@
  * host D and destination port P on the datagram socket S.
  */
 :- public endpoint_send/4.
-:- foreign(endpoint_send/4, 'ForeignSocket', sysEndpointSend('DatagramSocket', {byte}, 'String', int)).
-
-
+:- foreign(endpoint_send/4, 'ForeignSocket',
+      sysEndpointSend('DatagramSocket', {byte}, 'String', int)).

@@ -1,6 +1,7 @@
 package jekpro.frequent.misc;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
@@ -37,16 +38,29 @@ import java.util.concurrent.locks.Lock;
 public final class ForeignLock {
 
     /**
-     * <p>Perform a millisecond try lock.</p>
+     * <p>Perform a millisecond try lock on a lock.</p>
      *
      * @param lock    The lock.
-     * @param timeout The time-out.
+     * @param timeout The time-out in milliseconds.
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
     public static boolean sysTryLock(Lock lock, long timeout)
             throws InterruptedException {
         return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * <p>Perform a millisecond await on a condition.</p>
+     *
+     * @param cond    The condition.
+     * @param timeout The time-out in milliseconds.
+     * @return True if condition was notified, or false otherwise.
+     * @throws InterruptedException If the request was cancelled.
+     */
+    public static boolean sysAwait(Condition cond, long timeout)
+            throws InterruptedException {
+        return cond.await(timeout, TimeUnit.MILLISECONDS);
     }
 
 }

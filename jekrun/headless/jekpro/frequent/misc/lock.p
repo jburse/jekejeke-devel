@@ -67,21 +67,33 @@
 
 :- module(lock, []).
 
+/****************************************************************/
+/* Binary Locks                                                 */
+/****************************************************************/
+
 /**
  * mutex_new(M):
- * The predicate succeeds for a new slotted mutex M.
+ * The predicate succeeds for a new slotted lock M.
  */
-% mutex_new(-Mutex)
+% mutex_new(-Lock)
 :- public mutex_new/1.
 :- foreign_constructor(mutex_new/1, 'Mutex', new).
 
 /**
  * unslotted_new(M):
- * The predicate succeeds for a new unslotted mutex M.
+ * The predicate succeeds for a new unslotted lock M.
  */
-% unslotted_new(-Mutex)
+% unslotted_new(-Lock)
 :- public unslotted_new/1.
 :- foreign_constructor(unslotted_new/1, 'Unslotted', new).
+
+/**
+ * reentrant_new(M):
+ * The predicate succeeds for a new reentrant lock M.
+ */
+% reentrant_new(-Lock)
+:- public reentrant_new/1.
+:- foreign_constructor(reentrant_new/1, 'ReentrantLock', new).
 
 /**
  * lock_aquire(L):
@@ -105,7 +117,7 @@
 /**
  * lock_attempt(L, T):
  * The predicate succeeds after locking the lock L
- * in the timeout T. Otherwise the predicate fails.
+ * in the time-out T. Otherwise the predicate fails.
  */
 % lock_attempt(+Lock, +Integer)
 :- public lock_attempt/2.
@@ -120,21 +132,25 @@
 :- virtual lock_release/1.
 :- foreign(lock_release/1, 'Lock', unlock).
 
+/****************************************************************/
+/* Read/Write Locks                                             */
+/****************************************************************/
+
 /**
- * lock_new(P):
+ * locker_new(P):
  * The predicate succeeds for a new slotted and escalable
  * read write pair P.
  */
-% lock_new(-ReadWrite)
-:- public lock_new/1.
-:- foreign_constructor(lock_new/1, 'Locker', new).
+% locker_new(-ReadWriteLock)
+:- public locker_new/1.
+:- foreign_constructor(locker_new/1, 'Locker', new).
 
 /**
  * nonescalable_new(P):
  * The predicate succeeds for a new unslotted and non-escalable
  * read write pair P.
  */
-% nonescalable_new(-ReadWrite)
+% nonescalable_new(-ReadWriteLock)
 :- public nonescalable_new/1.
 :- foreign_constructor(nonescalable_new/1, 'Nonescalable', new).
 
@@ -142,6 +158,7 @@
  * get_read(P, R):
  * The predicate succeeds for the read lock R of the read write pair P.
  */
+% get_read(+ReadWriteLock, -Lock)
 :- public get_read/2.
 :- virtual get_read/2.
 :- foreign(get_read/2, 'ReadWriteLock', readLock).
@@ -150,6 +167,56 @@
  * get_write(P, W):
  * The predicate succeeds for the write lock W of the read write pair P.
  */
+% get_write(+ReadWriteLock, -Lock)
 :- public get_write/2.
 :- virtual get_write/2.
 :- foreign(get_write/2, 'ReadWriteLock', writeLock).
+
+/****************************************************************/
+/* Condition Variables                                          */
+/****************************************************************/
+
+/**
+ * cond_new(L, C):
+ * The predicate succeeds in C with a new condition for the lock L.
+ */
+% cond_new(+Lock, -Condition)
+:- public cond_new/2.
+:- virtual cond_new/2.
+:- foreign(cond_new/2, 'Lock', newCondition).
+
+/**
+ * cond_wait(C):
+ * The predicate succeeds when the condition C was notified.
+ */
+% cond_wait(+Condition)
+:- public cond_wait/1.
+:- virtual cond_wait/1.
+:- foreign(cond_wait/1, 'Condition', await).
+
+/**
+ * cond_wait(C, T):
+ * The predicate succeeds when the condition C was notified
+ * in the time-out. Otherwise the predicate fails.
+ */
+% cond_wait(+Condition, +Integer)
+:- public cond_wait/2.
+:- foreign(cond_wait/2, 'ForeignLock', sysAwait('Condition', long)).
+
+/**
+ * cond_notify(C):
+ * The predicate succeeds in notifying o waiting thread.
+ */
+% cond_notify(+Condition)
+:- public cond_notify/1.
+:- virtual cond_notify/1.
+:- foreign(cond_notify/1, 'Condition', signal).
+
+/**
+ * cond_notifyall(C):
+ * The predicate succeeds in notifying all waiting threads.
+ */
+% cond_notifyall(+Condition)
+:- public cond_notifyall/1.
+:- virtual cond_notifyall/1.
+:- foreign(cond_notifyall/1, 'Condition', signalAll).
