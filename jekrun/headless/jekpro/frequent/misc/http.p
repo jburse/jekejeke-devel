@@ -85,31 +85,32 @@
 /***************************************************************/
 
 /**
- * run_http(O, P):
- * The predicate runs a web server with object O at port P.
+ * run_http(O, A):
+ * The predicate runs a web server with object O at authority A.
  */
-% run_http(+Object, +Integer)
+% run_http(+Object, +Atom)
 :- public run_http/2.
-run_http(Object, Port) :-
-   balance((accept(Object, Port, Session), handle(Object, Session))).
+run_http(Object, Authority) :-
+   balance((accept(Object, Authority, Session), handle(Object, Session))).
 
 /**
  * accept(O, P, S):
  * The predicate repeatedly succeeds with accepted sessions S
  * at port P for the object O.
  */
-% accept(+Object, +Integer, -Socket)
+% accept(+Object, +Atom, -Socket)
 :- private accept/3.
-accept(Object, Port, Session) :-
+accept(Object, Authority, Session) :-
    setup_call_cleanup(
-      accept_new(Object, Port, Server),
+      accept_new(Object, Authority, Server),
       (repeat, server_accept(Server, Session)),
       accept_close(Object, Server)).
 
-% accept_new(+Object, +Integer, -Server)
+% accept_new(+Object, +Atom, -Server)
 :- private accept_new/3.
-accept_new(Object, Port, Server) :-
-   server_new(Port, Server),
+accept_new(Object, Authority, Server) :-
+   make_authority(_, Host, Port, Authority),
+   server_new(Host, Port, Server),
    Object::initialized(Server).
 
 % accept_close(+Object, +Server)

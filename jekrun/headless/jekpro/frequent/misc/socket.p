@@ -63,12 +63,13 @@
 /********************************************************************/
 
 /**
- * server_new(P, S):
- * The predicate succeeds in S with a new server socket for port P.
- * A zero port number lets the operating system choose a port number.
+ * server_new(H, P, S):
+ * The predicate succeeds in S with a new server socket for the host
+ * H and the port P. A zero port number lets the operating system choose
+ * a port number.
  */
-:- public server_new/2.
-:- foreign(server_new/2, 'ForeignSocket', sysServerNew(int)).
+:- public server_new/3.
+:- foreign(server_new/3, 'ForeignSocket', sysServerNew('String', int)).
 
 /**
  * server_port(S, P):
@@ -76,6 +77,13 @@
  */
 :- public server_port/2.
 :- foreign(server_port/2, 'ForeignSocket', sysServerPort('ServerSocket')).
+
+/**
+ * server_address(S, H):
+ * The predicate succeeds in H with the inet address of the server socket S.
+ */
+:- public server_address/2.
+:- foreign(server_address/2, 'ForeignSocket', sysServerAddress('ServerSocket')).
 
 /**
  * server_accept(S, H):
@@ -103,20 +111,27 @@
 /********************************************************************/
 
 /**
- * endpoint_new(P, S):
- * The predicate succeeds in S with a new datagram socket for port P.
- * A zero port number lets the operating system choose a port number.
+ * endpoint_new(H, P, S):
+ * The predicate succeeds in S with a new datagram socket for the
+ * host H and port P. A zero port number lets the operating system
+ * choose a port number.
  */
-:- public endpoint_new/2.
-:- foreign(endpoint_new/2, 'ForeignSocket', sysEndpointNew(int)).
+:- public endpoint_new/3.
+:- foreign(endpoint_new/3, 'ForeignSocket', sysEndpointNew('String', int)).
 
 /**
  * endpoint_port(S, P):
  * The predicate succeeds in P with the local port of the datagram socket S.
  */
 :- public endpoint_port/2.
-:- foreign(endpoint_port/2, 'ForeignSocket',
-      sysEndpointPort('DatagramSocket')).
+:- foreign(endpoint_port/2, 'ForeignSocket', sysEndpointPort('DatagramSocket')).
+
+/**
+ * endpoint_address(S, H):
+ * The predicate succeeds in H with the inet address of the datagram socket S.
+ */
+:- public endpoint_address/2.
+:- foreign(endpoint_address/2, 'ForeignSocket', sysEndpointAddress('DatagramSocket')).
 
 /**
  * endpoint_receive(S, B):

@@ -49,23 +49,37 @@ public final class ForeignSocket {
     /**
      * <p>Open a server socket.</p>
      *
-     * @param port The port.
+     * @param host The host adapter.
+     * @param port The local port.
      * @return The socket.
      * @throws IOException I/O Error.
      */
-    public static ServerSocket sysServerNew(int port)
+    public static ServerSocket sysServerNew(String host, int port)
             throws IOException {
-        return new ServerSocket(port);
+        ServerSocket socket = new ServerSocket();
+        socket.setReuseAddress(true);
+        socket.bind(new InetSocketAddress(host, port));
+        return socket;
     }
 
     /**
-     * <p>Retrieve the local server socket port.</p>
+     * <p>Retrieve the local port of the server socket.</p>
      *
      * @param socket The server socket.
      * @return The local port.
      */
     public static int sysServerPort(ServerSocket socket) {
         return socket.getLocalPort();
+    }
+
+    /**
+     * <p>Retrieve the inet address of the server socket.</p>
+     *
+     * @param socket The server socket.
+     * @return The inet address.
+     */
+    public static String sysServerAddress(ServerSocket socket) {
+        return socket.getInetAddress().getHostAddress();
     }
 
     /**
@@ -115,25 +129,37 @@ public final class ForeignSocket {
     /**
      * <p>Open a datagram socket.</p>
      *
-     * @param port The port.
+     * @param host The host adapter.
+     * @param port The local port.
      * @return The socket.
      * @throws SocketException Socket error.
      */
-    public static DatagramSocket sysEndpointNew(int port) throws SocketException {
+    public static DatagramSocket sysEndpointNew(String host, int port)
+            throws SocketException {
         DatagramSocket socket = new DatagramSocket(null);
         socket.setReuseAddress(true);
-        socket.bind(new InetSocketAddress(port));
+        socket.bind(new InetSocketAddress(host, port));
         return socket;
     }
 
     /**
-     * <p>Retrieve the local datagram socket port.</p>
+     * <p>Retrieve the local port of the datagram socket.</p>
      *
      * @param socket The datagram socket.
      * @return The local port.
      */
     public static int sysEndpointPort(DatagramSocket socket) {
         return socket.getLocalPort();
+    }
+
+    /**
+     * <p>Retrieve the inet address of the datagram socket.</p>
+     *
+     * @param socket The datagram socket.
+     * @return The inet address.
+     */
+    public static String sysEndpointAddress(DatagramSocket socket) {
+        return socket.getInetAddress().getHostAddress();
     }
 
     /**
