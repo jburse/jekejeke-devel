@@ -85,6 +85,8 @@ bagof/3	no	standard/bags
 bagof/4	no	standard/bags
 base64_block/2	no	stream/xml
 between/3	no	advanced/arith
+broker_start/1	no	experiment/broker
+broker_stop/0	no	experiment/broker
 call/2	no	standard/apply
 call/3	no	standard/apply
 call/4	no	standard/apply
@@ -105,7 +107,6 @@ clause_ref/2	no	experiment/ref
 clause_ref/3	no	experiment/ref
 client_new/3	no	misc/socket
 close/1	no	stream/stream
-close/2	no	stream/stream
 code_class/2	no	misc/text
 code_class/3	no	misc/text
 code_digit/3	no	misc/text
@@ -114,6 +115,11 @@ code_upper/2	no	misc/text
 compilable_ref/2	no	experiment/ref
 compiled_match/2	no	misc/text
 compiled_ref/2	no	experiment/ref
+cond_new/2	no	misc/lock
+cond_notify/1	no	misc/lock
+cond_notifyall/1	no	misc/lock
+cond_wait/1	no	misc/lock
+cond_wait/2	no	misc/lock
 contains/2	no	advanced/sets
 copy_term/2	no	standard/bags
 cosh/2	yes	basic/hyper
@@ -144,6 +150,11 @@ dispatch_text/3	no	misc/http
 dispatch_upgrade/2	no	misc/http
 distinct/2	no	advanced/sequence
 downcase_atom/2	no	misc/text
+endpoint_address/2	no	misc/socket
+endpoint_new/3	no	misc/socket
+endpoint_port/2	no	misc/socket
+endpoint_receive/2	no	misc/socket
+endpoint_send/4	no	misc/socket
 erase_ref/1	no	experiment/ref
 error_make/2	no	stream/console
 error_make/3	no	stream/console
@@ -229,10 +240,10 @@ limit/2	no	advanced/sequence
 lock_acquire/1	no	misc/lock
 lock_attempt/1	no	misc/lock
 lock_attempt/2	no	misc/lock
-lock_new/1	no	misc/lock
 lock_release/1	no	misc/lock
+locker_new/1	no	misc/lock
+make_authority/4	no	system/domain
 make_directory/1	no	system/file
-make_domain/3	no	system/domain
 make_link/4	no	system/uri
 make_name/3	no	system/file
 make_pack/3	no	system/file
@@ -330,8 +341,11 @@ rebuild_goal/2	no	experiment/simp
 rebuild_goal_arg/3	no	experiment/simp
 rebuild_rest/2	no	experiment/simp
 rebuild_term/2	no	experiment/simp
+receive/2	no	experiment/broker
+receive/3	no	experiment/broker
 recorda_ref/1	no	experiment/ref
 recordz_ref/1	no	experiment/ref
+reentrant_new/1	no	misc/lock
 ref_property/2	no	experiment/ref
 remove/3	no	advanced/sets
 remove/3	no	experiment/maps
@@ -348,8 +362,11 @@ reverse/2	no	basic/lists
 rfc1123_atom/2	no	system/zone
 run_http/2	no	misc/http
 select/3	no	basic/lists
+self/1	no	experiment/broker
+send/2	no	experiment/broker
 server_accept/2	no	misc/socket
-server_new/2	no	misc/socket
+server_address/2	no	misc/socket
+server_new/3	no	misc/socket
 server_port/2	no	misc/socket
 set_error/1	no	stream/stream
 set_input/1	no	stream/stream
@@ -369,6 +386,7 @@ simplify_term/2	no	experiment/simp
 sinh/2	yes	basic/hyper
 sort/2	no	standard/sort
 sort/3	no	standard/sort
+spawn/3	no	experiment/broker
 stream_property/2	no	stream/stream
 subset/2	no	advanced/sets
 succ/2	no	advanced/arith
@@ -441,6 +459,7 @@ uri_encode/2	no	system/uri
 uri_puny/2	no	system/domain
 validate_meta/2	no	misc/http
 websock_new/2	no	misc/socket
+when/2	no	experiment/broker
 write/1	no	stream/term
 write/2	no	stream/term
 write_block/1	no	stream/byte

@@ -1,7 +1,13 @@
 /**
- * UDP based message broker.
- * With Guards
- * With Authority syntax
+ * This module provides a Prolog implementation of the actor
+ * model. The predicates lean towards Erlang with the same receive
+ * and send semantics. On the other hand, the spawning of actors
+ * does not take a module parameter but rather the address of a broker.
+ *
+ * Currently we only support unreliable UDP message sending with up
+ * to 4096 bytes. We might add further protocols in the future.
+ * Especially a combination with our module "http" and its web sockets
+ * is planned which would even allow communication with web browser.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -184,8 +190,8 @@ spawn_run(Lock, Goal) :-
       Goal, spawn_cleanup).
 
 /**
- * self(A):
- * The predicate succeeds in A with the current actor.
+ * self(P):
+ * The predicate succeeds in P with actor path of the current actor.
  */
 % self(-Pid)
 :- public self/1.
@@ -194,8 +200,10 @@ self(pid(Authority, Name)) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name).
 
-/* send(A, M):
- * The predicate succeeds in sending the message M to the actor A.
+/* send(P, M):
+ * The predicate succeeds in sending the message M to the
+ * actor identified by the actor path P. Sending is non-blocking
+ * and succeeds immediately.
  */
 % send(+Pid, +Term)
 :- public send/2.
@@ -211,10 +219,13 @@ send(pid(Authority, Name), Message) :-                  /* remote send */
    endpoint_send(Endpoint, Block, Host, Port).
 
 /**
- * receive(P, S):
- * The predicate blocks until a message arrives that matches
- * the pattern list P. It then succeeds in S with the selected
- * message.
+ * receive(L, M):
+ * receive(L, M, T):
+ * The predicate succeeds in M with the message that the current
+ * actor received and that matches the pattern and guard disjunction
+ * L. Receiving is blocking and succeeds only when a matching
+ * message has arrived. The ternary predicate takes an additional
+ * timeout parameter.
  */
 % receive(+Assoc, -Term)
 :- public receive/2.
@@ -236,22 +247,16 @@ receive(PatternGuards, Selected) :-
    ;  assertz(actor_deferred(Name, Selected)),
       fail).
 
-/**
- * receive(P, T, S):
- * The predicate blocks until a message arrives that matches
- * the pattern list P. It then succeeds in S with the selected
- * message. The predicate fails after T milliseconds.
- */
-% receive(+Assoc, +Integer, -Term)
+% receive(+Assoc, -Term, +Integer)
 :- public receive/3.
-receive(PatternGuards, _, Selected) :-
+receive(PatternGuards, Selected, _) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    clause_ref(actor_deferred(Name, Selected), true, Ref),
    receive_member(SelectedGuard, PatternGuards),
    receive_check(SelectedGuard, Selected), !,
    erase_ref(Ref).
-receive(PatternGuards, Timeout, Selected) :-
+receive(PatternGuards, Selected, Timeout) :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    actor_queue(Name, Queue),
@@ -273,7 +278,7 @@ receive_member(Term, Assoc) :-
    receive_member(Term, Assoc2).
 receive_member(Term, Term).
 
-% receive_check(+Assoc, -Term)
+% receive_check(+Pair, -Term)
 :- private receive_check/2.
 receive_check(SelectedGuard, Selected) :-
    nonvar(SelectedGuard),
