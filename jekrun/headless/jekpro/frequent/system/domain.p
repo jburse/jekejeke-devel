@@ -1,11 +1,11 @@
 /**
  * This module provides a couple of simple utilities to deal with the
  * access to internationalized domain names (IDNs). The predicate
- * make_domain/3 allows constructing and deconstructing user and
- * host. The predicate works bidirectional without loss of data.
+ * make_authority/4 allows constructing and deconstructing user, host
+ * and port. The predicate works bidirectional without loss of data.
  *
  * Example:
- * ?- make_domain('foo','λ.com',X).
+ * ?- make_authority('foo','λ.com',-1,X).
  * X = 'foo@λ.com'
  *
  * The predicate host_lookup/2 can be used to perform a forward or

@@ -48,6 +48,7 @@
 :- use_module(library(system/thread)).
 :- use_module(library(system/domain)).
 :- use_module(library(experiment/ref)).
+:- use_module(library(runtime/distributed)).
 
 :- public infix(when).
 :- op(1105, xfy, when).
@@ -68,6 +69,10 @@ when(_, _) :- throw(error(existence_error(body, when/2), _)).
 :- private actor_deferred/2.
 :- group_local actor_deferred/2.
 
+/***********************************************************/
+/* Message Broker                                          */
+/***********************************************************/
+
 /**
  * broker_start(A):
  * The predicate succeeds in starting a broker identified by the authority A.
@@ -77,10 +82,9 @@ when(_, _) :- throw(error(existence_error(body, when/2), _)).
 broker_start(Authority) :-
    unslotted_new(Lock),
    lock_acquire(Lock),
-   thread_new(broker_run(Lock, Authority), Thread),
-   thread_start(Thread),
+   submit(broker_run(Lock, Authority)),
    lock_acquire(Lock),
-   spawn_setup.
+   run_setup.
 
 /**
  * broker_stop:
@@ -94,7 +98,7 @@ broker_stop :-
    atom_block(Atom, Block, [encoding('utf-8')]),
    make_authority(_, Host, Port, Authority),
    endpoint_send(Endpoint, Block, Host, Port),
-   spawn_cleanup.
+   run_cleanup.
 
 % broker_run(+Lock, +Atom)
 :- private broker_run/2.
@@ -130,64 +134,56 @@ broker_server(Authority) :-
    -> actor_queue(Name, Queue),
       pipe_put(Queue, Message),
       fail
-   ;  Term = run(Pid, Goal)
-   -> spawn_actor(Goal, Name),
-      send(Pid, started(Name)),
+   ;  Term = run(Goal)
+   -> submit(run_safe(Goal)),
       fail; fail).
 
+/***********************************************************/
+/* Actor Primitives                                        */
+/***********************************************************/
+
 /**
- * spawn(A, G, P):
- * The predicate succeeds in P with a new actor on the
+ * run(A, G):
+ * The predicate starts a new actor on the
  * authority A running the goal G.
  */
-% spawn(+Atom, +Goal, -Pid)
-:- public spawn/3.
-:- meta_predicate spawn(?, 0, ?).
-spawn(Authority, Goal, pid(Authority, Name)) :-         /* local spawn */
+% run(+Atom, +Goal)
+:- public run/2.
+:- meta_predicate run(?, 0).
+run(Authority, Goal) :-                                 /* local run */
    server_endpoint(Authority, _), !,
-   spawn_actor(Goal, Name).
-spawn(Authority2, Goal, pid(Authority2, Name)) :-       /* remote spawn */
-   server_endpoint(Authority, Endpoint),
-   term_atom(run(pid(Authority, Name), Goal), Atom),
+   submit(run_safe(Goal)).
+run(Authority, Goal) :-                                 /* remote run */
+   server_endpoint(_, Endpoint),
+   term_atom(run(Goal), Atom),
    atom_block(Atom, Block, [encoding('utf-8')]),
-   make_authority(_, Host2, Port2, Authority2),
-   endpoint_send(Endpoint, Block, Host2, Port2),
-   receive(started(Name), _).
+   make_authority(_, Host, Port, Authority),
+   endpoint_send(Endpoint, Block, Host, Port).
 
-% spawn_actor(+Goal, -Atom)
-:- private spawn_actor/2.
-:- meta_predicate spawn_actor(0, ?).
-spawn_actor(Goal, Name) :-
-   unslotted_new(Lock),
-   lock_acquire(Lock),
-   thread_new(spawn_run(Lock, Goal), Thread),
-   current_thread_flag(Thread, sys_thread_name, Name),
-   thread_start(Thread),
-   lock_acquire(Lock).
+% run_safe(+Goal)
+:- private run_safe/1.
+:- meta_predicate run_safe(0).
+run_safe(Goal) :-
+   setup_call_cleanup(
+      run_setup,
+      Goal,
+      run_cleanup).
 
-% spawn_setup
-:- private spawn_setup/0.
-spawn_setup :-
+% run_setup
+:- private run_setup/0.
+run_setup :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    pipe_new(Queue),
    assertz(actor_queue(Name, Queue)).
 
-% spawn_cleanup
-:- private spawn_cleanup/0.
-spawn_cleanup :-
+% run_cleanup
+:- private run_cleanup/0.
+run_cleanup :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    retract(actor_queue(Name, _)),
    retractall(actor_deferred(Name, _)).
-
-% spawn_run(+Lock, +Goal)
-:- private spawn_run/2.
-:- meta_predicate spawn_run(?, 0).
-spawn_run(Lock, Goal) :-
-   setup_call_cleanup(
-      (spawn_setup, lock_release(Lock)),
-      Goal, spawn_cleanup).
 
 /**
  * self(P):
@@ -285,3 +281,20 @@ receive_check(SelectedGuard, Selected) :-
    SelectedGuard = (Selected when Guard), !,
    Guard.
 receive_check(Selected, Selected).
+
+/***********************************************************/
+/* Bootstrapped Predicates                                 */
+/***********************************************************/
+
+/**
+ * spawn(A, G, P):
+ * The predicate succeeds in P with the actor path of a new actor on
+ * the authority A running the goal G.
+ */
+% spawn(-Atom, +Goal, -Pid)
+:- public spawn/3.
+:- meta_predicate spawn(?, 0, ?).
+spawn(A, G, P) :-
+   self(C),
+   run(A, (self(B), send(C, started(B)), G)),
+   receive(started(P), _).

@@ -50,17 +50,4 @@ public final class ForeignLock {
         return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * <p>Perform a millisecond await on a condition.</p>
-     *
-     * @param cond    The condition.
-     * @param timeout The time-out in milliseconds.
-     * @return True if condition was notified, or false otherwise.
-     * @throws InterruptedException If the request was cancelled.
-     */
-    public static boolean sysAwait(Condition cond, long timeout)
-            throws InterruptedException {
-        return cond.await(timeout, TimeUnit.MILLISECONDS);
-    }
-
 }
