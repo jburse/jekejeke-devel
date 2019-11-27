@@ -49,8 +49,8 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Alarm {
-    private final ListArray<AlarmEntry> planned = new ListArray<AlarmEntry>();
+public final class Alarm<T> {
+    private final ListArray<AlarmEntry<T>> planned = new ListArray<AlarmEntry<T>>();
 
     /**
      * <p>Schedule an item on this alarm queue.</p>
@@ -59,13 +59,13 @@ public final class Alarm {
      * @param sleep The time-out.
      * @return The new alarm entry.
      */
-    public AlarmEntry schedule(Object r, long sleep) {
+    public AlarmEntry schedule(T r, long sleep) {
         long when = System.currentTimeMillis() + sleep;
-        AlarmEntry entry = new AlarmEntry(r, when);
+        AlarmEntry<T> entry = new AlarmEntry<T>(r, when);
         synchronized (this) {
             int i = 0;
             for (; i < planned.size(); i++) {
-                AlarmEntry entry2 = planned.get(i);
+                AlarmEntry<T> entry2 = planned.get(i);
                 if (when < entry2.getWhen())
                     break;
             }
@@ -81,14 +81,14 @@ public final class Alarm {
      * @return The item.
      * @throws InterruptedException Thread was interrupted.
      */
-    public Object next()
+    public T next()
             throws InterruptedException {
         synchronized (this) {
             for (; ; ) {
                 if (planned.size() == 0) {
                     this.wait();
                 } else {
-                    AlarmEntry entry = planned.get(0);
+                    AlarmEntry<T> entry = planned.get(0);
                     long sleep = entry.getWhen() - System.currentTimeMillis();
                     if (!(sleep > 0)) {
                         planned.remove(0);
@@ -106,7 +106,7 @@ public final class Alarm {
      *
      * @param entry The alarm entry.
      */
-    public void cancel(AlarmEntry entry) {
+    public void cancel(AlarmEntry<T> entry) {
         synchronized (this) {
             planned.remove(entry);
         }

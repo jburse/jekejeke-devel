@@ -33,7 +33,7 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Unbounded<T> implements InterfacePipe<T> {
-    private final ListArray<Object> list = new ListArray<Object>();
+    private final ListArray<T> list = new ListArray<T>();
 
     /**
      * <p>Dequeue an element.</p>
@@ -41,7 +41,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      * @return The element.
      */
     private T dequeue() {
-        T t = (T) list.get(0);
+        T t = list.get(0);
         list.remove(0);
         return t;
     }

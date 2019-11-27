@@ -18,6 +18,13 @@
  * The predicates get_read/2 and get_write/2 allow retrieving the
  * corresponding lock.
  *
+ * Some of the locks can produce condition variables via the predicate
+ * cond_new/2. A condition variable allows a thread to temporarily
+ * leaving a critical region via the predicates cond_wait/1 and cond_wait/2.
+ * The predicates cond_notify/1 and cond_notifyall/1 on the other hand
+ * let a waiting thread respectively all waiting threads enter their
+ * critical region again.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -61,6 +68,7 @@
 /**
  * mutex_new(M):
  * The predicate succeeds for a new reentrant lock M.
+ * The lock can produce condition variables.
  */
 % mutex_new(-Lock)
 :- public mutex_new/1.
@@ -69,6 +77,7 @@
 /**
  * unslotted_new(M):
  * The predicate succeeds for a new unslotted lock M.
+ * The lock cannot produce condition variables.
  */
 % unslotted_new(-Lock)
 :- public unslotted_new/1.
@@ -118,7 +127,7 @@
 /**
  * readwrite_new(P):
  * The predicate succeeds for a new reentrant and gradeable
- * read write pair P.
+ * read write pair P. The locks can produce condition variables.
  */
 % readwrite_new(-ReadWriteLock)
 :- public readwrite_new/1.
@@ -127,7 +136,7 @@
 /**
  * nonescalable_new(P):
  * The predicate succeeds for a new unslotted and non-escalable
- * read write pair P.
+ * read write pair P. The locks cannot produce condition variables.
  */
 % nonescalable_new(-ReadWriteLock)
 :- public nonescalable_new/1.
@@ -150,3 +159,52 @@
 :- public get_write/2.
 :- virtual get_write/2.
 :- foreign(get_write/2, 'ReadWriteLock', writeLock).
+
+/****************************************************************/
+/* Condition Variables                                          */
+/****************************************************************/
+
+/**
+ * cond_new(L, C):
+ * The predicate succeeds in C with a new condition for the lock L.
+ */
+% cond_new(+Lock, -Condition)
+:- public cond_new/2.
+:- virtual cond_new/2.
+:- foreign(cond_new/2, 'Lock', newCondition).
+
+/**
+ * cond_wait(C):
+ * The predicate succeeds when the condition C was notified.
+ */
+% cond_wait(+Condition)
+:- public cond_wait/1.
+:- virtual cond_wait/1.
+:- foreign(cond_wait/1, 'Condition', await).
+
+/**
+ * cond_wait(C, T):
+ * The predicate succeeds when the condition C was notified
+ * in the time-out. Otherwise the predicate fails.
+ */
+% cond_wait(+Condition, +Integer)
+:- public cond_wait/2.
+:- foreign(cond_wait/2, 'ForeignLock', sysAwait('Condition', long)).
+
+/**
+ * cond_notify(C):
+ * The predicate succeeds in notifying one waiting thread.
+ */
+% cond_notify(+Condition)
+:- public cond_notify/1.
+:- virtual cond_notify/1.
+:- foreign(cond_notify/1, 'Condition', signal).
+
+/**
+ * cond_notifyall(C):
+ * The predicate succeeds in notifying all waiting threads.
+ */
+% cond_notifyall(+Condition)
+:- public cond_notifyall/1.
+:- virtual cond_notifyall/1.
+:- foreign(cond_notifyall/1, 'Condition', signalAll).

@@ -30,8 +30,8 @@ package matula.util.misc;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class AlarmEntry {
-    private final Object item;
+public final class AlarmEntry<T> {
+    private final T item;
     private final long when;
 
     /**
@@ -40,7 +40,7 @@ public final class AlarmEntry {
      * @param r The item.
      * @param w The time point.
      */
-    AlarmEntry(Object r, long w) {
+    AlarmEntry(T r, long w) {
         item = r;
         when = w;
     }
@@ -50,7 +50,7 @@ public final class AlarmEntry {
      *
      * @return The iterm.
      */
-    Object getItem() {
+    T getItem() {
         return item;
     }
 

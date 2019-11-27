@@ -727,7 +727,7 @@ public class PrologReader {
      * <p>Read a compound.</p>
      * <p>Can be overridden by sub classes.</p>
      *
-     * @param help  The functor.
+     * @param help The functor.
      * @return The compound.
      * @throws ScannerError    Error and position.
      * @throws IOException     IO error.
