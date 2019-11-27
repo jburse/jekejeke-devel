@@ -130,12 +130,12 @@
 
 /**
  * readwrite_new(P):
- * The predicate succeeds for a new slotted and escalable
+ * The predicate succeeds for a new reentrant and gradeable
  * read write pair P.
  */
 % readwrite_new(-ReadWriteLock)
 :- public readwrite_new/1.
-:- foreign_constructor(readwrite_new/1, 'Locker', new).
+:- foreign_constructor(readwrite_new/1, 'ReentrantReadWriteLock', new).
 
 /**
  * nonescalable_new(P):
