@@ -73,11 +73,11 @@
 
 /**
  * mutex_new(M):
- * The predicate succeeds for a new slotted lock M.
+ * The predicate succeeds for a new reentrant lock M.
  */
 % mutex_new(-Lock)
 :- public mutex_new/1.
-:- foreign_constructor(mutex_new/1, 'Mutex', new).
+:- foreign_constructor(mutex_new/1, 'ReentrantLock', new).
 
 /**
  * unslotted_new(M):
@@ -86,14 +86,6 @@
 % unslotted_new(-Lock)
 :- public unslotted_new/1.
 :- foreign_constructor(unslotted_new/1, 'Unslotted', new).
-
-/**
- * reentrant_new(M):
- * The predicate succeeds for a new reentrant lock M.
- */
-% reentrant_new(-Lock)
-:- public reentrant_new/1.
-:- foreign_constructor(reentrant_new/1, 'ReentrantLock', new).
 
 /**
  * lock_aquire(L):
@@ -137,13 +129,13 @@
 /****************************************************************/
 
 /**
- * locker_new(P):
+ * readwrite_new(P):
  * The predicate succeeds for a new slotted and escalable
  * read write pair P.
  */
-% locker_new(-ReadWriteLock)
-:- public locker_new/1.
-:- foreign_constructor(locker_new/1, 'Locker', new).
+% readwrite_new(-ReadWriteLock)
+:- public readwrite_new/1.
+:- foreign_constructor(readwrite_new/1, 'Locker', new).
 
 /**
  * nonescalable_new(P):

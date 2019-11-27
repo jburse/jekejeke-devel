@@ -150,26 +150,14 @@ setup_balance(Q, N) :-
    horde2(Z, J, (S, sys_take_all(I, F, 1), T), N).
 
 /**
- * submit(C, N):
- * The predicate succeeds in running a copy of the goal C in a new
- * thread and unifies N with its new name.
+ * submit(C):
+ * The predicate succeeds in running a copy of the goal C in a new thread.
  */
-:- public submit/2.
-:- meta_predicate submit(0, ?).
-submit(Goal, Name) :-
+:- public submit/1.
+:- meta_predicate submit(0).
+submit(Goal) :-
    thread_new(sys_managed_call(Goal), Thread),
-   current_thread_flag(Thread, sys_thread_name, Name),
    thread_start(Thread).
-
-/**
- * cancel(N):
- * The predicate succeeds in stopping the thread with the name N.
- */
-:- public cancel/1.
-cancel(Name) :-
-   current_thread(Thread),
-   current_thread_flag(Thread, sys_thread_name, Name), !,
-   sys_thread_fini(Thread).
 
 /**********************************************************/
 /* Pipe Utilities                                         */

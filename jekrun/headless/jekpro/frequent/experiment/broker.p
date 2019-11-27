@@ -1,8 +1,8 @@
 /**
- * This module provides a Prolog implementation of the actor
- * model. The predicates lean towards Erlang with the same receive
- * and send semantics. On the other hand, the spawning of actors
- * does not take a module parameter but rather the address of a broker.
+ * This module provides a Prolog implementation of the actor model. The
+ * realization leans towards Erlang with the same receive and send semantics
+ * and towards Go in that we do only provide a run primitive, the spawn
+ * primitive is a bootstrapped.
  *
  * Currently we only support unreliable UDP message sending with up
  * to 4096 bytes. We might add further protocols in the future.
