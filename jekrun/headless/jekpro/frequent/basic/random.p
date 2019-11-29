@@ -144,9 +144,18 @@ random(M, N) :-
 :- foreign_constructor(counter_new/1, 'Counter', new).
 
 /**
+ * counter_new(I, C):
+ * The predicate succeeds for a new counter C
+ * with initial value I.
+ */
+% counter_new(+Integer, -Counter)
+:- public counter_new/2.
+:- foreign_constructor(counter_new/2, 'Counter', new(int)).
+
+/**
  * counter_next(C, V):
  * The predicate succeeds for incrementing the
- * counter C and unifying the old value V
+ * counter C and unifying the old value V.
  */
 % counter_next(+Counter, -Integer)
 :- public counter_next/2.

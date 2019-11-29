@@ -5,6 +5,7 @@ import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.runtime.SpecialSession;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.Controller;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
@@ -111,8 +112,9 @@ public final class FlagThread extends AbstractFlag<Thread> {
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
-                /* can't modify */
-                return false;
+                String name = SpecialUniv.derefAndCastString(m, d);
+                t.setName(name);
+                return true;
             case FLAG_SYS_THREAD_STATE:
                 /* can't modify */
                 return false;

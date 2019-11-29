@@ -16,6 +16,7 @@ import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHashLink;
 
 import java.io.Writer;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>The base delegate class for a defined delegate.</p>
@@ -441,6 +442,14 @@ public abstract class AbstractDefined extends AbstractDelegate {
      */
     public abstract void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException;
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public abstract ReadWriteLock getLock(Engine en);
 
     /***********************************************************/
     /* Dynamic Database                                        */

@@ -12,6 +12,7 @@ import jekpro.tools.term.SkelAtom;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>The delegate class for a lockfree delegate.</p>
@@ -66,7 +67,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param pick  The predicate.
      * @param scope The source.
      */
-    public final void shrinkPredicate(Predicate pick, AbstractSource scope) {
+    public void shrinkPredicate(Predicate pick, AbstractSource scope) {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
@@ -81,7 +82,7 @@ final class DefinedLockfree extends AbstractDefined {
      *
      * @param pick The predicate.
      */
-    public final void releasePredicate(Predicate pick) {
+    public void releasePredicate(Predicate pick) {
         /* */
     }
 
@@ -95,7 +96,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param en The engine.
      * @return the clause list or null.
      */
-    public final Clause[] listClauses(Engine en) {
+    public Clause[] listClauses(Engine en) {
         return cr.getClauses();
     }
 
@@ -121,7 +122,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param en The engine.
      * @return The length of the clause list.
      */
-    public final int lengthClauses(Engine en) {
+    public int lengthClauses(Engine en) {
         InterfaceRope set = cr.set;
         return (set != null ? set.size() : 0);
     }
@@ -133,7 +134,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param flags  The flags.
      * @param en     The engine.
      */
-    public final boolean assertClause(Clause clause,
+    public boolean assertClause(Clause clause,
                                       int flags, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
@@ -149,7 +150,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param en     The engine.
      * @return True if clause was found and removed, otherwise false.
      */
-    public final boolean retractClause(Clause clause, Engine en) {
+    public boolean retractClause(Clause clause, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         clause.flags &= ~Clause.MASK_CLAUSE_ASSE;
@@ -165,7 +166,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final void inspectClauses(Writer wr, Engine en)
+    public void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
             InterfaceRope set = cr.set;
@@ -174,6 +175,17 @@ final class DefinedLockfree extends AbstractDefined {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
+    }
+
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public ReadWriteLock getLock(Engine en) {
+        return null;
     }
 
 }

@@ -33,7 +33,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Counter {
-    private final AtomicInteger counter = new AtomicInteger();
+    private final AtomicInteger counter;
+
+    /**
+     * <p>Create a new counter.</p>
+     */
+    public Counter() {
+        counter = new AtomicInteger();
+    }
+
+    /**
+     * <p>Create a new counter.</p>
+     *
+     * @param start The initial value.
+     */
+    public Counter(int start) {
+        counter = new AtomicInteger(start);
+    }
 
     /**
      * <p>Increment this counter and return the old value.</p>

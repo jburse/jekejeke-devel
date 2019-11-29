@@ -14,6 +14,7 @@ import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>The delegate class for a multi blocking delegate.</p>
@@ -46,7 +47,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
+final class DefinedBlockingMulti extends AbstractDefinedMultifile {
     private final Bouquet cr = new Bouquet();
     private final Nonescalable lock = new Nonescalable();
 
@@ -70,7 +71,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @param scope The source.
      * @throws EngineMessage Shit happens.
      */
-    public final void shrinkPredicate(Predicate pick, AbstractSource scope)
+    public void shrinkPredicate(Predicate pick, AbstractSource scope)
             throws EngineMessage {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
@@ -86,7 +87,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      *
      * @param pick The predicate.
      */
-    public final void releasePredicate(Predicate pick) {
+    public void releasePredicate(Predicate pick) {
         /* do nothing */
     }
 
@@ -101,7 +102,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @return the clause list or null.
      * @throws EngineMessage Shit happens.
      */
-    public final Clause[] listClauses(Engine en)
+    public Clause[] listClauses(Engine en)
             throws EngineMessage {
         try {
             lock.readLock().lockInterruptibly();
@@ -148,7 +149,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @param en The engine.
      * @return The length of the clause list.
      */
-    public final int lengthClauses(Engine en) {
+    public int lengthClauses(Engine en) {
         InterfaceRope set = cr.set;
         return (set != null ? set.size() : 0);
     }
@@ -161,7 +162,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @param en     The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean assertClause(Clause clause,
+    public boolean assertClause(Clause clause,
                                       int flags, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
@@ -189,7 +190,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @param en     The engine.
      * @return True if clause was found and removed, otherwise false.
      */
-    public final boolean retractClause(Clause clause, Engine en)
+    public boolean retractClause(Clause clause, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
@@ -217,7 +218,7 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final void inspectClauses(Writer wr, Engine en)
+    public void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         try {
             lock.readLock().lockInterruptibly();
@@ -235,6 +236,16 @@ public final class DefinedBlockingMulti extends AbstractDefinedMultifile {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @return The read write lock.
+     * @param en
+     */
+    public ReadWriteLock getLock(Engine en) {
+        return lock;
     }
 
 }

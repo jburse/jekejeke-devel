@@ -1,10 +1,10 @@
 /**
  * This module provides a Prolog implementation of the actor model. The
- * realization leans towards Erlang with the same receive and send semantics
- * and towards Go in that we do only provide a run primitive, the spawn
- * primitive is a bootstrapped.
+ * realization leans towards Erlang with the same receive, send and spawn
+ * semantics. Currently send and spawn are one way so that a client is
+ * not notified whether the primitive was performed or not.
  *
- * Currently we only support unreliable UDP message sending with up
+ * Currently we only support unreliable UDP transport with up
  * to 4096 bytes. We might add further protocols in the future.
  * Especially a combination with our module "http" and its web sockets
  * is planned which would even allow communication with web browser.
@@ -48,7 +48,7 @@
 :- use_module(library(system/thread)).
 :- use_module(library(system/domain)).
 :- use_module(library(experiment/ref)).
-:- use_module(library(runtime/distributed)).
+:- use_module(library(basic/random)).
 
 :- public infix(when).
 :- op(1105, xfy, when).
@@ -57,9 +57,9 @@
 :- meta_function when(?, 0).
 when(_, _) :- throw(error(existence_error(body, when/2), _)).
 
-% server_endpoint(+Atom, +Endpoint)
-:- private server_endpoint/2.
-:- group_local server_endpoint/2.
+% server_endpoint(+Atom, +Endpoint, +Counter)
+:- private server_endpoint/3.
+:- group_local server_endpoint/3.
 
 % actor_queue(+Atom, +Pipe)
 :- private actor_queue/2.
@@ -74,17 +74,19 @@ when(_, _) :- throw(error(existence_error(body, when/2), _)).
 /***********************************************************/
 
 /**
- * broker_start(A):
- * The predicate succeeds in starting a broker identified by the authority A.
+ * broker_start(A, N):
+ * The predicate succeeds in starting a broker identified by the
+ * authority A and numbering actors starting with N.
  */
-% broker_start(+Atom)
-:- public broker_start/1.
-broker_start(Authority) :-
+% broker_start(+Atom, +Integer)
+:- public broker_start/2.
+broker_start(Authority, Node) :-
    unslotted_new(Lock),
    lock_acquire(Lock),
-   submit(broker_run(Lock, Authority)),
+   thread_new(broker_run(Lock, Authority, Node), Thread),
+   thread_start(Thread),
    lock_acquire(Lock),
-   run_setup.
+   spawn_setup.
 
 /**
  * broker_stop:
@@ -93,38 +95,39 @@ broker_start(Authority) :-
 % broker_stop
 :- public broker_stop/0.
 broker_stop :-
-   server_endpoint(Authority, Endpoint),
+   server_endpoint(Authority, Endpoint, _),
    term_atom(end, Atom),
    atom_block(Atom, Block, [encoding('utf-8')]),
    make_authority(_, Host, Port, Authority),
    endpoint_send(Endpoint, Block, Host, Port),
-   run_cleanup.
+   spawn_cleanup.
 
-% broker_run(+Lock, +Atom)
-:- private broker_run/2.
-broker_run(Lock, Authority) :-
+% broker_run(+Lock, +Atom, +Integer)
+:- private broker_run/3.
+broker_run(Lock, Authority, Node) :-
    setup_call_cleanup(
-      (broker_setup(Authority), lock_release(Lock)),
+      (broker_setup(Authority, Node), lock_release(Lock)),
       broker_server(Authority),
       broker_cleanup(Authority)).
 
-% broker_setup(+Atom)
-:- private broker_setup/1.
-broker_setup(Authority) :-
+% broker_setup(+Atom, +Integer)
+:- private broker_setup/2.
+broker_setup(Authority, Node) :-
    make_authority(_, Host, Port, Authority),
    endpoint_new(Host, Port, Endpoint),
-   assertz(server_endpoint(Authority, Endpoint)).
+   counter_new(Node, Counter),
+   assertz(server_endpoint(Authority, Endpoint, Counter)).
 
 % broker_cleanup(+Atom)
 :- private broker_cleanup/1.
 broker_cleanup(Authority) :-
-   retract(server_endpoint(Authority, Endpoint)),
+   retract(server_endpoint(Authority, Endpoint, _)),
    close(Endpoint).
 
 % broker_server(+Atom)
 :- private broker_server/1.
 broker_server(Authority) :-
-   server_endpoint(Authority, Endpoint),
+   server_endpoint(Authority, Endpoint, _),
    repeat,
    endpoint_receive(Endpoint, Block),
    atom_block(Atom, Block, [encoding('utf-8')]),
@@ -134,8 +137,10 @@ broker_server(Authority) :-
    -> actor_queue(Name, Queue),
       pipe_put(Queue, Message),
       fail
-   ;  Term = run(Goal)
-   -> submit(run_safe(Goal)),
+   ;  Term = spawn(Name, Goal)
+   -> thread_new(spawn_safe(Goal), Thread),
+      set_thread_flag(Thread, sys_thread_name, Name),
+      thread_start(Thread),
       fail; fail).
 
 /***********************************************************/
@@ -143,43 +148,54 @@ broker_server(Authority) :-
 /***********************************************************/
 
 /**
- * run(A, G):
- * The predicate starts a new actor on the
- * authority A running the goal G.
+ * spawn(A, G, P):
+ * The predicate succeeds in P with the actor path of a new actor on
+ * the authority A running the goal G.
  */
-% run(+Atom, +Goal)
-:- public run/2.
-:- meta_predicate run(?, 0).
-run(Authority, Goal) :-                                 /* local run */
-   server_endpoint(Authority, _), !,
-   submit(run_safe(Goal)).
-run(Authority, Goal) :-                                 /* remote run */
-   server_endpoint(_, Endpoint),
-   term_atom(run(Goal), Atom),
+% spawn(+Atom, +Goal, -Pid)
+:- public spawn/3.
+:- meta_predicate spawn(?, 0, ?).
+spawn(Authority, Goal, pid(Authority, Name)) :-         /* local run */
+   server_endpoint(Authority, _, Counter), !,
+   spawn_name(Counter, Name),
+   thread_new(spawn_safe(Goal), Thread),
+   set_thread_flag(Thread, sys_thread_name, Name),
+   thread_start(Thread).
+spawn(Authority, Goal, pid(Authority, Name)) :-         /* remote run */
+   server_endpoint(_, Endpoint, Counter),
+   spawn_name(Counter, Name),
+   term_atom(spawn(Name, Goal), Atom),
    atom_block(Atom, Block, [encoding('utf-8')]),
    make_authority(_, Host, Port, Authority),
    endpoint_send(Endpoint, Block, Host, Port).
 
-% run_safe(+Goal)
-:- private run_safe/1.
-:- meta_predicate run_safe(0).
-run_safe(Goal) :-
-   setup_call_cleanup(
-      run_setup,
-      Goal,
-      run_cleanup).
+% spawn_name(+Counter, -Atom)
+:- private spawn_name/2.
+spawn_name(Counter, Name) :-
+   counter_next(Counter, Number),
+   atom_number(Atom, Number),
+   atom_concat('Actor-', Atom, Name).
 
-% run_setup
-:- private run_setup/0.
-run_setup :-
+% spawn_safe(+Goal)
+:- private spawn_safe/1.
+:- meta_predicate spawn_safe(0).
+spawn_safe(Goal) :-
+   setup_call_cleanup(
+      spawn_setup,
+      Goal,
+      spawn_cleanup).
+
+% spawn_setup
+:- private spawn_setup/0.
+spawn_setup :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    pipe_new(Queue),
    assertz(actor_queue(Name, Queue)).
 
-% run_cleanup
-:- private run_cleanup/0.
-run_cleanup :-
+% spawn_cleanup
+:- private spawn_cleanup/0.
+spawn_cleanup :-
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name),
    retract(actor_queue(Name, _)),
@@ -192,7 +208,7 @@ run_cleanup :-
 % self(-Pid)
 :- public self/1.
 self(pid(Authority, Name)) :-
-   server_endpoint(Authority, _),
+   server_endpoint(Authority, _, _),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name).
 
@@ -204,11 +220,11 @@ self(pid(Authority, Name)) :-
 % send(+Pid, +Term)
 :- public send/2.
 send(pid(Authority, Name), Message) :-                  /* local send */
-   server_endpoint(Authority, _), !,
+   server_endpoint(Authority, _, _), !,
    actor_queue(Name, Queue),
    pipe_put(Queue, Message).
 send(pid(Authority, Name), Message) :-                  /* remote send */
-   server_endpoint(_, Endpoint),
+   server_endpoint(_, Endpoint, _),
    term_atom(send(Name, Message), Atom),
    atom_block(Atom, Block, [encoding('utf-8')]),
    make_authority(_, Host, Port, Authority),
@@ -281,20 +297,3 @@ receive_check(SelectedGuard, Selected) :-
    SelectedGuard = (Selected when Guard), !,
    Guard.
 receive_check(Selected, Selected).
-
-/***********************************************************/
-/* Bootstrapped Predicates                                 */
-/***********************************************************/
-
-/**
- * spawn(A, G, P):
- * The predicate succeeds in P with the actor path of a new actor on
- * the authority A running the goal G.
- */
-% spawn(-Atom, +Goal, -Pid)
-:- public spawn/3.
-:- meta_predicate spawn(?, 0, ?).
-spawn(A, G, P) :-
-   self(C),
-   run(A, (self(B), send(C, started(B)), G)),
-   receive(started(P), _).

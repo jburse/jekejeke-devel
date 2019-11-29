@@ -241,7 +241,6 @@ lock_acquire/1	no	misc/lock
 lock_attempt/1	no	misc/lock
 lock_attempt/2	no	misc/lock
 lock_release/1	no	misc/lock
-locker_new/1	no	misc/lock
 make_authority/4	no	system/domain
 make_directory/1	no	system/file
 make_link/4	no	system/uri
@@ -337,6 +336,7 @@ read_punch_max/2	no	stream/console
 read_punch_max/3	no	stream/console
 read_term/2	no	stream/term
 read_term/3	no	stream/term
+readwrite_new/1	no	misc/lock
 rebuild_goal/2	no	experiment/simp
 rebuild_goal_arg/3	no	experiment/simp
 rebuild_rest/2	no	experiment/simp
@@ -345,7 +345,6 @@ receive/2	no	experiment/broker
 receive/3	no	experiment/broker
 recorda_ref/1	no	experiment/ref
 recordz_ref/1	no	experiment/ref
-reentrant_new/1	no	misc/lock
 ref_property/2	no	experiment/ref
 remove/3	no	advanced/sets
 remove/3	no	experiment/maps
@@ -360,6 +359,7 @@ retract_table/1	no	advanced/tabling
 retractall_table/1	no	advanced/tabling
 reverse/2	no	basic/lists
 rfc1123_atom/2	no	system/zone
+run/2	no	experiment/broker
 run_http/2	no	misc/http
 select/3	no	basic/lists
 self/1	no	experiment/broker

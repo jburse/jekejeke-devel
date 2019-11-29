@@ -13,6 +13,7 @@ import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>The delegate class for group local delegate.</p>
@@ -45,7 +46,7 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class DefinedGroupLocal extends AbstractDefined {
+final class DefinedGroupLocal extends AbstractDefined {
     private final int seqid;
 
     /**
@@ -69,7 +70,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @param pick  The predicate.
      * @param scope The source.
      */
-    public final void shrinkPredicate(Predicate pick, AbstractSource scope) {
+    public void shrinkPredicate(Predicate pick, AbstractSource scope) {
         /* do nothing */
     }
 
@@ -78,7 +79,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      *
      * @param pick The predicate.
      */
-    public final void releasePredicate(Predicate pick) {
+    public void releasePredicate(Predicate pick) {
         pick.getSource().getStore().foyer.releaseHole(seqid);
     }
 
@@ -93,7 +94,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @return The clause list or null.
      * @throws EngineMessage Shit happens.
      */
-    public final Clause[] listClauses(Engine en)
+    public Clause[] listClauses(Engine en)
             throws EngineMessage {
         LocalBlocking ep = defineLocalBlocking(en);
         try {
@@ -142,7 +143,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @param en The engine.
      * @return The length of the clause list.
      */
-    public final int lengthClauses(Engine en) {
+    public int lengthClauses(Engine en) {
         LocalBlocking ep = defineLocalBlocking(en);
         InterfaceRope set = ep.cr.set;
         return (set != null ? set.size() : 0);
@@ -156,7 +157,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @param en     The engine.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean assertClause(Clause clause,
+    public boolean assertClause(Clause clause,
                                       int flags, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
@@ -186,7 +187,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @return True if clause was found and removed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public final boolean retractClause(Clause clause, Engine en)
+    public boolean retractClause(Clause clause, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
@@ -215,7 +216,7 @@ public final class DefinedGroupLocal extends AbstractDefined {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final void inspectClauses(Writer wr, Engine en)
+    public void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         LocalBlocking ep = defineLocalBlocking(en);
         try {
@@ -234,6 +235,17 @@ public final class DefinedGroupLocal extends AbstractDefined {
         } finally {
             ep.lock.readLock().unlock();
         }
+    }
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public ReadWriteLock getLock(Engine en) {
+        LocalBlocking ep = defineLocalBlocking(en);
+        return ep.lock;
     }
 
     /***********************************************************/

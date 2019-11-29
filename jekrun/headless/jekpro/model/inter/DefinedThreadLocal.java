@@ -12,6 +12,7 @@ import matula.util.data.ListArray;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>The delegate class for thread local delegate.</p>
@@ -68,7 +69,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param pick  The predicate.
      * @param scope The source.
      */
-    public final void shrinkPredicate(Predicate pick, AbstractSource scope) {
+    public void shrinkPredicate(Predicate pick, AbstractSource scope) {
         /* do nothing */
     }
 
@@ -77,7 +78,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      *
      * @param pick The predicate.
      */
-    public final void releasePredicate(Predicate pick) {
+    public void releasePredicate(Predicate pick) {
         pick.getSource().getStore().foyer.releaseHole(seqid);
     }
 
@@ -91,7 +92,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param en The engine.
      * @return The clause list or null.
      */
-    public final Clause[] listClauses(Engine en) {
+    public Clause[] listClauses(Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
         return ep.cr.getClauses();
     }
@@ -119,7 +120,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param en The engine.
      * @return The length of the clause list.
      */
-    public final int lengthClauses(Engine en) {
+    public int lengthClauses(Engine en) {
         LocalLockfree ep = defineLocalLockfree(en);
         InterfaceRope set = ep.cr.set;
         return (set != null ? set.size() : 0);
@@ -132,7 +133,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param flags  The flags.
      * @param en     The engine.
      */
-    public final boolean assertClause(Clause clause,
+    public boolean assertClause(Clause clause,
                                       int flags, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
@@ -149,7 +150,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @param en     The engine.
      * @return True if clause was found and removed, otherwise false.
      */
-    public final boolean retractClause(Clause clause, Engine en) {
+    public boolean retractClause(Clause clause, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
             return false;
         LocalLockfree ep = defineLocalLockfree(en);
@@ -166,7 +167,7 @@ final class DefinedThreadLocal extends AbstractDefined {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final void inspectClauses(Writer wr, Engine en)
+    public void inspectClauses(Writer wr, Engine en)
             throws EngineMessage, EngineException {
         LocalLockfree ep = defineLocalLockfree(en);
         try {
@@ -176,6 +177,16 @@ final class DefinedThreadLocal extends AbstractDefined {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         }
+    }
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public ReadWriteLock getLock(Engine en) {
+        return null;
     }
 
     /***********************************************************/

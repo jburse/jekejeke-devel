@@ -78,6 +78,7 @@ atan/2	yes	arithmetic/trigo
 atan2/3	no	arithmetic/trigo
 atom/1	no	structure/type
 atom_block/2	no	structure/atom
+atom_block/3	no	structure/atom
 atom_chars/2	no	structure/atom
 atom_codes/2	no	structure/atom
 atom_concat/3	no	structure/atom
@@ -91,7 +92,6 @@ balance/2	no	runtime/distributed
 begin_module/1	no	bootload/engine
 break/0	no	runtime/session
 callable/1	no	structure/type
-cancel/1	no	runtime/distributed
 ceiling/2	yes	arithmetic/round
 char_code/2	no	structure/atom
 clause/2	no	runtime/dynamic
@@ -193,7 +193,7 @@ sqrt/2	yes	arithmetic/trigo
 (static)/1	no	reflect/pred
 sub_atom/4	no	structure/atom
 sub_atom/5	no	structure/atom
-submit/2	no	runtime/distributed
+submit/1	no	runtime/distributed
 sys_activate_capability/2	no	bootload/toolkit
 sys_add_file_extension/2	no	bootload/path
 sys_add_path/1	no	bootload/path

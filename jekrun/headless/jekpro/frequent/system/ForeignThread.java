@@ -17,7 +17,6 @@ import matula.util.data.MapHash;
 import matula.util.system.ConnectionReader;
 import matula.util.system.ConnectionWriter;
 import matula.util.wire.AbstractLivestock;
-import matula.util.wire.ManagedGroup;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -175,15 +174,16 @@ public final class ForeignThread {
         EngineMessage h = (EngineMessage) new InterpreterMessage(m).getException();
         long when = System.currentTimeMillis() + sleep;
         synchronized (t) {
-            while (AbstractLivestock.liveGetSignal(t) != null & sleep > 0) {
-                t.wait(sleep);
-                sleep = when - System.currentTimeMillis();
-            }
-            if (sleep > 0) {
-                AbstractLivestock.liveSetSignal(t, h);
-                return true;
-            } else {
-                return false;
+            for (; ; ) {
+                if (AbstractLivestock.liveGetSignal(t) == null) {
+                    AbstractLivestock.liveSetSignal(t, h);
+                    return true;
+                } else if (sleep > 0) {
+                    t.wait(sleep);
+                    sleep = when - System.currentTimeMillis();
+                } else {
+                    return false;
+                }
             }
         }
     }
