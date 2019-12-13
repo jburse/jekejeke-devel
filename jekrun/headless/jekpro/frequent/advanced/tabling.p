@@ -69,12 +69,14 @@
 
 :- module(tabling, []).
 :- use_package(foreign(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(matula/util/data)).
 :- use_package(foreign(jekpro/tools/call)).
 :- use_module(library(advanced/sequence)).
 :- use_module(library(advanced/aggregate)).
 :- use_module(library(basic/lists)).
 :- use_module(library(experiment/ref)).
+:- use_module(library(misc/lock)).
 
 :- public prefix(table).
 :- op(1150, fx, table).
@@ -121,14 +123,14 @@ sys_table_dire(P, C) :- sys_table_def(P, C).
 :- private sys_table_def/2.
 sys_table_def(I, C) :- sys_indicator(I), !,
    sys_make_indicator(F, N, I),
-   sys_table_declare(F, N),
+   sys_table_declare(F, N, C),
    length(L, N),
    sys_table_wrapper(F, L, L, nil, nil, C),
    sys_table_mode(F, N).
 sys_table_def(M, C) :-
    sys_callable(M),
    sys_functor(M, F, N),
-   sys_table_declare(F, N),
+   sys_table_declare(F, N, C),
    length(L, N),
    M =.. [_|R],
    sys_table_aggregate(R, L, T, A, S),
@@ -140,25 +142,29 @@ sys_table_def(M, C) :-
 /*****************************************************************/
 
 /**
- * sys_table_declare(F, N):
+ * sys_table_declare(F, N, C):
  * The predicate sets the predicate properties of the cache predicate,
  * based on the tabled predicate.
  */
-% sys_table_declare(+Atom, +Integer)
-:- private sys_table_declare/2.
-sys_table_declare(F, N) :-
+% sys_table_declare(+Atom, +Integer, +Comparator)
+:- private sys_table_declare/3.
+sys_table_declare(F, N, C) :-
+   variant_dynamic(C), !,
    sys_make_indicator(F, N, I),
    static(I),
    set_predicate_property(I, sys_tabled),
    sys_table_test(F, N, M),
    sys_make_indicator(M, 2, J),
-   (  predicate_property(I, visible(public)) -> public(J)
-   ;  predicate_property(I, visible(private)) -> private(J)
-   ;  true),
-   (  predicate_property(I, multifile) -> multifile(J)
-   ;  true),
-   thread_local(J),
-   set_predicate_property(J, sys_notrace).
+   sys_table_props(I, J),
+   dynamic(J).
+sys_table_declare(F, N, _) :-
+   sys_make_indicator(F, N, I),
+   static(I),
+   set_predicate_property(I, sys_tabled),
+   sys_table_test(F, N, M),
+   sys_make_indicator(M, 2, J),
+   sys_table_props(I, J),
+   thread_local(J).
 
 /**
  * sys_table_mode(F, N):
@@ -171,13 +177,23 @@ sys_table_mode(F, N) :-
    sys_make_indicator(F, N, I),
    sys_table_aux(F, G),
    sys_make_indicator(G, N, J),
+   sys_table_props(I, J),
+   static(J).
+
+/**
+ * sys_table_props(I, J):
+ * The predicate set the visibility of the predicate J to the
+ * visibility of the predicate I.
+ */
+% sys_table_props(+Indicator, +Indicator)
+:- private sys_table_props/2.
+sys_table_props(I, J) :-
    (  predicate_property(I, visible(public)) -> public(J)
    ;  predicate_property(I, visible(private)) -> private(J)
    ;  true),
    (  predicate_property(I, multifile) -> multifile(J)
    ;  true),
-   static(J),
-   set_predicate_property(J, sys_notrace).
+   sys_notrace(J).
 
 /*****************************************************************/
 /* Aggregate Helper                                              */
@@ -220,6 +236,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    sys_univ(Blank, [M, P, _]),
    sys_table_new(C, W, R, New),
    sys_table_list(C, W, R, S, List),
+   sys_table_update(M, Blank, Test, Update, C),
    Key =.. [''|T],
    Descr =.. [''|L],
    Body = (sys_goal_globals(A^Descr, W),
@@ -230,11 +247,9 @@ sys_table_wrapper(F, T, L, A, S, C) :-
          sys_call_info((sys_revolve_run(A, Goal, W, R, J),
             S = J), Res),
          (  Res == det
-         -> retractall(Blank),
-            assertz(Test)
+         -> Update
          ;  Res == fail
-         -> retractall(Blank),
-            assertz(Test), fail
+         -> Update, fail
          ;  true))),
    sys_make_indicator(F, N, I),
    (  predicate_property(I, multifile)
@@ -251,6 +266,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    sys_univ(Blank, [M, P, _]),
    sys_table_new(C, W, R, New),
    sys_table_list(C, W, R, S, List),
+   sys_table_update(M, Blank, Test, Update, C),
    Key =.. [''|T],
    Descr =.. [''|L],
    Body = (sys_goal_globals(A^Descr, W),
@@ -260,8 +276,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
       ;  New,
          (sys_revolve_run(A, Goal, W, R, _),
          fail; true),
-         retractall(Blank),
-         assertz(Test),
+         Update,
          List)),
    sys_make_indicator(F, N, I),
    (  predicate_property(I, multifile)
@@ -294,6 +309,24 @@ sys_table_list(C, W, R, S, G) :-
    G = sys_revolve_list(W, R, S, C).
 sys_table_list(_, W, R, S, G) :-
    G = sys_revolve_list(W, R, S).
+
+/**
+ * sys_table_update(M, B, T, G, C):
+ * The predicate succeeds in G with a code snippted to update
+ * the tabling cache.
+ */
+% sys_table_update(+Atom, +Clause, +Clause, -Goal, +Comparator)
+:- private sys_table_update/5.
+sys_table_update(M, B, T, G, C) :-
+   variant_dynamic(C), !,
+   sys_make_indicator(M, 2, J),
+   predicate_property(J, sys_readwrite_lock(Pair)),
+   get_write(Pair, Lock),
+   G = setup_call_cleanup(lock_acquire(Lock),
+      (retractall(B), assertz(T)),
+      lock_release(Lock)).
+sys_table_update(_, B, T, G, _) :-
+   G = (retractall(B), assertz(T)).
 
 /*****************************************************************/
 /* Eager Evaluation                                              */
@@ -432,3 +465,19 @@ user:term_expansion(A, B) :- sys_table_head(A, B), !.
 % variant_key(-Key)
 :- private variant_key/1.
 :- foreign_constructor(variant_key/1, 'VariantKey', new).
+
+/**
+ * variant_dynamic(C):
+ * The predicate succeeds if the variant comparator is shared dynamic.
+ */
+% variant_dynamic(+Comparator)
+:- foreign(variant_dynamic/1, 'VariantKey',
+      sysVariantDynamic('EngineLexical')).
+
+/**
+ * variant_group_local(C):
+ * The predicate succeeds if the variant comparator is shared group local.
+ */
+% variant_group_local(+Comparator)
+:- foreign(variant_group_local/1, 'VariantKey',
+      sysVariantGroupLocal('EngineLexical')).

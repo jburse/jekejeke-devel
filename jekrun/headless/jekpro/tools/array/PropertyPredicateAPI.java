@@ -2,6 +2,7 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
@@ -17,6 +18,8 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * <p>This class provides predicate properties.</p>
@@ -60,6 +63,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static String OP_META_PREDICATE = "meta_predicate";
     private final static String OP_META_FUNCTION = "meta_function";
     private final static String OP_SYS_TABLED = "sys_tabled";
+    private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
 
     public final static int PROP_SYS_META_PREDICATE = 0;
     public final static int PROP_SYS_META_FUNCTION = 1;
@@ -68,6 +72,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     public final static int PROP_META_PREDICATE = 4;
     public final static int PROP_META_FUNCTION = 5;
     public final static int PROP_SYS_TABLED = 6;
+    public final static int PROP_SYS_READWRITE_LOCK = 7;
 
     static {
         DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_SYS_META_PREDICATE));
@@ -81,6 +86,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicateAPI(PROP_META_FUNCTION,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
         DEFAULT.add(new StoreKey(OP_SYS_TABLED, 0), new PropertyPredicateAPI(PROP_SYS_TABLED));
+        DEFAULT.add(new StoreKey(OP_SYS_READWRITE_LOCK, 1), new PropertyPredicateAPI(PROP_SYS_READWRITE_LOCK));
     }
 
 
@@ -160,6 +166,14 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_READWRITE_LOCK:
+                t = getPredicateLock(pick, en);
+                if (t != null) {
+                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
+                            new SkelAtom(OP_SYS_READWRITE_LOCK), t), Display.DISPLAY_CONST)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -207,6 +221,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             case PROP_SYS_TABLED:
                 pick.setBit(Predicate.MASK_PRED_TABL);
                 return true;
+            case PROP_SYS_READWRITE_LOCK:
+                /* can't modify */
+                return false;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -252,6 +269,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             case PROP_SYS_TABLED:
                 pick.resetBit(Predicate.MASK_PRED_TABL);
                 return true;
+            case PROP_SYS_READWRITE_LOCK:
+                /* can't modify */
+                return false;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -291,7 +311,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             res.toArray(vals);
             return vals;
         } else {
-            if (id < PROP_SYS_META_PREDICATE || id > PROP_SYS_TABLED)
+            if (id < PROP_SYS_META_PREDICATE || id > PROP_SYS_READWRITE_LOCK)
                 throw new IllegalArgumentException("illegal prop");
             return null;
         }
@@ -330,6 +350,22 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
+     * <p>Retrieve the predicate lock.</p>
+     *
+     * @param pick The predicate.
+     * @param en The engie.
+     * @return The read write lock.
+     */
+    private static ReadWriteLock getPredicateLock(Predicate pick, Engine en) {
+        AbstractDelegate del = pick.del;
+        if (del instanceof AbstractDefined) {
+            return ((AbstractDefined) del).getLock(en);
+        } else {
+            return null;
         }
     }
 

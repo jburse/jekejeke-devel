@@ -15,6 +15,7 @@ import matula.util.wire.AbstractLivestock;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>The delegate class for a blocking delegate.</p>
@@ -49,7 +50,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 final class DefinedBlocking extends AbstractDefined {
     private final Bouquet cr = new Bouquet();
-    private final Nonescalable lock = new Nonescalable();
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * <p>Create a blocking delegate.</p>

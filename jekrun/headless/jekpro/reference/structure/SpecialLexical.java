@@ -6,19 +6,12 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.WriteOpts;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.regex.IgnoreCase;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.text.Collator;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Locale;
 
 /**
  * <p>Provides built-in predicates for lexical comparison.</p>

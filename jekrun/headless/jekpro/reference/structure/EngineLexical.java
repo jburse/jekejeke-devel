@@ -15,7 +15,6 @@ import matula.util.regex.IgnoreCase;
 import matula.util.wire.LangProperties;
 
 import java.text.Collator;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
 
@@ -59,13 +58,22 @@ public final class EngineLexical implements Comparator<Object> {
     private static final String OP_REVERSE = "reverse";
     private static final String OP_EAGER = "eager";
     private static final String OP_LOCALE = "locale";
+    private static final String OP_SHARE = "share";
+    private static final String OP_SHARE_THREAD_LOCAL = "thread_local";
+    private static final String OP_SHARE_DYNAMIC = "dynamic";
+    private static final String OP_SHARE_GROUP_LOCAL = "group_local";
 
     public static final int MASK_FLAG_RVRS = 0x00000001;
     public static final int MASK_FLAG_EAGR = 0x00000002;
+    public static final int MASK_FLAG_SHDY = 0x00000004;
+    public static final int MASK_FLAG_SHGL = 0x00000008;
 
     private static final int TYPE_HASH = 1;
     private static final int TYPE_TREE = 2;
     private static final int TYPE_COLLATOR = 3;
+    private static final int SHARE_THREAD_LOCAL = 1;
+    private static final int SHARE_DYNAMIC = 2;
+    private static final int SHARE_GROUP_LOCAL = 3;
 
     private Comparator<String> cmpstr;
     private Engine engine;
@@ -299,6 +307,26 @@ public final class EngineLexical implements Comparator<Object> {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(EngineLexical.OP_LOCALE)) {
                 locale = EngineLexical.atomToLocale(((SkelCompound) en.skel).args[0], en.display);
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(EngineLexical.OP_SHARE)) {
+                int share = EngineLexical.atomToShare(((SkelCompound) en.skel).args[0], en.display);
+                switch (share) {
+                    case SHARE_THREAD_LOCAL:
+                        flags &= ~MASK_FLAG_SHDY;
+                        flags &= ~MASK_FLAG_SHGL;
+                        break;
+                    case SHARE_DYNAMIC:
+                        flags |= MASK_FLAG_SHDY;
+                        flags &= ~MASK_FLAG_SHGL;
+                        break;
+                    case SHARE_GROUP_LOCAL:
+                        flags &= ~MASK_FLAG_SHDY;
+                        flags |= MASK_FLAG_SHGL;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal share");
+                }
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(
@@ -328,7 +356,7 @@ public final class EngineLexical implements Comparator<Object> {
             case EngineLexical.TYPE_COLLATOR:
                 Collator col = Collator.getInstance(locale);
                 col.setStrength(ignore ? Collator.SECONDARY : Collator.TERTIARY);
-                cmpstr = (Comparator)col;
+                cmpstr = (Comparator) col;
                 break;
             default:
                 throw new IllegalArgumentException("illegal type");
@@ -336,11 +364,11 @@ public final class EngineLexical implements Comparator<Object> {
     }
 
     /**
-     * <p>Convert an atom to a type.</p>
+     * <p>Convert an atom to a sort type.</p>
      *
      * @param m The type skeleton.
      * @param d The type display.
-     * @return The type.
+     * @return The sort type.
      * @throws EngineMessage Domain Error.
      */
     private static int atomToType(Object m, Display d)
@@ -370,6 +398,29 @@ public final class EngineLexical implements Comparator<Object> {
             throws EngineMessage {
         String fun = SpecialUniv.derefAndCastString(m, d);
         return LangProperties.stringToLocale(fun);
+    }
+
+    /**
+     * <p>Convert an atom to a share type.</p>
+     *
+     * @param m The type skeleton.
+     * @param d The type display.
+     * @return The share type.
+     * @throws EngineMessage Domain Error.
+     */
+    private static int atomToShare(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(EngineLexical.OP_SHARE_THREAD_LOCAL)) {
+            return SHARE_THREAD_LOCAL;
+        } else if (fun.equals(EngineLexical.OP_SHARE_DYNAMIC)) {
+            return SHARE_DYNAMIC;
+        } else if (fun.equals(EngineLexical.OP_SHARE_GROUP_LOCAL)) {
+            return SHARE_GROUP_LOCAL;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_TYPE_OPTION, m), d);
+        }
     }
 
 }

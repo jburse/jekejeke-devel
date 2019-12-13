@@ -1,8 +1,8 @@
 package jekpro.reference.structure;
 
 import jekpro.frequent.standard.SpecialFind;
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -327,7 +327,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The print map.
      */
     public static MapHashLink<Object, String> hashToMap(MapHashLink<String, SkelVar> vars,
-                                                               Display d, Engine en) {
+                                                        Display d, Engine en) {
         if (vars == null)
             return null;
         MapHashLink<Object, String> print = null;
@@ -382,9 +382,9 @@ public final class SpecialVars extends AbstractSpecial {
      * @return The new variable names, can be null.
      */
     public static MapHashLink<Object, String> numberVars(SetHashLink<Object> vars,
-                                                                SetHashLink<Object> anon,
-                                                                MapHashLink<Object, String> print,
-                                                                int flags) {
+                                                         SetHashLink<Object> anon,
+                                                         MapHashLink<Object, String> print,
+                                                         int flags) {
         if (vars == null)
             return null;
 
@@ -531,7 +531,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static MapHashLink<Object, String> assocToMap(Object t, Display d,
-                                                                Engine en)
+                                                         Engine en)
             throws EngineMessage {
         MapHashLink<Object, String> print = null;
         en.skel = t;
@@ -616,9 +616,10 @@ public final class SpecialVars extends AbstractSpecial {
 
     /**
      * <p>Add priorized to the map hash.</p>
-     *  @param print    The print map.
-     * @param key      The variable.
-     * @param name     The variable name.
+     *
+     * @param print The print map.
+     * @param key   The variable.
+     * @param name  The variable name.
      */
     public static <T> void addMap(MapHashLink<T, String> print,
                                   T key,
