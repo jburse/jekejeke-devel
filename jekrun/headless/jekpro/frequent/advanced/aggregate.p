@@ -73,7 +73,8 @@
  * The predicates aggregates the aggregate A for the solutions of G and
  * unifies the result with S. The quaternary predicate takes additional
  * sort options as argument. For a list of aggregates see the API
- * documentation.
+ * documentation. The sort options are the same as for compare/4 and
+ * friends, for additions see the API documentation.
  */
 % aggregate_all(+Aggregate, +Goal, -Value)
 :- public aggregate_all/3.
