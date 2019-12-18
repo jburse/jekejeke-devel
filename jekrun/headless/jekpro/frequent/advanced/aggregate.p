@@ -70,7 +70,7 @@
 /**
  * aggregate_all(A, G, S):
  * aggregate_all(A, G, S, O):
- * The predicates aggregates the aggregate A for the solutions of G and
+ * The predicates aggregate the aggregate A for the solutions of G and
  * unifies the result with S. The quaternary predicate takes additional
  * sort options as argument. For a list of aggregates see the API
  * documentation. The sort options are the same as for compare/4 and
