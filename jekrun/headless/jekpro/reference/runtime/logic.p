@@ -81,9 +81,9 @@
  */
 % +Goal ; +Goal
 :- public ;/2.
+:- sys_notrace ;/2.
 :- meta_predicate ;(0, 0).
 _; _ :- throw(error(existence_error(body, ;/2), _)).
-:- set_predicate_property(;/2, sys_notrace).
 
 /**
  * A -> B: [ISO 7.8.7]
@@ -92,9 +92,9 @@ _; _ :- throw(error(existence_error(body, ;/2), _)).
  */
 % +Goal -> +Goal
 :- public -> /2.
+:- sys_notrace -> /2.
 :- meta_predicate ->(0, 0).
 _ -> _ :- throw(error(existence_error(body, -> /2), _)).
-:- set_predicate_property(-> /2, sys_notrace).
 
 /**
  * A *-> B:
@@ -103,9 +103,9 @@ _ -> _ :- throw(error(existence_error(body, -> /2), _)).
  */
 % +Goal *-> +Goal
 :- public *-> /2.
+:- sys_notrace *-> /2.
 :- meta_predicate *->(0, 0).
 _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
-:- set_predicate_property(*-> /2, sys_notrace).
 
 /**
  * repeat: [ISO 8.15.3]

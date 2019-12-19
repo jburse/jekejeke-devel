@@ -134,18 +134,41 @@ once(X) :- X, !.
 /******************************************************************/
 
 /**
- * throw(E): [ISO 7.8.9]
+ * throw(B): [ISO 7.8.9]
+ * throw(E, B):
  * The predicate fills the stack trace if necessary
- * and then raises the exception E.
+ * and then raises the exception B. The binary predicate
+ * allows specifying  a primary exception E.
  */
 % throw(+Exception)
 throw(V) :- var(V), throw(error(instantiation_error, _)).
-throw(error(M, T)) :- var(T), !,
-   sys_fetch_stack(T), sys_raise(error(M, T)).
-throw(warning(M, T)) :- var(T), !,
-   sys_fetch_stack(T), sys_raise(warning(M, T)).
-throw(B) :- sys_raise(B).
+throw(B) :-
+   sys_fill_stack(B),
+   sys_raise(B).
 :- set_predicate_property(throw/1, visible(public)).
+
+% throw(+Exception, +Exception)
+throw(_, V) :- var(V), throw(error(instantiation_error, _)).
+throw(E, B) :-
+   sys_append_cause(E, B, C),
+   sys_fill_stack(B),
+   sys_raise(C).
+:- set_predicate_property(throw/2, visible(public)).
+
+% sys_append_cause(+Exception, +Exception, -Exception)
+sys_append_cause(E, _, _) :- var(E), throw(error(instantiation_error, _)).
+sys_append_cause(cause(E, F), B, cause(E, C)) :- !,
+   sys_append_cause(F, B, C).
+sys_append_cause(E, B, cause(E, B)).
+:- set_predicate_property(sys_append_cause/3, visible(private)).
+
+% sys_fill_stack(+Exception)
+sys_fill_stack(error(_, T)) :- var(T), !,
+   sys_fetch_stack(T).
+sys_fill_stack(warning(_, T)) :- var(T), !,
+   sys_fetch_stack(T).
+sys_fill_stack(_).
+:- set_predicate_property(sys_fill_stack/1, visible(private)).
 
 % sys_fetch_stack(-Trace)
 :- special(sys_fetch_stack/1, 'SpecialControl', 3).
@@ -184,7 +207,7 @@ sys_ball_handler(E, _) :- sys_error_type(E, system_error(_)), !,
 sys_ball_handler(E, _) :- sys_error_type(E, limit_error(_)), !,
    sys_raise(E).
 sys_ball_handler(_, B) :-
-   call(B).
+   B.
 :- set_predicate_property(sys_ball_handler/2, visible(private)).
 :- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?, 0))).
 :- sys_context_property(here, C),

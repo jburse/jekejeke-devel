@@ -149,16 +149,6 @@ setup_balance(Q, N) :-
    sys_thread_init(Z, sys_put_all(I, G, F, N)),
    horde2(Z, J, (S, sys_take_all(I, F, 1), T), N).
 
-/**
- * submit(C):
- * The predicate succeeds in running a copy of the goal C in a new thread.
- */
-:- public submit/1.
-:- meta_predicate submit(0).
-submit(Goal) :-
-   thread_new(sys_managed_call(Goal), Thread),
-   thread_start(Thread).
-
 /**********************************************************/
 /* Pipe Utilities                                         */
 /**********************************************************/
@@ -179,7 +169,7 @@ sys_take_all2(T, Q) :-
    repeat,
    pipe_take(Q, A),
    (  A = the(S) -> S = T
-   ;  A = ball(E) -> sys_raise(E)
+   ;  A = ball(S) -> throw(S, error(resource_error(producer_error), _))
    ;  !, fail).
 
 /**
@@ -280,11 +270,19 @@ sys_thread_inits(Group, Goal, N) :- N > 0,
 /* Thread Managed                                               */
 /****************************************************************/
 
+/**
+ * sys_managed_call(G):
+ * The predicate succeeds whenever G succeeds. During setup and
+ * cleanup it will update the managed time.
+ */
 % sys_managed_call(+Goal)
 :- private sys_managed_call/1.
 :- meta_predicate sys_managed_call(0).
 sys_managed_call(G) :-
-   setup_call_cleanup(sys_managed_start, G, sys_managed_end).
+   setup_call_cleanup(
+      sys_managed_start,
+      G,
+      sys_managed_end).
 
 % sys_managed_start
 :- private sys_managed_start/0.

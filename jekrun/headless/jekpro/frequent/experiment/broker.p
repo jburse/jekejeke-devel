@@ -402,11 +402,12 @@ rpc_fetch(L, Q) :-
    ;  S = the(H)
    -> (H = L; send(Q, next), fail)
    ;  S = ball(H)
-   -> sys_raise(H)
+   -> throw(H, error(resource_error(remote_error), _))
    ;  !, fail).
 
 % rpc_wrap(+List, +Goal, +Pid)
 :- public rpc_wrap/3.
+:- sys_notrace rpc_wrap/3.
 :- meta_predicate rpc_wrap(?, 0, ?).
 rpc_wrap(L, G, P) :-
    sys_trap(rpc_query(L, G, P),

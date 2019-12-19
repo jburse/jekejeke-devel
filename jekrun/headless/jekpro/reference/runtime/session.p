@@ -74,8 +74,8 @@
  */
 % abort
 :- public abort/0.
+:- sys_notrace abort/0.
 abort :- throw(error(system_error(user_abort), _)).
-:- set_predicate_property(abort/0, sys_notrace).
 
 /**
  * exit:
@@ -83,8 +83,8 @@ abort :- throw(error(system_error(user_abort), _)).
  */
 % exit
 :- public exit/0.
+:- sys_notrace exit/0.
 exit :- throw(error(system_error(user_exit), _)).
-:- set_predicate_property(exit/0, sys_notrace).
 
 /**
  * close:
@@ -92,8 +92,8 @@ exit :- throw(error(system_error(user_exit), _)).
  */
 % close
 :- public close/0.
+:- sys_notrace close/0.
 close :- throw(error(system_error(user_close), _)).
-:- set_predicate_property(close/0, sys_notrace).
 
 /**
  * prolog:
@@ -103,14 +103,15 @@ close :- throw(error(system_error(user_close), _)).
  */
 % prolog
 :- public prolog/0.
+:- sys_notrace prolog/0.
 prolog :-
    call_cleanup(
       sys_toplevel,
       end_all_modules).
-:- set_predicate_property(prolog/0, sys_notrace).
 
 % break
 :- public break/0.
+:- sys_notrace break/0.
 break :-
    current_prolog_flag(sys_break_level, X),
    Y is X+1,
@@ -118,7 +119,6 @@ break :-
       set_prolog_flag(sys_break_level, Y),
       sys_toplevel,
       set_prolog_flag(sys_break_level, X)).
-:- set_predicate_property(break/0, sys_notrace).
 
 % sys_toplevel
 :- private sys_toplevel/0.
@@ -129,7 +129,6 @@ sys_toplevel :-
       ;  sys_error_type(E, system_error(user_exit)) -> sys_error_cause(E)
       ;  sys_error_type(E, system_error(_)) -> sys_raise(E)
       ;  sys_error_stack(E), fail)), !.
-:- set_predicate_property(sys_toplevel/0, sys_notrace).
 
 % sys_toplevel_ask
 :- private sys_toplevel_ask/0.
