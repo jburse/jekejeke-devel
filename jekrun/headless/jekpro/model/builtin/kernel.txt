@@ -59,6 +59,7 @@ sys_soft_begin/0	no	builtin/body
 sys_soft_commit/0	no	builtin/body
 sys_trap/3	no	builtin/control
 throw/1	no	builtin/control
+throw/2	no	builtin/control
 true/0	no	builtin/control
 (virtual)/1	no	builtin/special
 

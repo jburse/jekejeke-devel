@@ -1,7 +1,7 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.standard.SpecialSort;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -204,8 +204,8 @@ public abstract class AbstractSkel {
      * @param alfa The skeleton of the first term.
      * @param beta The skeleton of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
-     * @see Engine#compareTerm
      * @throws ArithmeticException Incomparable reference.
+     * @see Engine#compareTerm
      */
     public static int compareTermSkel(Object alfa, Object beta)
             throws ArithmeticException {

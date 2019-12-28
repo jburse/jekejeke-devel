@@ -4,12 +4,10 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.inter.Engine;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.FileResource;
-import jekpro.model.pretty.PrologWriter;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.Resource;
 import jekpro.tools.term.*;
+import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.regex.ScannerToken;
@@ -304,6 +302,8 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Retrieve the user-friendly detail message from the message term.</p>
+     * <p>Will use the Java default locale.</p>
+     * <p>Will not use any error properties.</p>
      *
      * @return The messsage text.
      */
@@ -320,6 +320,31 @@ public final class EngineMessage extends Exception {
 
     /**
      * <p>Retrieve the user-friendly detail message form the message term.</p>
+     * <p>Will use the locale from the foyer.</p>
+     * <p>Will use the error properties from the foyer.</p>
+     *
+     * @param foyer The foyer.
+     * @return The message text.
+     */
+    public String toString(Foyer foyer) {
+        try {
+            Locale locale = foyer.locale;
+            Properties error = getErrorLang(locale, foyer);
+            Display ref = AbstractSkel.createDisplay(template);
+            return EngineMessage.messageMake(template, ref, locale, error, null);
+        } catch (IOException x) {
+            throw new RuntimeException("shouldnt happen", x);
+        } catch (EngineMessage x) {
+            throw new RuntimeException("shouldnt happen", x);
+        } catch (EngineException x) {
+            throw new RuntimeException("shouldnt happen", x);
+        }
+    }
+
+    /**
+     * <p>Retrieve the user-friendly detail message form the message term.</p>
+     * <p>Will use the locale from the foyer of the store.</p>
+     * <p>Will use the error properties from the store.</p>
      *
      * @param store The store.
      * @return The message text.
@@ -863,36 +888,50 @@ public final class EngineMessage extends Exception {
     /******************************************************************/
 
     /**
-     * <p>Retrieve the properties file union.</p>
+     * <p>Retrieve the error properties from a foyer.</p>
      *
      * @param locale The locale.
-     * @param start  The store start.
-     * @return The properties file union.
+     * @param foyer  The foyer.
+     * @return The properties.
      * @throws IOException Shit happens.
      */
-    public static Properties getErrorLang(Locale locale, Store start)
+    public static Properties getErrorLang(Locale locale, Foyer foyer)
+            throws IOException {
+        AbstractFramework af = foyer.getFactory();
+        return af.getErrorLang(locale);
+    }
+
+    /**
+     * <p>Retrieve the error properties from a store.</p>
+     *
+     * @param locale The locale.
+     * @param store  The store.
+     * @return The properties.
+     * @throws IOException Shit happens.
+     */
+    public static Properties getErrorLang(Locale locale, Store store)
             throws IOException {
         PropertiesWithImport res = new PropertiesWithImport();
         String locstr = "_" + locale;
-        Store store = start;
-        while (store != null) {
-            MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
+        Store temp = store;
+        while (temp != null) {
+            MapEntry<String, AbstractSource>[] sources = temp.snapshotSources();
             for (int j = 0; j < sources.length; j++) {
                 AbstractSource base = sources[j].value;
                 Resource[] rscs = base.snapshotResources();
                 for (int i = 0; i < rscs.length; i++) {
                     Resource rsc = rscs[i];
                     String key = rsc.getKey();
-                    HashMap<String, Properties> cache = getCache(key, start);
+                    HashMap<String, Properties> cache = getCache(key, store);
                     if (cache == null)
                         continue;
                     Properties prop = ForeignCache.getCached(cache, locstr);
-                    ForeignCache.getProp(prop, start, key, locstr);
+                    ForeignCache.getProp(prop, store, key, locstr);
                     if (ForeignCache.isValid(prop))
                         res.addImport(prop);
                 }
             }
-            store = store.parent;
+            temp = temp.parent;
         }
         return res;
     }

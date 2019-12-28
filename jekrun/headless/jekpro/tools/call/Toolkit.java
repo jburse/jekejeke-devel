@@ -4,7 +4,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.FlagFactory;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Lobby;
 import matula.util.data.ListArray;
 
 /**
@@ -113,10 +112,6 @@ public abstract class Toolkit {
     public final Object getFactory() {
         return factory;
     }
-
-    /*********************************************************/
-    /* Airdrop Support                                       */
-    /*********************************************************/
 
     /**
      * <p>Init a list of paths.</p>

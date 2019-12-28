@@ -138,7 +138,7 @@ public final class EngineException extends Exception {
     }
 
     /**
-     * <p>Make exception from two engine exceptions.</p>
+     * <p>Make an engine exception from two engine exceptions.</p>
      * <p>Will do the following transformation:</p>
      * <ul>
      * <li>Before: First = cause(X1,..cause(Xn-1,Xn)), Second = Y.</li>

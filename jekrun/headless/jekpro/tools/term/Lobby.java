@@ -12,7 +12,6 @@ import jekpro.tools.call.Toolkit;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
-import matula.util.regex.ScannerError;
 
 /*
  * With the introduction of hierarchical knowledge bases it became
@@ -110,14 +109,14 @@ public final class Lobby {
     /**
      * <p>Check the license of the given capability.</p>
      *
-     * @param c The capability.
+     * @param capa The capability.
      * @throws InterpreterMessage License error.
      */
-    public void checkLicense(Capability c)
+    public void checkLicense(Capability capa)
             throws InterpreterMessage {
-        if (c == null)
+        if (capa == null)
             throw new NullPointerException("capability missing");
-        AbstractBranch b = (AbstractBranch) c.getBranch();
+        AbstractBranch b = (AbstractBranch) capa.getBranch();
         AbstractTracking tracking = foyer.getTracking(b);
         if (tracking == null)
             throw new InterpreterMessage(InterpreterMessage.licenseError(EngineMessage.OP_LICENSE_TRACKING_LOST));
@@ -168,39 +167,37 @@ public final class Lobby {
     /**
      * <p>Activate a capability.</p>
      *
-     * @param c The capability.
-     * @param h The license key.
+     * @param capa The capability.
+     * @param hash The license key.
      * @throws InterpreterMessage License error.
      */
-    public void activateCapability(Capability c, String h)
+    public void activateCapability(Capability capa, String hash)
             throws InterpreterMessage {
-        if (c == null)
+        if (capa == null)
             throw new NullPointerException("capability missing");
-        if (h == null)
+        if (hash == null)
             throw new NullPointerException("hash missing");
-        AbstractBranch b = (AbstractBranch) c.getBranch();
+        AbstractBranch b = (AbstractBranch) capa.getBranch();
         try {
-            foyer.getFramework().getActivator().activateBundle(foyer, b, h);
+            foyer.getFramework().getActivator().activateBundle(foyer, b, hash);
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
-        } catch (ScannerError x) {
-            throw new InterpreterMessage(InterpreterMessage.syntaxError(x.getMessage()));
         }
     }
 
     /**
      * <p>Calculate the install ID.</p>
      *
-     * @param c The capability.
+     * @param capa The capability.
      * @return The install ID.
      * @throws InterpreterMessage License error.
      */
-    public String calcInstallID(Capability c)
+    public String calcInstallID(Capability capa)
             throws InterpreterMessage {
-        if (c == null)
+        if (capa == null)
             throw new NullPointerException("capability missing");
         try {
-            return foyer.getFramework().getActivator().calcInstallID(foyer, (AbstractBranch) c.getBranch());
+            return foyer.getFramework().getActivator().calcInstallID(foyer, (AbstractBranch) capa.getBranch());
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
         }
@@ -258,8 +255,7 @@ public final class Lobby {
      * @param h The hint.
      */
     public void setHint(int h) {
-        AbstractFactory factory = foyer.getFactory();
-        factory.setHint(foyer, h);
+        foyer.getFactory().setHint(foyer, h);
     }
 
     /**

@@ -3,16 +3,10 @@ package jekpro.tools.call;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Lobby;
-import matula.util.wire.AbstractLivestock;
-import matula.util.wire.ManagedGroup;
 
 /**
  * <p>The call-in object can be obtained from an interpreter by providing

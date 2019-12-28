@@ -193,7 +193,6 @@ sqrt/2	yes	arithmetic/trigo
 (static)/1	no	reflect/pred
 sub_atom/4	no	structure/atom
 sub_atom/5	no	structure/atom
-submit/1	no	runtime/distributed
 sys_activate_capability/2	no	bootload/toolkit
 sys_add_file_extension/2	no	bootload/path
 sys_add_path/1	no	bootload/path

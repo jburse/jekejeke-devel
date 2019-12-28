@@ -341,7 +341,7 @@ public class Foyer extends Enforced {
      * @param c The class.
      * @return The store.
      */
-    public Store createStore(Class c) {
+    public Store createStore(Class<?> c) {
         Store store = new Store(this, null);
         store.loader = c.getClassLoader();
         return store;
