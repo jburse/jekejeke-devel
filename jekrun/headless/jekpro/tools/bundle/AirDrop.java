@@ -126,24 +126,25 @@ public final class AirDrop {
 
         for (int i = 0; i < roots.size(); i++) {
             String root = roots.get(i);
-
             String name = root + MODEL_DEFAULT;
             Properties prop = LangProperties.getLang(loader, name, Locale.getDefault());
             if (prop != null) {
-                if (slips == null)
-                    slips = new ListArray<AirDropEntry>();
                 String capa = prop.getProperty(AbstractBundle.PROP_SLIP_CAPA);
-                boolean dontask = "true".equals(prop.getProperty(AbstractBundle.PROP_SLIP_DONTASK));
-                slips.add(new AirDropEntry(capa, dontask));
+                if (capa != null) {
+                    boolean dontask = "true".equals(prop.getProperty(AbstractBundle.PROP_SLIP_DONTASK));
+                    if (slips == null)
+                        slips = new ListArray<AirDropEntry>();
+                    slips.add(new AirDropEntry(capa, dontask));
+                }
             }
 
             name = root + MODEL_SWI;
             String adr = LangProperties.getURL(loader, name,
                     RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
             if (adr != null) {
+                String capa = CapabilitySWI.class.getName() + "(" + root + ")";
                 if (slips == null)
                     slips = new ListArray<AirDropEntry>();
-                String capa = CapabilitySWI.class.getName() + "(" + root + ")";
                 slips.add(new AirDropEntry(capa, true));
             }
         }

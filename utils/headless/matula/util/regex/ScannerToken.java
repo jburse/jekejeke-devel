@@ -193,8 +193,11 @@ public final class ScannerToken {
      * <p>Set the reader.</p>
      *
      * @param r The reader.
+     * @throws IOException IO error.
      */
-    public void setReader(Reader r) {
+    public void setReader(Reader r) throws IOException {
+        if (!r.markSupported())
+            throw new IOException("shouldn't happen");
         reader = r;
     }
 
@@ -753,8 +756,7 @@ public final class ScannerToken {
      *
      * @throws IOException I/O Error.
      */
-    public void nextTerminalSuffix()
-            throws IOException {
+    public void nextTerminalSuffix() throws IOException {
         buf.setLength(0);
         while (ch != CodeType.LINE_EOF) {
             switch (delemiter.classOf(ch)) {
@@ -862,7 +864,8 @@ public final class ScannerToken {
      */
     public void pushBack() throws IOException {
         int k = (ch != CodeType.LINE_EOF ? Character.charCount(ch) : 0);
-        reader.skip(-k);
+        if (-k != reader.skip(-k))
+            throw new IOException("shouldn't happen");
     }
 
     /**********************************************************/

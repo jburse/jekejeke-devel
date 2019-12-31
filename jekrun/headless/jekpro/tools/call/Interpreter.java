@@ -316,7 +316,6 @@ public final class Interpreter {
     public AbstractTerm parseTerm(String s, Object opt)
             throws InterpreterMessage, InterpreterException {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
-        cr.setLineNumber(1);
         return parseTerm(cr, opt, true);
     }
 
@@ -369,10 +368,10 @@ public final class Interpreter {
                 if (te)
                     rd.flags |= PrologReader.FLAG_TEOF;
             }
-            rd.getScanner().setReader(lr);
             rd.setEngineRaw(en);
             try {
                 try {
+                    rd.getScanner().setReader(lr);
                     val = rd.parseHeadStatement();
                 } catch (ScannerError y) {
                     String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());

@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import matula.util.data.MapEntry;
 import matula.util.data.MapTree;
 import matula.util.regex.ScannerError;
+import matula.util.system.OpenDuplex;
 import matula.util.system.OpenOpts;
 
 import java.io.IOException;
@@ -95,7 +96,7 @@ public abstract class AbstractRecognizer {
                            Object param)
             throws LicenseError, IOException, ScannerError {
         OpenOpts opts = new OpenOpts();
-        opts.setFlags(opts.getFlags() | OpenOpts.MASK_OPEN_BINR);
+        opts.setFlags(opts.getFlags() | OpenDuplex.MASK_OPEN_BINR);
         InputStream in = (InputStream) opts.openRead(this, adr);
         try {
             loadBinary(prop, in, param);

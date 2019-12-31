@@ -61,17 +61,13 @@ public final class ForeignStream {
 
     /* type values */
     public final static String OP_TYPE = "type";
-    public final static String OP_TYPE_NONE = "none";
     public final static String OP_TYPE_BINARY = "binary";
     public final static String OP_TYPE_TEXT = "text";
-    public final static String OP_TYPE_RESOURCE = "resource";
-    public final static String OP_TYPE_PACKAGE = "package";
+    public final static String OP_TYPE_STRING = "string";
 
-    public final static int TYPE_NONE = -1;
     public final static int TYPE_BINARY = 0;
     public final static int TYPE_TEXT = 1;
-    public final static int TYPE_RESOURCE = 2;
-    public final static int TYPE_PACKAGE = 3;
+    public final static int TYPE_STRING = 2;
 
     /* open options */
     public final static String OP_BOM = "bom";
@@ -473,7 +469,7 @@ public final class ForeignStream {
      * @throws ClassCastException Validation error.
      * @throws InterpreterMessage Validation error.
      */
-    private static OpenDuplex decodeOpenDuplex(int mode, Object opt)
+    public static OpenDuplex decodeOpenDuplex(int mode, Object opt)
             throws ClassCastException, InterpreterMessage {
         OpenDuplex res = new OpenDuplex();
         while (opt instanceof TermCompound &&
@@ -492,10 +488,16 @@ public final class ForeignStream {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
-                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
                         break;
                     case TYPE_TEXT:
-                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
+                        break;
+                    case TYPE_STRING:
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_STRG);
                         break;
                     default:
                         throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -648,10 +650,16 @@ public final class ForeignStream {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
-                        res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
                         break;
                     case TYPE_TEXT:
-                        res.setFlags(res.getFlags() & ~OpenOpts.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
+                        break;
+                    case TYPE_STRING:
+                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
+                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_STRG);
                         break;
                     default:
                         throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -717,65 +725,16 @@ public final class ForeignStream {
      */
     public static int atomToType(Object t) throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_TYPE_NONE)) {
-            return TYPE_NONE;
-        } else if (val.equals(OP_TYPE_BINARY)) {
+        if (val.equals(OP_TYPE_BINARY)) {
             return TYPE_BINARY;
         } else if (val.equals(OP_TYPE_TEXT)) {
             return TYPE_TEXT;
-        } else if (val.equals(OP_TYPE_RESOURCE)) {
-            return TYPE_RESOURCE;
-        } else if (val.equals(OP_TYPE_PACKAGE)) {
-            return TYPE_PACKAGE;
+        } else if (val.equals(OP_TYPE_STRING)) {
+            return TYPE_STRING;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
-    }
-
-    /****************************************************************/
-    /* Close Options                                                */
-    /****************************************************************/
-
-    /**
-     * <p>Decode the close options.</p>
-     *
-     * @param opt The close options term.
-     * @return The close options.
-     * @throws ClassCastException Validation error.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static int decodeCloseOpts(Object opt)
-            throws ClassCastException, InterpreterMessage {
-        int res = 0;
-        while (opt instanceof TermCompound &&
-                ((TermCompound) opt).getArity() == 2 &&
-                ((TermCompound) opt).getFunctor().equals(Knowledgebase.OP_CONS)) {
-            Object temp = ((TermCompound) opt).getArg(0);
-            if (temp instanceof TermCompound &&
-                    ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_FORCE)) {
-                Object help = ((TermCompound) temp).getArg(0);
-                if (atomToBool(help)) {
-                    res |= OpenOpts.MASK_CLSE_FRCE;
-                } else {
-                    res &= ~OpenOpts.MASK_CLSE_FRCE;
-                }
-            } else {
-                InterpreterMessage.checkInstantiated(temp);
-                throw new InterpreterMessage(InterpreterMessage.domainError(
-                        OP_OPEN_OPTION, temp));
-            }
-            opt = ((TermCompound) opt).getArg(1);
-        }
-        if (opt.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            InterpreterMessage.checkInstantiated(opt);
-            throw new InterpreterMessage(InterpreterMessage.typeError(
-                    InterpreterMessage.OP_TYPE_LIST, opt));
-        }
-        return res;
     }
 
     /**

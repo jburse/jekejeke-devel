@@ -640,6 +640,31 @@ public final class SpecialUniv extends AbstractSpecial {
     }
 
     /**
+     * <p>Check whether the given term is a byte array.</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return The byte array.
+     * @throws EngineMessage Type error.
+     */
+    public static byte[] derefAndCastBytes(Object t, Display d)
+            throws EngineMessage {
+        BindUniv b;
+        while (t instanceof SkelVar &&
+                (b = d.bind[((SkelVar) t).id]).display != null) {
+            t = b.skel;
+            d = b.display;
+        }
+        if (t instanceof byte[]) {
+            return (byte[]) t;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_BYTES, t), d);
+        }
+    }
+
+    /**
      * <p>Check whether the given term is an atom.</p>
      *
      * @param t The term skel.

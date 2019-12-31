@@ -84,12 +84,11 @@ public final class ForeignConsole {
             throws IOException {
         int len = arg.intValue();
         StringBuilder buf = new StringBuilder();
-        int pos = 0;
-        int ch = (pos < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
+        int ch = (0 < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
         while (ch != CodeType.LINE_EOL && ch != CodeType.LINE_EOF) {
             buf.appendCodePoint(ch);
-            pos++;
-            ch = (pos < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
+            len--;
+            ch = (0 < len ? ScannerToken.sysGetCode(reader) : CodeType.LINE_EOL);
         }
         if (ch == CodeType.LINE_EOF && buf.length() == 0)
             return null;
@@ -137,16 +136,15 @@ public final class ForeignConsole {
             throws IOException {
         int len = arg.intValue();
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int pos = 0;
-        int ch = (pos < len ? in.read() : CodeType.LINE_WIN);
+        int ch = (0 < len ? in.read() : CodeType.LINE_WIN);
         while (ch != CodeType.LINE_WIN && ch != CodeType.LINE_EOF) {
             buf.write(ch);
-            pos++;
-            ch = (pos < len ? in.read() : CodeType.LINE_WIN);
+            len--;
+            ch = (0 < len ? in.read() : CodeType.LINE_WIN);
         }
         if (ch == CodeType.LINE_EOF && buf.size() == 0)
             return null;
-        if (!(pos < len))
+        if (!(0 < len))
             return buf.toByteArray();
         if (ch != CodeType.LINE_WIN)
             throw new StreamCorruptedException("cr missing");

@@ -100,6 +100,19 @@ public final class ForeignPath {
     private static final String OP_DATA_PLAIN = "plain";
     private static final String OP_DATA_ENCRYPT = "encrypt";
 
+    private final static int USE_NONE = -1;
+    private final static int USE_BINARY = 0;
+    private final static int USE_TEXT = 1;
+    private final static int USE_RESOURCE = 2;
+    private final static int USE_PACKAGE = 3;
+
+    private final static String OP_USE = "type";
+    private final static String OP_USE_NONE = "none";
+    private final static String OP_USE_BINARY = "binary";
+    private final static String OP_USE_TEXT = "text";
+    private final static String OP_USE_PACKAGE = "package";
+    private final static String OP_USE_RESOURCE = "resource";
+
     private static final int DATA_PLAIN = 0;
     private static final int DATA_ENCRYPT = 1;
 
@@ -429,23 +442,23 @@ public final class ForeignPath {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(ForeignStream.OP_TYPE)) {
+                    ((TermCompound) temp).getFunctor().equals(OP_USE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 type &= ~FileExtension.MASK_PCKG_LOAD;
                 type &= ~FileExtension.MASK_USES_SUFX;
-                switch (ForeignStream.atomToType(help)) {
-                    case ForeignStream.TYPE_NONE:
+                switch (ForeignPath.atomToUse(help)) {
+                    case USE_NONE:
                         break;
-                    case ForeignStream.TYPE_BINARY:
+                    case USE_BINARY:
                         type |= FileExtension.MASK_USES_BNRY;
                         break;
-                    case ForeignStream.TYPE_TEXT:
+                    case USE_TEXT:
                         type |= FileExtension.MASK_USES_TEXT;
                         break;
-                    case ForeignStream.TYPE_RESOURCE:
+                    case USE_RESOURCE:
                         type |= FileExtension.MASK_USES_RSCS;
                         break;
-                    case ForeignStream.TYPE_PACKAGE:
+                    case USE_PACKAGE:
                         type |= FileExtension.MASK_PCKG_LOAD;
                         break;
                     default:
@@ -460,7 +473,7 @@ public final class ForeignPath {
                 mime = (!"".equals(str) ? str : null);
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_MIME)) {
+                    ((TermCompound) temp).getFunctor().equals(OP_DATA)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToData(help)) {
                     case DATA_PLAIN:
@@ -545,13 +558,13 @@ public final class ForeignPath {
         if ((fe.getType() & FileExtension.MASK_USES_SUFX) != 0) {
             Object val;
             if ((fe.getType() & FileExtension.MASK_USES_BNRY) != 0) {
-                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_BINARY);
+                val = new TermCompound(OP_USE, OP_USE_BINARY);
             } else if ((fe.getType() & FileExtension.MASK_USES_TEXT) != 0) {
-                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_TEXT);
+                val = new TermCompound(OP_USE, OP_USE_TEXT);
             } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
-                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_RESOURCE);
+                val = new TermCompound(OP_USE, OP_USE_RESOURCE);
             } else if ((fe.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
-                val = new TermCompound(ForeignStream.OP_TYPE, ForeignStream.OP_TYPE_PACKAGE);
+                val = new TermCompound(OP_USE, OP_USE_PACKAGE);
             } else {
                 throw new IllegalArgumentException("unkown uses");
             }
@@ -578,6 +591,33 @@ public final class ForeignPath {
             return DATA_PLAIN;
         } else if (val.equals(OP_DATA_ENCRYPT)) {
             return DATA_ENCRYPT;
+        } else {
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
+        }
+    }
+
+
+    /**
+     * <p>Convert an atom to a type. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param t The type term.
+     * @return The type value.
+     * @throws InterpreterMessage Validation error.
+     */
+    public static int atomToUse(Object t) throws InterpreterMessage {
+        String val = InterpreterMessage.castString(t);
+        if (val.equals(OP_USE_NONE)) {
+            return USE_NONE;
+        } else if (val.equals(OP_USE_BINARY)) {
+            return USE_BINARY;
+        } else if (val.equals(OP_USE_TEXT)) {
+            return USE_TEXT;
+        } else if (val.equals(OP_USE_RESOURCE)) {
+            return USE_RESOURCE;
+        } else if (val.equals(OP_USE_PACKAGE)) {
+            return USE_PACKAGE;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

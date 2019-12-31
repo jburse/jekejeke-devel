@@ -42,6 +42,8 @@ public final class AirDropEntry {
      * @param d The don't ask flag.
      */
     public AirDropEntry(String c, boolean d) {
+        if (c == null)
+            throw new NullPointerException("capa missing");
         capa = c;
         dontask = d;
     }

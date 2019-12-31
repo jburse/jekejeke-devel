@@ -87,6 +87,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_TYPE_CONSTRUCTOR = "constructor";
     public static final String OP_TYPE_OPER_INDICATOR = "oper_indicator";
     public static final String OP_TYPE_ATOMIC = "atomic";
+    public static final String OP_TYPE_BYTES = "bytes";
 
     private static final String OP_DOMAIN_ERROR = "domain_error"; /* ISO */
     public static final String OP_DOMAIN_OPERATOR_SPECIFIER = "operator_specifier";

@@ -44,6 +44,8 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ConnectionReader extends FilterReader {
+    private final static int MAX_LINE = 1024;
+
     private boolean bom;
     private String encoding = "";
     private long lastmodified;
@@ -60,7 +62,7 @@ public final class ConnectionReader extends FilterReader {
     private String line = "";
     private int offset;
     private int mark = -1;
-    private int lineno;
+    private int lineno = 1;
     private boolean skiplf;
     private StringBuilder buf = new StringBuilder();
 
@@ -336,7 +338,7 @@ public final class ConnectionReader extends FilterReader {
     public int read()
             throws IOException {
         if (offset == line.length())
-            nextLine();
+            nextLineMax();
         if (offset == line.length())
             return -1;
         int ch = line.charAt(offset);
@@ -358,7 +360,7 @@ public final class ConnectionReader extends FilterReader {
     public int read(char[] cbuf, int off, int len)
             throws IOException {
         if (offset == line.length())
-            nextLine();
+            nextLineMax();
         if (offset == line.length())
             return -1;
         int k = Math.min(line.length() - offset, len);
@@ -385,7 +387,7 @@ public final class ConnectionReader extends FilterReader {
             long done = 0;
             while (len > 0) {
                 if (offset == line.length())
-                    nextLine();
+                    nextLineMax();
                 if (offset == line.length())
                     return done;
                 long k = Math.min(line.length() - offset, len);
@@ -459,29 +461,35 @@ public final class ConnectionReader extends FilterReader {
      *
      * @throws IOException IO error.
      */
-    private void nextLine()
-            throws IOException {
+    private void nextLineMax() throws IOException {
+        int len = MAX_LINE;
         buf.setLength(0);
-        int ch = in.read();
+        int ch = (0 < len ? in.read() : CodeType.LINE_EOF);
         if (skiplf && ch == CodeType.LINE_EOL)
             ch = in.read();
         while (ch != CodeType.LINE_EOL &&
                 ch != CodeType.LINE_WIN &&
                 ch != CodeType.LINE_EOF) {
             buf.append((char) ch);
-            ch = in.read();
+            len--;
+            ch = (0 < len ? in.read() : CodeType.LINE_EOF);
         }
         if (ch != CodeType.LINE_EOF)
             buf.append(CodeType.LINE_EOL);
         skiplf = (ch == CodeType.LINE_WIN);
-        if (buf.length() != 0) {
+        if (mark != -1) {
+            if (mark != 0 &&
+                    line.charAt(mark - 1) == CodeType.LINE_EOL)
+                lineno++;
+            offset = line.length() - mark;
+            line = line.substring(mark) + buf.toString();
+            mark = 0;
+        } else {
             if (line.length() != 0 &&
                     line.charAt(line.length() - 1) == CodeType.LINE_EOL)
                 lineno++;
-            if (mark == line.length())
-                mark = 0;
-            line = buf.toString();
             offset = 0;
+            line = buf.toString();
         }
     }
 

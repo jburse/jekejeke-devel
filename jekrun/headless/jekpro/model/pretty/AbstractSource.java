@@ -371,13 +371,13 @@ public abstract class AbstractSource {
                     } else {
                         rd = en.store.foyer.createReader(Foyer.IO_ANNO);
                     }
-                    rd.getScanner().setReader(lr);
                     rd.setEngineRaw(en);
                 }
                 rd.setFlags(flags);
                 rd.setSource(en.visor.peekStack());
                 try {
                     try {
+                        rd.getScanner().setReader(lr);
                         val = rd.parseHeadStatement();
                     } catch (ScannerError y) {
                         String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());

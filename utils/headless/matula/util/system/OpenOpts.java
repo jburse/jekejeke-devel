@@ -58,11 +58,8 @@ public final class OpenOpts extends OpenDuplex {
     public static final int MASK_OPEN_NOBR = 0x00000200;
     public static final int MASK_OPEN_BOMW = 0x00000400;
 
-    public static final int MASK_CLSE_FRCE = 0x00000001;
-
-    private static final String ENC_UTF_16BE = "UTF-16BE";
-    private static final String ENC_UTF_16LE = "UTF-16LE";
-    private static final String ENC_UTF_8 = "UTF-8";
+    private static final String ENCODING_UTF16BE = "UTF-16BE";
+    private static final String ENCODING_UTF16LE = "UTF-16LE";
 
     private long ifmodifiedsince;
     private String ifnonematch = "";
@@ -145,7 +142,7 @@ public final class OpenOpts extends OpenDuplex {
             }
             if (getBuffer() != 0)
                 in = new BufferedInputStream(in, getBuffer());
-            if ((getFlags() & MASK_OPEN_BINR) != 0) {
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 ConnectionInput cin = new ConnectionInput(in);
                 cin.setLastModified(file.lastModified());
                 cin.setETag(Long.toString(cin.getLastModified()));
@@ -185,7 +182,6 @@ public final class OpenOpts extends OpenDuplex {
                 crd.setETag(Long.toString(crd.getLastModified()));
                 String mt = (fe != null ? fe.getMimeType() : null);
                 crd.setMimeType(mt != null ? mt : "");
-                crd.setLineNumber(1);
                 crd.setRaf(raf);
                 crd.setPath(adr2);
                 crd.setBuffer(getBuffer());
@@ -216,7 +212,7 @@ public final class OpenOpts extends OpenDuplex {
                 }
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                if ((getFlags() & MASK_OPEN_BINR) != 0) {
+                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(file.lastModified());
                     cin.setETag(Long.toString(cin.getLastModified()));
@@ -252,7 +248,6 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setETag(Long.toString(crd.getLastModified()));
                     String mt = (fe != null ? fe.getMimeType() : null);
                     crd.setMimeType(mt != null ? mt : "");
-                    crd.setLineNumber(1);
                     crd.setPath(adr2);
                     crd.setBuffer(getBuffer());
                     crd.setDate(System.currentTimeMillis());
@@ -301,7 +296,7 @@ public final class OpenOpts extends OpenDuplex {
                 }
                 if (getBuffer() != 0)
                     in = new BufferedInputStream(in, getBuffer());
-                if ((getFlags() & MASK_OPEN_BINR) != 0) {
+                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                     ConnectionInput cin = new ConnectionInput(in);
                     cin.setLastModified(OpenOpts.getLastModified(con));
                     cin.setETag(OpenOpts.getETag(con));
@@ -342,7 +337,6 @@ public final class OpenOpts extends OpenDuplex {
                     crd.setExpiration(OpenOpts.getExpiration(con));
                     String mt = (fe != null ? fe.getMimeType() : null);
                     crd.setMimeType(mt != null ? mt : "");
-                    crd.setLineNumber(1);
                     crd.setPath(adr2);
                     crd.setBuffer(getBuffer());
                     crd.setDate(con.getDate());
@@ -372,7 +366,7 @@ public final class OpenOpts extends OpenDuplex {
             File file = new File(path.replace('/', File.separatorChar));
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             OutputStream out = new FileOutputStream(raf.getFD());
-            if ((getFlags() & MASK_OPEN_BINR) != 0) {
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 ConnectionOutput cout;
                 if (getBuffer() != 0) {
                     cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
@@ -426,7 +420,7 @@ public final class OpenOpts extends OpenDuplex {
                 con.setDoOutput(true);
                 out = con.getOutputStream();
             }
-            if ((getFlags() & MASK_OPEN_BINR) != 0) {
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 ConnectionOutput cout;
                 if (getBuffer() != 0) {
                     cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
@@ -491,7 +485,7 @@ public final class OpenOpts extends OpenDuplex {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(raf.length());
             OutputStream out = new FileOutputStream(raf.getFD());
-            if ((getFlags() & MASK_OPEN_BINR) != 0) {
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 ConnectionOutput cout;
                 if (getBuffer() != 0) {
                     cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
@@ -538,7 +532,7 @@ public final class OpenOpts extends OpenDuplex {
             String path = ForeignUri.sysSpecPath(spec);
             File file = new File(path.replace('/', File.separatorChar));
             OutputStream out = new FileOutputStream(file, true);
-            if ((getFlags() & MASK_OPEN_BINR) != 0) {
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 ConnectionOutput cout;
                 if (getBuffer() != 0) {
                     cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
@@ -767,17 +761,17 @@ public final class OpenOpts extends OpenDuplex {
         if (ch == 0xFE) {
             ch = in.read();
             if (ch == 0xFF)
-                enc = ENC_UTF_16BE;
+                enc = ENCODING_UTF16BE;
         } else if (ch == 0xFF) {
             ch = in.read();
             if (ch == 0xFE)
-                enc = ENC_UTF_16LE;
+                enc = ENCODING_UTF16LE;
         } else if (ch == 0xEF) {
             ch = in.read();
             if (ch == 0xBB) {
                 ch = in.read();
                 if (ch == 0xBF)
-                    enc = ENC_UTF_8;
+                    enc = ForeignUri.ENCODING_UTF8;
             }
         }
         return enc;
@@ -794,13 +788,13 @@ public final class OpenOpts extends OpenDuplex {
     public static void generateBom(OutputStream out, String enc)
             throws IOException, UnsupportedCharsetException {
         enc = Charset.forName(enc).name();
-        if (enc.equals(ENC_UTF_16BE)) {
+        if (enc.equals(ENCODING_UTF16BE)) {
             out.write(0xFE);
             out.write(0xFF);
-        } else if (enc.equals(ENC_UTF_16LE)) {
+        } else if (enc.equals(ENCODING_UTF16LE)) {
             out.write(0xFF);
             out.write(0xFE);
-        } else if (enc.equals(ENC_UTF_8)) {
+        } else if (enc.equals(ForeignUri.ENCODING_UTF8)) {
             out.write(0xEF);
             out.write(0xBB);
             out.write(0xBF);
