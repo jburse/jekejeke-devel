@@ -40,8 +40,8 @@
 
 :- module(monitor, []).
 :- use_module(library(misc/http)).
-:- use_module(library(runtime/distributed)).
 :- use_module(library(system/thread)).
+:- use_module(library(system/domain)).
 :- use_module(library(misc/socket)).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/store)).
@@ -55,14 +55,15 @@
 % start_monitor
 :- public start_monitor/0.
 start_monitor :-
-   current_prolog_flag(sys_monitor_config, P),
-   start_monitor(P).
+   current_prolog_flag(sys_monitor_config, A),
+   start_monitor(A).
 
-% start_monitor(+Integer)
+% start_monitor(+Atom)
 :- private start_monitor/1.
-start_monitor(-1) :- !.
-start_monitor(P) :-
-   submit((run_http(wire/monitor, P), fail; true), _).
+start_monitor('') :- !.
+start_monitor(A) :-
+   thread_new((run_http(wire/monitor, A), fail; true), Thread),
+   thread_start(Thread).
 
 /**
  * initialized(O, S):
@@ -74,7 +75,9 @@ start_monitor(P) :-
 :- public initialized/2.
 initialized(_, Server) :-
    server_port(Server, Port),
-   set_prolog_flag(sys_monitor_running, Port).
+   server_address(Server, Host),
+   make_authority('', Host, Port, Authority),
+   set_prolog_flag(sys_monitor_running, Authority).
 
 /**
  * destroyed(O, S):
@@ -85,7 +88,7 @@ initialized(_, Server) :-
 :- override destroyed/2.
 :- public destroyed/2.
 destroyed(_, _) :-
-   set_prolog_flag(sys_monitor_running, -1).
+   set_prolog_flag(sys_monitor_running, '').
 
 /**
  * dispatch(O, P, R, S):

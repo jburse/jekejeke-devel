@@ -68,43 +68,43 @@ public final class FoyerTrace extends Foyer {
     public SkelAtom ATOM_SYS_OUT;
     public SkelAtom ATOM_SYS_AT;
 
-    private int moniconfig = -1;
-    private int monirunning = -1;
+    private String monirunning = "";
+    private String moniconfig = "";
 
     /**
-     * <p>Retrieve the monitor port.</p>
+     * <p>Retrieve the running monitor authority.</p>
      *
-     * @return The monitor port.
+     * @return The running monitor authority.
      */
-    public int getMonitorConfig() {
-        return moniconfig;
-    }
-
-    /**
-     * <p>Set the monitor port.</p>
-     *
-     * @param p The monitor port.
-     */
-    public void setMonitorConfig(int p) {
-        moniconfig = p;
-    }
-
-    /**
-     * <p>Retrieve the monitor port.</p>
-     *
-     * @return The monitor port.
-     */
-    public int getMonitorRunning() {
+    public String getMonitorRunning() {
         return monirunning;
     }
 
     /**
-     * <p>Set the monitor port.</p>
+     * <p>Set the running monitor authority.</p>
      *
-     * @param p The monitor port.
+     * @param au The running monitor authority.
      */
-    public void setMonitorRunning(int p) {
-        monirunning = p;
+    public void setMonitorRunning(String au) {
+        monirunning = au;
+    }
+
+    /**
+     * <p>Retrieve the config monitor authority.</p>
+     *
+     * @return The config monitor authority.
+     */
+    public String getMonitorConfig() {
+        return moniconfig;
+    }
+
+    /**
+     * <p>Set the config monitor authority.</p>
+     *
+     * @param au The config monitor authority.
+     */
+    public void setMonitorConfig(String au) {
+        moniconfig = au;
     }
 
     /**********************************************************/

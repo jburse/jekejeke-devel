@@ -5,7 +5,8 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
 /**
@@ -43,13 +44,13 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
             = new MapHash<String, AbstractFlag<Engine>>();
 
-    public final static String OP_SYS_MONITOR_CONFIG = "sys_monitor_config";
-    public final static String OP_SYS_MONITOR_RUNNING = "sys_monitor_running";
     public final static String OP_SYS_MONITOR_LOGGING = "sys_monitor_logging";
+    public final static String OP_SYS_MONITOR_RUNNING = "sys_monitor_running";
+    public final static String OP_SYS_MONITOR_CONFIG = "sys_monitor_config";
 
-    private static final int FLAG_SYS_MONITOR_CONFIG = 0;
+    private static final int FLAG_SYS_MONITOR_LOGGING = 0;
     private static final int FLAG_SYS_MONITOR_RUNNING = 1;
-    private static final int FLAG_SYS_MONITOR_LOGGING = 2;
+    private static final int FLAG_SYS_MONITOR_CONFIG = 2;
 
     /**
      * <p>Create a flag.</p>
@@ -61,9 +62,9 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
     }
 
     static {
-        DEFAULT.add(OP_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
-        DEFAULT.add(OP_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
         DEFAULT.add(OP_SYS_MONITOR_LOGGING, new FlagFactoryTrace(FLAG_SYS_MONITOR_LOGGING));
+        DEFAULT.add(OP_SYS_MONITOR_RUNNING, new FlagFactoryTrace(FLAG_SYS_MONITOR_RUNNING));
+        DEFAULT.add(OP_SYS_MONITOR_CONFIG, new FlagFactoryTrace(FLAG_SYS_MONITOR_CONFIG));
     }
 
     /**
@@ -74,12 +75,12 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
      */
     public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
-            case FLAG_SYS_MONITOR_CONFIG:
-                return Integer.valueOf(((FoyerTrace) en.store.foyer).getMonitorConfig());
-            case FLAG_SYS_MONITOR_RUNNING:
-                return Integer.valueOf(((FoyerTrace) en.store.foyer).getMonitorRunning());
             case FLAG_SYS_MONITOR_LOGGING:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() & FoyerTrace.MASK_FOYER_NLOG) == 0);
+            case FLAG_SYS_MONITOR_RUNNING:
+                return new SkelAtom(((FoyerTrace) en.store.foyer).getMonitorRunning());
+            case FLAG_SYS_MONITOR_CONFIG:
+                return new SkelAtom(((FoyerTrace) en.store.foyer).getMonitorConfig());
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -99,22 +100,20 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
             throws EngineMessage {
         try {
             switch (id) {
-                case FLAG_SYS_MONITOR_CONFIG:
-                    Number num = SpecialEval.derefAndCastInteger(m, d);
-                    int n = SpecialEval.castIntValue(num);
-                    ((FoyerTrace) en.store.foyer).setMonitorConfig(n);
-                    return true;
-                case FLAG_SYS_MONITOR_RUNNING:
-                    num = SpecialEval.derefAndCastInteger(m, d);
-                    n = SpecialEval.castIntValue(num);
-                    ((FoyerTrace) en.store.foyer).setMonitorRunning(n);
-                    return true;
-                case FLAG_SYS_MONITOR_LOGGING:
+                 case FLAG_SYS_MONITOR_LOGGING:
                     if (AbstractFlag.atomToSwitch(m, d)) {
                         en.store.foyer.resetBit(FoyerTrace.MASK_FOYER_NLOG);
                     } else {
                         en.store.foyer.setBit(FoyerTrace.MASK_FOYER_NLOG);
                     }
+                    return true;
+                case FLAG_SYS_MONITOR_RUNNING:
+                    String str = SpecialUniv.derefAndCastString(m, d);
+                    ((FoyerTrace) en.store.foyer).setMonitorRunning(str);
+                    return true;
+                case FLAG_SYS_MONITOR_CONFIG:
+                    str = SpecialUniv.derefAndCastString(m, d);
+                    ((FoyerTrace) en.store.foyer).setMonitorConfig(str);
                     return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");

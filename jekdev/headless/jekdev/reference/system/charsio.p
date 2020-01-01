@@ -7,12 +7,10 @@
  * Example:
  * ?- with_output_to(atom(A), (write(foo); write(bar))).
  * A = foo ;
- * A = bar ;
- * No
+ * A = bar
  *
  * ?- with_input_from(atom('foo.\n'), read(X)).
- * X = foo ;
- * No
+ * X = foo
  *
  * The predicate with_output_to/2 is non-deterministic for non-deterministic
  * goals and will return different data results for each success. The
@@ -51,7 +49,7 @@
 :- package(library(jekdev/reference/system)).
 
 :- module(charsio, []).
-:- use_module(library(system/memory)).
+:- use_module(library(structure/bytes)).
 
 /***************************************************************/
 /* Temporarily Redirecting                                     */
@@ -69,14 +67,14 @@
 with_output_to(atom(A), G) :- !,
    current_output(S),
    try_call_finally(
-      redirect_output([]),
-      (G, fetch_output(A)),
+      redirect_text_output,
+      (G, fetch_text_output(A)),
       set_output(S)).
 with_output_to(bytes(L), G) :- !,
    current_output(S),
    try_call_finally(
-      redirect_output([type(binary)]),
-      (G, fetch_output(B)),
+      redirect_binary_output,
+      (G, fetch_binary_output(B)),
       set_output(S)),
    atom_block(A, B),
    atom_codes(A, L).
@@ -92,7 +90,7 @@ with_output_to(bytes(L), G) :- !,
 :- meta_predicate with_input_from(?, 0).
 with_input_from(atom(A), G) :- !,
    current_input(S),
-   memory_read(A, [], T),
+   create_text_input(A, T),
    try_call_finally(
       set_input(T),
       G,
@@ -101,15 +99,11 @@ with_input_from(bytes(L), G) :- !,
    current_input(S),
    atom_codes(A, L),
    atom_block(A, B),
-   memory_read(B, [type(binary)], T),
+   create_binary_input(B, T),
    try_call_finally(
       set_input(T),
       G,
       set_input(S)).
-
-/***************************************************************/
-/* Helper Predicates                                           */
-/***************************************************************/
 
 /**
  * try_call_finally(S, G, T):
@@ -127,14 +121,47 @@ try_call_finally(S, G, T) :-
    current_prolog_flag(sys_choices, Y),
    (X == Y, !, T; T; S, fail).
 
-% redirect_output(+Options)
-:- private redirect_output/1.
-redirect_output(O) :-
-   memory_write(O, T),
-   set_output(T).
+/***************************************************************/
+/* Helper Predicates                                           */
+/***************************************************************/
 
-% fetch_output(+Container)
-:- private fetch_output/1.
-fetch_output(D) :-
-   current_output(T),
-   memory_get(T, D).
+% redirect_binary_output
+:- private redirect_binary_output/0.
+redirect_binary_output :-
+   memory_write(S),
+   open(S, write, K, [type(binary), buffer(0)]),
+   set_output(K).
+
+% redirect_text_output
+:- private redirect_text_output/0.
+redirect_text_output :-
+   memory_write(S),
+   open(S, write, K, [buffer(0)]),
+   set_output(K).
+
+% fetch_binary_output(-Bytes)
+:- private fetch_binary_output/1.
+fetch_binary_output(B) :-
+   current_output(K),
+   memory_get(K, B).
+
+% fetch_text_output(-Atom)
+:- private fetch_text_output/1.
+fetch_text_output(A) :-
+   current_output(K),
+   flush_output(K),
+   memory_get(K, B),
+   atom_block(A, B, []).
+
+% create_binary_input(+Bytes, -Stream)
+:- private create_binary_input/2.
+create_binary_input(B, K) :-
+   memory_read(B, S),
+   open(S, read, K, [type(binary), buffer(0)]).
+
+% create_text_input(+Atom, -Stream)
+:- private create_text_input/2.
+create_text_input(A, K) :-
+   atom_block(A, B, []),
+   memory_read(B, S),
+   open(S, read, K, [buffer(0)]).
