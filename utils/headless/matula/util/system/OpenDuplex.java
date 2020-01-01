@@ -121,14 +121,14 @@ public class OpenDuplex extends OpenCheck {
     public Object openRead(AbstractRecognizer know, Socket sock)
             throws IOException, LicenseError {
         InputStream in = sock.getInputStream();
+        ConnectionInput cin;
+        if (getBuffer() != 0) {
+            cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
+            cin.setBuffer(getBuffer());
+        } else {
+            cin = new ConnectionInput(in);
+        }
         if ((getFlags() & MASK_OPEN_BINR) != 0) {
-            ConnectionInput cin;
-            if (getBuffer() != 0) {
-                cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
-                cin.setBuffer(getBuffer());
-            } else {
-                cin = new ConnectionInput(in);
-            }
             return cin;
         } else {
             String theencoding = getEncoding();
@@ -136,20 +136,13 @@ public class OpenDuplex extends OpenCheck {
                 theencoding = ForeignUri.ENCODING_UTF8;
             InputStreamReader isr;
             try {
-                isr = new InputStreamReader(in, theencoding);
+                isr = new InputStreamReader(cin, theencoding);
             } catch (UnsupportedEncodingException x) {
-                in.close();
+                cin.close();
                 throw x;
             }
-            ConnectionReader crd;
-            if (getBuffer() != 0) {
-                crd = new ConnectionReader(new BufferedReader(isr, getBuffer()));
-                crd.setBuffer(getBuffer());
-            } else {
-                crd = new ConnectionReader(isr);
-            }
-            crd.setEncoding(isr.getEncoding());
-            crd.setUnbuf(isr);
+            ConnectionReader crd = new ConnectionReader(isr);
+            crd.setUncoded(cin);
             return crd;
         }
     }
@@ -165,14 +158,14 @@ public class OpenDuplex extends OpenCheck {
     public Object openWrite(Socket sock)
             throws IOException {
         OutputStream out = sock.getOutputStream();
+        ConnectionOutput cout;
+        if (getBuffer() != 0) {
+            cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
+            cout.setBuffer(getBuffer());
+        } else {
+            cout = new ConnectionOutput(out);
+        }
         if ((getFlags() & MASK_OPEN_BINR) != 0) {
-            ConnectionOutput cout;
-            if (getBuffer() != 0) {
-                cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
-                cout.setBuffer(getBuffer());
-            } else {
-                cout = new ConnectionOutput(out);
-            }
             return cout;
         } else {
             String theencoding = getEncoding();
@@ -180,20 +173,13 @@ public class OpenDuplex extends OpenCheck {
                 theencoding = ForeignUri.ENCODING_UTF8;
             OutputStreamWriter osw;
             try {
-                osw = new OutputStreamWriter(out, theencoding);
+                osw = new OutputStreamWriter(cout, theencoding);
             } catch (UnsupportedEncodingException x) {
-                out.close();
+                cout.close();
                 throw x;
             }
-            ConnectionWriter cwr;
-            if (getBuffer() != 0) {
-                cwr = new ConnectionWriter(new BufferedWriter(osw, getBuffer()));
-                cwr.setBuffer(getBuffer());
-            } else {
-                cwr = new ConnectionWriter(osw);
-            }
-            cwr.setEncoding(osw.getEncoding());
-            cwr.setUnbuf(osw);
+            ConnectionWriter cwr = new ConnectionWriter(osw);
+            cwr.setUncoded(cout);
             cwr.setNewLine(newline);
             return cwr;
         }

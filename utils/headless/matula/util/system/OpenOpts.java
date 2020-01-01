@@ -140,18 +140,23 @@ public final class OpenOpts extends OpenDuplex {
                 if (cap != null)
                     in = cap.prepareStream(in, know);
             }
-            if (getBuffer() != 0)
-                in = new BufferedInputStream(in, getBuffer());
-            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                ConnectionInput cin = new ConnectionInput(in);
-                cin.setLastModified(file.lastModified());
-                cin.setETag(Long.toString(cin.getLastModified()));
-                String mt = (fe != null ? fe.getMimeType() : null);
-                cin.setMimeType(mt != null ? mt : "");
-                cin.setRaf(raf);
-                cin.setPath(adr2);
+
+            ConnectionInput cin;
+            if (getBuffer() != 0) {
+                cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
                 cin.setBuffer(getBuffer());
-                cin.setDate(System.currentTimeMillis());
+            } else {
+                cin = new ConnectionInput(in);
+            }
+            cin.setLastModified(file.lastModified());
+            cin.setETag(Long.toString(cin.getLastModified()));
+            String mt = (fe != null ? fe.getMimeType() : null);
+            cin.setMimeType(mt != null ? mt : "");
+            cin.setRaf(raf);
+            cin.setPath(adr2);
+            cin.setDate(System.currentTimeMillis());
+
+            if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                 return cin;
             } else {
                 boolean hasbom = false;
@@ -159,33 +164,23 @@ public final class OpenOpts extends OpenDuplex {
                 if ((getFlags() & MASK_OPEN_NOBR) == 0 &&
                         theencoding == null &&
                         getBuffer() != 0) {
-                    in.mark(3);
-                    theencoding = detectBom(in);
-                    in.reset();
+                    cin.mark(3);
+                    theencoding = detectBom(cin);
+                    cin.reset();
                     hasbom = (theencoding != null);
                 }
                 if (theencoding == null)
                     theencoding = ForeignUri.ENCODING_UTF8;
                 InputStreamReader isr;
                 try {
-                    isr = new InputStreamReader(in, theencoding);
+                    isr = new InputStreamReader(cin, theencoding);
                 } catch (UnsupportedEncodingException x) {
-                    in.close();
-                    raf.close();
+                    cin.close();
                     throw x;
                 }
                 ConnectionReader crd = new ConnectionReader(isr);
-                crd.setEncoding(isr.getEncoding());
-                crd.setUnbuf(isr);
+                crd.setUncoded(cin);
                 crd.setBom(hasbom);
-                crd.setLastModified(file.lastModified());
-                crd.setETag(Long.toString(crd.getLastModified()));
-                String mt = (fe != null ? fe.getMimeType() : null);
-                crd.setMimeType(mt != null ? mt : "");
-                crd.setRaf(raf);
-                crd.setPath(adr2);
-                crd.setBuffer(getBuffer());
-                crd.setDate(System.currentTimeMillis());
                 return crd;
             }
         } else {
@@ -210,47 +205,42 @@ public final class OpenOpts extends OpenDuplex {
                     if (cap != null)
                         in = cap.prepareStream(in, know);
                 }
-                if (getBuffer() != 0)
-                    in = new BufferedInputStream(in, getBuffer());
-                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                    ConnectionInput cin = new ConnectionInput(in);
-                    cin.setLastModified(file.lastModified());
-                    cin.setETag(Long.toString(cin.getLastModified()));
-                    String mt = (fe != null ? fe.getMimeType() : null);
-                    cin.setMimeType(mt != null ? mt : "");
-                    cin.setPath(adr2);
+                ConnectionInput cin;
+                if (getBuffer() != 0) {
+                    cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
                     cin.setBuffer(getBuffer());
-                    cin.setDate(System.currentTimeMillis());
+                } else {
+                    cin = new ConnectionInput(in);
+                }
+                cin.setLastModified(file.lastModified());
+                cin.setETag(Long.toString(cin.getLastModified()));
+                String mt = (fe != null ? fe.getMimeType() : null);
+                cin.setMimeType(mt != null ? mt : "");
+                cin.setPath(adr2);
+                cin.setDate(System.currentTimeMillis());
+                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                     return cin;
                 } else {
                     boolean hasbom = false;
                     String theencoding = getEncoding();
                     if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null && getBuffer() != 0) {
-                        in.mark(3);
-                        theencoding = detectBom(in);
-                        in.reset();
+                        cin.mark(3);
+                        theencoding = detectBom(cin);
+                        cin.reset();
                         hasbom = (theencoding != null);
                     }
                     if (theencoding == null)
                         theencoding = ForeignUri.ENCODING_UTF8;
                     InputStreamReader isr;
                     try {
-                        isr = new InputStreamReader(in, theencoding);
+                        isr = new InputStreamReader(cin, theencoding);
                     } catch (UnsupportedEncodingException x) {
-                        in.close();
+                        cin.close();
                         throw x;
                     }
                     ConnectionReader crd = new ConnectionReader(isr);
-                    crd.setEncoding(isr.getEncoding());
-                    crd.setUnbuf(isr);
+                    crd.setUncoded(cin);
                     crd.setBom(hasbom);
-                    crd.setLastModified(file.lastModified());
-                    crd.setETag(Long.toString(crd.getLastModified()));
-                    String mt = (fe != null ? fe.getMimeType() : null);
-                    crd.setMimeType(mt != null ? mt : "");
-                    crd.setPath(adr2);
-                    crd.setBuffer(getBuffer());
-                    crd.setDate(System.currentTimeMillis());
                     return crd;
                 }
             } else {
@@ -294,19 +284,22 @@ public final class OpenOpts extends OpenDuplex {
                     if (cap != null)
                         in = cap.prepareStream(in, know);
                 }
-                if (getBuffer() != 0)
-                    in = new BufferedInputStream(in, getBuffer());
-                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                    ConnectionInput cin = new ConnectionInput(in);
-                    cin.setLastModified(OpenOpts.getLastModified(con));
-                    cin.setETag(OpenOpts.getETag(con));
-                    cin.setExpiration(OpenOpts.getExpiration(con));
-                    String mt = (fe != null ? fe.getMimeType() : null);
-                    cin.setMimeType(mt != null ? mt : "");
-                    cin.setPath(adr2);
+                ConnectionInput cin;
+                if (getBuffer() != 0) {
+                    cin = new ConnectionInput(new BufferedInputStream(in, getBuffer()));
                     cin.setBuffer(getBuffer());
-                    cin.setDate(con.getDate());
-                    cin.setMaxAge(OpenOpts.getMaxAge(con));
+                } else {
+                    cin = new ConnectionInput(in);
+                }
+                cin.setLastModified(OpenOpts.getLastModified(con));
+                cin.setETag(OpenOpts.getETag(con));
+                cin.setExpiration(OpenOpts.getExpiration(con));
+                String mt = (fe != null ? fe.getMimeType() : null);
+                cin.setMimeType(mt != null ? mt : "");
+                cin.setPath(adr2);
+                cin.setDate(con.getDate());
+                cin.setMaxAge(OpenOpts.getMaxAge(con));
+                if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
                     return cin;
                 } else {
                     boolean hasbom = false;
@@ -314,33 +307,23 @@ public final class OpenOpts extends OpenDuplex {
                     if (theencoding == null)
                         theencoding = OpenOpts.getCharSet(con);
                     if ((getFlags() & MASK_OPEN_NOBR) == 0 && theencoding == null && getBuffer() != 0) {
-                        in.mark(3);
-                        theencoding = detectBom(in);
-                        in.reset();
+                        cin.mark(3);
+                        theencoding = detectBom(cin);
+                        cin.reset();
                         hasbom = (theencoding != null);
                     }
                     if (theencoding == null)
                         theencoding = ForeignUri.ENCODING_UTF8;
                     InputStreamReader isr;
                     try {
-                        isr = new InputStreamReader(in, theencoding);
+                        isr = new InputStreamReader(cin, theencoding);
                     } catch (UnsupportedEncodingException x) {
-                        in.close();
+                        cin.close();
                         throw x;
                     }
                     ConnectionReader crd = new ConnectionReader(isr);
-                    crd.setEncoding(isr.getEncoding());
-                    crd.setUnbuf(isr);
+                    crd.setUncoded(cin);
                     crd.setBom(hasbom);
-                    crd.setLastModified(OpenOpts.getLastModified(con));
-                    crd.setETag(OpenOpts.getETag(con));
-                    crd.setExpiration(OpenOpts.getExpiration(con));
-                    String mt = (fe != null ? fe.getMimeType() : null);
-                    crd.setMimeType(mt != null ? mt : "");
-                    crd.setPath(adr2);
-                    crd.setBuffer(getBuffer());
-                    crd.setDate(con.getDate());
-                    crd.setMaxAge(OpenOpts.getMaxAge(con));
                     return crd;
                 }
             }
@@ -366,16 +349,16 @@ public final class OpenOpts extends OpenDuplex {
             File file = new File(path.replace('/', File.separatorChar));
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             OutputStream out = new FileOutputStream(raf.getFD());
+            ConnectionOutput cout;
+            if (getBuffer() != 0) {
+                cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
+                cout.setBuffer(getBuffer());
+            } else {
+                cout = new ConnectionOutput(out);
+            }
+            cout.setRaf(raf);
+            cout.setPath(adr2);
             if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                ConnectionOutput cout;
-                if (getBuffer() != 0) {
-                    cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
-                    cout.setBuffer(getBuffer());
-                } else {
-                    cout = new ConnectionOutput(out);
-                }
-                cout.setRaf(raf);
-                cout.setPath(adr2);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -383,23 +366,13 @@ public final class OpenOpts extends OpenDuplex {
                     theencoding = ForeignUri.ENCODING_UTF8;
                 OutputStreamWriter osw;
                 try {
-                    osw = new OutputStreamWriter(out, theencoding);
+                    osw = new OutputStreamWriter(cout, theencoding);
                 } catch (UnsupportedEncodingException x) {
-                    out.close();
-                    raf.close();
+                    cout.close();
                     throw x;
                 }
-                ConnectionWriter cwr;
-                if (getBuffer() != 0) {
-                    cwr = new ConnectionWriter(new BufferedWriter(osw, getBuffer()));
-                    cwr.setBuffer(getBuffer());
-                } else {
-                    cwr = new ConnectionWriter(osw);
-                }
-                cwr.setEncoding(osw.getEncoding());
-                cwr.setUnbuf(osw);
-                cwr.setRaf(raf);
-                cwr.setPath(adr2);
+                ConnectionWriter cwr = new ConnectionWriter(osw);
+                cwr.setUncoded(cout);
                 cwr.setNewLine(newline);
                 return cwr;
             }
@@ -420,15 +393,15 @@ public final class OpenOpts extends OpenDuplex {
                 con.setDoOutput(true);
                 out = con.getOutputStream();
             }
+            ConnectionOutput cout;
+            if (getBuffer() != 0) {
+                cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
+                cout.setBuffer(getBuffer());
+            } else {
+                cout = new ConnectionOutput(out);
+            }
+            cout.setPath(adr2);
             if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                ConnectionOutput cout;
-                if (getBuffer() != 0) {
-                    cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
-                    cout.setBuffer(getBuffer());
-                } else {
-                    cout = new ConnectionOutput(out);
-                }
-                cout.setPath(adr2);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -436,29 +409,21 @@ public final class OpenOpts extends OpenDuplex {
                     theencoding = ForeignUri.ENCODING_UTF8;
                 if ((getFlags() & MASK_OPEN_BOMW) != 0) {
                     try {
-                        generateBom(out, theencoding);
+                        generateBom(cout, theencoding);
                     } catch (UnsupportedEncodingException x) {
-                        out.close();
+                        cout.close();
                         throw x;
                     }
                 }
                 OutputStreamWriter osw;
                 try {
-                    osw = new OutputStreamWriter(out, theencoding);
+                    osw = new OutputStreamWriter(cout, theencoding);
                 } catch (UnsupportedEncodingException x) {
-                    out.close();
+                    cout.close();
                     throw x;
                 }
-                ConnectionWriter cwr;
-                if (getBuffer() != 0) {
-                    cwr = new ConnectionWriter(new BufferedWriter(osw, getBuffer()));
-                    cwr.setBuffer(getBuffer());
-                } else {
-                    cwr = new ConnectionWriter(osw);
-                }
-                cwr.setEncoding(osw.getEncoding());
-                cwr.setUnbuf(osw);
-                cwr.setPath(adr2);
+                ConnectionWriter cwr = new ConnectionWriter(osw);
+                cwr.setUncoded(cout);
                 cwr.setNewLine(newline);
                 return cwr;
             }
@@ -485,17 +450,17 @@ public final class OpenOpts extends OpenDuplex {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(raf.length());
             OutputStream out = new FileOutputStream(raf.getFD());
+            ConnectionOutput cout;
+            if (getBuffer() != 0) {
+                cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
+                cout.setBuffer(getBuffer());
+            } else {
+                cout = new ConnectionOutput(out);
+            }
+            cout.setRaf(raf);
+            cout.setPath(adr2);
+            cout.setAppend(true);
             if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                ConnectionOutput cout;
-                if (getBuffer() != 0) {
-                    cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
-                    cout.setBuffer(getBuffer());
-                } else {
-                    cout = new ConnectionOutput(out);
-                }
-                cout.setRaf(raf);
-                cout.setPath(adr2);
-                cout.setAppend(true);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -503,25 +468,14 @@ public final class OpenOpts extends OpenDuplex {
                     theencoding = ForeignUri.ENCODING_UTF8;
                 OutputStreamWriter osw;
                 try {
-                    osw = new OutputStreamWriter(out, theencoding);
+                    osw = new OutputStreamWriter(cout, theencoding);
                 } catch (UnsupportedEncodingException x) {
-                    out.close();
-                    raf.close();
+                    cout.close();
                     throw x;
                 }
-                ConnectionWriter cwr;
-                if (getBuffer() != 0) {
-                    cwr = new ConnectionWriter(new BufferedWriter(osw, getBuffer()));
-                    cwr.setBuffer(getBuffer());
-                } else {
-                    cwr = new ConnectionWriter(osw);
-                }
-                cwr.setEncoding(osw.getEncoding());
-                cwr.setUnbuf(osw);
-                cwr.setRaf(raf);
-                cwr.setPath(adr2);
+                ConnectionWriter cwr = new ConnectionWriter(osw);
+                cwr.setUncoded(cout);
                 cwr.setNewLine(newline);
-                cwr.setAppend(true);
                 return cwr;
             }
         } else {
@@ -532,16 +486,16 @@ public final class OpenOpts extends OpenDuplex {
             String path = ForeignUri.sysSpecPath(spec);
             File file = new File(path.replace('/', File.separatorChar));
             OutputStream out = new FileOutputStream(file, true);
+            ConnectionOutput cout;
+            if (getBuffer() != 0) {
+                cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
+                cout.setBuffer(getBuffer());
+            } else {
+                cout = new ConnectionOutput(out);
+            }
+            cout.setPath(adr2);
+            cout.setAppend(true);
             if ((getFlags() & OpenDuplex.MASK_OPEN_BINR) != 0) {
-                ConnectionOutput cout;
-                if (getBuffer() != 0) {
-                    cout = new ConnectionOutput(new BufferedOutputStream(out, getBuffer()));
-                    cout.setBuffer(getBuffer());
-                } else {
-                    cout = new ConnectionOutput(out);
-                }
-                cout.setPath(adr2);
-                cout.setAppend(true);
                 return cout;
             } else {
                 String theencoding = getEncoding();
@@ -549,23 +503,14 @@ public final class OpenOpts extends OpenDuplex {
                     theencoding = ForeignUri.ENCODING_UTF8;
                 OutputStreamWriter osw;
                 try {
-                    osw = new OutputStreamWriter(out, theencoding);
+                    osw = new OutputStreamWriter(cout, theencoding);
                 } catch (UnsupportedEncodingException x) {
-                    out.close();
+                    cout.close();
                     throw x;
                 }
-                ConnectionWriter cwr;
-                if (getBuffer() != 0) {
-                    cwr = new ConnectionWriter(new BufferedWriter(osw, getBuffer()));
-                    cwr.setBuffer(getBuffer());
-                } else {
-                    cwr = new ConnectionWriter(osw);
-                }
-                cwr.setEncoding(osw.getEncoding());
-                cwr.setUnbuf(osw);
-                cwr.setPath(adr2);
+                ConnectionWriter cwr = new ConnectionWriter(osw);
+                cwr.setUncoded(cout);
                 cwr.setNewLine(newline);
-                cwr.setAppend(true);
                 return cwr;
             }
         }
@@ -691,8 +636,12 @@ public final class OpenOpts extends OpenDuplex {
      * @return The path.
      */
     public static String getPath(Object o) {
-        if (o instanceof ConnectionReader)
-            return ((ConnectionReader) o).getPath();
+        if (o instanceof ConnectionReader) {
+            InputStream uncoded = ((ConnectionReader)o).getUncoded();
+            if (uncoded instanceof ConnectionInput) {
+                return ((ConnectionInput) uncoded).getPath();
+            }
+        }
         return null;
     }
 

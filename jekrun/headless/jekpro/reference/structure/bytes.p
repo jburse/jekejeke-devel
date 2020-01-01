@@ -1,9 +1,13 @@
 /**
- * This module provides access to the byte array datatype. The
- * byte data type is a reference data type to the Java array byte[]
- * and might be modified as a side effect. But it can also be used
- * immutably as a block of bytes.
+ * This module provides access to the byte array datatype. The byte
+ * data type is a reference data type to the Java array byte[] and
+ * might be modified as a side effect. Nevertheless, it can also be
+ * used immutably as a block of bytes, which gets collected by Java GC.
  *
+ * The predicates atom_block/[2,3] allows converting between atoms
+ * and byte arrays. The binary predicate insists on atom code points
+ * between 0 and 255. The ternary predicate allows the full code
+ * point range and defaults the encoding option to UTF-8.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,6 +40,7 @@
 
 :- package(library(jekpro/reference/structure)).
 :- use_package(foreign(jekpro/reference/structure)).
+:- use_package(foreign(matula/util/config)).
 :- module(bytes, []).
 
 /**
@@ -75,3 +80,29 @@ atom_block(A, B, O) :-
 :- private sys_atom_to_block/3.
 :- foreign(sys_atom_to_block/3, 'ForeignBytes',
       sysAtomToBlock('String', 'Object')).
+
+/**
+ * memory_write(S):
+ * The predicate succeeds in S with a new write memory socket.
+ */
+% memory_write(-Socket)
+:- public memory_write/1.
+:- foreign_constructor(memory_write/1, 'Memory', new).
+
+/**
+ * memory_read(B, S):
+ * The predicate succeeds in S with a new read memory socket
+ * for the block B.
+ */
+% memory_read(+Bytes, -Socket)
+:- public memory_read/2.
+:- foreign_constructor(memory_read/2, 'Memory', new({byte})).
+
+/**
+ * memory_get(K, B):
+ * The predicate succeeds in B with the block of the
+ * output stream K.
+ */
+% memory_get(+Stream, -Bytes)
+:- public memory_get/2.
+:- foreign(memory_get/2, 'ForeignBytes', sysMemoryGet('Object')).

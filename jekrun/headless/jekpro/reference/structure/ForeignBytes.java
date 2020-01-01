@@ -2,13 +2,10 @@ package jekpro.reference.structure;
 
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermCompound;
-import matula.util.system.ForeignUri;
-import matula.util.system.OpenDuplex;
+import matula.util.system.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -113,6 +110,22 @@ public final class ForeignBytes {
         OpenDuplex od = ForeignStream.decodeOpenDuplex(ForeignStream.MODE_WRITE, opt);
         String enc = od.getEncoding();
         return str.getBytes((enc != null ? enc : ForeignUri.ENCODING_UTF8));
+    }
+
+    /**
+     * <p>Retrieve the data of the output stream.</p>
+     *
+     * @param str The output stream.
+     * @return The data.
+     */
+    public static byte[] sysMemoryGet(Object str) {
+        if (str instanceof ConnectionWriter)
+            str = ((ConnectionWriter) str).getUncoded();
+        if (str instanceof ConnectionOutput)
+            str = ((ConnectionOutput) str).getUnbuf();
+        if (str instanceof ByteArrayOutputStream)
+            return ((ByteArrayOutputStream) str).toByteArray();
+        return null;
     }
 
 }

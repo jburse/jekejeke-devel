@@ -1,13 +1,15 @@
-package matula.util.wire;
+package matula.util.config;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketImpl;
 
 /**
- * <p>Provides an interruptible input/output pair.</p>
+ * <p>Provides a byte array input/output pair.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,20 +39,29 @@ import java.net.SocketImpl;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Interruptible extends Socket {
-    private InterruptibleOutput out;
-    private InterruptibleInput in;
+public final class Memory extends Socket {
+    private ByteArrayOutputStream out;
+    private ByteArrayInputStream in;
 
     /**
-     * <p>Create an interruptible socket.</p>
+     * <p>Create a write memory socket.</p>
      *
-     * @param s The socket.
-     * @throws IOException IO Error.
+     * @throws SocketException Socket Error.
      */
-    public Interruptible(Socket s) throws IOException {
+    public Memory() throws SocketException {
         super((SocketImpl) null);
-        out = new InterruptibleOutput(s.getOutputStream());
-        in = new InterruptibleInput(s.getInputStream());
+        out = new ByteArrayOutputStream();
+    }
+
+    /**
+     * <p>Create a read memory socket.</p>
+     *
+     * @param data The data.
+     * @throws SocketException Socket Error.
+     */
+    public Memory(byte[] data) throws SocketException {
+        super((SocketImpl) null);
+        in = new ByteArrayInputStream(data);
     }
 
     /**

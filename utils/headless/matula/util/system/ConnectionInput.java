@@ -1,9 +1,6 @@
 package matula.util.system;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 
 /**
  * <p>Refinement of the filter input stream.</p>
@@ -47,6 +44,7 @@ public final class ConnectionInput extends FilterInputStream {
     private int buffer;
     private long date;
     private int maxage = -1;
+    private InputStream unbuf;
 
     /**
      * <p>Create a buffered input stream from an input stream.</p>
@@ -217,6 +215,15 @@ public final class ConnectionInput extends FilterInputStream {
      */
     void setMaxAge(int m) {
         maxage = m;
+    }
+
+    /**
+     * <p>Retrieve the unbuffered and unadored input.</p>
+     *
+     * @return The unbuffered and unadored input.
+     */
+    public InputStream getUnbuf() {
+        return unbuf;
     }
 
     /**

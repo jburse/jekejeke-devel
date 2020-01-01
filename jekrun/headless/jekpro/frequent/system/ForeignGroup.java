@@ -1,7 +1,6 @@
 package jekpro.frequent.system;
 
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;

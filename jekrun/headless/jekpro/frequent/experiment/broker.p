@@ -60,6 +60,7 @@
 :- use_module(library(system/thread)).
 :- use_module(library(system/domain)).
 :- use_module(library(experiment/ref)).
+:- use_module(library(structure/bytes)).
 
 :- public infix(when).
 :- op(1105, xfy, when).
@@ -107,7 +108,7 @@ broker_start(Authority) :-
 broker_stop :-
    server_endpoint(Authority, Endpoint),
    term_atom(end, Atom),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    spawn_cleanup.
@@ -139,7 +140,7 @@ broker_server(Authority) :-
    server_endpoint(Authority, Endpoint),
    repeat,
    endpoint_receive(Endpoint, Block),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    term_atom(Term, Atom),
    (  Term = end -> !
    ;  Term = control(Name, Message)
@@ -174,7 +175,7 @@ control(pid(Authority, Name), Message) :-               /* local control */
 control(pid(Authority, Name), Message) :-               /* remote control */
    server_endpoint(_, Endpoint),
    term_atom(control(Name, Message), Atom),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)).
 
@@ -199,7 +200,7 @@ spawn(Authority, Goal, pid(Authority, Name)) :-         /* remote run */
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_atom(spawn(Goal, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(spawned(Name), _).
@@ -266,7 +267,7 @@ exit(pid(Authority, Name), Message) :-                  /* remote exit */
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_atom(exit(Name, Message, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(exited, _).
@@ -299,7 +300,7 @@ send(pid(Authority, Name), Message) :-                  /* remote send */
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_atom(send(Name, Message, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, [encoding('utf-8')]),
+   atom_block(Atom, Block, []),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(sent, _).

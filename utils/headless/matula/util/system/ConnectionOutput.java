@@ -42,6 +42,7 @@ public final class ConnectionOutput extends FilterOutputStream {
     private String path;
     private boolean append;
     private int buffer;
+    private OutputStream unbuf;
 
     /**
      * <p>Create a filter output stream from an output stream.</p>
@@ -50,18 +51,7 @@ public final class ConnectionOutput extends FilterOutputStream {
      */
     ConnectionOutput(OutputStream out) {
         super(out);
-    }
-
-    /**
-     * <p>Compensate for lack of overriding in filter output stream.</p>
-     *
-     * @param b   The bytes.
-     * @param off the start offset in the data.
-     * @param len the number of bytes to write.
-     * @throws IOException IO error.
-     */
-    public void write(byte b[], int off, int len) throws IOException {
-        out.write(b, off, len);
+        unbuf = out;
     }
 
     /**
@@ -134,6 +124,27 @@ public final class ConnectionOutput extends FilterOutputStream {
      */
     void setBuffer(int b) {
         buffer = b;
+    }
+
+    /**
+     * <p>Retrieve the unbuffered and unadored output.</p>
+     *
+     * @return The unbuffered and unadored output.
+     */
+    public OutputStream getUnbuf() {
+        return unbuf;
+    }
+
+    /**
+     * <p>Compensate for lack of overriding in filter output stream.</p>
+     *
+     * @param b   The bytes.
+     * @param off the start offset in the data.
+     * @param len the number of bytes to write.
+     * @throws IOException IO error.
+     */
+    public void write(byte b[], int off, int len) throws IOException {
+        out.write(b, off, len);
     }
 
     /**

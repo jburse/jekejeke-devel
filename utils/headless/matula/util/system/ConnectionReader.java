@@ -2,18 +2,11 @@ package matula.util.system;
 
 import matula.util.regex.CodeType;
 
-import java.io.FilterReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Reader;
+import java.io.*;
 
 /**
  * <p>Refinement of the filter reader.</p>
  * <p>Allows the inspection of a couple of data.</p>
- * <p>Also provides line termination sequence compression.</p>
- * <p>Further provides current line and offset inspection.</p>
- * <p>Warning: The pre-allocated string buffer keeps using an
- * internal buffer of size >max of the encountered lines.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,17 +40,8 @@ public final class ConnectionReader extends FilterReader {
     private final static int MAX_LINE = 1024;
 
     private boolean bom;
-    private String encoding = "";
-    private long lastmodified;
-    private String etag = "";
-    private long expiration;
-    private String mimetype = "";
-    private RandomAccessFile raf;
-    private String path;
-    private int buffer;
-    private long date;
-    private int maxage = -1;
     private Reader unbuf;
+    private InputStream uncoded;
 
     private String line = "";
     private int offset;
@@ -73,6 +57,7 @@ public final class ConnectionReader extends FilterReader {
      */
     public ConnectionReader(Reader r) {
         super(r);
+        unbuf = r;
     }
 
     /**
@@ -91,186 +76,6 @@ public final class ConnectionReader extends FilterReader {
      */
     void setBom(boolean b) {
         bom = b;
-    }
-
-    /**
-     * <p>Retrieve the encoding.</p>
-     *
-     * @return The encoding.
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * <p>Set the encoding.</p>
-     *
-     * @param e The encoding.
-     */
-    public void setEncoding(String e) {
-        encoding = e;
-    }
-
-    /**
-     * <p>Retrieve the last modified.</p>
-     *
-     * @return The last modified, or 0.
-     */
-    public long getLastModified() {
-        return lastmodified;
-    }
-
-    /**
-     * <p>Set the last modified.</p>
-     *
-     * @param l The last modified.
-     */
-    void setLastModified(long l) {
-        lastmodified = l;
-    }
-
-    /**
-     * <p>Retrieve the ETag,</p>
-     *
-     * @return The ETag, or "".
-     */
-    public String getETag() {
-        return etag;
-    }
-
-    /**
-     * <p>Set the ETag.</p>
-     *
-     * @param e The ETag.
-     */
-    void setETag(String e) {
-        etag = e;
-    }
-
-    /**
-     * <p>Retrieve the expiration.</p>
-     *
-     * @return The expiration.
-     */
-    public long getExpiration() {
-        return expiration;
-    }
-
-    /**
-     * <p>Set the expiration.</p>
-     *
-     * @param e The expiration.
-     */
-    void setExpiration(long e) {
-        expiration = e;
-    }
-
-    /**
-     * <p>Retrieve the mime type.</p>
-     *
-     * @return The mime type.
-     */
-    public String getMimeType() {
-        return mimetype;
-    }
-
-    /**
-     * <p>Set the mime type.</p>
-     *
-     * @param m The mime type.
-     */
-    public void setMimeType(String m) {
-        mimetype = m;
-    }
-
-    /**
-     * <p>Retrieve the random access file.</p>
-     *
-     * @return The random access file.
-     */
-    public RandomAccessFile getRaf() {
-        return raf;
-    }
-
-    /**
-     * <p>Set the random access file.</p>
-     *
-     * @param r The randoma access file.
-     */
-    void setRaf(RandomAccessFile r) {
-        raf = r;
-    }
-
-    /**
-     * <p>Retrieve the path.</p>
-     *
-     * @return The path.
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * <p>Set the path.</p>
-     *
-     * @param p The path.
-     */
-    public void setPath(String p) {
-        path = p;
-    }
-
-    /**
-     * <p>Retrieve the buffer size.</p>
-     *
-     * @return The buffer size.
-     */
-    public int getBuffer() {
-        return buffer;
-    }
-
-    /**
-     * <p>Set the buffer size.</p>
-     *
-     * @param b The buffer size.
-     */
-    public void setBuffer(int b) {
-        buffer = b;
-    }
-
-    /**
-     * <p>Retrieve the access time.</p>
-     *
-     * @return The access time.
-     */
-    public long getDate() {
-        return date;
-    }
-
-    /**
-     * <p>Set the access time.</p>
-     *
-     * @param a The access time.
-     */
-    void setDate(long a) {
-        date = a;
-    }
-
-    /**
-     * <p>Retrieve the max age.</p>
-     *
-     * @return The max age.
-     */
-    public int getMaxAge() {
-        return maxage;
-    }
-
-    /**
-     * <p>Set the max age.</p>
-     *
-     * @param m The max age.
-     */
-    void setMaxAge(int m) {
-        maxage = m;
     }
 
     /**
@@ -301,12 +106,21 @@ public final class ConnectionReader extends FilterReader {
     }
 
     /**
-     * <p>Set the unbuffered and unadored reader.</p>
+     * <p>Retrieve the uncoded input stream.</p>
      *
-     * @param u The unbuffered and unadored reader.
+     * @return The uncoded input stream.
      */
-    public void setUnbuf(Reader u) {
-        unbuf = u;
+    public InputStream getUncoded() {
+        return uncoded;
+    }
+
+    /**
+     * <p>Set the uncoded input stream.</p>
+     *
+     * @param u The uncoded input stream.
+     */
+    public void setUncoded(InputStream u) {
+        uncoded = u;
     }
 
     /**
@@ -439,17 +253,6 @@ public final class ConnectionReader extends FilterReader {
             throw new IllegalArgumentException("already reset");
         offset = mark;
         mark = -1;
-    }
-
-    /**
-     * <p>Close the stream and the file.</p>
-     *
-     * @throws IOException IO error.
-     */
-    public void close() throws IOException {
-        in.close();
-        if (raf != null)
-            raf.close();
     }
 
     /************************************************************/

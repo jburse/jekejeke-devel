@@ -7,7 +7,10 @@ import jekpro.tools.call.InterpreterMessage;
 import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 
 /**
@@ -260,7 +263,7 @@ public final class ForeignDirectory {
      * <p>Check the entry of an archive.</p>
      *
      * @param uristr The archive name.
-     * @param name The entry name.
+     * @param name   The entry name.
      * @return True if the entry exists in the archive, otherwise false.
      * @throws IOException        Shit happens.
      * @throws InterpreterMessage Not file scheme.

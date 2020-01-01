@@ -14,12 +14,8 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.system.ConnectionReader;
-import matula.util.system.ConnectionWriter;
 import matula.util.wire.AbstractLivestock;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.util.ArrayList;
 
 /**
@@ -54,7 +50,6 @@ import java.util.ArrayList;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignThread {
-    public final static int BUF_SIZE = 1024;
 
     /****************************************************************/
     /* Thread Creation                                              */
@@ -87,33 +82,10 @@ public final class ForeignThread {
             throws InterpreterMessage, InterpreterException {
         final Interpreter inter2 = inter.getKnowledgebase().iterable();
         Object rd = inter.getProperty(Toolkit.PROP_SYS_CUR_INPUT);
-        ConnectionReader cr;
-        if (rd instanceof ConnectionReader && (cr = (ConnectionReader) rd).getBuffer() != 0) {
-            ConnectionReader rp = new ConnectionReader(new BufferedReader(cr.getUnbuf(), BUF_SIZE));
-            rp.setBuffer(BUF_SIZE);
-            rp.setEncoding(cr.getEncoding());
-            rp.setUnbuf(cr.getUnbuf());
-            rd = rp;
-        }
         inter2.setProperty(Toolkit.PROP_SYS_CUR_INPUT, rd);
         Object wr = inter.getProperty(Toolkit.PROP_SYS_CUR_OUTPUT);
-        ConnectionWriter cw;
-        if (wr instanceof ConnectionWriter && (cw = (ConnectionWriter) wr).getBuffer() != 0) {
-            ConnectionWriter wp = new ConnectionWriter(new BufferedWriter(cw.getUnbuf(), BUF_SIZE));
-            wp.setBuffer(BUF_SIZE);
-            wp.setEncoding(cw.getEncoding());
-            wp.setUnbuf(cw.getUnbuf());
-            wr = wp;
-        }
         inter2.setProperty(Toolkit.PROP_SYS_CUR_OUTPUT, wr);
         wr = inter.getProperty(Toolkit.PROP_SYS_CUR_ERROR);
-        if (wr instanceof ConnectionWriter && (cw = (ConnectionWriter) wr).getBuffer() != 0) {
-            ConnectionWriter wp = new ConnectionWriter(new BufferedWriter(cw.getUnbuf(), BUF_SIZE));
-            wp.setBuffer(BUF_SIZE);
-            wp.setEncoding(cw.getEncoding());
-            wp.setUnbuf(cw.getUnbuf());
-            wr = wp;
-        }
         inter2.setProperty(Toolkit.PROP_SYS_CUR_ERROR, wr);
         inter2.setProperty(Toolkit.PROP_SYS_ATTACHED_TO, inter.getProperty(Toolkit.PROP_SYS_ATTACHED_TO));
         return inter2;

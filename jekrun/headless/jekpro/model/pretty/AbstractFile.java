@@ -7,6 +7,7 @@ import jekpro.model.rope.LoadOpts;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.system.ConnectionInput;
 import matula.util.system.ConnectionReader;
 import matula.util.system.OpenOpts;
 
@@ -45,8 +46,6 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractFile extends AbstractSource {
-    public static final int MASK_SRC_FBOM = 0x00000100;
-
     public final static String OP_DSLH = "../";
     public final static String OP_DSLH2 = "..";
     public final static String OP_DSLH3 = "/..";
@@ -54,7 +53,6 @@ public abstract class AbstractFile extends AbstractSource {
     private long lastmodified;
     private String etag = "";
     private long expiration;
-    private String encoding;
     private int buffer;
     private long date;
     private int maxage = -1;
@@ -111,24 +109,6 @@ public abstract class AbstractFile extends AbstractSource {
      */
     public void setExpiration(long e) {
         expiration = e;
-    }
-
-    /**
-     * <p>Retrieve the encoding.</p>
-     *
-     * @return The encoding.
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * <p>Set the encoding.</p>
-     *
-     * @param e The encoding.
-     */
-    public void setEncoding(String e) {
-        encoding = e;
     }
 
     /**
@@ -262,11 +242,12 @@ public abstract class AbstractFile extends AbstractSource {
             return;
 
         ConnectionReader cr = (ConnectionReader) reader;
-        setLastModified(cr.getLastModified());
-        setETag(cr.getETag());
-        setExpiration(cr.getExpiration());
-        setDate(cr.getDate());
-        setMaxAge(cr.getMaxAge());
+        ConnectionInput cin = (ConnectionInput)cr.getUncoded();
+        setLastModified(cin.getLastModified());
+        setETag(cin.getETag());
+        setExpiration(cin.getExpiration());
+        setDate(cin.getDate());
+        setMaxAge(cin.getMaxAge());
     }
 
     /**************************************************************/

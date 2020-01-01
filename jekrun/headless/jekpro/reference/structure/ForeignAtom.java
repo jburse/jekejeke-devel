@@ -1,8 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -16,7 +14,6 @@ import matula.util.regex.CompLang;
 import matula.util.regex.ScannerError;
 import matula.util.regex.ScannerToken;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 

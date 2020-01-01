@@ -2,15 +2,11 @@ package matula.util.system;
 
 import matula.util.regex.CodeType;
 
-import java.io.FilterWriter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.io.Writer;
+import java.io.*;
 
 /**
  * <p>Refinement of the filter writer.</p>
  * <p>Allows the inspection of a couple of data.</p>
- * <p>Translates '\n' to platform specific newline.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -42,13 +38,10 @@ import java.io.Writer;
  */
 public final class ConnectionWriter extends FilterWriter {
     private boolean bom;
-    private String encoding = "";
-    private RandomAccessFile raf;
-    private String path;
-    private int buffer;
     private Writer unbuf;
+    private OutputStream uncoded;
+
     private String newline = OpenOpts.UNIX_NEWLINE;
-    private boolean append;
 
     /**
      * <p>Create a connection writer from a write.</p>
@@ -57,6 +50,7 @@ public final class ConnectionWriter extends FilterWriter {
      */
     public ConnectionWriter(Writer w) {
         super(w);
+        unbuf = w;
     }
 
     /**
@@ -78,96 +72,6 @@ public final class ConnectionWriter extends FilterWriter {
     }
 
     /**
-     * <p>Retrieve the encoding encoding.</p>
-     *
-     * @return The encoding encoding
-     */
-    public String getEncoding() {
-        return encoding;
-    }
-
-    /**
-     * <p>Set the encoding encoding.</p>
-     *
-     * @param c The encoding encoding.
-     */
-    public void setEncoding(String c) {
-        encoding = c;
-    }
-
-    /**
-     * <p>Retrieve the random access file.</p>
-     *
-     * @return The random access file.
-     */
-    public RandomAccessFile getRaf() {
-        return raf;
-    }
-
-    /**
-     * <p>Set the random access file.</p>
-     *
-     * @param r The randoma access file.
-     */
-    void setRaf(RandomAccessFile r) {
-        raf = r;
-    }
-
-    /**
-     * <p>Retrieve the path.</p>
-     *
-     * @return The path.
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * <p>Set the path.</p>
-     *
-     * @param p The path.
-     */
-    void setPath(String p) {
-        path = p;
-    }
-
-    /**
-     * <p>Retrieve the append flag.</p>
-     *
-     * @return The append flag.
-     */
-    public boolean getAppend() {
-        return append;
-    }
-
-    /**
-     * <p>Set the append flag.</p>
-     *
-     * @param a The append flag.
-     */
-    void setAppend(boolean a) {
-        append = a;
-    }
-
-    /**
-     * <p>Retrieve the buffer size.</p>
-     *
-     * @return The buffer size.
-     */
-    public int getBuffer() {
-        return buffer;
-    }
-
-    /**
-     * <p>Set the buffer size.</p>
-     *
-     * @param b The buffer size.
-     */
-    public void setBuffer(int b) {
-        buffer = b;
-    }
-
-    /**
      * <p>Retrieve the unbuffered and unadored writer.</p>
      *
      * @return The unbuffered and unadored write.
@@ -177,12 +81,21 @@ public final class ConnectionWriter extends FilterWriter {
     }
 
     /**
-     * <p>Set the unbuffered and unadored writer.</p>
+     * <p>Retrieve the uncoded output stream.</p>
      *
-     * @param u The unbuffered and unadored writer.
+     * @return The uncoded output stream.
      */
-    public void setUnbuf(Writer u) {
-        unbuf = u;
+    public OutputStream getUncoded() {
+        return uncoded;
+    }
+
+    /**
+     * <p>Set the uncoded output stream stream.</p>
+     *
+     * @param u The uncoded output stream.
+     */
+    public void setUncoded(OutputStream u) {
+        uncoded = u;
     }
 
     /**
@@ -232,7 +145,7 @@ public final class ConnectionWriter extends FilterWriter {
      * @param len  Number of characters to be written
      * @throws IOException If an I/O error occurs
      */
-    public void write(char cbuf[], int off, int len) throws IOException {
+    public void write(char[] cbuf, int off, int len) throws IOException {
         if (!OpenDuplex.UNIX_NEWLINE.equals(newline)) {
             int k = indexOf(cbuf, off, len, CodeType.LINE_EOL);
             while (k != -1) {
@@ -258,7 +171,7 @@ public final class ConnectionWriter extends FilterWriter {
      * @param ch   The character.
      * @return The index, or -1.
      */
-    private static int indexOf(char cbuf[], int off, int len, int ch) {
+    private static int indexOf(char[] cbuf, int off, int len, int ch) {
         for (int i = 0; i < len; i++) {
             if (cbuf[off + i] == ch)
                 return off + i;

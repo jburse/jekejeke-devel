@@ -79,6 +79,7 @@
 :- use_module(library(system/domain)).
 :- use_module(library(system/zone)).
 :- use_module(library(misc/text)).
+:- use_module(library(structure/bytes)).
 
 /***************************************************************/
 /* HTTP Server                                                 */

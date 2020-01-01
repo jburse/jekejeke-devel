@@ -244,11 +244,21 @@ public final class ForeignStream {
         if (str instanceof ConnectionOutput) {
             raf = ((ConnectionOutput) str).getRaf();
         } else if (str instanceof ConnectionWriter) {
-            raf = ((ConnectionWriter) str).getRaf();
+            OutputStream cout = ((ConnectionWriter) str).getUncoded();
+            if (cout instanceof ConnectionOutput) {
+                raf = ((ConnectionOutput) cout).getRaf();
+            } else {
+                raf = null;
+            }
         } else if (str instanceof ConnectionInput) {
             raf = ((ConnectionInput) str).getRaf();
         } else if (str instanceof ConnectionReader) {
-            raf = ((ConnectionReader) str).getRaf();
+            InputStream cin = ((ConnectionReader) str).getUncoded();
+            if (cin instanceof ConnectionInput) {
+                raf = ((ConnectionInput) cin).getRaf();
+            } else {
+                raf = null;
+            }
         } else {
             raf = null;
         }
@@ -387,43 +397,25 @@ public final class ForeignStream {
      */
     public static Object sysReaderProperties(ConnectionReader read,
                                              Object res) {
+        Reader unbuf = read.getUnbuf();
+        String enc;
+        if (unbuf instanceof InputStreamReader) {
+            enc = ((InputStreamReader) unbuf).getEncoding();
+        } else {
+            enc = null;
+        }
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_ENCODING,
-                        read.getEncoding()), res);
+                        (enc != null ? enc : "")), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BOM, (read.getBom() ? Foyer.OP_TRUE :
                         AbstractFlag.OP_FALSE)), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_LAST_MODIFIED,
-                        TermAtomic.normBigInteger(read.getLastModified())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_VERSION_TAG,
-                        read.getETag()), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_EXPIRATION,
-                        TermAtomic.normBigInteger(read.getExpiration())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MIME_TYPE,
-                        read.getMimeType()), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(ReadOpts.OP_LINE_NO,
                         Integer.valueOf(read.getLineNumber())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BUFFER,
-                        Integer.valueOf(read.getBuffer())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_DATE,
-                        TermAtomic.normBigInteger(read.getDate())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_MAX_AGE,
-                        Integer.valueOf(read.getMaxAge())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MODE,
-                        OP_READ), res);
-        String path = read.getPath();
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_FILE_NAME,
-                        (path != null ? path : "")), res);
+        InputStream cin = read.getUncoded();
+        if (cin instanceof ConnectionInput)
+            res = sysInputProperties((ConnectionInput) cin, res);
         return res;
     }
 
@@ -436,23 +428,23 @@ public final class ForeignStream {
      */
     public static Object sysWriterProperties(ConnectionWriter write,
                                              Object res) {
+        Writer unbuf = write.getUnbuf();
+        String enc;
+        if (unbuf instanceof OutputStreamWriter) {
+            enc = ((OutputStreamWriter) unbuf).getEncoding();
+        } else {
+            enc = null;
+        }
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_ENCODING,
-                        write.getEncoding()), res);
+                        (enc != null ? enc : "")), res);
         res = new TermCompound(Knowledgebase.OP_CONS,
                 new TermCompound(OP_BOM,
                         (write.getBom() ? Foyer.OP_TRUE :
                                 AbstractFlag.OP_FALSE)), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BUFFER,
-                        Integer.valueOf(write.getBuffer())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MODE,
-                        (write.getAppend() ? OP_APPEND : OP_WRITE)), res);
-        String path = write.getPath();
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_FILE_NAME,
-                        (path != null ? path : "")), res);
+        OutputStream cout = write.getUncoded();
+        if (cout instanceof ConnectionOutput)
+            res = sysOutputProperties((ConnectionOutput) cout, res);
         return res;
     }
 
