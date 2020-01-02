@@ -128,4 +128,28 @@ public final class ForeignBytes {
         return null;
     }
 
+    /**
+     * <p>Retrieve the data of the output stream.</p>
+     *
+     * @param str The output stream.
+     * @param opt The desired encoding.
+     * @return The data.
+     * @throws InterpreterMessage Validation error.
+     * @throws ClassCastException Validation error.
+     * @throws UnsupportedEncodingException Encoding problem.
+     */
+    public static String sysMemoryGet(Object str, Object opt)
+            throws ClassCastException, UnsupportedEncodingException, InterpreterMessage {
+        OpenDuplex od = ForeignStream.decodeOpenDuplex(ForeignStream.MODE_READ, opt);
+        String enc = od.getEncoding();
+        if (str instanceof ConnectionWriter)
+            str = ((ConnectionWriter) str).getUncoded();
+        if (str instanceof ConnectionOutput)
+            str = ((ConnectionOutput) str).getUnbuf();
+        if (str instanceof ByteArrayOutputStream)
+            return ((ByteArrayOutputStream) str).toString(
+                    (enc != null ? enc : ForeignUri.ENCODING_UTF8));
+        return null;
+    }
+
 }

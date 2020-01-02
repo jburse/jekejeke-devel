@@ -51,6 +51,7 @@
 :- use_module(library(stream/console)).
 :- use_module(library(system/locale)).
 :- use_module(library(misc/text)).
+:- use_module(library(structure/bytes)).
 :- sys_load_resource(info).
 
 /***********************************************************/

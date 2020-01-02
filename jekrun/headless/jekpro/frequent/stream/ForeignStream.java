@@ -63,7 +63,6 @@ public final class ForeignStream {
     public final static String OP_TYPE = "type";
     public final static String OP_TYPE_BINARY = "binary";
     public final static String OP_TYPE_TEXT = "text";
-    public final static String OP_TYPE_STRING = "string";
 
     public final static int TYPE_BINARY = 0;
     public final static int TYPE_TEXT = 1;
@@ -481,15 +480,9 @@ public final class ForeignStream {
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
                         res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
                         break;
                     case TYPE_TEXT:
                         res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
-                        break;
-                    case TYPE_STRING:
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_STRG);
                         break;
                     default:
                         throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -643,15 +636,9 @@ public final class ForeignStream {
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
                         res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
                         break;
                     case TYPE_TEXT:
                         res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_STRG);
-                        break;
-                    case TYPE_STRING:
-                        res.setFlags(res.getFlags() & ~OpenDuplex.MASK_OPEN_BINR);
-                        res.setFlags(res.getFlags() | OpenDuplex.MASK_OPEN_STRG);
                         break;
                     default:
                         throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -721,8 +708,6 @@ public final class ForeignStream {
             return TYPE_BINARY;
         } else if (val.equals(OP_TYPE_TEXT)) {
             return TYPE_TEXT;
-        } else if (val.equals(OP_TYPE_STRING)) {
-            return TYPE_STRING;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));

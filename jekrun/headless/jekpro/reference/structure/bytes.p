@@ -49,7 +49,7 @@
  * If A is a variable, then the predicate succeeds in A with the
  * atom for the block B. Otherwise the predicate succeeds in B
  * with the atom for the block B. The ternary predicate allows
- * specifying encoding options.
+ * specifying encoding options O.
  */
 % atom_block(+-Atom, -+Bytes)
 :- public atom_block/2.
@@ -82,6 +82,61 @@ atom_block(A, B, O) :-
       sysAtomToBlock('String', 'Object')).
 
 /**
+ * term_block(T, B):
+ * term_block(T, B, O):
+ * The predicate succeeds when the block B is the UTF-8 serialization
+ * of the term T. The ternary predicate accepts read respectively
+ * write options O.
+ */
+% term_block(+-Term, -+Bytes)
+:- public term_block/2.
+term_block(T, B) :-
+   term_block(T, B, []).
+
+% term_block(+-Term, -+Bytes, +List)
+:- public term_block/3.
+term_block(T, B, O) :- var(B), !,
+   memory_write(S),
+   open(S, write, K, [buffer(0)]),
+   write_term(K, T, [quoted(true)|O]),
+   flush_output(K),
+   memory_get(K, B).
+term_block(T, B, O) :-
+   memory_read(B, S),
+   open(S, read, K, [buffer(0)]),
+   read_term(K, T, [terminator(end_of_file)|O]).
+
+/**
+ * term_atom(T, A):
+ * term_atom(T, A, O):
+ * The predicate succeeds when the atom A is the serialization
+ * of the term T. The ternary predicate accepts read respectively
+ * write options O.
+ */
+% term_atom(+-Term, -+Atom)
+:- public term_atom/2.
+term_atom(T, A) :-
+   term_atom(T, A, []).
+
+% term_atom(+-Term, -+Atom, +List)
+:- public term_atom/3.
+term_atom(T, A, O) :- var(A), !,
+   memory_write(S),
+   open(S, write, K, [buffer(0)]),
+   write_term(K, T, [quoted(true)|O]),
+   flush_output(K),
+   memory_get(K, [], A).
+term_atom(T, A, O) :-
+   atom_block(A, B, []),
+   memory_read(B, S),
+   open(S, read, K, [buffer(0)]),
+   read_term(K, T, [terminator(end_of_file)|O]).
+
+/********************************************************************/
+/* Memory Socket                                                    */
+/********************************************************************/
+
+/**
  * memory_write(S):
  * The predicate succeeds in S with a new write memory socket.
  */
@@ -106,3 +161,12 @@ atom_block(A, B, O) :-
 % memory_get(+Stream, -Bytes)
 :- public memory_get/2.
 :- foreign(memory_get/2, 'ForeignBytes', sysMemoryGet('Object')).
+
+/**
+ * memory_get(K, O, B):
+ * The predicate succeeds in B with the atom of the
+ * output stream K in the encoding options O.
+ */
+% memory_get(+Stream, +List, -Bytes)
+:- public memory_get/3.
+:- foreign(memory_get/3, 'ForeignBytes', sysMemoryGet('Object', 'Object')).

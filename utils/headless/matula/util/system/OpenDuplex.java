@@ -44,7 +44,6 @@ import java.net.Socket;
  */
 public class OpenDuplex extends OpenCheck {
     public static final int MASK_OPEN_BINR = 0x00000010;
-    public static final int MASK_OPEN_STRG = 0x00000020;
 
     public static final String UNIX_NEWLINE = "\n";
     public static final String MAC_NEWLINE = "\r";

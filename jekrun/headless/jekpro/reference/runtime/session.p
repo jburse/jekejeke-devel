@@ -62,6 +62,7 @@
 :- use_module(library(stream/console)).
 :- use_module(library(misc/residue)).
 :- use_module(library(system/thread)).
+:- use_module(library(structure/bytes)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/

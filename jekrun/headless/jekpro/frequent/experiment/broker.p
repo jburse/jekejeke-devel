@@ -107,8 +107,7 @@ broker_start(Authority) :-
 :- public broker_stop/0.
 broker_stop :-
    server_endpoint(Authority, Endpoint),
-   term_atom(end, Atom),
-   atom_block(Atom, Block, []),
+   term_block(end, Block),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    spawn_cleanup.
@@ -140,8 +139,7 @@ broker_server(Authority) :-
    server_endpoint(Authority, Endpoint),
    repeat,
    endpoint_receive(Endpoint, Block),
-   atom_block(Atom, Block, []),
-   term_atom(Term, Atom),
+   term_block(Term, Block),
    (  Term = end -> !
    ;  Term = control(Name, Message)
    -> actor_queue(Name, Queue, _),
@@ -174,8 +172,7 @@ control(pid(Authority, Name), Message) :-               /* local control */
    pipe_put(Queue, Message).
 control(pid(Authority, Name), Message) :-               /* remote control */
    server_endpoint(_, Endpoint),
-   term_atom(control(Name, Message), Atom),
-   atom_block(Atom, Block, []),
+   term_block(control(Name, Message), Block),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)).
 
@@ -199,8 +196,7 @@ spawn(Authority, Goal, pid(Authority, Name)) :-         /* remote run */
    server_endpoint(Authority2, Endpoint),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
-   term_atom(spawn(Goal, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, []),
+   term_block(spawn(Goal, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(spawned(Name), _).
@@ -266,8 +262,7 @@ exit(pid(Authority, Name), Message) :-                  /* remote exit */
    server_endpoint(Authority2, Endpoint),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
-   term_atom(exit(Name, Message, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, []),
+   term_block(exit(Name, Message, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(exited, _).
@@ -299,8 +294,7 @@ send(pid(Authority, Name), Message) :-                  /* remote send */
    server_endpoint(Authority2, Endpoint),
    thread_current(Thread),
    current_thread_flag(Thread, sys_thread_name, Name2),
-   term_atom(send(Name, Message, pid(Authority2, Name2)), Atom),
-   atom_block(Atom, Block, []),
+   term_block(send(Name, Message, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
    sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
    receive(sent, _).

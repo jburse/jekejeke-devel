@@ -662,34 +662,3 @@ atom_integer(Atom, Radix, Integer) :- var(Atom), !,
    sys_integer_to_atom(Integer, Radix, Atom).
 atom_integer(Atom, Radix, Integer) :-
    sys_atom_to_integer(Atom, Radix, Integer).
-
-/****************************************************************/
-/* Term Conversion                                              */
-/****************************************************************/
-
-/**
- * term_atom(T, A):
- * term_atom(T, A, O):
- * The predicate succeeds when the atom A is the serialization
- * of the term T. The ternary predicate accepts read respectively
- * write options O.
- */
-% term_atom(+-Term, -+Atom)
-:- public term_atom/2.
-term_atom(T, A) :-
-   term_atom(T, A, []).
-
-% term_atom(+-Term, -+Atom, +List)
-:- public term_atom/3.
-term_atom(T, A, O) :- var(A), !,
-   sys_unparse_term(T, O, A).
-term_atom(T, A, O) :-
-   sys_parse_term(A, O, T).
-
-:- private sys_parse_term/3.
-:- foreign(sys_parse_term/3, 'ForeignAtom',
-      sysParseTerm('Interpreter', 'String', 'Object')).
-
-:- private sys_unparse_term/3.
-:- foreign(sys_unparse_term/3, 'ForeignAtom',
-      sysUnparseTerm('Interpreter', 'AbstractTerm', 'Object')).
