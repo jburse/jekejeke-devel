@@ -40,7 +40,7 @@ public final class ConnectionInput extends FilterInputStream {
     private long expiration;
     private String mimetype = "";
     private RandomAccessFile raf;
-    private String path;
+    private String path = "";
     private int buffer;
     private long date;
     private int maxage = -1;

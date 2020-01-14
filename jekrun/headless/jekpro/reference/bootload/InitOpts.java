@@ -1,5 +1,6 @@
 package jekpro.reference.bootload;
 
+import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
@@ -14,10 +15,6 @@ import jekpro.tools.term.TermCompound;
 final class InitOpts {
     /* options */
     private final static String OP_PROMPT = "prompt";
-
-    /* option values */
-    private final static String OP_TRUE = "true";
-    private final static String OP_FALSE = "false";
 
     /* error terms */
     private final static String OP_INIT_OPTION = "init_option";
@@ -62,7 +59,7 @@ final class InitOpts {
                     ((TermCompound) temp).getArity() == 1 &&
                     ((TermCompound) temp).getFunctor().equals(OP_PROMPT)) {
                 Object help = ((TermCompound) temp).getArg(0);
-                res.setPrompt(atomToBool(help));
+                res.setPrompt(ForeignStream.atomToBool(help));
             } else {
                 InterpreterMessage.checkInstantiated(temp);
                 throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -78,27 +75,6 @@ final class InitOpts {
                     OP_LIST, opt));
         }
         return res;
-    }
-
-    /**
-     * <p>Convert an atom to a bool. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param t The bool term.
-     * @return The bool value.
-     * @throws InterpreterMessage Validation error.
-     */
-    private static boolean atomToBool(Object t)
-            throws InterpreterMessage {
-        String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_TRUE)) {
-            return true;
-        } else if (val.equals(OP_FALSE)) {
-            return false;
-        } else {
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
-        }
     }
 
 }

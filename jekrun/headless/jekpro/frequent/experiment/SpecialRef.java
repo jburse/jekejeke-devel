@@ -87,8 +87,8 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
@@ -225,7 +225,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param flags The flags.
      * @param en    The engine.
      * @return True if the ptr ref could be unified.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static Clause compileClause(int flags, Engine en)
             throws EngineMessage, EngineException {
@@ -260,8 +260,8 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param ptr The reference.
      * @param en  The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     private static void refToProperties(InterfaceReference ptr, Engine en)
             throws EngineMessage, EngineException {
@@ -296,8 +296,8 @@ public final class SpecialRef extends AbstractSpecial {
      * @param ptr The ptr.
      * @param sk  The property.
      * @param en  The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     private static void refToProperty(InterfaceReference ptr, StoreKey sk,
                                       Engine en)
@@ -310,14 +310,14 @@ public final class SpecialRef extends AbstractSpecial {
     }
 
     /**
-     * <p>Set a ptr property.</p>
+     * <p>Set a reference property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param ptr The ptr.
+     * @param ptr The reference.
      * @param m   The value skeleton.
      * @param d   The value display.
      * @param en  The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static void setRefProp(InterfaceReference ptr, Object m, Display d,
                                    Engine en)
@@ -332,14 +332,14 @@ public final class SpecialRef extends AbstractSpecial {
     }
 
     /**
-     * <p>Reset a ptr property.</p>
+     * <p>Reset a reference property.</p>
      * <p>Throws a domain error for undefined flags.</p>
      *
-     * @param ptr The ptr.
+     * @param ptr The reference.
      * @param m   The value skeleton.
      * @param d   The value display.
      * @param en  The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static void resetRefProp(InterfaceReference ptr, Object m, Display d,
                                      Engine en)
@@ -355,13 +355,13 @@ public final class SpecialRef extends AbstractSpecial {
 
     /**
      * <p>Retrieve a reference property.</p>
-     * <p>Throws a domain error for undefined ptr properties.</p>
+     * <p>Throws a domain error for undefined reference properties.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param sk The property.
+     * @param sk The property name and arity.
      * @param en The engine.
-     * @return The value.
-     * @throws EngineMessage Shit happens.
+     * @return The property.
+     * @throws EngineMessage Validation Error.
      */
     private static AbstractProperty<InterfaceReference> findRefProperty(StoreKey sk,
                                                                         Engine en)
@@ -393,7 +393,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param m The skel.
      * @param d The display.
      * @return The ptr.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static InterfaceReference derefAndCastPtr(Object m, Display d)
             throws EngineMessage {
@@ -420,7 +420,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @param t  The options skel.
      * @param d  The options display.
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static MapHashLink<Object, String> decodeAssertOptions(Object t, Display d,
                                                                          Engine en)

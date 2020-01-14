@@ -22,7 +22,7 @@ import matula.util.data.MapHashLink;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
- * <p>This class provides predicate properties.</p>
+ * <p>This class provides additional predicate properties.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -91,18 +91,18 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
 
 
     /**
-     * <p>Create a predicate property API.</p>
+     * <p>Create an additional predicate property.</p>
      *
-     * @param i The id of the source property.
+     * @param i The id of the additional predicate property.
      */
     private PropertyPredicateAPI(int i) {
         super(i);
     }
 
     /**
-     * <p>Create a predicate property API.</p>
+     * <p>Create an additional predicate property.</p>
      *
-     * @param i The id of the source property.
+     * @param i The id of the additional predicate property.
      * @param f The flags.
      */
     private PropertyPredicateAPI(int i, int f) {
@@ -187,7 +187,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
      * @param d    The property display.
      * @param en   The engine.
      * @return True if property could be set, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public boolean setObjProp(Predicate pick, Object m, Display d, Engine en)
             throws EngineMessage {
@@ -237,7 +237,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
      * @param d    The property display.
      * @param en   The engine.
      * @return True if property could be set, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public boolean resetObjProp(Predicate pick, Object m, Display d, Engine en)
             throws EngineMessage {
@@ -357,7 +357,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
      * <p>Retrieve the predicate lock.</p>
      *
      * @param pick The predicate.
-     * @param en The engie.
+     * @param en   The engine.
      * @return The read write lock.
      */
     private static ReadWriteLock getPredicateLock(Predicate pick, Engine en) {

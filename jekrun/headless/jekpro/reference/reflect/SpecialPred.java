@@ -79,8 +79,8 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Validation Error.
+     * @throws EngineMessage   Validation Error.
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
@@ -190,7 +190,7 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param en The engine.
      * @return The prolog list of the visible predicates.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static Object currentPredicates(Engine en)
             throws EngineMessage {
@@ -215,7 +215,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param res   The old predicate indicators.
      * @param en    The engine.
      * @return The new predicate indicators.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static Object consPredicates(Predicate[] preds, Object res,
                                          Engine en)
@@ -243,8 +243,8 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param en   The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     public static void predicateToProperties(Predicate pick, Engine en)
             throws EngineMessage, EngineException {
@@ -269,8 +269,8 @@ public final class SpecialPred extends AbstractSpecial {
      * @param pick  The predicate.
      * @param props The properties.
      * @param en    The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     private static void predicatePropToProperties(Predicate pick,
                                                   MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
@@ -296,7 +296,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param pick The predicate.
      * @param sk   The property.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static void predicateToProperty(Predicate pick, StoreKey sk,
                                            Engine en)
@@ -320,7 +320,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param m    The value skeleton.
      * @param d    The value display.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static void setPredProp(Predicate pick, Object m, Display d,
                                    Engine en)
@@ -342,7 +342,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param m    The value skeleton.
      * @param d    The value display.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static void resetPredProp(Predicate pick, Object m, Display d,
                                      Engine en)
@@ -383,7 +383,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param sk The property.
      * @param en The engine.
      * @return The predicate property.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static AbstractProperty<Predicate> findPredProperty(StoreKey sk,
                                                                Engine en)
@@ -417,7 +417,7 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param pick The predicate.
      * @param en   The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static void defineStatic(Predicate pick, Engine en)
             throws EngineMessage {
@@ -461,7 +461,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @param res   The old predicate indicators.
      * @param en    The engine.
      * @return The new predicate indicators.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     public static Object consProvables(Predicate[] preds, Object res,
                                        Engine en)
@@ -487,8 +487,8 @@ public final class SpecialPred extends AbstractSpecial {
      * @param d  The indicator display.
      * @param en The engine.
      * @return The predicate, or null.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     public static Predicate indicatorToPredicate(Object t, Display d,
                                                  Engine en)
@@ -510,8 +510,8 @@ public final class SpecialPred extends AbstractSpecial {
      * @param en   The engine.
      * @param copt The create flag.
      * @return The predicate, or null.
-     * @throws EngineMessage Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
+     * @throws EngineMessage Validation Error.
      */
     public static Predicate indicatorToPredicateDefined(Object t, Display d,
                                                         Engine en, int copt)

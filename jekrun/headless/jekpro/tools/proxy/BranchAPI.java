@@ -7,9 +7,9 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
-import jekpro.reference.reflect.PropertyPredicate;
 import jekpro.tools.array.PropertyPredicateAPI;
-import matula.util.data.MapEntry;
+import jekpro.reference.reflect.PropertyStream;
+import jekpro.tools.array.PropertyStreamAPI;
 
 /**
  * <p>The internal implementation of the capability API.</p>
@@ -58,6 +58,7 @@ final class BranchAPI extends Branch {
      */
     BranchAPI() {
         addPredProps(PropertyPredicateAPI.DEFAULT);
+        addStreamProps(PropertyStreamAPI.DEFAULT);
     }
 
     /**

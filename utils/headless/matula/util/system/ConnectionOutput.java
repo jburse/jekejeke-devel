@@ -39,7 +39,7 @@ import java.io.RandomAccessFile;
  */
 public final class ConnectionOutput extends FilterOutputStream {
     private RandomAccessFile raf;
-    private String path;
+    private String path = "";
     private boolean append;
     private int buffer;
     private OutputStream unbuf;

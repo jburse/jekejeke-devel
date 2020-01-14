@@ -184,47 +184,79 @@ close(Stream) :-
 :- public stream_property/2.
 stream_property(Alias, Prop) :- atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_stream_properties(Stream, Props),
-   sys_member(Prop, Props).
+   stream_property2(Stream, Prop).
 stream_property(Stream, Prop) :-
-   sys_stream_properties(Stream, Props),
-   sys_member(Prop, Props).
+   stream_property2(Stream, Prop).
 
-:- private sys_stream_properties/2.
-:- foreign(sys_stream_properties/2, 'ForeignStream',
-      sysStreamProperties('Object')).
+% stream_property2(+Frame, -Property)
+:- private stream_property2/2.
+stream_property2(I, R) :- var(R), !,
+   sys_stream_property(I, P),
+   sys_member(R, P).
+stream_property2(I, R) :-
+   functor(R, F, A),
+   sys_stream_property_chk(I, F/A, P),
+   sys_member(R, P).
+
+:- private sys_stream_property/2.
+:- foreign(sys_stream_property/2, 'ForeignStream',
+      sysStreamProperty('Interpreter', 'Object')).
+
+:- private sys_stream_property_chk/3.
+:- foreign(sys_stream_property_chk/3, 'ForeignStream',
+      sysStreamPropertyChk('Interpreter', 'Object', 'Object')).
+
+/**
+ * set_stream_property(S, Q):
+ * The predicate assigns the property Q to the stream S.
+ */
+% set_stream_property(+AliasOrStream, +Property)
+:- public set_stream_property/2.
+set_stream_property(Alias, Pos) :- atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_set_stream_property(Stream, Pos).
+set_stream_property(Stream, Pos) :-
+   sys_set_stream_property(Stream, Pos).
+
+% sys_set_stream_property(+Stream, +Property)
+:- private sys_set_stream_property/2.
+:- foreign(sys_set_stream_property/2, 'ForeignStream',
+      sysSetStreamProperty('Interpreter', 'Object', 'Object')).
+
+/**
+ * reset_stream_property(S, Q):
+ * The predicate de-assigns the property Q from the stream S.
+ */
+% reset_stream_property(+AliasOrStream, +Property)
+:- public reset_stream_property/2.
+reset_stream_property(Alias, Pos) :- atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_reset_stream_property(Stream, Pos).
+reset_stream_property(Stream, Pos) :-
+   sys_reset_stream_property(Stream, Pos).
+
+% sys_reset_stream_property(+Stream, +Property)
+:- private sys_reset_stream_property/2.
+:- foreign(sys_reset_stream_property/2, 'ForeignStream',
+      sysResetStreamProperty('Interpreter', 'Object', 'Object')).
 
 /**
  * set_stream_position(S, P): [ISO 8.11.9]
  * The predicate sets the file position of the stream S to P.
  */
-% set_stream_position(+AliasOrPath, +Pos)
+% set_stream_position(+AliasOrStream, +Pos)
 :- public set_stream_position/2.
-set_stream_position(Alias, Pos) :- atom(Alias), !,
-   sys_get_alias(Alias, Stream),
-   sys_set_stream_position(Stream, Pos).
-set_stream_position(Stream, Pos) :-
-   sys_set_stream_position(Stream, Pos).
-
-:- private sys_set_stream_position/2.
-:- foreign(sys_set_stream_position/2, 'ForeignStream',
-      sysSetStreamPosition('Object', long)).
+set_stream_position(S, P) :-
+   set_stream_property(S, position(P)).
 
 /**
  * set_stream_length(S, L):
  * The predicate sets the file length of the stream S to L.
  */
-% set_stream_length(+AliasOrPath, +Pos)
+% set_stream_length(+AliasOrStream, +Pos)
 :- public set_stream_length/2.
-set_stream_length(Alias, Len) :- atom(Alias), !,
-   sys_get_alias(Alias, Stream),
-   sys_set_stream_length(Stream, Len).
-set_stream_length(Stream, Len) :-
-   sys_set_stream_length(Stream, Len).
-
-:- private sys_set_stream_length/2.
-:- foreign(sys_set_stream_length/2, 'ForeignStream',
-      sysSetStreamLength('Object', long)).
+set_stream_length(S, L) :-
+   set_stream_property(S, length(L)).
 
 /*************************************************************************/
 /* Alias handling                                                        */

@@ -1,18 +1,34 @@
 package jekpro.frequent.stream;
 
 import derek.util.protect.LicenseError;
+import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.Store;
+import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.PropertySource;
+import jekpro.reference.reflect.PropertyStream;
+import jekpro.tools.array.PropertyStreamAPI;
 import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
+import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
+import matula.util.data.ListArray;
+import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
 import matula.util.system.*;
 
 import java.io.*;
@@ -54,39 +70,13 @@ public final class ForeignStream {
     public final static int MODE_WRITE = 1;
     public final static int MODE_APPEND = 2;
 
-    /* mode values */
-    public final static String OP_READ = "read";
-    public final static String OP_WRITE = "write";
-    public final static String OP_APPEND = "append";
-
-    /* type values */
-    public final static String OP_TYPE = "type";
-    public final static String OP_TYPE_BINARY = "binary";
-    public final static String OP_TYPE_TEXT = "text";
-
     public final static int TYPE_BINARY = 0;
     public final static int TYPE_TEXT = 1;
-    public final static int TYPE_STRING = 2;
 
-    /* open options */
-    public final static String OP_BOM = "bom";
-    public final static String OP_ENCODING = "encoding";
-    public final static String OP_BUFFER = "buffer";
     private final static String OP_IF_MODIFIED_SINCE = "if_modified_since";
     private final static String OP_IF_NONE_MATCH = "if_none_match";
     public final static String OP_USE_CACHES = "use_caches";
-    public final static String OP_REPOSITION = "reposition";
     public final static String OP_NEWLINE = "newline";
-
-    /* close options */
-    public final static String OP_FORCE = "force";
-
-    /* stream properties */
-    public final static String OP_OUTPUT = "output";
-    public final static String OP_INPUT = "input";
-    public final static String OP_MODE = "mode";
-    public final static String OP_FILE_NAME = "file_name";
-    public final static String OP_MIME_TYPE = "mime_type";
 
     /* error terms */
     public final static String OP_PERMISSION_OPEN = "open";
@@ -126,7 +116,7 @@ public final class ForeignStream {
         } catch (IllegalArgumentException x) {
             throw new InterpreterMessage(InterpreterMessage.permissionError(
                     ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
-                    new TermCompound(ForeignStream.OP_REPOSITION,
+                    new TermCompound(PropertyStream.OP_REPOSITION,
                             Foyer.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
@@ -166,7 +156,7 @@ public final class ForeignStream {
         } catch (IllegalArgumentException x) {
             throw new InterpreterMessage(InterpreterMessage.permissionError(
                     ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
-                    new TermCompound(ForeignStream.OP_REPOSITION,
+                    new TermCompound(PropertyStream.OP_REPOSITION,
                             Foyer.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
@@ -184,52 +174,16 @@ public final class ForeignStream {
      * @throws InterpreterMessage Validation error.
      */
     private static int atomToMode(String fun) throws InterpreterMessage {
-        if (fun.equals(OP_READ)) {
+        if (fun.equals(PropertyStream.OP_MODE_READ)) {
             return MODE_READ;
-        } else if (fun.equals(OP_WRITE)) {
+        } else if (fun.equals(PropertyStream.OP_MODE_WRITE)) {
             return MODE_WRITE;
-        } else if (fun.equals(OP_APPEND)) {
+        } else if (fun.equals(PropertyStream.OP_MODE_APPEND)) {
             return MODE_APPEND;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     EngineMessage.OP_DOMAIN_IO_MODE, fun));
         }
-    }
-
-    /****************************************************************/
-    /* Length & Position Properties                                 */
-    /****************************************************************/
-
-    /**
-     * <p>Reposition the stream.</p>
-     *
-     * @param str  The stream.
-     * @param fpos The position.
-     * @throws InterpreterMessage Validation or permission error.
-     */
-    public static void sysSetStreamPosition(Object str, long fpos)
-            throws InterpreterMessage, IOException {
-        RandomAccessFile raf = ForeignStream.getRaf(str);
-        if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    "reposition", "stream", str));
-        raf.seek(fpos);
-    }
-
-    /**
-     * <p>Truncate the stream.</p>
-     *
-     * @param str  The stream.
-     * @param fpos The position.
-     * @throws InterpreterMessage Validation or permission error.
-     */
-    public static void sysSetStreamLength(Object str, long fpos)
-            throws InterpreterMessage, IOException {
-        RandomAccessFile raf = ForeignStream.getRaf(str);
-        if (raf == null)
-            throw new InterpreterMessage(InterpreterMessage.permissionError(
-                    "reposition", "stream", str));
-        raf.setLength(fpos);
     }
 
     /**
@@ -238,7 +192,7 @@ public final class ForeignStream {
      * @param str The stream.
      * @return The raf or null.
      */
-    private static RandomAccessFile getRaf(Object str) {
+    public static RandomAccessFile getRaf(Object str) {
         RandomAccessFile raf;
         if (str instanceof ConnectionOutput) {
             raf = ((ConnectionOutput) str).getRaf();
@@ -269,182 +223,92 @@ public final class ForeignStream {
     /****************************************************************/
 
     /**
-     * <p>Return the list of stream properties.</p>
+     * <p>Retrieve all the properties of a stream.</p>
      *
-     * @param str Thew stream.
-     * @return The properties of the stream.
-     * @throws InterpreterMessage Validation error.
-     * @throws IOException        IO error.
+     * @param inter The interpreter.
+     * @param obj   The stream.
+     * @return The properties.
+     * @throws InterpreterException Validation Error.
+     * @throws InterpreterMessage   Validation Error.
      */
-    public static Object sysStreamProperties(Object str)
-            throws InterpreterMessage, IOException {
-        Object res = Knowledgebase.OP_NIL;
-        if (str instanceof Reader) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TYPE_TEXT), res);
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_INPUT, res);
-            if (str instanceof ConnectionReader)
-                res = sysReaderProperties((ConnectionReader) str, res);
-        } else if (str instanceof Writer) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TYPE_TEXT), res);
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_OUTPUT, res);
-            if (str instanceof ConnectionWriter)
-                res = sysWriterProperties((ConnectionWriter) str, res);
-        } else if (str instanceof InputStream) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TYPE_BINARY), res);
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_INPUT, res);
-            if (str instanceof ConnectionInput)
-                res = sysInputProperties((ConnectionInput) str, res);
-        } else if (str instanceof OutputStream) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound(OP_TYPE, OP_TYPE_BINARY), res);
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    OP_OUTPUT, res);
-            if (str instanceof ConnectionOutput)
-                res = sysOutputProperties((ConnectionOutput) str, res);
-        } else {
-            throw new InterpreterMessage(
-                    InterpreterMessage.domainError("stream", str));
+    public static Object sysStreamProperty(Interpreter inter,
+                                           Object obj)
+            throws InterpreterException, InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            streamToProperties(obj, en);
+            return AbstractTerm.createTerm(en.skel, en.display);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
-        RandomAccessFile raf = ForeignStream.getRaf(str);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_REPOSITION,
-                        (raf != null ? Foyer.OP_TRUE :
-                                AbstractFlag.OP_FALSE)), res);
-        if (raf != null) {
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("position",
-                            TermAtomic.normBigInteger(raf.getFilePointer())), res);
-            res = new TermCompound(Knowledgebase.OP_CONS,
-                    new TermCompound("length",
-                            TermAtomic.normBigInteger(raf.length())), res);
-        }
-        return res;
     }
 
     /**
-     * <p>Retrieve the properties of an input stream.</p>
+     * <p>Retrieve some properties of a knowledge base.</p>
      *
-     * @param res The properties before.
-     * @return The properties after.
+     * @param inter The interpreter.
+     * @param obj   The stream.
+     * @param key   The property name and arity.
+     * @return The properties.
+     * @throws InterpreterException Validation Error.
+     * @throws InterpreterMessage   Validation Error.
      */
-    public static Object sysInputProperties(ConnectionInput in, Object res) {
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_LAST_MODIFIED,
-                        TermAtomic.normBigInteger(in.getLastModified())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_VERSION_TAG,
-                        in.getETag()), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_EXPIRATION,
-                        TermAtomic.normBigInteger(in.getExpiration())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MIME_TYPE,
-                        in.getMimeType()), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BUFFER,
-                        Integer.valueOf(in.getBuffer())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_DATE,
-                        TermAtomic.normBigInteger(in.getDate())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(PropertySource.OP_MAX_AGE,
-                        Integer.valueOf(in.getMaxAge())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MODE,
-                        OP_READ), res);
-        String path = in.getPath();
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_FILE_NAME,
-                        (path != null ? path : "")), res);
-        return res;
-    }
-
-    /**
-     * <p>Retrieve the properties of an output stream.</p>
-     *
-     * @param out The connection output.
-     * @param res The properties before.
-     * @return The properties after.
-     */
-    public static Object sysOutputProperties(ConnectionOutput out,
-                                             Object res) {
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BUFFER,
-                        Integer.valueOf(out.getBuffer())), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_MODE,
-                        (out.getAppend() ? OP_APPEND : OP_WRITE)), res);
-        String path = out.getPath();
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_FILE_NAME,
-                        (path != null ? path : "")), res);
-        return res;
-    }
-
-    /**
-     * <p>Retrieve the properties of this connection reader.</p>
-     *
-     * @param read The connection reader.
-     * @param res  The properties before.
-     * @return The properties after.
-     */
-    public static Object sysReaderProperties(ConnectionReader read,
-                                             Object res) {
-        Reader unbuf = read.getUnbuf();
-        String enc;
-        if (unbuf instanceof InputStreamReader) {
-            enc = ((InputStreamReader) unbuf).getEncoding();
-        } else {
-            enc = null;
+    public static Object sysStreamPropertyChk(Interpreter inter,
+                                              Object obj, Object key)
+            throws InterpreterException, InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(key),
+                    AbstractTerm.getDisplay(key), en);
+            streamToProperty(obj, sk, en);
+            return AbstractTerm.createTerm(en.skel, en.display);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_ENCODING,
-                        (enc != null ? enc : "")), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BOM, (read.getBom() ? Foyer.OP_TRUE :
-                        AbstractFlag.OP_FALSE)), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(ReadOpts.OP_LINE_NO,
-                        Integer.valueOf(read.getLineNumber())), res);
-        InputStream cin = read.getUncoded();
-        if (cin instanceof ConnectionInput)
-            res = sysInputProperties((ConnectionInput) cin, res);
-        return res;
     }
 
     /**
-     * <p>Retrieve the properties of a writer.</p>
+     * <p>Set some properties of a stream.</p>
      *
-     * @param write The connection writer.
-     * @param res   The properties before.
-     * @return The properties after.
+     * @param inter The interpreter.
+     * @param obj   The stream.
+     * @param val   The property functor and arguments.
+     * @throws InterpreterMessage Validation Error.
      */
-    public static Object sysWriterProperties(ConnectionWriter write,
-                                             Object res) {
-        Writer unbuf = write.getUnbuf();
-        String enc;
-        if (unbuf instanceof OutputStreamWriter) {
-            enc = ((OutputStreamWriter) unbuf).getEncoding();
-        } else {
-            enc = null;
+    public static void sysSetStreamProperty(Interpreter inter,
+                                            Object obj, Object val)
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            setStreamProp(obj, AbstractTerm.getSkel(val),
+                    AbstractTerm.getDisplay(val), en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_ENCODING,
-                        (enc != null ? enc : "")), res);
-        res = new TermCompound(Knowledgebase.OP_CONS,
-                new TermCompound(OP_BOM,
-                        (write.getBom() ? Foyer.OP_TRUE :
-                                AbstractFlag.OP_FALSE)), res);
-        OutputStream cout = write.getUncoded();
-        if (cout instanceof ConnectionOutput)
-            res = sysOutputProperties((ConnectionOutput) cout, res);
-        return res;
+    }
+
+    /**
+     * <p>Reset some properties of a knowledge base.</p>
+     *
+     * @param inter The interpreter.
+     * @param obj   The stream.
+     * @param val   The property functor and arguments.
+     * @throws InterpreterMessage Validation Error.
+     */
+    public static void sysResetStreamProperty(Interpreter inter,
+                                              Object obj, Object val)
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        try {
+            resetStreamProp(obj, AbstractTerm.getSkel(val),
+                    AbstractTerm.getDisplay(val), en);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
     }
 
     /****************************************************************/
@@ -469,13 +333,13 @@ public final class ForeignStream {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStreamAPI.OP_ENCODING)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
                 res.setEncoding(fun);
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStream.OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
@@ -490,7 +354,7 @@ public final class ForeignStream {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStream.OP_BUFFER)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 Number num = InterpreterMessage.castInteger(help);
                 SpecialEval.checkNotLessThanZero(num);
@@ -546,7 +410,7 @@ public final class ForeignStream {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_BOM)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStreamAPI.OP_BOM)) {
                 switch (mode) {
                     case MODE_READ:
                         Object help = ((TermCompound) temp).getArg(0);
@@ -572,7 +436,7 @@ public final class ForeignStream {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_ENCODING)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStreamAPI.OP_ENCODING)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
                 res.setEncoding(fun);
@@ -631,7 +495,7 @@ public final class ForeignStream {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_TYPE)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStream.OP_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToType(help)) {
                     case TYPE_BINARY:
@@ -646,7 +510,7 @@ public final class ForeignStream {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_REPOSITION)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStream.OP_REPOSITION)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 if (atomToBool(help)) {
                     res.setFlags(res.getFlags() | OpenOpts.MASK_OPEN_RPOS);
@@ -655,7 +519,7 @@ public final class ForeignStream {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_BUFFER)) {
+                    ((TermCompound) temp).getFunctor().equals(PropertyStream.OP_BUFFER)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 Number num = InterpreterMessage.castInteger(help);
                 SpecialEval.checkNotLessThanZero(num);
@@ -704,9 +568,9 @@ public final class ForeignStream {
      */
     public static int atomToType(Object t) throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_TYPE_BINARY)) {
+        if (val.equals(PropertyStream.OP_TYPE_BINARY)) {
             return TYPE_BINARY;
-        } else if (val.equals(OP_TYPE_TEXT)) {
+        } else if (val.equals(PropertyStream.OP_TYPE_TEXT)) {
             return TYPE_TEXT;
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
@@ -722,7 +586,8 @@ public final class ForeignStream {
      * @return The bool value.
      * @throws InterpreterMessage Validation error.
      */
-    public static boolean atomToBool(Object t) throws InterpreterMessage {
+    public static boolean atomToBool(Object t) throws
+            InterpreterMessage {
         String val = InterpreterMessage.castString(t);
         if (val.equals(Foyer.OP_TRUE)) {
             return true;
@@ -732,6 +597,159 @@ public final class ForeignStream {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
+    }
+
+    /***************************************************************/
+    /* High-Level Stream Access/Modification                       */
+    /***************************************************************/
+
+    /**
+     * <p>Create a prolog list for the properties of the given stream.</p>
+     * <p>Result is returned in skeleton and display.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param obj The stream.
+     * @param en  The engine.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
+     */
+    private static void streamToProperties(Object obj, Engine en)
+            throws EngineMessage, EngineException {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
+        for (int i = snapshot.length - 1; i >= 0; i--) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            ListArray<MapHash<StoreKey, AbstractProperty<Object>>> props = branch.getStreamProps();
+            for (int j = 0; j < props.size(); j++)
+                streamPropToProperties(obj, props.get(j), en);
+        }
+    }
+
+    /**
+     * <p>Create a prolog list of the properties of the given stream and properties.</p>
+     *
+     * @param obj  The stream.
+     * @param props The properties.
+     * @param en    The engine.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
+     */
+    private static void streamPropToProperties(Object obj,
+                                               MapHash<StoreKey, AbstractProperty<Object>> props,
+                                               Engine en)
+            throws EngineMessage, EngineException {
+        for (MapEntry<StoreKey, AbstractProperty<Object>> entry2 =
+             (props != null ? props.getLastEntry() : null);
+             entry2 != null; entry2 = props.predecessor(entry2)) {
+            AbstractProperty<Object> prop = entry2.value;
+            Object t = en.skel;
+            Display d = en.display;
+            Object[] vals = prop.getObjProps(obj, en);
+            en.skel = t;
+            en.display = d;
+            AbstractProperty.consArray(vals, en);
+        }
+    }
+
+    /**
+     * <p>Create a prolog list for the property of the given stream.</p>
+     * <p>Result is returned in skeleton and display.</p>
+     *
+     * @param obj The stream.
+     * @param sk  The property.
+     * @param en  The engine.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
+     */
+    private static void streamToProperty(Object obj, StoreKey sk,
+                                         Engine en)
+            throws EngineMessage, EngineException {
+        AbstractProperty<Object> prop = ForeignStream.findStreamProperty(sk, en);
+        Object[] vals = prop.getObjProps(obj, en);
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
+        AbstractProperty.consArray(vals, en);
+    }
+
+    /**
+     * <p>Set a stream property.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     *
+     * @param obj The stream.
+     * @param m   The value skeleton.
+     * @param d   The value display.
+     * @param en  The engine.
+     * @throws EngineMessage Validation Error.
+     */
+    private static void setStreamProp(Object obj, Object m, Display d,
+                                      Engine en)
+            throws EngineMessage {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Object> prop = ForeignStream.findStreamProperty(sk, en);
+        if (!prop.setObjProp(obj, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
+    }
+
+    /**
+     * <p>Reset a stream property.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     *
+     * @param obj The stream.
+     * @param m   The value skeleton.
+     * @param d   The value display.
+     * @param en  The engine.
+     * @throws EngineMessage Validation Error.
+     */
+    private static void resetStreamProp(Object obj, Object m, Display d,
+                                        Engine en)
+            throws EngineMessage {
+        StoreKey sk = StackElement.callableToStoreKey(m);
+        AbstractProperty<Object> prop = ForeignStream.findStreamProperty(sk, en);
+        if (!prop.resetObjProp(obj, m, d, en))
+            throw new EngineMessage(EngineMessage.permissionError(
+                    EngineMessage.OP_PERMISSION_MODIFY,
+                    EngineMessage.OP_PERMISSION_PROPERTY,
+                    StoreKey.storeKeyToSkel(sk)));
+    }
+
+    /**
+     * <p>Retrieve a stream property.</p>
+     * <p>Throws a domain error for undefined stream properties.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param sk The property name and arity.
+     * @param en The engine.
+     * @return The property.
+     * @throws EngineMessage Validation Error.
+     */
+    private static AbstractProperty<Object> findStreamProperty(StoreKey sk,
+                                                               Engine en)
+            throws EngineMessage {
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            ListArray<MapHash<StoreKey, AbstractProperty<Object>>> props = branch.getStreamProps();
+            for (int j = 0; j < props.size(); j++) {
+                AbstractProperty<Object> prop = props.get(j).get(sk);
+                if (prop != null)
+                    return prop;
+            }
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
+                StoreKey.storeKeyToSkel(sk)));
     }
 
 }
