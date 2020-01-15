@@ -1,7 +1,7 @@
 package jekdev.reference.debug;
 
-import jekdev.reference.system.ProtocolReader;
-import jekdev.reference.system.ProtocolWriter;
+import jekdev.reference.system.ConnectionReaderTrace;
+import jekdev.reference.system.ConnectionWriterTrace;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
@@ -79,20 +79,14 @@ public final class PropertyTraceStream extends AbstractProperty<Object> {
      * @param en  The engine.
      * @return The stream properties.
      */
-    public Object[] getObjProps(Object obj, Engine en)
-            throws EngineException, EngineMessage {
+    public Object[] getObjProps(Object obj, Engine en) {
         switch (id) {
             case PROP_SYS_PROTOCOL:
-                if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader) obj).getUnbuf();
-                } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter) obj).getUnbuf();
-                }
                 Writer wr;
-                if (obj instanceof ProtocolReader) {
-                    wr = ((ProtocolReader) obj).getProtocol();
-                } else if (obj instanceof ProtocolWriter) {
-                    wr = ((ProtocolWriter) obj).getProtocol();
+                if (obj instanceof ConnectionReaderTrace) {
+                    wr = ((ConnectionReaderTrace) obj).getProtocol();
+                } else if (obj instanceof ConnectionWriterTrace) {
+                    wr = ((ConnectionWriterTrace) obj).getProtocol();
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -121,15 +115,10 @@ public final class PropertyTraceStream extends AbstractProperty<Object> {
         switch (id) {
             case PROP_SYS_PROTOCOL:
                 Writer wr = derefAndCastProtocol(m, d, en);
-                if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader) obj).getUnbuf();
-                } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter) obj).getUnbuf();
-                }
-                if (obj instanceof ProtocolReader) {
-                    ((ProtocolReader) obj).setProtocol(wr);
-                } else if (obj instanceof ProtocolWriter) {
-                    ((ProtocolWriter) obj).setProtocol(wr);
+                if (obj instanceof ConnectionReaderTrace) {
+                    ((ConnectionReaderTrace) obj).setProtocol(wr);
+                } else if (obj instanceof ConnectionWriterTrace) {
+                    ((ConnectionWriterTrace) obj).setProtocol(wr);
                 } else {
                     throw new EngineMessage(
                             EngineMessage.permissionError("protocol", "stream", obj));
@@ -155,15 +144,10 @@ public final class PropertyTraceStream extends AbstractProperty<Object> {
             throws EngineMessage {
         switch (id) {
             case PROP_SYS_PROTOCOL:
-                if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader) obj).getUnbuf();
-                } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter) obj).getUnbuf();
-                }
-                if (obj instanceof ProtocolReader) {
-                    ((ProtocolReader) obj).setProtocol(null);
-                } else if (obj instanceof ProtocolWriter) {
-                    ((ProtocolWriter) obj).setProtocol(null);
+                if (obj instanceof ConnectionReaderTrace) {
+                    ((ConnectionReaderTrace) obj).setProtocol(null);
+                } else if (obj instanceof ConnectionWriterTrace) {
+                    ((ConnectionWriterTrace) obj).setProtocol(null);
                 } else {
                     throw new EngineMessage(
                             EngineMessage.permissionError("protocol", "stream", obj));

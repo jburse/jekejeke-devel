@@ -1,11 +1,12 @@
 package jekdev.reference.system;
 
-import java.io.FilterWriter;
+import matula.util.system.ConnectionWriter;
+
 import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>Provides protocolling of a writer.</p>
+ * <p>Refinement of the connection writer.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,15 +36,15 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ProtocolWriter extends FilterWriter {
+public final class ConnectionWriterTrace extends ConnectionWriter {
     private Writer protocol;
 
     /**
-     * <p>Create a protocol writer over a writer.</p>
+     * <p>Create a trace connection writer from a writer.</p>
      *
      * @param w The writer.
      */
-    public ProtocolWriter(Writer w) {
+    public ConnectionWriterTrace(Writer w) {
         super(w);
     }
 
@@ -72,7 +73,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void write(int c) throws IOException {
-        out.write(c);
+        super.write(c);
         if (protocol != null)
             protocol.write(c);
     }
@@ -85,8 +86,8 @@ public final class ProtocolWriter extends FilterWriter {
      * @param len  The length.
      * @throws IOException IO Error.
      */
-    public void write(char cbuf[], int off, int len) throws IOException {
-        out.write(cbuf, off, len);
+    public void write(char[] cbuf, int off, int len) throws IOException {
+        super.write(cbuf, off, len);
         if (protocol != null)
             protocol.write(cbuf, off, len);
     }
@@ -100,7 +101,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void write(String str, int off, int len) throws IOException {
-        out.write(str, off, len);
+        super.write(str, off, len);
         if (protocol != null)
             protocol.write(str, off, len);
     }
@@ -111,7 +112,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO error.
      */
     public void flush() throws IOException {
-        out.flush();
+        super.flush();
         if (protocol != null)
             protocol.flush();
     }
@@ -122,7 +123,7 @@ public final class ProtocolWriter extends FilterWriter {
      * @throws IOException IO Error.
      */
     public void close() throws IOException {
-        out.close();
+        super.close();
         if (protocol != null)
             protocol.close();
     }

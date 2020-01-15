@@ -93,9 +93,6 @@ is_dict/2	no	notebook/dict
 is_json/1	no	notebook/json
 leash/1	no	debug/custom
 list_cover_source/0	no	testing/tracker
-memory_get/2	no	system/memory
-memory_read/3	no	system/memory
-memory_write/2	no	system/memory
 meta_both/2	no	wire/view
 meta_thread/2	no	wire/view
 micro_close/1	no	inspection/micro

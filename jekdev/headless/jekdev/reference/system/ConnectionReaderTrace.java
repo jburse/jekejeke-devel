@@ -1,12 +1,13 @@
 package jekdev.reference.system;
 
-import java.io.FilterReader;
+import matula.util.system.ConnectionReader;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
 /**
- * <p>Provides protocolling of a reader.</p>
+ * <p>Refinement of the connection reader.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,16 +37,16 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ProtocolReader extends FilterReader {
+public final class ConnectionReaderTrace extends ConnectionReader {
     private Writer protocol;
     private boolean peeking;
 
     /**
-     * <p>Create a protocol reader over a reader.</p>
+     * <p>Create a trace connection reader from a reader.</p>
      *
      * @param r The reader.
      */
-    public ProtocolReader(Reader r) {
+    public ConnectionReaderTrace(Reader r) {
         super(r);
     }
 
@@ -67,6 +68,7 @@ public final class ProtocolReader extends FilterReader {
         return protocol;
     }
 
+
     /**
      * <p>Read a character.</p>
      *
@@ -74,13 +76,11 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException IO Error.
      */
     public int read() throws IOException {
-        int ch = in.read();
+        int ch = super.read();
         if (ch == -1)
-            return -1;
-        if (!peeking) {
-            if (protocol != null)
-                protocol.write(ch);
-        }
+            return ch;
+        if (protocol != null && !peeking)
+            protocol.write(ch);
         return ch;
     }
 
@@ -94,34 +94,30 @@ public final class ProtocolReader extends FilterReader {
      * @throws IOException Shit happens.
      */
     public int read(char[] cbuf, int off, int len) throws IOException {
-        int n = in.read(cbuf, off, len);
-        if (n == -1)
-            return -1;
-        if (!peeking) {
-            if (protocol != null)
-                protocol.write(cbuf, off, n);
-        }
-        return n;
+        len = super.read(cbuf, off, len);
+        if (len == -1)
+            return len;
+        if (protocol != null && !peeking)
+            protocol.write(cbuf, off, len);
+        return len;
     }
+
 
     /**
      * <p>Mark current position.</p>
      *
      * @param a The expiry length.
-     * @throws IOException IO Error.
      */
-    public void mark(int a) throws IOException {
-        in.mark(a);
+    public void mark(int a) {
+        super.mark(a);
         peeking = true;
     }
 
     /**
      * <p>Reset to last marked position.</p>
-     *
-     * @throws IOException IO Error.
      */
-    public void reset() throws IOException {
-        in.reset();
+    public void reset() {
+        super.reset();
         peeking = false;
     }
 
