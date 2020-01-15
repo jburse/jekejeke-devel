@@ -60,19 +60,20 @@
  */
 % protocol(+Atom)
 :- public protocol/1.
+:- sys_notrace protocol/1.
 protocol(_) :-
    current_prolog_flag(sys_cur_input, Input),
-   sys_get_stream_protocol(Input, Protocol),
+   stream_property(Input, sys_protocol(Protocol)),
    Protocol \== null,
    throw(error(permission_error(protocol, state, Protocol), _)).
 protocol(Name) :-
    open(Name, append, Protocol),
    current_prolog_flag(sys_cur_input, Input),
-   sys_set_stream_protocol(Input, Protocol),
+   set_stream_property(Input, sys_protocol(Protocol)),
    current_prolog_flag(sys_cur_output, Output),
-   sys_set_stream_protocol(Output, Protocol),
+   set_stream_property(Output, sys_protocol(Protocol)),
    current_prolog_flag(sys_cur_error, Error),
-   sys_set_stream_protocol(Error, Protocol).
+   set_stream_property(Error, sys_protocol(Protocol)).
 :- set_predicate_property(protocol/1, sys_notrace).
 
 /**
@@ -82,26 +83,18 @@ protocol(Name) :-
  */
 % noprotocol
 :- public noprotocol/0.
+:- sys_notrace noprotocol/0.
 noprotocol :-
    current_prolog_flag(sys_cur_input, Input),
-   sys_get_stream_protocol(Input, Protocol),
+   stream_property(Input, sys_protocol(Protocol)),
    Protocol == null,
    throw(error(permission_error(protocol, state, Protocol), _)).
 noprotocol :-
    current_prolog_flag(sys_cur_input, Input),
-   sys_get_stream_protocol(Input, Protocol),
+   stream_property(Input, sys_protocol(Protocol)),
    close(Protocol),
-   sys_set_stream_protocol(Input, null),
+   set_stream_property(Input, sys_protocol(null)),
    current_prolog_flag(sys_cur_output, Output),
-   sys_set_stream_protocol(Output, null),
+   set_stream_property(Output, sys_protocol(null)),
    current_prolog_flag(sys_cur_error, Error),
-   sys_set_stream_protocol(Error, null).
-:- set_predicate_property(noprotocol/0, sys_notrace).
-
-:- private sys_get_stream_protocol/2.
-:- foreign(sys_get_stream_protocol/2, 'ForeignProtocol',
-      sysGetStreamProtocol('Object')).
-
-:- private sys_set_stream_protocol/2.
-:- foreign(sys_set_stream_protocol/2, 'ForeignProtocol',
-      sysSetStreamProtocol('Object', 'Object')).
+   set_stream_property(Error, sys_protocol(null)).

@@ -61,7 +61,7 @@
  * store_property(F, P):
  * The predicate succeeds for the properties P of the knowledge base F.
  */
-% store_property(+Frame, -Property)
+% store_property(+Store, -Property)
 :- public store_property/2.
 store_property(I, R) :- var(R), !,
    sys_store_property(I, P),
@@ -83,7 +83,7 @@ store_property(I, R) :-
  * set_store_property(S, Q):
  * The predicate assigns the property Q to the knowledge base S.
  */
-% set_store_property(+Oper, +Property)
+% set_store_property(+Store, +Property)
 :- public set_store_property/2.
 :- foreign(set_store_property/2, 'ForeignStore',
       sysSetStoreProperty('Interpreter', 'Knowledgebase', 'Object')).
@@ -92,7 +92,7 @@ store_property(I, R) :-
  * reset_store_property(S, Q):
  * The predicate de-assigns the property Q from the knowledge base S.
  */
-% reset_store_property(+Oper, +Property)
+% reset_store_property(+Store, +Property)
 :- public reset_store_property/2.
 :- foreign(reset_store_property/2, 'ForeignStore',
       sysResetStoreProperty('Interpreter', 'Knowledgebase', 'Object')).

@@ -75,6 +75,7 @@
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/store)).
 :- use_module(library(system/attach)).
+:- use_module(library(structure/bytes)).
 :- sys_load_resource(debug).
 
 /***********************************************************************/

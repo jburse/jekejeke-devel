@@ -52,6 +52,7 @@
 :- use_module(library(advanced/sequence)).
 :- use_module(library(stream/xml)).
 :- use_module(library(system/uri)).
+:- use_module(library(structure/bytes)).
 :- use_module(runner).
 :- use_module(helper).
 :- sys_load_resource(testing).
@@ -197,7 +198,7 @@ html_list_package(_, _).
 html_list_member(R, S) :-
    call_nth(result_predicate(F, A, S, P), Z),
    html_zebra_row(Z),
-   term_atom(F/A, FAStr, [quoted(true)]),
+   term_atom(F/A, FAStr),
    make_uri(R, '', FAStr, RFAUri),
    uri_encode(RFAUri, RFAUriEnc),
    write('  <td><a href="'), html_escape(RFAUriEnc), write('">'),
@@ -237,7 +238,7 @@ html_list_suite(S, N, Z) :-
    write('''>'), html_escape(V1), write(' '),
    html_escape(N), write('</h1>'), nl,
    result_predicate(F, A, S, U),
-   term_atom(F/A, FAStr, [quoted(true)]),
+   term_atom(F/A, FAStr),
    uri_encode(FAStr, FAStrEnc),
    write('<a name="'), html_escape(FAStrEnc), write('"></a>'),
    write('<h2>'), html_functor_type(A), write(' '), html_functor_indicator(F, A), write('</h2>'), nl,
@@ -285,8 +286,8 @@ html_list_predicate(_, _, _, _).
 :- private html_functor_indicator/2.
 html_functor_indicator(F, A) :-
    A < 0, !, A2 is -A-1,
-   term_atom(F/A2, FA2Str, [quoted(true)]),
+   term_atom(F/A2, FA2Str),
    html_escape(FA2Str).
 html_functor_indicator(F, A) :-
-   term_atom(F/A, FAStr, [quoted(true)]),
+   term_atom(F/A, FAStr),
    html_escape(FAStr).

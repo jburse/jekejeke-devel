@@ -58,8 +58,8 @@ public final class ForeignStore {
      * @param inter The interpreter.
      * @param know  The knowledge base.
      * @return The properties.
-     * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Validation Error.
+     * @throws InterpreterMessage   Validation Error.
      */
     public static Object sysStoreProperty(Interpreter inter,
                                           Knowledgebase know)
@@ -80,18 +80,18 @@ public final class ForeignStore {
      *
      * @param inter The interpreter.
      * @param know  The knowledge base.
-     * @param obj   The properties name.
+     * @param key   The property name and arity.
      * @return The properties.
-     * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Validation Error.
+     * @throws InterpreterMessage   Validation Error.
      */
     public static Object sysStorePropertyChk(Interpreter inter,
-                                             Knowledgebase know, Object obj)
+                                             Knowledgebase know, Object key)
             throws InterpreterException, InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
-            StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(obj),
-                    AbstractTerm.getDisplay(obj), en);
+            StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(key),
+                    AbstractTerm.getDisplay(key), en);
             storeToProperty((Store) know.getStore(), sk, en);
             return AbstractTerm.createTerm(en.skel, en.display);
         } catch (EngineException x) {
@@ -106,36 +106,36 @@ public final class ForeignStore {
      *
      * @param inter The interpreter.
      * @param know  The knowledge base.
-     * @param obj   The properties name and value.
-     * @throws InterpreterMessage Shit happens.
+     * @param val   The property functor and arguments.
+     * @throws InterpreterMessage Validation Error.
      */
     public static void sysSetStoreProperty(Interpreter inter,
-                                           Knowledgebase know, Object obj)
+                                           Knowledgebase know, Object val)
             throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
             setStoreProp((Store) know.getStore(),
-                    AbstractTerm.getSkel(obj), AbstractTerm.getDisplay(obj), en);
+                    AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
     }
 
     /**
-     * <p>Set some properties of a knowledge base.</p>
+     * <p>Reset some properties of a knowledge base.</p>
      *
      * @param inter The interpreter.
      * @param know  The knowledge base.
-     * @param obj   The properties name.
-     * @throws InterpreterMessage Shit happens.
+     * @param val   The property functor and arguments.
+     * @throws InterpreterMessage Validation Error.
      */
     public static void sysResetStoreProperty(Interpreter inter,
-                                             Knowledgebase know, Object obj)
+                                             Knowledgebase know, Object val)
             throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
             resetStoreProp((Store) know.getStore(),
-                    AbstractTerm.getSkel(obj), AbstractTerm.getDisplay(obj), en);
+                    AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -194,8 +194,8 @@ public final class ForeignStore {
      *
      * @param store The store.
      * @param en    The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     public static void storeToProperties(Store store, Engine en)
             throws EngineMessage, EngineException {
@@ -233,8 +233,8 @@ public final class ForeignStore {
      * @param store The store, non null.
      * @param sk    The property.
      * @param en    The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Validation Error.
+     * @throws EngineException Validation Error.
      */
     public static void storeToProperty(Store store, StoreKey sk,
                                        Engine en)
@@ -259,7 +259,7 @@ public final class ForeignStore {
      * @param m     The term skeleton.
      * @param d     The term display.
      * @param en    The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static void setStoreProp(Store store,
                                      Object m, Display d, Engine en)
@@ -283,7 +283,7 @@ public final class ForeignStore {
      * @param m     The term skeleton.
      * @param d     The term display.
      * @param en    The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static void resetStoreProp(Store store,
                                        Object m, Display d, Engine en)
@@ -307,7 +307,7 @@ public final class ForeignStore {
      * @param sk The property.
      * @param en The engine.
      * @return The store property.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage Validation Error.
      */
     private static AbstractProperty<Store> findStoreProperty(StoreKey sk,
                                                              Engine en)

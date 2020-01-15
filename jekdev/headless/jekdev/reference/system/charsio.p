@@ -150,8 +150,7 @@ fetch_binary_output(B) :-
 fetch_text_output(A) :-
    current_output(K),
    flush_output(K),
-   memory_get(K, B),
-   atom_block(A, B, []).
+   memory_get(K, [], A).
 
 % create_binary_input(+Bytes, -Stream)
 :- private create_binary_input/2.

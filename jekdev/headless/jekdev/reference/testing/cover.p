@@ -53,6 +53,7 @@
 :- use_module(library(stream/xml)).
 :- use_module(library(inspection/base)).
 :- use_module(library(system/uri)).
+:- use_module(library(structure/bytes)).
 :- use_module(tracker).
 :- use_module(helper).
 :- sys_load_resource(testing).
@@ -198,7 +199,7 @@ html_list_member(R, S) :-
    call_nth(cover_predicate(F, A, S, P), Z),
    html_zebra_row(Z),
    sys_provable_hash(F/A, S, K),
-   term_atom(K, FAStr, [quoted(true)]),
+   term_atom(K, FAStr),
    make_uri(R, '', FAStr, RFAUri),
    uri_encode(RFAUri, RFAUriEnc),
    write('  <td><a href="'), html_escape(RFAUriEnc), write('">'),
@@ -239,7 +240,7 @@ html_list_source(S, N, Z) :-
    html_escape(N), write('</h1>'), nl,
    cover_predicate(F, A, S, U),
    sys_provable_hash(F/A, S, K),
-   term_atom(K, FAStr, [quoted(true)]),
+   term_atom(K, FAStr),
    uri_encode(FAStr, FAStrEnc),
    write('<a name="'), html_escape(FAStrEnc), write('"></a>'),
    write('<h2>'), html_functor_type(A), write(' '),
@@ -292,9 +293,9 @@ html_list_predicate(_, _, _, _).
 html_functor_indicator(F, A, C) :-
    A < 0, !, B is -A-1,
    sys_provable_hash(F/B, C, K),
-   term_atom(K, FBStr, [quoted(true)]),
+   term_atom(K, FBStr),
    html_escape(FBStr).
 html_functor_indicator(F, A, C) :-
    sys_provable_hash(F/A, C, K),
-   term_atom(K, FAStr, [quoted(true)]),
+   term_atom(K, FAStr),
    html_escape(FAStr).
