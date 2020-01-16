@@ -1,6 +1,17 @@
 package jekdev.reference.wire;
 
+import jekdev.model.builtin.CapabilityTrace;
+import jekdev.model.pretty.FoyerTrace;
+import jekdev.reference.system.ConnectionReaderTrace;
+import jekdev.reference.system.ConnectionWriterTrace;
+import jekpro.model.builtin.AbstractBranch;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.call.Capability;
+import jekpro.tools.proxy.CapabilityAPI;
+
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * <p>This class provides an abstract factory.</p>
@@ -40,6 +51,58 @@ public abstract class AbstractFactoryTrace extends AbstractFactory {
      */
     public AbstractFactoryTrace() {
         addPrologFlags(FlagFactoryTrace.DEFAULT);
+    }
+
+    /**
+     * <p>Prepare the tool connections.</p>
+     * <p>Can be overridden by subclasses.</p>
+     */
+    protected void prepareToolConnections() {
+        toolinput = new ConnectionReaderTrace(new InputStreamReader(System.in));
+        tooloutput = new ConnectionWriterTrace(new OutputStreamWriter(System.out));
+        toolerror = new ConnectionWriterTrace(new OutputStreamWriter(System.err));
+    }
+
+    /*******************************************************************/
+    /* Bootstrap Capabilities                                          */
+    /*******************************************************************/
+
+    /**
+     * <p>Retrieve the init branches.</p>
+     *
+     * @return The branches.
+     */
+    public AbstractBranch[] getInitBranches() {
+        Capability cap = new CapabilityAPI();
+        Capability cap2 = new CapabilityTrace();
+        return new AbstractBranch[]{(AbstractBranch) cap.getBranch(),
+                (AbstractBranch) cap2.getBranch()};
+    }
+
+    /**
+     * <p>Retrieve the brand branch.</p>
+     *
+     * @return The branch.
+     */
+    public AbstractBranch getBrandBranch() {
+        Capability cap2 = new CapabilityTrace();
+        return (AbstractBranch) cap2.getBranch();
+    }
+
+    /*******************************************************************/
+    /* Factory Methods                                                 */
+    /*******************************************************************/
+
+    /**
+     * <p>Create a fioyer.</p>
+     * <p>Can be overridden by subclasses.</p>
+     *
+     * @return The foyer.
+     */
+    public Foyer createFoyer() {
+        Foyer foyer = new FoyerTrace();
+        foyer.setFramework(this);
+        return foyer;
     }
 
 }

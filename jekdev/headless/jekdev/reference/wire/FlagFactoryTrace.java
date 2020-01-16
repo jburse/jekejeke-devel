@@ -100,7 +100,7 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
             throws EngineMessage {
         try {
             switch (id) {
-                 case FLAG_SYS_MONITOR_LOGGING:
+                case FLAG_SYS_MONITOR_LOGGING:
                     if (AbstractFlag.atomToSwitch(m, d)) {
                         en.store.foyer.resetBit(FoyerTrace.MASK_FOYER_NLOG);
                     } else {
