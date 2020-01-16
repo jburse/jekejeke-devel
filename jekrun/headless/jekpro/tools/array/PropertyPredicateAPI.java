@@ -65,14 +65,14 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static String OP_SYS_TABLED = "sys_tabled";
     private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
 
-    public final static int PROP_SYS_META_PREDICATE = 0;
-    public final static int PROP_SYS_META_FUNCTION = 1;
-    public final static int PROP_SYS_NOEXPAND = 2;
-    public final static int PROP_SYS_NOMACRO = 3;
-    public final static int PROP_META_PREDICATE = 4;
-    public final static int PROP_META_FUNCTION = 5;
-    public final static int PROP_SYS_TABLED = 6;
-    public final static int PROP_SYS_READWRITE_LOCK = 7;
+    private final static int PROP_SYS_META_PREDICATE = 0;
+    private final static int PROP_SYS_META_FUNCTION = 1;
+    private final static int PROP_SYS_NOEXPAND = 2;
+    private final static int PROP_SYS_NOMACRO = 3;
+    private final static int PROP_META_PREDICATE = 4;
+    private final static int PROP_META_FUNCTION = 5;
+    private final static int PROP_SYS_TABLED = 6;
+    private final static int PROP_SYS_READWRITE_LOCK = 7;
 
     static {
         DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_SYS_META_PREDICATE));

@@ -8,9 +8,13 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
+import jekpro.reference.bootload.ForeignEngine;
+import jekpro.tools.bundle.RecognizerSWI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
+import matula.util.config.AbstractBundle;
+import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -246,6 +250,46 @@ public abstract class Capability {
      */
     public final Object getBranch() {
         return branch;
+    }
+
+    /**
+     * <p>Retrieve the language as an internationalized text.</p>
+     *
+     * @param lobby  The lobby.
+     * @param locale The locale.
+     * @return The language as an internationalized text or null.
+     */
+    public String getLang(Lobby lobby, Locale locale) {
+        Properties descr = getDescrModel(locale, lobby);
+        if (descr != null) {
+            String langcode = (String) getProperty(Capability.PROP_LANGUAGE_CODE, lobby);
+            if (!"".equals(langcode)) {
+                return descr.getProperty("language." + langcode);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Retrieve the product and release text.</p>
+     *
+     * @param lobby  The lobby.
+     * @param locale The locale.
+     * @return The product and release.
+     */
+    public String getProductRelease(Lobby lobby, Locale locale) {
+        Properties descr = getDescrModel(locale, lobby);
+        if (descr != null) {
+            String product = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT);
+            String release = descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
+            return product + " " + release + ForeignEngine.sysDate(this, lobby, locale);
+        } else {
+            Properties resources = LangProperties.getLang(RecognizerSWI.class, "intl", locale);
+            return resources.getProperty("capa.missing");
+        }
     }
 
 }

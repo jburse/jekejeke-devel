@@ -4,10 +4,19 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.Foyer;
+import jekpro.tools.call.Capability;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.AbstractReflection;
+import jekpro.tools.proxy.CapabilityAPI;
+import jekpro.tools.proxy.Reflection;
 import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
+import matula.util.system.ConnectionReader;
+import matula.util.system.ConnectionWriter;
+
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * <p>This class provides an abstract factory.</p>
@@ -82,7 +91,19 @@ public abstract class AbstractFactory extends AbstractFramework {
      * <p>Create an abstract factor.</p>
      */
     public AbstractFactory() {
+        prepareToolConnections();
         addPrologFlags(FlagFactory.DEFAULT);
+        setReflection(Reflection.DEFAULT);
+    }
+
+    /**
+     * <p>Prepare the tool connections.</p>
+     * <p>Can be overridden by subclasses.</p>
+     */
+    protected void prepareToolConnections() {
+        toolinput = new ConnectionReader(new InputStreamReader(System.in));
+        tooloutput = new ConnectionWriter(new OutputStreamWriter(System.out));
+        toolerror = new ConnectionWriter(new OutputStreamWriter(System.err));
     }
 
     /**
@@ -102,10 +123,6 @@ public abstract class AbstractFactory extends AbstractFramework {
     public void setReflection(AbstractReflection r) {
         reflection = r;
     }
-
-    /****************************************************************/
-    /* Prolog Flags                                                 */
-    /****************************************************************/
 
     /**
      * <p>Retrieve the prolog flags.</p>
@@ -128,36 +145,49 @@ public abstract class AbstractFactory extends AbstractFramework {
     }
 
     /*******************************************************************/
+    /* Bootstrap Capabilities                                          */
+    /*******************************************************************/
+
+    /**
+     * <p>Retrieve the init branches.</p>
+     * <p>Can be overridden by subclasses.</p>
+     *
+     * @return The branches.
+     */
+    public AbstractBranch[] getInitBranches() {
+        Capability cap = new CapabilityAPI();
+        return new AbstractBranch[]{(AbstractBranch) cap.getBranch()};
+    }
+
+    /**
+     * <p>Retrieve the brand branch.</p>
+     * <p>Can be overridden by subclasses.</p>
+     *
+     * @return The branch.
+     */
+    public AbstractBranch getBrandBranch() {
+        Capability cap = new CapabilityAPI();
+        return (AbstractBranch) cap.getBranch();
+    }
+
+    /*******************************************************************/
     /* Factory Methods                                                 */
     /*******************************************************************/
 
     /**
      * <p>Create a fioyer.</p>
+     * <p>Can be overridden by subclasses.</p>
      *
      * @return The foyer.
      */
-    public abstract Foyer createFoyer();
+    public Foyer createFoyer() {
+        Foyer foyer = new Foyer();
+        foyer.setFramework(this);
+        return foyer;
+    }
 
     /*******************************************************************/
-    /* Configuration Data                                                 */
-    /*******************************************************************/
-
-    /**
-     * <p>Retrieve the init branches.</p>
-     *
-     * @return The branches.
-     */
-    public abstract AbstractBranch[] getInitBranches();
-
-    /**
-     * <p>Retrieve the brand branch.</p>
-     *
-     * @return The branch.
-     */
-    public abstract AbstractBranch getBrandBranch();
-
-    /*******************************************************************/
-    /* Life Cycle                                                      */
+    /* Plaztform Specific                                              */
     /*******************************************************************/
 
     /**

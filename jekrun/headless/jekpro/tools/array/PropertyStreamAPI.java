@@ -62,15 +62,15 @@ public class PropertyStreamAPI extends AbstractProperty<Object> {
     public final static String OP_MIME_TYPE = "mime_type";
     public final static String OP_BOM = "bom";
 
-    public final static int PROP_ENCODING = 0;
-    public final static int PROP_MIME_TYPE = 1;
-    public final static int PROP_LAST_MODIFIED = 2;
-    public final static int PROP_VERSION_TAG = 3;
-    public final static int PROP_BOM = 4;
-    public final static int PROP_LINE_NO = 5;
-    public final static int PROP_EXPIRATION = 6;
-    public final static int PROP_DATE = 7;
-    public final static int PROP_MAX_AGE = 8;
+    private final static int PROP_ENCODING = 0;
+    private final static int PROP_MIME_TYPE = 1;
+    private final static int PROP_LAST_MODIFIED = 2;
+    private final static int PROP_VERSION_TAG = 3;
+    private final static int PROP_BOM = 4;
+    private final static int PROP_LINE_NO = 5;
+    private final static int PROP_EXPIRATION = 6;
+    private final static int PROP_DATE = 7;
+    private final static int PROP_MAX_AGE = 8;
 
     static {
         DEFAULT.add(new StoreKey(OP_ENCODING, 1), new PropertyStreamAPI(PROP_ENCODING));
@@ -100,8 +100,7 @@ public class PropertyStreamAPI extends AbstractProperty<Object> {
      * @param en  The engine.
      * @return The stream properties.
      */
-    public Object[] getObjProps(Object obj, Engine en)
-            throws EngineException, EngineMessage {
+    public Object[] getObjProps(Object obj, Engine en) {
         switch (id) {
             case PROP_ENCODING:
                 if (obj instanceof ConnectionReader) {
