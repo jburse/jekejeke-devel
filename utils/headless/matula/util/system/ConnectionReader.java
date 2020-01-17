@@ -36,7 +36,7 @@ import java.io.*;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ConnectionReader extends FilterReader {
+public class ConnectionReader extends FilterReader {
     private final static int MAX_LINE = 1024;
 
     private boolean bom;

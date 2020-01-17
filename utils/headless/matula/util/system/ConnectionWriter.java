@@ -36,7 +36,7 @@ import java.io.*;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ConnectionWriter extends FilterWriter {
+public class ConnectionWriter extends FilterWriter {
     private boolean bom;
     private Writer unbuf;
     private OutputStream uncoded;
@@ -44,7 +44,7 @@ public final class ConnectionWriter extends FilterWriter {
     private String newline = OpenOpts.UNIX_NEWLINE;
 
     /**
-     * <p>Create a connection writer from a write.</p>
+     * <p>Create a connection writer from a writer.</p>
      *
      * @param w The writer.
      */
