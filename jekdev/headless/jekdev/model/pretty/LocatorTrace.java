@@ -74,24 +74,6 @@ public final class LocatorTrace extends AbstractLocator {
     }
 
     /**
-     * <p>Retrieve all the indicator positions.</p>
-     *
-     * @return All the indicator positions.
-     */
-    public MapEntry<PositionKey, Predicate[]>[] allFirstPositions() {
-        return firstlocs.allPositions();
-    }
-
-    /**
-     * <p>Retrieve all the static positions.</p>
-     *
-     * @return All the static positions.
-     */
-    public MapEntry<PositionKey, Predicate[]>[] allPositions() {
-        return locs.allPositions();
-    }
-
-    /**
      * <p>Retrieve all the indicator predicates.</p>
      *
      * @return All the indicator predicates.

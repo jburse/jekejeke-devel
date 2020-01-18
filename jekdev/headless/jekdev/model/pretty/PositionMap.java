@@ -39,10 +39,6 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PositionMap extends MapHashLink<PositionKey, PredicateSet> {
-    private MapEntry<PositionKey, Predicate[]>[] cachelocs;
-
-    private final static MapEntry<PositionKey, Predicate[]>[] VOID_POS = new MapEntry[0];
-
     protected AbstractSource src;
 
     /**
@@ -67,9 +63,7 @@ public final class PositionMap extends MapHashLink<PositionKey, PredicateSet> {
                 loc = new PredicateSet();
                 add(pos, loc);
             }
-            if (!loc.addPredicate(pick))
-                return;
-            cachelocs = null;
+            loc.addPredicate(pick);
         }
     }
 
@@ -79,41 +73,7 @@ public final class PositionMap extends MapHashLink<PositionKey, PredicateSet> {
     public void clearPositions() {
         synchronized (src) {
             clear();
-            cachelocs = null;
         }
-    }
-
-    /**
-     * <p>Retrieve all positions.</p>
-     *
-     * @return Snapshot of the positions.
-     */
-    public MapEntry<PositionKey, Predicate[]>[] allPositions() {
-        MapEntry<PositionKey, Predicate[]>[] res = cachelocs;
-        if (res != null)
-            return res;
-        synchronized (src) {
-            res = cachelocs;
-            if (res != null)
-                return res;
-            if (size() != 0) {
-                res = new MapEntry[size()];
-                int k = 0;
-                for (MapEntry<PositionKey, PredicateSet> entry = getFirstEntry();
-                     entry != null; entry = successor(entry)) {
-                    PredicateSet loc = entry.value;
-                    MapEntry<PositionKey, Predicate[]> help = new MapEntry<PositionKey, Predicate[]>();
-                    help.key = entry.key;
-                    help.value = loc.allPredicates();
-                    res[k] = help;
-                    k++;
-                }
-            } else {
-                res = VOID_POS;
-            }
-            cachelocs = res;
-        }
-        return res;
     }
 
     /**

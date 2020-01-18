@@ -42,14 +42,12 @@ public final class PredicateSet extends ListArray<Predicate> {
      * <p>Add a predicate.</p>
      *
      * @param pick The predicate.
-     * @return True if cache was cleared, otherwise false.
      */
-    public boolean addPredicate(Predicate pick) {
+    public void addPredicate(Predicate pick) {
         if (contains(pick))
-            return false;
+            return;
         add(pick);
         cachepreds = null;
-        return true;
     }
 
     /**
