@@ -139,6 +139,7 @@ max/2	no	gauss/vector
 max/3	no	gauss/ordered
 min/2	no	gauss/vector
 min/3	no	gauss/ordered
+mode/2	yes	decimal/scale
 mp/3	no	decimal/multi
 mp_abnormal/1	no	decimal/multi
 multi:mp_abnormal/1	no	decimal/poly
@@ -155,6 +156,7 @@ mp_mul/4	no	decimal/arith
 mp_slash/4	no	decimal/arith
 mp_sub/4	no	decimal/arith
 new_context/2	yes	decimal/scale
+new_context/3	yes	decimal/scale
 new_decimal/3	yes	decimal/scale
 new_fraction/3	no	groebner/fraction
 precision/2	yes	decimal/scale

@@ -2,7 +2,6 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -53,6 +52,8 @@ public class SupplementScale extends AbstractSpecial {
     private final static int EVALUABLE_PRECISION = 3;
     private final static int EVALUABLE_REQUESTED = 4;
     private final static int EVALUABLE_NEW_CONTEXT = 5;
+    private final static int EVALUABLE_MODE = 6;
+    private final static int EVALUABLE_NEW_CONTEXT_DEVIANT = 7;
 
     /**
      * <p>Create a decimal access special.</p>
@@ -158,6 +159,40 @@ public class SupplementScale extends AbstractSpecial {
                     en.skel = newContext(x);
                     en.display = Display.DISPLAY_CONST;
                     return;
+                case EVALUABLE_MODE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    mc = SpecialArith.derefAndCastContext(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(mc.getRoundingMode().ordinal());
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_NEW_CONTEXT_DEVIANT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    x = SpecialEval.castIntValue(alfa);
+                    en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    SpecialEval.checkNotLessThanZero(alfa);
+                    int y = SpecialEval.castIntValue(alfa);
+                    en.skel = newContext(x, y);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
@@ -173,15 +208,28 @@ public class SupplementScale extends AbstractSpecial {
     /********************************************************************/
 
     /**
-     * <p>Create a new context.</p>
+     * <p>Retrieve the precision.</p>
      *
-     * @param x The first operand.
-     * @return The result.
+     * @param n The decimal.
+     * @return The precision.
+     */
+    public static int precision(Number n) {
+        if (n instanceof Long) {
+            return log10(n.longValue());
+        } else {
+            return ((BigDecimal) n).precision();
+        }
+    }
+
+    /**
+     * <p>Create a new math context.</p>
+     * <p>The rounding mode defaults to HALF_EVEN.</p>
+     *
+     * @param x The requested precision.
+     * @return The math context.
      */
     private static MathContext newContext(int x) {
         switch (x) {
-            case 0:
-                return MathContext.UNLIMITED;
             case 7:
                 return MathContext.DECIMAL32;
             case 16:
@@ -194,16 +242,17 @@ public class SupplementScale extends AbstractSpecial {
     }
 
     /**
-     * <p>Retrieve the precision.</p>
+     * <p>Create a new math context.</p>
      *
-     * @param n The decimal.
-     * @return The precision.
+     * @param x The requested precision.
+     * @param y The requested rounding mode.
+     * @return The math context.
      */
-    public static int precision(Number n) {
-        if (n instanceof Long) {
-            return log10(n.longValue());
+    private static MathContext newContext(int x, int y) {
+        if (y == BigDecimal.ROUND_HALF_EVEN) {
+            return newContext(x);
         } else {
-            return ((BigDecimal) n).precision();
+            return new MathContext(x, RoundingMode.valueOf(y));
         }
     }
 

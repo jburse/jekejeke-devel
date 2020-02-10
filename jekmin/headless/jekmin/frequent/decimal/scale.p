@@ -100,3 +100,18 @@
  */
 :- public new_context/2.
 :- special(new_context/2, 'SupplementScale', 5).
+
+/**
+ * mode(C, P):
+ * Predicate succeeds in P with requested rounding mode by the math context C.
+ */
+:- public mode/2.
+:- special(mode/2, 'SupplementScale', 6).
+
+/**
+ * new_context(P, R, C):
+ * Predicate succeeds in C with a new math context of requested precision P
+ * and requested rounding mode R.
+ */
+:- public new_context/3.
+:- special(new_context/3, 'SupplementScale', 7).
