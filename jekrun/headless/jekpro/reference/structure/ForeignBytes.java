@@ -5,8 +5,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.InterpreterMessage;
 import matula.util.system.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 
 /**
  * <p>The foreign predicates for the module bytes.</p>
@@ -112,6 +111,10 @@ public final class ForeignBytes {
         return str.getBytes((enc != null ? enc : ForeignUri.ENCODING_UTF8));
     }
 
+    /********************************************************************/
+    /* Memory Socket                                                    */
+    /********************************************************************/
+
     /**
      * <p>Retrieve the data of the output stream.</p>
      *
@@ -150,6 +153,43 @@ public final class ForeignBytes {
             return ((ByteArrayOutputStream) str).toString(
                     (enc != null ? enc : ForeignUri.ENCODING_UTF8));
         return null;
+    }
+
+    /****************************************************************/
+    /* Block Byte I/O                                               */
+    /****************************************************************/
+
+    /**
+     * <p>Read a byte block.</p>
+     *
+     * @param in  The input stream.
+     * @param arg The maximum length.
+     * @return The byte block, or null.
+     * @throws IOException I/O Error.
+     */
+    public static byte[] sysReadBlock(InputStream in, Integer arg)
+            throws IOException {
+        int len = arg.intValue();
+        byte[] data = new byte[len];
+        len = in.read(data, 0, len);
+        if (len == -1)
+            return null;
+        if (len == data.length)
+            return data;
+        byte[] data2 = new byte[len];
+        System.arraycopy(data, 0, data2, 0, len);
+        return data2;
+    }
+
+    /**
+     * <p>Write a byte block.</p>
+     *
+     * @param out  The output stream.
+     * @param data The byte block.
+     */
+    public static void sysWriteBlock(OutputStream out, byte[] data)
+            throws IOException {
+        out.write(data);
     }
 
 }

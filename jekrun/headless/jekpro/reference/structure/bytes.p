@@ -41,6 +41,7 @@
 :- package(library(jekpro/reference/structure)).
 :- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(matula/util/config)).
+:- use_package(foreign(java/io)).
 :- module(bytes, []).
 
 /**
@@ -156,7 +157,7 @@ term_atom(T, A, O) :-
 /**
  * memory_get(K, B):
  * The predicate succeeds in B with the block of the
- * output stream K.
+ * Prolog output stream K.
  */
 % memory_get(+Stream, -Bytes)
 :- public memory_get/2.
@@ -165,8 +166,58 @@ term_atom(T, A, O) :-
 /**
  * memory_get(K, O, B):
  * The predicate succeeds in B with the atom of the
- * output stream K in the encoding options O.
+ * Prolog output stream K in the encoding options O.
  */
 % memory_get(+Stream, +List, -Bytes)
 :- public memory_get/3.
 :- foreign(memory_get/3, 'ForeignBytes', sysMemoryGet('Object', 'Object')).
+
+/****************************************************************/
+/* Block Byte I/O                                               */
+/****************************************************************/
+
+/**
+ * read_block(L, B):
+ * read_block(I, L, B):
+ * The predicate succeeds in a block B in reading maximally L bytes from I.
+ */
+% read_block(+Integer, -Bytes)
+:- public read_block/2.
+read_block(Length, Block) :-
+   current_input(Stream),
+   sys_read_block(Stream, Length, Block).
+
+% read_block(+Stream, +Integer, -Bytes)
+:- public read_block/3.
+read_block(Alias, Length, Block) :- atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_read_block(Stream, Length, Block).
+read_block(Stream, Length, Block) :-
+   sys_read_block(Stream, Length, Block).
+
+:- private sys_read_block/3.
+:- foreign(sys_read_block/3, 'ForeignBytes',
+      sysReadBlock('InputStream', 'Integer')).
+
+/**
+ * write_block(B):
+ * write_block(O, B):
+ * The predicate succeeds in writing the byte block B to O.
+ */
+% write_block(+Bytes)
+:- public write_block/1.
+write_block(Block) :-
+   current_output(Stream),
+   sys_write_block(Stream, Block).
+
+% write_block(+Stream, +Bytes)
+:- public write_block/2.
+write_block(Alias, Block) :- atom(Alias), !,
+   sys_get_alias(Alias, Stream),
+   sys_write_block(Stream, Block).
+write_block(Stream, Block) :-
+   sys_write_block(Stream, Block).
+
+:- private sys_write_block/2.
+:- foreign(sys_write_block/2, 'ForeignBytes',
+      sysWriteBlock('OutputStream', {byte})).

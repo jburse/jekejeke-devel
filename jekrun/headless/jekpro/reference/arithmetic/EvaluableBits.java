@@ -49,6 +49,7 @@ public final class EvaluableBits extends AbstractSpecial {
     private final static int EVALUABLE_XOR = 3;
     private final static int EVALUABLE_SHIFT_LEFT = 4;
     private final static int EVALUABLE_SHIFT_RIGHT = 5;
+    private final static int EVALUABLE_GCD = 6;
 
     /**
      * <p>Create an evaluable bits.</p>
@@ -82,7 +83,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = not(alfa);
+                    en.skel = EvaluableBits.not(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_AND:
@@ -100,7 +101,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = and(alfa, beta);
+                    en.skel = EvaluableBits.and(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_OR:
@@ -118,7 +119,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = or(alfa, beta);
+                    en.skel = EvaluableBits.or(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_XOR:
@@ -136,7 +137,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = xor(alfa, beta);
+                    en.skel = EvaluableBits.xor(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_SHIFT_LEFT:
@@ -155,7 +156,7 @@ public final class EvaluableBits extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     int x = SpecialEval.castIntValue(beta);
-                    en.skel = shiftLeft(alfa, x);
+                    en.skel = EvaluableBits.shiftLeft(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_SHIFT_RIGHT:
@@ -174,7 +175,25 @@ public final class EvaluableBits extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     x = SpecialEval.castIntValue(beta);
-                    en.skel = shiftRight(alfa, x);
+                    en.skel = EvaluableBits.shiftRight(alfa, x);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_GCD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.computeExpr(temp[1], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = EvaluableBits.gcd(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -306,6 +325,66 @@ public final class EvaluableBits extends AbstractSpecial {
             return TermAtomic.normBigInteger(
                     ((BigInteger) m).shiftRight(x));
         }
+    }
+
+    /********************************************************************/
+    /* Additional Binary Number Operations:                             */
+    /*      gcd/2: gcd()                                                */
+    /********************************************************************/
+
+    /**
+     * <p>Return the gcd.</p>
+     *
+     * @param m The first number.
+     * @param n The second number.
+     * @return The gcd.
+     */
+    private static Number gcd(Number m, Number n) {
+        if (m instanceof Integer && n instanceof Integer) {
+            int x = binaryGcd(Math.abs(m.intValue()), Math.abs(n.intValue()));
+            if (x != Integer.MIN_VALUE) {
+                return Integer.valueOf(x);
+            } else {
+                return BigInteger.valueOf(-(long) x);
+            }
+        } else {
+            return TermAtomic.normBigInteger(
+                    TermAtomic.widenBigInteger(m).gcd(
+                            TermAtomic.widenBigInteger(n)));
+        }
+    }
+
+    /**
+     * <p>Return the gcd of two integers.</p>
+     *
+     * @param m The first number.
+     * @param n The second number.
+     * @return The gcd.
+     */
+    private static int binaryGcd(int m, int n) {
+        if (n == 0)
+            return m;
+        if (m == 0)
+            return n;
+
+        // Right shift a & b till their last bits equal to 1.
+        int aZeros = Integer.numberOfTrailingZeros(m);
+        int bZeros = Integer.numberOfTrailingZeros(n);
+        m >>>= aZeros;
+        n >>>= bZeros;
+
+        int t = (aZeros < bZeros ? aZeros : bZeros);
+
+        while (m != n) {
+            if ((m + 0x80000000) > (n + 0x80000000)) {  // a > b as unsigned
+                m -= n;
+                m >>>= Integer.numberOfTrailingZeros(m);
+            } else {
+                n -= m;
+                n >>>= Integer.numberOfTrailingZeros(n);
+            }
+        }
+        return m << t;
     }
 
 }

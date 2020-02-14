@@ -87,36 +87,36 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_NOSTACK = "sys_nostack";
     private final static String OP_SYS_NOHEAD = "sys_nohead";
 
-    public final static int PROP_VISIBLE = 0;
+    private final static int PROP_VISIBLE = 0;
 
-    public final static int PROP_OVERRIDE = 1;
-    public final static int PROP_SYS_MULTIFILE = 2;
-    public final static int PROP_DISCONTIGUOUS = 3;
-    public final static int PROP_SYS_STYLE_CHECK = 4;
-    public final static int PROP_SYS_PUBLIC = 5;
-    public final static int PROP_SYS_PRIVATE = 6;
-    public final static int PROP_SYS_DYNAMIC = 7;
-    public final static int PROP_SYS_THREAD_LOCAL = 8;
-    public final static int PROP_SYS_GROUP_LOCAL = 9;
+    private final static int PROP_OVERRIDE = 1;
+    private final static int PROP_SYS_MULTIFILE = 2;
+    private final static int PROP_DISCONTIGUOUS = 3;
+    private final static int PROP_SYS_STYLE_CHECK = 4;
+    private final static int PROP_SYS_PUBLIC = 5;
+    private final static int PROP_SYS_PRIVATE = 6;
+    private final static int PROP_SYS_DYNAMIC = 7;
+    private final static int PROP_SYS_THREAD_LOCAL = 8;
+    private final static int PROP_SYS_GROUP_LOCAL = 9;
 
-    public final static int PROP_MULTIFILE = 10;
-    public final static int PROP_VIRTUAL = 11;
-    public final static int PROP_SYS_ARITHMETIC = 12;
-    public final static int PROP_AUTOMATIC = 13;
+    private final static int PROP_MULTIFILE = 10;
+    private final static int PROP_VIRTUAL = 11;
+    private final static int PROP_SYS_ARITHMETIC = 12;
+    private final static int PROP_AUTOMATIC = 13;
 
-    public final static int PROP_SYS_NOTRACE = 14;
+    private final static int PROP_SYS_NOTRACE = 14;
 
-    public final static int PROP_BUILT_IN = 15;
-    public final static int PROP_STATIC = 16;
-    public final static int PROP_DYNAMIC = 17;
-    public final static int PROP_THREAD_LOCAL = 18;
-    public final static int PROP_GROUP_LOCAL = 19;
+    private final static int PROP_BUILT_IN = 15;
+    private final static int PROP_STATIC = 16;
+    private final static int PROP_DYNAMIC = 17;
+    private final static int PROP_THREAD_LOCAL = 18;
+    private final static int PROP_GROUP_LOCAL = 19;
 
-    public final static int PROP_FULL_NAME = 20;
-    public final static int PROP_SYS_USAGE = 21;
-    public final static int PROP_SYS_NOBODY = 22;
-    public final static int PROP_SYS_NOSTACK = 23;
-    public final static int PROP_SYS_NOHEAD = 24;
+    private final static int PROP_FULL_NAME = 20;
+    private final static int PROP_SYS_USAGE = 21;
+    private final static int PROP_SYS_NOBODY = 22;
+    private final static int PROP_SYS_NOSTACK = 23;
+    private final static int PROP_SYS_NOHEAD = 24;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,

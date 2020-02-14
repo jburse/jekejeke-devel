@@ -83,7 +83,7 @@ public final class EvaluableCompare extends AbstractSpecial {
                 Number beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
                     d.remTab(en);
-                en.skel = min(alfa, beta);
+                en.skel = EvaluableCompare.min(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
                 return;
             case EVALUABLE_MAX:
@@ -101,7 +101,7 @@ public final class EvaluableCompare extends AbstractSpecial {
                 beta = SpecialEval.derefAndCastNumber(en.skel, d);
                 if (multi)
                     d.remTab(en);
-                en.skel = max(alfa, beta);
+                en.skel = EvaluableCompare.max(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
                 return;
             default:

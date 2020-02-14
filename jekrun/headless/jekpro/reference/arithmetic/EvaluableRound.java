@@ -2,7 +2,6 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -188,7 +187,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = div(alfa, beta);
+                    en.skel = EvaluableRound.div(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_MOD:
@@ -206,7 +205,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = mod(alfa, beta);
+                    en.skel = EvaluableRound.mod(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -303,10 +302,18 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.makeFloat((float) Math.floor(f));
+            if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
+                return TermAtomic.makeFloat((float) Math.floor(f));
+            } else {
+                return m;
+            }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.makeDouble(Math.floor(d));
+            if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
+                return TermAtomic.makeDouble(Math.floor(d));
+            } else {
+                return m;
+            }
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -333,10 +340,18 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.makeFloat((float) Math.ceil(f));
+            if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
+                return TermAtomic.makeFloat((float) Math.ceil(f));
+            } else {
+                return m;
+            }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.makeDouble(Math.ceil(d));
+            if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
+                return TermAtomic.makeDouble(Math.ceil(d));
+            } else {
+                return m;
+            }
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -363,12 +378,20 @@ public final class EvaluableRound extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            return TermAtomic.makeFloat(
-                    (f < 0 ? -Math.round(-f) : Math.round(f)));
+            if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
+                return TermAtomic.makeFloat(
+                        (f < 0 ? -Math.round(-f) : Math.round(f)));
+            } else {
+                return f;
+            }
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            return TermAtomic.makeDouble(
-                    (d < 0 ? -Math.round(-d) : Math.round(d)));
+            if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
+                return TermAtomic.makeDouble(
+                        (d < 0 ? -Math.round(-d) : Math.round(d)));
+            } else {
+                return m;
+            }
         } else if (m instanceof Long) {
             return m;
         } else {
@@ -376,7 +399,7 @@ public final class EvaluableRound extends AbstractSpecial {
             if (b.scale() <= 0) {
                 return b;
             } else {
-                return TermAtomic.normBigDecimal(((BigDecimal) m).setScale(0,
+                return TermAtomic.normBigDecimal(b.setScale(0,
                         BigDecimal.ROUND_HALF_UP));
             }
         }

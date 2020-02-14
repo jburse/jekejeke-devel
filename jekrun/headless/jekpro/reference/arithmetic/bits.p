@@ -60,14 +60,14 @@
 :- public infix(\/).
 :- op(500, yfx, \/).
 
+:- public infix(xor).
+:- op(400, yfx, xor).
+
 :- public infix(<<).
 :- op(400, yfx, <<).
 
 :- public infix(>>).
 :- op(400, yfx, >>).
-
-:- public infix(xor).
-:- op(400, yfx, xor).
 
 :- public prefix(\).
 :- op(200, fy, \).
@@ -76,7 +76,7 @@
  * \ X: [ISO 9.4.5]
  * If X is an integer then returns the bitwise complement of X.
  */
-% \ : integer -> integer
+% \(+Integer, -Integer)
 :- public (\)/2.
 :- special((\)/2, 'EvaluableBits', 0).
 
@@ -84,7 +84,7 @@
  * X /\ Y: [ISO 9.4.3]
  * If X and Y are both integers then the function returns the bitwise X and Y.
  */
-% /\ : integer x integer -> integer
+% /\(+Integer, +Integer, -Integer)
 :- public /\ /3.
 :- special(/\ /3, 'EvaluableBits', 1).
 
@@ -92,30 +92,53 @@
  * X \/ Y: [ISO 9.4.4]
  * If X and Y are both integers then the function returns the bitwise X or Y.
  */
-% \/ : integer x integer -> integer
+% \/(+Integer, +Integer, -Integer)
 :- public \/ /3.
 :- special(\/ /3, 'EvaluableBits', 2).
 
 /**
  * X xor Y: [TC2 9.4.6]
- * If X and Y are both integers then the function returns the bitwise exclusive X or Y.
+ * If X and Y are both integers then the function returns the
+ * bitwise exclusive X or Y.
  */
-% xor : integer x integer -> integer
+% xor(+Integer, +Integer, -Integer)
 :- public xor/3.
 :- special(xor/3, 'EvaluableBits', 3).
 
 /**
  * X << Y: [ISO 9.4.2]
- * If X and Y are both integers then the function returns X shifted by Y places left.
+ * If X and Y are both integers then the function returns X
+ * shifted by Y places left.
  */
-% << : integer x integer -> integer
+% <<(+Integer, +Integer, -Integer)
 :- public << /3.
 :- special(<< /3, 'EvaluableBits', 4).
 
 /**
  * X >> Y: [ISO 9.4.1]
- * If X and Y are both integers then the function returns X shifted by Y places right.
+ * If X and Y are both integers then the function returns X
+ * shifted by Y places right.
  */
-% >> : integer x integer -> integer
+% >>(+Integer, +Integer, -Integer)
 :- public >> /3.
 :- special(>> /3, 'EvaluableBits', 5).
+
+/**
+ * gcd(X, Y):
+ * If X and Y are both integers then the function returns the greatest
+ * common divisor of X and Y.
+ */
+% gcd(+Integer, +Integer, -Integer)
+:- public gcd/3.
+:- special(gcd/3, 'EvaluableBits', 6).
+
+/**
+ * lcm(X, Y):
+ * If X and Y are both integers then the function returns the least
+ * common multiple of X and Y.
+ */
+% lcm(+Integer, +Integer, -Integer)
+:- public lcm/3.
+lcm(_, 0, R) :- !, =(R, 0).
+lcm(0, _, R) :- !, =(R, 0).
+lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.

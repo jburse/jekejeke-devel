@@ -81,14 +81,14 @@
 :- public infix(//).
 :- op(400, yfx, //).
 
+:- public infix(rem).
+:- op(400, yfx, rem).
+
 :- public infix(div).
 :- op(400, yfx, div).
 
 :- public infix(mod).
 :- op(400, yfx, mod).
-
-:- public infix(rem).
-:- op(400, yfx, rem).
 
 /**
  * integer(X):

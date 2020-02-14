@@ -104,3 +104,5 @@ functor(T, F, A) :-
 :- sys_context_property(here, C),
    set_predicate_property(> /2, sys_meta_predicate(C)).
 :- set_predicate_property(> /2, visible(public)).
+:- sys_context_property(here, C),
+   set_predicate_property(> /2, sys_public(C)).

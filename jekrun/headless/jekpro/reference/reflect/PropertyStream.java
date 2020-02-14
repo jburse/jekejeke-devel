@@ -11,6 +11,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -68,15 +69,15 @@ public final class PropertyStream extends AbstractProperty<Object> {
     public final static String OP_MODE = "mode";
     public final static String OP_FILE_NAME = "file_name";
 
-    public final static int PROP_TYPE = 0;
-    public final static int PROP_OUTPUT = 1;
-    public final static int PROP_INPUT = 2;
-    public final static int PROP_REPOSITION = 3;
-    public final static int PROP_POSITION = 4;
-    public final static int PROP_LENGTH = 5;
-    public final static int PROP_BUFFER = 6;
-    public final static int PROP_MODE = 7;
-    public final static int PROP_FILE_NAME = 8;
+    private final static int PROP_TYPE = 0;
+    private final static int PROP_OUTPUT = 1;
+    private final static int PROP_INPUT = 2;
+    private final static int PROP_REPOSITION = 3;
+    private final static int PROP_POSITION = 4;
+    private final static int PROP_LENGTH = 5;
+    private final static int PROP_BUFFER = 6;
+    private final static int PROP_MODE = 7;
+    private final static int PROP_FILE_NAME = 8;
 
     static {
         DEFAULT.add(new StoreKey(OP_TYPE, 1), new PropertyStream(PROP_TYPE));
@@ -114,7 +115,7 @@ public final class PropertyStream extends AbstractProperty<Object> {
      * @return The stream properties.
      */
     public Object[] getObjProps(Object obj, Engine en)
-            throws EngineException, EngineMessage {
+            throws EngineMessage {
         switch (id) {
             case PROP_TYPE:
                 if (obj instanceof Reader || obj instanceof Writer) {
@@ -276,12 +277,11 @@ public final class PropertyStream extends AbstractProperty<Object> {
                 /* can't modify */
                 return false;
             case PROP_POSITION:
-                Number num = SpecialEval.derefAndCastInteger(m, d);
-                long val = SpecialEval.castLongValue(num);
+                long val = derefAndCastPosition(m, d, en);
                 RandomAccessFile raf = ForeignStream.getRaf(obj);
                 if (raf == null)
                     throw new EngineMessage(EngineMessage.permissionError(
-                            "reposition", "stream", obj));
+                            "position", "stream", obj));
                 try {
                     raf.seek(val);
                 } catch (IOException x) {
@@ -289,12 +289,11 @@ public final class PropertyStream extends AbstractProperty<Object> {
                 }
                 return true;
             case PROP_LENGTH:
-                num = SpecialEval.derefAndCastInteger(m, d);
-                val = SpecialEval.castLongValue(num);
+                val = derefAndCastLength(m, d, en);
                 raf = ForeignStream.getRaf(obj);
                 if (raf == null)
                     throw new EngineMessage(EngineMessage.permissionError(
-                            "reposition", "stream", obj));
+                            "length", "stream", obj));
                 try {
                     raf.setLength(val);
                 } catch (IOException x) {
@@ -363,4 +362,66 @@ public final class PropertyStream extends AbstractProperty<Object> {
         }
     }
 
+    /****************************************************************/
+    /* Deref Utility                                                */
+    /****************************************************************/
+
+    /**
+     * <p>Deref and cast to stream position.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The stream position.
+     * @throws EngineMessage Validation Error.
+     */
+    private static long derefAndCastPosition(Object m, Display d, Engine en)
+            throws EngineMessage, ClassCastException {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 1 &&
+                ((SkelCompound) m).sym.fun.equals(OP_POSITION)) {
+            m = ((SkelCompound) m).args[0];
+            Number num = SpecialEval.derefAndCastInteger(m, d);
+            return SpecialEval.castLongValue(num);
+         } else {
+            EngineMessage.checkInstantiated(m);
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
+     * <p>Deref and cast to stream length.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The stream length.
+     * @throws EngineMessage Validation Error.
+     */
+    private static long derefAndCastLength(Object m, Display d, Engine en)
+            throws EngineMessage, ClassCastException {
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 1 &&
+                ((SkelCompound) m).sym.fun.equals(OP_LENGTH)) {
+            m = ((SkelCompound) m).args[0];
+            Number num = SpecialEval.derefAndCastInteger(m, d);
+            return SpecialEval.castLongValue(num);
+        } else {
+            EngineMessage.checkInstantiated(m);
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+    
 }

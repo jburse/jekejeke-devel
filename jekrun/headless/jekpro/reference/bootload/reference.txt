@@ -77,8 +77,8 @@ assertz/1	no	runtime/dynamic
 atan/2	yes	arithmetic/trigo
 atan2/3	no	arithmetic/trigo
 atom/1	no	structure/type
-atom_block/2	no	structure/atom
-atom_block/3	no	structure/atom
+atom_block/2	no	structure/bytes
+atom_block/3	no	structure/bytes
 atom_chars/2	no	structure/atom
 atom_codes/2	no	structure/atom
 atom_concat/3	no	structure/atom
@@ -152,6 +152,10 @@ listing/1	no	bootload/load
 log/2	yes	arithmetic/trigo
 make/0	no	bootload/load
 max/3	yes	arithmetic/compare
+memory_get/2	no	structure/bytes
+memory_get/3	no	structure/bytes
+memory_read/2	no	structure/bytes
+memory_write/1	no	structure/bytes
 (meta_function)/1	no	runtime/meta
 (meta_predicate)/1	no	runtime/meta
 min/3	yes	arithmetic/compare
@@ -249,8 +253,10 @@ sys_term_singletons/2	no	structure/vars
 sys_univ/2	no	runtime/quali
 sys_var/1	no	runtime/quali
 tan/2	yes	arithmetic/trigo
-term_atom/2	no	structure/atom
-term_atom/3	no	structure/atom
+term_atom/2	no	structure/bytes
+term_atom/3	no	structure/bytes
+term_block/2	no	structure/bytes
+term_block/3	no	structure/bytes
 term_variables/2	no	structure/vars
 term_variables/3	no	structure/vars
 (thread_local)/1	no	runtime/dynamic
