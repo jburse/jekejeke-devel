@@ -27,15 +27,22 @@
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
 * /3	yes	arithmetic/elem
+* /3	no	arithmetic/ratio
 ** /3	yes	arithmetic/trigo
 *-> /2	no	runtime/logic
 (+)/2	yes	arithmetic/elem
+(+)/2	no	arithmetic/ratio
 (+)/3	yes	arithmetic/elem
+(+)/3	no	arithmetic/ratio
 (-)/2	yes	arithmetic/elem
+(-)/2	no	arithmetic/ratio
 (-)/3	yes	arithmetic/elem
+(-)/3	no	arithmetic/ratio
 -> /2	no	runtime/logic
 '.'/2	no	bootload/load
 / /3	yes	arithmetic/elem
+/ /3	no	arithmetic/ratio
+// /3	no	arithmetic/ratio
 // /3	yes	arithmetic/round
 /\ /3	yes	arithmetic/bits
 : /2	no	runtime/quali
@@ -44,13 +51,19 @@ public
 :: /3	yes	runtime/quali
 ;/2	no	runtime/logic
 < /2	no	arithmetic/compare
+< /2	no	arithmetic/ratio
 << /3	yes	arithmetic/bits
 =.. /2	no	structure/univ
 =:= /2	no	arithmetic/compare
+=:= /2	no	arithmetic/ratio
 =< /2	no	arithmetic/compare
+=< /2	no	arithmetic/ratio
 == /2	no	structure/lexical
 =\= /2	no	arithmetic/compare
+=\= /2	no	arithmetic/ratio
+> /2	no	arithmetic/ratio
 >= /2	no	arithmetic/compare
+>= /2	no	arithmetic/ratio
 >> /3	yes	arithmetic/bits
 @< /2	no	structure/lexical
 @=< /2	no	structure/lexical
@@ -62,9 +75,11 @@ public
 \= /2	no	structure/univ
 \== /2	no	structure/lexical
 ^ /3	yes	arithmetic/elem
+^ /3	no	arithmetic/ratio
 abolish/1	no	runtime/dynamic
 abort/0	no	runtime/session
 abs/2	yes	arithmetic/elem
+abs/2	no	arithmetic/ratio
 absolute_file_name/2	no	bootload/path
 absolute_file_name/3	no	bootload/path
 absolute_resource_name/2	no	bootload/path
@@ -111,6 +126,7 @@ current_source/1	no	reflect/source
 decimal/1	no	structure/type
 decimal/2	yes	arithmetic/elem
 (discontiguous)/1	no	bootload/load
+div/3	no	arithmetic/ratio
 div/3	yes	arithmetic/round
 (dynamic)/1	no	runtime/dynamic
 e/1	yes	arithmetic/trigo
@@ -123,6 +139,7 @@ exit/0	no	runtime/session
 exp/2	yes	arithmetic/trigo
 float/1	no	structure/type
 float/2	yes	arithmetic/elem
+float/2	no	arithmetic/ratio
 float32/1	no	structure/type
 float32/2	yes	arithmetic/elem
 float64/1	no	structure/type
@@ -133,6 +150,8 @@ foreign_constructor/3	no	reflect/foreign
 foreign_fun/3	no	reflect/foreign
 foreign_getter/3	no	reflect/foreign
 foreign_setter/3	no	reflect/foreign
+gcd/3	yes	arithmetic/bits
+gcd/3	no	arithmetic/ratio
 (group_local)/1	no	runtime/dynamic
 halt/0	no	bootload/engine
 halt/1	no	bootload/engine
@@ -140,6 +159,7 @@ horde/1	no	runtime/distributed
 horde/2	no	runtime/distributed
 include/1	no	bootload/load
 integer/1	no	structure/type
+integer/2	no	arithmetic/ratio
 integer/2	yes	arithmetic/round
 integer_chars/3	no	structure/atom
 integer_codes/3	no	structure/atom
@@ -147,11 +167,14 @@ is/2	no	arithmetic/eval
 last_atom_concat/3	no	structure/atom
 last_sub_atom/4	no	structure/atom
 last_sub_atom/5	no	structure/atom
+lcm/3	no	arithmetic/bits
+lcm/3	no	arithmetic/ratio
 listing/0	no	bootload/load
 listing/1	no	bootload/load
 log/2	yes	arithmetic/trigo
 make/0	no	bootload/load
 max/3	yes	arithmetic/compare
+max/3	no	arithmetic/ratio
 memory_get/2	no	structure/bytes
 memory_get/3	no	structure/bytes
 memory_read/2	no	structure/bytes
@@ -159,6 +182,8 @@ memory_write/1	no	structure/bytes
 (meta_function)/1	no	runtime/meta
 (meta_predicate)/1	no	runtime/meta
 min/3	yes	arithmetic/compare
+min/3	no	arithmetic/ratio
+mod/3	no	arithmetic/ratio
 mod/3	yes	arithmetic/round
 module/2	no	bootload/module
 (multifile)/1	no	bootload/load
@@ -175,9 +200,15 @@ predicate_property/2	no	reflect/pred
 (private)/1	no	bootload/module
 prolog/0	no	runtime/session
 (public)/1	no	bootload/module
+rat/3	no	arithmetic/ratio
+rational/1	no	arithmetic/ratio
+rdiv/3	no	arithmetic/ratio
+read_block/2	no	structure/bytes
+read_block/3	no	structure/bytes
 rebuild/0	no	bootload/load
 reexport/1	no	bootload/module
 reference/1	no	structure/type
+rem/3	no	arithmetic/ratio
 rem/3	yes	arithmetic/round
 repeat/0	no	runtime/logic
 reset_oper_property/2	no	reflect/oper
@@ -191,6 +222,7 @@ set_prolog_flag/2	no	bootload/engine
 setup_balance/1	no	runtime/distributed
 setup_balance/2	no	runtime/distributed
 sign/2	yes	arithmetic/elem
+sign/2	no	arithmetic/ratio
 sin/2	yes	arithmetic/trigo
 source_property/2	no	reflect/source
 sqrt/2	yes	arithmetic/trigo
@@ -268,5 +300,7 @@ use_module/1	no	bootload/module
 use_package/1	no	bootload/module
 version/0	no	bootload/engine
 welcome/0	no	bootload/engine
+write_block/1	no	structure/bytes
+write_block/2	no	structure/bytes
 xor/3	yes	arithmetic/bits
 
