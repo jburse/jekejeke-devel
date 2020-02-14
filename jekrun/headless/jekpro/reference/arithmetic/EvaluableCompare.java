@@ -2,7 +2,6 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -10,6 +9,7 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>Provides the compare evaluables.</p>
@@ -45,6 +45,18 @@ import java.math.BigDecimal;
 public final class EvaluableCompare extends AbstractSpecial {
     private final static int EVALUABLE_MIN = 0;
     private final static int EVALUABLE_MAX = 1;
+    private final static int EVALUABLE_EXPONENT = 2;
+    private final static int EVALUABLE_MANTISSA = 3;
+    private final static int EVALUABLE_RADIX = 4;
+
+    private static final int FLOAT_SNIF_WIDTH = 23;
+    private static final int FLOAT_SNIF_MASK = 0x007fffff;
+    private static final int FLOAT_SIGN_MASK = 0x80000000;
+
+    private static final int DOUBLE_SNIF_WIDTH = 52;
+    private static final long DOUBLE_SNIF_MASK = 0x000fffffffffffffL;
+    private static final long DOUBLE_SIGN_MASK = 0x8000000000000000L;
+
 
     /**
      * <p>Create a compare evaluable.</p>
@@ -104,13 +116,49 @@ public final class EvaluableCompare extends AbstractSpecial {
                 en.skel = EvaluableCompare.max(alfa, beta);
                 en.display = Display.DISPLAY_CONST;
                 return;
+            case EVALUABLE_EXPONENT:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.computeExpr(temp[0], ref);
+                d = en.display;
+                multi = d.getAndReset();
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                en.skel = EvaluableCompare.exponent(alfa);
+                en.display = Display.DISPLAY_CONST;
+                return;
+            case EVALUABLE_MANTISSA:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.computeExpr(temp[0], ref);
+                d = en.display;
+                multi = d.getAndReset();
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                en.skel = EvaluableCompare.mantissa(alfa);
+                en.display = Display.DISPLAY_CONST;
+                return;
+            case EVALUABLE_RADIX:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.computeExpr(temp[0], ref);
+                d = en.display;
+                multi = d.getAndReset();
+                alfa = SpecialEval.derefAndCastNumber(en.skel, d);
+                if (multi)
+                    d.remTab(en);
+                en.skel = EvaluableCompare.radix(alfa);
+                en.display = Display.DISPLAY_CONST;
+                return;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
 
     /********************************************************************/
-    /* Compare:                                                         */
+    /* Binary Operations:                                               */
     /*      (min)/2: min()                                              */
     /*      (max)/2: max()                                              */
     /********************************************************************/
@@ -210,6 +258,87 @@ public final class EvaluableCompare extends AbstractSpecial {
                         TermAtomic.normBigDecimal(u));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+    /********************************************************************/
+    /* Unary Operations:                                                */
+    /*      fp_exponent/2: exponent()                                   */
+    /*      fp_mantissa/2: mantissa()                                   */
+    /*      fp_radix/2: radix()                                         */
+    /********************************************************************/
+
+    /**
+     * <p>Exponent of the number.</p>
+     *
+     * @param m The number.
+     * @return The exponent of the number.
+     */
+    private static Number exponent(Number m) {
+        if (m instanceof Integer || m instanceof BigInteger) {
+            return Integer.valueOf(0);
+        } else if (m instanceof Float) {
+            float f = m.floatValue();
+            if (f == 0.0f)
+                return Integer.valueOf(0);
+            return Integer.valueOf(Math.getExponent(f)-FLOAT_SNIF_WIDTH);
+        } else if (m instanceof Double) {
+            double d = m.doubleValue();
+            if (d == 0.0)
+                return Integer.valueOf(0);
+            return Integer.valueOf(Math.getExponent(d) - DOUBLE_SNIF_WIDTH);
+        } else if (m instanceof Long || m instanceof BigDecimal) {
+            return Integer.valueOf(-TermAtomic.scale(m));
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+    /**
+     * <p>Mantissa of the number.</p>
+     *
+     * @param m The number.
+     * @return The mantissa of the number.
+     */
+    private static Number mantissa(Number m) {
+        if (m instanceof Integer || m instanceof BigInteger) {
+            return m;
+        } else if (m instanceof Float) {
+            float f = m.floatValue();
+            if (f == 0.0f)
+                return Integer.valueOf(0);
+            int raw = Float.floatToRawIntBits(f);
+            int mantissa = (raw & FLOAT_SNIF_MASK) + (FLOAT_SNIF_MASK + 1);
+            return Integer.valueOf((raw & FLOAT_SIGN_MASK) != 0 ? -mantissa : mantissa);
+        } else if (m instanceof Double) {
+            double d = m.doubleValue();
+            if (d == 0.0)
+                return Integer.valueOf(0);
+            long raw = Double.doubleToRawLongBits(d);
+            long mantissa = (raw & DOUBLE_SNIF_MASK) + (DOUBLE_SNIF_MASK + 1);
+            return TermAtomic.normBigInteger((raw & DOUBLE_SIGN_MASK) != 0 ? -mantissa : mantissa);
+        } else if (m instanceof Long || m instanceof BigDecimal) {
+            return TermAtomic.normBigInteger(TermAtomic.unscaledValue(m));
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+    /**
+     * <p>Radix of the number.</p>
+     *
+     * @param m The number.
+     * @return The radix of the number.
+     */
+    private static Number radix(Number m) {
+        if (m instanceof Integer || m instanceof BigInteger) {
+            return Integer.valueOf(1);
+        } else if (m instanceof Float || m instanceof Double) {
+            return Integer.valueOf(2);
+        } else if (m instanceof Long || m instanceof BigDecimal) {
+            return Integer.valueOf(10);
+        } else {
+            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
     }
 

@@ -44,6 +44,7 @@
  */
 
 :- package(library(jekpro/reference/arithmetic)).
+:- use_package(foreign(jekpro/reference/arithmetic)).
 
 :- module(ratio, []).
 
@@ -81,6 +82,24 @@ rdiv(A, D, R) :-
  */
 :- public rat/3.
 rat(X, Y, rat(X, Y)).
+
+/**
+ * rational(X):
+ * If X is a number then the function returns the corresponding rational number.
+ */
+:- public rational/2.
+rational(rat(A, B), R) :- !,
+   R = rat(A, B).
+rational(X, R) :-
+   fp_mantissa(X, M),
+   fp_exponent(X, E),
+   fp_radix(X, B),
+   (  user: <(E, 0)
+   -> user: -(E, F),
+      user: ^(B, F, H),
+      rat_make(M, H, R)
+   ;  user: ^(B, E, H),
+      user: *(M, H, R)).
 
 /***************************************************************/
 /* elem.p                                                      */
@@ -122,6 +141,14 @@ float(rat(A, B), C) :- !,
    user: /(A, B, C).
 float(A, B) :-
    user:float(A, B).
+
+:- public float32/2.
+:- override float32/2.
+float32(rat(A, B), C) :- !,
+   user: /(A, B, H),
+   user:float32(H, C).
+float32(A, B) :-
+   user:float32(A, B).
 
 :- public (+)/3.
 :- override (+)/3.
@@ -436,3 +463,28 @@ mod(A, rat(B, C), R) :- !,
    rat_make(K, C, R).
 mod(A, B, C) :-
    user:mod(A, B, C).
+
+/***************************************************************/
+/* Helper                                                      */
+/***************************************************************/
+
+/**
+ * fp_exponent(X): [ISO 7.1.3]
+ * If X is a number then the function returns its exponent.
+ */
+:- private fp_exponent/2.
+:- special(fp_exponent/2, 'EvaluableCompare', 2).
+
+/**
+ * fp_mantissa(X): [ISO 7.1.3]
+ * If X is a number then the function returns its mantissa.
+ */
+:- private fp_mantissa/2.
+:- special(fp_mantissa/2, 'EvaluableCompare', 3).
+
+/**
+ * fp_radix(X): [ISO 7.1.3]
+ * If X is a number then the function returns its radix.
+ */
+:- private fp_radix/2.
+:- special(fp_radix/2, 'EvaluableCompare', 4).
