@@ -207,9 +207,9 @@ float(A, B) :-
 
 :- private rat_make/3.
 rat_make(A, D, R) :-
-   H is user:gcd(A, D),
-   P is A//H,
-   Q is D//H,
+   user:gcd(A, D, H),
+   user: //(A, H, P),
+   user: //(D, H, Q),
    rat_norm(P, Q, R).
 
 :- private rat_norm/3.
