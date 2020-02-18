@@ -3,13 +3,19 @@
  * overrides the number evaluable functions and the number predicates.
  * It also provides a few new unique evaluable functions and predicates
  * for rational numbers. The arithmetic operation (rdiv)/2 creates a
- * rational number and normalizes it into a compound rat/2:
+ * rational number and normalizes it into a compound with functor #/2:
  *
+ * Example:
  * ?- X is 4 rdiv 6.
- * X = rat(2, 3)
+ * X = 2#3
  *
- * Rational numbers with unit denominator are normalized into ordinary
- * numbers. The overridden evaluable functions and predicates are realized
+ * Rational numbers with unit denominator are normalized into integer
+ * numbers. Rational numbers can be tested by the predicate rational/1.
+ * The evaluable function rational/1 is able to turn a number into a
+ * rational number. The predicate rational/3 determines the numerator
+ * and denominator of a rational number.
+ *
+ * The overridden evaluable functions and predicates are realized
  * in Prolog and use multi-argument indexing to dispatch into rational
  * number or ordinary number routines. We currently measure a ca. 4-fold
  * overhead for ordinary numbers, but this might improve in the future.
@@ -51,45 +57,49 @@
 :- public infix(rdiv).
 :- op(400, yfx, rdiv).
 
-/**
- * rational(X):
- * The predicate succeeds when X is a proper rational number.
- */
-:- public rational/1.
-rational(rat(_, _)).
+:- public infix(#).
+:- op(100, xfx, #).
 
 /**
  * X rdiv Y:
  * If X and Y are both numbers then the function returns the rational division of X by Y.
  */
 :- public rdiv/3.
-rdiv(rat(A, B), rat(D, C), R) :- !,
+rdiv(A#B, D#C, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
    rat_make(P, Q, R).
-rdiv(rat(A, B), D, R) :- !,
+rdiv(A#B, D, R) :- !,
    user: *(B, D, Q),
    rat_make(A, Q, R).
-rdiv(A, rat(D, C), R) :- !,
+rdiv(A, D#C, R) :- !,
    user: *(A, C, P),
    rat_make(P, D, R).
 rdiv(A, D, R) :-
    rat_make(A, D, R).
 
 /**
- * rat(X, Y):
+ * #(X, Y):
  * If X and Y are both numbers then the function returns the rational number X/Y.
  */
-:- public rat/3.
-rat(X, Y, rat(X, Y)).
+:- public # /3.
+#(X, Y, X#Y).
+
+/**
+ * rational(X):
+ * The predicate succeeds when X is a rational number.
+ */
+:- public rational/1.
+rational(_#_) :- !.
+rational(X) :- integer(X).
 
 /**
  * rational(X):
  * If X is a number then the function returns the corresponding rational number.
  */
 :- public rational/2.
-rational(rat(A, B), R) :- !,
-   R = rat(A, B).
+rational(A#B, R) :- !,
+   R = A#B.
 rational(X, R) :-
    fp_mantissa(X, M),
    fp_exponent(X, E),
@@ -101,50 +111,83 @@ rational(X, R) :-
    ;  user: ^(B, E, H),
       user: *(M, H, R)).
 
+/**
+ * rational(R, N, D):
+ * The predicate succeeds in N with the numerator and in D with
+ * the denomiator of the rational number R.
+ */
+:- public rational/3.
+rational(X#Y, A, B) :- !, A = X, B = Y.
+rational(X, X, 1) :- integer(X).
+
+/**
+ * numerator(X):
+ * If X is a rational number, then the function returns the numerator.
+ */
+:- public numerator/2.
+numerator(X#_, A) :- !, A = X.
+numerator(X, X) :- integer(X).
+
+/**
+ * denominator(X):
+ * If X is a rational number, then the function returns the denominator.
+ */
+:- public denominator/2.
+denominator(_#X, A) :- !, A = X.
+denominator(X, 1) :- integer(X).
+
 /***************************************************************/
 /* elem.p                                                      */
 /***************************************************************/
 
 :- public (-)/2.
 :- override (-)/2.
--(rat(A, B), R) :- !,
+-(A#B, R) :- !,
    user: -(A, C),
-   R = rat(C, B).
+   R = C#B.
 -(A, B) :-
    user: -(A, B).
 
 :- public (+)/2.
 :- override (+)/2.
-+(rat(A, B), R) :- !,
-   R = rat(A, B).
++(A#B, R) :- !,
+   R = A#B.
 +(A, B) :-
    user: +(A, B).
 
 :- public abs/2.
 :- override abs/2.
-abs(rat(A, B), R) :- !,
+abs(A#B, R) :- !,
    user:abs(A, C),
-   R = rat(C, B).
+   R = C#B.
 abs(A, B) :-
    user:abs(A, B).
 
 :- public sign/2.
 :- override sign/2.
-sign(rat(A, _), C) :- !,
+sign(A#_, C) :- !,
    user:sign(A, C).
 sign(A, B) :-
    user:sign(A, B).
 
 :- public float/2.
 :- override float/2.
-float(rat(A, B), C) :- !,
+float(A#B, C) :- !,
    user: /(A, B, C).
 float(A, B) :-
    user:float(A, B).
 
+:- public decimal/2.
+:- override decimal/2.
+decimal(A#B, C) :- !,
+   user: /(A, B, H),
+   user:decimal(H, C).
+decimal(A, B) :-
+   user:decimal(A, B).
+
 :- public float32/2.
 :- override float32/2.
-float32(rat(A, B), C) :- !,
+float32(A#B, C) :- !,
    user: /(A, B, H),
    user:float32(H, C).
 float32(A, B) :-
@@ -152,17 +195,17 @@ float32(A, B) :-
 
 :- public (+)/3.
 :- override (+)/3.
-+(rat(A, B), rat(C, D), R) :- !,
++(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: +(H, J, P),
    user: *(B, D, Q),
    rat_make(P, Q, R).
-+(rat(A, B), C, R) :- !,
++(A#B, C, R) :- !,
    user: *(B, C, H),
    user: +(A, H, P),
    rat_make(P, B, R).
-+(A, rat(C, D), R) :- !,
++(A, C#D, R) :- !,
    user: *(A, D, H),
    user: +(H, C, P),
    rat_make(P, D, R).
@@ -171,17 +214,17 @@ float32(A, B) :-
 
 :- public (-)/3.
 :- override (-)/3.
--(rat(A, B), rat(C, D), R) :- !,
+-(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: -(H, J, P),
    user: *(B, D, Q),
    rat_make(P, Q, R).
--(rat(A, B), C, R) :- !,
+-(A#B, C, R) :- !,
    user: *(B, C, H),
    user: -(A, H, P),
    rat_make(P, B, R).
--(A, rat(C, D), R) :- !,
+-(A, C#D, R) :- !,
    user: *(A, D, H),
    user: -(H, C, P),
    rat_make(P, D, R).
@@ -190,14 +233,14 @@ float32(A, B) :-
 
 :- public * /3.
 :- override * /3.
-*(rat(A, B), rat(C, D), R) :- !,
+*(A#B, C#D, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
    rat_make(P, Q, R).
-*(rat(A, B), C, R) :- !,
+*(A#B, C, R) :- !,
    user: *(A, C, P),
    rat_make(P, B, R).
-*(A, rat(C, D), R) :- !,
+*(A, C#D, R) :- !,
    user: *(A, C, P),
    rat_make(P, D, R).
 *(A, B, C) :-
@@ -205,14 +248,14 @@ float32(A, B) :-
 
 :- public / /3.
 :- override / /3.
-/(rat(A, B), rat(D, C), R) :- !,
+/(A#B, D#C, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
    user: /(P, Q, R).
-/(rat(A, B), D, R) :- !,
+/(A#B, D, R) :- !,
    user: *(B, D, Q),
    user: /(A, Q, R).
-/(A, rat(D, C), R) :- !,
+/(A, D#C, R) :- !,
    user: *(A, C, P),
    user: /(P, D, R).
 /(A, B, C) :-
@@ -220,17 +263,22 @@ float32(A, B) :-
 
 :- public ^ /3.
 :- override ^ /3.
-^(rat(A, B), C, R) :- user: <(C, 0), !,
-   user: -(C, D),
-   user: ^(A, D, P),
-   user: ^(B, D, Q),
-   rat_norm(Q, P, R).
-^(rat(A, B), C, R) :- !,
+^(X, C, R) :- user: <(C, 0), !,
+   user: -(C, H),
+   ^(X, H, J),
+   rat_inv(J, R).
+^(A#B, C, R) :- !,
    user: ^(A, C, P),
    user: ^(B, C, Q),
    rat_norm(P, Q, R).
 ^(A, B, C) :-
    user: ^(A, B, C).
+
+:- private rat_inv/2.
+rat_inv(A#B, C) :- !,
+   rat_norm(B, A, C).
+rat_inv(A, B) :-
+   rat_norm(1, A, B).
 
 :- private rat_make/3.
 rat_make(A, D, R) :-
@@ -249,8 +297,8 @@ rat_norm(P, 1, C) :- !,
 rat_norm(P, Q, C) :- user: <(Q, 0), !,
    user: -(P, R),
    user: -(Q, S),
-   C = rat(R, S).
-rat_norm(P, Q, rat(P, Q)).
+   C = R#S.
+rat_norm(P, Q, P#Q).
 
 /***************************************************************/
 /* compare.p                                                   */
@@ -306,46 +354,46 @@ rat_norm(P, Q, rat(P, Q)).
 
 :- public min/3.
 :- override min/3.
-min(rat(A, B), rat(C, D), R) :- !,
-   (rat_less(rat(A, B), rat(C, D)) -> R = rat(A, B); R = rat(C, D)).
-min(rat(A, B), C, R) :- !,
-   (rat_less(rat(A, B), C) -> R = rat(A, B); R = C).
-min(A, rat(B, C), R) :- !,
-   (rat_less(A, rat(B, C)) -> R = A; R = rat(B, C)).
+min(A#B, C#D, R) :- !,
+   (rat_less(A#B, C#D) -> R = A#B; R = C#D).
+min(A#B, C, R) :- !,
+   (rat_less(A#B, C) -> R = A#B; R = C).
+min(A, B#C, R) :- !,
+   (rat_less(A, B#C) -> R = A; R = B#C).
 min(A, B, C) :-
    user:min(A, B, C).
 
 :- public max/3.
 :- override max/3.
-max(rat(A, B), rat(C, D), R) :- !,
-   (rat_less(rat(A, B), rat(C, D)) -> R = rat(C, D); R = rat(A, B)).
-max(rat(A, B), C, R) :- !,
-   (rat_less(rat(A, B), C) -> R = C; R = rat(A, B)).
-max(A, rat(B, C), R) :- !,
-   (rat_less(A, rat(B, C)) -> R = rat(B, C); R = A).
+max(A#B, C#D, R) :- !,
+   (rat_less(A#B, C#D) -> R = C#D; R = A#B).
+max(A#B, C, R) :- !,
+   (rat_less(A#B, C) -> R = C; R = A#B).
+max(A, B#C, R) :- !,
+   (rat_less(A, B#C) -> R = B#C; R = A).
 max(A, B, C) :-
    user:max(A, B, C).
 
 :- private rat_equal/2.
-rat_equal(rat(A, B), rat(C, D)) :- !,
+rat_equal(A#B, C#D) :- !,
    user: =:=(A, C),
    user: =:=(B, D).
-rat_equal(rat(_, _), _) :- !,
+rat_equal(_#_, _) :- !,
    fail.
-rat_equal(_, rat(_, _)) :- !,
+rat_equal(_, _#_) :- !,
    fail.
 rat_equal(A, B) :-
    user: =:=(A, B).
 
 :- private rat_less/2.
-rat_less(rat(A, B), rat(C, D)) :- !,
+rat_less(A#B, C#D) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: <(H, J).
-rat_less(rat(A, B), C) :- !,
+rat_less(A#B, C) :- !,
    user: *(B, C, J),
    user: <(A, J).
-rat_less(A, rat(B, C)) :- !,
+rat_less(A, B#C) :- !,
    user: *(A, C, H),
    user: <(H, B).
 rat_less(A, B) :-
@@ -357,33 +405,50 @@ rat_less(A, B) :-
 
 :- public gcd/3.
 :- override gcd/3.
-gcd(rat(A, B), rat(C, D), R) :-
+gcd(A#B, C#D, R) :- !,
    user:gcd(A, C, P),
    user:lcm(B, D, Q),
-   R = rat(P, Q).
-gcd(rat(A, B), C, R) :-
+   R = P#Q.
+gcd(A#B, C, R) :- !,
    user:gcd(A, C, P),
-   R = rat(P, B).
-gcd(A, rat(B, C), R) :-
+   R = P#B.
+gcd(A, B#C, R) :- !,
    user:gcd(A, B, P),
-   R = rat(P, C).
+   R = P#C.
 gcd(A, B, C) :-
    user:gcd(A, B, C).
 
 :- public lcm/3.
 :- override lcm/3.
-lcm(rat(A, B), rat(C, D), R) :-
+lcm(A#B, C#D, R) :- !,
    user:lcm(A, C, P),
    user:gcd(B, D, Q),
-   R = rat(P, Q).
-lcm(rat(A, B), C, R) :-
+   R = P#Q.
+lcm(A#B, C, R) :- !,
    user:lcm(A, C, P),
-   R = rat(P, B).
-lcm(A, rat(B, C), R) :-
+   R = P#B.
+lcm(A, B#C, R) :- !,
    user:lcm(A, B, P),
-   R = rat(P, C).
+   R = P#C.
 lcm(A, B, C) :-
    user:lcm(A, B, C).
+
+:- public msb/2.
+:- override msb/2.
+msb(A#B, C) :- !,
+   user:msb(A, H),
+   user:msb(B, J),
+   user: -(H, J, K),
+   (  user: <(K, 0)
+   -> user: >>(A, K, L),
+      M = B
+   ;  L = A,
+      user: <<(B, K, M)),
+   (  user: <(L, M)
+   -> user: -(K, 1, C)
+   ;  C = K).
+msb(A, B) :-
+   user:msb(A, B).
 
 /***************************************************************/
 /* round.p                                                     */
@@ -391,21 +456,57 @@ lcm(A, B, C) :-
 
 :- public integer/2.
 :- override integer/2.
-integer(rat(A, B), C) :- !,
+integer(A#B, C) :- !,
    user: //(A, B, C).
-integer(C, D) :-
-   user:integer(C, D).
+integer(A, B) :-
+   user:integer(A, B).
+
+:- public truncate/2.
+:- override truncate/2.
+truncate(A#B, C) :- !,
+   user: //(A, B, C).
+truncate(A, B) :-
+   user:truncate(A, B).
+
+:- public floor/2.
+:- override floor/2.
+floor(A#B, C) :- !,
+   user:div(A, B, C).
+floor(A, B) :-
+   user:floor(A, B).
+
+:- public ceiling/2.
+:- override ceiling/2.
+ceiling(A#B, C) :- !,
+   user: -(A, H),
+   user:div(H, B, J),
+   user: -(J, C).
+ceiling(A, B) :-
+   user:ceiling(A, B).
+
+:- public round/2.
+:- override round/2.
+round(A#B, C) :- user: <(A, 0), !,
+   user: >>(B, 1, H),
+   user: -(A, H, J),
+   user: //(J, B, C).
+round(A#B, C) :- !,
+   user: >>(B, 1, H),
+   user: +(A, H, J),
+   user: //(J, B, C).
+round(A, B) :-
+   user:round(A, B).
 
 :- public // /3.
 :- override // /3.
-//(rat(A, B), rat(C, D), R) :- !,
+//(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user: //(H, J, R).
-//(rat(A, B), C, R) :- !,
+//(A#B, C, R) :- !,
    user: *(B, C, J),
    user: //(A, J, R).
-//(A, rat(B, C), R) :- !,
+//(A, B#C, R) :- !,
    user: *(A, C, H),
    user: //(H, B, R).
 //(A, B, C) :-
@@ -413,17 +514,17 @@ integer(C, D) :-
 
 :- public rem/3.
 :- override rem/3.
-rem(rat(A, B), rat(C, D), R) :- !,
+rem(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user:rem(H, J, K),
    user: *(B, D, L),
    rat_make(K, L, R).
-rem(rat(A, B), C, R) :- !,
+rem(A#B, C, R) :- !,
    user: *(B, C, J),
    user:rem(A, J, K),
    rat_make(K, B, R).
-rem(A, rat(B, C), R) :- !,
+rem(A, B#C, R) :- !,
    user: *(A, C, H),
    user:rem(H, B, K),
    rat_make(K, C, R).
@@ -432,14 +533,14 @@ rem(A, B, C) :-
 
 :- public div/3.
 :- override div/3.
-div(rat(A, B), rat(C, D), R) :- !,
+div(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user:div(H, J, R).
-div(rat(A, B), C, R) :- !,
+div(A#B, C, R) :- !,
    user: *(B, C, J),
    user:div(A, J, R).
-div(A, rat(B, C), R) :- !,
+div(A, B#C, R) :- !,
    user: *(A, C, H),
    user:div(H, B, R).
 div(A, B, C) :-
@@ -447,17 +548,17 @@ div(A, B, C) :-
 
 :- public mod/3.
 :- override mod/3.
-mod(rat(A, B), rat(C, D), R) :- !,
+mod(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
    user:mod(H, J, K),
    user: *(B, D, L),
    rat_make(K, L, R).
-mod(rat(A, B), C, R) :- !,
+mod(A#B, C, R) :- !,
    user: *(B, C, J),
    user:mod(A, J, K),
    rat_make(K, B, R).
-mod(A, rat(B, C), R) :- !,
+mod(A, B#C, R) :- !,
    user: *(A, C, H),
    user:mod(H, B, K),
    rat_make(K, C, R).

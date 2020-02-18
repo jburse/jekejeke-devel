@@ -85,7 +85,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = integer(alfa);
+                    en.skel = EvaluableRound.integer(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_TRUNCATE:
@@ -97,7 +97,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = truncate(alfa);
+                    en.skel = EvaluableRound.truncate(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_FLOOR:
@@ -109,7 +109,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = floor(alfa);
+                    en.skel = EvaluableRound.floor(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_CEILING:
@@ -121,7 +121,7 @@ public final class EvaluableRound extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = ceiling(alfa);
+                    en.skel = EvaluableRound.ceiling(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_ROUND:
@@ -408,8 +408,8 @@ public final class EvaluableRound extends AbstractSpecial {
     /********************************************************************/
     /* Rounding Operations (Part I):                                    */
     /*      (//)/2: slashSlash()                                        */
-    /*      (div)/2: div()                                              */
     /*      (rem)/2: rem()                                              */
+    /*      (div)/2: div()                                              */
     /*      (mod)/2: mod()                                              */
     /********************************************************************/
 
@@ -470,6 +470,58 @@ public final class EvaluableRound extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigDecimal(a).divide(
                         h, 0, BigDecimal.ROUND_DOWN).unscaledValue());
+            default:
+                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+    /**
+     * <p>Remainder of the two numbers.</p>
+     * <p>The result is related to (//)/2 as follows:</p>
+     * <pre>
+     *      X rem Y = X - (X // Y) * Y.
+     * </pre>
+     *
+     * @param a The first operand.
+     * @param b The second operand.
+     * @return The remainder of the first operand by the second operand.
+     * @throws ArithmeticException Shit happens.
+     */
+    private static Number rem(Number a, Number b) throws ArithmeticException {
+        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
+            case SpecialCompare.NUM_INTEGER:
+                int u = b.intValue();
+                if (u == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.normBigInteger(a.intValue() % u);
+            case SpecialCompare.NUM_BIG_INTEGER:
+                BigInteger p = TermAtomic.widenBigInteger(b);
+                if (p.signum() == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
+            case SpecialCompare.NUM_FLOAT:
+                float f = b.floatValue();
+                if (f == 0.0f)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.makeFloat(a.floatValue() % f);
+            case SpecialCompare.NUM_DOUBLE:
+                double d = b.doubleValue();
+                if (d == 0.0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                return TermAtomic.makeDouble(a.doubleValue() % d);
+            case SpecialCompare.NUM_LONG:
+            case SpecialCompare.NUM_BIG_DECIMAL:
+                BigDecimal h = TermAtomic.widenBigDecimal(b);
+                if (h.signum() == 0)
+                    throw new ArithmeticException(
+                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
+                BigDecimal j = TermAtomic.widenBigDecimal(a);
+                return TermAtomic.normBigDecimal(j.subtract(j.divide(
+                        h, 0, BigDecimal.ROUND_DOWN).multiply(h)));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
@@ -549,58 +601,6 @@ public final class EvaluableRound extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 return TermAtomic.normBigInteger(TermAtomic.widenBigDecimal(a).divide(
                         h, 0, BigDecimal.ROUND_FLOOR).unscaledValue());
-            default:
-                throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
-        }
-    }
-
-    /**
-     * <p>Remainder of the two numbers.</p>
-     * <p>The result is related to (//)/2 as follows:</p>
-     * <pre>
-     *      X rem Y = X - (X // Y) * Y.
-     * </pre>
-     *
-     * @param a The first operand.
-     * @param b The second operand.
-     * @return The remainder of the first operand by the second operand.
-     * @throws ArithmeticException Shit happens.
-     */
-    private static Number rem(Number a, Number b) throws ArithmeticException {
-        switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
-            case SpecialCompare.NUM_INTEGER:
-                int u = b.intValue();
-                if (u == 0)
-                    throw new ArithmeticException(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger(a.intValue() % u);
-            case SpecialCompare.NUM_BIG_INTEGER:
-                BigInteger p = TermAtomic.widenBigInteger(b);
-                if (p.signum() == 0)
-                    throw new ArithmeticException(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger(TermAtomic.widenBigInteger(a).remainder(p));
-            case SpecialCompare.NUM_FLOAT:
-                float f = b.floatValue();
-                if (f == 0.0f)
-                    throw new ArithmeticException(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.makeFloat(a.floatValue() % f);
-            case SpecialCompare.NUM_DOUBLE:
-                double d = b.doubleValue();
-                if (d == 0.0)
-                    throw new ArithmeticException(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.makeDouble(a.doubleValue() % d);
-            case SpecialCompare.NUM_LONG:
-            case SpecialCompare.NUM_BIG_DECIMAL:
-                BigDecimal h = TermAtomic.widenBigDecimal(b);
-                if (h.signum() == 0)
-                    throw new ArithmeticException(
-                            EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                BigDecimal j = TermAtomic.widenBigDecimal(a);
-                return TermAtomic.normBigDecimal(j.subtract(j.divide(
-                        h, 0, BigDecimal.ROUND_DOWN).multiply(h)));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }

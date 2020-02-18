@@ -2,7 +2,6 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -50,6 +49,7 @@ public final class EvaluableBits extends AbstractSpecial {
     private final static int EVALUABLE_SHIFT_LEFT = 4;
     private final static int EVALUABLE_SHIFT_RIGHT = 5;
     private final static int EVALUABLE_GCD = 6;
+    private final static int EVALUABLE_MSB = 7;
 
     /**
      * <p>Create an evaluable bits.</p>
@@ -194,6 +194,18 @@ public final class EvaluableBits extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     en.skel = EvaluableBits.gcd(alfa, beta);
+                    en.display = Display.DISPLAY_CONST;
+                    return;
+                case EVALUABLE_MSB:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.computeExpr(temp[0], ref);
+                    d = en.display;
+                    multi = d.getAndReset();
+                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    if (multi)
+                        d.remTab(en);
+                    en.skel = Integer.valueOf(EvaluableBits.msb(alfa));
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -385,6 +397,31 @@ public final class EvaluableBits extends AbstractSpecial {
             }
         }
         return m << t;
+    }
+
+    /********************************************************************/
+    /* Additional Unary Number Operations:                              */
+    /*      msb/1: msb()                                                */
+    /********************************************************************/
+
+    /**
+     * <p>The index of the most significant bit.</p>
+     *
+     * @param m The number.
+     * @return The msb.
+     */
+    private static int msb(Number m) {
+        if (m instanceof Integer) {
+            int x = m.intValue();
+            int k = 31 - Integer.numberOfLeadingZeros(Math.abs(x));
+            if (x < 0 && Integer.bitCount(Math.abs(x)) == 1) {
+               return k - 1;
+            } else {
+               return k;
+            }
+        } else {
+            return ((BigInteger) m).bitLength() - 1;
+        }
     }
 
 }

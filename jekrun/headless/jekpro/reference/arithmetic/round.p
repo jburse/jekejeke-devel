@@ -6,7 +6,8 @@
  * result type of the evaluable functions truncate/1, floor/1,
  * ceiling/1 and round/1 is the same as the argument type:
  *
- * integer, truncate:	towards zero
+ * integer:	        integer towards zero
+ * truncate:	    towards zero
  * floor:			towards lower infinity
  * ceiling:			towards upper infinity
  * round:			towards nearest neighbour or then away from zero
@@ -23,8 +24,8 @@
  * the evaluable functions (rem)/2 and (mod)/2 is the same as the
  * argument types:
  *
- * X // Y = integer(X /F Y).
- * X div Y = integer(floor(X /F Y)).
+ * X // Y = truncate_I(X /_R Y).
+ * X div Y = floor_I(X /_R Y)).
  * X rem Y = X – (X // Y) * Y.
  * X mod Y = X – (X div Y) * Y.
  *
@@ -94,7 +95,7 @@
  * integer(X):
  * If X is a number the returns the integer of X.
  */
-% integer: number -> integer
+% integer(+Number, -Integer)
 :- public integer/2.
 :- special(integer/2, 'EvaluableRound', 0).
 
@@ -102,10 +103,10 @@
  * truncate(X): [ISO 9.1.7]
  * If X is a number then returns the rounding of X towards zero.
  */
-% truncate: integer -> integer
-% truncate: float32 -> float32
-% truncate: float -> float
-% truncate: decimal -> decimal
+% truncate(+Integer, -Integer)
+% truncate(+Float32, -Float32)
+% truncate(+Float, -Float)
+% truncate(+Decimal, -Decimal)
 :- public truncate/2.
 :- special(truncate/2, 'EvaluableRound', 1).
 
@@ -114,10 +115,10 @@
  * If X is a number then returns the rounding of X towards
  * negative infinity.
  */
-% floor: integer -> integer
-% floor: float32 -> float32
-% floor: float -> float
-% floor: decimal -> decimal
+% floor(+Integer, -Integer)
+% floor(+Float32, -Float32)
+% floor(+Float, -Float)
+% floor(+Decimal, -Decimal)
 :- public floor/2.
 :- special(floor/2, 'EvaluableRound', 2).
 
@@ -127,9 +128,9 @@
  * positive infinity.
  */
 % ceiling integer -> integer
-% ceiling: float32 -> float32
-% ceiling: float -> float
-% ceiling: decimal -> decimal
+% ceiling(+Float32, -Float32)
+% ceiling(+Float, -Float)
+% ceiling(+Decimal, -Decimal)
 :- public ceiling/2.
 :- special(ceiling/2, 'EvaluableRound', 3).
 
@@ -139,10 +140,10 @@
  * integer. If the absolute fraction of the number is 0.5 then returns
  * the rounding away from zero.
  */
-% round: integer -> integer
-% round: float32 -> float32
-% round: float -> float
-% round: decimal -> decimal
+% round(+Integer, -Integer)
+% round(+Float32, -Float32)
+% round(+Float, -Float)
+% round(+Decimal, -Decimal)
 :- public round/2.
 :- special(round/2, 'EvaluableRound', 4).
 
@@ -151,7 +152,7 @@
  * If X and Y are both numbers then the function returns
  * the truncated division of X by Y.
  */
-% // : number x number -> integer
+% //(+Number, +Number, -Integer)
 :- public // /3.
 :- special(// /3, 'EvaluableRound', 5).
 
@@ -160,10 +161,10 @@
  * If X and Y are both numbers then the function returns
  * the remainder of X by Y.
  */
-% rem : integer x integer -> integer
-% rem : float32 x float32 -> float32
-% rem : float x float -> float
-% rem : decimal x decimal -> decimal
+% rem(+Integer, +Integer, -Decimal)
+% rem(+Float32, +Float32, -Float32)
+% rem(+Float, +Float, -Float)
+% rem(+Decimal, +Decimal, -Decimal)
 :- public rem/3.
 :- special(rem/3, 'EvaluableRound', 6).
 
@@ -172,7 +173,7 @@
  * If X and Y are both numbers then the function returns
  * the floored division of X by Y.
  */
-% div : number x number -> integer
+% div(+Number, +Number, -Integer)
 :- public div/3.
 :- special(div/3, 'EvaluableRound', 7).
 
@@ -181,9 +182,9 @@
  * If X and Y are both numbers then the function returns
  * the modulus of X by Y.
  */
-% mod : integer x integer -> integer
-% mod : float32 x float32 -> float32
-% mod : float x float -> float
-% mod : decimal x decimal -> decimal
+% mod(+Integer, +Integer, -Decimal)
+% mod(+Float32, +Float32, -Float32)
+% mod(+Float, +Float, -Float)
+% mod(+Decimal, +Decimal, -Decimal)
 :- public mod/3.
 :- special(mod/3, 'EvaluableRound', 8).

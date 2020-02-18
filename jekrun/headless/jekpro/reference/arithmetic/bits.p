@@ -142,3 +142,10 @@
 lcm(_, 0, R) :- !, =(R, 0).
 lcm(0, _, R) :- !, =(R, 0).
 lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
+
+/**
+ * msb(X):
+ * If X is an integer then the function returns the most significant bit.
+ */
+:- public msb/2.
+:- special(msb/2, 'EvaluableBits', 7).
