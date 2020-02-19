@@ -5,20 +5,30 @@
  * for rational numbers. The arithmetic operation (rdiv)/2 creates a
  * rational number and normalizes it into a compound with functor #/2:
  *
- * Example:
+ * Examples:
  * ?- X is 4 rdiv 6.
  * X = 2#3
+ * ?- X is (- 12) rdiv 6.
+ * X = -2
  *
  * Rational numbers with unit denominator are normalized into integer
  * numbers. Rational numbers can be tested by the predicate rational/1.
- * The evaluable function rational/1 is able to turn a number into a
- * rational number. The predicate rational/3 determines the numerator
- * and denominator of a rational number.
+ * They can be decomposed into numerator and denominator via the
+ * predicate rational/3. The evaluable function rational/1 is able to
+ * turn a float number into a rational number. The evaluable function
+ * float/1 can do the converse:
+ *
+ * Examples:
+ * ?- X is rational(sqrt(2)).
+ * X = 6369051672525773#4503599627370496
+ * ?- X is float(6369051672525773#4503599627370496).
+ * X = 1.4142135623730951
  *
  * The overridden evaluable functions and predicates are realized
  * in Prolog and use multi-argument indexing to dispatch into rational
  * number or ordinary number routines. We currently measure a ca. 4-fold
- * overhead for ordinary numbers, but this might improve in the future.
+ * overhead for ordinary numbers, but this might improve in the future
+ * releases of the Jekejeke Prolog runtime library.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -114,7 +124,7 @@ rational(X, R) :-
 /**
  * rational(R, N, D):
  * The predicate succeeds in N with the numerator and in D with
- * the denomiator of the rational number R.
+ * the denominator of the rational number R.
  */
 :- public rational/3.
 rational(X#Y, A, B) :- !, A = X, B = Y.
@@ -122,7 +132,7 @@ rational(X, X, 1) :- integer(X).
 
 /**
  * numerator(X):
- * If X is a rational number, then the function returns the numerator.
+ * If X is a rational number then the function returns the numerator.
  */
 :- public numerator/2.
 numerator(X#_, A) :- !, A = X.
@@ -130,7 +140,7 @@ numerator(X, X) :- integer(X).
 
 /**
  * denominator(X):
- * If X is a rational number, then the function returns the denominator.
+ * If X is a rational number then the function returns the denominator.
  */
 :- public denominator/2.
 denominator(_#X, A) :- !, A = X.
@@ -432,23 +442,6 @@ lcm(A, B#C, R) :- !,
    R = P#C.
 lcm(A, B, C) :-
    user:lcm(A, B, C).
-
-:- public msb/2.
-:- override msb/2.
-msb(A#B, C) :- !,
-   user:msb(A, H),
-   user:msb(B, J),
-   user: -(H, J, K),
-   (  user: <(K, 0)
-   -> user: >>(A, K, L),
-      M = B
-   ;  L = A,
-      user: <<(B, K, M)),
-   (  user: <(L, M)
-   -> user: -(K, 1, C)
-   ;  C = K).
-msb(A, B) :-
-   user:msb(A, B).
 
 /***************************************************************/
 /* round.p                                                     */

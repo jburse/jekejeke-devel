@@ -530,7 +530,7 @@ public final class EvaluableElem extends AbstractSpecial {
                     return TermAtomic.normBigInteger(pow(y, x));
                 } else {
                     return TermAtomic.normBigInteger(
-                            BigInteger.valueOf(m.intValue()).pow(x));
+                            BigInteger.valueOf(y).pow(x));
                 }
             }
         } else if (m instanceof BigInteger) {

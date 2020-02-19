@@ -1,14 +1,13 @@
 /**
- * Characters can be written to text streams or read from text
- * streams. Text streams can be obtained by the to open/3 and
- * open/4 system predicates documented in the stream control
- * section. The standard output and/or the standard input might
- * also point to text streams, but this is not guaranteed.
+ * Characters can be written to text streams or read from text streams.
+ * Text streams can be obtained by the to open/3 and open/4 system
+ * predicates documented in the stream control sec-tion. The standard
+ * input, output and error usually point to a text streams.
  *
- * Text streams are automatically flushed when the new line primitive
- * is invoked. Additionally the text stream of the console window
- * is automatically flushed when more than 1024 characters have
- * been written.
+ * Text streams are flushed when the new line primitive nl/[0,1] is
+ * invoked. Otherwise, the text stream is usually buffered and only
+ * flushed when the buffer size has been reached. There might be binary
+ * buffers and text encoding buffers simultaneously.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

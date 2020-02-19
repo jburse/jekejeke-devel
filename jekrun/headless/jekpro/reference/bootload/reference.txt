@@ -26,6 +26,7 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
+# /3	no	arithmetic/ratio
 * /3	yes	arithmetic/elem
 * /3	no	arithmetic/ratio
 ** /3	yes	arithmetic/trigo
@@ -107,6 +108,7 @@ balance/2	no	runtime/distributed
 begin_module/1	no	bootload/engine
 break/0	no	runtime/session
 callable/1	no	structure/type
+ceiling/2	no	arithmetic/ratio
 ceiling/2	yes	arithmetic/round
 char_code/2	no	structure/atom
 clause/2	no	runtime/dynamic
@@ -125,6 +127,8 @@ current_resource/1	no	reflect/source
 current_source/1	no	reflect/source
 decimal/1	no	structure/type
 decimal/2	yes	arithmetic/elem
+decimal/2	no	arithmetic/ratio
+denominator/2	no	arithmetic/ratio
 (discontiguous)/1	no	bootload/load
 div/3	no	arithmetic/ratio
 div/3	yes	arithmetic/round
@@ -142,7 +146,9 @@ float/2	yes	arithmetic/elem
 float/2	no	arithmetic/ratio
 float32/1	no	structure/type
 float32/2	yes	arithmetic/elem
+float32/2	no	arithmetic/ratio
 float64/1	no	structure/type
+floor/2	no	arithmetic/ratio
 floor/2	yes	arithmetic/round
 foreign/3	no	reflect/foreign
 foreign_const/3	no	reflect/foreign
@@ -186,11 +192,13 @@ min/3	no	arithmetic/ratio
 mod/3	no	arithmetic/ratio
 mod/3	yes	arithmetic/round
 module/2	no	bootload/module
+msb/2	yes	arithmetic/bits
 (multifile)/1	no	bootload/load
 number/1	no	structure/type
 number_chars/2	no	structure/atom
 number_codes/2	no	structure/atom
 numbervars/3	no	structure/vars
+numerator/2	no	arithmetic/ratio
 op/3	no	reflect/oper
 oper_property/2	no	reflect/oper
 (override)/1	no	bootload/module
@@ -200,8 +208,9 @@ predicate_property/2	no	reflect/pred
 (private)/1	no	bootload/module
 prolog/0	no	runtime/session
 (public)/1	no	bootload/module
-rat/3	no	arithmetic/ratio
 rational/1	no	arithmetic/ratio
+rational/2	no	arithmetic/ratio
+rational/3	no	arithmetic/ratio
 rdiv/3	no	arithmetic/ratio
 read_block/2	no	structure/bytes
 read_block/3	no	structure/bytes
@@ -214,6 +223,7 @@ repeat/0	no	runtime/logic
 reset_oper_property/2	no	reflect/oper
 retract/1	no	runtime/dynamic
 retractall/1	no	runtime/dynamic
+round/2	no	arithmetic/ratio
 round/2	yes	arithmetic/round
 safe_term_variables/2	no	structure/vars
 safe_term_variables/3	no	structure/vars
@@ -293,6 +303,7 @@ term_variables/2	no	structure/vars
 term_variables/3	no	structure/vars
 (thread_local)/1	no	runtime/dynamic
 top_module/1	no	bootload/engine
+truncate/2	no	arithmetic/ratio
 truncate/2	yes	arithmetic/round
 unify_with_occurs_check/2	no	structure/univ
 unload_file/1	no	bootload/load

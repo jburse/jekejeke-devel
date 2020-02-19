@@ -2,13 +2,20 @@
  * Bytes can be written to binary streams or read from binary streams.
  * Binary streams can be obtained by the to open/3 and open/4 system
  * predicates documented in the stream control section. The standard
- * output and/or the standard input might also point to binary streams,
- * but this is not guaranteed.
+ * input, output and error might also point to binary streams.
  *
  * Text streams and binary streams share the notion of flushing and
  * end of stream. Therefore the system predicates flush_output/[0,1]
- * and at_end_of_stream/[0,1] apply to both text streams and
- * binary streams.
+ * and at_end_of_stream/[0,1] apply to both text streams and binary
+ * streams. If the stream can be repositioned, irrespective of the
+ * stream type, further two stream properties position/1 and length/1
+ * are provided.
+ *
+ * It should be noted that our at_end_of_stream/[0,1] is not as powerful
+ * as the C-call feof(), so it cannot be used to distinguish an interrupted
+ * stream from an end of file. Further, we do not provide the information
+ * as a stream property end_of_stream/1. Other stream properties that
+ * are also not supported are alias/1 and eof_action/1.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -179,53 +186,3 @@ at_end_of_stream(Stream) :-
 :- private sys_at_end_of_stream/1.
 :- foreign(sys_at_end_of_stream/1, 'ForeignByte',
       sysAtEndOfStream('Object')).
-
-/****************************************************************/
-/* Block Byte I/O                                               */
-/****************************************************************/
-
-/**
- * read_block(L, B):
- * read_block(I, L, B):
- * The predicate succeeds in a block B in reading maximally L bytes from I.
- */
-% read_block(+Integer, -Bytes)
-:- public read_block/2.
-read_block(Length, Block) :-
-   current_input(Stream),
-   sys_read_block(Stream, Length, Block).
-
-% read_block(+Stream, +Integer, -Bytes)
-:- public read_block/3.
-read_block(Alias, Length, Block) :- atom(Alias), !,
-   sys_get_alias(Alias, Stream),
-   sys_read_block(Stream, Length, Block).
-read_block(Stream, Length, Block) :-
-   sys_read_block(Stream, Length, Block).
-
-:- private sys_read_block/3.
-:- foreign(sys_read_block/3, 'ForeignByte',
-      sysReadBlock('InputStream', 'Integer')).
-
-/**
- * write_block(B):
- * write_block(O, B):
- * The predicate succeeds in writing the byte block B to O.
- */
-% write_block(+Bytes)
-:- public write_block/1.
-write_block(Block) :-
-   current_output(Stream),
-   sys_write_block(Stream, Block).
-
-% write_block(+Stream, +Bytes)
-:- public write_block/2.
-write_block(Alias, Block) :- atom(Alias), !,
-   sys_get_alias(Alias, Stream),
-   sys_write_block(Stream, Block).
-write_block(Stream, Block) :-
-   sys_write_block(Stream, Block).
-
-:- private sys_write_block/2.
-:- foreign(sys_write_block/2, 'ForeignByte',
-      sysWriteBlock('OutputStream', {byte})).

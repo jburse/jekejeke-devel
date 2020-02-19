@@ -177,8 +177,7 @@ close(Stream) :-
 /**
  * stream_property(S, P): [ISO 8.11.8]
  * The predicate succeeds with all the properties of the stream
- * S that unify with P. The following stream properties are
- * supported. For a list of options see the API documentation.
+ * S that unify with P.
  */
 % stream_property(+AliasOrPath, -Prop)
 :- public stream_property/2.

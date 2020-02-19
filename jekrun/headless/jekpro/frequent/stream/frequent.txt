@@ -324,10 +324,9 @@ random_next/2	no	basic/random
 random_next/3	no	basic/random
 random_permutation/2	no	basic/random
 random_permutation/3	no	basic/random
+rationalize/2	no	advanced/approx
 read/1	no	stream/term
 read/2	no	stream/term
-read_block/2	no	stream/byte
-read_block/3	no	stream/byte
 read_line/1	no	stream/console
 read_line/2	no	stream/console
 read_line_max/2	no	stream/console
@@ -352,6 +351,7 @@ remove/3	no	advanced/sets
 remove/3	no	experiment/maps
 rename_file/2	no	system/file
 reset_ref_property/2	no	experiment/ref
+reset_stream_property/2	no	stream/stream
 response_binary/3	no	misc/http
 response_text/3	no	misc/http
 rest_expansion/2	no	standard/expand
@@ -377,6 +377,7 @@ set_output/1	no	stream/stream
 set_ref_property/2	no	experiment/ref
 set_stream_length/2	no	stream/stream
 set_stream_position/2	no	stream/stream
+set_stream_property/2	no	stream/stream
 set_thread_flag/3	no	system/thread
 set_time_file/2	no	system/file
 setof/3	no	standard/bags
@@ -465,8 +466,6 @@ websock_new/2	no	misc/socket
 when/2	no	experiment/broker
 write/1	no	stream/term
 write/2	no	stream/term
-write_block/1	no	stream/byte
-write_block/2	no	stream/byte
 write_canonical/1	no	stream/term
 write_canonical/2	no	stream/term
 write_term/2	no	stream/term
