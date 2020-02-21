@@ -44,10 +44,11 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class Index {
-    public final static String OP_VAR = "var";
     public final static String OP_SYS_EQ = "sys_eq";
     public final static String OP_IDENTITY = "==";
     public final static String OP_FUNCTOR = "functor";
+    public final static String OP_VAR = "var";
+    public final static String OP_NONVAR = "nonvar";
 
     static final Object VALUE_GUARD = new Object();
 
@@ -106,12 +107,6 @@ final class Index {
         while (list instanceof Goal) {
             Object molec = ((Goal) list).term;
             if (molec instanceof SkelCompound &&
-                    ((SkelCompound) molec).args.length == 1 &&
-                    ((SkelCompound) molec).sym.fun.equals(Index.OP_VAR)) {
-                SkelCompound sc = (SkelCompound) molec;
-                if (sc.args[0] == sv)
-                    return VALUE_GUARD;
-            } else if (molec instanceof SkelCompound &&
                     ((SkelCompound) molec).args.length == 2 &&
                     (((SkelCompound) molec).sym.fun.equals(Foyer.OP_EQUAL) ||
                             ((SkelCompound) molec).sym.fun.equals(Index.OP_SYS_EQ) ||
@@ -141,6 +136,16 @@ final class Index {
                     if (!(term instanceof SkelVar) && !(term instanceof SkelCompound))
                         return keyValue(term);
                 }
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 1 &&
+                    ((SkelCompound) molec).sym.fun.equals(Index.OP_VAR)) {
+                SkelCompound sc = (SkelCompound) molec;
+                if (sc.args[0] == sv)
+                    return VALUE_GUARD;
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 1 &&
+                    ((SkelCompound) molec).sym.fun.equals(Index.OP_NONVAR)) {
+                /* */
             } else {
                 return null;
             }

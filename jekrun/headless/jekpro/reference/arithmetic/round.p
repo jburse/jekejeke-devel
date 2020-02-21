@@ -188,3 +188,11 @@
 % mod(+Decimal, +Decimal, -Decimal)
 :- public mod/3.
 :- special(mod/3, 'EvaluableRound', 8).
+
+/**
+ * divmod(X, Y, Z, T):
+ * The predicate succeeds in Z with the division of X by Y,
+ * and in T with the modulo of X by Y.
+ */
+:- public divmod/4.
+:- special(divmod/4, 'SpecialCompare', 6).

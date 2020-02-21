@@ -17,6 +17,7 @@ import jekpro.tools.term.SkelVar;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
+import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.Fence;
@@ -150,6 +151,13 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_BOTT;
 
     public Directive CLAUSE_HOOK;
+
+    /**
+     * <p>Create a new foyer.</p>
+     */
+    public Foyer() {
+        setInteractor(DefaultInteractor.DEFAULT);
+    }
 
     /**
      * <p>Retrieve the factory.</p>

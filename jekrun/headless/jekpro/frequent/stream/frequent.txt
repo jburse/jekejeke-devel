@@ -325,6 +325,7 @@ random_next/3	no	basic/random
 random_permutation/2	no	basic/random
 random_permutation/3	no	basic/random
 rationalize/2	no	advanced/approx
+rationalize32/2	no	advanced/approx
 read/1	no	stream/term
 read/2	no	stream/term
 read_line/1	no	stream/console

@@ -1,4 +1,22 @@
 /**
+ * This module provides rational number approximations. In contrast to
+ * rational/1 the number of bits in the result is minimized so that the
+ * target is still reached. The evaluable functions rationalize/1 and
+ * rationalize32/1 find rational numbers wih fewer bits that approximate
+ * 64-bit respectively 32-bit floating point numbers.
+ *
+ * Examples:
+ * ?- X is rationalize(8*(pi-3)).
+ * X = 121642183#107387442
+ * ?- X is rationalize32(8*(pi-3)).
+ * X = 4591#4053
+ *
+ * The current realization uses an integer algorithm based on Euclid's
+ * and it does also use rational arithmetic. Since our rational arithmetic
+ * is still slow and since the algorithm doesn't use floating points
+ * internally, it is relatively slow compared to other implementations.
+ * Again this might change in the future.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -35,37 +53,47 @@
 
 /**
  * rationalize(X):
- * If X is a number then the function returns an approximate rational number.
+ * If X is a number then the function returns an approximate
+ * rational number. The target precision is epsilon/2.
  */
+% rationalize(+Number, -Rational)
 :- public rationalize/2.
-rationalize(X, Y) :-
+rationalize(X, S) :-
    R is rational(X),
-   rat_find(R, 0, 1, Y).
+   rational(R, V, W),
+   P is R-1#9007199254740992,
+   Q is R+1#9007199254740992,
+   rat_iter(V#W, 1#0, 0#1, P, Q, S).
 
-:- private rat_find/4.
-rat_find(R, L, H, Y) :-
-   rat_mediant(L, H, M),
-   rat_find(R, L, H, M, Y).
+/**
+ * rationalize32(X):
+ * If X is a number then the function returns an approximate
+ * rational number. The target precision is epsilon32/2.
+ */
+% rationalize32(+Number, -Rational)
+:- public rationalize32/2.
+rationalize32(X, S) :-
+   R is rational(X),
+   rational(R, V, W),
+   P is R-1#16777216,
+   Q is R+1#16777216,
+   rat_iter(V#W, 1#0, 0#1, P, Q, S).
 
-:- private rat_find/5.
-rat_find(R, _, _, M, Y) :-
-   abs(R-M) < 1#4503599627370496, !,
-   Y = M.
-rat_find(R, _, H, M, Y) :-
-   M < R, !,
-   rat_find(R, M, H, Y).
-rat_find(R, L, _, M, Y) :-
-   rat_find(R, L, M, Y).
-
-:- private rat_mediant/3.
-rat_mediant(A#B, C#D, E#F) :- !,
-   E is A+C,
-   F is B+D.
-rat_mediant(A, B#C, E#F) :- !,
-   E is A+B,
-   F is 1+C.
-rat_mediant(A#B, C, E#F) :- !,
-   E is A+C,
-   F is B+1.
-rat_mediant(A, B, E#2) :-
-   E is A+B.
+/**
+ * rat_iter(R, L, H, P, Q, S):
+ * The predicate succeeds in S with the first continued fraction development
+ * of R that is inside the interval (P,Q). Euclids algoritm is used and the
+ * interval (L,H) is used to develop the stern-brocot branch.
+ */
+:- private rat_iter/6.
+rat_iter(_, X, _, Y, Z, X) :-
+   X \= 1#0,
+   Y < X, X < Z, !.
+rat_iter(_#0, X, _, _, _, X) :- !.
+rat_iter(V#W, M#N, P#Q, Y, Z, X) :-
+   user:divmod(V, W, D, U),
+   user: *(D, M, H),
+   user: +(H, P, A),
+   user: *(D, N, J),
+   user: +(J, Q, B),
+   rat_iter(W#U, A#B, M#N, Y, Z, X).
