@@ -47,6 +47,7 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/reference/arithmetic)).
 
 :- module(approx, []).
@@ -59,10 +60,10 @@
 :- public rational/2.
 rational(A#B, R) :- !,
    R = A#B.
-rational(X, R) :-
-   fp_mantissa(X, M),
-   fp_exponent(X, E),
-   fp_radix(X, B),
+rational(F, R) :-
+   sys_float_mantissa(F, M),
+   sys_float_exponent(F, E),
+   sys_float_radix(F, B),
    R is M*B^E.
 
 /**
@@ -117,22 +118,22 @@ rat_iter(V#W, M#N, P#Q, Y, Z, X) :-
 /***************************************************************/
 
 /**
- * fp_exponent(X): [ISO 7.1.3]
- * If X is a number then the function returns its exponent.
+ * sys_float_mantissa(F, M): [ISO 7.1.3]
+ * The predicate succeeds in M with the mantissa of F.
  */
-:- private fp_exponent/2.
-:- special(fp_exponent/2, 'EvaluableCompare', 2).
+:- private sys_float_mantissa/2.
+:- foreign(sys_float_mantissa/2, 'ForeignApprox', sysFloatMantissa('Number')).
 
 /**
- * fp_mantissa(X): [ISO 7.1.3]
- * If X is a number then the function returns its mantissa.
+ * sys_float_exponent(F, E): [ISO 7.1.3]
+ * The predicate succeeds in E with the exponent of F.
  */
-:- private fp_mantissa/2.
-:- special(fp_mantissa/2, 'EvaluableCompare', 3).
+:- private sys_float_exponent/2.
+:- foreign(sys_float_exponent/2, 'ForeignApprox', sysFloatExponent('Number')).
 
 /**
- * fp_radix(X): [ISO 7.1.3]
- * If X is a number then the function returns its radix.
+ * sys_float_radix(F, B): [ISO 7.1.3]
+ * The predicate succeeds in B with the radix of F.
  */
-:- private fp_radix/2.
-:- special(fp_radix/2, 'EvaluableCompare', 4).
+:- private sys_float_radix/2.
+:- foreign(sys_float_radix/2, 'ForeignApprox', sysFloatRadix('Number')).

@@ -53,6 +53,14 @@ public final class EvaluableRound extends AbstractSpecial {
     private final static int EVALUABLE_DIV = 7;
     private final static int EVALUABLE_MOD = 8;
 
+    private static final int FLOAT_SNIF_WIDTH = 23;
+    private static final int FLOAT_SNIF_MASK = 0x007fffff;
+    private static final int FLOAT_SIGN_MASK = 0x80000000;
+
+    private static final int DOUBLE_SNIF_WIDTH = 52;
+    private static final long DOUBLE_SNIF_MASK = 0x000fffffffffffffL;
+    private static final long DOUBLE_SIGN_MASK = 0x8000000000000000L;
+
     /**
      * <p>Create a round evaluable.</p>
      *
@@ -626,8 +634,8 @@ public final class EvaluableRound extends AbstractSpecial {
         if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
             return Integer.valueOf((int) f);
         } else {
-            return BigInteger.valueOf(EvaluableCompare.getMantissa(f)).shiftLeft(
-                    Math.getExponent(f) - EvaluableCompare.FLOAT_SNIF_WIDTH);
+            return BigInteger.valueOf(getMantissa(f)).shiftLeft(
+                    getExponent(f));
         }
     }
 
@@ -641,9 +649,61 @@ public final class EvaluableRound extends AbstractSpecial {
         if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
             return TermAtomic.normBigInteger((long) d);
         } else {
-            return BigInteger.valueOf(EvaluableCompare.getMantissa(d)).shiftLeft(
-                    Math.getExponent(d) - EvaluableCompare.DOUBLE_SNIF_WIDTH);
+            return BigInteger.valueOf(getMantissa(d)).shiftLeft(
+                    getExponent(d));
         }
+    }
+
+    /**
+     * <p>Retrieve the mantissa of a float.</p>
+     *
+     * @param f The float.
+     * @return The mantissa.
+     */
+    public static int getMantissa(float f) {
+        if (f == 0.0f)
+            return 0;
+        int raw = Float.floatToRawIntBits(f);
+        int mantissa = (raw & FLOAT_SNIF_MASK) + (FLOAT_SNIF_MASK + 1);
+        return (raw & FLOAT_SIGN_MASK) != 0 ? -mantissa : mantissa;
+    }
+
+    /**
+     * <p>Retrieve the mantissa of a double.</p>
+     *
+     * @param d The float.
+     * @return The mantissa.
+     */
+    public static long getMantissa(double d) {
+        if (d == 0.0)
+            return 0;
+        long raw = Double.doubleToRawLongBits(d);
+        long mantissa = (raw & DOUBLE_SNIF_MASK) + (DOUBLE_SNIF_MASK + 1);
+        return (raw & DOUBLE_SIGN_MASK) != 0 ? -mantissa : mantissa;
+    }
+
+    /**
+     * <p>Retrieve the exponent of a float.</p>
+     *
+     * @param f The float.
+     * @return The exponent.
+     */
+    public static int getExponent(float f) {
+        if (f == 0.0f)
+            return 0;
+        return Math.getExponent(f) - FLOAT_SNIF_WIDTH;
+    }
+
+    /**
+     * <p>Retrieve the exponent of a double.</p>
+     *
+     * @param d The double.
+     * @return The exponent.
+     */
+    public static int getExponent(double d) {
+        if (d == 0.0)
+            return 0;
+        return Math.getExponent(d) - DOUBLE_SNIF_WIDTH;
     }
 
     /**
