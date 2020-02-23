@@ -49,11 +49,11 @@ public final class EvaluableCompare extends AbstractSpecial {
     private final static int EVALUABLE_MANTISSA = 3;
     private final static int EVALUABLE_RADIX = 4;
 
-    private static final int FLOAT_SNIF_WIDTH = 23;
+    public static final int FLOAT_SNIF_WIDTH = 23;
     private static final int FLOAT_SNIF_MASK = 0x007fffff;
     private static final int FLOAT_SIGN_MASK = 0x80000000;
 
-    private static final int DOUBLE_SNIF_WIDTH = 52;
+    public static final int DOUBLE_SNIF_WIDTH = 52;
     private static final long DOUBLE_SNIF_MASK = 0x000fffffffffffffL;
     private static final long DOUBLE_SIGN_MASK = 0x8000000000000000L;
 
@@ -281,7 +281,7 @@ public final class EvaluableCompare extends AbstractSpecial {
             float f = m.floatValue();
             if (f == 0.0f)
                 return Integer.valueOf(0);
-            return Integer.valueOf(Math.getExponent(f)-FLOAT_SNIF_WIDTH);
+            return Integer.valueOf(Math.getExponent(f) - FLOAT_SNIF_WIDTH);
         } else if (m instanceof Double) {
             double d = m.doubleValue();
             if (d == 0.0)
@@ -305,18 +305,10 @@ public final class EvaluableCompare extends AbstractSpecial {
             return m;
         } else if (m instanceof Float) {
             float f = m.floatValue();
-            if (f == 0.0f)
-                return Integer.valueOf(0);
-            int raw = Float.floatToRawIntBits(f);
-            int mantissa = (raw & FLOAT_SNIF_MASK) + (FLOAT_SNIF_MASK + 1);
-            return Integer.valueOf((raw & FLOAT_SIGN_MASK) != 0 ? -mantissa : mantissa);
+            return Integer.valueOf(getMantissa(f));
         } else if (m instanceof Double) {
             double d = m.doubleValue();
-            if (d == 0.0)
-                return Integer.valueOf(0);
-            long raw = Double.doubleToRawLongBits(d);
-            long mantissa = (raw & DOUBLE_SNIF_MASK) + (DOUBLE_SNIF_MASK + 1);
-            return TermAtomic.normBigInteger((raw & DOUBLE_SIGN_MASK) != 0 ? -mantissa : mantissa);
+            return TermAtomic.normBigInteger(getMantissa(d));
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigInteger(TermAtomic.unscaledValue(m));
         } else {
@@ -340,6 +332,34 @@ public final class EvaluableCompare extends AbstractSpecial {
         } else {
             throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
         }
+    }
+
+    /**
+     * <p>Retrieve the mantissa of float.</p>
+     *
+     * @param f The float.
+     * @return The mantissa.
+     */
+    public static int getMantissa(float f) {
+        if (f == 0.0f)
+            return 0;
+        int raw = Float.floatToRawIntBits(f);
+        int mantissa = (raw & FLOAT_SNIF_MASK) + (FLOAT_SNIF_MASK + 1);
+        return (raw & FLOAT_SIGN_MASK) != 0 ? -mantissa : mantissa;
+    }
+
+    /**
+     * <p>Retrieve the mantissa of double.</p>
+     *
+     * @param d The float.
+     * @return The mantissa.
+     */
+    public static long getMantissa(double d) {
+        if (d == 0.0)
+            return 0;
+        long raw = Double.doubleToRawLongBits(d);
+        long mantissa = (raw & DOUBLE_SNIF_MASK) + (DOUBLE_SNIF_MASK + 1);
+        return (raw & DOUBLE_SIGN_MASK) != 0 ? -mantissa : mantissa;
     }
 
 }

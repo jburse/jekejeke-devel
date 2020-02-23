@@ -47,9 +47,23 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- use_package(foreign(jekpro/reference/arithmetic)).
 
 :- module(approx, []).
 :- reexport(library(arithmetic/ratio)).
+
+/**
+ * rational(X):
+ * If X is a number then the function returns the corresponding rational number.
+ */
+:- public rational/2.
+rational(A#B, R) :- !,
+   R = A#B.
+rational(X, R) :-
+   fp_mantissa(X, M),
+   fp_exponent(X, E),
+   fp_radix(X, B),
+   R is M*B^E.
 
 /**
  * rationalize(X):
@@ -97,3 +111,28 @@ rat_iter(V#W, M#N, P#Q, Y, Z, X) :-
    user: *(D, N, J),
    user: +(J, Q, B),
    rat_iter(W#U, A#B, M#N, Y, Z, X).
+
+/***************************************************************/
+/* Helper                                                      */
+/***************************************************************/
+
+/**
+ * fp_exponent(X): [ISO 7.1.3]
+ * If X is a number then the function returns its exponent.
+ */
+:- private fp_exponent/2.
+:- special(fp_exponent/2, 'EvaluableCompare', 2).
+
+/**
+ * fp_mantissa(X): [ISO 7.1.3]
+ * If X is a number then the function returns its mantissa.
+ */
+:- private fp_mantissa/2.
+:- special(fp_mantissa/2, 'EvaluableCompare', 3).
+
+/**
+ * fp_radix(X): [ISO 7.1.3]
+ * If X is a number then the function returns its radix.
+ */
+:- private fp_radix/2.
+:- special(fp_radix/2, 'EvaluableCompare', 4).

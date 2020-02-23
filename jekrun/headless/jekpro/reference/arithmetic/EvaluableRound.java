@@ -235,19 +235,9 @@ public final class EvaluableRound extends AbstractSpecial {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
-            float f = m.floatValue();
-            if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
-                return Integer.valueOf((int) f);
-            } else {
-                return TermAtomic.normBigInteger(new BigDecimal(f).toBigInteger());
-            }
+            return toInteger(m.floatValue());
         } else if (m instanceof Double) {
-            double d = m.doubleValue();
-            if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
-                return TermAtomic.normBigInteger((long) d);
-            } else {
-                return TermAtomic.normBigInteger(new BigDecimal(d).toBigInteger());
-            }
+            return toInteger(m.doubleValue());
         } else if (m instanceof Long) {
             return TermAtomic.normBigInteger(m.longValue());
         } else {
@@ -433,7 +423,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger(a.intValue() / u);
+                return TermAtomic.normBigInteger((long) a.intValue() / u);
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -445,23 +435,13 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                float g = a.floatValue() / f;
-                if (Integer.MIN_VALUE <= g && g <= Integer.MAX_VALUE) {
-                    return Integer.valueOf((int) g);
-                } else {
-                    return TermAtomic.normBigInteger(new BigDecimal(g).toBigInteger());
-                }
+                return toInteger(a.floatValue() / f);
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                double e = a.doubleValue() / d;
-                if (Long.MIN_VALUE <= e && e <= Long.MAX_VALUE) {
-                    return TermAtomic.normBigInteger((long) e);
-                } else {
-                    return TermAtomic.normBigInteger(new BigDecimal(e).toBigInteger());
-                }
+                return toInteger(a.doubleValue() / d);
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -494,7 +474,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger(a.intValue() % u);
+                return Integer.valueOf(a.intValue() % u);
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -547,52 +527,26 @@ public final class EvaluableRound extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
-                if ((v < 0) && (u >= 0)) {
-                    return TermAtomic.normBigInteger(((long) v - u + 1) / u);
-                } else if ((v >= 0) && (u < 0)) {
-                    return TermAtomic.normBigInteger(((long) v - u - 1) / u);
-                } else {
-                    return TermAtomic.normBigInteger(v / u);
-                }
+                return TermAtomic.normBigInteger(SpecialCompare.floorDiv(v, u));
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger q = TermAtomic.widenBigInteger(a);
-                if ((q.signum() < 0) && (p.signum() >= 0)) {
-                    return TermAtomic.normBigInteger(q.subtract(p).add(
-                            BigInteger.ONE).divide(p));
-                } else if ((q.signum() >= 0) && (p.signum() < 0)) {
-                    return TermAtomic.normBigInteger(q.subtract(p).subtract(
-                            BigInteger.ONE).divide(p));
-                } else {
-                    return TermAtomic.normBigInteger(q.divide(p));
-                }
+                return TermAtomic.normBigInteger(SpecialCompare.floorDiv(q, p));
             case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                float g = a.floatValue() / f;
-                if (Integer.MIN_VALUE <= g && g <= Integer.MAX_VALUE) {
-                    return Integer.valueOf((int) Math.floor(g));
-                } else {
-                    return TermAtomic.normBigInteger(new BigDecimal(g).setScale(0,
-                            BigDecimal.ROUND_FLOOR).unscaledValue());
-                }
+                return toInteger((float)Math.floor(a.floatValue() / f));
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                double e = a.doubleValue() / d;
-                if (Long.MIN_VALUE <= e && e <= Long.MAX_VALUE) {
-                    return TermAtomic.normBigInteger((long) Math.floor(e));
-                } else {
-                    return TermAtomic.normBigInteger(new BigDecimal(e).setScale(0,
-                            BigDecimal.ROUND_FLOOR).unscaledValue());
-                }
+                return toInteger(Math.floor(a.doubleValue() / d));
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -626,64 +580,28 @@ public final class EvaluableRound extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
-                if ((v < 0) != (u < 0)) {
-                    long res = v % u;
-                    if (res != 0) {
-                        return TermAtomic.normBigInteger(res + u);
-                    } else {
-                        return Integer.valueOf(0);
-                    }
-                } else {
-                    return TermAtomic.normBigInteger(v % u);
-                }
+                return Integer.valueOf(SpecialCompare.floorMod(v, u));
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger q = TermAtomic.widenBigInteger(a);
-                if ((q.signum() < 0) != (p.signum() < 0)) {
-                    BigInteger res = q.remainder(p);
-                    if (!res.equals(BigInteger.ZERO)) {
-                        return TermAtomic.normBigInteger(res.add(p));
-                    } else {
-                        return Integer.valueOf(0);
-                    }
-                } else {
-                    return TermAtomic.normBigInteger(q.remainder(p));
-                }
+                return TermAtomic.normBigInteger(SpecialCompare.floorMod(q, p));
             case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
-                if ((g < 0) != (f < 0)) {
-                    float res = g % f;
-                    if (res != 0) {
-                        return TermAtomic.makeFloat(res + f);
-                    } else {
-                        return TermAtomic.ZERO_FLOAT;
-                    }
-                } else {
-                    return TermAtomic.makeFloat(g % f);
-                }
+                return TermAtomic.makeFloat(SpecialCompare.floorMod(g, f));
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
-                if ((e < 0) != (d < 0)) {
-                    double res = e % d;
-                    if (res != 0) {
-                        return TermAtomic.makeDouble(res + d);
-                    } else {
-                        return TermAtomic.ZERO_DOUBLE;
-                    }
-                } else {
-                    return TermAtomic.makeDouble(e % d);
-                }
+                return TermAtomic.makeDouble(SpecialCompare.floorMod(e, d));
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -695,6 +613,36 @@ public final class EvaluableRound extends AbstractSpecial {
                         h, 0, BigDecimal.ROUND_FLOOR).multiply(h)));
             default:
                 throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+        }
+    }
+
+    /**
+     * <p>Convert an float to a Prolog integer.</p>
+     *
+     * @param f The float.
+     * @return The integer.
+     */
+    public static Number toInteger(float f) {
+        if (Integer.MIN_VALUE <= f && f <= Integer.MAX_VALUE) {
+            return Integer.valueOf((int) f);
+        } else {
+            return BigInteger.valueOf(EvaluableCompare.getMantissa(f)).shiftLeft(
+                    Math.getExponent(f) - EvaluableCompare.FLOAT_SNIF_WIDTH);
+        }
+    }
+
+    /**
+     * <p>Concert a double to an integer.</p>
+     *
+     * @param d The double.
+     * @return The integer to a Prolog integer.
+     */
+    public static Number toInteger(double d) {
+        if (Long.MIN_VALUE <= d && d <= Long.MAX_VALUE) {
+            return TermAtomic.normBigInteger((long) d);
+        } else {
+            return BigInteger.valueOf(EvaluableCompare.getMantissa(d)).shiftLeft(
+                    Math.getExponent(d) - EvaluableCompare.DOUBLE_SNIF_WIDTH);
         }
     }
 
@@ -724,16 +672,13 @@ public final class EvaluableRound extends AbstractSpecial {
         System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
         x=-19.0; y=-12.0;
         System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
-    }
-    */
-    /*
-    public static void main(String[] args) {
+
         int x=Integer.MIN_VALUE;
-        int y=5;
+        int y=-1;
         System.out.println("x="+x+", y="+y+", x%y="+x%y);
         System.out.println("x="+x+", y="+y+", x%y="+((long)x)%y);
-        System.out.println("x="+x+", y="+y+", x%y="+x/y);
-        System.out.println("x="+x+", y="+y+", x%y="+((long)x)/y);
+        System.out.println("x="+x+", y="+y+", x/y="+x/y);
+        System.out.println("x="+x+", y="+y+", x/y="+((long)x)/y);
     }
     */
 

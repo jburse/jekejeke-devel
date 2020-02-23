@@ -64,14 +64,26 @@
 /**
  * random(F):
  * The predicate succeeds for a continuous uniform random
- * number F in the interval [0..1) from the knowledgebase
- * random number generator.
+ * 64-bit floating point number F in the interval [0..1) from
+ * the knowledgebase random number generator.
  */
 % random(-Float)
 :- public random/1.
 random(F) :-
    current_prolog_flag(sys_random, R),
    random_next(R, F).
+
+/**
+ * random32(F):
+ * The predicate succeeds for a continuous uniform random
+ * 32-bit floating point number F in the interval [0..1) from
+ * the knowledgebase random number generator.
+ */
+% random32(-Float)
+:- public random32/1.
+random32(F) :-
+   current_prolog_flag(sys_random, R),
+   random_next32(R, F).
 
 /**
  * random(M, N):
@@ -111,13 +123,24 @@ random(M, N) :-
 /**
  * random_next(R, F):
  * The predicate succeeds for a continuous uniform random
- * number F in the interval [0..1) from the random number
- * generator R.
+ * 64-bit floating point number F in the interval [0..1) from
+ * the random number generator R.
  */
 % random_next(+Random, -Float)
 :- public random_next/2.
 :- virtual random_next/2.
 :- foreign(random_next/2, 'Random', nextDouble).
+
+/**
+ * random_next32(R, F):
+ * The predicate succeeds for a continuous uniform random
+ * 32-bit floating point number F in the interval [0..1)
+ * from the random number generator R.
+ */
+% random_next32(+Random, -Float)
+:- public random_next32/2.
+:- virtual random_next32/2.
+:- foreign(random_next32/2, 'Random', nextFloat).
 
 /**
  * random_next(R, M, N):

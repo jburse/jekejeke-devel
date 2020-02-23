@@ -149,3 +149,17 @@ lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
  */
 :- public msb/2.
 :- special(msb/2, 'EvaluableBits', 7).
+
+/**
+ * lsb(X):
+ * If X is an integer then the function returns the least significant bit.
+ */
+:- public lsb/2.
+:- special(lsb/2, 'EvaluableBits', 8).
+
+/**
+ * popcount(X):
+ * If X is an integer then the function returns the number of bits.
+ */
+:- public popcount/2.
+:- special(popcount/2, 'EvaluableBits', 9).

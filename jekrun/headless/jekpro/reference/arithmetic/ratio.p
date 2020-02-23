@@ -14,15 +14,16 @@
  * Rational numbers with unit denominator are normalized into integer
  * numbers. Rational numbers can be tested by the predicate rational/1.
  * They can be decomposed into numerator and denominator via the
- * predicate rational/3. The evaluable function rational/1 is able to
- * turn a float number into a rational number. The evaluable function
- * float/1 can do the converse:
+ * predicate rational/3. The evaluable functions numerator/1 and
+ * denominator/1 do the same individually.
  *
  * Examples:
- * ?- X is rational(sqrt(2)).
- * X = 6369051672525773#4503599627370496
- * ?- X is float(6369051672525773#4503599627370496).
- * X = 1.4142135623730951
+ * ?- rational(2#3, X, Y).
+ * X = 2,
+ * Y = 3
+ * ?- rational(-2, X, Y).
+ * X = -2,
+ * Y = 1
  *
  * The overridden evaluable functions and predicates are realized
  * in Prolog and use multi-argument indexing to dispatch into rational
@@ -60,7 +61,6 @@
  */
 
 :- package(library(jekpro/reference/arithmetic)).
-:- use_package(foreign(jekpro/reference/arithmetic)).
 
 :- module(ratio, []).
 
@@ -78,15 +78,15 @@
 rdiv(A#B, D#C, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
-   rat_make(P, Q, R).
+   rat_norm(P, Q, R).
 rdiv(A#B, D, R) :- !,
    user: *(B, D, Q),
-   rat_make(A, Q, R).
+   rat_norm(A, Q, R).
 rdiv(A, D#C, R) :- !,
    user: *(A, C, P),
-   rat_make(P, D, R).
+   rat_norm(P, D, R).
 rdiv(A, D, R) :-
-   rat_make(A, D, R).
+   rat_norm(A, D, R).
 
 /**
  * #(X, Y):
@@ -102,24 +102,6 @@ rdiv(A, D, R) :-
 :- public rational/1.
 rational(_#_) :- !.
 rational(X) :- integer(X).
-
-/**
- * rational(X):
- * If X is a number then the function returns the corresponding rational number.
- */
-:- public rational/2.
-rational(A#B, R) :- !,
-   R = A#B.
-rational(X, R) :-
-   fp_mantissa(X, M),
-   fp_exponent(X, E),
-   fp_radix(X, B),
-   (  user: <(E, 0)
-   -> user: -(E, F),
-      user: ^(B, F, H),
-      rat_make(M, H, R)
-   ;  user: ^(B, E, H),
-      user: *(M, H, R)).
 
 /**
  * rational(R, N, D):
@@ -210,15 +192,15 @@ float32(A, B) :-
    user: *(B, C, J),
    user: +(H, J, P),
    user: *(B, D, Q),
-   rat_make(P, Q, R).
+   rat_norm(P, Q, R).
 +(A#B, C, R) :- !,
    user: *(B, C, H),
    user: +(A, H, P),
-   rat_make(P, B, R).
+   rat_norm(P, B, R).
 +(A, C#D, R) :- !,
    user: *(A, D, H),
    user: +(H, C, P),
-   rat_make(P, D, R).
+   rat_norm(P, D, R).
 +(A, B, C) :-
    user: +(A, B, C).
 
@@ -229,15 +211,15 @@ float32(A, B) :-
    user: *(B, C, J),
    user: -(H, J, P),
    user: *(B, D, Q),
-   rat_make(P, Q, R).
+   rat_norm(P, Q, R).
 -(A#B, C, R) :- !,
    user: *(B, C, H),
    user: -(A, H, P),
-   rat_make(P, B, R).
+   rat_norm(P, B, R).
 -(A, C#D, R) :- !,
    user: *(A, D, H),
    user: -(H, C, P),
-   rat_make(P, D, R).
+   rat_norm(P, D, R).
 -(A, B, C) :-
    user: -(A, B, C).
 
@@ -246,13 +228,13 @@ float32(A, B) :-
 *(A#B, C#D, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
-   rat_make(P, Q, R).
+   rat_norm(P, Q, R).
 *(A#B, C, R) :- !,
    user: *(A, C, P),
-   rat_make(P, B, R).
+   rat_norm(P, B, R).
 *(A, C#D, R) :- !,
    user: *(A, C, P),
-   rat_make(P, D, R).
+   rat_norm(P, D, R).
 *(A, B, C) :-
    user: *(A, B, C).
 
@@ -276,39 +258,34 @@ float32(A, B) :-
 ^(X, C, R) :- user: <(C, 0), !,
    user: -(C, H),
    ^(X, H, J),
-   rat_inv(J, R).
+   rational(J, P, Q),
+   rat_make(Q, P, R).
 ^(A#B, C, R) :- !,
    user: ^(A, C, P),
    user: ^(B, C, Q),
-   rat_norm(P, Q, R).
+   rat_make(P, Q, R).
 ^(A, B, C) :-
    user: ^(A, B, C).
 
-:- private rat_inv/2.
-rat_inv(A#B, C) :- !,
-   rat_norm(B, A, C).
-rat_inv(A, B) :-
-   rat_norm(1, A, B).
-
-:- private rat_make/3.
-rat_make(A, D, R) :-
+:- private rat_norm/3.
+rat_norm(A, D, R) :-
    user:gcd(A, D, H),
    user: //(A, H, P),
    user: //(D, H, Q),
-   rat_norm(P, Q, R).
+   rat_make(P, Q, R).
 
-:- private rat_norm/3.
-rat_norm(_, 0, _) :-
+:- private rat_make/3.
+rat_make(_, 0, _) :-
    throw(error(evaluation_error(zero_divisor), _)).
-rat_norm(P, -1, C) :- !,
+rat_make(P, -1, C) :- !,
    user: -(P, C).
-rat_norm(P, 1, C) :- !,
+rat_make(P, 1, C) :- !,
    C = P.
-rat_norm(P, Q, C) :- user: <(Q, 0), !,
+rat_make(P, Q, C) :- user: <(Q, 0), !,
    user: -(P, R),
    user: -(Q, S),
    C = R#S.
-rat_norm(P, Q, P#Q).
+rat_make(P, Q, P#Q).
 
 /***************************************************************/
 /* compare.p                                                   */
@@ -433,13 +410,13 @@ gcd(A, B, C) :-
 lcm(A#B, C#D, R) :- !,
    user:lcm(A, C, P),
    user:gcd(B, D, Q),
-   R = P#Q.
-lcm(A#B, C, R) :- !,
+   rat_make(P, Q, R).
+lcm(A#_, C, R) :- !,
    user:lcm(A, C, P),
-   R = P#B.
-lcm(A, B#C, R) :- !,
+   R = P.
+lcm(A, B#_, R) :- !,
    user:lcm(A, B, P),
-   R = P#C.
+   R = P.
 lcm(A, B, C) :-
    user:lcm(A, B, C).
 
@@ -512,15 +489,15 @@ rem(A#B, C#D, R) :- !,
    user: *(B, C, J),
    user:rem(H, J, K),
    user: *(B, D, L),
-   rat_make(K, L, R).
+   rat_norm(K, L, R).
 rem(A#B, C, R) :- !,
    user: *(B, C, J),
    user:rem(A, J, K),
-   rat_make(K, B, R).
+   rat_norm(K, B, R).
 rem(A, B#C, R) :- !,
    user: *(A, C, H),
    user:rem(H, B, K),
-   rat_make(K, C, R).
+   rat_norm(K, C, R).
 rem(A, B, C) :-
    user:rem(A, B, C).
 
@@ -546,39 +523,33 @@ mod(A#B, C#D, R) :- !,
    user: *(B, C, J),
    user:mod(H, J, K),
    user: *(B, D, L),
-   rat_make(K, L, R).
+   rat_norm(K, L, R).
 mod(A#B, C, R) :- !,
    user: *(B, C, J),
    user:mod(A, J, K),
-   rat_make(K, B, R).
+   rat_norm(K, B, R).
 mod(A, B#C, R) :- !,
    user: *(A, C, H),
    user:mod(H, B, K),
-   rat_make(K, C, R).
+   rat_norm(K, C, R).
 mod(A, B, C) :-
    user:mod(A, B, C).
 
-/***************************************************************/
-/* Helper                                                      */
-/***************************************************************/
-
-/**
- * fp_exponent(X): [ISO 7.1.3]
- * If X is a number then the function returns its exponent.
- */
-:- private fp_exponent/2.
-:- special(fp_exponent/2, 'EvaluableCompare', 2).
-
-/**
- * fp_mantissa(X): [ISO 7.1.3]
- * If X is a number then the function returns its mantissa.
- */
-:- private fp_mantissa/2.
-:- special(fp_mantissa/2, 'EvaluableCompare', 3).
-
-/**
- * fp_radix(X): [ISO 7.1.3]
- * If X is a number then the function returns its radix.
- */
-:- private fp_radix/2.
-:- special(fp_radix/2, 'EvaluableCompare', 4).
+:- public divmod/4.
+:- override divmod/4.
+divmod(A#B, C#D, R, S) :- !,
+   user: *(A, D, H),
+   user: *(B, C, J),
+   user:divmod(H, J, R, K),
+   user: *(B, D, L),
+   rat_norm(K, L, S).
+divmod(A#B, C, R, S) :- !,
+   user: *(B, C, J),
+   user:divmod(A, J, R, K),
+   rat_norm(K, B, S).
+divmod(A, B#C, R, S) :- !,
+   user: *(A, C, H),
+   user:divmod(H, B, R, K),
+   rat_norm(K, C, S).
+divmod(A, B, C, D) :-
+   user:divmod(A, B, C, D).
