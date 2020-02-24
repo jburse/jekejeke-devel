@@ -212,7 +212,7 @@ make_rational(_, 0, _) :-
 make_rational(0, _, R) :- !,
    R = 0.
 make_rational(A, B, C) :-
-   elem:gcd(A, B, H), H \== 1, !,
+   user:gcd(A, B, H), H \== 1, !,
    user: //(A, H, J),
    user: //(B, H, K),
    new_rational(J, K, C).

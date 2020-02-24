@@ -45,9 +45,8 @@ import java.math.BigInteger;
  */
 public final class SupplementElem extends AbstractSpecial {
     private final static int EVALUABLE_ULP = 0;
-    private final static int EVALUABLE_GCD = 1;
-    private final static int EVALUABLE_MODINV = 2;
-    private final static int EVALUABLE_MODPOW = 3;
+    private final static int EVALUABLE_MODINV = 1;
+    private final static int EVALUABLE_MODPOW = 2;
 
     /**
      * <p>Create an elementary evaluable.</p>
@@ -84,24 +83,6 @@ public final class SupplementElem extends AbstractSpecial {
                     en.skel = ulp(alfa);
                     en.display = Display.DISPLAY_CONST;
                     return;
-                case EVALUABLE_GCD:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.computeExpr(temp[1], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = gcd(alfa, beta);
-                    en.display = Display.DISPLAY_CONST;
-                    return;
                 case EVALUABLE_MODINV:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -114,7 +95,7 @@ public final class SupplementElem extends AbstractSpecial {
                     en.computeExpr(temp[1], ref);
                     d = en.display;
                     multi = d.getAndReset();
-                    beta = SpecialEval.derefAndCastInteger(en.skel, d);
+                    Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
                     en.skel = modinv(alfa, beta);
@@ -178,66 +159,10 @@ public final class SupplementElem extends AbstractSpecial {
         }
     }
 
-
     /********************************************************************/
     /* Additional Binary Number Operations:                             */
-    /*      gcd/2: gcd()                                                */
+    /*      modinv/2: modinv()                                          */
     /********************************************************************/
-
-    /**
-     * <p>Return the gcd.</p>
-     *
-     * @param m The first number.
-     * @param n The second number.
-     * @return The gcd.
-     */
-    private static Number gcd(Number m, Number n) {
-        if (m instanceof Integer && n instanceof Integer) {
-            int x = binaryGcd(Math.abs(m.intValue()), Math.abs(n.intValue()));
-            if (x != Integer.MIN_VALUE) {
-                return Integer.valueOf(x);
-            } else {
-                return BigInteger.valueOf(-(long) x);
-            }
-        } else {
-            return TermAtomic.normBigInteger(
-                    TermAtomic.widenBigInteger(m).gcd(
-                            TermAtomic.widenBigInteger(n)));
-        }
-    }
-
-    /**
-     * <p>Return the gcd of two integers.</p>
-     *
-     * @param m The first number.
-     * @param n The second number.
-     * @return The gcd.
-     */
-    private static int binaryGcd(int m, int n) {
-        if (n == 0)
-            return m;
-        if (m == 0)
-            return n;
-
-        // Right shift a & b till their last bits equal to 1.
-        int aZeros = Integer.numberOfTrailingZeros(m);
-        int bZeros = Integer.numberOfTrailingZeros(n);
-        m >>>= aZeros;
-        n >>>= bZeros;
-
-        int t = (aZeros < bZeros ? aZeros : bZeros);
-
-        while (m != n) {
-            if ((m + 0x80000000) > (n + 0x80000000)) {  // a > b as unsigned
-                m -= n;
-                m >>>= Integer.numberOfTrailingZeros(m);
-            } else {
-                n -= m;
-                n >>>= Integer.numberOfTrailingZeros(n);
-            }
-        }
-        return m << t;
-    }
 
     /**
      * <p>Return the modpow.</p>

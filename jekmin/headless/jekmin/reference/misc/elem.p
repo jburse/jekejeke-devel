@@ -1,33 +1,26 @@
 /**
  * We provide a couple of additional elementary operations. The ulp
  * operation is defined for integer, float and decimal. It returns a
- * result of the same type as its argument. The gcd operation is
- * currently only defined for integers. It returns a result that
- * is an integer.
+ * result of the same type as its argument.
  *
  * ulp: integer -> integer             isqrt: integer -> integer
  * ulp: float -> float                 sqrtrem: integer -> integer^2
  * ulp: decimal -> decimal             iroot: integer^2 -> integer
- * gcd: integer^2 -> integer           rootrem: integer^2 -> integer^2
- * lcm: integer^2 -> integer           divmod : number^2 -> number^2
+ * rootrem: integer^2 -> integer^2
  *
  * The ulp operation makes use of the ulp() function of the Java Math
- * library. The gcd operation implements a binary gcd algorithm for
- * 32-bit integers and otherwise delegates to the Java BigInteger
- * gcd operation implementation.
+ * library. The root operations work on integers and use a combination
+ * of Newton and Zimmermann algorithms.
  *
  * Examples:
  * ulp(0)          --> 1               isqrt(7)        --> 2
  * ulp(0.0)        --> 4.9E-324        sqrtrem(7)      --> (2,3)
  * ulp(0d0.00)     --> 0d0.01          iroot(77,5)     --> 2
- * gcd(36,24)      --> 12              rootrem(77,5)   --> (2, 45)
- * lcm(36,24)      --> 72              divmod(12,-7)   --> (-1,5)
+ * rootrem(77,5)   --> (2, 45)
  *
- * The evaluable functions isqrt/1 and iroot/2 as well as the predicates
- * sqrtrem/3 and rootrem/4 use the fast Hacker method of finding an
- * integer root. The predicate divmod/4 returns both the quotient
- * and remainder of a division. This is faster than invoking the ISO
- * core standard eval-uable functions (//)/2 and (rem)/2 separately.
+ * The predicate divmod/4 returns both the quotient and remainder of a
+ * division. This is faster than invoking the ISO core standard evaluable
+ * functions (//)/2 and (rem)/2 separately.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -73,36 +66,18 @@
 :- special(ulp/2, 'SupplementElem', 0).
 
 /**
- * gcd(X, Y, Z):
- * The predicate succeeds in Z with the greatest common divisor of the
- * integer X and the integer Y.
- */
-:- public gcd/3.
-:- special(gcd/3, 'SupplementElem', 1).
-
-/**
- * lcm(X, Y, Z):
- * The predicate succeeds in Z with the least common multiple of the
- * integer X and the integer Y.
- */
-:- public lcm/3.
-lcm(_, 0, R) :- !, R = 0.
-lcm(0, _, R) :- !, R = 0.
-lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
-
-/**
  * modinv(B, M, R):
  * The predicate succeeds in R with B^(-1) mod M.
  */
 :- public modinv/3.
-:- special(modinv/3, 'SupplementElem', 2).
+:- special(modinv/3, 'SupplementElem', 1).
 
 /**
  * modpow(B, E, M, R):
  * The predicate succeeds in R with B^E mod M.
  */
 :- public modpow/4.
-:- special(modpow/4, 'SupplementElem', 3).
+:- special(modpow/4, 'SupplementElem', 2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Sqrt Root
@@ -132,10 +107,10 @@ sqrtrem(X, Y, Z) :-
 
 % zimmerman(+Integer, -Integer, -Integer)
 :- private zimmerman/3.
-zimmerman(N, X, Y) :- bitlength(N) =< 208, !,
+zimmerman(N, X, Y) :- msb(N) < 208, !,
    newton(N, X, Y).
 zimmerman(N, X2, Y2) :-
-   I is (bitlength(N)+1)//4,
+   I is (msb(N)+2)//4,
    K is 2*I,
    shiftup(N, K, U),
    zimmerman(U, P, Q),
@@ -149,7 +124,7 @@ zimmerman(N, X2, Y2) :-
 newton(0, X, Y) :- !,
    X = 0, Y = 0.
 newton(N, X2, Y2) :-
-   J is (bitlength(N)+1)//2,
+   J is (msb(N)+2)//2,
    X is 1<<J,
    Y is N-1<<(2*J),
    newton2(X, Y, X2, Y2).
@@ -203,10 +178,10 @@ rootrem(X, Y, Z, T) :-
 
 % zimmerman(+Integer, +Integer, -Integer, -Integer)
 :- private zimmerman/4.
-zimmerman(N, M, X, Y) :- bitlength(N) =< 2*M*52, !,
+zimmerman(N, M, X, Y) :- msb(N) < 2*M*52, !,
    newton(N, M, X, Y).
 zimmerman(N, M, X2, Y2) :-
-   I is (bitlength(N)-1+M)//(2*M),
+   I is (msb(N)+M)//(2*M),
    K is M*I,
    shiftup(N, K, U),
    zimmerman(U, M, P, Q),
@@ -221,7 +196,7 @@ zimmerman(N, M, X2, Y2) :-
 newton(0, _, X, Y) :- !,
    X = 0, Y = 0.
 newton(N, M, X2, Y2) :-
-   J is (bitlength(N)+M-1)//M,
+   J is (msb(N)+M)//M,
    X is 1<<J,
    F is 1<<(M*J),
    Y is N-F,
@@ -243,7 +218,7 @@ newton2(X, Y, _, _, X, Y).
 % shiftup(+Integer, +Integer, -Integer)
 :- private shiftup/3.
 shiftup(X, N, Y) :-
-   lowestsetbit(X) < N, !,
+   lsb(X) < N, !,
    Y is X>>N+1.
 shiftup(X, N, Y) :-
    Y is X>>N.
@@ -254,11 +229,3 @@ remup(P, 0, V) :- !,
    V = P.
 remup(P, _, V) :-
    V is P+1.
-
-/**
- * divmod(X, Y, Z, T):
- * The predicate succeeds in Z with the division of X by Y,
- * and in T with the modulo of X by Y.
- */
-:- public divmod/4.
-:- special(divmod/4, 'SpecialElem', 0).

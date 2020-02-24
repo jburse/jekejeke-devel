@@ -60,20 +60,6 @@
 :- module(scale, []).
 
 /**
- * scale(X, S):
- * Predicate succeeds in S with the scale of the decimal number X.
- */
-:- public scale/2.
-:- special(scale/2, 'SupplementScale', 0).
-
-/**
- * unscaled_value(X, U):
- * Predicate succeeds in U with the unscaled value of the decimal number X.
- */
-:- public unscaled_value/2.
-:- special(unscaled_value/2, 'SupplementScale', 1).
-
-/**
  * new_decimal(U, S, D):
  * The predicate succeeds in D with a decimal of unscaled value U and scale S.
  */
@@ -89,7 +75,7 @@
 
 /**
  * requested(C, P):
- * Predicate succeeds in P with requested precision by the math context C.
+ * Predicate succeeds in P with requested precision of the math context C.
  */
 :- public requested/2.
 :- special(requested/2, 'SupplementScale', 4).
@@ -103,7 +89,7 @@
 
 /**
  * mode(C, P):
- * Predicate succeeds in P with requested rounding mode by the math context C.
+ * Predicate succeeds in P with requested rounding mode of the math context C.
  */
 :- public mode/2.
 :- special(mode/2, 'SupplementScale', 6).

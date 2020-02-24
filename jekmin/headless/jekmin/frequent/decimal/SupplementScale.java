@@ -46,8 +46,6 @@ import java.math.RoundingMode;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class SupplementScale extends AbstractSpecial {
-    private final static int EVALUABLE_SCALE = 0;
-    private final static int EVALUABLE_UNSCALED_VALUE = 1;
     private final static int EVALUABLE_NEW_DECIMAL = 2;
     private final static int EVALUABLE_PRECISION = 3;
     private final static int EVALUABLE_REQUESTED = 4;
@@ -78,37 +76,13 @@ public class SupplementScale extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case EVALUABLE_SCALE:
+                case EVALUABLE_NEW_DECIMAL:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     en.computeExpr(temp[0], ref);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    Number alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = Integer.valueOf(TermAtomic.scale(alfa));
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_UNSCALED_VALUE:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastDecimal(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = TermAtomic.normBigInteger(TermAtomic.unscaledValue(alfa));
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_NEW_DECIMAL:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
                     en.computeExpr(temp[1], ref);

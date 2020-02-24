@@ -37,6 +37,7 @@
 :- use_module(library(decimal/scale)).
 :- use_module(library(decimal/arith)).
 :- use_module(library(misc/bits)).
+:- use_module(library(advanced/approx)).
 
 /****************************************************************/
 /* Precision Helper                                             */
@@ -49,14 +50,14 @@
 % dec_log10(+Decimal, -Float)
 :- public dec_log10/2.
 dec_log10(X, N) :-
-   U is unscaled_value(X),
-   S is scale(X),
-   N is S-int_log10(U).
+   sys_float_mantissa(X, U),
+   sys_float_exponent(X, S),
+   N is -S-int_log10(U).
 
 % int_log10(+Integer, -Float)
 :- private int_log10/2.
 int_log10(X, N) :-
-   L is bitlength(X)-1,
+   L is msb(X),
    L > 52, !,
    K is L-52,
    N is (log(X>>K)+K*log2)/log10.
@@ -88,11 +89,11 @@ int_log10(X, N) :-
 % dec_decomp(+Decimal, -Integer, -Decimal)
 :- public dec_decomp/3.
 dec_decomp(X, E, M) :-
-   S is scale(X),
+   sys_float_exponent(X, S),
    P is precision(X)-1,
-   E is P-S,
+   E is P+S,
    E \== 0, !,
-   U is unscaled_value(X),
+   sys_float_mantissa(X, U),
    M is new_decimal(U, P).
 dec_decomp(X, 0, X).
 
@@ -104,7 +105,7 @@ dec_decomp(X, 0, X).
 % bin_decomp(+Decimal, +Context, -Integer, -Decimal)
 :- public bin_decomp/4.
 bin_decomp(X, P, E, M) :-
-   E is bitlength(integer(X))-1,
+   E is msb(integer(X)),
    E \== 0, !,
    K is 1<<E,
    mp_slash(X, K, P, M).

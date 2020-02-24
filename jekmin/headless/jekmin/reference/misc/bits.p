@@ -50,27 +50,6 @@
 :- module(bits, []).
 
 /**
- * bitcount(X, N):
- * Predicate succeeds in N with the number of non-zero bits of X.
- */
-:- public bitcount/2.
-:- special(bitcount/2, 'SupplementBits', 0).
-
-/**
- * bitlength(X, N):
- * Predicate succeeds in N with the highest non-zero bit of X.
- */
-:- public bitlength/2.
-:- special(bitlength/2, 'SupplementBits', 1).
-
-/**
- * lowestsetbit(X, N):
- * Predicate succeeds in N with the lowest non-zero bit of X.
- */
-:- public lowestsetbit/2.
-:- special(lowestsetbit/2, 'SupplementBits', 2).
-
-/**
  * setbit(X, Y, Z):
  * The predicate succeeds in Z with Y \/ (1 << X).
  */

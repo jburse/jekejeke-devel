@@ -2,7 +2,6 @@ package jekmin.reference.misc;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -44,9 +43,6 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SupplementBits extends AbstractSpecial {
-    private final static int EVALUABLE_BITCOUNT = 0;
-    private final static int EVALUABLE_BITLENGTH = 1;
-    private final static int EVALUABLE_LOWESTSETBIT = 2;
     private final static int EVALUABLE_SETBIT = 3;
     private final static int EVALUABLE_CLEARBIT = 4;
 
@@ -73,49 +69,13 @@ public final class SupplementBits extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case EVALUABLE_BITCOUNT:
+                case EVALUABLE_SETBIT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     en.computeExpr(temp[0], ref);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
                     Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = Integer.valueOf(bitCount(alfa));
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_BITLENGTH:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = Integer.valueOf(bitLength(alfa));
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_LOWESTSETBIT:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = Integer.valueOf(lowestSetBit(alfa));
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_SETBIT:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
                     en.computeExpr(temp[1], ref);
@@ -158,84 +118,6 @@ public final class SupplementBits extends AbstractSpecial {
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));
-        }
-    }
-
-    /********************************************************************/
-    /* Additional Unary Bitwise Operations:                             */
-    /*      bitcount/2: bitCount()                                      */
-    /*      bitlength/2: bitLength()                                    */
-    /*      lowestsetbit/2: lowestSetBit()                              */
-    /********************************************************************/
-
-    /**
-     * <p>Count the bits.</p>
-     *
-     * @param m The operand.
-     * @return The result.
-     */
-    private static int bitCount(Number m) {
-        if (m instanceof Integer) {
-            int x = m.intValue();
-            if (x != Integer.MIN_VALUE) {
-                int k = Integer.bitCount(Math.abs(x));
-                if (x < 0) {
-                    return k + Integer.numberOfTrailingZeros(Math.abs(x)) - 1;
-                } else {
-                    return k;
-                }
-            } else {
-                return 31;
-            }
-        } else {
-            return ((BigInteger) m).bitCount();
-        }
-    }
-
-    /**
-     * <p>The number of bits to represent this number.</p>
-     *
-     * @param m The operand.
-     * @return The result.
-     */
-    private static int bitLength(Number m) {
-        if (m instanceof Integer) {
-            int x = m.intValue();
-            if (x != Integer.MIN_VALUE) {
-                int k = 32 - Integer.numberOfLeadingZeros(Math.abs(x));
-                if (x < 0 && Integer.bitCount(Math.abs(x)) == 1) {
-                    return k - 1;
-                } else {
-                    return k;
-                }
-            } else {
-                return 31;
-            }
-        } else {
-            return ((BigInteger) m).bitLength();
-        }
-    }
-
-    /**
-     * <p>The lowest set bit of this number.</p>
-     *
-     * @param m The operand.
-     * @return The result.
-     */
-    private static int lowestSetBit(Number m) {
-        if (m instanceof Integer) {
-            int x = m.intValue();
-            if (x != Integer.MIN_VALUE) {
-                if (x == 0) {
-                    return -1;
-                } else {
-                    return Integer.numberOfTrailingZeros(x);
-                }
-            } else {
-                return 31;
-            }
-        } else {
-            return ((BigInteger) m).getLowestSetBit();
         }
     }
 
