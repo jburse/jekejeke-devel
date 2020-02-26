@@ -1,7 +1,9 @@
 package jekpro.reference.structure;
 
 import jekpro.model.molec.AbstractUndo;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.call.CallOut;
@@ -284,7 +286,7 @@ public final class ForeignAtom {
      * @throws InterpreterException Error and position.
      */
     public static Number sysAtomToNumber(Interpreter inter, String s)
-            throws InterpreterException {
+            throws InterpreterException, InterpreterMessage {
         Number num;
         try {
             int ch;
@@ -302,6 +304,8 @@ public final class ForeignAtom {
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));
+        } catch (EngineMessage y) {
+            throw new InterpreterMessage(y);
         }
         return num;
     }
@@ -386,53 +390,87 @@ public final class ForeignAtom {
     /**
      * <p>Convert a number to a string.</p>
      *
-     * @param num   The number.
+     * @param m     The number.
      * @param flags The flags.
      * @return The string.
+     * @throws InterpreterMessage Not a Prolog number.
      */
-    public static String sysNumberToAtom(Number num, int flags) {
-        if (num instanceof Integer ||
-                num instanceof BigInteger ||
-                num instanceof Double) {
-            return num.toString();
-        } else if (num instanceof Float) {
+    public static String sysNumberToAtom(Number m, int flags)
+            throws InterpreterMessage {
+        try {
+            return numToString(m, flags);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /**
+     * <p>Convert a number to a string.</p>
+     *
+     * @param m     The number.
+     * @param flags The flags.
+     * @return The string.
+     * @throws EngineMessage Not a Prolog number.
+     */
+    public static String numToString(Number m, int flags)
+            throws EngineMessage {
+        if (m instanceof Integer ||
+                m instanceof BigInteger ||
+                m instanceof Double) {
+            return m.toString();
+        } else if (m instanceof Float) {
             if ((flags & Interpreter.FLAG_QUOTED) != 0) {
                 StringBuilder buf = new StringBuilder();
-                if (Math.signum(num.floatValue()) < 0) {
+                float y = m.floatValue();
+                if (y < 0) {
                     buf.append(Knowledgebase.OP_SUB);
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_FLOAT32);
-                    buf.append(-num.floatValue());
+                    buf.append(-y);
                 } else {
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_FLOAT32);
-                    buf.append(num.floatValue());
+                    buf.append(y);
                 }
                 return buf.toString();
             } else {
-                return num.toString();
+                return m.toString();
             }
-        } else if (num instanceof Long ||
-                num instanceof BigDecimal) {
+        } else if (m instanceof Long ||
+                m instanceof BigDecimal) {
             if ((flags & Interpreter.FLAG_QUOTED) != 0) {
                 StringBuilder buf = new StringBuilder();
-                if (EvaluableElem.sign(num).longValue() < 0) {
+                if (EvaluableElem.sign(m).longValue() < 0) {
                     buf.append(Knowledgebase.OP_SUB);
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
-                    buf.append(EvaluableElem.neg(num).toString());
+                    buf.append(EvaluableElem.neg(m).toString());
                 } else {
                     buf.appendCodePoint(CodeType.LINE_ZERO);
                     buf.appendCodePoint(ScannerToken.PREFIX_DECIMAL);
-                    buf.append(num.toString());
+                    buf.append(m.toString());
                 }
                 return buf.toString();
             } else {
-                return num.toString();
+                return m.toString();
             }
         } else {
-            throw new IllegalArgumentException("illegal number");
+            return refToString(m);
         }
+    }
+
+    /**
+     * <p>Convert a reference to a string.</p>
+     *
+     * @param obj The reference.
+     * @return The string.
+     */
+    public static String refToString(Object obj) {
+        StringBuilder buf = new StringBuilder();
+        buf.appendCodePoint(CodeType.LINE_ZERO);
+        buf.appendCodePoint(ScannerToken.PREFIX_REFERENCE);
+        buf.append(Integer.toHexString(obj.hashCode()));
+        return buf.toString();
     }
 
     /**
@@ -445,7 +483,7 @@ public final class ForeignAtom {
      * @throws InterpreterException Error and position.
      */
     public static Number sysAtomToInteger(Interpreter inter, String s, int radix)
-            throws InterpreterException {
+            throws InterpreterException, InterpreterMessage {
         Number num;
         try {
             int ch;
@@ -463,6 +501,8 @@ public final class ForeignAtom {
             throw new InterpreterException(x,
                     InterpreterException.fetchPos(
                             InterpreterException.fetchStack(inter), line, inter));
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
         }
         return num;
     }
@@ -499,14 +539,17 @@ public final class ForeignAtom {
      * @param num   The number.
      * @param radix The radix.
      * @return The string.
+     * @throws InterpreterMessage Not a Prolog integer.
      */
-    public static String sysIntegerToAtom(Number num, int radix) {
+    public static String sysIntegerToAtom(Number num, int radix)
+            throws InterpreterMessage {
         if (num instanceof Integer) {
             return Integer.toString(num.intValue(), radix);
         } else if (num instanceof BigInteger) {
             return ((BigInteger) num).toString(radix);
         } else {
-            throw new IllegalArgumentException("illegal number");
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    EngineMessage.OP_TYPE_INTEGER, num));
         }
     }
 

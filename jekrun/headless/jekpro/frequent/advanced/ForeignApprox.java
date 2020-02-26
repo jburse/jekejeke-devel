@@ -1,7 +1,9 @@
 package jekpro.frequent.advanced;
 
+import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.EvaluableRound;
 import jekpro.reference.arithmetic.SpecialCompare;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
@@ -45,8 +47,10 @@ public final class ForeignApprox {
      *
      * @param m The number.
      * @return The mantissa.
+     * @throws InterpreterMessage Not a Prolog number.
      */
-    public static Number sysFloatMantissa(Number m) {
+    public static Number sysFloatMantissa(Number m)
+            throws InterpreterMessage {
         if (m instanceof Integer || m instanceof BigInteger) {
             return m;
         } else if (m instanceof Float) {
@@ -58,7 +62,8 @@ public final class ForeignApprox {
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return TermAtomic.normBigInteger(TermAtomic.unscaledValue(m));
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -67,8 +72,10 @@ public final class ForeignApprox {
      *
      * @param m The number.
      * @return The exponent.
+     * @throws InterpreterMessage Not a Prolog number.
      */
-    public static int sysFloatExponent(Number m) {
+    public static int sysFloatExponent(Number m)
+            throws InterpreterMessage {
         if (m instanceof Integer || m instanceof BigInteger) {
             return 0;
         } else if (m instanceof Float) {
@@ -80,7 +87,8 @@ public final class ForeignApprox {
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return -TermAtomic.scale(m);
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -89,8 +97,10 @@ public final class ForeignApprox {
      *
      * @param m The number.
      * @return The radix.
+     * @throws InterpreterMessage Not a Prolog number.
      */
-    public static int sysFloatRadix(Number m) {
+    public static int sysFloatRadix(Number m)
+            throws InterpreterMessage {
         if (m instanceof Integer || m instanceof BigInteger) {
             return 1;
         } else if (m instanceof Float || m instanceof Double) {
@@ -98,7 +108,8 @@ public final class ForeignApprox {
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return 10;
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new InterpreterMessage(InterpreterMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 

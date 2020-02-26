@@ -159,3 +159,21 @@ atan2(X, Y, Z) :-
 
 :- private sys_atan2/3.
 :- foreign_fun(sys_atan2/3, 'Math', atan2(double, double)).
+
+/**
+ * epsilon: [N208 9.7.3]
+ * Returns the ulp of 64-bit one.
+ */
+% epsilon32(-Number)
+:- public epsilon/1.
+% :- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
+:- foreign_fun(epsilon/1, 'ForeignHyper', epsilon).
+
+/**
+ * epsilon32:
+ * Returns the ulp of 32-bit one.
+ */
+% epsilon32(-Number)
+:- public epsilon32/1.
+% :- foreign_const(epsilon32/1, 'SpecialCompare', 'EPSILON32').
+:- foreign_fun(epsilon32/1, 'ForeignHyper', epsilon32).

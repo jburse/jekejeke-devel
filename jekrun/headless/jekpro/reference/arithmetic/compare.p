@@ -10,18 +10,18 @@
  * 0d1.00D < 2
  * 1 =:= 0d1.00
  *
- * We also provide evaluable functions min/2 and max/2. These functions are
- * based on the aforementioned arithmetic comparison. The type of the return
- * value depends on the order of the arguments of these evaluable functions.
+ * The comparison predicates (=:=)/2, (<)/2, … do evaluate their
+ * arguments before performing the corresponding comparison. The
+ * predicate number_compare/3 does not evaluate its arguments and
+ * is the analogue of the lexical compare/3.
  *
  * min, max: integer x integer -> integer
  * min, max: float x float -> float
  * min, max: decimal x decimal -> decimal
- * epsilon: float
  *
- * The constant epsilon allows querying the smallest float number that when
- * added to one will still result in a float number different from one
- * without any rounding.
+ * We also provide evaluable functions min/2 and max/2. These functions are
+ * based on the aforementioned arithmetic comparison. The type of the return
+ * value depends on the order of the arguments of these evaluable functions.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -138,6 +138,16 @@
 :- special(>= /2, 'SpecialCompare', 5).
 
 /**
+ * number_compare(C, X, Y):
+ * The predicate succeeds when C unifies with the result of
+ * arithmetical comparing X to Y. The result is one of the
+ * following atoms <, = or >.
+ */
+% number_compare(-Atom, +Number, +Number)
+:- public number_compare/3.
+:- special(number_compare/3, 'SpecialCompare', 7).
+
+/**
  * min(X, Y): [TC2 9.3.9]
  * If X and Y are both numbers then the function returns the minimum of X and Y.
  */
@@ -157,18 +167,3 @@
 :- public max/3.
 :- special(max/3, 'EvaluableCompare', 1).
 
-/**
- * epsilon: [N208 9.7.3]
- * Returns the ulp of 64-bit one.
- */
-:- public epsilon/1.
-% :- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
-:- foreign_fun(epsilon/1, 'ForeignHyper', epsilon).
-
-/**
- * epsilon32:
- * Returns the ulp of 32-bit one.
- */
-:- public epsilon32/1.
-% :- foreign_const(epsilon32/1, 'SpecialCompare', 'EPSILON32').
-:- foreign_fun(epsilon32/1, 'ForeignHyper', epsilon32).

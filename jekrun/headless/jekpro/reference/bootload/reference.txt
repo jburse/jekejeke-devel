@@ -132,6 +132,7 @@ denominator/2	no	arithmetic/ratio
 (discontiguous)/1	no	bootload/load
 div/3	no	arithmetic/ratio
 div/3	yes	arithmetic/round
+divmod/4	no	arithmetic/ratio
 divmod/4	no	arithmetic/round
 (dynamic)/1	no	runtime/dynamic
 e/1	yes	arithmetic/trigo
@@ -179,6 +180,7 @@ lcm/3	no	arithmetic/ratio
 listing/0	no	bootload/load
 listing/1	no	bootload/load
 log/2	yes	arithmetic/trigo
+lsb/2	yes	arithmetic/bits
 make/0	no	bootload/load
 max/3	yes	arithmetic/compare
 max/3	no	arithmetic/ratio
@@ -198,6 +200,8 @@ msb/2	yes	arithmetic/bits
 number/1	no	structure/type
 number_chars/2	no	structure/atom
 number_codes/2	no	structure/atom
+number_compare/3	no	arithmetic/compare
+number_compare/3	no	arithmetic/ratio
 numbervars/3	no	structure/vars
 numerator/2	no	arithmetic/ratio
 op/3	no	reflect/oper
@@ -205,12 +209,12 @@ oper_property/2	no	reflect/oper
 (override)/1	no	bootload/module
 package/1	no	bootload/module
 pi/1	yes	arithmetic/trigo
+popcount/2	yes	arithmetic/bits
 predicate_property/2	no	reflect/pred
 (private)/1	no	bootload/module
 prolog/0	no	runtime/session
 (public)/1	no	bootload/module
 rational/1	no	arithmetic/ratio
-rational/2	no	arithmetic/ratio
 rational/3	no	arithmetic/ratio
 rdiv/3	no	arithmetic/ratio
 read_block/2	no	structure/bytes

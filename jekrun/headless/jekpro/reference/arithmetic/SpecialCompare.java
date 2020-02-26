@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -49,6 +50,7 @@ public final class SpecialCompare extends AbstractSpecial {
     private final static int SPECIAL_COMPARE_LQ = 3;
     private final static int SPECIAL_COMPARE_GQ = 5;
     private final static int SPECIAL_DIVMOD = 6;
+    private final static int SPECIAL_NUMBER_COMPARE = 7;
 
     public static final int NUM_INTEGER = 0;
     public static final int NUM_BIG_INTEGER = 1;
@@ -185,6 +187,16 @@ public final class SpecialCompare extends AbstractSpecial {
                 if (!en.unifyTerm(temp[3], ref, res[1], Display.DISPLAY_CONST))
                     return false;
                 return true;
+            case SPECIAL_NUMBER_COMPARE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                alfa = SpecialEval.derefAndCastNumber(temp[1], ref);
+                beta = SpecialEval.derefAndCastNumber(temp[2], ref);
+                int res2 = SpecialCompare.computeCmp(alfa, beta) ;
+                if (!en.unifyTerm(temp[0], ref,
+                        SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST))
+                    return false;
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -202,8 +214,10 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return True if they are equal, false otherwise.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static boolean testEq(Number m, Number n) {
+    public static boolean testEq(Number m, Number n)
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
             case SpecialCompare.NUM_BIG_INTEGER:
@@ -227,12 +241,14 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return <0 m < n,  0 m == m, >0 m > n.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static int computeCmp(Number m, Number n) {
+    public static int computeCmp(Number m, Number n)
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
             case SpecialCompare.NUM_BIG_INTEGER:
-                return compareIntegerArithmetical(m, n);
+                return SpecialCompare.compareIntegerArithmetical(m, n);
             case SpecialCompare.NUM_FLOAT:
                 float x = m.floatValue();
                 float y = n.floatValue();
@@ -259,8 +275,9 @@ public final class SpecialCompare extends AbstractSpecial {
      *
      * @param m The Prolog number.
      * @return The category.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static int numType(Number m) {
+    public static int numType(Number m) throws EngineMessage {
         if (m instanceof Integer) {
             return SpecialCompare.NUM_INTEGER;
         } else if (m instanceof BigInteger) {
@@ -274,7 +291,8 @@ public final class SpecialCompare extends AbstractSpecial {
         } else if (m instanceof BigDecimal) {
             return SpecialCompare.NUM_BIG_DECIMAL;
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -319,10 +337,11 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param a The first operand.
      * @param b The second operand.
      * @return The division result and the modulo.
-     * @throws ArithmeticException Shit happens.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog value.
      */
     private static Number[] divMod(Number a, Number b)
-            throws ArithmeticException {
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
             case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();

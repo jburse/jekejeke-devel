@@ -121,8 +121,10 @@ public final class EvaluableCompare extends AbstractSpecial {
      * @param m The first number.
      * @param n The second number.
      * @return The minimum of the two numbers.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number min(Number m, Number n) {
+    private static Number min(Number m, Number n)
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
             case SpecialCompare.NUM_BIG_INTEGER:
@@ -170,8 +172,10 @@ public final class EvaluableCompare extends AbstractSpecial {
      * @param m The first number.
      * @param n The second number.
      * @return The minimum of the two numbers.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number max(Number m, Number n) {
+    private static Number max(Number m, Number n)
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
             case SpecialCompare.NUM_BIG_INTEGER:

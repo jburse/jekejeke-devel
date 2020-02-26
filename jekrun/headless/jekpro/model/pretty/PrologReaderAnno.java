@@ -519,9 +519,11 @@ public class PrologReaderAnno extends PrologReader {
      *
      * @return The term.
      * @throws ScannerError Error and position.
+     * @throws IOException     IO error.
+     * @throws EngineMessage Not a Prolog number.
      */
     protected final Object readNumber()
-            throws ScannerError, IOException {
+            throws ScannerError, IOException, EngineMessage {
         if ((getFlags() & PrologWriter.FLAG_HINT) == 0)
             return super.readNumber();
         SkelAtom help;

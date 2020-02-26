@@ -14,8 +14,8 @@
  *
  * Examples:
  * floor(-3)          --> -3
- * floor(-3.14)       --> -4
- * floor(-0d3.1415)   --> -4
+ * floor(-3.14)       --> -4.0
+ * floor(-0d3.1415)   --> -0d4
  *
  * The division is based on a hypothetical /F operation. This operation
  * is approximate for float arguments and exact for integer and decimal
@@ -24,8 +24,8 @@
  * the evaluable functions (rem)/2 and (mod)/2 is the same as the
  * argument types:
  *
- * X // Y = truncate_I(X /_R Y).
- * X div Y = floor_I(X /_R Y)).
+ * X // Y = integer(X / Y).
+ * X div Y = integer(floor(X / Y)).
  * X rem Y = X – (X // Y) * Y.
  * X mod Y = X – (X div Y) * Y.
  *

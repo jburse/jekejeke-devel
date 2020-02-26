@@ -121,19 +121,19 @@ rat_iter(V#W, M#N, P#Q, Y, Z, X) :-
  * sys_float_mantissa(F, M): [ISO 7.1.3]
  * The predicate succeeds in M with the mantissa of F.
  */
-:- private sys_float_mantissa/2.
+:- public sys_float_mantissa/2.
 :- foreign(sys_float_mantissa/2, 'ForeignApprox', sysFloatMantissa('Number')).
 
 /**
  * sys_float_exponent(F, E): [ISO 7.1.3]
  * The predicate succeeds in E with the exponent of F.
  */
-:- private sys_float_exponent/2.
+:- public sys_float_exponent/2.
 :- foreign(sys_float_exponent/2, 'ForeignApprox', sysFloatExponent('Number')).
 
 /**
  * sys_float_radix(F, B): [ISO 7.1.3]
  * The predicate succeeds in B with the radix of F.
  */
-:- private sys_float_radix/2.
+:- public sys_float_radix/2.
 :- foreign(sys_float_radix/2, 'ForeignApprox', sysFloatRadix('Number')).

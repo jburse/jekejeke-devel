@@ -805,10 +805,12 @@ public class PrologReader {
      * <p>Can be overridden by sub classes.</p>
      *
      * @return The term.
-     * @throws ScannerError Error and position.
+     * @throws ScannerError  Error and position.
+     * @throws IOException     IO error.
+     * @throws EngineMessage Not a Prolog number.
      */
     protected Object readNumber()
-            throws ScannerError, IOException {
+            throws ScannerError, IOException, EngineMessage {
         Number num;
         if (Foyer.OP_SUB.equals(st.getData())) {
             nextToken();

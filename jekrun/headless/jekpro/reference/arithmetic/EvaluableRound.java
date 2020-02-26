@@ -55,10 +55,12 @@ public final class EvaluableRound extends AbstractSpecial {
 
     private static final int FLOAT_SNIF_WIDTH = 23;
     private static final int FLOAT_SNIF_MASK = 0x007fffff;
+    private static final int FLOAT_EXPO_MASK = 0x7f800000;
     private static final int FLOAT_SIGN_MASK = 0x80000000;
 
     private static final int DOUBLE_SNIF_WIDTH = 52;
     private static final long DOUBLE_SNIF_MASK = 0x000fffffffffffffL;
+    private static final long DOUBLE_EXPO_MASK = 0x7ff0000000000000L;
     private static final long DOUBLE_SIGN_MASK = 0x8000000000000000L;
 
     /**
@@ -421,10 +423,10 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param a The first operand.
      * @param b The second operand.
      * @return The first operand divided by the second operand.
-     * @throws ArithmeticException Shit happens.
+     * @throws EngineMessage Not a Prolog number.
      */
     private static Number slashSlash(Number a, Number b)
-            throws ArithmeticException {
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
             case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
@@ -473,9 +475,11 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param a The first operand.
      * @param b The second operand.
      * @return The remainder of the first operand by the second operand.
-     * @throws ArithmeticException Shit happens.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number rem(Number a, Number b) throws ArithmeticException {
+    private static Number rem(Number a, Number b)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
             case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
@@ -525,9 +529,10 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param a The first operand.
      * @param b The second operand.
      * @return The first operand divided by the second operand.
-     * @throws ArithmeticException Shit happens.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number div(Number a, Number b) {
+    private static Number div(Number a, Number b)
+            throws EngineMessage {
         switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
             case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
@@ -548,7 +553,7 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return toInteger((float)Math.floor(a.floatValue() / f));
+                return toInteger((float) Math.floor(a.floatValue() / f));
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
@@ -578,9 +583,11 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param a The first number.
      * @param b The second number.
      * @return The remainder of the first number by the second number.
-     * @throws ArithmeticException Shit happens.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number mod(Number a, Number b) throws ArithmeticException {
+    private static Number mod(Number a, Number b)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(a), SpecialCompare.numType(b))) {
             case SpecialCompare.NUM_INTEGER:
                 int u = b.intValue();
@@ -661,10 +668,10 @@ public final class EvaluableRound extends AbstractSpecial {
      * @return The mantissa.
      */
     public static int getMantissa(float f) {
-        if (f == 0.0f)
-            return 0;
         int raw = Float.floatToRawIntBits(f);
-        int mantissa = (raw & FLOAT_SNIF_MASK) + (FLOAT_SNIF_MASK + 1);
+        int mantissa = raw & FLOAT_SNIF_MASK;
+        if ((raw & FLOAT_EXPO_MASK) != 0)
+            mantissa += FLOAT_SNIF_MASK + 1;
         return (raw & FLOAT_SIGN_MASK) != 0 ? -mantissa : mantissa;
     }
 
@@ -675,10 +682,10 @@ public final class EvaluableRound extends AbstractSpecial {
      * @return The mantissa.
      */
     public static long getMantissa(double d) {
-        if (d == 0.0)
-            return 0;
         long raw = Double.doubleToRawLongBits(d);
-        long mantissa = (raw & DOUBLE_SNIF_MASK) + (DOUBLE_SNIF_MASK + 1);
+        long mantissa = raw & DOUBLE_SNIF_MASK;
+        if ((raw & DOUBLE_EXPO_MASK) != 0)
+            mantissa += DOUBLE_SNIF_MASK + 1;
         return (raw & DOUBLE_SIGN_MASK) != 0 ? -mantissa : mantissa;
     }
 
@@ -691,7 +698,8 @@ public final class EvaluableRound extends AbstractSpecial {
     public static int getExponent(float f) {
         if (f == 0.0f)
             return 0;
-        return Math.getExponent(f) - FLOAT_SNIF_WIDTH;
+        return Math.max(Math.getExponent(f),
+                Float.MIN_EXPONENT) - FLOAT_SNIF_WIDTH;
     }
 
     /**
@@ -703,7 +711,8 @@ public final class EvaluableRound extends AbstractSpecial {
     public static int getExponent(double d) {
         if (d == 0.0)
             return 0;
-        return Math.getExponent(d) - DOUBLE_SNIF_WIDTH;
+        return Math.max(Math.getExponent(d),
+                Double.MIN_EXPONENT) - DOUBLE_SNIF_WIDTH;
     }
 
     /**

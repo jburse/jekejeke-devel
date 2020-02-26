@@ -5,8 +5,10 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
+import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
@@ -15,6 +17,8 @@ import matula.util.regex.ScannerToken;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * <p>This class provides the writing of prolog terms.</p>
@@ -802,7 +806,7 @@ public class PrologWriter {
             safeSpace(t);
             append(t);
         } else if (term instanceof Number) {
-            String t = ForeignAtom.sysNumberToAtom((Number) term, flags);
+            String t = ForeignAtom.numToString((Number) term, flags);
             if ((spez & SPEZ_MINS) != 0) {
                 append(' ');
             } else {
@@ -810,7 +814,7 @@ public class PrologWriter {
             }
             append(t);
         } else {
-            String t = refToString(term);
+            String t = ForeignAtom.refToString(term);
             if ((spez & SPEZ_MINS) != 0) {
                 append(' ');
             } else {
@@ -818,20 +822,6 @@ public class PrologWriter {
             }
             append(t);
         }
-    }
-
-    /**
-     * <p>Convert a reference to a string.</p>
-     *
-     * @param obj The reference.
-     * @return The string.
-     */
-    private static String refToString(Object obj) {
-        StringBuilder buf = new StringBuilder();
-        buf.appendCodePoint(CodeType.LINE_ZERO);
-        buf.appendCodePoint(ScannerToken.PREFIX_REFERENCE);
-        buf.append(Integer.toHexString(obj.hashCode()));
-        return buf.toString();
     }
 
     /*********************************************************************/

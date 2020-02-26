@@ -275,10 +275,10 @@ public final class EvaluableElem extends AbstractSpecial {
      *
      * @param m The Prolog number.
      * @return The negated Prolog number.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws EngineMessage Not a Prolog number.
      */
     public static Number neg(Number m)
-            throws ArithmeticException {
+            throws EngineMessage {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
@@ -302,7 +302,8 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(((BigDecimal) m).negate());
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -312,9 +313,11 @@ public final class EvaluableElem extends AbstractSpecial {
      *
      * @param m The Prolog number.
      * @return The absed Prolog number.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static Number abs(Number m) throws ArithmeticException {
+    public static Number abs(Number m)
+            throws ArithmeticException, EngineMessage {
         if (m instanceof Integer) {
             int x = m.intValue();
             if (x != Integer.MIN_VALUE) {
@@ -338,7 +341,8 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigDecimal) {
             return TermAtomic.normBigDecimal(((BigDecimal) m).abs());
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -347,9 +351,11 @@ public final class EvaluableElem extends AbstractSpecial {
      *
      * @param m The Prolog number.
      * @return The signed Prolog number.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static Number sign(Number m) throws ArithmeticException {
+    public static Number sign(Number m)
+            throws ArithmeticException, EngineMessage {
         if (m instanceof Integer) {
             return Integer.valueOf(Integer.signum(m.intValue()));
         } else if (m instanceof BigInteger) {
@@ -363,7 +369,8 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof BigDecimal) {
             return Long.valueOf(((BigDecimal) m).signum());
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -372,8 +379,9 @@ public final class EvaluableElem extends AbstractSpecial {
      *
      * @param m The number.
      * @return The float.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number decimal(Number m) {
+    private static Number decimal(Number m) throws EngineMessage {
         if (m instanceof Integer) {
             return Long.valueOf(m.intValue());
         } else if (m instanceof BigInteger) {
@@ -383,7 +391,8 @@ public final class EvaluableElem extends AbstractSpecial {
         } else if (m instanceof Long || m instanceof BigDecimal) {
             return m;
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -401,9 +410,11 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return The sum of the two numbers.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static Number add(Number m, Number n) throws ArithmeticException {
+    public static Number add(Number m, Number n)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -433,9 +444,11 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return The first number subtracted by the second number.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number sub(Number m, Number n) throws ArithmeticException {
+    private static Number sub(Number m, Number n)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
@@ -465,9 +478,11 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return The product of the two numbers.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number mul(Number m, Number n) throws ArithmeticException {
+    private static Number mul(Number m, Number n)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
@@ -497,9 +512,10 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The first Prolog number.
      * @param n The second Prolog number.
      * @return The first number slashed by the second number.
-     * @throws ArithmeticException Not a Prolog number.
+     * @throws ArithmeticException Illegal value.
      */
-    private static double slash(Number m, Number n) throws ArithmeticException {
+    private static double slash(Number m, Number n)
+            throws ArithmeticException {
         double b = n.doubleValue();
         if (!TermAtomic.guardDouble(b))
             throw new ArithmeticException(
@@ -518,8 +534,11 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The first operand.
      * @param x The second operand.
      * @return The first integer raised to the power of the second integer.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number intPow(Number m, int x) {
+    private static Number intPow(Number m, int x)
+            throws ArithmeticException, EngineMessage {
         if (m instanceof Integer) {
             int y = m.intValue();
             if (y == 0) {
@@ -545,7 +564,8 @@ public final class EvaluableElem extends AbstractSpecial {
             return TermAtomic.normBigDecimal(
                     TermAtomic.widenBigDecimal(m).pow(x));
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 

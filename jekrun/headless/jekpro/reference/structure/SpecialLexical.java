@@ -168,7 +168,7 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param en  The engine.
      * @return The comparison atom.
      */
-    private static SkelAtom compAtom(int res, Engine en) {
+    public static SkelAtom compAtom(int res, Engine en) {
         if (res < 0) {
             return en.store.foyer.ATOM_LESS;
         } else if (res == 0) {
