@@ -277,7 +277,8 @@ public final class SpecialCompare extends AbstractSpecial {
      * @return The category.
      * @throws EngineMessage Not a Prolog number.
      */
-    public static int numType(Number m) throws EngineMessage {
+    public static int numType(Number m)
+            throws EngineMessage {
         if (m instanceof Integer) {
             return SpecialCompare.NUM_INTEGER;
         } else if (m instanceof BigInteger) {

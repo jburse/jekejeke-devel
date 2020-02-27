@@ -48,7 +48,6 @@
 
 :- package(library(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/frequent/advanced)).
-:- use_package(foreign(jekpro/reference/arithmetic)).
 
 :- module(approx, []).
 :- reexport(library(arithmetic/ratio)).
@@ -57,6 +56,7 @@
  * rational(X):
  * If X is a number then the function returns the corresponding rational number.
  */
+% rational(+Number, -Rational)
 :- public rational/2.
 rational(A#B, R) :- !,
    R = A#B.
@@ -73,12 +73,22 @@ rational(F, R) :-
  */
 % rationalize(+Number, -Rational)
 :- public rationalize/2.
+rationalize(X, S) :- X < 0, !,
+   R is rational(-X),
+   rat_rationalize(R, H),
+   S is -H.
 rationalize(X, S) :-
    R is rational(X),
+   rat_rationalize(R, S).
+
+% rat_rationalize(+Rational, -Rational)
+:- private rat_rationalize/2.
+rat_rationalize(R, S) :-
    rational(R, V, W),
-   P is R-1#9007199254740992,
-   Q is R+1#9007199254740992,
-   rat_iter(V#W, 1#0, 0#1, P, Q, S).
+   P is R*9007199254740991#9007199254740992,
+   Q is R*9007199254740993#9007199254740992,
+   rat_iter(V#W, 1#0, 0#1, P, Q, A#B),
+   rational(S, A, B).
 
 /**
  * rationalize32(X):
@@ -87,12 +97,22 @@ rationalize(X, S) :-
  */
 % rationalize32(+Number, -Rational)
 :- public rationalize32/2.
+rationalize32(X, S) :- X < 0, !,
+   R is rational(-X),
+   rat_rationalize32(R, H),
+   S is -H.
 rationalize32(X, S) :-
    R is rational(X),
+   rat_rationalize32(R, S).
+
+% rat_rationalize32(+Rational, -Rational)
+:- private rat_rationalize32/2.
+rat_rationalize32(R, S) :-
    rational(R, V, W),
-   P is R-1#16777216,
-   Q is R+1#16777216,
-   rat_iter(V#W, 1#0, 0#1, P, Q, S).
+   P is R*16777215#16777216,
+   Q is R*16777217#16777216,
+   rat_iter(V#W, 1#0, 0#1, P, Q, A#B),
+   rational(S, A, B).
 
 /**
  * rat_iter(R, L, H, P, Q, S):
@@ -100,6 +120,7 @@ rationalize32(X, S) :-
  * of R that is inside the interval (P,Q). Euclids algoritm is used and the
  * interval (L,H) is used to develop the stern-brocot branch.
  */
+% rat_iter(+Rational, +Rational, +Rational, +Rational, +Rational, -Rational)
 :- private rat_iter/6.
 rat_iter(_, X, _, Y, Z, X) :-
    X \= 1#0,

@@ -109,24 +109,40 @@ rational(X) :- integer(X).
  * the denominator of the rational number R.
  */
 :- public rational/3.
-rational(X#Y, A, B) :- !, A = X, B = Y.
-rational(X, X, 1) :- integer(X).
+rational(X, A, B) :- var(X), !,
+   rat_make(A, B, X).
+rational(X#Y, A, B) :- !,
+   A = X,
+   B = Y.
+rational(X, A, B) :- integer(X), !,
+   A = X,
+   B = 1.
+rational(X, _, _) :-
+   throw(error(type_error(rational, X), _)).
 
 /**
  * numerator(X):
  * If X is a rational number then the function returns the numerator.
  */
 :- public numerator/2.
-numerator(X#_, A) :- !, A = X.
-numerator(X, X) :- integer(X).
+numerator(X#_, A) :- !,
+   A = X.
+numerator(X, A) :- integer(X), !,
+   A = X.
+numerator(X, _) :-
+   throw(error(type_error(rational, X), _)).
 
 /**
  * denominator(X):
  * If X is a rational number then the function returns the denominator.
  */
 :- public denominator/2.
-denominator(_#X, A) :- !, A = X.
-denominator(X, 1) :- integer(X).
+denominator(_#X, A) :- !,
+   A = X.
+denominator(X, A) :- integer(X), !,
+   A = 1.
+denominator(X, _) :-
+   throw(error(type_error(rational, X), _)).
 
 /***************************************************************/
 /* elem.p                                                      */
