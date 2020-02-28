@@ -46,6 +46,12 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+/**
+ * See also:
+ * Continued Fractions on the Stern-Brocot Tree
+ * https://www.cut-the-knot.org/blue/ContinuedFractions.shtml
+ */
+
 :- package(library(jekpro/frequent/advanced)).
 :- use_package(foreign(jekpro/frequent/advanced)).
 
@@ -74,21 +80,34 @@ rational(F, R) :-
 % rationalize(+Number, -Rational)
 :- public rationalize/2.
 rationalize(X, S) :- X < 0, !,
-   R is rational(-X),
-   rat_rationalize(R, H),
+   F is -float(X),
+   rat_rationalize(F, H),
    S is -H.
 rationalize(X, S) :-
-   R is rational(X),
-   rat_rationalize(R, S).
+   F is float(X),
+   rat_rationalize(F, S).
 
-% rat_rationalize(+Rational, -Rational)
+% rat_rationalize(+Float, -Rational)
 :- private rat_rationalize/2.
-rat_rationalize(R, S) :-
+rat_rationalize(F, S) :-
+   R is rational(F),
    rational(R, V, W),
-   P is R*9007199254740991#9007199254740992,
-   Q is R*9007199254740993#9007199254740992,
-   rat_iter(V#W, 1#0, 0#1, P, Q, A#B),
+   rat_iter(V#W, 1#0, 0#1, F, A#B),
    rational(S, A, B).
+
+% rat_iter(+Rational, +Rational, +Rational, +Float, -Rational)
+:- private rat_iter/5.
+rat_iter(_, X, _, Y, X) :-
+   X \= 1#0,
+   float(X) =:= Y, !.
+rat_iter(_#0, X, _, _, X) :- !.
+rat_iter(V#W, M#N, P#Q, Y, X) :-
+   user:divmod(V, W, D, U),
+   user: *(D, M, H),
+   user: +(H, P, A),
+   user: *(D, N, J),
+   user: +(J, Q, B),
+   rat_iter(W#U, A#B, M#N, Y, X).
 
 /**
  * rationalize32(X):
@@ -98,41 +117,34 @@ rat_rationalize(R, S) :-
 % rationalize32(+Number, -Rational)
 :- public rationalize32/2.
 rationalize32(X, S) :- X < 0, !,
-   R is rational(-X),
-   rat_rationalize32(R, H),
+   F is -float32(X),
+   rat_rationalize32(F, H),
    S is -H.
 rationalize32(X, S) :-
-   R is rational(X),
-   rat_rationalize32(R, S).
+   F is float32(X),
+   rat_rationalize32(F, S).
 
-% rat_rationalize32(+Rational, -Rational)
+% rat_rationalize32(+Float, -Rational)
 :- private rat_rationalize32/2.
-rat_rationalize32(R, S) :-
+rat_rationalize32(F, S) :-
+   R is rational(F),
    rational(R, V, W),
-   P is R*16777215#16777216,
-   Q is R*16777217#16777216,
-   rat_iter(V#W, 1#0, 0#1, P, Q, A#B),
+   rat_iter32(V#W, 1#0, 0#1, F, A#B),
    rational(S, A, B).
 
-/**
- * rat_iter(R, L, H, P, Q, S):
- * The predicate succeeds in S with the first continued fraction development
- * of R that is inside the interval (P,Q). Euclids algoritm is used and the
- * interval (L,H) is used to develop the stern-brocot branch.
- */
-% rat_iter(+Rational, +Rational, +Rational, +Rational, +Rational, -Rational)
-:- private rat_iter/6.
-rat_iter(_, X, _, Y, Z, X) :-
+% rat_iter32(+Rational, +Rational, +Rational, +Float, -Rational)
+:- private rat_iter32/5.
+rat_iter32(_, X, _, Y, X) :-
    X \= 1#0,
-   Y < X, X < Z, !.
-rat_iter(_#0, X, _, _, _, X) :- !.
-rat_iter(V#W, M#N, P#Q, Y, Z, X) :-
+   float32(X) =:= Y, !.
+rat_iter32(_#0, X, _, _, X) :- !.
+rat_iter32(V#W, M#N, P#Q, Y, X) :-
    user:divmod(V, W, D, U),
    user: *(D, M, H),
    user: +(H, P, A),
    user: *(D, N, J),
    user: +(J, Q, B),
-   rat_iter(W#U, A#B, M#N, Y, Z, X).
+   rat_iter32(W#U, A#B, M#N, Y, X).
 
 /***************************************************************/
 /* Helper                                                      */

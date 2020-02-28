@@ -139,8 +139,8 @@ e/1	yes	arithmetic/trigo
 end_all_modules/0	no	bootload/engine
 end_module/0	no	bootload/engine
 ensure_loaded/1	no	bootload/load
-epsilon/1	yes	arithmetic/compare
-epsilon32/1	yes	arithmetic/compare
+epsilon/1	yes	arithmetic/trigo
+epsilon32/1	yes	arithmetic/trigo
 exit/0	no	runtime/session
 exp/2	yes	arithmetic/trigo
 float/1	no	structure/type
