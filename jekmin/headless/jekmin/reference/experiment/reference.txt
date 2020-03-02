@@ -53,8 +53,6 @@ attr_unify_hook/2	no	finite/clpb
 attribute_goals/3	no	finite/clpb
 b_delete/1	no	term/state
 b_setval/2	no	term/state
-bitcount/2	yes	misc/bits
-bitlength/2	yes	misc/bits
 chart/3	no	minimal/chart
 choose/1	no	minimal/asp
 choose/2	no	minimal/asp
@@ -65,12 +63,10 @@ del_atts/2	no	term/verify
 deposita_ref/1	no	minimal/assume
 depositz_ref/1	no	minimal/assume
 dif/2	no	term/herbrand
-divmod/4	no	misc/elem
 expr_vars/2	no	finite/tree
 fail/1	no	minimal/hypo
 (forward)/1	no	minimal/delta
 freeze/2	no	term/suspend
-gcd/3	yes	misc/elem
 get_attr/3	no	term/unify
 get_atts/3	no	term/verify
 user:goal_expansion/2	no	minimal/chart
@@ -84,8 +80,6 @@ isqrt/2	no	misc/elem
 label/1	no	finite/enum
 label_maximum/2	no	finite/enum
 labeling/1	no	finite/clpb
-lcm/3	no	misc/elem
-lowestsetbit/2	yes	misc/bits
 min_choose/2	no	minimal/asp
 min_choose/3	no	minimal/asp
 modinv/3	yes	misc/elem

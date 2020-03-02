@@ -2,7 +2,6 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -181,8 +180,10 @@ public class SpecialArith extends AbstractSpecial {
      * @param m  The decimal number.
      * @param mc The math context.
      * @return The rounded decimal number.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number mpDecimal(Number m, MathContext mc) {
+    private static Number mpDecimal(Number m, MathContext mc)
+            throws EngineMessage {
         if (m instanceof Integer) {
             if (mc.getPrecision() != 0 &&
                     (SupplementScale.log10(m.intValue()) > mc.getPrecision())) {
@@ -215,7 +216,8 @@ public class SpecialArith extends AbstractSpecial {
                 return d;
             }
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 
@@ -235,9 +237,12 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number mpAdd(Number m, Number n,
-                                MathContext mc) {
+                                MathContext mc)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() + n.intValue());
@@ -268,9 +273,12 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number mpSub(Number m, Number n,
-                                MathContext mc) {
+                                MathContext mc)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() - n.intValue());
@@ -299,9 +307,12 @@ public class SpecialArith extends AbstractSpecial {
      * @param n  The second Prolog decimal.
      * @param mc The math context.
      * @return The result.
+     * @throws ArithmeticException Illegal value.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number mpMul(Number m, Number n,
-                                MathContext mc) {
+                                MathContext mc)
+            throws ArithmeticException, EngineMessage {
         switch (Math.max(SpecialCompare.numType(m), SpecialCompare.numType(n))) {
             case SpecialCompare.NUM_INTEGER:
                 return TermAtomic.normBigInteger((long) m.intValue() * n.intValue());
@@ -348,8 +359,10 @@ public class SpecialArith extends AbstractSpecial {
      * @param x  The second operand.
      * @param mc The math context.
      * @return The result.
+     * @throws EngineMessage Not a Prolog number.
      */
-    private static Number mpIntPow(Number m, int x, MathContext mc) {
+    private static Number mpIntPow(Number m, int x, MathContext mc)
+            throws EngineMessage {
         if (m instanceof Integer || m instanceof BigInteger) {
             return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).pow(x));
@@ -364,7 +377,8 @@ public class SpecialArith extends AbstractSpecial {
                         EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
             return TermAtomic.normBigDecimal(b.pow(x, mc));
         } else {
-            throw new IllegalArgumentException(SpecialCompare.OP_ILLEGAL_CATEGORY);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 

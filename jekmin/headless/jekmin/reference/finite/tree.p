@@ -6,8 +6,10 @@
  * resulting BDD tree is automatically shown by the top-level:
  *
  * Example:
- * ?- sat(X#Y).
- * sat((X->(Y->0;1);Y->1;0))
+ * ?- sat(X=\=Y).
+ * sat((X -> (Y -> 0; 1); Y -> 1; 0))
+ * ?- sat(~(X=\=Y)).
+ * X = Y
  *
  * BDD tree reductions and attribute variable hooks guard the interaction
  * between SAT constraints. Interval arithmetic is used in reducing
@@ -92,9 +94,6 @@
 :- use_module(library(experiment/ordmaps)).
 :- use_module(library(experiment/maps)).
 :- use_module(library(term/verify)).
-
-:- public infix(#).
-:- op(500, yfx, #).
 
 :- public prefix(~).
 :- op(300, fy, ~).
@@ -188,10 +187,10 @@ expr_tree(A =:= B, R) :- !,
    expr_tree(B, Q),
    tree_equiv(P, Q, R).
 /**
- * A # B (SAT):
- * If A and B are expressions then the xor A#B is also an expression.
+ * A =\= B (SAT):
+ * If A and B are expressions then the xor A=\=B is also an expression.
  */
-expr_tree(A#B, R) :- !,
+expr_tree(A =\= B, R) :- !,
    expr_tree(A, P),
    expr_tree(B, Q),
    tree_xor(P, Q, R).

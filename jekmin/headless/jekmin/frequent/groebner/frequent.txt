@@ -164,7 +164,6 @@ quorem/4	no	gauss/ring
 vector:randpoly/2	no	gauss/ring
 reduced/3	no	gauss/ring
 requested/2	yes	decimal/scale
-scale/2	yes	decimal/scale
 integer:sign/2	no	gauss/ordered
 radical:sign/2	no	gauss/ordered
 rational:sign/2	no	gauss/ordered
@@ -207,6 +206,5 @@ sys_radical_triage/3	no	gauss/ordered
 sys_test_lindep/3	no	gauss/ordered
 element:taylor/4	no	leibniz/series
 element:taylor/5	no	leibniz/series
-unscaled_value/2	yes	decimal/scale
 user:'|'/3	no	gauss/element
 
