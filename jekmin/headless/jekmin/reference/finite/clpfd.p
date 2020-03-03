@@ -68,7 +68,6 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(minimal/assume)).
 :- use_module(library(minimal/delta)).
-:- use_module(library(misc/struc)).
 :- use_module(library(misc/elem)).
 :- use_module(library(misc/residue)).
 :- use_module(library(experiment/trail)).

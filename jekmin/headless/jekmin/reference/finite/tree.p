@@ -5,7 +5,7 @@
  * Internally the SAT constraint is normalized into a BDD tree. The
  * resulting BDD tree is automatically shown by the top-level:
  *
- * Example:
+ * Examples:
  * ?- sat(X=\=Y).
  * sat((X -> (Y -> 0; 1); Y -> 1; 0))
  * ?- sat(~(X=\=Y)).
