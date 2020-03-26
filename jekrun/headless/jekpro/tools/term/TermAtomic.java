@@ -368,18 +368,23 @@ public final class TermAtomic extends AbstractTerm {
      *
      * @param m The number.
      * @return The big decimal.
+     * @throws EngineMessage Not a Prolog number.
      */
-    public static BigDecimal widenBigDecimal(Number m) {
+    public static BigDecimal widenBigDecimal(Number m)
+            throws EngineMessage {
         if (m instanceof Integer) {
             return BigDecimal.valueOf(m.intValue());
         } else if (m instanceof BigInteger) {
             return new BigDecimal((BigInteger) m);
+        } else if (m instanceof Float || m instanceof Double) {
+            return new BigDecimal(m.doubleValue());
         } else if (m instanceof Long) {
             return BigDecimal.valueOf(m.longValue());
         } else if (m instanceof BigDecimal) {
             return (BigDecimal) m;
         } else {
-            return new BigDecimal(m.doubleValue());
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_STRICT, m));
         }
     }
 

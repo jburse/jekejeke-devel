@@ -4,17 +4,20 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
+import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
@@ -148,7 +151,7 @@ public class Knowledgebase {
      *
      * @return The lobby.
      */
-    public final Lobby getLobby() {
+    public Lobby getLobby() {
         return (Lobby) store.foyer.proxy;
     }
 
@@ -157,28 +160,28 @@ public class Knowledgebase {
      *
      * @return The parent.
      */
-    public final Knowledgebase getParent() {
+    public Knowledgebase getParent() {
         Store parent = store.parent;
         return (parent != null ? (Knowledgebase) parent.proxy : null);
     }
 
-    /********************************************************************/
-    /* Iterable Construction                                            */
-    /********************************************************************/
+    /*****************************************************************/
+    /* Iterable Construction                                         */
+    /*****************************************************************/
 
     /**
      * <p>Create an iterable with a new controller.</p>
      *
      * @return The iterable.
      */
-    public final Interpreter iterable() {
+    public Interpreter iterable() {
         return new Interpreter(this,
                 new Controller(getLobby(), this));
     }
 
-    /*******************************************************/
-    /* Initialization API                                  */
-    /*******************************************************/
+    /*****************************************************************/
+    /* Initialization API                                            */
+    /*****************************************************************/
 
     /**
      * <p>Init the predefined capabilities.</p>
@@ -228,7 +231,7 @@ public class Knowledgebase {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public final void finiKnowledgebase()
+    public void finiKnowledgebase()
             throws InterpreterMessage, InterpreterException {
         try {
             store.finiStore();
@@ -239,9 +242,76 @@ public class Knowledgebase {
         }
     }
 
-    /*******************************************************/
-    /* Class Path                                          */
-    /*******************************************************/
+    /*****************************************************************/
+    /* Properties API                                                */
+    /*****************************************************************/
+
+    /**
+     * <p>Retrieve the knowledgebase property names.</p>
+     *
+     * @return The knowledgebase property names.
+     */
+    public ArrayList<String> getProperties() {
+        return ForeignEngine.listSessionFlags(store);
+    }
+
+    /**
+     * <p>Retrieve a knowledgebase property.</p>
+     *
+     * @param flag The flag name.
+     * @return The flag value.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public Object getProperty(String flag)
+            throws InterpreterMessage, InterpreterException {
+        try {
+            Object res = ForeignEngine.getSessionFlag(flag, store);
+            return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
+    }
+
+    /**
+     * <p>Set a knowledgebase property.</p>
+     *
+     * @param flag The flag name.
+     * @param val  The flag value.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public void setProperty(String flag, Object val)
+            throws InterpreterMessage {
+        try {
+            ForeignEngine.setSessionFlag(flag, AbstractTerm.getSkel(val),
+                    AbstractTerm.getDisplay(val), store);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+    }
+
+    /*****************************************************************/
+    /* Class Path                                                    */
+    /*****************************************************************/
+
+    /**
+     * <p>Retrieve the paths.</p>
+     * <p>Returns a copy which should be treated immutable.</p>
+     *
+     * @return The paths.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public String[] getClassPaths()
+            throws InterpreterMessage {
+        try {
+            return store.snapshotClassPaths();
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.licenseError(x.getError()));
+        }
+    }
 
     /**
      * <p>Add a path.</p>
@@ -249,7 +319,7 @@ public class Knowledgebase {
      * @param path The path.
      * @throws InterpreterMessage Shit happens.
      */
-    public final void addClassPath(String path)
+    public void addClassPath(String path)
             throws InterpreterMessage {
         try {
             path = LookupBase.findWrite(path, store);
@@ -263,20 +333,13 @@ public class Knowledgebase {
     }
 
     /**
-     * <p>Retrieve the paths.</p>
+     * <p>Retrieve the file extensions.</p>
      * <p>Returns a copy which should be treated immutable.</p>
      *
-     * @return The paths.
-     * @throws InterpreterMessage Shit happens.
+     * @return The file extensions and their type.
      */
-    public final String[] getClassPaths()
-            throws InterpreterMessage {
-        try {
-            return store.snapshotClassPaths();
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getError()));
-        }
+    public MapEntry<String, FileExtension>[] getFileExtensions() {
+        return store.snapshotFileExtensions();
     }
 
     /**
@@ -285,7 +348,7 @@ public class Knowledgebase {
      * @param e  The file extension.
      * @param fe The type and mime.
      */
-    public final void addFileExtension(String e, FileExtension fe) {
+    public void addFileExtension(String e, FileExtension fe) {
         store.addFileExtension(e, fe);
     }
 
@@ -294,18 +357,8 @@ public class Knowledgebase {
      *
      * @param e The file extension.
      */
-    public final void removeFileExtension(String e) {
+    public void removeFileExtension(String e) {
         store.removeFileExtension(e);
-    }
-
-    /**
-     * <p>Retrieve the file extensions.</p>
-     * <p>Returns a copy which should be treated immutable.</p>
-     *
-     * @return The file extensions and their type.
-     */
-    public final MapEntry<String, FileExtension>[] getFileExtensions() {
-        return store.snapshotFileExtensions();
     }
 
     /*******************************************************/
@@ -319,7 +372,7 @@ public class Knowledgebase {
      * @return The capability.
      * @throws InterpreterMessage Shit happens.
      */
-    public final Capability stringToCapability(String name)
+    public Capability stringToCapability(String name)
             throws InterpreterMessage, InterpreterException {
         Store store = (Store) getStore();
         AbstractFactory factory = store.foyer.getFactory();
@@ -348,7 +401,7 @@ public class Knowledgebase {
      * @return The error properties.
      * @throws IOException Shit happens.
      */
-    public final Properties getErrorProperties(Locale locale)
+    public Properties getErrorProperties(Locale locale)
             throws IOException {
         return EngineMessage.getErrorLang(locale, store);
     }
@@ -359,7 +412,7 @@ public class Knowledgebase {
      * @param key The adr of the resource bundle.
      * @return The properties cache, or null.
      */
-    public final HashMap<String, Properties> getCache(String key) {
+    public HashMap<String, Properties> getCache(String key) {
         return EngineMessage.getCache(key, store);
     }
 
@@ -372,7 +425,7 @@ public class Knowledgebase {
      *
      * @return The store.
      */
-    public final Object getStore() {
+    public Object getStore() {
         return store;
     }
 

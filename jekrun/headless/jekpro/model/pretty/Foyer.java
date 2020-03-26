@@ -17,6 +17,7 @@ import jekpro.tools.term.SkelVar;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractRecognizer;
 import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -115,6 +116,7 @@ public class Foyer extends Enforced {
 
     private final ListArray<Store> regs = new ListArray<Store>();
     private Store[] cacheregs;
+    private AbstractFactory factory;
 
     public final SkelAtom ATOM_NIL = new SkelAtom(Foyer.OP_NIL);
     public final SkelAtom ATOM_CONS = new SkelAtom(Foyer.OP_CONS);
@@ -165,7 +167,16 @@ public class Foyer extends Enforced {
      * @return The factory.
      */
     public AbstractFactory getFactory() {
-        return (AbstractFactory) getFramework();
+        return factory;
+    }
+
+    /**
+     * <p>Set the factory.</p>
+     *
+     * @param f The factory.
+     */
+    public void setFactory(AbstractFactory f) {
+        factory = f;
     }
 
     /************************************************************/

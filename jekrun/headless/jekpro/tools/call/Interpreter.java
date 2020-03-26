@@ -1,6 +1,7 @@
 package jekpro.tools.call;
 
 import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
@@ -174,12 +175,12 @@ public final class Interpreter {
     /*****************************************************************/
 
     /**
-     * <p>Retrieve the property names.</p>
+     * <p>Retrieve the interpreter property names.</p>
      *
-     * @return The property names.
+     * @return The interpreter property names.
      */
     public ArrayList<String> getProperties() {
-        return ForeignEngine.listFlags(engine);
+        return ForeignEngine.listPrologFlags(engine);
     }
 
     /**
@@ -193,7 +194,7 @@ public final class Interpreter {
     public Object getProperty(String flag)
             throws InterpreterMessage, InterpreterException {
         try {
-            Object res = ForeignEngine.getFlag(flag, engine);
+            Object res = ForeignEngine.getPrologFlag(flag, engine);
             return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -212,7 +213,7 @@ public final class Interpreter {
     public void setProperty(String flag, Object val)
             throws InterpreterMessage {
         try {
-            ForeignEngine.setFlag(flag, AbstractTerm.getSkel(val),
+            ForeignEngine.setPrologFlag(flag, AbstractTerm.getSkel(val),
                     AbstractTerm.getDisplay(val), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -438,7 +439,7 @@ public final class Interpreter {
      *
      * @return The engine.
      */
-    public final Object getEngine() {
+    public Object getEngine() {
         return engine;
     }
 

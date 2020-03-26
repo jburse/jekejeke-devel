@@ -14,9 +14,11 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
+import matula.comp.sharik.AbstractActivator;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapHash;
 
+import java.io.File;
 import java.util.Random;
 
 /**
@@ -114,6 +116,7 @@ public final class Flag extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_TIMEOUT, new Flag(FLAG_SYS_TIMEOUT));
         DEFAULT.add(OP_STYLE_CHECK, new Flag(FLAG_STYLE_CHECK));
         DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
+
     }
 
     /**
@@ -126,7 +129,7 @@ public final class Flag extends AbstractFlag<Engine> {
     }
 
     /**
-     * <p>Retrieve the value of this flag.</p>
+     * <p>Retrieve the value of this Prolog flag.</p>
      *
      * @param en The engine.
      * @return The value.

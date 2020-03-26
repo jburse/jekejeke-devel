@@ -13,7 +13,6 @@ import jekpro.tools.array.AutoArray;
 import jekpro.tools.call.Capability;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
-import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;

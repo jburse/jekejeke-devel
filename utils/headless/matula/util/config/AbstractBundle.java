@@ -11,6 +11,10 @@ import matula.util.wire.LangProperties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Properties;
@@ -138,18 +142,20 @@ public abstract class AbstractBundle extends Check {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
+     * @param loader      The class loader.
      * @return The properties or null.
      */
-    public abstract Properties getDescrModel(Locale locale, Enforced e);
+    public abstract Properties getDescrModel(Locale locale, ClassLoader loader);
 
     /**
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param e      The enforced.
+     * @param loader      The class loader.
+     * @param runtime     The runtime.
      * @return The properties or null.
      */
-    public abstract Properties getDescrPlatform(Locale locale, Enforced e);
+    public abstract Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime);
 
     /**
      * <p>Retrieve the parameters of this branch.</p>

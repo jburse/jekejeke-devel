@@ -8,6 +8,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadForce;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
@@ -19,18 +20,13 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.wire.LangProperties;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>The foreign predicates for the module engine.</p>
@@ -76,7 +72,9 @@ public final class ForeignEngine {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             Engine en = (Engine) inter.getEngine();
-            ArrayList<String> list = ForeignEngine.listFlags(en);
+            ArrayList<String> list = ForeignEngine.listPrologFlags(en);
+            ArrayList<String> list2 = ForeignEngine.listSessionFlags(en.store);
+            list.addAll(list2);
             String[] arr = new String[list.size()];
             list.toArray(arr);
             dc = new ArrayEnumeration<String>(arr);
@@ -104,11 +102,14 @@ public final class ForeignEngine {
             throws InterpreterMessage, InterpreterException {
         try {
             Engine en = (Engine) inter.getEngine();
-            Object val = ForeignEngine.getFlag(flag, en);
-            if (val == null)
-                throw new InterpreterMessage(InterpreterMessage.domainError(
-                        "prolog_flag", flag));
-            return val;
+            AbstractFlag<Engine> af = findPrologFlag(flag, en);
+            if (af != null)
+                return af.getObjFlag(en, en);
+            AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
+            if (af2 != null)
+                return af2.getObjFlag(en.store, null);
+            throw new InterpreterMessage(InterpreterMessage.domainError(
+                    "prolog_flag", flag));
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -128,8 +129,25 @@ public final class ForeignEngine {
             throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
-            ForeignEngine.setFlag(flag, AbstractTerm.getSkel(val),
-                    AbstractTerm.getDisplay(val), en);
+            AbstractFlag<Engine> af = findPrologFlag(flag, en);
+            if (af != null) {
+                if (!af.setObjFlag(en, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en))
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            EngineMessage.OP_PERMISSION_MODIFY,
+                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+                return;
+            }
+            AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
+            if (af2 != null) {
+                if (!af2.setObjFlag(en.store, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), null))
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            EngineMessage.OP_PERMISSION_MODIFY,
+                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+                return;
+            }
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                    new SkelAtom(flag)));
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -158,12 +176,12 @@ public final class ForeignEngine {
      * @param en The engine.
      * @return The list of flags.
      */
-    public static ArrayList<String> listFlags(Engine en) {
+    public static ArrayList<String> listPrologFlags(Engine en) {
         ArrayList<String> res = new ArrayList<String>();
         AbstractFactory factory = en.store.foyer.getFactory();
         ListArray<MapHash<String, AbstractFlag<Engine>>> flags = factory.getPrologFlags();
         for (int i = 0; i < flags.size(); i++)
-            listFlags(flags.get(i), res);
+            listPrologFlags(flags.get(i), res);
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -175,7 +193,7 @@ public final class ForeignEngine {
             MapHash<String, AbstractFlag<Engine>> pfs = branch.getPrologFlags();
             if (pfs == null)
                 continue;
-            listFlags(pfs, res);
+            listPrologFlags(pfs, res);
         }
         return res;
     }
@@ -186,8 +204,8 @@ public final class ForeignEngine {
      * @param pfs The hash table.
      * @param res The flag names.
      */
-    private static void listFlags(MapHash<String, AbstractFlag<Engine>> pfs,
-                                  ArrayList<String> res) {
+    private static void listPrologFlags(MapHash<String, AbstractFlag<Engine>> pfs,
+                                        ArrayList<String> res) {
         for (MapEntry<String, AbstractFlag<Engine>> entry2 = pfs.getFirstEntry();
              entry2 != null; entry2 = pfs.successor(entry2)) {
             res.add(entry2.key);
@@ -204,12 +222,12 @@ public final class ForeignEngine {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Object getFlag(String flag, Engine en)
+    public static Object getPrologFlag(String flag, Engine en)
             throws EngineMessage, EngineException {
         AbstractFlag<Engine> af = findPrologFlag(flag, en);
-        if (af == null)
-            return null;
-        return af.getObjFlag(en, en);
+        if (af != null)
+            return af.getObjFlag(en, en);
+        return null;
     }
 
     /**
@@ -223,17 +241,19 @@ public final class ForeignEngine {
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void setFlag(String flag, Object m, Display d, Engine en)
+    public static void setPrologFlag(String flag, Object m, Display d, Engine en)
             throws EngineMessage {
-        AbstractFlag af = findPrologFlag(flag, en);
-        if (af == null)
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROLOG_FLAG,
-                    new SkelAtom(flag)));
-        if (!af.setObjFlag(en, m, d, en))
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+        AbstractFlag<Engine> af = findPrologFlag(flag, en);
+        if (af != null) {
+            if (!af.setObjFlag(en, m, d, en))
+                throw new EngineMessage(EngineMessage.permissionError(
+                        EngineMessage.OP_PERMISSION_MODIFY,
+                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+            return;
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                new SkelAtom(flag)));
     }
 
     /**
@@ -248,7 +268,7 @@ public final class ForeignEngine {
         ListArray<MapHash<String, AbstractFlag<Engine>>> flags = factory.getPrologFlags();
         for (int i = 0; i < flags.size(); i++) {
             MapHash<String, AbstractFlag<Engine>> pfs = flags.get(i);
-            AbstractFlag af = pfs.get(flag);
+            AbstractFlag<Engine> af = pfs.get(flag);
             if (af != null)
                 return af;
         }
@@ -263,7 +283,102 @@ public final class ForeignEngine {
             MapHash<String, AbstractFlag<Engine>> pfs = branch.getPrologFlags();
             if (pfs == null)
                 continue;
-            AbstractFlag af = pfs.get(flag);
+            AbstractFlag<Engine> af = pfs.get(flag);
+            if (af != null)
+                return af;
+        }
+        return null;
+    }
+
+    /*************************************************************/
+    /* Session Flags                                             */
+    /*************************************************************/
+
+    /**
+     * <p>Retrieve the list of session flags.</p>
+     *
+     * @param store The store.
+     * @return The list of flags.
+     */
+    public static ArrayList<String> listSessionFlags(Store store) {
+        ArrayList<String> res = new ArrayList<String>();
+        AbstractFactory factory = store.foyer.getFactory();
+        ListArray<MapHash<String, AbstractFlag<Store>>> flags = factory.getSessionFlags();
+        for (int i = 0; i < flags.size(); i++)
+            listSessionFlags(flags.get(i), res);
+        return res;
+    }
+
+    /**
+     * <p>List the flag names from the hash table.</p>
+     *
+     * @param pfs The hash table.
+     * @param res The flag names.
+     */
+    private static void listSessionFlags(MapHash<String, AbstractFlag<Store>> pfs,
+                                         ArrayList<String> res) {
+        for (MapEntry<String, AbstractFlag<Store>> entry2 = pfs.getFirstEntry();
+             entry2 != null; entry2 = pfs.successor(entry2)) {
+            res.add(entry2.key);
+        }
+    }
+
+    /**
+     * <p>Retrieve the value of the given session flag.</p>
+     *
+     * @param flag  The flag.
+     * @param store The store.
+     * @return The value or null.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static Object getSessionFlag(String flag, Store store)
+            throws EngineMessage, EngineException {
+        AbstractFlag<Store> af = findSessionFlag(flag, store);
+        if (af != null)
+            return af.getObjFlag(store, null);
+        return null;
+    }
+
+    /**
+     * <p>Change the value of a prolog Prolog flag.</p>
+     * <p>Throws a domain error for undefined flags.</p>
+     * <p>Only capabilities that are ok are considered.</p>
+     *
+     * @param flag  The name of the flag.
+     * @param m     The value skel.
+     * @param d     The value display.
+     * @param store The store.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void setSessionFlag(String flag, Object m, Display d, Store store)
+            throws EngineMessage {
+        AbstractFlag<Store> af = findSessionFlag(flag, store);
+        if (af != null) {
+            if (!af.setObjFlag(store, m, d, null))
+                throw new EngineMessage(EngineMessage.permissionError(
+                        EngineMessage.OP_PERMISSION_MODIFY,
+                        EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+            return;
+        }
+        throw new EngineMessage(EngineMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                new SkelAtom(flag)));
+    }
+
+    /**
+     * <p>Find a session flag.</p>
+     *
+     * @param flag  The session flag name.
+     * @param store The store.
+     * @return The Prolog flag.
+     */
+    private static AbstractFlag<Store> findSessionFlag(String flag, Store store) {
+        AbstractFactory factory = store.foyer.getFactory();
+        ListArray<MapHash<String, AbstractFlag<Store>>> flags = factory.getSessionFlags();
+        for (int i = 0; i < flags.size(); i++) {
+            MapHash<String, AbstractFlag<Store>> pfs = flags.get(i);
+            AbstractFlag<Store> af = pfs.get(flag);
             if (af != null)
                 return af;
         }
@@ -285,49 +400,10 @@ public final class ForeignEngine {
         Capability brand = lobby.getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        return ForeignEngine.sysFamilyProduct(brand, lobby, locale);
-    }
-
-    /**
-     * <p>Retrieve the family and product text.</p>
-     *
-     * @param cap    The capability.
-     * @param lobby  The lobby.
-     * @param locale The locale.
-     * @return The family and product.
-     */
-    public static String sysFamilyProduct(Capability cap, Lobby lobby, Locale locale) {
-        Properties descr = cap.getDescrModel(locale, lobby);
-        String family = descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
-        String product = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT);
-        String release = descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
-        return family + ", " + product + " " + release + sysDate(cap, lobby, locale);
-    }
-
-    /**
-     * <p>Retrieve the date formatted.</p>
-     *
-     * @param cap    The capability.
-     * @param lobby  The lobby.
-     * @param locale The locale.
-     * @return The date formatted or "".
-     */
-    public static String sysDate(Capability cap, Lobby lobby, Locale locale) {
-        Properties descr = cap.getDescrPlatform(locale, lobby);
-        String datestr = (descr != null ? descr.getProperty(AbstractBundle.PROP_CAPA_DATE) : null);
-        if (datestr != null) {
-            try {
-                DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
-                Date date = df.parse(datestr);
-                df = DateFormat.getDateInstance(DateFormat.LONG, locale);
-                datestr = " (" + df.format(date) + ")";
-            } catch (ParseException x) {
-                datestr = "";
-            }
-        } else {
-            datestr = "";
-        }
-        return datestr;
+        ClassLoader loader = lobby.getRoot().getLoader();
+        AbstractRuntime runtime = lobby.getFramework().getRuntime();
+        return brand.getFamily(locale, loader) + ", " +
+                brand.getProductReleaseDate(locale, loader, runtime);
     }
 
     /**
@@ -341,8 +417,8 @@ public final class ForeignEngine {
         Capability brand = lobby.getToolkit().getBrandCapability();
         Engine en = (Engine) inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        Properties descr = brand.getDescrModel(locale, lobby);
-        return descr.getProperty(AbstractBundle.PROP_PRODUCT_COMPANY);
+        ClassLoader loader = lobby.getRoot().getLoader();
+        return brand.getCompany(locale, loader);
     }
 
     /*************************************************************/

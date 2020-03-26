@@ -1,7 +1,6 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -53,6 +52,9 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
             = new MapHash<String, AbstractFlag<Engine>>();
 
+    private final static String OP_VALUE_TOWARD_ZERO = "toward_zero";
+    private final static String OP_VALUE_HALF_EVEN = "half_even";
+
     public final static String OP_SYS_MASK = "sys_mask";
     public final static String OP_SYS_CUR_INPUT = "sys_cur_input";
     public final static String OP_SYS_CUR_OUTPUT = "sys_cur_output";
@@ -73,6 +75,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static String OP_INTEGER_ROUNDING_FUNCTION = "integer_rounding_function";
     public final static String OP_CHAR_CONVERSION = "char_conversion";
     public final static String OP_MAX_ARITY = "max_arity";
+    public final static String OP_FLOAT_ROUNDING_FUNCTION = "float_rounding_function";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_CUR_INPUT = 1;
@@ -94,6 +97,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 17;
     private static final int FLAG_CHAR_CONVERSION = 18;
     private static final int FLAG_MAX_ARITY = 19;
+    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 20;
 
     /**
      * <p>Create a flag.</p>
@@ -125,6 +129,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         DEFAULT.add(OP_INTEGER_ROUNDING_FUNCTION, new FlagFactory(FLAG_INTEGER_ROUNDING_FUNCTION));
         DEFAULT.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
         DEFAULT.add(OP_MAX_ARITY, new FlagFactory(FLAG_MAX_ARITY));
+        DEFAULT.add(OP_FLOAT_ROUNDING_FUNCTION, new FlagFactory(FLAG_FLOAT_ROUNDING_FUNCTION));
     }
 
     /**
@@ -201,11 +206,13 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_BOUNDED:
                 return new SkelAtom(AbstractFlag.OP_FALSE);
             case FLAG_INTEGER_ROUNDING_FUNCTION:
-                return new SkelAtom(Branch.OP_VALUE_TOWARD_ZERO);
+                return new SkelAtom(OP_VALUE_TOWARD_ZERO);
             case FLAG_CHAR_CONVERSION:
                 return AbstractFlag.switchToAtom(false);
             case FLAG_MAX_ARITY:
                 return Integer.valueOf(Integer.MAX_VALUE);
+            case FLAG_FLOAT_ROUNDING_FUNCTION:
+                return new SkelAtom(OP_VALUE_HALF_EVEN);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -299,6 +306,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_INTEGER_ROUNDING_FUNCTION:
             case FLAG_CHAR_CONVERSION:
             case FLAG_MAX_ARITY:
+            case FLAG_FLOAT_ROUNDING_FUNCTION:
                 /* can't modify */
                 return false;
             default:

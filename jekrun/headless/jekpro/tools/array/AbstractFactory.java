@@ -2,14 +2,14 @@ package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.tools.call.Capability;
-import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.proxy.CapabilityAPI;
 import jekpro.tools.proxy.Reflection;
-import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.system.ConnectionReader;
@@ -49,7 +49,7 @@ import java.io.OutputStreamWriter;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public abstract class AbstractFactory extends AbstractFramework {
+public abstract class AbstractFactory {
     public static final String OP_DOMAIN_FOREIGN_VISIBILITY = "foreign_visibility";
     public static final String OP_DOMAIN_FOREIGN_RECEIVER = "foreign_receiver";
     public static final String OP_DOMAIN_FOREIGN_PARAMETER = "foreign_parameter";
@@ -85,6 +85,8 @@ public abstract class AbstractFactory extends AbstractFramework {
     public Object toolerror;
     private ListArray<MapHash<String, AbstractFlag<Engine>>> prologflags
             = new ListArray<MapHash<String, AbstractFlag<Engine>>>();
+    private ListArray<MapHash<String, AbstractFlag<Store>>> sessionflags
+            = new ListArray<MapHash<String, AbstractFlag<Store>>>();
     private AbstractReflection reflection;
 
     /**
@@ -93,6 +95,7 @@ public abstract class AbstractFactory extends AbstractFramework {
     public AbstractFactory() {
         prepareToolConnections();
         addPrologFlags(FlagFactory.DEFAULT);
+        addSessionFlags(FlagSession.DEFAULT);
         setReflection(Reflection.DEFAULT);
     }
 
@@ -144,6 +147,26 @@ public abstract class AbstractFactory extends AbstractFramework {
         prologflags.add(f);
     }
 
+    /**
+     * <p>Retrieve the prolog flags.</p>
+     *
+     * @return The prolog flags.
+     */
+    public final ListArray<MapHash<String, AbstractFlag<Store>>> getSessionFlags() {
+        return sessionflags;
+    }
+
+    /**
+     * <p>Set the prolog flags.</p>
+     *
+     * @param f The prolog flags.
+     */
+    public final void addSessionFlags(MapHash<String, AbstractFlag<Store>> f) {
+        if (f == null)
+            throw new NullPointerException("flags missing");
+        sessionflags.add(f);
+    }
+
     /*******************************************************************/
     /* Bootstrap Capabilities                                          */
     /*******************************************************************/
@@ -182,7 +205,7 @@ public abstract class AbstractFactory extends AbstractFramework {
      */
     public Foyer createFoyer() {
         Foyer foyer = new Foyer();
-        foyer.setFramework(this);
+        foyer.setFactory(this);
         return foyer;
     }
 

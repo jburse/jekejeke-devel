@@ -8,8 +8,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.tools.array.PropertyPredicateAPI;
-import jekpro.reference.reflect.PropertyStream;
 import jekpro.tools.array.PropertyStreamAPI;
+import matula.util.config.AbstractFramework;
 
 /**
  * <p>The internal implementation of the capability API.</p>
@@ -43,6 +43,7 @@ import jekpro.tools.array.PropertyStreamAPI;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class BranchAPI extends Branch {
+    static BranchAPI DEFAULT = new BranchAPI();
 
     /**
      * <p>Retrieve the parameters of this branch.</p>
@@ -56,7 +57,7 @@ final class BranchAPI extends Branch {
     /**
      * <p>Create the branch API.</p>
      */
-    BranchAPI() {
+    private BranchAPI() {
         addPredProps(PropertyPredicateAPI.DEFAULT);
         addStreamProps(PropertyStreamAPI.DEFAULT);
     }
@@ -71,7 +72,7 @@ final class BranchAPI extends Branch {
      * @throws EngineException Shit happens.
      */
     public final void initBranch(Engine en,
-                           boolean prompt, boolean system)
+                                 boolean prompt, boolean system)
             throws EngineMessage, EngineException {
         super.initBranch(en, prompt, system);
 
@@ -99,7 +100,8 @@ final class BranchAPI extends Branch {
         loadSystem("jekpro/reference/bootload/load.p", en);
         loadSystem("jekpro/reference/bootload/module.p", en);
 
-        String aspect = en.store.foyer.getFactory().getRuntime().getAspect();
+        AbstractFramework framework = en.store.foyer.getFramework();
+        String aspect = framework.getRuntime().getAspect();
         loadSystem("jekpro/platform/" + aspect + "/stats.p", en);
     }
 

@@ -8,16 +8,19 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
-import jekpro.reference.bootload.ForeignEngine;
-import jekpro.tools.bundle.RecognizerSWI;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractRuntime;
 import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -97,6 +100,7 @@ public abstract class Capability {
         branch = b;
         branch.proxy = this;
     }
+
 
     /**
      * <p>Retrieve the hash code.</p>
@@ -219,12 +223,24 @@ public abstract class Capability {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param lobby  The lobby.
+     * @param loader The class loader.
      * @return The properties.
      */
-    public Properties getDescrModel(Locale locale, Lobby lobby) {
-        Foyer foyer = (Foyer) lobby.getFoyer();
-        return branch.getDescrModel(locale, foyer);
+    public Properties getDescrModel(Locale locale, ClassLoader loader) {
+        return branch.getDescrModel(locale, loader);
+    }
+
+    /**
+     * <p>Retrieve the bundle description.</p>
+     *
+     * @param locale The locale.
+     * @param loader      The class loader.
+     * @param runtime     The runtime.
+     * @return The properties.
+     */
+    public Properties getDescrPlatform(Locale locale, ClassLoader loader,
+                                       AbstractRuntime runtime) {
+        return branch.getDescrPlatform(locale, loader, runtime);
     }
 
     /**
@@ -235,8 +251,10 @@ public abstract class Capability {
      * @return The properties.
      */
     public Properties getDescrPlatform(Locale locale, Lobby lobby) {
+        ClassLoader loader = lobby.getRoot().getLoader();
         Foyer foyer = (Foyer) lobby.getFoyer();
-        return branch.getDescrPlatform(locale, foyer);
+        AbstractRuntime runtime = foyer.getFramework().getRuntime();
+        return branch.getDescrPlatform(locale, loader, runtime);
     }
 
     /***********************************************************/
@@ -255,14 +273,14 @@ public abstract class Capability {
     /**
      * <p>Retrieve the language as an internationalized text.</p>
      *
-     * @param lobby  The lobby.
      * @param locale The locale.
+     * @param loader The class loader.
      * @return The language as an internationalized text or null.
      */
-    public String getLang(Lobby lobby, Locale locale) {
-        Properties descr = getDescrModel(locale, lobby);
+    public String getLang(Locale locale, ClassLoader loader) {
+        Properties descr = getDescrModel(locale, loader);
         if (descr != null) {
-            String langcode = (String) getProperty(Capability.PROP_LANGUAGE_CODE, lobby);
+            String langcode = branch.getLang();
             if (!"".equals(langcode)) {
                 return descr.getProperty("language." + langcode);
             } else {
@@ -274,22 +292,83 @@ public abstract class Capability {
     }
 
     /**
+     * <p>Retreve the family as an internationalized text.</p>
+     *
+     * @param locale The locale.
+     * @param loader The class loader.
+     * @return The family as an internationalized text or null.
+     */
+    public String getCompany(Locale locale, ClassLoader loader) {
+        Properties descr = getDescrModel(locale, loader);
+        if (descr != null) {
+            return descr.getProperty(AbstractBundle.PROP_PRODUCT_COMPANY);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * <p>Retreve the family as an internationalized text.</p>
+     *
+     * @param locale The locale.
+     * @param loader The class loader.
+     * @return The family as an internationalized text or null.
+     */
+    public String getFamily(Locale locale, ClassLoader loader) {
+        Properties descr = getDescrModel(locale, loader);
+        if (descr != null) {
+            return descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param lobby  The lobby.
      * @param locale The locale.
+     * @param loader  The class loader.
+     * @param runtime The runtime.
      * @return The product and release.
      */
-    public String getProductRelease(Lobby lobby, Locale locale) {
-        Properties descr = getDescrModel(locale, lobby);
+    public String getProductReleaseDate(Locale locale, ClassLoader loader,
+                                        AbstractRuntime runtime) {
+        Properties descr = getDescrModel(locale, loader);
         if (descr != null) {
             String product = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT);
             String release = descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
-            return product + " " + release + ForeignEngine.sysDate(this, lobby, locale);
+            return product + " " + release + sysDate(locale, loader, runtime);
         } else {
-            Properties resources = LangProperties.getLang(RecognizerSWI.class, "intl", locale);
+            Properties resources = LangProperties.getLang(Capability.class, "intl", locale);
             return resources.getProperty("capa.missing");
         }
+    }
+
+    /**
+     * <p>Retrieve the date formatted.</p>
+     *
+     * @param locale  The locale.
+     * @param loader  The class loader.
+     * @param runtime The runtime.
+     * @return The date formatted or "".
+     */
+    private String sysDate(Locale locale, ClassLoader loader,
+                          AbstractRuntime runtime) {
+        Properties descr = getDescrPlatform(locale, loader, runtime);
+        String datestr = (descr != null ? descr.getProperty(AbstractBundle.PROP_CAPA_DATE) : null);
+        if (datestr != null) {
+            try {
+                DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
+                Date date = df.parse(datestr);
+                df = DateFormat.getDateInstance(DateFormat.LONG, locale);
+                datestr = " (" + df.format(date) + ")";
+            } catch (ParseException x) {
+                datestr = "";
+            }
+        } else {
+            datestr = "";
+        }
+        return datestr;
     }
 
 }

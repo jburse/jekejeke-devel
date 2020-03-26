@@ -72,9 +72,10 @@ public final class DefaultBundle extends AbstractBundle {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
+     * @param loader      The class loader.
      * @return The properties or null.
      */
-    public Properties getDescrModel(Locale locale, Enforced e) {
+    public Properties getDescrModel(Locale locale, ClassLoader loader) {
         return null;
     }
 
@@ -82,10 +83,11 @@ public final class DefaultBundle extends AbstractBundle {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param e      The enforced.
+     * @param loader      The class loader.
+     * @param runtime     The runtime.
      * @return The properties or null.
      */
-    public Properties getDescrPlatform(Locale locale, Enforced e) {
+    public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {
         return null;
     }
 

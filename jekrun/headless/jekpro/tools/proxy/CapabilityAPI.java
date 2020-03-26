@@ -51,7 +51,7 @@ public final class CapabilityAPI extends Capability {
      * <p>Create the capability headless.</p>
      */
     public CapabilityAPI() {
-        super(new BranchAPI());
+        super(BranchAPI.DEFAULT);
     }
 
 }

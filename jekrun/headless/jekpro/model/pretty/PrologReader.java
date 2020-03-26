@@ -806,7 +806,7 @@ public class PrologReader {
      *
      * @return The term.
      * @throws ScannerError  Error and position.
-     * @throws IOException     IO error.
+     * @throws IOException   IO error.
      * @throws EngineMessage Not a Prolog number.
      */
     protected Object readNumber()

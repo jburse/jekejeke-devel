@@ -11,6 +11,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractFramework;
 import matula.util.data.MapEntry;
 
 /*
@@ -288,6 +289,15 @@ public final class Lobby {
     public Knowledgebase getRoot() {
         Store store = (Store) foyer.getRoot();
         return (store != null ? (Knowledgebase) store.proxy : null);
+    }
+
+    /**
+     * <p>Retrieve the framework.</p>
+     *
+     * @return The framework.
+     */
+    public AbstractFramework getFramework() {
+        return foyer.getFramework();
     }
 
 }

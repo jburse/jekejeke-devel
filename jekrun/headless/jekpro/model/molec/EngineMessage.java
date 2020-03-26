@@ -898,8 +898,8 @@ public final class EngineMessage extends Exception {
      */
     public static Properties getErrorLang(Locale locale, Foyer foyer)
             throws IOException {
-        AbstractFramework af = foyer.getFactory();
-        return af.getErrorLang(locale);
+        AbstractFramework framework = foyer.getFramework();
+        return framework.getErrorLang(locale);
     }
 
     /**

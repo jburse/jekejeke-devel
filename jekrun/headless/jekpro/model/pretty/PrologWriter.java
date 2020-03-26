@@ -5,20 +5,15 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
-import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.ForeignAtom;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
-import matula.util.regex.ScannerToken;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * <p>This class provides the writing of prolog terms.</p>

@@ -518,8 +518,8 @@ public class PrologReaderAnno extends PrologReader {
      * <p>Read a number token.</p>
      *
      * @return The term.
-     * @throws ScannerError Error and position.
-     * @throws IOException     IO error.
+     * @throws ScannerError  Error and position.
+     * @throws IOException   IO error.
      * @throws EngineMessage Not a Prolog number.
      */
     protected final Object readNumber()

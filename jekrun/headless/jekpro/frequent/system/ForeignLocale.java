@@ -11,6 +11,7 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
@@ -231,7 +232,8 @@ public final class ForeignLocale {
             throws InterpreterMessage, InterpreterException {
         Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
         Locale locale = LangProperties.stringToLocale(locstr);
-        return capa.getDescrModel(locale, inter.getKnowledgebase().getLobby());
+        Lobby lobby = inter.getKnowledgebase().getLobby();
+        return capa.getDescrModel(locale, lobby.getRoot().getLoader());
     }
 
     /**

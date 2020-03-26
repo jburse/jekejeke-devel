@@ -4,10 +4,12 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
+import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
@@ -113,15 +115,18 @@ final class BranchSWI extends AbstractBranch {
         return tracking;
     }
 
+    /***************************************************************/
+    /* Capability Properties                                       */
+    /***************************************************************/
+
     /**
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param e      The enforced.
+     * @param loader      The class loader.
      * @return The properties or null.
      */
-    public Properties getDescrModel(Locale locale, Enforced e) {
-        ClassLoader loader = e.getRoot().getLoader();
+    public Properties getDescrModel(Locale locale, ClassLoader loader) {
         String name = getMainRoot() + AirDrop.MODEL_SWI;
         return LangProperties.getLangCheck(loader, name, locale,
                 RecognizerSWI.DEFAULT, null, FileExtension.MASK_USES_TEXT);
@@ -133,11 +138,11 @@ final class BranchSWI extends AbstractBranch {
      * https://github.com/SWI-Prolog/plweb-www/tree/master/icons</p>
      *
      * @param locale The locale.
-     * @param e      The enforced.
+     * @param loader      The class loader.
+     * @param runtime     The runtime.
      * @return The properties.
      */
-    public Properties getDescrPlatform(Locale locale, Enforced e) {
-        ClassLoader loader = e.getRoot().getLoader();
+    public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {
         String name = getMainRoot() + AirDrop.PLATFORM_SWI;
         return LangProperties.getLangCheck(loader, name, locale,
                 RecognizerSWI.DEFAULT, getMainRoot(), FileExtension.MASK_USES_TEXT);
@@ -148,12 +153,12 @@ final class BranchSWI extends AbstractBranch {
      *
      * @param res  The target list.
      * @param root The root.
-     * @param e    The enforced.
+     * @param foyer    The enforced.
      * @throws IOException Shit happens.
      */
-    public void rootToAbsolute(ListArray<String> res, String root, Enforced e)
+    public void rootToAbsolute(ListArray<String> res, String root, Foyer foyer)
             throws IOException {
-        ClassLoader loader = e.getRoot().getLoader();
+        ClassLoader loader = foyer.getRoot().getLoader();
         if (root.equals(getMainRoot())) {
             Tracking.rootToAbsoluteCheck(res, root, loader, AirDrop.MODEL_SWI + ".pl");
         } else {

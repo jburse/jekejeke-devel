@@ -12,6 +12,7 @@ import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRecognizer;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
@@ -393,9 +394,10 @@ public class Store extends AbstractRecognizer {
         if (path == null)
             throw new NullPointerException("path missing");
         Object data = foyer.getApplication();
+        AbstractFramework framework = foyer.getFramework();
         synchronized (this) {
             ClassLoader stop = (parent != null ? parent.loader : null);
-            loader = foyer.getFactory().getRuntime().addURL(loader, path, stop, data);
+            loader = framework.getRuntime().addURL(loader, path, stop, data);
             cachepaths = null;
         }
 
@@ -415,13 +417,14 @@ public class Store extends AbstractRecognizer {
         if (res != null)
             return res;
         Object data = foyer.getApplication();
+        AbstractFramework framework = foyer.getFramework();
         synchronized (this) {
             res = cachepaths;
             if (res != null)
                 return res;
             ListArray<String> paths;
             ClassLoader stop = (parent != null ? parent.loader : null);
-            paths = foyer.getFactory().getRuntime().getURLs(loader, stop, data);
+            paths = framework.getRuntime().getURLs(loader, stop, data);
             res = new String[paths.size()];
             paths.toArray(res);
             cachepaths = res;

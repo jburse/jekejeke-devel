@@ -242,7 +242,7 @@ public abstract class AbstractFile extends AbstractSource {
             return;
 
         ConnectionReader cr = (ConnectionReader) reader;
-        ConnectionInput cin = (ConnectionInput)cr.getUncoded();
+        ConnectionInput cin = (ConnectionInput) cr.getUncoded();
         setLastModified(cin.getLastModified());
         setETag(cin.getETag());
         setExpiration(cin.getExpiration());

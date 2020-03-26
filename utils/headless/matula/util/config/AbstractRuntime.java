@@ -40,7 +40,7 @@ import java.lang.reflect.Array;
  */
 public abstract class AbstractRuntime {
     public final static String JAVA_ARRAY = "[]";
-    private final static MapHash<String, Class> primitive = new MapHash<String, Class>();
+    private final static MapHash<String, Class<?>> primitive = new MapHash<String, Class<?>>();
 
     public final static String ASPECT_SWING = "swing";
     public final static String ASPECT_ANDROID = "android";
@@ -144,7 +144,7 @@ public abstract class AbstractRuntime {
      * @param cl   The class loader.
      * @return The class, or null.
      */
-    public static Class stringToClass(String name, ClassLoader cl) {
+    public static Class<?> stringToClass(String name, ClassLoader cl) {
         int k = name.length();
         if (name.startsWith(JAVA_ARRAY, k - JAVA_ARRAY.length())) {
             k -= JAVA_ARRAY.length();
@@ -153,7 +153,7 @@ public abstract class AbstractRuntime {
                 k -= JAVA_ARRAY.length();
                 count++;
             }
-            Class clazz = stringToClassNonArray(name.substring(0, k), cl);
+            Class<?> clazz = stringToClassNonArray(name.substring(0, k), cl);
             while (count > 0 && clazz != null) {
                 Object o;
                 try {
@@ -177,8 +177,8 @@ public abstract class AbstractRuntime {
      * @param cl   The class loader.
      * @return The class, or null.
      */
-    private static Class stringToClassNonArray(String name, ClassLoader cl) {
-        Class clazz = primitive.get(name);
+    private static Class<?> stringToClassNonArray(String name, ClassLoader cl) {
+        Class<?> clazz = primitive.get(name);
         if (clazz != null)
             return clazz;
         try {
@@ -195,7 +195,7 @@ public abstract class AbstractRuntime {
      * @param clazz The class.
      * @return The string.
      */
-    public static String classToString(Class clazz) {
+    public static String classToString(Class<?> clazz) {
         if (clazz.isArray()) {
             int count = 1;
             clazz = clazz.getComponentType();
