@@ -58,6 +58,7 @@ final class BranchAPI extends Branch {
      * <p>Create the branch API.</p>
      */
     private BranchAPI() {
+        setDescription(DescriptionAPI.DEFAULT);
         addPredProps(PropertyPredicateAPI.DEFAULT);
         addStreamProps(PropertyStreamAPI.DEFAULT);
     }

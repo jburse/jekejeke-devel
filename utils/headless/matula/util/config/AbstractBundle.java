@@ -53,12 +53,7 @@ import java.util.Properties;
 public abstract class AbstractBundle extends Check {
     public final static int MASK_BNDL_NACT = 0x00000001;
 
-    /* model specific */
-    public final static String PROP_CAPA_FAMILY = "capa.family";
-    public final static String PROP_CAPA_PRODUCT = "capa.product";
-    public final static String PROP_CAPA_RELEASE = "capa.release";
     /* platform specific */
-    public final static String PROP_CAPA_DATE = "capa.date";
     public final static String PROP_CAPA_ICON = "capa.icon";
     public final static String PROP_CAPA_BIGICON = "capa.bigicon";
 
@@ -77,7 +72,7 @@ public abstract class AbstractBundle extends Check {
     public static final String[] VOID_LIST = new String[0];
 
     private int flags;
-    private String mainroot;
+    private AbstractDescription description;
 
     /**
      * <p>Retrieve the flags.</p>
@@ -98,21 +93,21 @@ public abstract class AbstractBundle extends Check {
     }
 
     /**
-     * <p>Retrieve the main root.</p>
+     * <p>Retrieve the description.</p>
      *
-     * @return The main root.
+     * @return The description.
      */
-    public String getMainRoot() {
-        return mainroot;
+    public AbstractDescription getDescription() {
+        return description;
     }
 
     /**
-     * <p>Set the main root.</p>
+     * <p>Set the description.</p>
      *
-     * @param m The main root.
+     * @param d The description.
      */
-    public void setMainRoot(String m) {
-        mainroot = m;
+    public void setDescription(AbstractDescription d) {
+        description = d;
     }
 
     /***************************************************************/
@@ -137,25 +132,6 @@ public abstract class AbstractBundle extends Check {
      */
     public abstract InputStream prepareStream(InputStream in, AbstractRecognizer know)
             throws LicenseError, IOException;
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @return The properties or null.
-     */
-    public abstract Properties getDescrModel(Locale locale, ClassLoader loader);
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
-     * @return The properties or null.
-     */
-    public abstract Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime);
 
     /**
      * <p>Retrieve the parameters of this branch.</p>

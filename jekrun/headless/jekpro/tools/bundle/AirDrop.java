@@ -5,6 +5,7 @@ import jekpro.model.pretty.Store;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Lobby;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractDescription;
 import matula.util.config.FileExtension;
 import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
@@ -49,12 +50,6 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class AirDrop {
-    public final static String MODEL_DEFAULT = "model/builtin/description";
-    public final static String MODEL_SWI = "pack";
-
-    public final static String PLATFORM_DIR = "platform/";
-    public final static String PLATFORM_FILE = "/description";
-    public final static String PLATFORM_SWI = "icon";
 
     /*************************************************************/
     /* Known Paths                                               */
@@ -126,7 +121,7 @@ public final class AirDrop {
 
         for (int i = 0; i < roots.size(); i++) {
             String root = roots.get(i);
-            String name = root + MODEL_DEFAULT;
+            String name = root + AbstractDescription.MODEL_DEFAULT;
             Properties prop = LangProperties.getLang(loader, name, Locale.getDefault());
             if (prop != null) {
                 String capa = prop.getProperty(AbstractBundle.PROP_SLIP_CAPA);
@@ -138,7 +133,7 @@ public final class AirDrop {
                 }
             }
 
-            name = root + MODEL_SWI;
+            name = root + DescriptionSWI.MODEL_SWI;
             String adr = LangProperties.getURL(loader, name,
                     RecognizerSWI.DEFAULT, FileExtension.MASK_USES_TEXT);
             if (adr != null) {

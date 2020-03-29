@@ -106,7 +106,8 @@ public final class ForeignStatistics {
      * @return The value, or null.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysGetStat(Interpreter inter, String name) throws InterpreterMessage {
+    public static Object sysGetStat(Interpreter inter, String name)
+            throws InterpreterMessage {
         if (OP_MAX.equals(name)) {
             return TermAtomic.normBigInteger(Runtime.getRuntime().maxMemory());
         } else if (OP_USED.equals(name)) {

@@ -6,13 +6,13 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import matula.util.config.ForeignArchive;
 import matula.util.config.GestaltEntry;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * <p>Hotspot current directory and path discovery.</p>
@@ -53,8 +53,8 @@ public final class AndroidGestalt {
      * @return The base url.
      */
     public static String getBase() {
-        File userdir = new File(Environment.getDataDirectory(), "app");
-        return userdir.toURI().toString();
+        File curdir = new File(Environment.getDataDirectory(), "app");
+        return ForeignArchive.condensePath(curdir.toString());
     }
 
     /**
@@ -72,20 +72,15 @@ public final class AndroidGestalt {
         String[] names = pm.getPackagesForUid(android.os.Process.myUid());
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            PackageInfo pi = null;
-            try {
-                pi = pm.getPackageInfo(name, PackageManager.GET_ACTIVITIES);
-            } catch (PackageManager.NameNotFoundException x) {
-                /* */
-            }
-            if (pi != null && pi.activities != null && pi.activities.length > 0)
-                continue;
             Bundle bd = getBundle(pm, name);
-            Object dstr = (bd != null ? bd.get("dontask") : null);
-            String path = pi.applicationInfo.sourceDir;
-            URL url = new URL(ForeignUri.SCHEME_FILE, null, path);
-            path = ForeignUri.sysUriRelative(base, url.toString());
+            Object estr = (bd != null ? bd.get(GestaltEntry.ATTR_ISEXTENSION) : null);
+            boolean isextension = (estr != null ? estr.equals(Boolean.TRUE) : false);
+            if (!isextension)
+                continue;
+            Object dstr = (bd != null ? bd.get(GestaltEntry.ATTR_DONTASK) : null);
             boolean dontask = (dstr != null ? dstr.equals(Boolean.TRUE) : true);
+            String path = ForeignArchive.condensePath(getSourceDir(pm, name));
+            path = ForeignUri.sysUriRelative(base, path);
             GestaltEntry pse = new GestaltEntry(path, dontask);
             paths.add(pse);
         }
@@ -93,7 +88,7 @@ public final class AndroidGestalt {
     }
 
     /**
-     * <p>Retrieve a bundle for an application.</p>
+     * <p>Retrieve the bundle for an application.</p>
      *
      * @param pm   The package manager.
      * @param name The application name.
@@ -107,6 +102,23 @@ public final class AndroidGestalt {
             /* */
         }
         return (ai != null ? ai.metaData : null);
+    }
+
+    /**
+     * <p>Retrieve the sourcedir for an application.</p>
+     *
+     * @param pm   The package manager.
+     * @param name The application name.
+     * @return The source dir.
+     */
+    private static String getSourceDir(PackageManager pm, String name) {
+        PackageInfo pi = null;
+        try {
+            pi = pm.getPackageInfo(name, PackageManager.GET_ACTIVITIES);
+        } catch (PackageManager.NameNotFoundException x) {
+            /* */
+        }
+        return (pi != null ? pi.applicationInfo.sourceDir : null);
     }
 
 }

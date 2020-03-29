@@ -8,16 +8,10 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
-import matula.comp.sharik.Enforced;
-import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
-import matula.util.system.ForeignCache;
-import matula.util.wire.LangProperties;
 
 import java.io.IOException;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>The internal implementation of a SWI package.</p>
@@ -98,7 +92,7 @@ final class BranchSWI extends AbstractBranch {
      * @param root The main root.
      */
     BranchSWI(String root) {
-        setMainRoot(root);
+        setDescription(new DescriptionSWI(root));
 //        setFlags(AbstractBundle.MASK_BNDL_NACT);
         setArchiveRoots(new String[]{root});
     }
@@ -120,35 +114,6 @@ final class BranchSWI extends AbstractBranch {
     /***************************************************************/
 
     /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @return The properties or null.
-     */
-    public Properties getDescrModel(Locale locale, ClassLoader loader) {
-        String name = getMainRoot() + AirDrop.MODEL_SWI;
-        return LangProperties.getLangCheck(loader, name, locale,
-                RecognizerSWI.DEFAULT, null, FileExtension.MASK_USES_TEXT);
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     * <p>Will be configured to display SWI-Prolog icons from here:
-     * https://github.com/SWI-Prolog/plweb-www/tree/master/icons</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
-     * @return The properties.
-     */
-    public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {
-        String name = getMainRoot() + AirDrop.PLATFORM_SWI;
-        return LangProperties.getLangCheck(loader, name, locale,
-                RecognizerSWI.DEFAULT, getMainRoot(), FileExtension.MASK_USES_TEXT);
-    }
-
-    /**
      * <p>Precompute the uris of a root.</p>
      *
      * @param res  The target list.
@@ -159,8 +124,8 @@ final class BranchSWI extends AbstractBranch {
     public void rootToAbsolute(ListArray<String> res, String root, Foyer foyer)
             throws IOException {
         ClassLoader loader = foyer.getRoot().getLoader();
-        if (root.equals(getMainRoot())) {
-            Tracking.rootToAbsoluteCheck(res, root, loader, AirDrop.MODEL_SWI + ".pl");
+        if (root.equals(getDescription().getMainRoot())) {
+            Tracking.rootToAbsoluteCheck(res, root, loader, DescriptionSWI.MODEL_SWI + ".pl");
         } else {
             Tracking.rootToAbsoluteCheck(res, root, loader, "root.propertiesx");
         }
@@ -181,7 +146,7 @@ final class BranchSWI extends AbstractBranch {
         super.initBranch(en, prompt, system);
 
         Store root = (Store) en.store.foyer.getRoot();
-        root.addFileExtension(getMainRoot() + PROLOG_DIR,
+        root.addFileExtension(getDescription().getMainRoot() + PROLOG_DIR,
                 new FileExtension(FileExtension.MASK_PCKG_LOAD));
     }
 
@@ -195,7 +160,7 @@ final class BranchSWI extends AbstractBranch {
     public final void finiBranch(Store store, boolean system)
             throws EngineMessage, EngineException {
         Store root = (Store) store.foyer.getRoot();
-        root.removeFileExtension(getMainRoot() + PROLOG_DIR);
+        root.removeFileExtension(getDescription().getMainRoot() + PROLOG_DIR);
 
         super.finiBranch(store, system);
     }

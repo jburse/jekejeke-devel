@@ -83,7 +83,7 @@ public abstract class Capability {
     public final static String PROP_NEEDS_ACT = AbstractBranch.OP_NEEDS_ACT;
     public final static String PROP_ACT_STATUS = AbstractBranch.OP_ACT_STATUS;
     public final static String PROP_EXPIRATION_DATE = AbstractBranch.OP_EXPIRATION_DATE;
-    public final static String PROP_BUNDLE_DIR = AbstractBranch.OP_BUNDLE_DIR;
+    public final static String PROP_BUNDLE_PATH = AbstractBranch.OP_BUNDLE_PATH;
     public final static String PROP_LANGUAGE_CODE = AbstractBranch.OP_LANGUAGE_CODE;
     public final static String PROP_INSTALL_CODE = AbstractBranch.OP_INSTALL_CODE;
     public final static String PROP_LICENSE_CODE = AbstractBranch.OP_LICENSE_CODE;
@@ -227,7 +227,7 @@ public abstract class Capability {
      * @return The properties.
      */
     public Properties getDescrModel(Locale locale, ClassLoader loader) {
-        return branch.getDescrModel(locale, loader);
+        return branch.getDescription().getDescrModel(locale, loader);
     }
 
     /**
@@ -240,7 +240,7 @@ public abstract class Capability {
      */
     public Properties getDescrPlatform(Locale locale, ClassLoader loader,
                                        AbstractRuntime runtime) {
-        return branch.getDescrPlatform(locale, loader, runtime);
+        return branch.getDescription().getDescrPlatform(locale, loader, runtime);
     }
 
     /**
@@ -254,7 +254,7 @@ public abstract class Capability {
         ClassLoader loader = lobby.getRoot().getLoader();
         Foyer foyer = (Foyer) lobby.getFoyer();
         AbstractRuntime runtime = foyer.getFramework().getRuntime();
-        return branch.getDescrPlatform(locale, loader, runtime);
+        return branch.getDescription().getDescrPlatform(locale, loader, runtime);
     }
 
     /***********************************************************/
@@ -315,12 +315,7 @@ public abstract class Capability {
      * @return The family as an internationalized text or null.
      */
     public String getFamily(Locale locale, ClassLoader loader) {
-        Properties descr = getDescrModel(locale, loader);
-        if (descr != null) {
-            return descr.getProperty(AbstractBundle.PROP_CAPA_FAMILY);
-        } else {
-            return null;
-        }
+        return branch.getDescription().getFamily(locale, loader);
     }
 
     /**
@@ -333,42 +328,7 @@ public abstract class Capability {
      */
     public String getProductReleaseDate(Locale locale, ClassLoader loader,
                                         AbstractRuntime runtime) {
-        Properties descr = getDescrModel(locale, loader);
-        if (descr != null) {
-            String product = descr.getProperty(AbstractBundle.PROP_CAPA_PRODUCT);
-            String release = descr.getProperty(AbstractBundle.PROP_CAPA_RELEASE);
-            return product + " " + release + sysDate(locale, loader, runtime);
-        } else {
-            Properties resources = LangProperties.getLang(Capability.class, "intl", locale);
-            return resources.getProperty("capa.missing");
-        }
-    }
-
-    /**
-     * <p>Retrieve the date formatted.</p>
-     *
-     * @param locale  The locale.
-     * @param loader  The class loader.
-     * @param runtime The runtime.
-     * @return The date formatted or "".
-     */
-    private String sysDate(Locale locale, ClassLoader loader,
-                          AbstractRuntime runtime) {
-        Properties descr = getDescrPlatform(locale, loader, runtime);
-        String datestr = (descr != null ? descr.getProperty(AbstractBundle.PROP_CAPA_DATE) : null);
-        if (datestr != null) {
-            try {
-                DateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATE, Locale.UK);
-                Date date = df.parse(datestr);
-                df = DateFormat.getDateInstance(DateFormat.LONG, locale);
-                datestr = " (" + df.format(date) + ")";
-            } catch (ParseException x) {
-                datestr = "";
-            }
-        } else {
-            datestr = "";
-        }
-        return datestr;
+        return branch.getDescription().getProductReleaseDate(locale, loader, runtime);
     }
 
 }

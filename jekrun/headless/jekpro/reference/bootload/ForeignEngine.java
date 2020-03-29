@@ -96,25 +96,18 @@ public final class ForeignEngine {
      * @param flag  The Prolog flag.
      * @return The value.
      * @throws InterpreterMessage   Flag undefined.
-     * @throws InterpreterException Flag undefined.
      */
     public static Object sysGetFlag(Interpreter inter, String flag)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            Engine en = (Engine) inter.getEngine();
-            AbstractFlag<Engine> af = findPrologFlag(flag, en);
-            if (af != null)
-                return af.getObjFlag(en, en);
-            AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
-            if (af2 != null)
-                return af2.getObjFlag(en.store, null);
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    "prolog_flag", flag));
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
+            throws InterpreterMessage {
+        Engine en = (Engine) inter.getEngine();
+        AbstractFlag<Engine> af = findPrologFlag(flag, en);
+        if (af != null)
+            return af.getObjFlag(en, en);
+        AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
+        if (af2 != null)
+            return af2.getObjFlag(en.store, null);
+        throw new InterpreterMessage(InterpreterMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG, flag));
     }
 
     /**
@@ -219,11 +212,8 @@ public final class ForeignEngine {
      * @param flag The flag.
      * @param en   The engine.
      * @return The value or null.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
-    public static Object getPrologFlag(String flag, Engine en)
-            throws EngineMessage, EngineException {
+    public static Object getPrologFlag(String flag, Engine en) {
         AbstractFlag<Engine> af = findPrologFlag(flag, en);
         if (af != null)
             return af.getObjFlag(en, en);
@@ -258,6 +248,7 @@ public final class ForeignEngine {
 
     /**
      * <p>Find a Prolog flag.</p>
+     * <p>Only capabilities that are ok are considered.</p>
      *
      * @param flag The Prolog flag name.
      * @param en   The engine.
@@ -329,11 +320,8 @@ public final class ForeignEngine {
      * @param flag  The flag.
      * @param store The store.
      * @return The value or null.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
      */
-    public static Object getSessionFlag(String flag, Store store)
-            throws EngineMessage, EngineException {
+    public static Object getSessionFlag(String flag, Store store) {
         AbstractFlag<Store> af = findSessionFlag(flag, store);
         if (af != null)
             return af.getObjFlag(store, null);

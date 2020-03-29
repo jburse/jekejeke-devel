@@ -1,6 +1,7 @@
 package jekpro.frequent.system;
 
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
@@ -224,7 +225,7 @@ public final class ForeignGroup {
             return (val != null ? val : AbstractFlag.OP_NULL);
         } else {
             throw new InterpreterMessage(InterpreterMessage.domainError(
-                    "prolog_flag", name));
+                    EngineMessage.OP_DOMAIN_PROLOG_FLAG, name));
         }
     }
 

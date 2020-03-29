@@ -6,10 +6,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.DefaultBundle;
-import matula.util.config.FileExtension;
+import matula.util.config.*;
 import matula.util.regex.ScannerError;
 
 import java.io.IOException;
@@ -149,13 +146,13 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 ((SkelCompound) obj).sym.fun.equals(OP_TITLE)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_CAPA_PRODUCT, ((SkelAtom) obj).fun);
+                prop.put(AbstractDescription.PROP_CAPA_PRODUCT, ((SkelAtom) obj).fun);
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_VERSION)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_CAPA_RELEASE, ((SkelAtom) obj).fun);
+                prop.put(AbstractDescription.PROP_CAPA_RELEASE, ((SkelAtom) obj).fun);
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_HOME)) {
@@ -229,7 +226,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 ((SkelCompound) obj).sym.fun.equals(OP_DATE)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_CAPA_DATE, ((SkelAtom) obj).fun);
+                prop.put(AbstractDescription.PROP_CAPA_DATE, ((SkelAtom) obj).fun);
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_ICON)) {

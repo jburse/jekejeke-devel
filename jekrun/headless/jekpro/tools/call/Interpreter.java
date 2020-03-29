@@ -188,19 +188,10 @@ public final class Interpreter {
      *
      * @param flag The flag name.
      * @return The flag value.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
      */
-    public Object getProperty(String flag)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            Object res = ForeignEngine.getPrologFlag(flag, engine);
-            return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
+    public Object getProperty(String flag) {
+        Object res = ForeignEngine.getPrologFlag(flag, engine);
+        return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
     }
 
     /**

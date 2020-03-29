@@ -1,7 +1,9 @@
-package matula.util.config;
+package jekpro.tools.proxy;
+
+import matula.util.config.AbstractDescription;
 
 /**
- * <p>This class represents a discovered path.</p>
+ * <p>The internal implementation of the capability API.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -31,40 +33,14 @@ package matula.util.config;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class GestaltEntry {
-    public static final String ATTR_DONTASK = "dontask";
-    public static final String ATTR_ISEXTENSION = "isextension";
-
-    private final String path;
-    private final boolean dontask;
+public final class DescriptionAPI extends AbstractDescription {
+    public final static DescriptionAPI DEFAULT = new DescriptionAPI();
 
     /**
-     * <p>Create a path entry.</p>
-     *
-     * @param c The path.
-     * @param d The don't ask flag.
+     * <p>Create the branch.</p>
      */
-    public GestaltEntry(String c, boolean d) {
-        path = c;
-        dontask = d;
-    }
-
-    /**
-     * <p>Retrieve the path.</p>
-     *
-     * @return The path.
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * <p>Retrieve the don't ask flag.</p>
-     *
-     * @return The don't ask flag.
-     */
-    public boolean getDontAsk() {
-        return dontask;
+    private DescriptionAPI() {
+        setMainRoot("jekpro/");
     }
 
 }

@@ -74,20 +74,20 @@ public final class FlagThread extends AbstractFlag<Thread> {
     /**
      * <p>Retrieve the value of this thread flag.</p>
      *
-     * @param t  The thread.
-     * @param en The engine.
+     * @param obj The thread.
+     * @param en  The engine.
      * @return The value.
      */
-    public Object getObjFlag(Thread t, Engine en) {
+    public Object getObjFlag(Thread obj, Engine en) {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
-                return t.getName();
+                return obj.getName();
             case FLAG_SYS_THREAD_STATE:
-                return t.getState().name();
+                return obj.getState().name();
             case FLAG_SYS_THREAD_GROUP:
-                return t.getThreadGroup();
+                return obj.getThreadGroup();
             case FLAG_SYS_TPROMPT:
-                Controller contr = Controller.currentController(t);
+                Controller contr = Controller.currentController(obj);
                 if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
                 Supervisor s = (Supervisor) contr.getVisor();

@@ -3,6 +3,7 @@ package jekpro.tools.term;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -97,6 +98,8 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Knowledgebase {
+    public final static String PROP_USER_DIR = FlagSession.OP_USER_DIR;
+
     private final Store store;
 
     public static final String OP_ON = AbstractFlag.OP_ON;
@@ -260,19 +263,10 @@ public class Knowledgebase {
      *
      * @param flag The flag name.
      * @return The flag value.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
      */
-    public Object getProperty(String flag)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            Object res = ForeignEngine.getSessionFlag(flag, store);
-            return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
+    public Object getProperty(String flag) {
+        Object res = ForeignEngine.getSessionFlag(flag, store);
+        return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
     }
 
     /**

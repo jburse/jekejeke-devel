@@ -1,12 +1,14 @@
 package matula.util.config;
 
 import matula.util.data.ListArray;
+import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -159,9 +161,9 @@ public final class ForeignArchive {
     /*****************************************************************/
 
     /**
-     * <p>Extract the file path from an uri.</p>
+     * <p>Extract a file path from an uri address.</p>
      *
-     * @param adr The uri string.
+     * @param adr The uri address.
      * @return The file path or null.
      */
     public static String extractPath(String adr) {
@@ -171,6 +173,25 @@ public final class ForeignArchive {
             return null;
         String path = ForeignUri.sysSpecPath(spec);
         return path.replace('/', File.separatorChar);
+    }
+
+    /**
+     * <p>Condense a file path to an uri address.</p>
+     *
+     * @param path The file path.
+     * @return The uri address.
+     */
+    public static String condensePath(String path) {
+        try {
+            File file = new File(path);
+            path = ForeignFile.sysSlashifyFile(file);
+            String spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_FILE,
+                    ForeignFile.STRING_EMPTY, path);
+            return ForeignUri.sysUriMake(spec, ForeignFile.STRING_EMPTY,
+                    ForeignFile.STRING_EMPTY);
+        } catch (MalformedURLException x) {
+            throw new RuntimeException("shouldn't happen", x);
+        }
     }
 
     /******************************************************/

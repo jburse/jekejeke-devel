@@ -44,9 +44,10 @@ public final class DefaultInteractor extends AbstractInteractor {
     public static final DefaultInteractor DEFAULT = new DefaultInteractor();
 
     /**
-     * <p>Create a watchdog.</p>
+     * <p>Create a default interactor.</p>
      */
     private DefaultInteractor() {
+        /* */
     }
 
     /**

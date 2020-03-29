@@ -9,16 +9,13 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import matula.comp.sharik.AbstractActivator;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapHash;
 
-import java.io.File;
 import java.util.Random;
 
 /**

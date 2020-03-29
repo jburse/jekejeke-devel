@@ -45,7 +45,7 @@ public final class FlagSession extends AbstractFlag<Store> {
     public final static MapHash<String, AbstractFlag<Store>> DEFAULT
             = new MapHash<String, AbstractFlag<Store>>();
 
-    private final static String OP_USER_DIR = "user_dir";
+    public final static String OP_USER_DIR = "user_dir";
 
     private static final int FLAG_USER_DIR = 0;
 

@@ -3,6 +3,7 @@ package matula.util.swing;
 import matula.util.config.ForeignArchive;
 import matula.util.config.GestaltEntry;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignUri;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,38 +52,42 @@ public final class SwingGestalt {
      * @return The base.
      */
     public static String getBase() {
-        File userdir = new File(System.getProperty("user.dir"));
-        return userdir.toURI().toString();
+        return ForeignArchive.condensePath(System.getProperty("user.dir"));
     }
 
     /**
      * <p>Load the discovery.</p>
      *
-     * @param base The base.
+     * @param base The base URI.
      * @return The discovery.
      * @throws IOException Shit happens.
      */
     public static ListArray<GestaltEntry> loadDiscoveries(String base)
             throws IOException {
         ListArray<GestaltEntry> paths = new ListArray<GestaltEntry>();
-        base = ForeignArchive.extractPath(base);
-        if (base == null)
+        String path = ForeignArchive.extractPath(base);
+        if (path == null)
             return paths;
-        File file = new File(base, SwingGestalt.DIRECTORY_APK);
+        File file = new File(path);
         ListArray<String> list = ForeignArchive.listDirectory(null, file);
         if (list == null)
             return paths;
         for (int i = 0; i < list.size(); i++) {
-            base = list.get(i);
-            if (base.endsWith("/"))
+            path = list.get(i);
+            if (path.endsWith("/"))
                 continue;
-            if (base.startsWith("."))
+            if (path.startsWith("."))
                 continue;
-            File file2 = new File(file, base);
+            File file2 = new File(file, path);
             Attributes at = SwingGestalt.getAttributes(file2);
-            String dstr = (at != null ? at.getValue("dontask") : null);
+            String estr = (at != null ? at.getValue(GestaltEntry.ATTR_ISEXTENSION) : null);
+            boolean isextension = (estr != null ? Boolean.valueOf(estr) : false);
+            if (!isextension)
+                continue;
+            String dstr = (at != null ? at.getValue(GestaltEntry.ATTR_DONTASK) : null);
             boolean dontask = (dstr != null ? Boolean.valueOf(dstr) : true);
-            String path = SwingGestalt.DIRECTORY_APK + "/" + base;
+            path = ForeignArchive.condensePath(file2.toString());
+            path = ForeignUri.sysUriRelative(base, path);
             GestaltEntry pse = new GestaltEntry(path, dontask);
             paths.add(pse);
         }
@@ -110,5 +115,19 @@ public final class SwingGestalt {
         jr.close();
         return (mf != null ? mf.getMainAttributes() : null);
     }
+
+    /**
+     * <p>Some testing.</p>
+     * @param args Ingnored.
+     */
+    /*
+    public static void main(String[] args) {
+        ListArray<String> cp=getClassPath();
+        if (cp==null)
+            return;
+        for (int i=0; i<cp.size(); i++)
+            System.out.println(cp.get(i));
+    }
+     */
 
 }

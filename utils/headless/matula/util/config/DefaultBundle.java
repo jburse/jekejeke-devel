@@ -46,6 +46,13 @@ public final class DefaultBundle extends AbstractBundle {
     public static final DefaultBundle DEFAULT = new DefaultBundle();
 
     /**
+     * <p>Create a default bundle.</p>
+     */
+    private DefaultBundle() {
+        /* */
+    }
+
+    /**
      * <p>Create the info.
      *
      * @return The info.
@@ -66,29 +73,6 @@ public final class DefaultBundle extends AbstractBundle {
     public InputStream prepareStream(InputStream in, AbstractRecognizer know)
             throws LicenseError, IOException {
         return ActivatorNet.prepareStream(in);
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @return The properties or null.
-     */
-    public Properties getDescrModel(Locale locale, ClassLoader loader) {
-        return null;
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
-     * @return The properties or null.
-     */
-    public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {
-        return null;
     }
 
     /**

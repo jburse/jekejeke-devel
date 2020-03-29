@@ -39,7 +39,7 @@ public final class ExtensibleClassLoader extends URLClassLoader {
     /**
      * <p>Create a new extensible class loader.</p>
      *
-     * @param urls The urls.
+     * @param urls   The urls.
      * @param parent The parent class loader.
      */
     public ExtensibleClassLoader(URL[] urls, ClassLoader parent) {

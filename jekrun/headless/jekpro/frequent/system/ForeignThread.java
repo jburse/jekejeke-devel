@@ -4,8 +4,6 @@ import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
@@ -225,25 +223,17 @@ public final class ForeignThread {
      * @param t     The thread.
      * @param flag  The thread flag.
      * @return The value.
-     * @throws InterpreterException Flag undefined.
-     * @throws InterpreterMessage   Flag undefined.
+     * @throws InterpreterMessage Flag undefined.
      */
     public static Object sysGetThreadFlag(Interpreter inter, Thread t,
                                           String flag)
-            throws InterpreterException, InterpreterMessage {
+            throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
-        Object val;
-        try {
-            val = ForeignThread.getThreadFlag(flag, t, en);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        if (val == null)
-            throw new InterpreterMessage(InterpreterMessage.domainError(
-                    "prolog_flag", flag));
-        return val;
+        AbstractFlag af = findThreadFlag(flag, en);
+        if (af != null)
+            return af.getObjFlag(t, en);
+        throw new InterpreterMessage(InterpreterMessage.domainError(
+                EngineMessage.OP_DOMAIN_PROLOG_FLAG, flag));
     }
 
     /**
@@ -260,8 +250,17 @@ public final class ForeignThread {
             throws InterpreterMessage {
         Engine en = (Engine) inter.getEngine();
         try {
-            ForeignThread.setFlag(flag, AbstractTerm.getSkel(val),
-                    AbstractTerm.getDisplay(val), t, en);
+            AbstractFlag af = findThreadFlag(flag, en);
+            if (af != null) {
+                if (!af.setObjFlag(t, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en))
+                    throw new EngineMessage(EngineMessage.permissionError(
+                            EngineMessage.OP_PERMISSION_MODIFY,
+                            EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
+                return;
+            }
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROLOG_FLAG,
+                    new SkelAtom(flag)));
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
@@ -299,53 +298,14 @@ public final class ForeignThread {
     }
 
     /**
-     * <p>Retrieve the value of the given thread flag.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param flag The flag.
-     * @param t    The thread.
-     * @param en   The engine.
-     * @return The value or null.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object getThreadFlag(String flag,
-                                       Thread t, Engine en)
-            throws EngineMessage, EngineException {
-        AbstractFlag af = findThreadFlag(flag, en);
-        return af.getObjFlag(t, en);
-    }
-
-    /**
-     * <p>Change the value of a prolog Prolog flag.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param flag The name of the flag.
-     * @param m    The value skel.
-     * @param d    The value display.
-     * @param en   The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void setFlag(String flag, Object m, Display d,
-                               Thread t, Engine en)
-            throws EngineMessage {
-        AbstractFlag af = findThreadFlag(flag, en);
-        if (!af.setObjFlag(t, m, d, en))
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
-    }
-
-    /**
      * <p>Find a thread flag.</p>
+     * <p>Only capabilities that are ok are considered.</p>
      *
      * @param flag The flag name.
      * @param en   The engine.
      * @return The thread flag.
-     * @throws EngineMessage Shit happens.
      */
-    private static AbstractFlag findThreadFlag(String flag, Engine en)
-            throws EngineMessage {
+    private static AbstractFlag findThreadFlag(String flag, Engine en) {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -361,9 +321,7 @@ public final class ForeignThread {
             if (af != null)
                 return af;
         }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_FLAG,
-                new SkelAtom(flag)));
+        return null;
     }
 
 

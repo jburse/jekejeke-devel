@@ -2,7 +2,6 @@ package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -65,11 +64,8 @@ public abstract class AbstractFlag<T> {
      * @param t  The object.
      * @param en The engine.
      * @return The value.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
      */
-    public abstract Object getObjFlag(T t, Engine en)
-            throws EngineException, EngineMessage;
+    public abstract Object getObjFlag(T t, Engine en);
 
     /**
      * <p>Set the value of a this flag.</p>
