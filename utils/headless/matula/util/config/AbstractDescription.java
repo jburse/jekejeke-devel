@@ -138,9 +138,8 @@ public abstract class AbstractDescription {
             String release = descr.getProperty(PROP_CAPA_RELEASE);
             return product + " " + release + sysDate(locale, loader, runtime);
         } else {
-//            Properties resources = LangProperties.getLang(Capability.class, "intl", locale);
-//            return resources.getProperty("capa.missing");
-            return null;
+            Properties resources = LangProperties.getLang(AbstractDescription.class, "intl", locale);
+            return resources.getProperty("capa.missing");
         }
     }
 
