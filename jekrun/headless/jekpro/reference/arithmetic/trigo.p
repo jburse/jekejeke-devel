@@ -139,7 +139,7 @@
 :- foreign_fun(pi/1, 'ForeignHyper', pi).
 
 /**
- * e:
+ * e: [N208 9.7.2]
  * Returns the float representation of Euler’s number e.
  */
 :- public e/1.

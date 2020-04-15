@@ -1,7 +1,6 @@
 package jekpro.tools.call;
 
 import jekpro.frequent.standard.SupervisorCopy;
-import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
@@ -59,23 +58,29 @@ import java.util.ArrayList;
  * <tr valign="baseline"><td>Binary Stream</td><td>OutputStream</td></tr>
  * </table>
  * <p>
- * The unparseTerm() methods convert a term to a string or stream. The
- * following flags are recognized. The method with an option term
- * recognizes all options from the write_term/2 predicate. The
- * following flags are available:
+ * The unparseTerm() methods convert a term to a string or stream.
+ * The parseTerm() methods convert a string or stream to a term.
+ * There are methods without and with an option list. The option
+ * lists are the same as the corresponding Prolog predicate:
  * <p>
- * <ul>
- * <li><b>FLAG_QUOTED:</b> Quote atoms when necessary.</li>
- * <li><b>FLAG_NUMBERVARS:</b> Write $VAR(n) as a variable name.</li>
- * <li><b>FLAG_IGNORE_OPS:</b> Ignore operator definitions.</li>
- * <li><b>FLAG_IGNORE_MOD:</b>Ignore module prefixes.</li>
- * </ul>
+ * <b>Table 7: Java Methods Prolog Predicates Mapping</b>
+ * <table>
+ * <tr valign="baseline"><th>Java Method</th><th>Prolog Predicates</th></tr>
+ * <tr valign="baseline"><td>parseTerm(Sring)</td><td>term_atom/2</td></tr>
+ * <tr valign="baseline"><td>parseTerm(Sring,Object)</td><td>term_atom/3</td></tr>
+ * <tr valign="baseline"><td>parseTerm(Reader)</td><td>read/2</td></tr>
+ * <tr valign="baseline"><td>parseTerm(Reader,Object)</td><td>read_term/3</td></tr>
+ * <tr valign="baseline"><td>unparseTerm(Object)</td><td>term_atom/2</td></tr>
+ * <tr valign="baseline"><td>unparseTerm(Object,Object)</td><td>term_atom/3</td></tr>
+ * <tr valign="baseline"><td>unparseTerm(Writer,Object)</td><td>write/2</td></tr>
+ * <tr valign="baseline"><td>unparseTerm(Writer,Object,Object)</td><td>write_term/3</td></tr>
+ * </table>
  * <p>
- * The parseTerm() methods convert a string or stream to a term. The
- * method that takes a string doesn't require that the term is terminated
- * by a period and returns null when an empty string has been supplied.
- * The method with an option term recognizes all options from the
- * read_term/2 predicate and returns null when the option unification fails.
+ * In contrast to read/2 and read_term/3 by default term_atom/[2,3]
+ * doesn’t require a terminating period. And in contrast to write_term/3
+ * by default term_atom/[2,3] does do atom quoting. These settings
+ * can be overridden when providing an option list.
+ *
  * <p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -107,11 +112,6 @@ import java.util.ArrayList;
  */
 public final class Interpreter {
     private final Engine engine;
-
-    public final static int FLAG_QUOTED = PrologWriter.FLAG_QUOT;
-    public final static int FLAG_NUMBERVARS = PrologWriter.FLAG_NUMV;
-    public final static int FLAG_IGNORE_OPS = PrologWriter.FLAG_IGNO;
-    public final static int FLAG_IGNORE_MOD = PrologWriter.FLAG_IGNM;
 
     /**
      * <p>Retrieve the knowledge base.</p>
@@ -219,6 +219,21 @@ public final class Interpreter {
      * <p>Unparse the given term to a string.</p>
      *
      * @param t   The object.
+     * @return The string.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public String unparseTerm(AbstractTerm t)
+            throws InterpreterMessage, InterpreterException {
+        StringWriter sw = new StringWriter();
+        unparseTerm(sw, t, null, PrologWriter.FLAG_QUOT);
+        return sw.toString();
+    }
+
+    /**
+     * <p>Unparse the given term to a string.</p>
+     *
+     * @param t   The object.
      * @param opt The write options.
      * @return The string.
      * @throws InterpreterMessage   Shit happens.
@@ -227,12 +242,25 @@ public final class Interpreter {
     public String unparseTerm(AbstractTerm t, Object opt)
             throws InterpreterMessage, InterpreterException {
         StringWriter sw = new StringWriter();
-        unparseTerm(sw, t, opt, true);
+        unparseTerm(sw, t, opt, PrologWriter.FLAG_QUOT);
         return sw.toString();
     }
 
     /**
-     * <p>Unparse the given term to a string.</p>
+     * <p>Unparse the given term to a writer.</p>
+     *
+     * @param wr  The writer.
+     * @param t   The term.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public void unparseTerm(Writer wr, Object t)
+            throws InterpreterMessage, InterpreterException {
+        unparseTerm(wr, t, null, PrologWriter.FLAG_NUMV);
+    }
+
+    /**
+     * <p>Unparse the given term to a writer.</p>
      *
      * @param wr  The writer.
      * @param t   The term.
@@ -240,9 +268,9 @@ public final class Interpreter {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public void unparseTerm(Writer wr, AbstractTerm t, Object opt)
+    public void unparseTerm(Writer wr, Object t, Object opt)
             throws InterpreterMessage, InterpreterException {
-        unparseTerm(wr, t, opt, false);
+        unparseTerm(wr, t, opt, 0);
     }
 
     /**
@@ -250,20 +278,22 @@ public final class Interpreter {
      *
      * @param wr  The writer.
      * @param t   The term.
-     * @param opt The write options.
-     * @param qf  The quoted flag.
+     * @param opt The write options or null.
+     * @param flags  The default flags.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    private void unparseTerm(Writer wr, AbstractTerm t, Object opt, boolean qf)
+    private void unparseTerm(Writer wr, Object t, Object opt, int flags)
             throws InterpreterMessage, InterpreterException {
         Engine en = (Engine) getEngine();
         try {
             PrologWriter pw;
-            if (!opt.equals(Knowledgebase.OP_NIL)) {
+            if (opt!=null && !opt.equals(Knowledgebase.OP_NIL)) {
                 WriteOpts wo = new WriteOpts(en);
-                if (qf)
+                if ((flags & PrologWriter.FLAG_QUOT) != 0)
                     wo.flags |= PrologWriter.FLAG_QUOT;
+                if ((flags & PrologWriter.FLAG_NUMV) != 0)
+                    wo.flags |= PrologWriter.FLAG_NUMV;
                 wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
                         AbstractTerm.getDisplay(opt), en);
                 if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
@@ -276,8 +306,10 @@ public final class Interpreter {
             } else {
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setSource(en.visor.peekStack());
-                if (qf)
+                if ((flags & PrologWriter.FLAG_QUOT) != 0)
                     pw.flags |= PrologWriter.FLAG_QUOT;
+                if ((flags & PrologWriter.FLAG_NUMV) != 0)
+                    pw.flags |= PrologWriter.FLAG_NUMV;
             }
             pw.setEngineRaw(en);
             pw.setWriter(wr);
@@ -293,6 +325,22 @@ public final class Interpreter {
     /***********************************************************/
     /* AbstractTerm Reading                                    */
     /***********************************************************/
+
+    /**
+     * <p>Create a term from a string.</p>
+     * <p>The term doesn't need a period.</p>
+     * <p>Returns null when an empty string has been supplied.</p>
+     *
+     * @param s The string.
+     * @return The term or null.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public AbstractTerm parseTerm(String s)
+            throws InterpreterMessage, InterpreterException {
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        return parseTerm(cr, null, true);
+    }
 
     /**
      * <p>Create a term from a string.</p>
@@ -316,6 +364,20 @@ public final class Interpreter {
      * <p>Returns null when the output options don't unify.</p>
      *
      * @param lr  The line number reader.
+     * @return The term or null.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    public AbstractTerm parseTerm(Reader lr)
+            throws InterpreterException, InterpreterMessage {
+        return parseTerm(lr, null, false);
+    }
+
+    /**
+     * <p>Create a term from a line number reader.</p>
+     * <p>Returns null when the output options don't unify.</p>
+     *
+     * @param lr  The line number reader.
      * @param opt The read options.
      * @return The term or null.
      * @throws InterpreterException Shit happens.
@@ -331,7 +393,7 @@ public final class Interpreter {
      * <p>Returns null when the output options don't unify.</p>
      *
      * @param lr  The line number reader.
-     * @param opt The read options.
+     * @param opt The read options or null.
      * @param te  The end of line flag.
      * @return The term or null.
      * @throws InterpreterException Shit happens.
@@ -343,7 +405,7 @@ public final class Interpreter {
         Object val;
         PrologReader rd;
         try {
-            if (!opt.equals(Knowledgebase.OP_NIL)) {
+            if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
                 ReadOpts ro = new ReadOpts(en);
                 if (te)
                     ro.flags |= PrologReader.FLAG_TEOF;
@@ -388,9 +450,11 @@ public final class Interpreter {
             return null;
         Display ref = AbstractSkel.createDisplay(val);
         try {
-            if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), val, ref, en, rd))
-                return null;
+            if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
+                if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
+                        AbstractTerm.getDisplay(opt), val, ref, en, rd))
+                    return null;
+            }
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }

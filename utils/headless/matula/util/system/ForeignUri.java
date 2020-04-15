@@ -426,29 +426,31 @@ public final class ForeignUri {
      * @param a The base URI.
      * @param b The relative or absolute URI.
      * @return The absolute URI.
-     * @throws MalformedURLException URL assembling problem.
      */
-    public static String sysUriAbsolute(String a, String b)
-            throws MalformedURLException {
-        String spec1 = ForeignUri.sysUriSpec(a);
-        String scheme1 = ForeignUri.sysSpecScheme(spec1);
-        String authority1 = ForeignUri.sysSpecAuthority(spec1);
+    public static String sysUriAbsolute(String a, String b) {
+        try {
+            String spec2 = ForeignUri.sysUriSpec(b);
+            String scheme2 = ForeignUri.sysSpecScheme(spec2);
+            String authority2 = ForeignUri.sysSpecAuthority(spec2);
 
-        String spec2 = ForeignUri.sysUriSpec(b);
-        String scheme2 = ForeignUri.sysSpecScheme(spec2);
-        String authority2 = ForeignUri.sysSpecAuthority(spec2);
+            if (ForeignFile.STRING_EMPTY.equals(scheme2) &&
+                    ForeignFile.STRING_EMPTY.equals(authority2)) {
+                String spec1 = ForeignUri.sysUriSpec(a);
+                String scheme1 = ForeignUri.sysSpecScheme(spec1);
+                String authority1 = ForeignUri.sysSpecAuthority(spec1);
 
-        if (ForeignFile.STRING_EMPTY.equals(scheme2) &&
-                ForeignFile.STRING_EMPTY.equals(authority2)) {
-            String path1 = ForeignUri.sysSpecPath(spec1);
-            String path2 = ForeignUri.sysSpecPath(spec2);
-            path1 = ForeignFile.sysPathAbsolute(path1, path2);
-            spec1 = ForeignUri.sysSpecMake(scheme1, authority1, path1);
-            String query = ForeignUri.sysUriQuery(b);
-            String hash = ForeignUri.sysUriHash(b);
-            return ForeignUri.sysUriMake(spec1, query, hash);
-        } else {
-            return b;
+                String path1 = ForeignUri.sysSpecPath(spec1);
+                String path2 = ForeignUri.sysSpecPath(spec2);
+                path1 = ForeignFile.sysPathAbsolute(path1, path2);
+                spec1 = ForeignUri.sysSpecMake(scheme1, authority1, path1);
+                String query = ForeignUri.sysUriQuery(b);
+                String hash = ForeignUri.sysUriHash(b);
+                return ForeignUri.sysUriMake(spec1, query, hash);
+            } else {
+                return b;
+            }
+        } catch (MalformedURLException x) {
+            throw new RuntimeException("shouldn't happen", x);
         }
     }
 

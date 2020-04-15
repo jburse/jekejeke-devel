@@ -140,7 +140,9 @@ public final class ScannerError extends ParseException {
     public String toString() {
         String s = getMessage();
         if (getErrorOffset() != -1)
-            s += "@" + getErrorOffset();
+            s = s + "@" + getErrorOffset();
+        if (line != null)
+            s = line + "\n" + s;
         return s;
     }
 

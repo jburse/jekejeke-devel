@@ -419,7 +419,7 @@ public final class ForeignAtom {
                 m instanceof Double) {
             return m.toString();
         } else if (m instanceof Float) {
-            if ((flags & Interpreter.FLAG_QUOTED) != 0) {
+            if ((flags & PrologWriter.FLAG_QUOT) != 0) {
                 StringBuilder buf = new StringBuilder();
                 float y = m.floatValue();
                 if (y < 0) {
@@ -438,7 +438,7 @@ public final class ForeignAtom {
             }
         } else if (m instanceof Long ||
                 m instanceof BigDecimal) {
-            if ((flags & Interpreter.FLAG_QUOTED) != 0) {
+            if ((flags & PrologWriter.FLAG_QUOT) != 0) {
                 StringBuilder buf = new StringBuilder();
                 if (EvaluableElem.sign(m).longValue() < 0) {
                     buf.append(Knowledgebase.OP_SUB);
