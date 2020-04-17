@@ -143,4 +143,13 @@ public final class RuntimeDalvik extends AbstractRuntime {
         }
     }
 
+    /**
+     * <p>Retrieve the default base.</p>
+     *
+     * @return The default base.
+     */
+    public String getBase() {
+        return AndroidGestalt.getBase();
+    }
+
 }

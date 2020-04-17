@@ -1,11 +1,13 @@
 package jekpro.tools.term;
 
+import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 
@@ -184,8 +186,30 @@ public abstract class AbstractTerm {
     public abstract Display getDisplay();
 
     /************************************************************/
-    /* String Generation                                        */
+    /* Object Protocol                                          */
     /************************************************************/
+
+    /**
+     * <p>Compute the hash.</p>
+     *
+     * @return The hash value.
+     */
+    public int hashCode() {
+        return SpecialSort.hashTerm(getSkel(), getDisplay(), 0);
+    }
+
+    /**
+     * <p>Check the identity.</p>
+     *
+     * @param o The other object.
+     */
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof AbstractTerm))
+            return false;
+        return SpecialLexical.equalTerm(getSkel(), getDisplay(), getSkel(o), getDisplay(o));
+    }
 
     /**
      * <p>Return a string of a term.</p>
@@ -195,25 +219,7 @@ public abstract class AbstractTerm {
     public String toString() {
         try {
             StringWriter sw = new StringWriter();
-            PrologWriter.toString(getSkel(this), getDisplay(this), sw, 0, null);
-            return sw.toString();
-        } catch (EngineMessage x) {
-            throw new RuntimeException("shouldn't happen", x);
-        } catch (EngineException x) {
-            throw new RuntimeException("shouldn't happen", x);
-        }
-    }
-
-    /**
-     * <p>Return a string of a term.</p>
-     *
-     * @param flags The flags.
-     * @return The string.
-     */
-    public String toString(int flags) {
-        try {
-            StringWriter sw = new StringWriter();
-            PrologWriter.toString(getSkel(this), getDisplay(this), sw, flags, null);
+            PrologWriter.toString(getSkel(), getDisplay(), sw, PrologWriter.FLAG_QUOT, null);
             return sw.toString();
         } catch (EngineMessage x) {
             throw new RuntimeException("shouldn't happen", x);
@@ -223,70 +229,8 @@ public abstract class AbstractTerm {
     }
 
     /****************************************************************/
-    /* Prolog Operations                                            */
+    /* Copy Terms                                                   */
     /****************************************************************/
-
-    /**
-     * <p>Retrieve the current bind.</p>
-     *
-     * @param inter The interpreter.
-     * @return The current bind.
-     */
-    public static AbstractUndo markBind(Interpreter inter) {
-        Engine en = (Engine) inter.getEngine();
-        return en.bind;
-    }
-
-    /**
-     * <p>Unify the this term for another term.</p>
-     * <p>Occurs check is not performed.</p>
-     *
-     * @param inter The call-in.
-     * @param fst   The first term.
-     * @param snd   The second term.
-     * @return True if the this term unifies with the other term, otherwise false.
-     * @throws InterpreterException Shit happens.
-     */
-    public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
-            throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
-        Engine backuse = en.visor.setInuse(en);
-        Thread backthread = en.visor.setFence(Thread.currentThread());
-        boolean res;
-        try {
-            res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
-                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
-        } catch (EngineException x) {
-            en.visor.setFence(backthread);
-            en.visor.setInuse(backuse);
-            throw new InterpreterException(x);
-        }
-        en.visor.setFence(backthread);
-        en.visor.setInuse(backuse);
-        return res;
-    }
-
-    /**
-     * <p>Release variable bindings done during unification.</p>
-     *
-     * @param inter The interpreter.
-     * @param mark  The marked bind.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void releaseBind(Interpreter inter, AbstractUndo mark)
-            throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
-        Engine backuse = en.visor.setInuse(en);
-        Thread backthread = en.visor.setFence(Thread.currentThread());
-
-        en.fault = null;
-        en.releaseBind(mark);
-
-        en.visor.setFence(backthread);
-        en.visor.setInuse(backuse);
-        if (en.fault != null)
-            throw new InterpreterException(en.fault);
-    }
 
     /**
      * <p>Create a copy of this term.</p>
@@ -348,6 +292,72 @@ public abstract class AbstractTerm {
             return t;
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
+    }
+
+    /****************************************************************/
+    /* Unify Terms                                                  */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the current bind.</p>
+     *
+     * @param inter The interpreter.
+     * @return The current bind.
+     */
+    public static Object markBind(Interpreter inter) {
+        Engine en = (Engine) inter.getEngine();
+        return en.bind;
+    }
+
+    /**
+     * <p>Unify the this term for another term.</p>
+     * <p>Occurs check is not performed.</p>
+     *
+     * @param inter The call-in.
+     * @param fst   The first term.
+     * @param snd   The second term.
+     * @return True if the this term unifies with the other term, otherwise false.
+     * @throws InterpreterException Shit happens.
+     */
+    public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
+            throws InterpreterException {
+        Engine en = (Engine) inter.getEngine();
+        Engine backuse = en.visor.setInuse(en);
+        Thread backthread = en.visor.setFence(Thread.currentThread());
+        boolean res;
+        try {
+            res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
+                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
+        } catch (EngineException x) {
+            en.visor.setFence(backthread);
+            en.visor.setInuse(backuse);
+            throw new InterpreterException(x);
+        }
+        en.visor.setFence(backthread);
+        en.visor.setInuse(backuse);
+        return res;
+    }
+
+    /**
+     * <p>Release variable bindings done during unification.</p>
+     *
+     * @param inter The interpreter.
+     * @param mark  The marked bind.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void releaseBind(Interpreter inter, Object mark)
+            throws InterpreterException {
+        Engine en = (Engine) inter.getEngine();
+        Engine backuse = en.visor.setInuse(en);
+        Thread backthread = en.visor.setFence(Thread.currentThread());
+
+        en.fault = null;
+        en.releaseBind((AbstractUndo)mark);
+
+        en.visor.setFence(backthread);
+        en.visor.setInuse(backuse);
+        if (en.fault != null)
+            throw new InterpreterException(en.fault);
     }
 
 }

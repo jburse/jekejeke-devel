@@ -109,6 +109,13 @@ public abstract class AbstractRuntime {
                                               ClassLoader stop, Object data)
             throws LicenseError;
 
+    /**
+     * <p>Retrieve the default base.</p>
+     *
+     * @return The default base.
+     */
+    public abstract String getBase();
+
     /********************************************************************/
     /* Class Loaders                                                    */
     /********************************************************************/

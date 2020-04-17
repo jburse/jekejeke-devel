@@ -225,7 +225,7 @@ public final class ForeignAtom {
         while (ac.hasMoreElements()) {
             Integer val1 = ac.getCFrom();
             Integer val2 = ac.nextElement();
-            AbstractUndo mark = AbstractTerm.markBind(inter);
+            Object mark = AbstractTerm.markBind(inter);
             if (AbstractTerm.unifyTerm(inter, cout, val1)) {
                 co.setRetry(true);
                 return val2;

@@ -98,7 +98,9 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Knowledgebase {
-    public final static String PROP_USER_DIR = FlagSession.OP_USER_DIR;
+    public final static String PROP_USER_PREFS = FlagSession.OP_USER_PREFS;
+    public final static String PROP_BASE_URL = FlagSession.OP_BASE_URL;
+    public final static String PROP_SYS_LOCALE = FlagSession.OP_SYS_LOCALE;
 
     private final Store store;
 
@@ -119,7 +121,7 @@ public class Knowledgebase {
         Lobby l = new Lobby(k);
         Foyer foyer = (Foyer) l.getFoyer();
 
-        store = foyer.createStore();
+        store = foyer.createStore(getClass().getClassLoader());
         store.proxy = this;
     }
 
@@ -133,7 +135,7 @@ public class Knowledgebase {
         Lobby l = new Lobby(k);
         Foyer foyer = (Foyer) l.getFoyer();
 
-        store = foyer.createStore(c);
+        store = foyer.createStore(c.getClassLoader());
         store.proxy = this;
     }
 

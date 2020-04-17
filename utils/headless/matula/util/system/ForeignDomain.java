@@ -50,8 +50,8 @@ public final class ForeignDomain {
     static {
         try {
             Class<?> clazz = Class.forName("java.net.IDN");
-            toascii = clazz.getDeclaredMethod("toASCII", new Class[]{String.class});
-            tounicode = clazz.getDeclaredMethod("toUnicode", new Class[]{String.class});
+            toascii = clazz.getDeclaredMethod("toASCII", String.class);
+            tounicode = clazz.getDeclaredMethod("toUnicode", String.class);
         } catch (ClassNotFoundException e) {
             toascii = null;
             tounicode = null;

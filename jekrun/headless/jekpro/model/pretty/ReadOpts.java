@@ -91,13 +91,13 @@ public final class ReadOpts {
     /**
      * <p>Create some read options.</p>
      *
-     * @param en The engine.
+     * @param s The source.
      */
-    public ReadOpts(Engine en) {
-        source = en.visor.peekStack();
-        utildouble = source.utildouble;
-        utilback = source.utilback;
-        utilsingle = source.utilsingle;
+    public ReadOpts(AbstractSource s) {
+        source = s;
+        utildouble = s.utildouble;
+        utilback = s.utilback;
+        utilsingle = s.utilsingle;
     }
 
     /**

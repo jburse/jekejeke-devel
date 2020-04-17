@@ -98,30 +98,6 @@ public final class TermVar extends AbstractTerm {
     }
 
     /**
-     * <p>Compute the hash.</p>
-     *
-     * @return The hash value.
-     */
-    public int hashCode() {
-        return skel.hashCode(display);
-    }
-
-    /**
-     * <p>Check the identity to another molec var.</p>
-     *
-     * @param o The other object.
-     * @return True if the other object is a molec and identical, otherwise false.
-     */
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof TermVar))
-            return false;
-        TermVar m = (TermVar) o;
-        return (skel == m.skel && display == m.display);
-    }
-
-    /**
      * <p>Retrieve the serial number of a variable.</p>
      *
      * @param inter The call-in.

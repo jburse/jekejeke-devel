@@ -601,7 +601,7 @@ public class PrologWriter {
      * @param var The variable name.
      * @return True if the variable needs quotes, false otherwise.
      */
-    public boolean variableNeedsQuotes(String var) {
+    public static boolean variableNeedsQuotes(String var) {
         if (var.length() == 0)
             return true;
         int ch = var.codePointAt(0);
@@ -710,7 +710,7 @@ public class PrologWriter {
      * @param oper The atom flags.
      * @return True if the atom needs quotes, false otherwise.
      */
-    private boolean atomNeedsQuotes(String fun, int oper) {
+    private static boolean atomNeedsQuotes(String fun, int oper) {
         if (fun.length() == 0)
             return true;
         int ch = fun.codePointAt(0);
@@ -786,6 +786,7 @@ public class PrologWriter {
                 Object obj = TermAtomic.createMolec(sv, ref);
                 String t = printmap.get(obj);
                 if (t != null) {
+                    t = variableQuoted(t);
                     safeSpace(t);
                     append(t);
                     return;
@@ -1748,5 +1749,17 @@ public class PrologWriter {
             throws IOException, EngineMessage, EngineException {
         append(t);
     }
+
+    /**
+     * <p>Some testing.</p>
+     * @param args Ignored.
+     */
+    /*
+    public static void main(String[] args) {
+        String var="Salary#";
+        System.out.println("var="+var);
+        System.out.println("variableNeedsQuotes(var)="+variableNeedsQuotes(var));
+    }
+    */
 
 }

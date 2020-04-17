@@ -70,6 +70,8 @@ public class PrologReader {
     public final static String OP_RBRACE = "}";
 
     /* only read opts */
+    public final static int FLAG_WRAP = 0x00000080;
+
     public final static int FLAG_SING = 0x00000100;
     public final static int FLAG_NEWV = 0x00000200;
     public final static int FLAG_TEOF = 0x00000400;

@@ -60,8 +60,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static String OP_SYS_CUR_OUTPUT = "sys_cur_output";
     public final static String OP_SYS_CUR_ERROR = "sys_cur_error";
     public final static String OP_SYS_ATTACHED_TO = "sys_attached_to";
-    public final static String OP_BASE_URL = "base_url";
-    public final static String OP_SYS_LOCALE = "sys_locale";
     public final static String OP_SYS_GOOD_FOR = "sys_good_for";
     public final static String OP_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_SYS_RUNTIME_VERSION = "sys_runtime_version";
@@ -82,22 +80,20 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_CUR_OUTPUT = 2;
     private static final int FLAG_SYS_CUR_ERROR = 3;
     private static final int FLAG_SYS_ATTACHED_TO = 4;
-    private static final int FLAG_BASE_URL = 5;
-    private static final int FLAG_SYS_LOCALE = 6;
-    private static final int FLAG_SYS_GOOD_FOR = 7;
-    private static final int FLAG_SYS_CPU_COUNT = 8;
-    private static final int FLAG_SYS_RUNTIME_VERSION = 9;
-    private static final int FLAG_VERBOSE = 10;
-    private static final int FLAG_SYS_HINT = 11;
-    private static final int FLAG_SYS_TOOL_INPUT = 12;
-    private static final int FLAG_SYS_TOOL_OUTPUT = 13;
-    private static final int FLAG_SYS_TOOL_ERROR = 14;
-    private static final int FLAG_SYS_BELONGS_TO = 15;
-    private static final int FLAG_BOUNDED = 16;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 17;
-    private static final int FLAG_CHAR_CONVERSION = 18;
-    private static final int FLAG_MAX_ARITY = 19;
-    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 20;
+    private static final int FLAG_SYS_GOOD_FOR = 6;
+    private static final int FLAG_SYS_CPU_COUNT = 7;
+    private static final int FLAG_SYS_RUNTIME_VERSION = 8;
+    private static final int FLAG_VERBOSE = 9;
+    private static final int FLAG_SYS_HINT = 10;
+    private static final int FLAG_SYS_TOOL_INPUT = 11;
+    private static final int FLAG_SYS_TOOL_OUTPUT = 12;
+    private static final int FLAG_SYS_TOOL_ERROR = 13;
+    private static final int FLAG_SYS_BELONGS_TO = 14;
+    private static final int FLAG_BOUNDED = 15;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 16;
+    private static final int FLAG_CHAR_CONVERSION = 17;
+    private static final int FLAG_MAX_ARITY = 18;
+    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 19;
 
     /**
      * <p>Create a flag.</p>
@@ -114,8 +110,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
         DEFAULT.add(OP_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
         DEFAULT.add(OP_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
-        DEFAULT.add(OP_BASE_URL, new FlagFactory(FLAG_BASE_URL));
-        DEFAULT.add(OP_SYS_LOCALE, new FlagFactory(FLAG_SYS_LOCALE));
         DEFAULT.add(OP_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
         DEFAULT.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
         DEFAULT.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
@@ -151,22 +145,17 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_SYS_ATTACHED_TO:
                 Object val = en.visor.attachedto;
                 return val != null ? val : AbstractFlag.OP_NULL;
-            case FLAG_BASE_URL:
-                String path = en.store.getBase();
-                return new SkelAtom(path != null ? path : "");
-            case FLAG_SYS_LOCALE:
-                return new SkelAtom(en.store.foyer.locale.toString());
             case FLAG_SYS_GOOD_FOR:
                 val = en.store.foyer.goodfor;
                 return val != null ? val : AbstractFlag.OP_NULL;
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
-                path = System.getProperty("java.vm.name");
-                int k = (path != null ? path.indexOf(':') : -1);
+                String name = System.getProperty("java.vm.name");
+                int k = (name != null ? name.indexOf(':') : -1);
                 if (k != -1)
-                    path = path.substring(0, k);
-                return path + ", " + System.getProperty("java.version");
+                    name = name.substring(0, k);
+                return name + ", " + System.getProperty("java.version");
             case FLAG_VERBOSE:
                 k = 0;
                 int flags = en.store.foyer.getBits();
@@ -174,7 +163,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                     k |= LoadOpts.VERBOSE_SUMMARY;
                 if ((flags & Foyer.MASK_FOYER_DTLS) != 0)
                     k |= LoadOpts.VERBOSE_DETAILS;
-                String name;
                 switch (k) {
                     case 0:
                         name = AbstractFlag.OP_OFF;
@@ -250,14 +238,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                 return true;
             case FLAG_SYS_ATTACHED_TO:
                 en.visor.attachedto = SpecialUniv.derefAndCastRefOrNull(m, d);
-                return true;
-            case FLAG_BASE_URL:
-                String fun = SpecialUniv.derefAndCastString(m, d);
-                en.store.setBase(!"".equals(fun) ? fun : null);
-                return true;
-            case FLAG_SYS_LOCALE:
-                fun = SpecialUniv.derefAndCastString(m, d);
-                en.store.foyer.locale = LangProperties.stringToLocale(fun);
                 return true;
             case FLAG_SYS_GOOD_FOR:
                 en.store.foyer.goodfor = SpecialUniv.derefAndCastRefOrNull(m, d);

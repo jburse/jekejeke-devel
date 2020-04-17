@@ -1,11 +1,9 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.SpecialSort;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -140,29 +138,6 @@ public final class TermCompound extends AbstractTerm {
      */
     public Display getDisplay() {
         return display;
-    }
-
-    /**
-     * <p>Compute the hash.</p>
-     *
-     * @return The hash value.
-     */
-    public int hashCode() {
-        return SpecialSort.hashTerm(skel, display, 0);
-    }
-
-    /**
-     * <p>Check the identity.</p>
-     *
-     * @param o The other object.
-     */
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof TermCompound))
-            return false;
-        TermCompound m = (TermCompound) o;
-        return SpecialLexical.equalTerm(skel, display, m.skel, m.display);
     }
 
     /**

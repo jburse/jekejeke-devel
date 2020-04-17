@@ -10,11 +10,9 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.reflect.PropertyStream;
 import jekpro.tools.array.PropertyStreamAPI;
 import jekpro.tools.call.Interpreter;
@@ -22,7 +20,6 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
@@ -31,7 +28,10 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.system.*;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.Socket;
 
 /**
@@ -633,7 +633,7 @@ public final class ForeignStream {
     /**
      * <p>Create a prolog list of the properties of the given stream and properties.</p>
      *
-     * @param obj  The stream.
+     * @param obj   The stream.
      * @param props The properties.
      * @param en    The engine.
      * @throws EngineMessage   Validation Error.

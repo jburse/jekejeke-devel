@@ -62,7 +62,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
             ucp.setAccessible(true);
 
             clazz = Class.forName("jdk.internal.loader.URLClassPath");
-            geturls = clazz.getDeclaredMethod("getURLs", new Class[0]);
+            geturls = clazz.getDeclaredMethod("getURLs");
         } catch (ClassNotFoundException e) {
             ucp = null;
             geturls = null;
@@ -167,6 +167,15 @@ public final class RuntimeHotspot extends AbstractRuntime {
         } else {
             return null;
         }
+    }
+
+    /**
+     * <p>Retrieve the default base.</p>
+     *
+     * @return The default base.
+     */
+    public String getBase() {
+        return SwingGestalt.getBase();
     }
 
     /********************************************************************/

@@ -1,23 +1,22 @@
 package jekpro.tools.call;
 
-import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.frequent.stream.ForeignTerm;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.EngineYield;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
+import jekpro.model.pretty.PrologWriter;
+import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignEngine;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.PositionKey;
-import matula.util.regex.ScannerError;
 import matula.util.system.ConnectionReader;
-import matula.util.system.OpenOpts;
 
-import java.io.*;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 
 /**
@@ -58,28 +57,11 @@ import java.util.ArrayList;
  * <tr valign="baseline"><td>Binary Stream</td><td>OutputStream</td></tr>
  * </table>
  * <p>
- * The unparseTerm() methods convert a term to a string or stream.
- * The parseTerm() methods convert a string or stream to a term.
- * There are methods without and with an option list. The option
+ * The parseTerm() respective parseTermWrapped() methods convert a string
+ * to a term. The string must not be terminated by a period. The unparseTerm()
+ * methods convert a term to a string. Atoms will be quoted during unparsed.
+ * There are methods without and with an option list. The read and write option
  * lists are the same as the corresponding Prolog predicate:
- * <p>
- * <b>Table 7: Java Methods Prolog Predicates Mapping</b>
- * <table>
- * <tr valign="baseline"><th>Java Method</th><th>Prolog Predicates</th></tr>
- * <tr valign="baseline"><td>parseTerm(Sring)</td><td>term_atom/2</td></tr>
- * <tr valign="baseline"><td>parseTerm(Sring,Object)</td><td>term_atom/3</td></tr>
- * <tr valign="baseline"><td>parseTerm(Reader)</td><td>read/2</td></tr>
- * <tr valign="baseline"><td>parseTerm(Reader,Object)</td><td>read_term/3</td></tr>
- * <tr valign="baseline"><td>unparseTerm(Object)</td><td>term_atom/2</td></tr>
- * <tr valign="baseline"><td>unparseTerm(Object,Object)</td><td>term_atom/3</td></tr>
- * <tr valign="baseline"><td>unparseTerm(Writer,Object)</td><td>write/2</td></tr>
- * <tr valign="baseline"><td>unparseTerm(Writer,Object,Object)</td><td>write_term/3</td></tr>
- * </table>
- * <p>
- * In contrast to read/2 and read_term/3 by default term_atom/[2,3]
- * doesn’t require a terminating period. And in contrast to write_term/3
- * by default term_atom/[2,3] does do atom quoting. These settings
- * can be overridden when providing an option list.
  *
  * <p>
  * Warranty & Liability
@@ -212,21 +194,21 @@ public final class Interpreter {
     }
 
     /****************************************************************/
-    /* AbstractTerm Writing                                         */
+    /* Term Writing                                                 */
     /****************************************************************/
 
     /**
      * <p>Unparse the given term to a string.</p>
      *
-     * @param t   The object.
+     * @param t The object.
      * @return The string.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public String unparseTerm(AbstractTerm t)
+    public String unparseTerm(Object t)
             throws InterpreterMessage, InterpreterException {
         StringWriter sw = new StringWriter();
-        unparseTerm(sw, t, null, PrologWriter.FLAG_QUOT);
+        ForeignTerm.unparseTerm(this, sw, t, null, PrologWriter.FLAG_QUOT);
         return sw.toString();
     }
 
@@ -239,91 +221,15 @@ public final class Interpreter {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public String unparseTerm(AbstractTerm t, Object opt)
+    public String unparseTerm(Object t, Object opt)
             throws InterpreterMessage, InterpreterException {
         StringWriter sw = new StringWriter();
-        unparseTerm(sw, t, opt, PrologWriter.FLAG_QUOT);
+        ForeignTerm.unparseTerm(this, sw, t, opt, PrologWriter.FLAG_QUOT);
         return sw.toString();
-    }
-
-    /**
-     * <p>Unparse the given term to a writer.</p>
-     *
-     * @param wr  The writer.
-     * @param t   The term.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public void unparseTerm(Writer wr, Object t)
-            throws InterpreterMessage, InterpreterException {
-        unparseTerm(wr, t, null, PrologWriter.FLAG_NUMV);
-    }
-
-    /**
-     * <p>Unparse the given term to a writer.</p>
-     *
-     * @param wr  The writer.
-     * @param t   The term.
-     * @param opt The write options.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public void unparseTerm(Writer wr, Object t, Object opt)
-            throws InterpreterMessage, InterpreterException {
-        unparseTerm(wr, t, opt, 0);
-    }
-
-    /**
-     * <p>Unparse the given term to a string.</p>
-     *
-     * @param wr  The writer.
-     * @param t   The term.
-     * @param opt The write options or null.
-     * @param flags  The default flags.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    private void unparseTerm(Writer wr, Object t, Object opt, int flags)
-            throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) getEngine();
-        try {
-            PrologWriter pw;
-            if (opt!=null && !opt.equals(Knowledgebase.OP_NIL)) {
-                WriteOpts wo = new WriteOpts(en);
-                if ((flags & PrologWriter.FLAG_QUOT) != 0)
-                    wo.flags |= PrologWriter.FLAG_QUOT;
-                if ((flags & PrologWriter.FLAG_NUMV) != 0)
-                    wo.flags |= PrologWriter.FLAG_NUMV;
-                wo.decodeWriteOptions(AbstractTerm.getSkel(opt),
-                        AbstractTerm.getDisplay(opt), en);
-                if ((wo.flags & PrologWriter.FLAG_FILL) == 0 &&
-                        (wo.flags & PrologWriter.FLAG_NAVI) == 0) {
-                    pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                } else {
-                    pw = en.store.foyer.createWriter(Foyer.IO_ANNO);
-                }
-                wo.setWriteOpts(pw);
-            } else {
-                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                if ((flags & PrologWriter.FLAG_QUOT) != 0)
-                    pw.flags |= PrologWriter.FLAG_QUOT;
-                if ((flags & PrologWriter.FLAG_NUMV) != 0)
-                    pw.flags |= PrologWriter.FLAG_NUMV;
-            }
-            pw.setEngineRaw(en);
-            pw.setWriter(wr);
-            pw.unparseStatement(AbstractTerm.getSkel(t),
-                    AbstractTerm.getDisplay(t));
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
     }
 
     /***********************************************************/
-    /* AbstractTerm Reading                                    */
+    /* Term Reading                                            */
     /***********************************************************/
 
     /**
@@ -336,10 +242,28 @@ public final class Interpreter {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public AbstractTerm parseTerm(String s)
+    public Object parseTerm(String s)
             throws InterpreterMessage, InterpreterException {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
-        return parseTerm(cr, null, true);
+        return ForeignTerm.parseTerm(this, cr,
+                null, PrologReader.FLAG_TEOF);
+    }
+
+    /**
+     * <p>Create a term from a string.</p>
+     * <p>The term doesn't need a period.</p>
+     * <p>Returns null when an empty string has been supplied.</p>
+     *
+     * @param s The string.
+     * @return The term or null.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public AbstractTerm parseTermWrapped(String s)
+            throws InterpreterMessage, InterpreterException {
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        return (AbstractTerm) ForeignTerm.parseTerm(this, cr,
+                null, PrologReader.FLAG_TEOF + PrologReader.FLAG_WRAP);
     }
 
     /**
@@ -353,114 +277,29 @@ public final class Interpreter {
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
-    public AbstractTerm parseTerm(String s, Object opt)
+    public Object parseTerm(String s, Object opt)
             throws InterpreterMessage, InterpreterException {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
-        return parseTerm(cr, opt, true);
+        return ForeignTerm.parseTerm(this, cr,
+                opt, PrologReader.FLAG_TEOF);
     }
 
     /**
-     * <p>Create a term from a line number reader.</p>
-     * <p>Returns null when the output options don't unify.</p>
+     * <p>Create a term from a string.</p>
+     * <p>The term doesn't need a period.</p>
+     * <p>Returns null when an empty string has been supplied.</p>
      *
-     * @param lr  The line number reader.
-     * @return The term or null.
-     * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
-     */
-    public AbstractTerm parseTerm(Reader lr)
-            throws InterpreterException, InterpreterMessage {
-        return parseTerm(lr, null, false);
-    }
-
-    /**
-     * <p>Create a term from a line number reader.</p>
-     * <p>Returns null when the output options don't unify.</p>
-     *
-     * @param lr  The line number reader.
+     * @param s   The string.
      * @param opt The read options.
      * @return The term or null.
-     * @throws InterpreterException Shit happens.
      * @throws InterpreterMessage   Shit happens.
-     */
-    public AbstractTerm parseTerm(Reader lr, Object opt)
-            throws InterpreterException, InterpreterMessage {
-        return parseTerm(lr, opt, false);
-    }
-
-    /**
-     * <p>Create a term from a line number reader.</p>
-     * <p>Returns null when the output options don't unify.</p>
-     *
-     * @param lr  The line number reader.
-     * @param opt The read options or null.
-     * @param te  The end of line flag.
-     * @return The term or null.
      * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
      */
-    private AbstractTerm parseTerm(Reader lr, Object opt, boolean te)
-            throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) getEngine();
-        Object val;
-        PrologReader rd;
-        try {
-            if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
-                ReadOpts ro = new ReadOpts(en);
-                if (te)
-                    ro.flags |= PrologReader.FLAG_TEOF;
-                ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
-                if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
-                    rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                } else {
-                    rd = en.store.foyer.createReader(Foyer.IO_ANNO);
-                }
-                ro.setReadOpts(rd);
-            } else {
-                rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                rd.setSource(en.visor.peekStack());
-                if (te)
-                    rd.flags |= PrologReader.FLAG_TEOF;
-            }
-            rd.setEngineRaw(en);
-            try {
-                try {
-                    rd.getScanner().setReader(lr);
-                    val = rd.parseHeadStatement();
-                } catch (ScannerError y) {
-                    String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
-                    rd.parseTailError(y);
-                    EngineMessage x = new EngineMessage(
-                            EngineMessage.syntaxError(y.getMessage()));
-                    PositionKey pos = PositionKey.createPos(lr);
-                    throw new EngineException(x,
-                            EngineException.fetchPos(EngineException.fetchLoc(
-                                    EngineException.fetchStack(en),
-                                    pos, en), line, en));
-                }
-            } catch (IOException y) {
-                throw EngineMessage.mapIOException(y);
-            }
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        if (val == null)
-            return null;
-        Display ref = AbstractSkel.createDisplay(val);
-        try {
-            if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
-                if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
-                        AbstractTerm.getDisplay(opt), val, ref, en, rd))
-                    return null;
-            }
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        if (SupervisorCopy.displaySize(val) != 0)
-            ref.vars = Display.VARS_MARKER;
-        return AbstractTerm.createTermWrapped(val, ref);
+    public AbstractTerm parseTermWrapped(String s, Object opt)
+            throws InterpreterMessage, InterpreterException {
+        ConnectionReader cr = new ConnectionReader(new StringReader(s));
+        return (AbstractTerm) ForeignTerm.parseTerm(this, cr,
+                opt, PrologReader.FLAG_TEOF + PrologReader.FLAG_WRAP);
     }
 
     /***********************************************************/

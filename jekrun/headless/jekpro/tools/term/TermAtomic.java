@@ -124,31 +124,6 @@ public final class TermAtomic extends AbstractTerm {
         return Display.DISPLAY_CONST;
     }
 
-    /**
-     * <p>Compute the hash code of this term.</p>
-     *
-     * @return The hash value.
-     */
-    public int hashCode() {
-        return skel.hashCode();
-    }
-
-    /**
-     * <p>Check the identity of this term with another term.</p>
-     *
-     * @param o The other object.
-     * @return True if the other object is a term and this term
-     * is identical to the other term, otherwise false.
-     */
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof TermAtomic))
-            return false;
-        TermAtomic t = (TermAtomic) o;
-        return skel.equals(t.skel);
-    }
-
     /****************************************************************/
     /* Integer Normalization & Widening                             */
     /****************************************************************/

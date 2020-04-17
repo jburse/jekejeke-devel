@@ -13,14 +13,9 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.Lobby;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;
-import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -233,9 +228,9 @@ public abstract class Capability {
     /**
      * <p>Retrieve the bundle description.</p>
      *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
+     * @param locale  The locale.
+     * @param loader  The class loader.
+     * @param runtime The runtime.
      * @return The properties.
      */
     public Properties getDescrPlatform(Locale locale, ClassLoader loader,
@@ -321,7 +316,7 @@ public abstract class Capability {
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param locale The locale.
+     * @param locale  The locale.
      * @param loader  The class loader.
      * @param runtime The runtime.
      * @return The product and release.

@@ -98,13 +98,13 @@ public final class WriteOpts {
     /**
      * <p>Create some write options.</p>
      *
-     * @param en The engine.
+     * @param s The source.
      */
-    public WriteOpts(Engine en) {
-        source = en.visor.peekStack();
-        utildouble = source.utildouble;
-        utilback = source.utilback;
-        utilsingle = source.utilsingle;
+    public WriteOpts(AbstractSource s) {
+        source = s;
+        utildouble = s.utildouble;
+        utilback = s.utilback;
+        utilsingle = s.utilsingle;
     }
 
     /**
@@ -485,7 +485,7 @@ public final class WriteOpts {
         PrologWriter pw = new PrologWriter();
         for (MapEntry<Object, String> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
-            if (pw.variableNeedsQuotes(entry.value))
+            if (PrologWriter.variableNeedsQuotes(entry.value))
                 throw new EngineMessage(EngineMessage.domainError(
                         EngineMessage.OP_DOMAIN_VARIABLE_NAME, new SkelAtom(entry.value)));
         }
