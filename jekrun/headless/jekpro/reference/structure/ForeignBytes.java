@@ -3,7 +3,10 @@ package jekpro.reference.structure;
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.system.*;
+import matula.util.system.ConnectionOutput;
+import matula.util.system.ConnectionWriter;
+import matula.util.system.ForeignUri;
+import matula.util.system.OpenDuplex;
 
 import java.io.*;
 
@@ -137,8 +140,8 @@ public final class ForeignBytes {
      * @param str The output stream.
      * @param opt The desired encoding.
      * @return The data.
-     * @throws InterpreterMessage Validation error.
-     * @throws ClassCastException Validation error.
+     * @throws InterpreterMessage           Validation error.
+     * @throws ClassCastException           Validation error.
      * @throws UnsupportedEncodingException Encoding problem.
      */
     public static String sysMemoryGet(Object str, Object opt)

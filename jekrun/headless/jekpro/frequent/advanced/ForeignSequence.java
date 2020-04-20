@@ -4,7 +4,8 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.AbstractLexical;
+import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
@@ -82,13 +83,13 @@ public final class ForeignSequence {
      * @return The variant comparator.
      * @throws InterpreterMessage Type Error.
      */
-    public static EngineLexical sysVariantComparator(Interpreter inter,
-                                                     Object opt)
+    public static LexicalCollator sysVariantComparator(Interpreter inter,
+                                                       Object opt)
             throws InterpreterMessage {
         Engine engine = (Engine) inter.getEngine();
-        EngineLexical el = new EngineLexical();
+        LexicalCollator el;
         try {
-            el.decodeSortOpts(AbstractTerm.getSkel(opt),
+            el = (LexicalCollator) AbstractLexical.decodeSortOpts(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -111,8 +112,8 @@ public final class ForeignSequence {
      * @param el The variant comparator.
      * @return The revolve.
      */
-    public static AbstractMap sysRevolveNew(EngineLexical el) {
-        if (el.getComparator() == null) {
+    public static AbstractMap sysRevolveNew(AbstractLexical el) {
+        if (el instanceof LexicalCollator && ((LexicalCollator) el).getCmpStr() == null) {
             return new MapHashLink();
         } else {
             return new MapTree(el);

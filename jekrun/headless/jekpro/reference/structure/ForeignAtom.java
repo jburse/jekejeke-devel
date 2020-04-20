@@ -1,6 +1,5 @@
 package jekpro.reference.structure;
 
-import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;

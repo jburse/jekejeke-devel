@@ -97,7 +97,7 @@ import java.util.Properties;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Knowledgebase {
+public final class Knowledgebase {
     public final static String PROP_USER_PREFS = FlagSession.OP_USER_PREFS;
     public final static String PROP_BASE_URL = FlagSession.OP_BASE_URL;
     public final static String PROP_SYS_LOCALE = FlagSession.OP_SYS_LOCALE;
@@ -171,7 +171,7 @@ public class Knowledgebase {
     }
 
     /*****************************************************************/
-    /* Iterable Construction                                         */
+    /* Knowledgebase Factory                                         */
     /*****************************************************************/
 
     /**
@@ -187,6 +187,19 @@ public class Knowledgebase {
     /*****************************************************************/
     /* Initialization API                                            */
     /*****************************************************************/
+
+    /**
+     * <p>Init the predefined capabilities.</p>
+     * <p>No user interaction is performed.</p>
+     *
+     * @param inter The call-in.
+     * @throws InterpreterMessage   Shit happens.
+     * @throws InterpreterException Shit happens.
+     */
+    public static void initKnowledgebase(Interpreter inter)
+            throws InterpreterMessage, InterpreterException {
+        initKnowledgebase(inter, false);
+    }
 
     /**
      * <p>Init the predefined capabilities.</p>
@@ -217,18 +230,6 @@ public class Knowledgebase {
         }
     }
 
-    /**
-     * <p>Init the predefined capabilities.</p>
-     * <p>No user interaction is performed.</p>
-     *
-     * @param inter The call-in.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    public static void initKnowledgebase(Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        initKnowledgebase(inter, false);
-    }
 
     /**
      * <p>Fini the registered capabilities.</p>
@@ -263,11 +264,11 @@ public class Knowledgebase {
     /**
      * <p>Retrieve a knowledgebase property.</p>
      *
-     * @param flag The flag name.
+     * @param name The flag name.
      * @return The flag value.
      */
-    public Object getProperty(String flag) {
-        Object res = ForeignEngine.getSessionFlag(flag, store);
+    public Object getProperty(String name) {
+        Object res = ForeignEngine.getSessionFlag(name, store);
         return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
     }
 

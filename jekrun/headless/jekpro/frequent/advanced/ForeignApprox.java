@@ -2,7 +2,6 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.EvaluableRound;
-import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;
 

@@ -126,7 +126,7 @@ public final class Interpreter {
     }
 
     /*****************************************************************/
-    /* Iterable Construction                                         */
+    /* Interpreter Factory                                           */
     /*****************************************************************/
 
     /**
@@ -137,10 +137,6 @@ public final class Interpreter {
     public Interpreter iterable() {
         return new Interpreter(getKnowledgebase(), getController());
     }
-
-    /*****************************************************************/
-    /* Iterator Construction                                         */
-    /*****************************************************************/
 
     /**
      * <p>Create a call-in.</p>

@@ -8,7 +8,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.AbstractLexical;
+import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -97,9 +98,8 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    EngineLexical el = new EngineLexical();
-                    el.decodeSortOpts(temp[2], ref, en);
-                    if (el.getComparator() == null) {
+                    AbstractLexical el=AbstractLexical.decodeSortOpts(temp[2], ref, en);
+                    if (el instanceof LexicalCollator && ((LexicalCollator)el).getCmpStr() == null) {
                         set = new SetHashLink<Object>();
                         SpecialSort.sortSet(set, temp[0], ref, en);
                     } else {
@@ -109,7 +109,7 @@ public final class SpecialSort extends AbstractSpecial {
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createSet(set, en, (el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
+                    SpecialSort.createSet(set, en, (el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -135,9 +135,8 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    el = new EngineLexical();
-                    el.decodeSortOpts(temp[2], ref, en);
-                    if (el.getComparator() == null) {
+                    el=AbstractLexical.decodeSortOpts(temp[2], ref, en);
+                    if (el instanceof LexicalCollator && ((LexicalCollator)el).getCmpStr() == null) {
                         map = new MapHashLink<Object, ListArray<Object>>();
                         SpecialSort.sortMap(map, temp[0], ref, en);
                     } else {
@@ -147,7 +146,7 @@ public final class SpecialSort extends AbstractSpecial {
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createMap(map, en, (el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
+                    SpecialSort.createMap(map, en, (el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(temp[1], ref, en.skel, d))

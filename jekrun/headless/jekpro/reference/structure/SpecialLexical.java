@@ -139,15 +139,14 @@ public final class SpecialLexical extends AbstractSpecial {
                 case SPECIAL_COMPARE_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    EngineLexical el = new EngineLexical();
-                    el.decodeSortOpts(temp[3], ref, en);
-                    if (el.getComparator() == null) {
+                    AbstractLexical el = AbstractLexical.decodeSortOpts(temp[3], ref, en);
+                    if (el instanceof LexicalCollator && ((LexicalCollator) el).getCmpStr() == null) {
                         res = en.compareTerm(temp[1], ref, temp[2], ref);
                     } else {
                         el.setEngine(en);
                         res = el.compareTerm(temp[1], ref, temp[2], ref);
                     }
-                    if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0)
+                    if ((el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0)
                         res = -res;
                     if (!en.unifyTerm(temp[0], ref,
                             SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST))

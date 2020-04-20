@@ -352,12 +352,26 @@ public abstract class AbstractTerm {
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
         en.fault = null;
-        en.releaseBind((AbstractUndo)mark);
+        en.releaseBind((AbstractUndo) mark);
 
         en.visor.setFence(backthread);
         en.visor.setInuse(backuse);
         if (en.fault != null)
             throw new InterpreterException(en.fault);
+    }
+
+    /**
+     * <p>Compare two terms.</p>
+     *
+     * @param inter The interpreter.
+     * @param alfa  The first term.
+     * @param beta  The second term-
+     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
+     * @throws ArithmeticException Incomparable reference.
+     */
+    public static int compareTerm(Interpreter inter, Object alfa, Object beta) {
+        Engine en = (Engine) inter.getEngine();
+        return en.compare(alfa, beta);
     }
 
 }

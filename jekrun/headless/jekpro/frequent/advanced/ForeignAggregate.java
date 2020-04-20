@@ -2,7 +2,8 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.Foyer;
-import jekpro.reference.structure.EngineLexical;
+import jekpro.reference.structure.AbstractLexical;
+import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -51,18 +52,8 @@ public final class ForeignAggregate {
      * @param el The variant comparator.
      * @return True if the variant comparator is eager, otherwise false.
      */
-    public static boolean sysVariantEager(EngineLexical el) {
-        return ((el.getFlags() & EngineLexical.MASK_FLAG_EAGR) != 0);
-    }
-
-    /**
-     * <p>Check if the variant comparator is natural.</p>
-     *
-     * @param el The variant comparator.
-     * @return True if the variant comparator is natural, otherwise false.
-     */
-    public static boolean sysVariantNatural(EngineLexical el) {
-        return (el.getComparator() == IgnoreCase.DEFAULT_TERTIARY);
+    public static boolean sysVariantEager(AbstractLexical el) {
+        return ((el.getFlags() & AbstractLexical.MASK_FLAG_EAGR) != 0);
     }
 
     /**
@@ -71,8 +62,19 @@ public final class ForeignAggregate {
      * @param el The variant comparator.
      * @return True if the variant comparator is reverse, otherwise false.
      */
-    public static boolean sysVariantReverse(EngineLexical el) {
-        return ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0);
+    public static boolean sysVariantReverse(AbstractLexical el) {
+        return ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0);
+    }
+
+    /**
+     * <p>Check if the variant comparator is natural.</p>
+     *
+     * @param el The variant comparator.
+     * @return True if the variant comparator is natural, otherwise false.
+     */
+    public static boolean sysVariantNatural(AbstractLexical el) {
+        return (el instanceof LexicalCollator &&
+                ((LexicalCollator) el).getCmpStr() == IgnoreCase.DEFAULT_TERTIARY);
     }
 
     /**
@@ -84,10 +86,10 @@ public final class ForeignAggregate {
      * @return The pair.
      */
     public static Object sysRevolvePair(CallOut co, AbstractMap map,
-                                        EngineLexical el) {
+                                        AbstractLexical el) {
         MapEntry at;
         if (co.getFirst()) {
-            if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0) {
+            if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
                 at = map.getLastEntry();
             } else {
                 at = map.getFirstEntry();
@@ -98,7 +100,7 @@ public final class ForeignAggregate {
             at = (MapEntry) co.getData();
         }
         MapEntry next;
-        if ((el.getFlags() & EngineLexical.MASK_FLAG_RVRS) != 0) {
+        if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
             next = map.predecessor(at);
         } else {
             next = map.successor(at);
