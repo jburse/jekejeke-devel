@@ -10,6 +10,9 @@ import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
+import jekpro.tools.array.Types;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -98,8 +101,9 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    AbstractLexical el=AbstractLexical.decodeSortOpts(temp[2], ref, en);
-                    if (el instanceof LexicalCollator && ((LexicalCollator)el).getCmpStr() == null) {
+                    AbstractLexical el = AbstractLexical.decodeSortOpts(temp[2], ref, en);
+                    if (el instanceof LexicalCollator &&
+                            ((LexicalCollator) el).getCmpStr() == null) {
                         set = new SetHashLink<Object>();
                         SpecialSort.sortSet(set, temp[0], ref, en);
                     } else {
@@ -135,8 +139,9 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT_OPT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    el=AbstractLexical.decodeSortOpts(temp[2], ref, en);
-                    if (el instanceof LexicalCollator && ((LexicalCollator)el).getCmpStr() == null) {
+                    el = AbstractLexical.decodeSortOpts(temp[2], ref, en);
+                    if (el instanceof LexicalCollator &&
+                            ((LexicalCollator) el).getCmpStr() == null) {
                         map = new MapHashLink<Object, ListArray<Object>>();
                         SpecialSort.sortMap(map, temp[0], ref, en);
                     } else {
@@ -201,7 +206,7 @@ public final class SpecialSort extends AbstractSpecial {
      */
     private static void sortSet(AbstractSet<Object> set,
                                 Object m, Display d, Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
         en.skel = m;
         en.display = d;
         en.deref();
@@ -221,6 +226,13 @@ public final class SpecialSort extends AbstractSpecial {
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(
                         x.getMessage()));
+            } catch (RuntimeWrap x) {
+                Throwable y = x.getCause();
+                if (y instanceof InterpreterException) {
+                    throw (EngineException) ((InterpreterException) y).getException();
+                } else {
+                    throw Types.mapThrowable(y);
+                }
             }
             en.skel = sc.args[1];
             en.display = d;
@@ -243,8 +255,8 @@ public final class SpecialSort extends AbstractSpecial {
      * <p>End is passed in engine skel and display.</p>
      * <p>Result is returned in engine skel and display.</p>
      *
-     * @param set The abstract map.
-     * @param en  The engine.
+     * @param set     The abstract map.
+     * @param en      The engine.
      * @param reverse The reverse flag.
      */
     public static void createSet(AbstractSet<Object> set, Engine en,
@@ -291,7 +303,7 @@ public final class SpecialSort extends AbstractSpecial {
      */
     private static void sortMap(AbstractMap<Object, ListArray<Object>> map,
                                 Object m, Display d, Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
         en.skel = m;
         en.display = d;
         en.deref();
@@ -330,6 +342,13 @@ public final class SpecialSort extends AbstractSpecial {
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(
                         x.getMessage()));
+            } catch (RuntimeWrap x) {
+                Throwable y = x.getCause();
+                if (y instanceof InterpreterException) {
+                    throw (EngineException) ((InterpreterException) y).getException();
+                } else {
+                    throw Types.mapThrowable(y);
+                }
             }
             en.skel = sc2.args[1];
             en.display = d2;
@@ -357,8 +376,8 @@ public final class SpecialSort extends AbstractSpecial {
      * <p>End is passed in engine skel and display.</p>
      * <p>Result is returned in engine skel and display.</p>
      *
-     * @param map The abstract map.
-     * @param en  The engine.
+     * @param map     The abstract map.
+     * @param en      The engine.
      * @param reverse The reverse flag.
      */
     private static void createMap(AbstractMap<Object, ListArray<Object>> map,

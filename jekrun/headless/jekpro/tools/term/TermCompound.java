@@ -155,7 +155,7 @@ public final class TermCompound extends AbstractTerm {
      * @return The functor.
      */
     public TermAtomic getFunctorWrapped() {
-        return new TermAtomic(skel.sym, false);
+        return new TermAtomic(skel.sym);
     }
 
     /**

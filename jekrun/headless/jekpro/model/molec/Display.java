@@ -67,6 +67,17 @@ public final class Display {
     }
 
     /**
+     * <p>Create a new display.</p>
+     *
+     * @param size The size.
+     * @return The display.
+     */
+    public static Display valueOf(int size) {
+        return (size != 0 ? new Display(size) :
+                Display.DISPLAY_CONST);
+    }
+
+    /**
      * <p>Resize the display.</p>
      *
      * @param size The new size.

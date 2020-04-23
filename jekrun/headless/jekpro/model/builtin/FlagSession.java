@@ -5,7 +5,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.array.FlagFactory;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
 import matula.util.data.MapHash;

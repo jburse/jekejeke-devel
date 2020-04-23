@@ -478,7 +478,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyRest(temp[0], ref);
+        Object molec = ec.copyTermNew(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
             MapHashLink<Object, String> printmap =

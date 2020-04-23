@@ -1,4 +1,4 @@
-package jekpro.tools.call;
+package matula.util.config;
 
 import java.util.Enumeration;
 
@@ -34,18 +34,33 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ArrayEnumeration<T> implements Enumeration<T> {
-    private T[] data;
+    private Object[] data;
     private int pos;
+    private int size;
 
     /**
-     * <p>Create a new dom cursor.</p>
+     * <p>Create a array enumeration.</p>
      *
-     * @param d The elements.
+     * @param d The array.
      */
-    public ArrayEnumeration(T[] d) {
+    public ArrayEnumeration(Object[] d) {
         if (d == null)
             throw new NullPointerException("data missing");
         data = d;
+        size = d.length;
+    }
+
+    /**
+     * <p>Create a array enumeration.</p>
+     *
+     * @param d The array.
+     * @param s The effective size.
+     */
+    public ArrayEnumeration(Object[] d, int s) {
+        if (d == null)
+            throw new NullPointerException("data missing");
+        data = d;
+        size = s;
     }
 
     /**
@@ -54,7 +69,7 @@ public final class ArrayEnumeration<T> implements Enumeration<T> {
      * @return True if there are more elements, otherwise false.
      */
     public boolean hasMoreElements() {
-        return pos < data.length;
+        return pos < size;
     }
 
     /**
@@ -63,7 +78,7 @@ public final class ArrayEnumeration<T> implements Enumeration<T> {
      * @return The next element.
      */
     public T nextElement() {
-        return data[pos++];
+        return (T) data[pos++];
     }
 
 }

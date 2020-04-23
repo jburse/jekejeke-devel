@@ -75,22 +75,12 @@ public final class TermAtomic extends AbstractTerm {
     final Object skel;
 
     /**
-     * <p>Constructor for internal use only.</p>
-     *
-     * @param s The skeleton.
-     * @param f The flag.
-     */
-    TermAtomic(Object s, boolean f) {
-        skel = s;
-    }
-
-    /**
      * <p>Create a wrapped atomic from an unwrapped atomic.</p>
      *
      * @param s The unwrapped atomic.
      */
     public TermAtomic(Object s) {
-        this((s instanceof String ? new SkelAtom((String) s) : s), false);
+        skel = (s instanceof String ? new SkelAtom((String) s) : s);
     }
 
     /**

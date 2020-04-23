@@ -929,7 +929,11 @@ public class PrologReader {
     public SkelVar atomToVariable(String key) {
         SkelVar mv;
         if (OP_ANON.equals(key)) {
-            mv = new SkelVar(gensym);
+            if ((flags & PrologReader.FLAG_NEWV) != 0) {
+                mv = new SkelVar(gensym);
+            } else {
+                mv = SkelVar.valueOf(gensym);
+            }
             gensym++;
             return mv;
         }

@@ -8,6 +8,7 @@ import jekpro.tools.term.TermAtomic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * The foreign predicates for the module stats.

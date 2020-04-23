@@ -13,11 +13,11 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
+import matula.util.data.ListArray;
 import matula.util.system.ConnectionReader;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
 
 /**
  * This class represents an interpreter. The interpreter object can be
@@ -157,8 +157,11 @@ public final class Interpreter {
      *
      * @return The interpreter property names.
      */
-    public ArrayList<String> getProperties() {
-        return ForeignEngine.listPrologFlags(engine);
+    public String[] getProperties() {
+        ListArray<String> list = ForeignEngine.listPrologFlags(engine);
+        String[] res = new String[list.size()];
+        list.toArray(res);
+        return res;
     }
 
     /**

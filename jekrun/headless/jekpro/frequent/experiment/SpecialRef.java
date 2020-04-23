@@ -234,7 +234,7 @@ public final class SpecialRef extends AbstractSpecial {
         SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
         ec.flags = 0;
-        Object molec = ec.copyRest(temp[0], ref);
+        Object molec = ec.copyTermNew(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
             MapHashLink<Object, String> printmap =

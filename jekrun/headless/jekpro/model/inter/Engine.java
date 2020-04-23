@@ -392,8 +392,10 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @param o1 The first object.
      * @param o2 The second object.
      * @return <0 o1 < o2, 0 o1 = o2, >0 o1 > o2
+     * @throws ArithmeticException Incomparable reference.
      */
-    public final int compare(Object o1, Object o2) {
+    public final int compare(Object o1, Object o2)
+            throws ArithmeticException {
         return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
                 AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
     }

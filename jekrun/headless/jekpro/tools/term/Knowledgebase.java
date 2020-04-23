@@ -15,10 +15,10 @@ import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import matula.util.config.FileExtension;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
@@ -257,8 +257,11 @@ public final class Knowledgebase {
      *
      * @return The knowledgebase property names.
      */
-    public ArrayList<String> getProperties() {
-        return ForeignEngine.listSessionFlags(store);
+    public String[] getProperties() {
+        ListArray<String> list = ForeignEngine.listSessionFlags(store);
+        String[] res = new String[list.size()];
+        list.toArray(res);
+        return res;
     }
 
     /**

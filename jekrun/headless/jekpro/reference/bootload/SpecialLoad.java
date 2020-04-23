@@ -877,8 +877,8 @@ public final class SpecialLoad extends AbstractSpecial {
             en.contskel = dire;
             en.contdisplay = ref;
             if (!en.runLoop(snap, true))
-                throw new EngineMessage(
-                        EngineMessage.syntaxError(EngineMessage.OP_SYNTAX_REBUILD_FAILED));
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_REBUILD_FAILED));
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;

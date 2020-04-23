@@ -4,7 +4,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.UndoSerno;
-import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractTerm;
@@ -14,6 +13,8 @@ import jekpro.tools.term.TermVar;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+
+import java.util.Enumeration;
 
 /**
  * <p>Provides the methods for the module misc/residue.</p>
@@ -55,20 +56,18 @@ public final class ForeignResidue {
      * @return The attributed variables.
      */
     public static Object sysResidueAttr(CallOut co, Interpreter inter) {
-        ArrayEnumeration<Object> dc;
+        Enumeration<Object> dc;
         if (co.getFirst()) {
             Engine en = (Engine) inter.getEngine();
             ListArray<Object> list = ForeignResidue.listResidueAttrs(en);
             if (list == null)
                 return null;
-            Object[] res = new Object[list.size()];
-            list.toArray(res);
-            dc = new ArrayEnumeration<Object>(res);
+            dc = list.elements();
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<Object>) co.getData();
+            dc = (Enumeration<Object>) co.getData();
         }
         Object res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());

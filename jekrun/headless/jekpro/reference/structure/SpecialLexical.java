@@ -140,7 +140,8 @@ public final class SpecialLexical extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     AbstractLexical el = AbstractLexical.decodeSortOpts(temp[3], ref, en);
-                    if (el instanceof LexicalCollator && ((LexicalCollator) el).getCmpStr() == null) {
+                    if (el instanceof LexicalCollator &&
+                            ((LexicalCollator) el).getCmpStr() == null) {
                         res = en.compareTerm(temp[1], ref, temp[2], ref);
                     } else {
                         el.setEngine(en);
@@ -161,7 +162,7 @@ public final class SpecialLexical extends AbstractSpecial {
     }
 
     /**
-     * <p>Compute the comparison atom from n integer.</p>
+     * <p>Compute the comparison atom from an integer.</p>
      *
      * @param res The comparison result.
      * @param en  The engine.

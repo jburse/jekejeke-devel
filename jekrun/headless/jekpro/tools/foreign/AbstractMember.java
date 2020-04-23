@@ -310,12 +310,7 @@ abstract class AbstractMember extends AbstractLense
                 throw Types.mapThrowable(x);
             }
         } catch (Exception x) {
-            Throwable z = Types.mapException(x, method);
-            if (z instanceof EngineException) {
-                throw (EngineException) z;
-            } else {
-                throw (EngineMessage) z;
-            }
+            throw Types.mapException(x, method);
         } catch (Error x) {
             throw Types.mapError(x);
         }

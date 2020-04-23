@@ -51,16 +51,19 @@ public abstract class AbstractLexical implements Comparator<Object> {
     private static final String OP_TYPE_TREE = "tree";
     private static final String OP_TYPE_HASH = "hash";
     private static final String OP_TYPE_COLLATOR = "collator";
+    private static final String OP_TYPE_CALLBACK = "callback";
+
+    private static final String OP_IGNORE_CASE = "ignore_case";
+    private static final String OP_REVERSE = "reverse";
+    private static final String OP_EAGER = "eager";
+    private static final String OP_LOCALE = "locale";
 
     private static final String OP_SHARE = "share";
     private static final String OP_SHARE_THREAD_LOCAL = "thread_local";
     private static final String OP_SHARE_DYNAMIC = "dynamic";
     private static final String OP_SHARE_GROUP_LOCAL = "group_local";
 
-    private static final String OP_IGNORE_CASE = "ignore_case";
-    private static final String OP_REVERSE = "reverse";
-    private static final String OP_EAGER = "eager";
-    private static final String OP_LOCALE = "locale";
+    private static final String OP_COMPARATOR = "comparator";
 
     public static final int MASK_FLAG_RVRS = 0x00000001;
     public static final int MASK_FLAG_EAGR = 0x00000002;
@@ -70,6 +73,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
     private static final int TYPE_HASH = 1;
     private static final int TYPE_TREE = 2;
     private static final int TYPE_COLLATOR = 3;
+    private static final int TYPE_CALLBACK = 4;
 
     private static final int SHARE_THREAD_LOCAL = 1;
     private static final int SHARE_DYNAMIC = 2;
@@ -123,6 +127,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
         boolean ignore = false;
         int type = AbstractLexical.TYPE_TREE;
         int bits = 0;
+        Object callback = en.store.foyer.ATOM_COMPARE;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -181,6 +186,14 @@ public abstract class AbstractLexical implements Comparator<Object> {
                     default:
                         throw new IllegalArgumentException("illegal share");
                 }
+            } else if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 1 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(AbstractLexical.OP_COMPARATOR)) {
+                Object[] mc2 = ((SkelCompound) en.skel).args;
+                en.skel = mc2[0];
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                callback = AbstractTerm.createMolec(en.skel, en.display);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(
@@ -202,20 +215,25 @@ public abstract class AbstractLexical implements Comparator<Object> {
         }
         switch (type) {
             case AbstractLexical.TYPE_HASH:
-                LexicalCollator el = new LexicalCollator();
+                AbstractLexical el = new LexicalCollator();
                 el.setFlags(bits);
                 return el;
             case AbstractLexical.TYPE_TREE:
                 el = new LexicalCollator();
                 el.setFlags(bits);
-                el.setCmpStr(ignore ? IgnoreCase.DEFAULT : IgnoreCase.DEFAULT_TERTIARY);
+                ((LexicalCollator) el).setCmpStr(ignore ? IgnoreCase.DEFAULT : IgnoreCase.DEFAULT_TERTIARY);
                 return el;
             case AbstractLexical.TYPE_COLLATOR:
                 el = new LexicalCollator();
                 el.setFlags(bits);
                 Collator col = Collator.getInstance(locale);
                 col.setStrength(ignore ? Collator.SECONDARY : Collator.TERTIARY);
-                el.setCmpStr((Comparator) col);
+                ((LexicalCollator) el).setCmpStr((Comparator) col);
+                return el;
+            case AbstractLexical.TYPE_CALLBACK:
+                el = new LexicalCallback();
+                el.setFlags(bits);
+                ((LexicalCallback) el).setComparator(callback);
                 return el;
             default:
                 throw new IllegalArgumentException("illegal type");
@@ -239,6 +257,8 @@ public abstract class AbstractLexical implements Comparator<Object> {
             return TYPE_TREE;
         } else if (fun.equals(AbstractLexical.OP_TYPE_COLLATOR)) {
             return TYPE_COLLATOR;
+        } else if (fun.equals(AbstractLexical.OP_TYPE_CALLBACK)) {
+            return TYPE_CALLBACK;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_TYPE_OPTION, m), d);

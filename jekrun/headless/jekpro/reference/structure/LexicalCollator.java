@@ -11,7 +11,7 @@ import jekpro.tools.term.SkelVar;
 import java.util.Comparator;
 
 /**
- * <p>Collator based comparator.</p>
+ * <p>Comparator based on string collator.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

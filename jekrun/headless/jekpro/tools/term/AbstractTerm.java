@@ -110,7 +110,7 @@ public abstract class AbstractTerm {
         } else if (m instanceof SkelCompound) {
             return new TermCompound((SkelCompound) m, d);
         } else {
-            return new TermAtomic(m, false);
+            return new TermAtomic(m);
         }
     }
 
@@ -369,7 +369,8 @@ public abstract class AbstractTerm {
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
      */
-    public static int compareTerm(Interpreter inter, Object alfa, Object beta) {
+    public static int compareTerm(Interpreter inter, Object alfa, Object beta)
+            throws ArithmeticException {
         Engine en = (Engine) inter.getEngine();
         return en.compare(alfa, beta);
     }

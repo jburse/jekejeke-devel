@@ -8,10 +8,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.ListArray;
 
 /**
  * <p>This class provides basic functions to compile terms.</p>
@@ -389,7 +387,7 @@ public class SupervisorCall {
      * @throws EngineMessage Shit happens.
      */
     public final Object conjToSequen(Directive dire,
-                                    Object t, Display d, Engine en)
+                                     Object t, Display d, Engine en)
             throws EngineMessage {
         t = goalToInter(dire, t, d, en);
         t = new SkelCompound(en.store.foyer.ATOM_SYS_SEQUEN, t);

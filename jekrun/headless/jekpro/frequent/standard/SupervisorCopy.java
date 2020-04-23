@@ -164,7 +164,7 @@ public final class SupervisorCopy {
      * @param d The term display.
      * @return A copy of the term.
      */
-    public final Object copyRest(Object t, Display d) {
+    public final Object copyTermNew(Object t, Display d) {
         SkelCompound back = null;
         for (; ; ) {
             if (t instanceof SkelVar) {
@@ -182,7 +182,7 @@ public final class SupervisorCopy {
                 if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     for (int i = 0; i < sc.args.length - 1; i++)
-                        args[i] = copyRest(sc.args[i], d);
+                        args[i] = copyTermNew(sc.args[i], d);
                     args[sc.args.length - 1] = back;
                     back = new SkelCompound(sc.sym, args, null);
                     t = sc.args[sc.args.length - 1];

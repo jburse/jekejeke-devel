@@ -77,39 +77,4 @@ public final class ForeignAggregate {
                 ((LexicalCollator) el).getCmpStr() == IgnoreCase.DEFAULT_TERTIARY);
     }
 
-    /**
-     * <p>Enumerate the revolve.</p>
-     *
-     * @param co  The call out.
-     * @param map The map.
-     * @param el  The variant comparator.
-     * @return The pair.
-     */
-    public static Object sysRevolvePair(CallOut co, AbstractMap map,
-                                        AbstractLexical el) {
-        MapEntry at;
-        if (co.getFirst()) {
-            if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
-                at = map.getLastEntry();
-            } else {
-                at = map.getFirstEntry();
-            }
-            if (at == null)
-                return null;
-        } else {
-            at = (MapEntry) co.getData();
-        }
-        MapEntry next;
-        if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
-            next = map.predecessor(at);
-        } else {
-            next = map.successor(at);
-        }
-        co.setRetry(next != null);
-        co.setData(next);
-        Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
-        Display ref = AbstractSkel.createMarker(val);
-        return AbstractTerm.createMolec(val, ref);
-    }
-
 }

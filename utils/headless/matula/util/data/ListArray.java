@@ -1,5 +1,9 @@
 package matula.util.data;
 
+import matula.util.config.ArrayEnumeration;
+
+import java.util.Enumeration;
+
 /**
  * <p>This class provides a list array. The advantage over the usual Java
  * class ArrayList is no mod count, no bounds check and more important
@@ -192,6 +196,15 @@ public class ListArray<E> extends AbstractList<E> {
                 table[i] = null;
         }
         size = 0;
+    }
+
+    /**
+     * <p>Retrieve an enumeration of this list.</p>
+     *
+     * @return The enumeration.
+     */
+    public Enumeration<E> elements() {
+        return new ArrayEnumeration<E>(table, size);
     }
 
     /***************************************************************/

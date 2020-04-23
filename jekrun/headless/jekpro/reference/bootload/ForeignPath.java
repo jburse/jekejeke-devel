@@ -141,8 +141,8 @@ public final class ForeignPath {
      */
     public static String sysUnfindWrite(Interpreter inter,
                                         String path)
-           throws IOException {
-        Engine engine = (Engine)inter.getEngine();
+            throws IOException {
+        Engine engine = (Engine) inter.getEngine();
         String res = LookupBase.unfindWrite(path, engine);
         if (res != null)
             return res;

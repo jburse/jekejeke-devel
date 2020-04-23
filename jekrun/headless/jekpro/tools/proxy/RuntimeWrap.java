@@ -39,12 +39,22 @@ package jekpro.tools.proxy;
 public final class RuntimeWrap extends RuntimeException {
 
     /**
+     * <p>No stack filling.</p>
+     *
+     * @return This throwable.
+     * @see com.sun.org.apache.xerces.internal.parsers.AbstractDOMParser.Abort
+     */
+    public Throwable fillInStackTrace() {
+        return this;
+    }
+
+    /**
      * <p>Create a runtime wrap from a checked exception.</p>
      *
      * @param x The checked exception.
      */
     public RuntimeWrap(Exception x) {
-        super(x);
+        super("", x);
     }
 
 }

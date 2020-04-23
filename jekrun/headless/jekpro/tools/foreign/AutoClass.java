@@ -638,12 +638,7 @@ public final class AutoClass extends AbstractAuto {
                 throw Types.mapThrowable(x);
             }
         } catch (Exception x) {
-            Throwable z = Types.mapException(x, constructor);
-            if (z instanceof EngineException) {
-                throw (EngineException) z;
-            } else {
-                throw (EngineMessage) z;
-            }
+            throw Types.mapException(x, constructor);
         } catch (Error x) {
             throw Types.mapError(x);
         }

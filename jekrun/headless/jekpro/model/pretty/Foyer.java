@@ -68,8 +68,8 @@ public class Foyer extends Enforced {
     public final static String OP_SUB = "-";
     public final static String OP_TRUE = "true";
     public final static String OP_EQUAL = "=";
-    private final static String OP_LESS = "<";
-    private final static String OP_GREATER = ">";
+    public final static String OP_LESS = "<";
+    public final static String OP_GREATER = ">";
     private final static String OP_JEKEJEKE = "jekejeke";
     public final static String OP_SET = "{}";
     public final static String OP_UNIT = "()";
@@ -86,6 +86,8 @@ public class Foyer extends Enforced {
     public final static String OP_SYS_SOFT_COMMIT = "sys_soft_commit";
     public final static String OP_CALL = "call";
     public final static String OP_BOTT = "unit";
+
+    public final static String OP_COMPARE = "compare";
 
     public final static String OP_INDEX = "sys_index";
     public final static String OP_STRUCT = "sys_struct";
@@ -133,8 +135,6 @@ public class Foyer extends Enforced {
     public final SkelCompound CELL_EQUAL = new SkelCompound(ATOM_EQUAL,
             SkelVar.valueOf(0), SkelVar.valueOf(1));
 
-    public SkelCompound CELL_COMMA;
-
     public SkelAtom ATOM_COMMA;
     public SkelAtom ATOM_TRUE;
     public SkelAtom ATOM_SLASH;
@@ -151,6 +151,8 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SYS_SOFT_COMMIT;
     public SkelAtom ATOM_CALL;
     public SkelAtom ATOM_BOTT;
+
+    public SkelAtom ATOM_COMPARE;
 
     public Directive CLAUSE_HOOK;
 

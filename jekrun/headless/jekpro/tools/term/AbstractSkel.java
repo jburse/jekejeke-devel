@@ -112,8 +112,7 @@ public abstract class AbstractSkel {
      */
     public static Display createDisplay(Object t) {
         int size = SupervisorCopy.displaySize(t);
-        return (size != 0 ? new Display(size) :
-                Display.DISPLAY_CONST);
+        return Display.valueOf(size);
     }
 
     /**
@@ -124,8 +123,7 @@ public abstract class AbstractSkel {
      */
     public static Display createMarker(Object val) {
         int size = SupervisorCopy.displaySize(val);
-        Display ref = (size != 0 ? new Display(size) :
-                Display.DISPLAY_CONST);
+        Display ref = Display.valueOf(size);
         if (size != 0)
             ref.vars = Display.VARS_MARKER;
         return ref;

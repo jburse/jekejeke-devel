@@ -10,11 +10,12 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
 
-import java.util.ArrayList;
+import java.util.Enumeration;
 
 /**
  * The foreign predicates for the module system/thread.
@@ -198,18 +199,16 @@ public final class ForeignThread {
      * @return The thread flags.
      */
     public static String sysCurrentThreadFlag(Interpreter inter, CallOut co) {
-        ArrayEnumeration<String> dc;
+        Enumeration<String> dc;
         if (co.getFirst()) {
             Engine en = (Engine) inter.getEngine();
-            ArrayList<String> list = ForeignThread.listThreadFlags(en);
-            String[] arr = new String[list.size()];
-            list.toArray(arr);
-            dc = new ArrayEnumeration<String>(arr);
+            ListArray<String> list = ForeignThread.listThreadFlags(en);
+            dc = list.elements();
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>) co.getData();
+            dc = (Enumeration<String>) co.getData();
         }
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
@@ -277,8 +276,8 @@ public final class ForeignThread {
      * @param en The engine.
      * @return The list of flags.
      */
-    public static ArrayList<String> listThreadFlags(Engine en) {
-        ArrayList<String> res = new ArrayList<String>();
+    public static ListArray<String> listThreadFlags(Engine en) {
+        ListArray<String> res = new ListArray<String>();
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];

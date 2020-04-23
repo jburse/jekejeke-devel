@@ -1,5 +1,6 @@
 package jekpro.frequent.advanced;
 
+import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.term.AbstractSkel;
 import matula.util.data.SetEntry;
@@ -78,7 +79,7 @@ public final class VariantKey extends SetEntry
      * @param el The variant comparator.
      * @return True if the variant comparator is shared dynamic, otherwise false.
      */
-    public static boolean sysVariantDynamic(LexicalCollator el) {
+    public static boolean sysVariantDynamic(AbstractLexical el) {
         return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHDY) != 0);
     }
 
@@ -88,7 +89,7 @@ public final class VariantKey extends SetEntry
      * @param el The variant comparator.
      * @return True if the variant comparator is shared group local, otherwise false.
      */
-    public static boolean sysVariantGroupLocal(LexicalCollator el) {
+    public static boolean sysVariantGroupLocal(AbstractLexical el) {
         return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHGL) != 0);
     }
 

@@ -1,9 +1,9 @@
 package jekpro.frequent.system;
 
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.call.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
+import matula.util.config.ArrayEnumeration;
 import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
 
@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Set;
 
 /**
@@ -117,20 +118,18 @@ public final class ForeignDirectory {
      */
     public static String sysDirectoryFile(CallOut co, String uristr)
             throws InterpreterMessage {
-        ArrayEnumeration<String> dc;
+        Enumeration<String> dc;
         if (co.getFirst()) {
             File f = new File(ForeignDirectory.extractPathCheck(uristr));
             ListArray<String> list = ForeignArchive.listDirectory(null, f);
             if (list == null)
                 return null;
-            String[] res = new String[list.size()];
-            list.toArray(res);
-            dc = new ArrayEnumeration<String>(res);
+            dc = list.elements();
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>) co.getData();
+            dc = (Enumeration<String>) co.getData();
         }
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());
@@ -238,21 +237,19 @@ public final class ForeignDirectory {
      */
     public static String sysArchiveFile(CallOut co, String uristr, String prefix)
             throws InterpreterMessage, IOException {
-        ArrayEnumeration<String> dc;
+        Enumeration<String> dc;
         if (co.getFirst()) {
             File f = new File(ForeignDirectory.extractPathCheck(uristr));
             InputStream in = new FileInputStream(f);
             ListArray<String> list = ForeignArchive.listArchive(null, in, prefix);
             if (list == null)
                 return null;
-            String[] res = new String[list.size()];
-            list.toArray(res);
-            dc = new ArrayEnumeration<String>(res);
+            dc = list.elements();
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
         } else {
-            dc = (ArrayEnumeration<String>) co.getData();
+            dc = (Enumeration<String>) co.getData();
         }
         String res = dc.nextElement();
         co.setRetry(dc.hasMoreElements());

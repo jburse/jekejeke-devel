@@ -4,6 +4,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.TermAtomic;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * The value object for the module stats.

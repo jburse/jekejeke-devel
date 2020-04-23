@@ -134,7 +134,7 @@ final class ExecutorMethod extends AbstractExecutor {
             } else {
                 help = null;
             }
-            Object goal;
+            AbstractTerm goal;
             if (termargs.length != 0) {
                 goal = new TermCompound(inter, functor, termargs);
             } else {

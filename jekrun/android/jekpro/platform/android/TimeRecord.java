@@ -1,7 +1,7 @@
 package jekpro.platform.android;
 
 import jekpro.model.molec.EngineMessage;
-import jekpro.tools.call.ArrayEnumeration;
+import matula.util.config.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;

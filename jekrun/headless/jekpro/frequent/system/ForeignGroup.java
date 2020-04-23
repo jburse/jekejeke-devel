@@ -10,6 +10,7 @@ import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.Fence;
 import matula.util.wire.ManagedGroup;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * The foreign predicates for the module system/group.

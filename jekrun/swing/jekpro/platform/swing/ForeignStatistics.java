@@ -9,6 +9,7 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Iterator;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * The foreign predicates for the module stats.

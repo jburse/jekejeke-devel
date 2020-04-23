@@ -122,14 +122,14 @@ final class ExecutorFunction extends AbstractExecutor {
             throws InterpreterMessage, InterpreterException {
         try {
             Object[] termargs = uncompileArgs(proxy, args);
-            Object eval;
+            AbstractTerm eval;
             if (termargs.length != 0) {
                 eval = new TermCompound(inter, functor, termargs);
             } else {
                 eval = functor;
             }
             Object help = new TermVar();
-            Object goal = new TermCompound(inter, is, help, eval);
+            TermCompound goal = new TermCompound(inter, is, help, eval);
 
             CallIn callin = inter.iterator(goal);
             callin.next();
