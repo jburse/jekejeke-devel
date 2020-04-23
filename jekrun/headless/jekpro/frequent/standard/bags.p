@@ -62,6 +62,9 @@
  */
 
 :- use_package(foreign(jekpro/frequent/standard)).
+:- use_package(foreign(matula/util/data)).
+:- use_package(foreign(jekpro/tools/call)).
+:- use_package(foreign(jekpro/reference/structure)).
 
 :- module(user, []).
 
@@ -85,34 +88,25 @@
 % bagof(+Template, +QuantGoal, -List)
 :- public bagof/3.
 :- meta_predicate bagof(?, 0, ?).
-bagof(T, G, L) :-
-   sys_goal_globals(T^G, W),
-   W \== [], !,
-   sys_goal_kernel(G, B),
-   findall(W-T, B, H),
-   sys_key_variables(H, _),
-   keysort(H, J),
-   sys_run_values(J, W, L).
-bagof(T, G, L) :-
-   sys_goal_kernel(G, B),
-   findall(T, B, L),
-   L \== [].
+bagof(J, Goal, L) :-
+   sys_goal_globals(J^Goal, W),
+   sys_revolve_new(R),
+   (sys_revolve_run(Goal, W, R, J), fail; true),
+   sys_revolve_pair(R, W-P),
+   findall(W-J, sys_pivot_enum(P, W-J), H),
+   sys_strip_list(H, W, L).
 
 % bagof(+Template, +QuantGoal, -List, +List)
 :- public bagof/4.
 :- meta_predicate bagof(?, 0, ?, ?).
-bagof(T, G, L, O) :-
-   sys_goal_globals(T^G, W),
-   W \== [], !,
-   sys_goal_kernel(G, B),
-   findall(W-T, B, H),
-   sys_key_variables(H, _),
-   keysort(H, J, O),
-   sys_run_values(J, W, L).
-bagof(T, G, L, _) :-
-   sys_goal_kernel(G, B),
-   findall(T, B, L),
-   L \== [].
+bagof(J, Goal, L, O) :-
+   sys_variant_comparator(O, C),
+   sys_goal_globals(J^Goal, W),
+   sys_revolve_new(C, R),
+   (sys_revolve_run(Goal, W, R, J), fail; true),
+   sys_revolve_pair(R, C, W-P),
+   findall(W-J, sys_pivot_enum(P, W-J), H),
+   sys_strip_list(H, W, L).
 
 /**
  * setof(T, X1^…^Xn^G, L): [ISO 8.10.3]
@@ -134,37 +128,26 @@ setof(T, G, L) :-
 :- meta_predicate setof(?, 0, ?, ?).
 setof(T, G, L, O) :-
    bagof(T, G, H, O),
-   sort(H, L, O).
+   sort(H, L).
 
 /**********************************************************/
 /* Grouping Utilities                                     */
 /**********************************************************/
 
-% sys_key_variables(+Pairs, +Vars)
-:- private sys_key_variables/2.
-sys_key_variables([], _).
-sys_key_variables([K-_|P], L) :-
-   term_variables(K, L, _),
-   sys_key_variables(P, L).
+% sys_revolve_run(+Goal, +List, +Ref, +Term)
+:- private sys_revolve_run/4.
+:- meta_predicate sys_revolve_run(0, ?, ?, ?).
+sys_revolve_run(Goal, W, R, J) :-
+   sys_goal_kernel(Goal, B),
+   B,
+   sys_revolve_lookup(R, W, P),
+   sys_pivot_add(P, W-J).
 
-% sys_run_values(+Pairs, -Key, -Values)
-:- private sys_run_values/3.
-sys_run_values([K-V|P], J, M) :-
-   sys_run_values_rest(P, K, L, Q),
-   sys_run_values_more(Q, K, [V|L], J, M).
-
-% sys_run_values_more(+Pairs, +Key, +Values, -Key, -Values)
-:- private sys_run_values_more/5.
-sys_run_values_more(_, J, M, J, M).
-sys_run_values_more([K-V|P], _, _, J, M) :-
-   sys_run_values_rest(P, K, L, Q),
-   sys_run_values_more(Q, K, [V|L], J, M).
-
-% sys_run_values_rest(+Pairs, +Key, -Values, -Pairs)
-:- private sys_run_values_rest/4.
-sys_run_values_rest([K-V|P], J, [V|L], Q) :-
-   K == J, !, sys_run_values_rest(P, J, L, Q).
-sys_run_values_rest(P, _, [], P).
+% sys_strip_list(+List, +Term, -List)
+:- private sys_strip_list/3.
+sys_strip_list([], _, []).
+sys_strip_list([W-J|L], W, [J|R]) :-
+   sys_strip_list(L, W, R).
 
 /**********************************************************/
 /* All Solutions I                                        */
@@ -262,3 +245,85 @@ sys_call_values([_-V|L], I, O) :-
 sys_join_keys([], _).
 sys_join_keys([K-_|L], K) :-
    sys_join_keys(L, K).
+
+/*************************************************************/
+/* Pivot Datatype                                            */
+/*************************************************************/
+
+/**
+ * sys_variant_comparator(O, C):
+ * The predicate succeeds in C with the variant comparator
+ * for the sort options O.
+ */
+% sys_variant_comparator(+List, -Comparator)
+:- public sys_variant_comparator/2.
+:- foreign(sys_variant_comparator/2, 'ForeignBags',
+      sysVariantComparator('Interpreter', 'Object')).
+
+/**
+ * sys_revolve_new(R):
+ * Thre predicate succeeds in R with a new revolve.
+ */
+% sys_revolve_new(-Revolve)
+:- public sys_revolve_new/1.
+:- foreign(sys_revolve_new/1, 'ForeignBags', sysRevolveNew).
+
+/**
+ * sys_revolve_new(C, R):
+ * The predicate succeeds in R with a new revolve
+ * for the variant comparator C.
+ */
+% sys_revolve_new(+Comparator, -Revolve)
+:- public sys_revolve_new/2.
+:- foreign(sys_revolve_new/2, 'ForeignBags',
+      sysRevolveNew('AbstractLexical')).
+
+/**
+ * sys_revolve_lookup(R, K, P):
+ * The predicate succeeds in P with the old or new pivot
+ * for a copy of the key K in the revolve R.
+ */
+% sys_revolve_lookup(+Revolve, +Term, -Pivot)
+:- public sys_revolve_lookup/3.
+:- foreign(sys_revolve_lookup/3, 'ForeignBags',
+      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
+
+/**
+ * sys_revolve_pair(R, U):
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R.
+ */
+% sys_revolve_pair(+Revolve, -Pair)
+:- public sys_revolve_pair/2.
+:- foreign(sys_revolve_pair/2, 'ForeignBags',
+      sysRevolvePair('CallOut', 'AbstractMap')).
+
+/**
+ * sys_revolve_pair(R, C, U):
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R for the variant comparator C.
+ */
+% sys_revolve_pair(+Revolve, +Comparator, -Pair)
+:- public sys_revolve_pair/3.
+:- foreign(sys_revolve_pair/3, 'ForeignBags',
+      sysRevolvePair('CallOut', 'AbstractMap', 'AbstractLexical')).
+
+/**
+ * sys_pivot_add(P, O):
+ * The predicate succeeds extending the pivot P by O.
+ */
+% sys_pivot_add(+Pivot, +Term)
+:- public sys_pivot_add/2.
+:- foreign(sys_pivot_add/2, 'ForeignBags',
+      sysPivotAdd('Interpreter', 'SetEntry', 'Object')).
+
+/**
+ * sys_pivot_enum(R, U):
+ * The predicate succeeds in U with the key value pairs
+ * of the revolve R.
+ */
+% sys_pivot_enum(+Pivot, -Term)
+:- public sys_pivot_enum/2.
+:- foreign(sys_pivot_enum/2, 'ForeignBags',
+      sysPivotEnum('CallOut', 'SetEntry')).
+

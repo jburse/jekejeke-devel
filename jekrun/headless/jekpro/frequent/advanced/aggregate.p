@@ -90,7 +90,7 @@ aggregate_all(A, G, S) :-
 :- meta_predicate aggregate_all(?, 0, ?, ?).
 aggregate_all(A, G, S, O) :-
    pivot_new(P),
-   variant_comparator(O, C),
+   sys_variant_comparator(O, C),
    (  variant_eager(C)
    -> sys_aggregate_all(A, G, P, J),
       S = J
@@ -124,7 +124,7 @@ sys_aggregate_all(A, G, P, J) :-
 :- meta_predicate aggregate(?, 0, ?).
 aggregate(A, Goal, S) :-
    sys_goal_globals(A^Goal, W),
-   sys_revolve_new(W, P),
+   sys_revolve_make(W, P),
    (sys_revolve_run(A, Goal, W, P, _), fail; true),
    sys_revolve_list(W, P, S).
 
@@ -133,9 +133,9 @@ aggregate(A, Goal, S) :-
 :- meta_predicate aggregate(?, 0, ?, ?).
 aggregate(A, Goal, S, O) :-
    sys_goal_globals(A^Goal, W),
-   variant_comparator(O, C),
-   (  variant_natural(C) -> sys_revolve_new(W, P)
-   ;  sys_revolve_new(W, P, C)),
+   sys_variant_comparator(O, C),
+   (  variant_natural(C) -> sys_revolve_make(W, P)
+   ;  sys_revolve_make(W, P, C)),
    (  variant_eager(C)
    -> sys_revolve_run(A, Goal, W, P, J),
       S = J
@@ -148,7 +148,7 @@ aggregate(A, Goal, S, O) :-
 :- meta_predicate sys_aggregate(?, ?, 0, ?, ?).
 sys_aggregate(W, A, G, R, J) :-
    G,
-   revolve_lookup(R, W, P),
+   sys_revolve_lookup(R, W, P),
    pivot_get_default(P, A, H),
    next_state(A, H, J),
    \+ pivot_get(P, J),
@@ -167,30 +167,30 @@ sys_revolve_run(A, Goal, W, R, J) :-
 /* Revolve Helper                                            */
 /*************************************************************/
 
-% sys_revolve_new(+List, -Ref)
-sys_revolve_new([], P) :- !,
+% sys_revolve_make(+List, -Ref)
+sys_revolve_make([], P) :- !,
    pivot_new(P).
-sys_revolve_new(_, R) :-
-   revolve_new(R).
+sys_revolve_make(_, R) :-
+   sys_revolve_new(R).
 
-% sys_revolve_new(+List, -Ref, +Comparator)
-sys_revolve_new([], P, _) :- !,
+% sys_revolve_make(+List, -Ref, +Comparator)
+sys_revolve_make([], P, _) :- !,
    pivot_new(P).
-sys_revolve_new(_, R, C) :-
-   revolve_new(C, R).
+sys_revolve_make(_, R, C) :-
+   sys_revolve_new(C, R).
 
 % sys_revolve_list(+List, +Ref, -Value)
 sys_revolve_list([], P, S) :- !,
    pivot_get(P, S).
 sys_revolve_list(W, R, S) :-
-   revolve_pair(R, W-Q),
+   sys_revolve_pair(R, W-Q),
    pivot_get(Q, S).
 
 % sys_revolve_list(+List, +Ref, -Value, +Comparator)
 sys_revolve_list([], P, S, _) :- !,
    pivot_get(P, S).
 sys_revolve_list(W, R, S, C) :-
-   revolve_pair(R, C, W-Q),
+   sys_revolve_pair(R, C, W-Q),
    pivot_get(Q, S).
 
 /*************************************************************/
@@ -268,15 +268,7 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
  */
 % variant_eager(+Comparator)
 :- foreign(variant_eager/1, 'ForeignAggregate',
-      sysVariantEager('EngineLexical')).
-
-/**
- * variant_natural(C):
- * The predicate succeeds if the variant comparator is natural.
- */
-% variant_natural(+Comparator)
-:- foreign(variant_natural/1, 'ForeignAggregate',
-      sysVariantNatural('EngineLexical')).
+      sysVariantEager('AbstractLexical')).
 
 /**
  * variant_reverse(C):
@@ -284,14 +276,12 @@ next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
  */
 % variant_reverse(+Comparator)
 :- foreign(variant_reverse/1, 'ForeignAggregate',
-      sysVariantReverse('EngineLexical')).
+      sysVariantReverse('AbstractLexical')).
 
 /**
- * revolve_pair(R, C, U):
- * The predicate succeeds in U with the key value pairs
- * of the revolve R for the variant comparator C.
+ * variant_natural(C):
+ * The predicate succeeds if the variant comparator is natural.
  */
-% revolve_pair(+Revolve, +Comparator, -Pair)
-:- private revolve_pair/3.
-:- foreign(revolve_pair/3, 'ForeignAggregate',
-      sysRevolvePair('CallOut', 'AbstractMap', 'EngineLexical')).
+% variant_natural(+Comparator)
+:- foreign(variant_natural/1, 'ForeignAggregate',
+      sysVariantNatural('AbstractLexical')).

@@ -97,13 +97,13 @@
 % table(+IndicatorOrCallable)
 :- public (table)/1.
 table P :-
-   variant_comparator([], C),
+   sys_variant_comparator([], C),
    sys_table_dire(P, C).
 
 % sys_table_dire(+IndicatorOrCallable, +Comparator)
 :- private sys_table_dire/2.
 sys_table_dire(P as O, _) :- !,
-   variant_comparator(O, C), sys_table_dire(P, C).
+   sys_variant_comparator(O, C), sys_table_dire(P, C).
 sys_table_dire([P|Q], C) :- !,
    sys_table_def(P, C), sys_table_dire(Q, C).
 sys_table_dire((P, Q), C) :- !,
@@ -325,9 +325,9 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
 :- private sys_table_new/4.
 sys_table_new(C, W, R, G) :-
    variant_natural(C), !,
-   G = sys_revolve_new(W, R).
+   G = sys_revolve_make(W, R).
 sys_table_new(C, W, R, G) :-
-   G = sys_revolve_new(W, R, C).
+   G = sys_revolve_make(W, R, C).
 
 /**
  * sys_table_list(C, W, R, S, G):
@@ -557,7 +557,7 @@ variant_shared(C) :-
 % variant_dynamic(+Comparator)
 :- private variant_dynamic/1.
 :- foreign(variant_dynamic/1, 'VariantKey',
-      sysVariantDynamic('EngineLexical')).
+      sysVariantDynamic('AbstractLexical')).
 
 /**
  * variant_group_local(C):
@@ -566,4 +566,4 @@ variant_shared(C) :-
 % variant_group_local(+Comparator)
 :- private variant_group_local/1.
 :- foreign(variant_group_local/1, 'VariantKey',
-      sysVariantGroupLocal('EngineLexical')).
+      sysVariantGroupLocal('AbstractLexical')).

@@ -117,22 +117,35 @@ call_nth2(G, N) :-
 :- meta_predicate distinct(?, 0).
 distinct(W, Goal) :-
    variant_comparator([type(hash)], C),
-   revolve_new(C, R),
+   sys_revolve_new(C, R),
    sys_revolve_run(Goal, W, R, nil).
 
 /**
  * order_by(W, G):
+ * order_by(W, G, O):
  * The predicates succeeds lazily and sorted with only the first
- * solutions of G according to the witnesses W.
+ * solutions of G according to the witnesses W. The ternary predicate
+ * takes additional sort options as argument.
  */
 % order_by(+Term, +Goal)
 :- public order_by/2.
 :- meta_predicate order_by(?, 0).
 order_by(W, Goal) :-
    sys_goal_globals(W^Goal, J),
-   revolve_new(R),
+   sys_revolve_new(R),
    (sys_revolve_run(Goal, W, R, J), fail; true),
-   revolve_pair(R, W-P),
+   sys_revolve_pair(R, W-P),
+   pivot_get(P, J).
+
+% order_by(+Term, +Goal, +List)
+:- public order_by/3.
+:- meta_predicate order_by(?, 0, ?).
+order_by(W, Goal, O) :-
+   variant_comparator(O, C),
+   sys_goal_globals(W^Goal, J),
+   sys_revolve_new(C, R),
+   (sys_revolve_run(Goal, W, R, J), fail; true),
+   sys_revolve_pair(R, C, W-P),
    pivot_get(P, J).
 
 % sys_revolve_run(+Goal, +List, +Ref, +Term)
@@ -140,7 +153,7 @@ order_by(W, Goal) :-
 :- meta_predicate sys_revolve_run(0, ?, ?, ?).
 sys_revolve_run(Goal, W, R, J) :-
    Goal,
-   revolve_lookup(R, W, P),
+   sys_revolve_lookup(R, W, P),
    \+ pivot_get(P, _),
    pivot_set(P, J).
 
@@ -170,46 +183,3 @@ sys_revolve_run(Goal, W, R, J) :-
 % pivot_get(+Pivot, -Term)
 :- foreign(pivot_get/2, 'ForeignSequence',
       sysPivotGet('SetEntry')).
-
-/**
- * variant_comparator(O, C):
- * The predicate succeeds in C with the variant comparator
- * for the sort options O.
- */
-% variant_comparator(+List, -Comparator)
-:- foreign(variant_comparator/2, 'ForeignSequence',
-      sysVariantComparator('Interpreter', 'Object')).
-
-/**
- * revolve_new(R):
- * Thre predicate succeeds in R with a new revolve.
- */
-% revolve_new(-Revolve)
-:- foreign(revolve_new/1, 'ForeignSequence', sysRevolveNew).
-
-/**
- * revolve_new(C, R):
- * The predicate succeeds in R with a new revolve
- * for the variant comparator C.
- */
-% revolve_new(+Comparator, -Revolve)
-:- foreign(revolve_new/2, 'ForeignSequence',
-      sysRevolveNew('EngineLexical')).
-
-/**
- * revolve_lookup(R, K, P):
- * The predicate succeeds in P with the old or new pivot
- * for a copy of the key K in the revolve R.
- */
-% revolve_lookup(+Revolve, +Term, -Pivot)
-:- foreign(revolve_lookup/3, 'ForeignSequence',
-      sysRevolveLookup('Interpreter', 'AbstractMap', 'Object')).
-
-/**
- * revolve_pair(R, U):
- * The predicate succeeds in U with the key value pairs
- * of the revolve R.
- */
-% revolve_pair(+Revolve, -Pair)
-:- foreign(revolve_pair/2, 'ForeignSequence',
-      sysRevolvePair('CallOut', 'AbstractMap')).

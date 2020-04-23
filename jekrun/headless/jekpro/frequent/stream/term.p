@@ -94,16 +94,20 @@
 :- public write/1.
 write(Term) :-
    current_output(Stream),
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term).
 
 % write(+AliasOrStream, +Term)
 :- public write/2.
 write(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term).
 write(Stream, Term) :-
-   sys_write_term(Stream, Term, [numbervars(true)]).
+   sys_write_term(Stream, Term).
+
+:- private sys_write_term/2.
+:- foreign(sys_write_term/2, 'ForeignTerm',
+      sysWriteTerm('Interpreter', 'Writer', 'AbstractTerm')).
 
 /**
  * writeq(E): [ISO 8.14.2]
@@ -192,16 +196,20 @@ write_term(Stream, Term, Opt) :-
 :- public read/1.
 read(Term) :-
    current_input(Stream),
-   sys_read_term(Stream, [], Term).
+   sys_read_term(Stream, Term).
 
 % read(+AliasOrStream, -Term)
 :- public read/2.
 read(Alias, Term) :-
    atom(Alias), !,
    sys_get_alias(Alias, Stream),
-   sys_read_term(Stream, [], Term).
+   sys_read_term(Stream, Term).
 read(Stream, Term) :-
-   sys_read_term(Stream, [], Term).
+   sys_read_term(Stream, Term).
+
+:- private sys_read_term/2.
+:- foreign(sys_read_term/2, 'ForeignTerm',
+      sysReadTerm('Interpreter', 'Reader')).
 
 /**
  * read_term(E, O): [ISO 8.14.1]
