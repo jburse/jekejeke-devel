@@ -1,6 +1,6 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.standard.SpecialFind;
+import jekpro.frequent.advanced.SpecialFind;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;

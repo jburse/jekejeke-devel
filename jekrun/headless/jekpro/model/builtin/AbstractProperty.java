@@ -1,6 +1,6 @@
 package jekpro.model.builtin;
 
-import jekpro.frequent.standard.SpecialFind;
+import jekpro.frequent.advanced.SpecialFind;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;

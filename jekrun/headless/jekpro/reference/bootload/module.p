@@ -371,7 +371,8 @@ sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 
 :- ensure_loaded(library(basic/utility)).
 
-:- ensure_loaded(library(standard/bags)).
+:- ensure_loaded(library(advanced/bags)).
+
 :- ensure_loaded(library(standard/signal)).
 :- ensure_loaded(library(standard/sort)).
 :- ensure_loaded(library(standard/expand)).

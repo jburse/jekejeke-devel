@@ -1,5 +1,6 @@
 package jekpro.frequent.standard;
 
+import jekpro.frequent.advanced.SpecialFind;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;

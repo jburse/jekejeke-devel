@@ -116,7 +116,7 @@ call_nth2(G, N) :-
 :- public distinct/2.
 :- meta_predicate distinct(?, 0).
 distinct(W, Goal) :-
-   variant_comparator([type(hash)], C),
+   sys_variant_comparator([type(hash)], C),
    sys_revolve_new(C, R),
    sys_revolve_run(Goal, W, R, nil).
 
@@ -141,7 +141,7 @@ order_by(W, Goal) :-
 :- public order_by/3.
 :- meta_predicate order_by(?, 0, ?).
 order_by(W, Goal, O) :-
-   variant_comparator(O, C),
+   sys_variant_comparator(O, C),
    sys_goal_globals(W^Goal, J),
    sys_revolve_new(C, R),
    (sys_revolve_run(Goal, W, R, J), fail; true),
