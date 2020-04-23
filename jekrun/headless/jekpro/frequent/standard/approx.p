@@ -52,8 +52,8 @@
  * https://www.cut-the-knot.org/blue/ContinuedFractions.shtml
  */
 
-:- package(library(jekpro/frequent/advanced)).
-:- use_package(foreign(jekpro/frequent/advanced)).
+:- package(library(jekpro/frequent/standard)).
+:- use_package(foreign(jekpro/frequent/standard)).
 
 :- module(approx, []).
 :- reexport(library(arithmetic/ratio)).
