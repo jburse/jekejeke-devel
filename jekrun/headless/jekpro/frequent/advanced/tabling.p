@@ -72,7 +72,9 @@
 :- use_package(foreign(jekpro/reference/structure)).
 :- use_package(foreign(matula/util/data)).
 :- use_package(foreign(jekpro/tools/call)).
-:- use_module(library(advanced/sequence)).
+:- use_module(library(advanced/variant)).
+:- use_module(library(advanced/pivot)).
+:- use_module(library(advanced/revolve)).
 :- use_module(library(advanced/aggregate)).
 :- use_module(library(basic/lists)).
 :- use_module(library(experiment/ref)).
@@ -141,18 +143,18 @@ sys_table_def(M, C) :-
 % sys_table_declare(+Atom, +Integer, +Comparator)
 :- private sys_table_declare/3.
 sys_table_declare(F, N, C) :-
-   variant_shared(C), !,
+   sys_variant_shared(C), !,
    sys_make_indicator(F, N, I),
    static(I),
    set_predicate_property(I, sys_tabled),
    sys_table_cache(F, N, M),
    sys_make_indicator(M, 2, J),
    sys_table_props(I, J),
-   (variant_dynamic(C) -> dynamic(J); group_local(J)),
+   (sys_variant_dynamic(C) -> dynamic(J); group_local(J)),
    sys_table_lock(F, N, L),
    sys_make_indicator(L, 2, K),
    sys_table_props(I, K),
-   (variant_dynamic(C) -> dynamic(K); group_local(K)).
+   (sys_variant_dynamic(C) -> dynamic(K); group_local(K)).
 sys_table_declare(F, N, _) :-
    sys_make_indicator(F, N, I),
    static(I),
@@ -237,7 +239,7 @@ sys_table_spec(reduce(I, A), X, reduce(I, A, X)).
 % sys_table_wrapper(+Atom, +Term, +Goal, +Aggregate, +Value, +Comparator)
 :- private sys_table_wrapper/6.
 sys_table_wrapper(F, T, L, A, S, C) :-
-   variant_shared(C), !,
+   sys_variant_shared(C), !,
    length(T, N),
    sys_table_lock(F, N, V),
    sys_univ(Find, [V, P, E]),
@@ -257,8 +259,8 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    sys_univ(Test, [M, P, R]),
    sys_table_list(C, W, R, S, List),
    Body = (sys_goal_globals(A^Descr, W),
-      variant_key(P),
-      pivot_set(P, Key),
+      sys_variant_key(P),
+      sys_pivot_set(P, Key),
       (  Test -> List
       ;  sys_find_lock(Find, J, E),
          setup_call_cleanup(lock_acquire(E),
@@ -276,8 +278,8 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    Descr =.. [''|L],
    Key =.. [''|T],
    Body = (sys_goal_globals(A^Descr, W),
-      variant_key(P),
-      pivot_set(P, Key),
+      sys_variant_key(P),
+      sys_pivot_set(P, Key),
       Call),
    sys_univ(Head, [F|T]),
    (  predicate_property(I, multifile)
@@ -285,10 +287,20 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    ;  compilable_ref((Head :- Body), K)),
    recordz_ref(K).
 
+/**
+ * sys_variant_shared(C):
+ * The predicate succeeds if the variant comparator is shared.
+ */
+:- private sys_variant_shared/1.
+sys_variant_shared(C) :-
+   sys_variant_dynamic(C), !.
+sys_variant_shared(C) :-
+   sys_variant_group_local(C).
+
 % sys_table_call(+Atom, +Term, +Goal, +Aggregate, +Value, +Comparator, -Goal, -Var, -Var)
 :- private sys_table_call/9.
 sys_table_call(F, T, L, A, S, C, Call, P, W) :-
-   variant_eager(C), !,
+   sys_variant_eager(C), !,
    length(T, N),
    sys_table_aux(F, G),
    sys_univ(Goal, [G|L]),
@@ -324,7 +336,7 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
 % sys_table_new(+Comparator, +List, +Ref, -Goal)
 :- private sys_table_new/4.
 sys_table_new(C, W, R, G) :-
-   variant_natural(C), !,
+   sys_variant_natural(C), !,
    G = sys_revolve_make(W, R).
 sys_table_new(C, W, R, G) :-
    G = sys_revolve_make(W, R, C).
@@ -337,7 +349,7 @@ sys_table_new(C, W, R, G) :-
 % sys_table_list(+Comparator, +List, +Ref, +Value, -Goal)
 :- private sys_table_list/5.
 sys_table_list(C, W, R, S, G) :-
-   variant_reverse(C), !,
+   sys_variant_reverse(C), !,
    G = sys_revolve_list(W, R, S, C).
 sys_table_list(_, W, R, S, G) :-
    G = sys_revolve_list(W, R, S).
@@ -437,14 +449,14 @@ sys_current_table(V, F, N, R, E) :-
    sys_table_cache(F, N, M),
    sys_univ(Test, [M, P, E]),
    clause_ref(Test, true, R),
-   pivot_get(P, Key),
+   sys_pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
 sys_current_table(V, F, N, R, E) :-
    sys_table_lock(F, N, M),
    sys_univ(Find, [M, P, E]),
    clause_ref(Find, true, R),
-   pivot_get(P, Key),
+   sys_pivot_get(P, Key),
    Key =.. [_|L],
    sys_univ(V, [F|L]).
 
@@ -527,43 +539,3 @@ sys_table_help(F, H) :-
 :- meta_predicate user:term_expansion(-1, -1).
 user:term_expansion(A, _) :- var(A), !, fail.
 user:term_expansion(A, B) :- sys_table_head(A, B), !.
-
-/*****************************************************************/
-/* Key Datatype                                                  */
-/*****************************************************************/
-
-/**
- * variant_key(P):
- * The predicate succeeds in P with a variant_key.
- */
-% variant_key(-Key)
-:- private variant_key/1.
-:- foreign_constructor(variant_key/1, 'VariantKey', new).
-
-/**
- * variant_shared(C):
- * The predicate succeeds if the variant comparator is shared.
- */
-:- private variant_shared/1.
-variant_shared(C) :-
-   variant_dynamic(C), !.
-variant_shared(C) :-
-   variant_group_local(C).
-
-/**
- * variant_dynamic(C):
- * The predicate succeeds if the variant comparator is shared dynamic.
- */
-% variant_dynamic(+Comparator)
-:- private variant_dynamic/1.
-:- foreign(variant_dynamic/1, 'VariantKey',
-      sysVariantDynamic('AbstractLexical')).
-
-/**
- * variant_group_local(C):
- * The predicate succeeds if the variant comparator is shared group local.
- */
-% variant_group_local(+Comparator)
-:- private variant_group_local/1.
-:- foreign(variant_group_local/1, 'VariantKey',
-      sysVariantGroupLocal('AbstractLexical')).

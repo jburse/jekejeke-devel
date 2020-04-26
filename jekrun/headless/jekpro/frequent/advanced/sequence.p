@@ -55,6 +55,9 @@
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(sequence, []).
+:- use_module(library(advanced/variant)).
+:- use_module(library(advanced/pivot)).
+:- use_module(library(advanced/revolve)).
 
 /**
  * limit(C, G):
@@ -100,86 +103,127 @@ call_nth(G, C) :-
 :- private call_nth2/2.
 :- meta_predicate call_nth2(0, ?).
 call_nth2(G, N) :-
-   pivot_new(P),
-   pivot_set(P, 0),
+   sys_pivot_new(P),
+   sys_pivot_set(P, 0),
    G,
-   pivot_get(P, M),
+   sys_pivot_get(P, M),
    N is M+1,
-   pivot_set(P, N).
+   sys_pivot_set(P, N).
 
 /**
- * distinct(W, G):
- * The predicates succeeds eagerly with only the first solutions
- * of G according to the witnesses W.
+ * distinct(G):
+ * The predicates succeeds eagerly with
+ * only the first solutions of G.
  */
-% distinct(+Term, +Goal)
-:- public distinct/2.
-:- meta_predicate distinct(?, 0).
-distinct(W, Goal) :-
+% distinct(+Goal)
+:- public distinct/1.
+:- meta_predicate distinct(0).
+distinct(Goal) :-
+   term_variables(Goal, W),
    sys_variant_comparator([type(hash)], C),
    sys_revolve_new(C, R),
-   sys_revolve_run(Goal, W, R, nil).
+   sys_revolve_distinct(Goal, W, R, nil).
+
+% sys_revolve_distinct(+Goal, +List, +Ref, +Term)
+:- private sys_revolve_distinct/4.
+:- meta_predicate sys_revolve_distinct(0, ?, ?, ?).
+sys_revolve_distinct(G, W, R, J) :-
+   sys_goal_kernel(G, B),
+   B,
+   sys_revolve_lookup(R, W, P),
+   \+ sys_pivot_get(P, _),
+   sys_pivot_set(P, J).
 
 /**
  * order_by(W, G):
- * order_by(W, G, O):
- * The predicates succeeds lazily and sorted with only the first
- * solutions of G according to the witnesses W. The ternary predicate
- * takes additional sort options as argument.
+ * The predicates succeeds lazily and sorted with the
+ * solutions of G according to the order function W.
  */
 % order_by(+Term, +Goal)
 :- public order_by/2.
 :- meta_predicate order_by(?, 0).
-order_by(W, Goal) :-
+order_by(S, Goal) :-
+   sys_order_template(S, W),
    sys_goal_globals(W^Goal, J),
-   sys_revolve_new(R),
-   (sys_revolve_run(Goal, W, R, J), fail; true),
+   sys_order_comparator(S, C),
+   sys_variant_comparator([type(callback), comparator(C)], K),
+   sys_revolve_new(K, R),
+   (sys_revolve_order(Goal, W, R, J), fail; true),
    sys_revolve_pair(R, W-P),
-   pivot_get(P, J).
+   sys_pivot_list(P, W-J).
 
-% order_by(+Term, +Goal, +List)
-:- public order_by/3.
-:- meta_predicate order_by(?, 0, ?).
-order_by(W, Goal, O) :-
-   sys_variant_comparator(O, C),
-   sys_goal_globals(W^Goal, J),
-   sys_revolve_new(C, R),
-   (sys_revolve_run(Goal, W, R, J), fail; true),
-   sys_revolve_pair(R, C, W-P),
-   pivot_get(P, J).
-
-% sys_revolve_run(+Goal, +List, +Ref, +Term)
-:- private sys_revolve_run/4.
-:- meta_predicate sys_revolve_run(0, ?, ?, ?).
-sys_revolve_run(Goal, W, R, J) :-
-   Goal,
+% sys_revolve_order(+Goal, +List, +Ref, +Term)
+:- private sys_revolve_order/4.
+:- meta_predicate sys_revolve_order(0, ?, ?, ?).
+sys_revolve_order(G, W, R, J) :-
+   sys_goal_kernel(G, B),
+   B,
    sys_revolve_lookup(R, W, P),
-   \+ pivot_get(P, _),
-   pivot_set(P, J).
-
-/*************************************************************/
-/* Pivot Datatype                                            */
-/*************************************************************/
+   sys_pivot_add(P, W-J).
 
 /**
- * pivot_new(P):
- * The predicate succeeds in P with a new pivot.
+ * sys_order_template(L, R):
+ * The predicate succeeds in R with the template for the order function L.
  */
-% pivot_new(-Pivot)
-:- foreign_constructor(pivot_new/1, 'SetEntry', new).
+% sys_order_template(+List, -List)
+:- private sys_order_template/2.
+sys_order_template(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
+sys_order_template([], []) :- !.
+sys_order_template([asc(X)|Y], [X|Z]) :- !,
+   sys_order_template(Y, Z).
+sys_order_template([desc(X)|Y], [X|Z]) :- !,
+   sys_order_template(Y, Z).
+sys_order_template(X, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * pivot_set(P, O):
- * The predicate succeeds setting the pivot P to O.
+ * sys_order_comparator(L, R):
+ * The predicate succeeds in R with the comparator for the order function L.
  */
-% pivot_set(+Pivot, +Term)
-:- foreign(pivot_set/2, 'ForeignSequence',
-      sysPivotSet('Interpreter', 'SetEntry', 'Object')).
+% sys_order_comparator(+List, -List)
+:- private sys_order_comparator/2.
+sys_order_comparator(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
+sys_order_comparator([], []) :- !.
+sys_order_comparator([asc(_)|Y], [compare|Z]) :- !,
+   sys_order_comparator(Y, Z).
+sys_order_comparator([desc(_)|Y], [reversed(compare)|Z]) :- !,
+   sys_order_comparator(Y, Z).
+sys_order_comparator(X, _) :-
+   throw(error(type_error(list, X), _)).
+
+/************************************************************/
+/* Comparator DSL                                           */
+/************************************************************/
 
 /**
- * pivot_get(P, O):
- * The predicate succeeds in O with a copy of the pivot P.
+ * reversed(C, F, X, Y):
+ * The reversed comparator of C.
  */
-% pivot_get(+Pivot, -Term)
-:- foreign(pivot_get/2, 'ForeignSequence',
-      sysPivotGet('SetEntry')).
+% reversed(+Comparator, -Result, +Term, +Term)
+:- private reversed/4.
+:- meta_predicate reversed(3, ?, ?, ?).
+reversed(C, F, X, Y) :-
+   call(C, F, Y, X).
+
+/**
+ * '.'(C, D, F, L, R):
+ * The lexical combination of the comparator C and D.
+ */
+% '.'(+Comparator, +Comparator, -Result, +Term, +Term)
+:- private '.'/5.
+:- meta_predicate '.'(3, 3, ?, ?, ?).
+'.'(C, D, F, [X|Y], [Z|T]) :-
+   call(C, H, X, Z),
+   (  H == =
+   -> call(D, F, Y, T)
+   ;  F = H).
+
+/**
+ * [](F, X, Y):
+ * The nil comparator.
+ */
+% [](-Result, +Term, +Term)
+:- private []/3.
+[](=, [], []).

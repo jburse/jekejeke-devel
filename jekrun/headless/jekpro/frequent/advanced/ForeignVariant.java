@@ -1,20 +1,16 @@
 package jekpro.frequent.advanced;
 
-import jekpro.model.molec.Display;
-import jekpro.model.pretty.Foyer;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
-import jekpro.tools.call.CallOut;
-import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import matula.util.data.AbstractMap;
-import matula.util.data.MapEntry;
 import matula.util.regex.IgnoreCase;
 
 /**
- * <p>Provides built-in predicates for the module aggregate.</p>
+ * <p>Provides built-in predicates for the module variant.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -44,7 +40,28 @@ import matula.util.regex.IgnoreCase;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignAggregate {
+public final class ForeignVariant {
+
+    /**
+     * <p>Create a new variant comparator.</p>
+     *
+     * @param opt The sort options.
+     * @return The variant comparator.
+     * @throws InterpreterMessage Type Error.
+     */
+    public static AbstractLexical sysVariantComparator(Interpreter inter,
+                                                       Object opt)
+            throws InterpreterMessage {
+        Engine engine = (Engine) inter.getEngine();
+        AbstractLexical el;
+        try {
+            el = AbstractLexical.decodeSortOpts(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), engine);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        return el;
+    }
 
     /**
      * <p>Check if the variant comparator is eager.</p>
@@ -75,6 +92,26 @@ public final class ForeignAggregate {
     public static boolean sysVariantNatural(AbstractLexical el) {
         return (el instanceof LexicalCollator &&
                 ((LexicalCollator) el).getCmpStr() == IgnoreCase.DEFAULT_TERTIARY);
+    }
+
+    /**
+     * <p>Check if the variant comparator is shared dynamic.</p>
+     *
+     * @param el The variant comparator.
+     * @return True if the variant comparator is shared dynamic, otherwise false.
+     */
+    public static boolean sysVariantDynamic(AbstractLexical el) {
+        return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHDY) != 0);
+    }
+
+    /**
+     * <p>Check if the variant comparator is shared group local.</p>
+     *
+     * @param el The variant comparator.
+     * @return True if the variant comparator is shared group local, otherwise false.
+     */
+    public static boolean sysVariantGroupLocal(AbstractLexical el) {
+        return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHGL) != 0);
     }
 
 }

@@ -60,8 +60,9 @@
 :- use_package(foreign(jekpro/tools/term)).
 
 :- module(aggregate, []).
-:- use_module(library(advanced/sequence)).
-:- use_module(library(basic/lists)).
+:- use_module(library(advanced/variant)).
+:- use_module(library(advanced/pivot)).
+:- use_module(library(advanced/revolve)).
 
 /*************************************************************/
 /* Non-Grouping Aggregate                                    */
@@ -80,22 +81,22 @@
 :- public aggregate_all/3.
 :- meta_predicate aggregate_all(?, 0, ?).
 aggregate_all(A, G, S) :-
-   pivot_new(P),
+   sys_pivot_new(P),
    (sys_aggregate_all(A, G, P, _), fail; true),
-   pivot_get_default(P, A, H),
+   sys_pivot_get_default(P, A, H),
    S = H.
 
 % aggregate_all(+Aggregate, +Goal, -Value, +List)
 :- public aggregate_all/4.
 :- meta_predicate aggregate_all(?, 0, ?, ?).
 aggregate_all(A, G, S, O) :-
-   pivot_new(P),
+   sys_pivot_new(P),
    sys_variant_comparator(O, C),
-   (  variant_eager(C)
+   (  sys_variant_eager(C)
    -> sys_aggregate_all(A, G, P, J),
       S = J
    ;  (sys_aggregate_all(A, G, P, _), fail; true),
-      pivot_get_default(P, A, H),
+      sys_pivot_get_default(P, A, H),
       S = H).
 
 % sys_aggregate_all(+Aggregate, +Goal, +Pivot, -Value)
@@ -103,10 +104,10 @@ aggregate_all(A, G, S, O) :-
 :- meta_predicate sys_aggregate_all(?, 0, ?, ?).
 sys_aggregate_all(A, G, P, J) :-
    G,
-   pivot_get_default(P, A, H),
-   next_state(A, H, J),
-   \+ pivot_get(P, J),
-   pivot_set(P, J).
+   sys_pivot_get_default(P, A, H),
+   sys_state_next(A, H, J),
+   \+ sys_pivot_get(P, J),
+   sys_pivot_set(P, J).
 
 /*************************************************************/
 /* Grouping Aggregate                                        */
@@ -134,13 +135,13 @@ aggregate(A, Goal, S) :-
 aggregate(A, Goal, S, O) :-
    sys_goal_globals(A^Goal, W),
    sys_variant_comparator(O, C),
-   (  variant_natural(C) -> sys_revolve_make(W, P)
+   (  sys_variant_natural(C) -> sys_revolve_make(W, P)
    ;  sys_revolve_make(W, P, C)),
-   (  variant_eager(C)
+   (  sys_variant_eager(C)
    -> sys_revolve_run(A, Goal, W, P, J),
       S = J
    ;  (sys_revolve_run(A, Goal, W, P, _), fail; true),
-      (  variant_reverse(C) -> sys_revolve_list(W, P, S, C)
+      (  sys_variant_reverse(C) -> sys_revolve_list(W, P, S, C)
       ;  sys_revolve_list(W, P, S))).
 
 % sys_aggregate(+Vars, +Aggregate, +Goal, +Revolve, -Value)
@@ -149,10 +150,10 @@ aggregate(A, Goal, S, O) :-
 sys_aggregate(W, A, G, R, J) :-
    G,
    sys_revolve_lookup(R, W, P),
-   pivot_get_default(P, A, H),
-   next_state(A, H, J),
-   \+ pivot_get(P, J),
-   pivot_set(P, J).
+   sys_pivot_get_default(P, A, H),
+   sys_state_next(A, H, J),
+   \+ sys_pivot_get(P, J),
+   sys_pivot_set(P, J).
 
 % sys_revolve_run(+Aggregate, +Goal, +List, +Ref, -Value)
 :- meta_predicate sys_revolve_run(?, 0, ?, ?, ?).
@@ -169,119 +170,91 @@ sys_revolve_run(A, Goal, W, R, J) :-
 
 % sys_revolve_make(+List, -Ref)
 sys_revolve_make([], P) :- !,
-   pivot_new(P).
+   sys_pivot_new(P).
 sys_revolve_make(_, R) :-
    sys_revolve_new(R).
 
 % sys_revolve_make(+List, -Ref, +Comparator)
 sys_revolve_make([], P, _) :- !,
-   pivot_new(P).
+   sys_pivot_new(P).
 sys_revolve_make(_, R, C) :-
    sys_revolve_new(C, R).
 
 % sys_revolve_list(+List, +Ref, -Value)
 sys_revolve_list([], P, S) :- !,
-   pivot_get(P, S).
+   sys_pivot_get(P, S).
 sys_revolve_list(W, R, S) :-
    sys_revolve_pair(R, W-Q),
-   pivot_get(Q, S).
+   sys_pivot_get(Q, S).
 
 % sys_revolve_list(+List, +Ref, -Value, +Comparator)
 sys_revolve_list([], P, S, _) :- !,
-   pivot_get(P, S).
+   sys_pivot_get(P, S).
 sys_revolve_list(W, R, S, C) :-
    sys_revolve_pair(R, C, W-Q),
-   pivot_get(Q, S).
+   sys_pivot_get(Q, S).
 
 /*************************************************************/
 /* Aggregate State                                           */
 /*************************************************************/
 
 /**
- * pivot_get_default(P, A, H):
+ * sys_pivot_get_default(P, A, H):
  * The predicate succeeds in H with the value of the pivot P
  * or the initial state for the aggregate A.
  */
-% pivot_get_default(+Pivot, +Aggregate, -Value)
-:- private pivot_get_default/3.
-pivot_get_default(P, _, H) :-
-   pivot_get(P, H), !.
-pivot_get_default(_, A, H) :-
-   init_state(A, H).
+% sys_pivot_get_default(+Pivot, +Aggregate, -Value)
+:- private sys_pivot_get_default/3.
+sys_pivot_get_default(P, _, H) :-
+   sys_pivot_get(P, H), !.
+sys_pivot_get_default(_, A, H) :-
+   sys_state_init(A, H).
 
 /**
- * init_state(A, H):
+ * sys_state_init(A, H):
  * The predicate succeeds in H with the initial state for the aggregate A.
  */
-% init_state(+Aggregate, -Value)
-:- private init_state/2.
-init_state(X, _) :- var(X),
+% sys_state_init(+Aggregate, -Value)
+:- private sys_state_init/2.
+sys_state_init(X, _) :- var(X),
    throw(error(instantiation_error, _)).
-init_state(count, 0).
-init_state(sum(_), 0).
-init_state(mul(_), 1).
-init_state(min(_), sup).
-init_state(max(_), inf).
-init_state((A, B), (S, T)) :-
-   init_state(A, S),
-   init_state(B, T).
-init_state(nil, nil).
-init_state(first(_, _), sup).
-init_state(last(_, _), inf).
-init_state(reduce(I, _, _), I).
+sys_state_init(count, 0).
+sys_state_init(sum(_), 0).
+sys_state_init(mul(_), 1).
+sys_state_init(min(_), sup).
+sys_state_init(max(_), inf).
+sys_state_init((A, B), (S, T)) :-
+   sys_state_init(A, S),
+   sys_state_init(B, T).
+sys_state_init(nil, nil).
+sys_state_init(first(_, _), sup).
+sys_state_init(last(_, _), inf).
+sys_state_init(reduce(I, _, _), I).
 
 /**
- * next_state(A, H, J):
+ * sys_state_next(A, H, J):
  * The predicate succeeds in J with the next state for the
  * aggregate A after the state H.
  */
-% next_state(+Aggregate, +Value, -Value)
-:- private next_state/3.
-next_state(X, _, _) :- var(X),
+% sys_state_next(+Aggregate, +Value, -Value)
+:- private sys_state_next/3.
+sys_state_next(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-next_state(count, S, T) :- T is S+1.
-next_state(sum(X), S, T) :- T is S+X.
-next_state(mul(X), S, T) :- T is S*X.
-next_state(min(X), sup, X) :- !.
-next_state(min(X), S, T) :- T is min(S, X).
-next_state(max(X), inf, X) :- !.
-next_state(max(X), S, T) :- T is max(S, X).
-next_state((S, T), (A, B), (U, V)) :-
-   next_state(S, A, U),
-   next_state(T, B, V).
-next_state(nil, nil, nil).
-next_state(first(_, X), sup, X) :- !.
-next_state(first(C, X), S, X) :- call(C, X, S), !.
-next_state(first(_, _), S, S).
-next_state(last(_, X), inf, X) :- !.
-next_state(last(C, X), S, X) :- call(C, S, X), !.
-next_state(last(_, _), S, S).
-next_state(reduce(_, A, X), S, Y) :- call(A, S, X, Y).
-
-/*************************************************************/
-/* Revolve Datatype                                          */
-/*************************************************************/
-
-/**
- * variant_eager(C):
- * The predicate succeeds if the variant comparator is eager.
- */
-% variant_eager(+Comparator)
-:- foreign(variant_eager/1, 'ForeignAggregate',
-      sysVariantEager('AbstractLexical')).
-
-/**
- * variant_reverse(C):
- * The predicate succeeds if the variant comparator is reverse.
- */
-% variant_reverse(+Comparator)
-:- foreign(variant_reverse/1, 'ForeignAggregate',
-      sysVariantReverse('AbstractLexical')).
-
-/**
- * variant_natural(C):
- * The predicate succeeds if the variant comparator is natural.
- */
-% variant_natural(+Comparator)
-:- foreign(variant_natural/1, 'ForeignAggregate',
-      sysVariantNatural('AbstractLexical')).
+sys_state_next(count, S, T) :- T is S+1.
+sys_state_next(sum(X), S, T) :- T is S+X.
+sys_state_next(mul(X), S, T) :- T is S*X.
+sys_state_next(min(X), sup, X) :- !.
+sys_state_next(min(X), S, T) :- T is min(S, X).
+sys_state_next(max(X), inf, X) :- !.
+sys_state_next(max(X), S, T) :- T is max(S, X).
+sys_state_next((S, T), (A, B), (U, V)) :-
+   sys_state_next(S, A, U),
+   sys_state_next(T, B, V).
+sys_state_next(nil, nil, nil).
+sys_state_next(first(_, X), sup, X) :- !.
+sys_state_next(first(C, X), S, X) :- call(C, X, S), !.
+sys_state_next(first(_, _), S, S).
+sys_state_next(last(_, X), inf, X) :- !.
+sys_state_next(last(C, X), S, X) :- call(C, S, X), !.
+sys_state_next(last(_, _), S, S).
+sys_state_next(reduce(_, A, X), S, Y) :- call(A, S, X, Y).

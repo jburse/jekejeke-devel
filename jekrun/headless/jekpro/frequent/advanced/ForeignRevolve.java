@@ -2,23 +2,19 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.*;
 
-import java.util.Enumeration;
-
 /**
- * <p>Provides built-in predicates for the module bags.</p>
+ * <p>Provides built-in predicates for the module pivot.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -48,28 +44,7 @@ import java.util.Enumeration;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignBags {
-
-    /**
-     * <p>Create a new variant comparator.</p>
-     *
-     * @param opt The sort options.
-     * @return The variant comparator.
-     * @throws InterpreterMessage Type Error.
-     */
-    public static AbstractLexical sysVariantComparator(Interpreter inter,
-                                                       Object opt)
-            throws InterpreterMessage {
-        Engine engine = (Engine) inter.getEngine();
-        AbstractLexical el;
-        try {
-            el = AbstractLexical.decodeSortOpts(AbstractTerm.getSkel(opt),
-                    AbstractTerm.getDisplay(opt), engine);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return el;
-    }
+public final class ForeignRevolve {
 
     /**
      * <p>Create a new revolve.</p>
@@ -123,16 +98,16 @@ public final class ForeignBags {
      * @param map The revolve.
      * @return The pair.
      */
-    public static Object sysRevolvePair(CallOut co, AbstractMap map) {
-        MapEntry at;
+    public static Object sysRevolvePair(CallOut co, AbstractMap<Object, Object> map) {
+        MapEntry<Object, Object> at;
         if (co.getFirst()) {
             at = map.getFirstEntry();
             if (at == null)
                 return null;
         } else {
-            at = (MapEntry) co.getData();
+            at = (MapEntry<Object, Object>) co.getData();
         }
-        MapEntry next = map.successor(at);
+        MapEntry<Object, Object> next = map.successor(at);
         co.setRetry(next != null);
         co.setData(next);
         Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
@@ -148,9 +123,9 @@ public final class ForeignBags {
      * @param el  The variant comparator.
      * @return The pair.
      */
-    public static Object sysRevolvePair(CallOut co, AbstractMap map,
+    public static Object sysRevolvePair(CallOut co, AbstractMap<Object, Object> map,
                                         AbstractLexical el) {
-        MapEntry at;
+        MapEntry<Object, Object> at;
         if (co.getFirst()) {
             if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
                 at = map.getLastEntry();
@@ -160,9 +135,9 @@ public final class ForeignBags {
             if (at == null)
                 return null;
         } else {
-            at = (MapEntry) co.getData();
+            at = (MapEntry<Object, Object>) co.getData();
         }
-        MapEntry next;
+        MapEntry<Object, Object> next;
         if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
             next = map.predecessor(at);
         } else {
@@ -171,52 +146,6 @@ public final class ForeignBags {
         co.setRetry(next != null);
         co.setData(next);
         Object val = new SkelCompound(new SkelAtom(Foyer.OP_SUB), at.key, at);
-        Display ref = AbstractSkel.createMarker(val);
-        return AbstractTerm.createMolec(val, ref);
-    }
-
-    /**
-     * <p>Set a pivot value.</p>
-     *
-     * @param inter The interpreter.
-     * @param pivot The pivot.
-     * @param val   The value.
-     */
-    public static void sysPivotAdd(Interpreter inter,
-                                   SetEntry<ListArray<Object>> pivot,
-                                   Object val) {
-        Engine en = (Engine) inter.getEngine();
-        Display ref = AbstractTerm.getDisplay(val);
-        val = AbstractTerm.getSkel(val);
-        ListArray<Object> help = pivot.value;
-        if (help == null) {
-            help = new ListArray<Object>();
-            pivot.value = help;
-        }
-        help.add(AbstractSkel.copySkel(val, ref, en));
-    }
-
-    /**
-     * <p>Enumerate the pivot.</p>
-     *
-     * @param co    The call out.
-     * @param pivot The pivot.
-     * @return The value.
-     */
-    public static Object sysPivotEnum(CallOut co,
-                                      SetEntry<ListArray<Object>> pivot) {
-        Enumeration<Object> at;
-        if (co.getFirst()) {
-            ListArray<Object> help = pivot.value;
-            if (help == null)
-                return null;
-            at = help.elements();
-            co.setData(at);
-        } else {
-            at = (Enumeration<Object>) co.getData();
-        }
-        Object val = at.nextElement();
-        co.setRetry(at.hasMoreElements());
         Display ref = AbstractSkel.createMarker(val);
         return AbstractTerm.createMolec(val, ref);
     }

@@ -73,24 +73,4 @@ public final class VariantKey extends SetEntry
                 (o.value != null ? -1 : 0));
     }
 
-    /**
-     * <p>Check if the variant comparator is shared dynamic.</p>
-     *
-     * @param el The variant comparator.
-     * @return True if the variant comparator is shared dynamic, otherwise false.
-     */
-    public static boolean sysVariantDynamic(AbstractLexical el) {
-        return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHDY) != 0);
-    }
-
-    /**
-     * <p>Check if the variant comparator is shared group local.</p>
-     *
-     * @param el The variant comparator.
-     * @return True if the variant comparator is shared group local, otherwise false.
-     */
-    public static boolean sysVariantGroupLocal(AbstractLexical el) {
-        return ((el.getFlags() & LexicalCollator.MASK_FLAG_SHGL) != 0);
-    }
-
 }

@@ -55,7 +55,7 @@ public
 (\)/8	no	experiment/abstract
 (\)/9	no	experiment/abstract
 (\+)/3	no	standard/dcg
-^ /2	no	standard/bags
+^ /2	no	advanced/bags
 ^ /4	no	experiment/abstract
 ^ /5	no	experiment/abstract
 ^ /6	no	experiment/abstract
@@ -81,8 +81,8 @@ assumable_ref/2	no	experiment/ref
 at_end_of_stream/0	no	stream/byte
 at_end_of_stream/1	no	stream/byte
 atanh/2	yes	basic/hyper
-bagof/3	no	standard/bags
-bagof/4	no	standard/bags
+bagof/3	no	advanced/bags
+bagof/4	no	advanced/bags
 base64_block/2	no	stream/xml
 between/3	no	advanced/arith
 broker_start/1	no	experiment/broker
@@ -121,7 +121,7 @@ cond_notifyall/1	no	misc/lock
 cond_wait/1	no	misc/lock
 cond_wait/2	no	misc/lock
 contains/2	no	advanced/sets
-copy_term/2	no	standard/bags
+copy_term/2	no	advanced/bags
 cosh/2	yes	basic/hyper
 counter_new/1	no	basic/random
 counter_new/2	no	basic/random
@@ -167,8 +167,8 @@ expand_goal/2	no	standard/expand
 expand_rest/2	no	standard/expand
 expand_term/2	no	standard/expand
 fail/2	no	standard/dcg
-findall/3	no	standard/bags
-findall/4	no	standard/bags
+findall/3	no	advanced/bags
+findall/4	no	advanced/bags
 flush_output/0	no	stream/byte
 flush_output/1	no	stream/byte
 foldl/4	no	basic/lists
@@ -177,9 +177,8 @@ foldl/6	no	basic/lists
 foldl/7	no	basic/lists
 follow_path/3	no	system/file
 follow_uri/3	no	system/uri
-forall/2	no	standard/bags
-foreach/2	no	standard/bags
-foreach/4	no	standard/bags
+foreach/2	no	advanced/bags
+foreach/4	no	advanced/bags
 foreign_dimension/2	no	basic/array
 foreign_element/2	no	basic/array
 foreign_length/2	no	basic/array
@@ -281,6 +280,7 @@ ord_remove/3	no	experiment/ordmaps
 ord_subset/2	no	advanced/ordsets
 ord_union/3	no	advanced/ordsets
 order_by/2	no	advanced/sequence
+order_by/3	no	advanced/sequence
 pattern_compile/2	no	misc/text
 pattern_compile/3	no	misc/text
 pattern_match/2	no	misc/text
@@ -326,9 +326,9 @@ random_next/3	no	basic/random
 random_next32/2	no	basic/random
 random_permutation/2	no	basic/random
 random_permutation/3	no	basic/random
-rational/2	no	advanced/approx
-rationalize/2	no	advanced/approx
-rationalize32/2	no	advanced/approx
+rational/2	no	standard/approx
+rationalize/2	no	standard/approx
+rationalize32/2	no	standard/approx
 read/1	no	stream/term
 read/2	no	stream/term
 read_line/1	no	stream/console
@@ -384,8 +384,8 @@ set_stream_position/2	no	stream/stream
 set_stream_property/2	no	stream/stream
 set_thread_flag/3	no	system/thread
 set_time_file/2	no	system/file
-setof/3	no	standard/bags
-setof/4	no	standard/bags
+setof/3	no	advanced/bags
+setof/4	no	advanced/bags
 setup_call_cleanup/3	no	standard/signal
 sha1_hash/2	no	system/domain
 simplify_goal/2	no	experiment/simp
@@ -409,9 +409,9 @@ sys_cleanup/1	no	standard/signal
 sys_cond/2	no	standard/expand
 sys_current_eq/2	no	misc/residue
 sys_current_mark/1	no	misc/residue
-sys_float_exponent/2	no	advanced/approx
-sys_float_mantissa/2	no	advanced/approx
-sys_float_radix/2	no	advanced/approx
+sys_float_exponent/2	no	standard/approx
+sys_float_mantissa/2	no	standard/approx
+sys_float_radix/2	no	standard/approx
 sys_ground/2	no	standard/sort
 sys_hash_code/3	no	standard/sort
 sys_ignore/1	no	standard/signal
