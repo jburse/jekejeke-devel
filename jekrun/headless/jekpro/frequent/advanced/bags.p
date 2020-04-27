@@ -19,18 +19,18 @@
  * setof/4 allow specifying sort options.
  *
  * Examples:
- * p(a). p(b).
- * q(a). q(b). q(c).
+ * ?- bagof(Y, p(X, Y), L).
+ * X = a, L = [y, x] ;
+ * X = b, L = [x]
+ * ?- setof(Y, p(X, Y), L).
+ * X = a, L = [x, y] ;
+ * X = b, L = [x]
  *
- * ?- forall(p(X), q(X)).
- * Yes
- * ?- forall(q(X), p(X)).
- * No
- *
- * The predicate copy_term/2 can be used to copy a term. The predicate
- * findall/3 can be used to collect a resulting list without any
- * grouping. The elements will be copied. The forall/2 performs generate
- * and test and can be used for a bounded universal quantification.
+ * The predicate copy_term/2 can be used to copy a term. The
+ * predicates findall/[3,4] can be used to collect a resulting
+ * list without any grouping. The elements will be copied. The
+ * predicates foreach/2 and foreach/4 use findall/3 to compute
+ * a dynamic conjunction
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

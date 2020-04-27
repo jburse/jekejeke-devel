@@ -2,13 +2,13 @@ package jekpro.frequent.advanced;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.reference.structure.AbstractLexical;
+import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
-import matula.util.data.ListArray;
-import matula.util.data.SetEntry;
-import matula.util.data.SetTree;
+import matula.util.data.*;
 
 import java.util.Enumeration;
 
@@ -126,20 +126,58 @@ public final class ForeignPivot {
      * @param pivot The pivot.
      * @param val   The value.
      */
-    public static void sysPivotPut(Interpreter inter,
-                                   SetEntry<SetTree<Object>> pivot,
-                                   Object val) {
+    public static boolean sysPivotPut(Interpreter inter,
+                                      SetEntry<AbstractSet<Object>> pivot,
+                                      Object val) {
         Engine en = (Engine) inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
-        SetTree<Object> help = pivot.value;
+        AbstractSet<Object> help = pivot.value;
         if (help == null) {
             help = new SetTree<Object>(AbstractSkel.DEFAULT);
             pivot.value = help;
         }
         val = AbstractSkel.copySkel(val, ref, en);
-        if (help.getEntry(val) == null)
+        if (help.getEntry(val) == null) {
             help.add(val);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Put a pivot value.</p>
+     *
+     * @param inter The interpreter.
+     * @param pivot The pivot.
+     * @param el    The variant comparator.
+     * @param val   The value.
+     */
+    public static boolean sysPivotPut(Interpreter inter,
+                                   SetEntry<AbstractSet<Object>> pivot,
+                                   AbstractLexical el,
+                                   Object val) {
+        Engine en = (Engine) inter.getEngine();
+        Display ref = AbstractTerm.getDisplay(val);
+        val = AbstractTerm.getSkel(val);
+        AbstractSet<Object> help = pivot.value;
+        if (help == null) {
+            if (el instanceof LexicalCollator &&
+                    ((LexicalCollator) el).getCmpStr() == null) {
+                help = new SetHashLink<Object>();
+            } else {
+                help = new SetTree<Object>(el);
+            }
+            pivot.value = help;
+        }
+        val = AbstractSkel.copySkel(val, ref, en);
+        if (help.getEntry(val) == null) {
+            help.add(val);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -150,8 +188,8 @@ public final class ForeignPivot {
      * @return The value.
      */
     public static Object sysPivotEnum(CallOut co,
-                                      SetEntry<SetTree<Object>> pivot) {
-        SetTree<Object> help = pivot.value;
+                                      SetEntry<AbstractSet<Object>> pivot) {
+        AbstractSet<Object> help = pivot.value;
         SetEntry<Object> at;
         if (co.getFirst()) {
             if (help == null)
@@ -161,6 +199,43 @@ public final class ForeignPivot {
             at = (SetEntry<Object>) co.getData();
         }
         SetEntry<Object> next = help.successor(at);
+        co.setRetry(next != null);
+        co.setData(next);
+        Object val = at.value;
+        Display ref = AbstractSkel.createMarker(val);
+        return AbstractTerm.createMolec(val, ref);
+    }
+
+    /**
+     * <p>Enumerate the pivot.</p>
+     *
+     * @param co    The call out.
+     * @param pivot The pivot.
+     * @param el    The variant comparator.
+     * @return The value.
+     */
+    public static Object sysPivotEnum(CallOut co,
+                                      SetEntry<AbstractSet<Object>> pivot,
+                                      AbstractLexical el) {
+        AbstractSet<Object> help = pivot.value;
+        SetEntry<Object> at;
+        if (co.getFirst()) {
+            if (help == null)
+                return null;
+            if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
+                at = help.getLastEntry();
+            } else {
+                at = help.getFirstEntry();
+            }
+        } else {
+            at = (SetEntry<Object>) co.getData();
+        }
+        SetEntry<Object> next;
+        if ((el.getFlags() & AbstractLexical.MASK_FLAG_RVRS) != 0) {
+            next = help.successor(at);
+        } else {
+            next = help.predecessor(at);
+        }
         co.setRetry(next != null);
         co.setData(next);
         Object val = at.value;

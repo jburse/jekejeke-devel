@@ -74,8 +74,8 @@
 
 /**
  * sys_pivot_list(R, U):
- * The predicate succeeds in U with the key value pairs
- * of the revolve R.
+ * The predicate succeeds in U with the values
+ * of the pivot R.
  */
 % sys_pivot_list(+Pivot, -Term)
 :- foreign(sys_pivot_list/2, 'ForeignPivot',
@@ -83,17 +83,37 @@
 
 /**
  * sys_pivot_put(P, O):
- * The predicate succeeds extending the pivot P by O.
+ * The predicate succeeds extending the pivot P by O. The
+ * predicate fails if O is already present in P.
  */
 % sys_pivot_put(+Pivot, +Term)
 :- foreign(sys_pivot_put/2, 'ForeignPivot',
       sysPivotPut('Interpreter', 'SetEntry', 'Object')).
 
 /**
+ * sys_pivot_put(P, C, O):
+ * The predicate succeeds extending the pivot P by O
+ * for the variant comparator C. The predicate fails if O
+ * is already present in P.
+ */
+% sys_pivot_put(+Pivot, +Comparator, +Term)
+:- foreign(sys_pivot_put/3, 'ForeignPivot',
+      sysPivotPut('Interpreter', 'SetEntry', 'AbstractLexical', 'Object')).
+
+/**
  * sys_pivot_enum(R, U):
- * The predicate succeeds in U with the key value pairs
- * of the revolve R.
+ * The predicate succeeds in U with the values
+ * of the pivot R.
  */
 % sys_pivot_enum(+Pivot, -Term)
 :- foreign(sys_pivot_enum/2, 'ForeignPivot',
       sysPivotEnum('CallOut', 'SetEntry')).
+
+/**
+ * sys_pivot_enum(R, C, U):
+ * The predicate succeeds in U with the values
+ * of the pivot R for the variant comparator C.
+ */
+% sys_pivot_enum(+Pivot, +Comparator, -Term)
+:- foreign(sys_pivot_enum/3, 'ForeignPivot',
+      sysPivotEnum('CallOut', 'SetEntry', 'AbstractLexical')).

@@ -93,5 +93,4 @@
  * The predicate succeeds in P with a sys_variant_key.
  */
 % sys_variant_key(-Key)
-:- private sys_variant_key/1.
 :- foreign_constructor(sys_variant_key/1, 'VariantKey', new).

@@ -1,7 +1,5 @@
 package jekpro.frequent.advanced;
 
-import jekpro.reference.structure.AbstractLexical;
-import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.term.AbstractSkel;
 import matula.util.data.SetEntry;
 

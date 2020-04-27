@@ -121,18 +121,15 @@ call_nth2(G, N) :-
 distinct(Goal) :-
    term_variables(Goal, W),
    sys_variant_comparator([type(hash)], C),
-   sys_revolve_new(C, R),
-   sys_revolve_distinct(Goal, W, R, nil).
+   sys_pivot_new(P),
+   sys_pivot_distinct(Goal, W, P, C).
 
-% sys_revolve_distinct(+Goal, +List, +Ref, +Term)
-:- private sys_revolve_distinct/4.
-:- meta_predicate sys_revolve_distinct(0, ?, ?, ?).
-sys_revolve_distinct(G, W, R, J) :-
-   sys_goal_kernel(G, B),
-   B,
-   sys_revolve_lookup(R, W, P),
-   \+ sys_pivot_get(P, _),
-   sys_pivot_set(P, J).
+% sys_pivot_distinct(+Goal, +List, +Ref, +Comparator)
+:- private sys_pivot_distinct/4.
+:- meta_predicate sys_pivot_distinct(0, ?, ?, ?).
+sys_pivot_distinct(Goal, W, P, C) :-
+   Goal,
+   sys_pivot_put(P, C, W).
 
 /**
  * order_by(W, G):
@@ -142,6 +139,18 @@ sys_revolve_distinct(G, W, R, J) :-
 % order_by(+Term, +Goal)
 :- public order_by/2.
 :- meta_predicate order_by(?, 0).
+order_by(_, V) :- var(V),
+   throw(error(instantiation_error, _)).
+order_by(S, distinct(Goal)) :- !,
+   sys_order_template(S, W),
+   sys_goal_globals(W^Goal, J),
+   sys_order_comparator(S, C),
+   sys_variant_comparator([type(callback), comparator(C)], K),
+   sys_revolve_new(K, R),
+   sys_variant_comparator([type(hash)], D),
+   (sys_revolve_order(Goal, W, R, J, D), fail; true),
+   sys_revolve_pair(R, W-P),
+   sys_pivot_enum(P, W-J).
 order_by(S, Goal) :-
    sys_order_template(S, W),
    sys_goal_globals(W^Goal, J),
@@ -160,6 +169,15 @@ sys_revolve_order(G, W, R, J) :-
    B,
    sys_revolve_lookup(R, W, P),
    sys_pivot_add(P, W-J).
+
+% sys_revolve_order(+Goal, +List, +Ref, +Term, +Comparator)
+:- private sys_revolve_order/5.
+:- meta_predicate sys_revolve_order(0, ?, ?, ?, ?).
+sys_revolve_order(Goal, W, R, J, C) :-
+   sys_goal_kernel(Goal, B),
+   B,
+   sys_revolve_lookup(R, W, P),
+   sys_pivot_put(P, C, W-J).
 
 /**
  * sys_order_template(L, R):

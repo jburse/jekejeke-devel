@@ -51,8 +51,8 @@ public final class ForeignRevolve {
      *
      * @return The revolve.
      */
-    public static AbstractMap sysRevolveNew() {
-        return new MapTree(AbstractSkel.DEFAULT);
+    public static AbstractMap<Object, Object> sysRevolveNew() {
+        return new MapTree<Object, Object>(AbstractSkel.DEFAULT);
     }
 
     /**
@@ -61,12 +61,12 @@ public final class ForeignRevolve {
      * @param el The variant comparator.
      * @return The revolve.
      */
-    public static AbstractMap sysRevolveNew(AbstractLexical el) {
+    public static AbstractMap<Object, Object> sysRevolveNew(AbstractLexical el) {
         if (el instanceof LexicalCollator &&
                 ((LexicalCollator) el).getCmpStr() == null) {
-            return new MapHashLink();
+            return new MapHashLink<Object, Object>();
         } else {
-            return new MapTree(el);
+            return new MapTree<Object, Object>(el);
         }
     }
 
@@ -78,7 +78,8 @@ public final class ForeignRevolve {
      * @param val   The key.
      */
     public static SetEntry sysRevolveLookup(Interpreter inter,
-                                            AbstractMap map, Object val) {
+                                            AbstractMap<Object, Object> map,
+                                            Object val) {
         Engine en = (Engine) inter.getEngine();
         Display d = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
@@ -98,7 +99,8 @@ public final class ForeignRevolve {
      * @param map The revolve.
      * @return The pair.
      */
-    public static Object sysRevolvePair(CallOut co, AbstractMap<Object, Object> map) {
+    public static Object sysRevolvePair(CallOut co,
+                                        AbstractMap<Object, Object> map) {
         MapEntry<Object, Object> at;
         if (co.getFirst()) {
             at = map.getFirstEntry();
@@ -123,7 +125,8 @@ public final class ForeignRevolve {
      * @param el  The variant comparator.
      * @return The pair.
      */
-    public static Object sysRevolvePair(CallOut co, AbstractMap<Object, Object> map,
+    public static Object sysRevolvePair(CallOut co,
+                                        AbstractMap<Object, Object> map,
                                         AbstractLexical el) {
         MapEntry<Object, Object> at;
         if (co.getFirst()) {
