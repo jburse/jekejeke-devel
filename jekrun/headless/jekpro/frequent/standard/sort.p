@@ -116,3 +116,70 @@
  */
 :- public sys_hash_code/3.
 :- special(sys_hash_code/3, 'SpecialSort', 6).
+
+/**********************************************************/
+/* Number Compare                                         */
+/**********************************************************/
+
+/**
+ * number_compare(C, X, Y):
+ * The predicate succeeds when C unifies with the result of
+ * numerical comparing the term X to the term Y. The result is
+ * one of the following atoms <, = or >.
+ */
+% number_compare(-Atom, +Term, +Term)
+:- public number_compare/3.
+number_compare(C, X, Y) :-
+   sys_type(X, S),
+   sys_type(X, T),
+   number_test(D, S, T),
+   (  D == =
+   -> (  S == 0 -> compare(C, X, Y)
+      ;  S == 1 -> number_test(C, X, Y)
+      ;  S == 2 -> compare(C, X, Y)
+      ;  functor(X, F, A),
+         functor(Y, G, B),
+         number_test(E, A, B),
+         (  E == =
+         -> compare(H, F, G),
+            (  H == =
+            -> X =.. L,
+               Y =.. R,
+               sys_number_compare_list(L, R, C)
+            ;  C = H)
+         ;  C = E))
+   ;  C = D).
+
+/**
+ * sys_type(X, T):
+ * The predicate succeeds in T with the type of X.
+ */
+% sys_type(+Term, -Integer)
+:- private sys_type/2.
+sys_type(X, T) :- var(X), !, T = 0.
+sys_type(X, T) :- number(X), !, T = 1.
+sys_type(X, T) :- atomic(X), !, T = 2.
+sys_type(_, 3).
+
+/**
+ * sys_number_compare_list(L, R, C):
+ * The predicate succeeds when C unifies with the result of
+ * numerical comparing the list X to the list Y. The result is
+ * one of the following atoms <, = or >.
+ */
+:- private sys_number_compare_list/3.
+sys_number_compare_list([], [], =).
+sys_number_compare_list([X|L], [Y|R], C) :-
+   number_compare(D, X, Y),
+   (  D == =
+   -> sys_number_compare_list(L, R, C)
+   ;  C = D).
+
+/**
+ * number_test(C, X, Y):
+ * The predicate succeeds when C unifies with the result of
+ * numerical testing the number X to the number Y. The result is
+ * one of the following atoms <, = or >.
+ */
+% number_test(-Atom, +Number, +Number)
+:- special(number_test/3, 'SpecialSort', 7).

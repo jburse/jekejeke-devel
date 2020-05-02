@@ -138,16 +138,6 @@
 :- special(>= /2, 'SpecialCompare', 5).
 
 /**
- * number_test(C, X, Y):
- * The predicate succeeds when C unifies with the result of
- * numerical testing the number X to the number Y. The result is
- * one of the following atoms <, = or >.
- */
-% number_test(-Atom, +Number, +Number)
-:- public number_test/3.
-:- special(number_test/3, 'SpecialCompare', 7).
-
-/**
  * min(X, Y): [TC2 9.3.9]
  * If X and Y are both numbers then the function returns the minimum of X and Y.
  */

@@ -7,10 +7,12 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.RuntimeWrap;
@@ -59,6 +61,7 @@ public final class SpecialSort extends AbstractSpecial {
     private final static int SPECIAL_HASH_CODE = 4;
     private final static int SPECIAL_SYS_GROUND = 5;
     private final static int SPECIAL_SYS_HASH_CODE = 6;
+    private final static int SPECIAL_NUMBER_TEST = 7;
 
     /**
      * <p>Create a sort special.</p>
@@ -181,6 +184,16 @@ public final class SpecialSort extends AbstractSpecial {
                     val = Integer.valueOf(termHash(temp[0], ref,
                             SpecialEval.castIntValue(val), 0));
                     if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
+                        return false;
+                    return true;
+                case SPECIAL_NUMBER_TEST:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    val = SpecialEval.derefAndCastNumber(temp[1], ref);
+                    Number beta = SpecialEval.derefAndCastNumber(temp[2], ref);
+                    int res2 = SpecialCompare.computeCmp(val, beta) ;
+                    if (!en.unifyTerm(temp[0], ref,
+                            SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST))
                         return false;
                     return true;
                 default:

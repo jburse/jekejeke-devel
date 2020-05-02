@@ -170,3 +170,84 @@ rat_iter32(V#W, M#N, P#Q, Y, X) :-
  */
 :- public sys_float_radix/2.
 :- foreign(sys_float_radix/2, 'ForeignApprox', sysFloatRadix('Number')).
+
+/**********************************************************/
+/* Number Compare                                         */
+/**********************************************************/
+
+/**
+ * number_compare(C, X, Y):
+ * The predicate succeeds when C unifies with the result of
+ * numerical comparing the term X to the term Y. The result is
+ * one of the following atoms <, = or >.
+ */
+% number_compare(-Atom, +Term, +Term)
+:- public number_compare/3.
+:- override number_compare/3.
+number_compare(C, X, Y) :-
+   sys_type(X, S),
+   sys_type(X, T),
+   user:number_test(D, S, T),
+   (  D == =
+   -> (  S == 0 -> compare(C, X, Y)
+      ;  S == 1 -> number_test(C, X, Y)
+      ;  S == 2 -> compare(C, X, Y)
+      ;  functor(X, F, A),
+         functor(Y, G, B),
+         user:number_test(E, A, B),
+         (  E == =
+         -> compare(H, F, G),
+            (  H == =
+            -> X =.. L,
+               Y =.. R,
+               sys_number_compare_list(L, R, C)
+            ;  C = H)
+         ;  C = E))
+   ;  C = D).
+
+/**
+ * sys_type(X, T):
+ * The predicate succeeds in T with the type of X.
+ */
+% sys_type(+Term, -Integer)
+:- private sys_type/2.
+sys_type(X, T) :- var(X), !, T = 0.
+sys_type(X, T) :- number(X), !, T = 1.
+sys_type(X, T) :- atomic(X), !, T = 2.
+sys_type(_#_, T) :- !, T = 1.
+sys_type(_, 3).
+
+/**
+ * sys_number_compare_list(L, R, C):
+ * The predicate succeeds when C unifies with the result of
+ * numerical comparing the list X to the list Y. The result is
+ * one of the following atoms <, = or >.
+ */
+:- private sys_number_compare_list/3.
+sys_number_compare_list([], [], =).
+sys_number_compare_list([X|L], [Y|R], C) :-
+   number_compare(D, X, Y),
+   (  D == =
+   -> sys_number_compare_list(L, R, C)
+   ;  C = D).
+
+/**
+ * number_test(C, X, Y):
+ * The predicate succeeds when C unifies with the result of
+ * numerical testing the number X to the number Y. The result is
+ * one of the following atoms <, = or >.
+ */
+% number_test(-Atom, +Rational, +Rational)
+:- override number_test/3.
+number_test(R, A#B, C#D) :- !,
+   user: *(A, D, H),
+   user: *(B, C, J),
+   user:number_test(R, H, J).
+number_test(R, A#B, C) :- !,
+   user: *(B, C, J),
+   user:number_test(R, A, J).
+number_test(R, A, B#C) :- !,
+   user: *(A, C, H),
+   user:number_test(R, H, B).
+number_test(R, A, B) :-
+   user:number_test(R, A, B).

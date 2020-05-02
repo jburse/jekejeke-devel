@@ -188,12 +188,20 @@ sys_revolve_order(Goal, W, R, J, C) :-
 sys_order_template(V, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_order_template([], []) :- !.
-sys_order_template([asc(X)|Y], [X|Z]) :- !,
-   sys_order_template(Y, Z).
-sys_order_template([desc(X)|Y], [X|Z]) :- !,
-   sys_order_template(Y, Z).
+sys_order_template([X|Y], [Z|T]) :- !,
+   sys_order_template_arg(X, Z),
+   sys_order_template(Y, T).
 sys_order_template(X, _) :-
    throw(error(type_error(list, X), _)).
+
+% sys_order_template_arg(+Term, -Term)
+:- private sys_order_template_arg/2.
+sys_order_template_arg(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
+sys_order_template_arg(asc(X), X) :- !.
+sys_order_template_arg(desc(X), X) :- !.
+sys_order_template_arg(X, _) :-
+   throw(error(domain_error(order, X), _)).
 
 /**
  * sys_order_comparator(L, R):
@@ -204,12 +212,20 @@ sys_order_template(X, _) :-
 sys_order_comparator(V, _) :- var(V),
    throw(error(instantiation_error, _)).
 sys_order_comparator([], []) :- !.
-sys_order_comparator([asc(_)|Y], [compare|Z]) :- !,
-   sys_order_comparator(Y, Z).
-sys_order_comparator([desc(_)|Y], [reversed(compare)|Z]) :- !,
-   sys_order_comparator(Y, Z).
+sys_order_comparator([X|Y], [Z|T]) :- !,
+   sys_order_comparator_arg(X, Z),
+   sys_order_comparator(Y, T).
 sys_order_comparator(X, _) :-
    throw(error(type_error(list, X), _)).
+
+% sys_order_comparator_arg(+Term, -Term)
+:- private sys_order_comparator_arg/2.
+sys_order_comparator_arg(V, _) :- var(V),
+   throw(error(instantiation_error, _)).
+sys_order_comparator_arg(asc(_), compare) :- !.
+sys_order_comparator_arg(desc(_), reversed(compare)) :- !.
+sys_order_comparator_arg(X, _) :-
+   throw(error(domain_error(order, X), _)).
 
 /************************************************************/
 /* Comparator DSL                                           */

@@ -7,10 +7,11 @@
  * Examples:
  * p(a,y). p(a,x). p(b,x).
  *
- * ?- bagof(X,p(X,Y),L).
+ * ?- bagof(X, p(X, Y), L).
  * Y = y, L = [a] ;
  * Y = x, L = [a, b]
- * ?- bagof(X,Y^p(X,Y),L).
+ *
+ * ?- bagof(X, Y^p(X, Y), L).
  * L = [a, a, b]
  *
  * The predicate bagof/3 will do a sorting of the witnesses but not
@@ -22,6 +23,7 @@
  * ?- bagof(Y, p(X, Y), L).
  * X = a, L = [y, x] ;
  * X = b, L = [x]
+ *
  * ?- setof(Y, p(X, Y), L).
  * X = a, L = [x, y] ;
  * X = b, L = [x]
@@ -169,39 +171,6 @@ sys_revolve_set(Goal, W, R, J) :-
 sys_strip_list([], _, []).
 sys_strip_list([W-J|L], W, [J|R]) :-
    sys_strip_list(L, W, R).
-
-/**********************************************************/
-/* All Solutions I                                        */
-/**********************************************************/
-
-/**
- * findall(T, G, L): [ISO 8.10.1]
- * findall(T, G, L, R):
- * The predicate first finds all the solutions to the goal G, whereby
- * collecting copies of the template T in a list. The predicate then
- * succeeds when L unifies with the list.
- */
-% findall(+Template, +Goal, -List)
-:- public findall/3.
-:- meta_predicate findall(?, 0, ?).
-:- special(findall/3, 'SpecialFind', 0).
-
-% findall(+Template, +Goal, -List, +List)
-:- public findall/4.
-:- meta_predicate findall(?, 0, ?, ?).
-:- special(findall/4, 'SpecialFind', 1).
-
-/**********************************************************/
-/* Copy Term                                              */
-/**********************************************************/
-
-/**
- * copy_term(X, Y): [ISO 8.5.4]
- * The predicate creates a copy of X and succeeds when the copy unifies with Y.
- */
-% copy_term(+Term, -Term)
-:- public copy_term/2.
-:- special(copy_term/2, 'SpecialFind', 2).
 
 /**********************************************************/
 /* All Solutions II                                       */

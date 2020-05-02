@@ -50,7 +50,6 @@ public final class SpecialCompare extends AbstractSpecial {
     private final static int SPECIAL_COMPARE_LQ = 3;
     private final static int SPECIAL_COMPARE_GQ = 5;
     private final static int SPECIAL_DIVMOD = 6;
-    private final static int SPECIAL_NUMBER_TEST = 7;
 
     public static final int NUM_INTEGER = 0;
     public static final int NUM_BIG_INTEGER = 1;
@@ -185,16 +184,6 @@ public final class SpecialCompare extends AbstractSpecial {
                 if (!en.unifyTerm(temp[2], ref, res[0], Display.DISPLAY_CONST))
                     return false;
                 if (!en.unifyTerm(temp[3], ref, res[1], Display.DISPLAY_CONST))
-                    return false;
-                return true;
-            case SPECIAL_NUMBER_TEST:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                alfa = SpecialEval.derefAndCastNumber(temp[1], ref);
-                beta = SpecialEval.derefAndCastNumber(temp[2], ref);
-                int res2 = SpecialCompare.computeCmp(alfa, beta) ;
-                if (!en.unifyTerm(temp[0], ref,
-                        SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST))
                     return false;
                 return true;
             default:
