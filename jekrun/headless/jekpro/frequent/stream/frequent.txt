@@ -121,7 +121,6 @@ cond_notifyall/1	no	misc/lock
 cond_wait/1	no	misc/lock
 cond_wait/2	no	misc/lock
 contains/2	no	advanced/sets
-copy_term/2	no	advanced/bags
 cosh/2	yes	basic/hyper
 counter_new/1	no	basic/random
 counter_new/2	no	basic/random
@@ -167,8 +166,6 @@ expand_goal/2	no	standard/expand
 expand_rest/2	no	standard/expand
 expand_term/2	no	standard/expand
 fail/2	no	standard/dcg
-findall/3	no	advanced/bags
-findall/4	no	advanced/bags
 flush_output/0	no	stream/byte
 flush_output/1	no	stream/byte
 foldl/4	no	basic/lists
@@ -266,6 +263,8 @@ nth0/3	no	basic/lists
 nth0/4	no	basic/lists
 nth1/3	no	basic/lists
 nth1/4	no	basic/lists
+number_compare/3	no	standard/approx
+number_compare/3	no	standard/sort
 offset/2	no	advanced/sequence
 open/3	no	stream/stream
 open/4	no	stream/stream

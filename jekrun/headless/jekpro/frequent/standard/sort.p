@@ -132,14 +132,14 @@
 number_compare(C, X, Y) :-
    sys_type(X, S),
    sys_type(X, T),
-   number_test(D, S, T),
+   sys_number_test(D, S, T),
    (  D == =
    -> (  S == 0 -> compare(C, X, Y)
-      ;  S == 1 -> number_test(C, X, Y)
+      ;  S == 1 -> sys_number_test(C, X, Y)
       ;  S == 2 -> compare(C, X, Y)
       ;  functor(X, F, A),
          functor(Y, G, B),
-         number_test(E, A, B),
+         sys_number_test(E, A, B),
          (  E == =
          -> compare(H, F, G),
             (  H == =
@@ -176,10 +176,10 @@ sys_number_compare_list([X|L], [Y|R], C) :-
    ;  C = D).
 
 /**
- * number_test(C, X, Y):
+ * sys_number_test(C, X, Y):
  * The predicate succeeds when C unifies with the result of
  * numerical testing the number X to the number Y. The result is
  * one of the following atoms <, = or >.
  */
-% number_test(-Atom, +Number, +Number)
-:- special(number_test/3, 'SpecialSort', 7).
+% sys_number_test(-Atom, +Number, +Number)
+:- special(sys_number_test/3, 'SpecialSort', 7).
