@@ -133,3 +133,11 @@ T =.. L :-
 :- public \= /2.
 :- special(\= /2, 'SpecialUniv', 5).
 
+/**
+ * copy_term(X, Y): [ISO 8.5.4]
+ * The predicate creates a copy of X and succeeds when the copy unifies with Y.
+ */
+% copy_term(+Term, -Term)
+:- public copy_term/2.
+:- special(copy_term/2, 'SpecialUniv', 8).
+

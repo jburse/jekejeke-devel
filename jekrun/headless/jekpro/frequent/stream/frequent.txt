@@ -149,7 +149,7 @@ dispatch_head/3	no	misc/http
 dispatch_redirect/2	no	misc/http
 dispatch_text/3	no	misc/http
 dispatch_upgrade/2	no	misc/http
-distinct/2	no	advanced/sequence
+distinct/1	no	advanced/sequence
 downcase_atom/2	no	misc/text
 endpoint_address/2	no	misc/socket
 endpoint_new/3	no	misc/socket
@@ -280,7 +280,6 @@ ord_remove/3	no	experiment/ordmaps
 ord_subset/2	no	advanced/ordsets
 ord_union/3	no	advanced/ordsets
 order_by/2	no	advanced/sequence
-order_by/3	no	advanced/sequence
 pattern_compile/2	no	misc/text
 pattern_compile/3	no	misc/text
 pattern_match/2	no	misc/text

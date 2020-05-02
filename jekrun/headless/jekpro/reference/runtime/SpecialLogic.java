@@ -1,5 +1,7 @@
-package jekpro.frequent.standard;
+package jekpro.reference.runtime;
 
+import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -11,7 +13,7 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 
 /**
- * <p>Provides built-in predicates for the module bags.</p>
+ * <p>Provides built-in predicates for the module logic.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -41,17 +43,16 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialFind extends AbstractSpecial {
+public final class SpecialLogic extends AbstractSpecial {
     private final static int SPECIAL_FINDALL = 0;
     private final static int SPECIAL_FINDALL_END = 1;
-    private final static int SPECIAL_COPY_TERM = 2;
 
     /**
-     * <p>Create a set special.</p>
+     * <p>Create a logic special.</p>
      *
      * @param i The id.
      */
-    public SpecialFind(int i) {
+    public SpecialLogic(int i) {
         super(i);
     }
 
@@ -79,7 +80,7 @@ public final class SpecialFind extends AbstractSpecial {
 
                 en.skel = en.store.foyer.ATOM_NIL;
                 en.display = Display.DISPLAY_CONST;
-                SpecialFind.createList(list, en);
+                createList(list, en);
 
                 Display d = en.display;
                 boolean multi = d.getAndReset();
@@ -100,7 +101,7 @@ public final class SpecialFind extends AbstractSpecial {
                 en.skel = temp[3];
                 en.display = ref;
                 en.deref();
-                SpecialFind.createList(list, en);
+                createList(list, en);
 
                 d = en.display;
                 multi = d.getAndReset();
@@ -109,25 +110,10 @@ public final class SpecialFind extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 return true;
-            case SPECIAL_COPY_TERM:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Object val = AbstractSkel.copySkel(temp[0], ref, en);
-                d = AbstractSkel.createMarker(val);
-                multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, val, d))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
     }
-
-    /************************************************************************/
-    /* Findall Predicate                                                    */
-    /************************************************************************/
 
     /**
      * <p>Find all solutions.</p>
@@ -202,7 +188,7 @@ public final class SpecialFind extends AbstractSpecial {
             Display d = en.display;
             Object val = temp.get(i);
             Display ref = AbstractSkel.createMarker(val);
-            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+            pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t, d, en);
         }
     }

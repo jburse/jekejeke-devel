@@ -805,7 +805,7 @@ public abstract class AbstractSource {
      */
     public void addOperInv(Operator s) {
         synchronized (this) {
-            if (opsinv.getKey(s) != null)
+            if (opsinv.getEntry(s) != null)
                 return;
             opsinv.add(s);
             cacheopsinv = null;
@@ -819,9 +819,11 @@ public abstract class AbstractSource {
      */
     public void removeOperInv(Operator s) {
         synchronized (this) {
-            if (opsinv.getKey(s) == null)
+            SetEntry<Operator> entry = opsinv.getEntry(s);
+            if (entry == null)
                 return;
-            opsinv.remove(s);
+            opsinv.removeEntry(entry);
+            opsinv.resize();
             cacheopsinv = null;
         }
     }

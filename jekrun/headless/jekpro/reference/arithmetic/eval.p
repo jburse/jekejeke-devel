@@ -4,8 +4,8 @@
  * represents floats and decimals as pairs of a mantissa and a scale.
  * For floats the scale is binary, for decimals the scale is decimal:
  *
- * float = mantissa * 2scale
- * decimal = mantissa * 10scale
+ * float = mantissa * 2^scale
+ * decimal = mantissa * 10^scale
  *
  * Examples:
  * 1.0 = 100.0E-2

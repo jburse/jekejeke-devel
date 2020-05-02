@@ -103,7 +103,7 @@ public final class EngineVars {
             vars = new SetHashLink<Object>();
             vars.add(key);
         } else {
-            if (vars.getKey(key) == null)
+            if (vars.getEntry(key) == null)
                 vars.add(key);
         }
     }
@@ -185,7 +185,7 @@ public final class EngineVars {
                     vars = new SetHashLink<Object>();
                     f = false;
                 } else {
-                    f = vars.getKey(key) != null;
+                    f = (vars.getEntry(key) != null);
                 }
                 if (!f) {
                     vars.add(key);
@@ -281,7 +281,7 @@ public final class EngineVars {
             visit = new SetHashLink<BindUniv>();
             visit.add(b);
         } else {
-            if (visit.getKey(b) == null) {
+            if (visit.getEntry(b) == null) {
                 visit.add(b);
             } else {
                 return true;

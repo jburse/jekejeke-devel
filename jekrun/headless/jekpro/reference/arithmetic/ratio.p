@@ -402,20 +402,20 @@ rat_less(A, B#C) :- !,
 rat_less(A, B) :-
    user: <(A, B).
 
-:- public number_compare/3.
-:- override number_compare/3.
-number_compare(R, A#B, C#D) :- !,
+:- public number_test/3.
+:- override number_test/3.
+number_test(R, A#B, C#D) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
-   user:number_compare(R, H, J).
-number_compare(R, A#B, C) :- !,
+   user:number_test(R, H, J).
+number_test(R, A#B, C) :- !,
    user: *(B, C, J),
-   user:number_compare(R, A, J).
-number_compare(R, A, B#C) :- !,
+   user:number_test(R, A, J).
+number_test(R, A, B#C) :- !,
    user: *(A, C, H),
-   user:number_compare(R, H, B).
-number_compare(R, A, B) :-
-   user:number_compare(R, A, B).
+   user:number_test(R, H, B).
+number_test(R, A, B) :-
+   user:number_test(R, A, B).
 
 /***************************************************************/
 /* bits.p                                                      */

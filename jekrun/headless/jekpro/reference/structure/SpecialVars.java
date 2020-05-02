@@ -1,6 +1,5 @@
 package jekpro.reference.structure;
 
-import jekpro.frequent.advanced.SpecialFind;
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
@@ -14,6 +13,7 @@ import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.term.*;
 import matula.util.data.*;
 
@@ -395,7 +395,7 @@ public final class SpecialVars extends AbstractSpecial {
         /* pass one, all non-anon */
         for (SetEntry<Object> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            if (anon != null && anon.getKey(entry.value) != null)
+            if (anon != null && anon.getEntry(entry.value) != null)
                 continue;
             String t;
             if (print != null && (t = print.get(entry.value)) != null) {
@@ -405,7 +405,7 @@ public final class SpecialVars extends AbstractSpecial {
                     range = nameRange(print);
                 String name = SkelVar.sernoToString(k, false);
                 k++;
-                while (range.getKey(name) != null) {
+                while (range.getEntry(name) != null) {
                     name = SkelVar.sernoToString(k, false);
                     k++;
                 }
@@ -416,7 +416,7 @@ public final class SpecialVars extends AbstractSpecial {
         /* pass two, all anon */
         for (SetEntry<Object> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            if (anon == null || anon.getKey(entry.value) == null)
+            if (anon == null || anon.getEntry(entry.value) == null)
                 continue;
             String t;
             if (print != null && (t = print.get(entry.value)) != null) {
@@ -429,7 +429,7 @@ public final class SpecialVars extends AbstractSpecial {
                         range = nameRange(print);
                     String name = SkelVar.sernoToString(k, false);
                     k++;
-                    while (range.getKey(name) != null) {
+                    while (range.getEntry(name) != null) {
                         name = SkelVar.sernoToString(k, false);
                         k++;
                     }
@@ -471,7 +471,7 @@ public final class SpecialVars extends AbstractSpecial {
                     set = new SetHashLink<Object>();
                     set.add(pair);
                 } else {
-                    if (set.getKey(pair) == null)
+                    if (set.getEntry(pair) == null)
                         set.add(pair);
                 }
             }
@@ -510,12 +510,12 @@ public final class SpecialVars extends AbstractSpecial {
             Display ref2 = AbstractTerm.getDisplay(elem2);
             Object t4 = en.skel;
             Display d2 = en.display;
-            SpecialFind.pairValue(en.store.foyer.CELL_EQUAL,
+            SpecialLogic.pairValue(en.store.foyer.CELL_EQUAL,
                     new SkelAtom(entry.value), Display.DISPLAY_CONST,
                     val2, ref2, en);
             val2 = en.skel;
             ref2 = en.display;
-            SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                     val2, ref2, t4, d2, en);
         }
     }

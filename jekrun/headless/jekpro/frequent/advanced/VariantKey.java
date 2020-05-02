@@ -53,9 +53,9 @@ public final class VariantKey extends SetEntry
      * @return True of equals other object, otherwise false.
      */
     public boolean equals(Object obj) {
-        if (!(obj instanceof SetEntry))
+        if (!(obj instanceof VariantKey))
             return false;
-        return (value != null ? value.equals(((SetEntry) obj).value) :
+        return (value != null ? value.equals(((VariantKey) obj).value) :
                 null == ((SetEntry) obj).value);
     }
 

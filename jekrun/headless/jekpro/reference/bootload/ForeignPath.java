@@ -11,13 +11,16 @@ import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
 import matula.util.config.FileExtension;
+import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * <p>The foreign predicates for the module path.</p>
@@ -97,23 +100,21 @@ public final class ForeignPath {
     private static final String OP_MIME = "mime";
 
     private static final String OP_DATA = "data";
-    private static final String OP_DATA_PLAIN = "plain";
+    private static final String OP_DATA_CLEAR = "clear";
     private static final String OP_DATA_ENCRYPT = "encrypt";
 
-    private final static int USE_NONE = -1;
     private final static int USE_BINARY = 0;
     private final static int USE_TEXT = 1;
     private final static int USE_RESOURCE = 2;
     private final static int USE_PACKAGE = 3;
 
     private final static String OP_USE = "type";
-    private final static String OP_USE_NONE = "none";
     private final static String OP_USE_BINARY = "binary";
     private final static String OP_USE_TEXT = "text";
     private final static String OP_USE_PACKAGE = "package";
     private final static String OP_USE_RESOURCE = "resource";
 
-    private static final int DATA_PLAIN = 0;
+    private static final int DATA_CLEAR = 0;
     private static final int DATA_ENCRYPT = 1;
 
     /**
@@ -434,7 +435,7 @@ public final class ForeignPath {
      */
     private static FileExtension decodeFileExtension(Object opt)
             throws InterpreterMessage {
-        int type = 0;
+        int type = FileExtension.MASK_USES_TEXT;
         String mime = null;
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
@@ -447,8 +448,6 @@ public final class ForeignPath {
                 type &= ~FileExtension.MASK_PCKG_LOAD;
                 type &= ~FileExtension.MASK_USES_SUFX;
                 switch (ForeignPath.atomToUse(help)) {
-                    case USE_NONE:
-                        break;
                     case USE_BINARY:
                         type |= FileExtension.MASK_USES_BNRY;
                         break;
@@ -476,7 +475,7 @@ public final class ForeignPath {
                     ((TermCompound) temp).getFunctor().equals(OP_DATA)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 switch (atomToData(help)) {
-                    case DATA_PLAIN:
+                    case DATA_CLEAR:
                         type &= ~FileExtension.MASK_DATA_ECRY;
                         break;
                     case DATA_ENCRYPT:
@@ -521,24 +520,47 @@ public final class ForeignPath {
     /**
      * <p>Retrieve the file extensions along the knowledge bases.</p>
      *
+     * @param co The call-out.
      * @param inter The interpreter.
      * @return The list of class paths.
      */
-    public static Object sysGetFileExtenstions(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
+    public static Object sysGetFileExtenstions(CallOut co, Interpreter inter) {
+        Enumeration<Object> at;
+        if (co.getFirst()) {
+            ListArray<Object> help = listFileExtensions(inter);
+            at = help.elements();
+            if (!at.hasMoreElements())
+                return null;
+            co.setData(at);
+        } else {
+            at = (Enumeration<Object>) co.getData();
+        }
+        Object val = at.nextElement();
+        co.setRetry(at.hasMoreElements());
+        return val;
+    }
+
+    /**
+     * <p>Collect the file extensions.</p>
+     *
+     * @param inter The interpreter.
+     * @return The file extensions.
+     */
+    private static ListArray<Object> listFileExtensions(Interpreter inter) {
         Knowledgebase know = inter.getKnowledgebase();
-        Object end = lobby.ATOM_NIL;
+        Lobby lobby = know.getLobby();
+        ListArray<Object> res=new ListArray<Object>();
         do {
             MapEntry<String, FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
                 MapEntry<String, FileExtension> ext = exts[i];
                 Object val = encodeFileExtension(inter, ext.value);
                 val = new TermCompound(lobby.ATOM_SUB, ext.key, val);
-                end = new TermCompound(lobby.ATOM_CONS, val, end);
+                res.add(val);
             }
             know = know.getParent();
         } while (know != null);
-        return end;
+        return res;
     }
 
     /**
@@ -555,19 +577,14 @@ public final class ForeignPath {
             Object val = new TermCompound(OP_MIME, fe.getMimeType());
             end = new TermCompound(lobby.ATOM_CONS, val, end);
         }
-        if ((fe.getType() & FileExtension.MASK_USES_SUFX) != 0) {
-            Object val;
-            if ((fe.getType() & FileExtension.MASK_USES_BNRY) != 0) {
-                val = new TermCompound(OP_USE, OP_USE_BINARY);
-            } else if ((fe.getType() & FileExtension.MASK_USES_TEXT) != 0) {
-                val = new TermCompound(OP_USE, OP_USE_TEXT);
-            } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
-                val = new TermCompound(OP_USE, OP_USE_RESOURCE);
-            } else if ((fe.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
-                val = new TermCompound(OP_USE, OP_USE_PACKAGE);
-            } else {
-                throw new IllegalArgumentException("unkown uses");
-            }
+        if ((fe.getType() & FileExtension.MASK_USES_BNRY) != 0) {
+            Object val = new TermCompound(OP_USE, OP_USE_BINARY);
+            end = new TermCompound(lobby.ATOM_CONS, val, end);
+        } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
+            Object val = new TermCompound(OP_USE, OP_USE_RESOURCE);
+            end = new TermCompound(lobby.ATOM_CONS, val, end);
+        } else if ((fe.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
+            Object val = new TermCompound(OP_USE, OP_USE_PACKAGE);
             end = new TermCompound(lobby.ATOM_CONS, val, end);
         }
         if ((fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
@@ -587,8 +604,8 @@ public final class ForeignPath {
      */
     public static int atomToData(Object t) throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_DATA_PLAIN)) {
-            return DATA_PLAIN;
+        if (val.equals(OP_DATA_CLEAR)) {
+            return DATA_CLEAR;
         } else if (val.equals(OP_DATA_ENCRYPT)) {
             return DATA_ENCRYPT;
         } else {
@@ -608,9 +625,7 @@ public final class ForeignPath {
      */
     public static int atomToUse(Object t) throws InterpreterMessage {
         String val = InterpreterMessage.castString(t);
-        if (val.equals(OP_USE_NONE)) {
-            return USE_NONE;
-        } else if (val.equals(OP_USE_BINARY)) {
+        if (val.equals(OP_USE_BINARY)) {
             return USE_BINARY;
         } else if (val.equals(OP_USE_TEXT)) {
             return USE_TEXT;

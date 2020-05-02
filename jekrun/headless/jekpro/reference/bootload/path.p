@@ -3,7 +3,7 @@
  * against the current base in write or append mode. The current base
  * is the Prolog flag “base_url”. Otherwise in read mode, if the call-site
  * is not user it is resolved against the path of the call-site itself.
- * In both cases the suffixes of the sys_add_file_extension/1
+ * In both cases the suffixes of the sys_add_file_extension/2
  * command are used:
  *
  * Example:
@@ -14,7 +14,7 @@
  * ?- set_prolog_flag(base_url, '/C:/Users/Jan Burse/Desktop/').
  * Yes
  *
- * ?- sys_add_file_extension(text('.dcg', 'text/prolog')).
+ * ?- sys_add_file_extension('.dcg', [mime('text/prolog')]).
  * Yes
  *
  * ?- absolute_file_name('my folder/my file', X).
@@ -36,10 +36,10 @@
  *   &lt;path&gt;              resolve &lt;path&gt; in base.
  *
  * Read access resolution:
- *   library(<path>)           lookup resource <path> in class path.
- *   foreign(<path>)           lookup class <path> in class path.
- *   verbatim(<path>)          like library(<path>) or take as is.
- *   <path>                    resolve <path> in scope or base.
+ *   library(&lt;path&gt;)     lookup text &lt;path&gt; in class path.
+ *   foreign(&lt;path&gt;)     lookup class &lt;path&gt; in class path.
+ *   verbatim(&lt;path&gt;)    like library(&lt;path&gt;) or take as is.
+ *   &lt;path&gt;              resolve &lt;path&gt; in scope or base.
  *
  * The predicates absolute_file_name/[2,3] and absolute_resource_name/1
  * provide file name resolving. The predicate absolute_file_name/2 works
@@ -125,7 +125,7 @@ sys_current_path(Path) :-
  * sys_add_file_extension(E, O):
  * The predicate succeeds in adding the file extension database
  * entry E with type and mime options O to the current knowledge base.
- * For a list of recognized database entries see the API documentation.
+ * For a list of recognized mime options see the API documentation.
  */
 :- foreign(sys_add_file_extension/2, 'ForeignPath',
       sysAddFileExtenstion('Interpreter', 'String', 'Object')).
@@ -147,12 +147,11 @@ sys_current_path(Path) :-
  * along the knowledge bases.
  */
 sys_current_file_extension(E, O) :-
-   sys_get_file_extensions(L),
-   sys_member(-(E, O), L).
+   sys_get_file_extensions(-(E, O)).
 :- set_predicate_property(sys_current_file_extension/2, visible(public)).
 
 :- foreign(sys_get_file_extensions/1, 'ForeignPath',
-      sysGetFileExtenstions('Interpreter')).
+      sysGetFileExtenstions('CallOut', 'Interpreter')).
 :- set_predicate_property(sys_get_file_extensions/1, visible(private)).
 
 /****************************************************************/

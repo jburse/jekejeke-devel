@@ -51,6 +51,7 @@ public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_NOT_UNIFY = 5;
     private final static int SPECIAL_SYS_LIST_TO_TERM = 6;
     private final static int SPECIAL_SYS_TERM_TO_LIST = 7;
+    private final static int SPECIAL_COPY_TERM = 8;
 
     /**
      * <p>Create a univ special.</p>
@@ -180,6 +181,17 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.skel = SpecialUniv.termToList(en.skel, en);
                     if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
                         return false;
+                    return true;
+                case SPECIAL_COPY_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Object val = AbstractSkel.copySkel(temp[0], ref, en);
+                    d = AbstractSkel.createMarker(val);
+                    multi = d.getAndReset();
+                    if (!en.unifyTerm(temp[1], ref, val, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
                     return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

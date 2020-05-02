@@ -17,7 +17,6 @@ import jekpro.tools.term.SkelVar;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
-import matula.util.config.AbstractRecognizer;
 import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;

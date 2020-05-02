@@ -47,6 +47,8 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- use_package(foreign(jekpro/reference/runtime)).
+
 :- module(user, []).
 
 :- public infix('|').
@@ -115,3 +117,29 @@ _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
 :- public repeat/0.
 repeat.
 repeat :- repeat.
+
+/**
+ * forall(A,B): [N208 8.10.4]
+ * The predicate succeeds when there is no success of A
+ * such that B fails. Otherwise the predicate fails.
+ */
+:- public forall/2.
+:- meta_predicate forall(0, 0).
+forall(A, B) :- \+ (A, \+ B).
+
+/**
+ * findall(T, G, L): [ISO 8.10.1]
+ * findall(T, G, L, R):
+ * The predicate first finds all the solutions to the goal G, whereby
+ * collecting copies of the template T in a list. The predicate then
+ * succeeds when L unifies with the list.
+ */
+% findall(+Template, +Goal, -List)
+:- public findall/3.
+:- meta_predicate findall(?, 0, ?).
+:- special(findall/3, 'SpecialLogic', 0).
+
+% findall(+Template, +Goal, -List, +List)
+:- public findall/4.
+:- meta_predicate findall(?, 0, ?, ?).
+:- special(findall/4, 'SpecialLogic', 1).

@@ -379,4 +379,3 @@ sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 :- ensure_loaded(library(standard/apply)).
 
 :- set_prolog_flag(sys_clause_expand, on).
-

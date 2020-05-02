@@ -138,14 +138,14 @@
 :- special(>= /2, 'SpecialCompare', 5).
 
 /**
- * number_compare(C, X, Y):
+ * number_test(C, X, Y):
  * The predicate succeeds when C unifies with the result of
- * arithmetical comparing X to Y. The result is one of the
- * following atoms <, = or >.
+ * numerical testing the number X to the number Y. The result is
+ * one of the following atoms <, = or >.
  */
-% number_compare(-Atom, +Number, +Number)
-:- public number_compare/3.
-:- special(number_compare/3, 'SpecialCompare', 7).
+% number_test(-Atom, +Number, +Number)
+:- public number_test/3.
+:- special(number_test/3, 'SpecialCompare', 7).
 
 /**
  * min(X, Y): [TC2 9.3.9]
@@ -166,4 +166,3 @@
 % max: decimal x decimal -> decimal
 :- public max/3.
 :- special(max/3, 'EvaluableCompare', 1).
-

@@ -1,6 +1,5 @@
 package jekpro.frequent.standard;
 
-import jekpro.frequent.advanced.SpecialFind;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -9,6 +8,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
 import jekpro.tools.array.Types;
@@ -222,7 +222,7 @@ public final class SpecialSort extends AbstractSpecial {
             en.deref();
             Object elem = AbstractTerm.createMolec(en.skel, en.display);
             try {
-                if (set.getKey(elem) == null)
+                if (set.getEntry(elem) == null)
                     set.add(elem);
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(
@@ -272,7 +272,7 @@ public final class SpecialSort extends AbstractSpecial {
                 Object elem = entry.value;
                 Object val = AbstractTerm.getSkel(elem);
                 Display ref = AbstractTerm.getDisplay(elem);
-                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
             }
         } else {
@@ -283,7 +283,7 @@ public final class SpecialSort extends AbstractSpecial {
                 Object elem = entry.value;
                 Object val = AbstractTerm.getSkel(elem);
                 Display ref = AbstractTerm.getDisplay(elem);
-                SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
             }
         }
@@ -335,10 +335,12 @@ public final class SpecialSort extends AbstractSpecial {
             Object elem = AbstractTerm.createMolec(en.skel, en.display);
             ListArray<Object> found;
             try {
-                found = map.get(elem);
-                if (found == null) {
+                MapEntry<Object, ListArray<Object>> entry = map.getEntry(elem);
+                if (entry == null) {
                     found = new ListArray<Object>();
                     map.add(elem, found);
+                } else {
+                    found = entry.value;
                 }
             } catch (ArithmeticException x) {
                 throw new EngineMessage(EngineMessage.evaluationError(
@@ -396,11 +398,11 @@ public final class SpecialSort extends AbstractSpecial {
                     Object elem = list.get(i);
                     Object val = AbstractTerm.getSkel(elem);
                     Display ref = AbstractTerm.getDisplay(elem);
-                    SpecialFind.pairValue(en.store.foyer.CELL_SUB,
+                    SpecialLogic.pairValue(en.store.foyer.CELL_SUB,
                             val2, ref2, val, ref, en);
                     val = en.skel;
                     ref = en.display;
-                    SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                             val, ref, t4, d2, en);
                 }
             }
@@ -417,11 +419,11 @@ public final class SpecialSort extends AbstractSpecial {
                     Object elem = list.get(i);
                     Object val = AbstractTerm.getSkel(elem);
                     Display ref = AbstractTerm.getDisplay(elem);
-                    SpecialFind.pairValue(en.store.foyer.CELL_SUB,
+                    SpecialLogic.pairValue(en.store.foyer.CELL_SUB,
                             val2, ref2, val, ref, en);
                     val = en.skel;
                     ref = en.display;
-                    SpecialFind.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                             val, ref, t4, d2, en);
                 }
             }

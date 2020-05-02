@@ -11,7 +11,10 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.proxy.RuntimeWrap;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.TermVar;
 import matula.util.wire.AbstractLivestock;
 
 /**
@@ -88,7 +91,7 @@ public final class LexicalCallback extends AbstractLexical {
      *
      * @param first  The first molec.
      * @param second The second molec.
-     * @param en The engine.
+     * @param en     The engine.
      * @throws ArithmeticException  Incomparable reference.
      * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
@@ -151,7 +154,7 @@ public final class LexicalCallback extends AbstractLexical {
         Engine en = visor.inuse;
         if (en == null)
             throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-        int size=Math.max(SupervisorCopy.displaySize(alfa),
+        int size = Math.max(SupervisorCopy.displaySize(alfa),
                 SupervisorCopy.displaySize(beta));
         Display ref = Display.valueOf(size);
         Object first = AbstractTerm.createMolec(alfa, ref);
