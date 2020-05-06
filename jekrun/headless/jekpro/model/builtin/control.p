@@ -129,17 +129,6 @@ once(X) :- X, !.
 :- sys_context_property(here, C),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
-/**
- * forall(A,B): [N208 8.10.4]
- * The predicate succeeds when there is no success of A
- * such that B fails. Otherwise the predicate fails.
- */
-forall(A, B) :- \+ (A, \+ B).
-:- set_predicate_property(forall/2, visible(public)).
-:- set_predicate_property(forall/2, meta_predicate(forall(0, 0))).
-:- sys_context_property(here, C),
-   set_predicate_property(forall/2, sys_meta_predicate(C)).
-
 /******************************************************************/
 /* Throw                                                          */
 /******************************************************************/

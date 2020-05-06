@@ -44,9 +44,21 @@
  * The predicate succeeds in C with the variant comparator
  * for the sort options O.
  */
-% sys_variant_comparator(+List, -Comparator)
-:- foreign(sys_variant_comparator/2, 'ForeignVariant',
-      sysVariantComparator('Interpreter', 'Object')).
+% sys_variant_comparator(+-List, -+Comparator)
+sys_variant_comparator(L, C) :- var(C), !,
+   sys_variant_decode(L, C).
+sys_variant_comparator(L, C) :-
+   sys_variant_encode(C, L).
+
+% sys_variant_decode(+List, -Comparator)
+:- private sys_variant_decode/2.
+:- foreign(sys_variant_decode/2, 'ForeignVariant',
+      sysVariantDecode('Interpreter', 'Object')).
+
+% sys_variant_encode(+Comparator, -List)
+:- private sys_variant_encode/2.
+:- foreign(sys_variant_encode/2, 'ForeignVariant',
+      sysVariantEncode('Interpreter', 'AbstractLexical')).
 
 /**
  * sys_variant_eager(C):

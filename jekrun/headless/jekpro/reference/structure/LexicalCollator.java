@@ -43,6 +43,7 @@ import java.util.Comparator;
  */
 public final class LexicalCollator extends AbstractLexical {
     private Comparator<String> cmpstr;
+    private String locstr;
 
     /**
      * <p>Set the string comparator.</p>
@@ -60,6 +61,24 @@ public final class LexicalCollator extends AbstractLexical {
      */
     public Comparator<String> getCmpStr() {
         return cmpstr;
+    }
+
+    /**
+     * <p>Set the locale string.</p>
+     *
+     * @param l The locale string.
+     */
+    public void setLocStr(String l) {
+        locstr = l;
+    }
+
+    /**
+     * <p>Retrieve the locale string.</p>
+     *
+     * @return The locale string.
+     */
+    public String getLocStr() {
+        return locstr;
     }
 
     /**************************************************************/

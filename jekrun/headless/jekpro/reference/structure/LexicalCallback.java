@@ -61,6 +61,15 @@ public final class LexicalCallback extends AbstractLexical {
     }
 
     /**
+     * <p>Retrieve the comparator.</p>
+     *
+     * @return The comparator.
+     */
+    public Object getComparator() {
+        return comparator;
+    }
+
+    /**
      * <p>Compare two terms lexically.</p>
      * <p>As a side effect will dynamically allocate display serial numbers.</p>
      *

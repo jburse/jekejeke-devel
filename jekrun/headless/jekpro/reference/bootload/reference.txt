@@ -117,6 +117,7 @@ compare/3	no	structure/lexical
 compare/4	no	structure/lexical
 compound/1	no	structure/type
 consult/1	no	bootload/load
+copy_term/2	no	structure/univ
 cos/2	yes	arithmetic/trigo
 current_module/1	no	reflect/source
 current_op/3	no	reflect/oper
@@ -143,6 +144,8 @@ epsilon/1	yes	arithmetic/trigo
 epsilon32/1	yes	arithmetic/trigo
 exit/0	no	runtime/session
 exp/2	yes	arithmetic/trigo
+findall/3	no	runtime/logic
+findall/4	no	runtime/logic
 float/1	no	structure/type
 float/2	yes	arithmetic/elem
 float/2	no	arithmetic/ratio
@@ -152,6 +155,7 @@ float32/2	no	arithmetic/ratio
 float64/1	no	structure/type
 floor/2	no	arithmetic/ratio
 floor/2	yes	arithmetic/round
+forall/2	no	runtime/logic
 foreign/3	no	reflect/foreign
 foreign_const/3	no	reflect/foreign
 foreign_constructor/3	no	reflect/foreign
@@ -200,8 +204,6 @@ msb/2	yes	arithmetic/bits
 number/1	no	structure/type
 number_chars/2	no	structure/atom
 number_codes/2	no	structure/atom
-number_compare/3	no	arithmetic/compare
-number_compare/3	no	arithmetic/ratio
 numbervars/3	no	structure/vars
 numerator/2	no	arithmetic/ratio
 op/3	no	reflect/oper

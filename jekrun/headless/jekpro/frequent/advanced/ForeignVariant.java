@@ -43,14 +43,15 @@ import matula.util.regex.IgnoreCase;
 public final class ForeignVariant {
 
     /**
-     * <p>Create a new variant comparator.</p>
+     * <p>Decode a variant comparator.</p>
      *
-     * @param opt The sort options.
+     * @param inter The interpreter.
+     * @param opt   The sort options.
      * @return The variant comparator.
      * @throws InterpreterMessage Type Error.
      */
-    public static AbstractLexical sysVariantComparator(Interpreter inter,
-                                                       Object opt)
+    public static AbstractLexical sysVariantDecode(Interpreter inter,
+                                                   Object opt)
             throws InterpreterMessage {
         Engine engine = (Engine) inter.getEngine();
         AbstractLexical el;
@@ -61,6 +62,20 @@ public final class ForeignVariant {
             throw new InterpreterMessage(x);
         }
         return el;
+    }
+
+    /**
+     * <p>Encode a variant comparator.</p>
+     *
+     * @param inter The interpreter.
+     * @param el    The variant comparator.
+     * @return The sort options.
+     */
+    public static Object sysVariantEncode(Interpreter inter,
+                                          AbstractLexical el) {
+        Engine engine = (Engine) inter.getEngine();
+        AbstractLexical.encodeSortOpts(el, engine);
+        return AbstractTerm.createMolec(engine.skel, engine.display);
     }
 
     /**

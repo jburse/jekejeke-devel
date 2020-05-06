@@ -50,6 +50,15 @@ public final class IgnoreCase implements Comparator<String> {
     }
 
     /**
+     * <p>Retrieve the strength.</p>
+     *
+     * @return The strength.
+     */
+    public int getStrength() {
+        return strength;
+    }
+
+    /**
      * <p>Compare two strings.</p>
      *
      * @param o1 The first string.

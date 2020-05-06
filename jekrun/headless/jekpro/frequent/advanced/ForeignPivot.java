@@ -155,9 +155,9 @@ public final class ForeignPivot {
      * @param val   The value.
      */
     public static boolean sysPivotPut(Interpreter inter,
-                                   SetEntry<AbstractSet<Object>> pivot,
-                                   AbstractLexical el,
-                                   Object val) {
+                                      SetEntry<AbstractSet<Object>> pivot,
+                                      AbstractLexical el,
+                                      Object val) {
         Engine en = (Engine) inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);

@@ -5,6 +5,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.WriteOpts;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -119,6 +120,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
      * @param t  The option skeleton.
      * @param d  The option display.
      * @param en The engine.
+     * @return The sort options.
      * @throws EngineMessage Type Error.
      */
     public static AbstractLexical decodeSortOpts(Object t, Display d, Engine en)
@@ -229,6 +231,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
                 Collator col = Collator.getInstance(locale);
                 col.setStrength(ignore ? Collator.SECONDARY : Collator.TERTIARY);
                 ((LexicalCollator) el).setCmpStr((Comparator) col);
+                ((LexicalCollator) el).setLocStr(locale.toString());
                 return el;
             case AbstractLexical.TYPE_CALLBACK:
                 el = new LexicalCallback();
@@ -237,6 +240,82 @@ public abstract class AbstractLexical implements Comparator<Object> {
                 return el;
             default:
                 throw new IllegalArgumentException("illegal type");
+        }
+    }
+
+    /**
+     * !
+     * <p>Encode the sort options.</p>
+     * <p>The result is returned in skel and display.</p>
+     *
+     * @param el The sort options.
+     * @param en The engine.
+     */
+    public static void encodeSortOpts(AbstractLexical el, Engine en) {
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
+        if (el instanceof LexicalCollator) {
+            Comparator cmpstr = ((LexicalCollator) el).getCmpStr();
+            if (cmpstr == null) {
+                Object t = en.skel;
+                Display d = en.display;
+                Object m = new SkelCompound(new SkelAtom(OP_TYPE),
+                        new SkelAtom(OP_TYPE_HASH));
+                SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                        m, Display.DISPLAY_CONST, t, d, en);
+            } else if (cmpstr instanceof IgnoreCase) {
+                if (((IgnoreCase) cmpstr).getStrength() != Collator.TERTIARY) {
+                    Object t = en.skel;
+                    Display d = en.display;
+                    Object m = new SkelCompound(new SkelAtom(OP_IGNORE_CASE),
+                            new SkelAtom(Foyer.OP_TRUE));
+                    SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                            m, Display.DISPLAY_CONST, t, d, en);
+                }
+            } else {
+                if (((Collator) cmpstr).getStrength() != Collator.TERTIARY) {
+                    Object t = en.skel;
+                    Display d = en.display;
+                    Object m = new SkelCompound(new SkelAtom(OP_IGNORE_CASE),
+                            new SkelAtom(Foyer.OP_TRUE));
+                    SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                            m, Display.DISPLAY_CONST, t, d, en);
+                }
+                Object t = en.skel;
+                Display d = en.display;
+                Object m = new SkelCompound(new SkelAtom(OP_LOCALE),
+                        new SkelAtom(((LexicalCollator) el).getLocStr()));
+                SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                        m, Display.DISPLAY_CONST, t, d, en);
+                t = en.skel;
+                d = en.display;
+                m = new SkelCompound(new SkelAtom(OP_TYPE),
+                        new SkelAtom(OP_TYPE_COLLATOR));
+                SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                        m, Display.DISPLAY_CONST, t, d, en);
+            }
+        } else {
+            Object t = en.skel;
+            Display d = en.display;
+            Object obj = ((LexicalCallback) el).getComparator();
+            Object m = new SkelCompound(new SkelAtom(OP_COMPARATOR),
+                    AbstractTerm.getSkel(obj));
+            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                    m, AbstractTerm.getDisplay(obj), t, d, en);
+            t = en.skel;
+            d = en.display;
+            m = new SkelCompound(new SkelAtom(OP_TYPE),
+                    new SkelAtom(OP_TYPE_CALLBACK));
+            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                    m, Display.DISPLAY_CONST, t, d, en);
+        }
+        if ((el.getFlags() & MASK_FLAG_RVRS) != 0) {
+            Object t = en.skel;
+            Display d = en.display;
+            Object m = new SkelCompound(new SkelAtom(OP_REVERSE),
+                    new SkelAtom(Foyer.OP_TRUE));
+            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                    m, Display.DISPLAY_CONST, t, d, en);
         }
     }
 

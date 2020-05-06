@@ -6,7 +6,7 @@
  * ordering  based on a lexical comparison. The ordering of the
  * basic types is as follows:
  *
- * variable < decimal < float32 < float64 < integer < reference < atom < compound
+ * variable < decimal < float < integer < reference < atom < compound
  *
  * Variables are ordered according to their internal instantiation
  * numbering. Integers, float32s, float64s and decimals are
