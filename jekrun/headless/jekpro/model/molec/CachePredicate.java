@@ -111,7 +111,6 @@ public final class CachePredicate extends AbstractCache {
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            /* find name%pred */
             s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 String s1 = CacheFunctor.composeQuali(s, n);
@@ -131,7 +130,6 @@ public final class CachePredicate extends AbstractCache {
         if (pick != null)
             return pick;
         if (!Branch.OP_USER.equals(s) || !f)
-            /* find pred */
             return getRoutineUser(arity, n, base.getStore());
         return null;
     }
@@ -219,7 +217,6 @@ public final class CachePredicate extends AbstractCache {
         if (pick != null)
             return pick;
         if (!Branch.OP_USER.equals(s))
-            /* find pred */
             return getRoutineUser(arity, n, base.getStore());
         return null;
     }

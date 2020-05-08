@@ -309,14 +309,6 @@ public abstract class AbstractLexical implements Comparator<Object> {
             SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
                     m, Display.DISPLAY_CONST, t, d, en);
         }
-        if ((el.getFlags() & MASK_FLAG_RVRS) != 0) {
-            Object t = en.skel;
-            Display d = en.display;
-            Object m = new SkelCompound(new SkelAtom(OP_REVERSE),
-                    new SkelAtom(Foyer.OP_TRUE));
-            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
-                    m, Display.DISPLAY_CONST, t, d, en);
-        }
     }
 
     /**

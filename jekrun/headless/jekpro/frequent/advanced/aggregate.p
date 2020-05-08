@@ -125,9 +125,10 @@ sys_aggregate_all(A, G, P, J) :-
 :- meta_predicate aggregate(?, 0, ?).
 aggregate(A, Goal, S) :-
    sys_goal_globals(A^Goal, W),
-   sys_revolve_make(W, P),
-   (sys_revolve_run(A, Goal, W, P, _), fail; true),
-   sys_revolve_list(W, P, S).
+   sys_revolve_new(R),
+   (sys_aggregate(A, Goal, W, R, _), fail; true),
+   sys_revolve_pair(R, W-Q),
+   sys_pivot_get(Q, S).
 
 % aggregate(+Aggregate, +QuantGoal, -Value, +List)
 :- public aggregate/4.
@@ -135,64 +136,26 @@ aggregate(A, Goal, S) :-
 aggregate(A, Goal, S, O) :-
    sys_goal_globals(A^Goal, W),
    sys_variant_comparator(O, C),
-   (  sys_variant_natural(C) -> sys_revolve_make(W, P)
-   ;  sys_revolve_make(W, P, C)),
+   (  sys_variant_natural(C) -> sys_revolve_new(R)
+   ;  sys_revolve_new(C, R)),
    (  sys_variant_eager(C)
-   -> sys_revolve_run(A, Goal, W, P, J),
+   -> sys_aggregate(A, Goal, W, R, J),
       S = J
-   ;  (sys_revolve_run(A, Goal, W, P, _), fail; true),
-      (  sys_variant_reverse(C) -> sys_revolve_list(W, P, S, C)
-      ;  sys_revolve_list(W, P, S))).
+   ;  (sys_aggregate(A, Goal, W, R, _), fail; true),
+      (  sys_variant_reverse(C) -> sys_revolve_pair(R, C, W-Q)
+      ;  sys_revolve_pair(R, W-Q)),
+      sys_pivot_get(Q, S)).
 
-% sys_aggregate(+Vars, +Aggregate, +Goal, +Revolve, -Value)
-:- private sys_aggregate/5.
-:- meta_predicate sys_aggregate(?, ?, 0, ?, ?).
-sys_aggregate(W, A, G, R, J) :-
-   G,
+% sys_aggregate(+Aggregate, +Goal, +Vars, +Revolve, -Value)
+:- meta_predicate sys_aggregate(?, 0, ?, ?, ?).
+sys_aggregate(A, Goal, W, R, J) :-
+   sys_goal_kernel(Goal, B),
+   B,
    sys_revolve_lookup(R, W, P),
    sys_pivot_get_default(P, A, H),
    sys_state_next(A, H, J),
    \+ sys_pivot_get(P, J),
    sys_pivot_set(P, J).
-
-% sys_revolve_run(+Aggregate, +Goal, +List, +Ref, -Value)
-:- meta_predicate sys_revolve_run(?, 0, ?, ?, ?).
-sys_revolve_run(A, Goal, [], P, J) :- !,
-   sys_goal_kernel(Goal, B),
-   sys_aggregate_all(A, B, P, J).
-sys_revolve_run(A, Goal, W, R, J) :-
-   sys_goal_kernel(Goal, B),
-   sys_aggregate(W, A, B, R, J).
-
-/*************************************************************/
-/* Revolve Helper                                            */
-/*************************************************************/
-
-% sys_revolve_make(+List, -Ref)
-sys_revolve_make([], P) :- !,
-   sys_pivot_new(P).
-sys_revolve_make(_, R) :-
-   sys_revolve_new(R).
-
-% sys_revolve_make(+List, -Ref, +Comparator)
-sys_revolve_make([], P, _) :- !,
-   sys_pivot_new(P).
-sys_revolve_make(_, R, C) :-
-   sys_revolve_new(C, R).
-
-% sys_revolve_list(+List, +Ref, -Value)
-sys_revolve_list([], P, S) :- !,
-   sys_pivot_get(P, S).
-sys_revolve_list(W, R, S) :-
-   sys_revolve_pair(R, W-Q),
-   sys_pivot_get(Q, S).
-
-% sys_revolve_list(+List, +Ref, -Value, +Comparator)
-sys_revolve_list([], P, S, _) :- !,
-   sys_pivot_get(P, S).
-sys_revolve_list(W, R, S, C) :-
-   sys_revolve_pair(R, C, W-Q),
-   sys_pivot_get(Q, S).
 
 /*************************************************************/
 /* Aggregate State                                           */

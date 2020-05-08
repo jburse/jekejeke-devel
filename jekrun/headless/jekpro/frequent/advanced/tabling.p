@@ -206,6 +206,10 @@ sys_table_props(I, J) :-
    ;  true),
    (  predicate_property(I, multifile) -> multifile(J)
    ;  true),
+   sys_make_indicator(H, _, I),
+   sys_context_property(H, C),
+   (  predicate_property(I, override(C)) -> override(J)
+   ;  true),
    sys_notrace(J).
 
 /*****************************************************************/
@@ -306,11 +310,11 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
    sys_univ(Goal, [G|L]),
    sys_table_cache(F, N, M),
    sys_univ(Test, [M, P, R]),
-   sys_table_new(C, W, R, New),
+   sys_table_new(C, R, New),
    sys_table_list(C, W, R, S, List),
    Call = (  Test -> List
       ;  New,
-         sys_call_info((sys_revolve_run(A, Goal, W, R, J), S = J), Res),
+         sys_call_info((sys_aggregate(A, Goal, W, R, J), S = J), Res),
          (  Res == det -> assertz(Test)
          ;  Res == fail -> assertz(Test), fail
          ;  true)).
@@ -320,11 +324,11 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
    sys_univ(Goal, [G|L]),
    sys_table_cache(F, N, M),
    sys_univ(Test, [M, P, R]),
-   sys_table_new(C, W, R, New),
+   sys_table_new(C, R, New),
    sys_table_list(C, W, R, S, List),
    Call = (  Test -> List
       ;  New,
-         (sys_revolve_run(A, Goal, W, R, _), fail; true),
+         (sys_aggregate(A, Goal, W, R, _), fail; true),
          assertz(Test),
          List).
 
@@ -333,13 +337,15 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
  * The predicate succeeds in G with a code snippet to create
  * a pivot or revolve R for the witness W.
  */
-% sys_table_new(+Comparator, +List, +Ref, -Goal)
-:- private sys_table_new/4.
-sys_table_new(C, W, R, G) :-
+% sys_table_new(+Comparator, +Ref, -Goal)
+:- private sys_table_new/3.
+sys_table_new(C, R, G) :-
    sys_variant_natural(C), !,
-   G = sys_revolve_make(W, R).
-sys_table_new(C, W, R, G) :-
-   G = sys_revolve_make(W, R, C).
+   G = sys_revolve_new(R).
+sys_table_new(C, R, G) :-
+   sys_variant_comparator(L, C),
+   G = (sys_variant_comparator(L, D),
+      sys_revolve_new(D, R)).
 
 /**
  * sys_table_list(C, W, R, S, G):
@@ -350,9 +356,12 @@ sys_table_new(C, W, R, G) :-
 :- private sys_table_list/5.
 sys_table_list(C, W, R, S, G) :-
    sys_variant_reverse(C), !,
-   G = sys_revolve_list(W, R, S, C).
+   G = (sys_variant_comparator([reverse(true)], D),
+      sys_revolve_pair(R, D, W-Q),
+      sys_pivot_get(Q, S)).
 sys_table_list(_, W, R, S, G) :-
-   G = sys_revolve_list(W, R, S).
+   G = (sys_revolve_pair(R, W-Q),
+      sys_pivot_get(Q, S)).
 
 /*****************************************************************/
 /* Eager Evaluation                                              */

@@ -235,7 +235,7 @@ sys_order_comparator_arg(X, _) :-
  * reversed(C, F, X, Y):
  * The reversed comparator of C.
  */
-% reversed(+Comparator, -Result, +Term, +Term)
+% reversed(+Comparator, -Atom, +Term, +Term)
 :- private reversed/4.
 :- meta_predicate reversed(3, ?, ?, ?).
 reversed(C, F, X, Y) :-
@@ -245,7 +245,7 @@ reversed(C, F, X, Y) :-
  * '.'(C, D, F, L, R):
  * The lexical combination of the comparator C and D.
  */
-% '.'(+Comparator, +Comparator, -Result, +Term, +Term)
+% '.'(+Comparator, +Comparator, -Atom, +Term, +Term)
 :- private '.'/5.
 :- meta_predicate '.'(3, 3, ?, ?, ?).
 '.'(C, D, F, [X|Y], [Z|T]) :-
@@ -258,6 +258,6 @@ reversed(C, F, X, Y) :-
  * [](F, X, Y):
  * The nil comparator.
  */
-% [](-Result, +Term, +Term)
+% [](-Atom, +Term, +Term)
 :- private []/3.
 [](=, [], []).

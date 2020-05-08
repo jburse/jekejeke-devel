@@ -98,7 +98,6 @@ public final class OperatorSearch {
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            /* find name%oper */
             s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 String s1 = CacheFunctor.composeQuali(s, n);
@@ -118,7 +117,6 @@ public final class OperatorSearch {
         if (oper != null)
             return oper;
         if (!Branch.OP_USER.equals(s) || !f)
-            /* find oper */
             return getOperUser(type, n, base.getStore());
         return null;
     }
@@ -205,7 +203,6 @@ public final class OperatorSearch {
         if (oper != null)
             return oper;
         if (!Branch.OP_USER.equals(s))
-            /* find oper */
             return getOperUser(type, n, base.getStore());
         return null;
     }

@@ -1756,9 +1756,12 @@ public class PrologWriter {
      */
     /*
     public static void main(String[] args) {
-        String var="Salary#";
-        System.out.println("var="+var);
-        System.out.println("variableNeedsQuotes(var)="+variableNeedsQuotes(var));
+        String var = "Salary#";
+        System.out.println("var=" + var);
+        System.out.println("variableNeedsQuotes(var)=" + variableNeedsQuotes(var));
+        var = "🍊";
+        System.out.println("var=" + var);
+        System.out.println("variableNeedsQuotes(var)=" + variableNeedsQuotes(var));
     }
     */
 

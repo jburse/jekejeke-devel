@@ -107,6 +107,7 @@ public final class SpecialSession extends AbstractSpecial {
     private static SkelAtom sysQuoteVar(String fun, Engine en) {
         PrologWriter pw = new PrologWriter();
         pw.setSource(en.visor.peekStack());
+        pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
         return new SkelAtom(pw.variableQuoted(fun));
     }
 
