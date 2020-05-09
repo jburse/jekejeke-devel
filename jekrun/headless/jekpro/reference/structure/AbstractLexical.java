@@ -6,6 +6,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.WriteOpts;
 import jekpro.reference.runtime.SpecialLogic;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -384,9 +385,10 @@ public abstract class AbstractLexical implements Comparator<Object> {
      * @param o2 The second object.
      * @return <0 o1 < o2, 0 o1 = o2, >0 o1 > o2
      * @throws ArithmeticException Incomparable reference.
+     * @throws RuntimeWrap         Interpreter error.
      */
     public final int compare(Object o1, Object o2)
-            throws ArithmeticException {
+            throws ArithmeticException, RuntimeWrap {
         if (engine != null) {
             return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
                     AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
@@ -405,10 +407,11 @@ public abstract class AbstractLexical implements Comparator<Object> {
      * @param d2   The display of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
+     * @throws RuntimeWrap         Interpreter error.
      */
     public abstract int compareTerm(Object alfa, Display d1,
                                     Object beta, Display d2)
-            throws ArithmeticException;
+            throws ArithmeticException, RuntimeWrap;
 
     /**
      * <p>Compare two skeletons lexically.</p>
@@ -417,8 +420,9 @@ public abstract class AbstractLexical implements Comparator<Object> {
      * @param beta The skeleton of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
+     * @throws RuntimeWrap         Interpreter error.
      */
     public abstract int compareTermSkel(Object alfa, Object beta)
-            throws ArithmeticException;
+            throws ArithmeticException, RuntimeWrap;
 
 }

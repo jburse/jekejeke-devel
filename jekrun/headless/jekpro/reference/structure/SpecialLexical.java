@@ -6,6 +6,9 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.array.Types;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -158,6 +161,13 @@ public final class SpecialLexical extends AbstractSpecial {
             }
         } catch (ArithmeticException x) {
             throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+        } catch (RuntimeWrap x) {
+            Throwable y = x.getCause();
+            if (y instanceof InterpreterException) {
+                throw (EngineException) ((InterpreterException) y).getException();
+            } else {
+                throw Types.mapThrowable(y);
+            }
         }
     }
 

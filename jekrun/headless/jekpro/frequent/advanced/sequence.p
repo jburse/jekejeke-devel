@@ -1,7 +1,7 @@
 /**
  * This module is inspired by SQL query options such as TOP. Providing
  * such a module was recently pioneered by SWI-Prolog. Currently predicates
- * limit/2, offset/2, call_nth/2, distinct/2 and order_by/2 are provided.
+ * limit/2, offset/2, call_nth/2, distinct/1 and order_by/2 are provided.
  * The predicates solely work tuple oriented and it is possible to
  * cascade these predicates:
  *
@@ -16,8 +16,24 @@
  * The current implementation of limit/2 and offset/2 is based on
  * call_nth/2. The predicate call_nth/2 is in turn implemented with pivots,
  * an alternative to nb_setarg/3 which does not destruct a Prolog term, but
- * instead a Java object. The implementation of distinct/2 and order_by/2
+ * instead a Java object. The implementation of distinct/1 and order_by/2
  * use a custom Java object as well.
+ *
+ * Examples:
+ * ?- order_by([asc(X)], member(X, [red, green, blue])).
+ * X = blue ;
+ * X = green ;
+ * X = red
+ * ?- order_by([desc(X)], member(X, [red, green, blue])).
+ * X = red ;
+ * X = green ;
+ * X = blue
+ *
+ * The order_by/2 order functions are currently limited to ASC and DESC,
+ * both using the ISO core standard compare/3 under the hood. The order_by/2
+ * predicate can be combined with a goal wrapped in distinct/1 and it will
+ * then directly de-duplicate the unsorted part of the solutions
+ * in an efficient way.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -134,7 +150,9 @@ sys_pivot_distinct(Goal, W, P, C) :-
 /**
  * order_by(W, G):
  * The predicates succeeds lazily and sorted with the
- * solutions of G according to the order function W.
+ * solutions of G. Ordering is done according to the list
+ * of order function W. For the supported order functions see
+ * the API documentation.
  */
 % order_by(+Term, +Goal)
 :- public order_by/2.

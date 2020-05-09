@@ -79,10 +79,11 @@ public final class LexicalCallback extends AbstractLexical {
      * @param d2   The display of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
+     * @throws RuntimeWrap         Interpreter error.
      */
     public int compareTerm(Object alfa, Display d1,
                            Object beta, Display d2)
-            throws ArithmeticException {
+            throws ArithmeticException, RuntimeWrap {
         Object first = AbstractTerm.createMolec(alfa, d1);
         Object second = AbstractTerm.createMolec(beta, d2);
         try {
@@ -153,9 +154,10 @@ public final class LexicalCallback extends AbstractLexical {
      * @param beta The skeleton of the second term.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
+     * @throws RuntimeWrap         Interpreter error.
      */
     public int compareTermSkel(Object alfa, Object beta)
-            throws ArithmeticException {
+            throws ArithmeticException, RuntimeWrap {
         Thread thread = Thread.currentThread();
         Supervisor visor = (Supervisor) AbstractLivestock.currentLivestock(thread);
         if (visor == null)
