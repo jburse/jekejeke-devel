@@ -991,10 +991,6 @@ public class PrologWriter {
         spez = backspez;
         if (needsParen(oper, level))
             spez &= ~SPEZ_OPER;
-        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-        spez = (spez & SPEZ_OPER) + getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
                 (oper.getBits() & Operator.MASK_OPER_NEWR) != 0) {
             indent += SPACES;
@@ -1028,6 +1024,10 @@ public class PrologWriter {
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
                 (oper.getBits() & Operator.MASK_OPER_NEWR) == 0)
             indent += SPACES;
+        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
+        spez = (spez & SPEZ_OPER) + getSpez(z);
+        offset = getOffset(z, backoffset);
+        shift = getShift(z);
         Object mod2 = decodeQualification(sc, ref);
         SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
         write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
