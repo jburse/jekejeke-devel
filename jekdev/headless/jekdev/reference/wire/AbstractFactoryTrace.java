@@ -101,7 +101,7 @@ public abstract class AbstractFactoryTrace extends AbstractFactory {
      */
     public Foyer createFoyer() {
         Foyer foyer = new FoyerTrace();
-        foyer.setFramework(this);
+        foyer.setFactory(this);
         return foyer;
     }
 

@@ -6,7 +6,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.structure.SpecialUniv;
@@ -15,8 +14,6 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapHash;
-import matula.util.system.ConnectionReader;
-import matula.util.system.ConnectionWriter;
 
 import java.io.Writer;
 

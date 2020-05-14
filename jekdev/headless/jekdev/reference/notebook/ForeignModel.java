@@ -1,7 +1,7 @@
 package jekdev.reference.notebook;
 
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.tools.call.ArrayEnumeration;
+import matula.util.config.ArrayEnumeration;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.TermAtomic;

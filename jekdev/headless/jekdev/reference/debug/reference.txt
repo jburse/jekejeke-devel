@@ -26,11 +26,9 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-'.'/1	no	notebook/directives
 :< /2	no	notebook/dict
 := /2	no	notebook/func
 >:< /2	no	notebook/dict
-(?-)/1	no	notebook/directives
 analyze_batch/0	no	testing/tracker
 break/2	no	debug/default
 breaking/2	no	debug/default
@@ -53,9 +51,7 @@ del_json/4	no	notebook/json
 destroyed/2	no	wire/monitor
 diagnose_online/0	no	testing/diagnose
 dict_pairs/3	no	notebook/dict
-dispatch/4	no	wire/desktop
 dispatch/4	no	wire/monitor
-dispatch/4	no	wire/view
 dump/0	no	debug/dump
 dump/1	no	debug/dump
 elem_add_node/2	no	notebook/model
@@ -68,8 +64,6 @@ elem_remove_node/3	no	notebook/model
 elem_reset_attr/2	no	notebook/model
 elem_set_attr/3	no	notebook/model
 elem_set_name/2	no	notebook/model
-find_call_stack/3	no	wire/view
-frame_deref/2	no	wire/view
 frame_property/2	no	inspection/frame
 friendly/0	no	debug/friendly
 friendly/1	no	debug/friendly
@@ -80,11 +74,6 @@ get_json/3	no	notebook/json
 goal_tracing/2	no	debug/custom
 user:goal_tracing/2	no	testing/tracker
 user:goal_tracing/2	no	wire/monitor
-html_begin/3	no	wire/view
-html_end/1	no	wire/view
-html_h3/2	no	wire/view
-html_target/3	no	wire/desktop
-html_target/3	no	wire/mobile
 initialized/2	no	wire/monitor
 instrumented/0	no	debug/friendly
 instrumented/1	no	debug/friendly
@@ -93,8 +82,6 @@ is_dict/2	no	notebook/dict
 is_json/1	no	notebook/json
 leash/1	no	debug/custom
 list_cover_source/0	no	testing/tracker
-meta_both/2	no	wire/view
-meta_thread/2	no	wire/view
 micro_close/1	no	inspection/micro
 micro_cont/1	no	inspection/micro
 micro_new/2	no	inspection/micro
@@ -114,15 +101,12 @@ node_write/3	no	notebook/serialize
 nodebug/0	no	debug/default
 noprotocol/0	no	system/protocol
 nospy/1	no	debug/default
-notebook/0	no	notebook/directives
 protocol/1	no	system/protocol
 provable_property/2	no	inspection/provable
 put_dict/3	no	notebook/dict
 put_dict/4	no	notebook/dict
 put_json/3	no	notebook/json
 put_json/4	no	notebook/json
-raw_begin/3	no	wire/view
-raw_end/1	no	wire/view
 ref/4	no	testing/runner
 reset_callable_property/3	no	inspection/provable
 reset_provable_property/2	no	inspection/provable
@@ -159,7 +143,6 @@ stores/0	no	inspection/store
 summary_batch/0	no	testing/summary
 summary_batch/1	no	testing/summary
 syntax_property/2	no	inspection/syntax
-sys_apropos_table/1	no	debug/dummy
 sys_at/0	no	system/mode
 sys_atom_slash/2	no	inspection/notation
 sys_call_goal/1	no	inspection/frame
@@ -176,7 +159,6 @@ sys_location/4	no	inspection/base
 sys_name_flags/2	no	debug/default
 sys_notrace_frame/1	no	debug/default
 sys_out/0	no	system/mode
-sys_parent_goal/1	no	notebook/directives
 sys_provable_hash/3	no	inspection/base
 sys_put_obj/3	no	notebook/func
 sys_put_obj/4	no	notebook/func
@@ -186,7 +168,6 @@ tbreaking/2	no	system/attach
 tclear/0	no	system/attach
 tdebug/0	no	system/attach
 tdebugging/0	no	system/attach
-user:term_expansion/2	no	notebook/directives
 user:term_expansion/2	no	notebook/func
 text/1	no	testing/tracker
 text_get_data/2	no	notebook/model
@@ -208,7 +189,6 @@ tup/0	no	system/attach
 tvisible/1	no	system/attach
 up/0	no	debug/default
 upgrade/4	no	wire/monitor
-upgrade/4	no	wire/view
 visible/1	no	debug/default
 with_input_from/2	no	system/charsio
 with_output_to/2	no	system/charsio

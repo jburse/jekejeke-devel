@@ -30,6 +30,12 @@
  * text/1 facts that designate the sources that should appear in
  * the coverage map.
  *
+ * This module allows the online control of coverage results.
+ * Beforehand the tracker needs to be used to produce the coverage
+ * results. The predicate control_online/0 will then first present a
+ * listing of the theories and their summarized source line hits
+ * and misses.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -352,25 +358,63 @@ analyze_batch :-
 analyze_batch.
 
 /*************************************************************/
-/* List Sources                                              */
+/* List Summary                                              */
 /*************************************************************/
 
-% list_cover_source
-:- public list_cover_source/0.
-list_cover_source :-
-   write('Ok\tNok\tSource'), nl,
-   list_cover_source_data,
+% list_cover_summary
+:- private list_cover_summary/0.
+list_cover_summary :-
+   write('Ok\tNok\tPackage'), nl,
+   list_cover_summary_data,
    cover_summary(Ok-Nok),
    write(Ok), write('\t'), write(Nok), write('\tTotal'), nl.
 
-% list_cover_source_data
-:- private list_cover_source_data/0.
-list_cover_source_data :-
+% list_cover_summary_data
+:- private list_cover_summary_data/0.
+list_cover_summary_data :-
+   bagof(W, Name^Source^cover_source_view(Source, Directory, Name, W), L),
+   sys_sum_oknok(L, Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\t'), write(Directory), nl,
+   fail.
+list_cover_summary_data.
+
+/*************************************************************/
+/* List Source                                               */
+/*************************************************************/
+
+% list_cover_source(+Atom)
+:- private list_cover_source/1.
+list_cover_source(Directory) :-
+   write('Ok\tNok\tSource'), nl,
+   list_cover_source_data(Directory),
+   findall(W, cover_source_view(_, Directory, _, W), L),
+   sys_sum_oknok(L, Ok-Nok),
+   write(Ok), write('\t'), write(Nok), write('\tTotal'), nl.
+
+% list_cover_source_data(+Atom)
+:- private list_cover_source_data/1.
+list_cover_source_data(Directory) :-
    cover_source_view(_, Directory, Name, Ok-Nok),
    write(Ok), write('\t'), write(Nok), write('\t'),
    write(Directory), write(/), write(Name), nl,
    fail.
-list_cover_source_data.
+list_cover_source_data(_).
+
+/*************************************************************/
+/* Control Dialogue                                          */
+/*************************************************************/
+
+/**
+ * control_online:
+ * The predicate starts an online drill down of the coverage results.
+ */
+% control_online
+:- public control_online/0.
+control_online :-
+   list_cover_summary,
+   write('Package: '), flush_output,
+   read(Directory),
+   list_cover_source(Directory).
 
 /***************************************************************/
 /* Data View                                                  */

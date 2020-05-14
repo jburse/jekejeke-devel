@@ -5,13 +5,19 @@ import jekdev.reference.inspection.SpecialFrame;
 import jekdev.reference.inspection.SpecialProvable;
 import jekdev.reference.system.SpecialMode;
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.*;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 
 /**
@@ -199,7 +205,7 @@ public final class SpecialDefault extends AbstractSpecial {
      */
     private static boolean sysLeashedPort(int port, Engine en) {
         int tflags = en.visor.flags & SpecialDefault.MASK_MODE_LESH;
-        int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_LESH;
+        int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_LESH;
         return SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 16, port);
     }
 
@@ -235,13 +241,13 @@ public final class SpecialDefault extends AbstractSpecial {
     /**
      * <p>Convert an atom to a debug mode.</p>
      *
-     * @param t The atom skeleton.
+     * @param m The atom skeleton.
      * @param d The atom display.
      * @return The debug mode.
      */
-    public static int atomToMode(Object t, Display d)
+    public static int atomToMode(Object m, Display d)
             throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(t, d);
+        String fun = SpecialUniv.derefAndCastString(m, d);
         if (fun.equals(OP_INHERIT)) {
             return MASK_DEBG_INHR;
         } else if (fun.equals(AbstractFlag.OP_OFF)) {
@@ -256,7 +262,7 @@ public final class SpecialDefault extends AbstractSpecial {
             return MASK_DEBG_DBON;
         } else {
             throw new EngineMessage(EngineMessage.domainError(
-                    "debug_mode", t), d);
+                    "debug_mode", m), d);
         }
     }
 

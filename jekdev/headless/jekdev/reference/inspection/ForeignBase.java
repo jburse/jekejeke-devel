@@ -17,6 +17,7 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.*;
 import jekpro.tools.term.*;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * <p>This class provides built-ins for the module base.</p>

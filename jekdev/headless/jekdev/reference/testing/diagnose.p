@@ -162,6 +162,10 @@ list_test_case_data(Fun, Arity, Suite, Case) :-
    fail.
 list_test_case_data(_, _, _, _).
 
+/*************************************************************/
+/* Diagnose Dialogue                                         */
+/*************************************************************/
+
 /**
  * diagnose_online:
  * The predicate starts an online drill down of the test results.

@@ -18,6 +18,7 @@ import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.config.ArrayEnumeration;
 
 /**
  * The foreign predicates for the module system/group.
