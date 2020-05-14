@@ -35,6 +35,7 @@ breaking/2	no	debug/default
 callable_property/2	no	inspection/provable
 case/4	no	testing/runner
 change_store/1	no	debug/custom
+control_online/0	no	testing/tracker
 cover/5	no	testing/tracker
 cover_batch/1	no	testing/cover
 cover_predicate/4	no	testing/tracker
@@ -81,7 +82,6 @@ is_dict/1	no	notebook/dict
 is_dict/2	no	notebook/dict
 is_json/1	no	notebook/json
 leash/1	no	debug/custom
-list_cover_source/0	no	testing/tracker
 micro_close/1	no	inspection/micro
 micro_cont/1	no	inspection/micro
 micro_new/2	no	inspection/micro

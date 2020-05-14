@@ -186,23 +186,12 @@ public final class FoyerTrace extends Foyer {
     /**
      * <p>Factory for stores.</p>
      *
+     * @param loader The class loader.
      * @return The store.
      */
-    public Store createStore() {
+    public Store createStore(ClassLoader loader) {
         Store store = new StoreTrace(this, null);
-        store.loader = getClass().getClassLoader();
-        return store;
-    }
-
-    /**
-     * <p>Factory for stores.</p>
-     *
-     * @param c The class.
-     * @return The store.
-     */
-    public Store createStore(Class c) {
-        Store store = new StoreTrace(this, null);
-        store.loader = c.getClassLoader();
+        store.loader = loader;
         return store;
     }
 
