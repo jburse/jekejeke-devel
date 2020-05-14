@@ -70,10 +70,10 @@ public final class SpecialBits extends AbstractSpecial {
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     Number alfa = SpecialEval.derefAndCastInteger(temp[0], ref);
-                    SpecialEval.checkNotLessThanZero(alfa);
-                    int k = SpecialEval.castIntValue(alfa);
                     Number beta = SpecialEval.derefAndCastInteger(temp[1], ref);
-                    if (!sysTestBit(k, beta))
+                    SpecialEval.checkNotLessThanZero(beta);
+                    int k = SpecialEval.castIntValue(beta);
+                    if (!sysTestBit(alfa, k))
                         return false;
                     return true;
                 default:
@@ -85,7 +85,6 @@ public final class SpecialBits extends AbstractSpecial {
         }
     }
 
-
     /********************************************************************/
     /* Additional Binary Number Built-in:                               */
     /*      sys_test_bit/3: sysTestBit()                                */
@@ -94,11 +93,11 @@ public final class SpecialBits extends AbstractSpecial {
     /**
      * <p>Test a bit.</p>
      *
-     * @param k The first operand.
-     * @param b The second operand.
+     * @param b The first operand.
+     * @param k The second operand.
      * @return The result.
      */
-    private static boolean sysTestBit(int k, Number b) {
+    private static boolean sysTestBit(Number b, int k) {
         if (b instanceof Integer) {
             if (k <= 31) {
                 return (b.intValue() & (1 << k)) != 0;

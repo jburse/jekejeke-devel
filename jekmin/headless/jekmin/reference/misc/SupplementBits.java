@@ -84,9 +84,9 @@ public final class SupplementBits extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    SpecialEval.checkNotLessThanZero(alfa);
-                    int x = SpecialEval.castIntValue(alfa);
-                    en.skel = setBit(x, beta);
+                    SpecialEval.checkNotLessThanZero(beta);
+                    int x = SpecialEval.castIntValue(beta);
+                    en.skel = setBit(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_CLEARBIT:
@@ -104,9 +104,9 @@ public final class SupplementBits extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    SpecialEval.checkNotLessThanZero(alfa);
-                    x = SpecialEval.castIntValue(alfa);
-                    en.skel = clearBit(x, beta);
+                    SpecialEval.checkNotLessThanZero(beta);
+                    x = SpecialEval.castIntValue(beta);
+                    en.skel = clearBit(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -130,11 +130,11 @@ public final class SupplementBits extends AbstractSpecial {
     /**
      * <p>Set a bit.</p>
      *
-     * @param x The first operand.
-     * @param n The second operand.
+     * @param n The first operand.
+     * @param x The second operand.
      * @return The result.
      */
-    private static Number setBit(int x, Number n) {
+    private static Number setBit(Number n, int x) {
         if (n instanceof Integer) {
             if (x <= 30) {
                 return Integer.valueOf(n.intValue() | (1 << x));
@@ -151,11 +151,11 @@ public final class SupplementBits extends AbstractSpecial {
     /**
      * <p>Clear a bit.</p>
      *
-     * @param x The first operand.
-     * @param n The second operand.
+     * @param n The first operand.
+     * @param x The second operand.
      * @return The result.
      */
-    private static Number clearBit(int x, Number n) {
+    private static Number clearBit(Number n, int x) {
         if (n instanceof Integer) {
             if (x <= 30) {
                 return Integer.valueOf(n.intValue() & ~(1 << x));

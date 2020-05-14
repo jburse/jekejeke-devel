@@ -1,19 +1,19 @@
 /**
  * We provide a couple of additional bitwise operations. The evaluable
- * functions bitcount/1, bitlength/1 and lowestsetbit/1 deal with the
- * determination of certain bits of the given integer. The implementation
- * is more efficient than would be possible with existing logical,
- * shift and test operations.
+ * functions setbit/2 and clearbit/2 update the given integer in a
+ * more efficient way than would be possible with existing logical
+ * and shift operations:
  *
  * Examples:
- * bitlength(333)               --> 9
+ * ?- testbit(-100,3).
+ * Yes
+ * ?- testbit(100,3).
+ * No
  *
- * The evaluable functions setbit/2 and clearbit/2 update the given
- * integer in a more efficient way than would be possible with existing
- * logical and shift operations. The predicate testbit/2 tests a
- * particular bit in a given integer, again the implementation is more
- * efficient than would be possible with existing logical, shift and
- * test operations.
+ * The predicate  testbit/2 tests a particular bit in a given integer, again
+ * the implementation is more efficient than would be possible with
+ * existing logical, shift and test operations. The evaluable functions
+ * and the predicate require a positive or zero shift.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -51,21 +51,21 @@
 
 /**
  * setbit(X, Y, Z):
- * The predicate succeeds in Z with Y \/ (1 << X).
+ * If X and Y are integers than the function returns X \/ (1 << Y).
  */
 :- public setbit/3.
 :- special(setbit/3, 'SupplementBits', 3).
 
 /**
  * clearbit(X, Y, Z):
- * The predicate succeeds in Z with Y /\ \ (1 << X).
+ * If X and Y are integers than the function returns X /\ \ (1 << Y).
  */
 :- public clearbit/3.
 :- special(clearbit/3, 'SupplementBits', 4).
 
 /**
  * testbit(X, Y):
- * The predicate succeeds when Y /\ (1 << X) =\= 0.
+ * The predicate succeeds when X /\ (1 << Y) =\= 0.
  */
 :- public testbit/2.
 :- special(testbit/2, 'SpecialBits', 0).

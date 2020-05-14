@@ -1,7 +1,6 @@
 package jekmin.reference.experiment;
 
 import jekpro.frequent.standard.ChoiceAtomic;
-import jekpro.frequent.standard.SpecialFind;
 import jekpro.frequent.standard.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -9,12 +8,8 @@ import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.TermVar;
-import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
 
 /**
  * <p>Provides built-ins for the module experiment/cont.</p>

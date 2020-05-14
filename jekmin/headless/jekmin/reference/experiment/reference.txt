@@ -111,7 +111,6 @@ sat/1	no	finite/clpb
 setbit/3	yes	misc/bits
 sqrtrem/3	no	misc/elem
 sto/1	no	term/herbrand
-sys_apropos_table/1	no	experiment/dummy
 sys_assume_cont/1	no	experiment/cont
 sys_bound_var/1	no	experiment/trail
 sys_clause_hook/3	no	experiment/attr
@@ -130,8 +129,6 @@ sys_freezer/1	no	experiment/trail
 sys_melt_var/2	no	experiment/trail
 sys_ripple/1	no	experiment/cont
 sys_serno_hooks/3	no	experiment/attr
-sys_term_globals/2	no	misc/struc
-sys_term_kernel/2	no	misc/struc
 sys_unbind/1	no	experiment/trail
 residue:sys_unwrap_eq/3	no	finite/clpfd
 residue:sys_unwrap_eq/3	no	finite/intset
