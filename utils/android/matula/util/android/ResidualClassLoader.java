@@ -113,7 +113,7 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                     try {
                         return new URL(ForeignUri.SCHEME_FILE, null, file.toString());
                     } catch (MalformedURLException x) {
-                        throw new RuntimeException(x);
+                        return null;
                     }
                 }
             } else {
@@ -123,7 +123,7 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                     InputStream in = new FileInputStream(f);
                     found = ForeignArchive.existsEntry(in, name);
                 } catch (IOException x) {
-                    throw new RuntimeException(x);
+                    found = false;
                 }
                 if (found) {
                     try {
@@ -131,7 +131,7 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                         return new URL(ForeignUri.SCHEME_JAR, null, url.toString() +
                                 ForeignUri.JAR_SEP + name);
                     } catch (MalformedURLException x) {
-                        throw new RuntimeException(x);
+                        return null;
                     }
                 }
             }
@@ -149,7 +149,7 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
      */
     protected Enumeration<URL> findResources(String name) throws IOException {
         Enumeration<URL> en = super.findResources(name);
-        ArrayList<URL> res = null;
+        ListArray<URL> res = null;
         String[] paths = snapshotPaths();
         for (int i = 0; i < paths.length; i++) {
             String path = paths[i];
@@ -157,14 +157,14 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                 File file = new File(path, name);
                 if (file.exists() && file.isFile() && file.canRead()) {
                     if (res == null) {
-                        res = new ArrayList<URL>();
+                        res = new ListArray<URL>();
                         while (en.hasMoreElements())
                             res.add(en.nextElement());
                     }
                     try {
                         res.add(new URL(ForeignUri.SCHEME_FILE, null, file.toString()));
                     } catch (MalformedURLException x) {
-                        throw new RuntimeException(x);
+                        throw x;
                     }
                 }
             } else {
@@ -174,11 +174,11 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                     InputStream in = new FileInputStream(f);
                     found = ForeignArchive.existsEntry(in, name);
                 } catch (IOException x) {
-                    throw new RuntimeException(x);
+                    found = false;
                 }
                 if (found) {
                     if (res == null) {
-                        res = new ArrayList<URL>();
+                        res = new ListArray<URL>();
                         while (en.hasMoreElements())
                             res.add(en.nextElement());
                     }
@@ -187,13 +187,13 @@ final class ResidualClassLoader extends ClassLoader implements InterfaceURLs {
                         res.add(new URL(ForeignUri.SCHEME_JAR, null, url.toString() +
                                 ForeignUri.JAR_SEP + name));
                     } catch (MalformedURLException x) {
-                        throw new RuntimeException(x);
+                        throw x;
                     }
                 }
             }
         }
         if (res != null)
-            en = Collections.enumeration(res);
+            en = res.elements();
         return en;
     }
 
