@@ -231,7 +231,37 @@ public class PrologReaderAnno extends PrologReader {
     }
 
     /**
-     * <p>Reads a list.</p>
+     * <p>Read a list expression.</p>
+     *
+     * @return The term.
+     * @throws ScannerError    Error and position.
+     * @throws IOException     I/O error.
+     * @throws EngineMessage   Auto load problem.
+     * @throws EngineException Auto load problem.
+     */
+    protected final Object readList()
+            throws EngineException, IOException, ScannerError, EngineMessage {
+        String[] filler = getFiller();
+        Object arg = readArgs();
+        if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
+            throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
+                    st.getTokenOffset());
+        String[] filler2 = getFiller();
+        if ((filler != null || filler2 != null) &&
+                arg instanceof SkelCompound) {
+            SkelCompound sc = (SkelCompound) arg;
+            String[][] fillers = new String[sc.args.length + 1][];
+            fillers[0] = filler;
+            fillers[sc.args.length] = filler2;
+            SkelAtom help = makeFillers(sc.sym, fillers);
+            if (sc.sym != help)
+                arg = new SkelCompound(help, sc.args, sc.var);
+        }
+        return arg;
+    }
+
+    /**
+     * <p>Read arguments of a list expression.</p>
      *
      * @return The list.
      * @throws ScannerError    Error and position.
@@ -239,12 +269,10 @@ public class PrologReaderAnno extends PrologReader {
      * @throws EngineException Auto load problem.
      * @throws IOException     IO Error.
      */
-    protected final Object readList()
+    protected final Object readArgs()
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readList();
-        SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
-        String[] filler = getFiller();
+            return super.readArgs();
         Object[] args = new Object[2];
         args[0] = read(Operator.LEVEL_MIDDLE);
         args[1] = null;
@@ -252,36 +280,37 @@ public class PrologReaderAnno extends PrologReader {
         Object t;
         for (; ; ) {
             if (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
-                if (filler != null)
-                    help = makeFillers(help, new String[][]{filler, null, null});
-                back = new SkelCompound(help, args, null);
-                help = makePos(Foyer.OP_CONS, getAtomPos());
-                filler = getFiller();
+                SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
+                String[] filler = getFiller();
                 nextToken();
                 String[] filler2 = getFiller();
                 if (filler != null || filler2 != null) {
                     filler = concatFiller(filler, filler2);
-                    help = makeFillers(help, new String[][]{filler, null, null});
+                    help = makeFillers(help, new String[][]{null, filler, null});
                 }
+                back = new SkelCompound(help, args, null);
                 args = new Object[2];
                 args[0] = read(Operator.LEVEL_MIDDLE);
                 args[1] = back;
             } else if (st.getHint() == 0 && OP_BAR.equals(st.getData())) {
+                SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
+                String[] filler = getFiller();
                 nextToken();
+                String[] filler2 = getFiller();
+                if (filler != null || filler2 != null) {
+                    filler = concatFiller(filler, filler2);
+                    help = makeFillers(help, new String[][]{null, filler, null});
+                }
+                back = new SkelCompound(help, args, null);
                 t = read(Operator.LEVEL_MIDDLE);
                 break;
             } else {
+                SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
+                back = new SkelCompound(help, args, null);
                 t = makePos(Foyer.OP_NIL, getAtomPos());
                 break;
             }
         }
-        if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
-            throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
-                    st.getTokenOffset());
-        String[] filler2 = getFiller();
-        if (filler != null || filler2 != null)
-            help = makeFillers(help, new String[][]{filler, null, filler2});
-        back = new SkelCompound(help, args, null);
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;

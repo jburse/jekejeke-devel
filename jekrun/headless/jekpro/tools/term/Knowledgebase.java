@@ -14,6 +14,7 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
+import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -113,41 +114,71 @@ public final class Knowledgebase {
     public static final String OP_TRUE = Foyer.OP_TRUE;
 
     /**
-     * <p>Create a new knowledge base.</p>
+     * <p>Create a new root knowledge base.</p>
      *
      * @param k The toolkit.
      */
     public Knowledgebase(Toolkit k) {
-        Lobby l = new Lobby(k);
-        Foyer foyer = (Foyer) l.getFoyer();
+        Lobby lobby = new Lobby(k);
+        Foyer foyer = (Foyer) lobby.getFoyer();
 
-        store = foyer.createStore(getClass().getClassLoader());
+        store = foyer.createStore(null);
+        store.loader = getClass().getClassLoader();
         store.proxy = this;
     }
 
     /**
-     * <p>Create a new </p></o>
+     * <p>Create a new root knowledge base </p></o>
      *
      * @param k The toolkit.
-     * @param c The caller.
+     * @param c The class loader.
      */
-    public Knowledgebase(Toolkit k, Class c) {
-        Lobby l = new Lobby(k);
-        Foyer foyer = (Foyer) l.getFoyer();
+    public Knowledgebase(Toolkit k, ClassLoader c)
+            throws InterpreterMessage{
+        Lobby lobby = new Lobby(k);
+        Foyer foyer = (Foyer) lobby.getFoyer();
 
-        store = foyer.createStore(c.getClassLoader());
+        if (!AbstractRuntime.inChain(c, null, getClass().getClassLoader()))
+            throw new InterpreterMessage(InterpreterMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_LOADER, getClass().getClassLoader()));
+
+        store = foyer.createStore(null);
+        store.loader = c;
         store.proxy = this;
     }
 
     /**
-     * <p>Create a new knowledge base.</p>
+     * <p>Create a new child knowledge base.</p>
      *
      * @param p The parent.
      */
     public Knowledgebase(Knowledgebase p) {
         Store parent = (Store) p.getStore();
+        Foyer foyer = parent.foyer;
 
-        store = parent.createStore();
+        store = foyer.createStore(parent);
+        store.loader = parent.loader;
+        store.proxy = this;
+    }
+
+    /**
+     * <p>Create a new child knowledge base.</p>
+     *
+     * @param p The parent.
+     * @param c The class loader.
+     * @throws InterpreterMessage Shit happens.
+     */
+    public Knowledgebase(Knowledgebase p, ClassLoader c)
+            throws InterpreterMessage {
+        Store parent = (Store) p.getStore();
+        Foyer foyer = parent.foyer;
+
+        if (!AbstractRuntime.inChain(c, null, parent.loader))
+            throw new InterpreterMessage(InterpreterMessage.existenceError(
+                    EngineMessage.OP_EXISTENCE_LOADER, parent.loader));
+
+        store = foyer.createStore(parent);
+        store.loader = c;
         store.proxy = this;
     }
 

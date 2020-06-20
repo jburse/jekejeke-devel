@@ -152,18 +152,6 @@ public class Store extends AbstractRecognizer {
     /*****************************************************************/
 
     /**
-     * <p>Create a store.</p>
-     * <p>Can be overridden by subclasses.</p>
-     *
-     * @return The store.
-     */
-    public Store createStore() {
-        Store store = new Store(foyer, this);
-        store.loader = loader;
-        return store;
-    }
-
-    /**
      * <p>Init the store.</p>
      * <p>Can be overridden by subclasses.</p>
      *

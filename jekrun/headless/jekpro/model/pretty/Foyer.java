@@ -344,15 +344,12 @@ public class Foyer extends Enforced {
 
     /**
      * <p>Factory for stores.</p>
-     * <p>Can be overridden by subclasses.</p>
      *
-     * @param loader The class loader.
+     * @param parent The parent store.
      * @return The store.
      */
-    public Store createStore(ClassLoader loader) {
-        Store store = new Store(this, null);
-        store.loader = loader;
-        return store;
+    public Store createStore(Store parent) {
+        return new Store(this, parent);
     }
 
     /**

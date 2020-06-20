@@ -1281,8 +1281,6 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        appendLink(PrologReader.OP_LBRACKET, cp);
-        writeBreak(sc.sym, 0, false);
         Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
         spez = getSpez(z);
         offset = getOffset(z, backoffset);
@@ -1304,11 +1302,10 @@ public class PrologWriter {
             if (term instanceof SkelCompound &&
                     ((SkelCompound) term).args.length == 2 &&
                     ((SkelCompound) term).sym.fun.equals(Foyer.OP_CONS)) {
-                sc = (SkelCompound) term;
                 cp = offsetToPredicate(term, null, null);
-                appendLink(",", cp);
-                writeBreak(sc.sym, 0, true);
                 decl = predicateToMeta(cp);
+                appendLink(",", cp);
+                writeBreak(sc.sym, 1, true);
                 backspez = spez;
                 backoffset = offset;
                 backshift = shift;
@@ -1316,6 +1313,7 @@ public class PrologWriter {
                 spez = getSpez(z);
                 offset = getOffset(z, backoffset);
                 shift = getShift(z);
+                sc = (SkelCompound) term;
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
                 z = getArg(decl, backshift + 1, backspez, cp);
                 spez = getSpez(z);
@@ -1324,7 +1322,9 @@ public class PrologWriter {
                 term = sc.args[1];
             } else if (!(term instanceof SkelAtom) ||
                     !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
-                append('|');
+                cp = offsetToPredicate(term, null, null);
+                appendLink("|", cp);
+                writeBreak(sc.sym, 1, false);
                 write(term, ref, Operator.LEVEL_MIDDLE, null, null);
                 break;
             } else {
@@ -1334,8 +1334,6 @@ public class PrologWriter {
         spez = backspez;
         offset = backoffset;
         shift = backshift;
-        writeBreak(sc.sym, 2, false);
-        append(PrologReader.OP_RBRACKET);
     }
 
     /**
@@ -1581,10 +1579,18 @@ public class PrologWriter {
             if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
                 if (level > Operator.LEVEL_MIDDLE) {
                     indent += SPACES;
+                    append(PrologReader.OP_LBRACKET);
+                    writeBreak(sc.sym, 0, false);
                     writeList(sc, ref, mod, nsa);
+                    writeBreak(sc.sym, 2, false);
+                    append(PrologReader.OP_RBRACKET);
                     indent -= SPACES;
                 } else {
+                    append(PrologReader.OP_LBRACKET);
+                    writeBreak(sc.sym, 0, false);
                     writeList(sc, ref, mod, nsa);
+                    writeBreak(sc.sym, 2, false);
+                    append(PrologReader.OP_RBRACKET);
                 }
                 return;
             }

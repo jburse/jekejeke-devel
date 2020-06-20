@@ -233,7 +233,7 @@ public final class SpecialProxy extends AbstractSpecial {
     public static SkelAtom classOrProxyName(Object obj, Engine en) {
         if (obj instanceof Class) {
             Class clazz = (Class) obj;
-            Store store = inChain(clazz.getClassLoader(), en);
+            Store store = inSomeChain(clazz.getClassLoader(), en);
             if (store == null)
                 return null;
             String s1 = AbstractRuntime.classToString(clazz);
@@ -254,7 +254,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * @param what The class loader.
      * @param en   The engine.
      */
-    private static Store inChain(ClassLoader what, Engine en) {
+    private static Store inSomeChain(ClassLoader what, Engine en) {
         Store[] stores = en.store.foyer.snapshotStores();
         for (int i = 0; i < stores.length; i++) {
             Store store = stores[i];
