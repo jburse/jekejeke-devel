@@ -80,7 +80,7 @@ public final class ForeignRevolve {
     public static SetEntry sysRevolveLookup(Interpreter inter,
                                             AbstractMap<Object, Object> map,
                                             Object val) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Display d = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         val = AbstractSkel.copySkel(val, d, en);

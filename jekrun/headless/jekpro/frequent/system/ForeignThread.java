@@ -201,7 +201,7 @@ public final class ForeignThread {
     public static String sysCurrentThreadFlag(Interpreter inter, CallOut co) {
         Enumeration<String> dc;
         if (co.getFirst()) {
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             ListArray<String> list = ForeignThread.listThreadFlags(en);
             dc = list.elements();
             if (!dc.hasMoreElements())
@@ -227,7 +227,7 @@ public final class ForeignThread {
     public static Object sysGetThreadFlag(Interpreter inter, Thread t,
                                           String flag)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         AbstractFlag af = findThreadFlag(flag, en);
         if (af != null)
             return af.getObjFlag(t, en);
@@ -247,7 +247,7 @@ public final class ForeignThread {
     public static void sysSetThreadFlag(Interpreter inter, Thread t,
                                         String flag, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             AbstractFlag af = findThreadFlag(flag, en);
             if (af != null) {

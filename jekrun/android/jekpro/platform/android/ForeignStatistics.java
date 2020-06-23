@@ -9,6 +9,7 @@ import jekpro.tools.term.TermAtomic;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import matula.util.config.ArrayEnumeration;
+import matula.util.wire.AbstractLivestock;
 
 /**
  * The foreign predicates for the module stats.
@@ -138,7 +139,7 @@ public final class ForeignStatistics {
         } else if (OP_SYS_TIME_SELF.equals(name)) {
             return TermAtomic.normBigInteger(SystemClock.currentThreadTimeMillis());
         } else if (OP_SYS_TIME_MANAGED.equals(name)) {
-            Supervisor s = (Supervisor) inter.getController().getVisor();
+            Supervisor s = inter.getVisor();
             return TermAtomic.normBigInteger(s.getMillis());
         } else if (OP_WALL.equals(name)) {
             return TermAtomic.normBigInteger(System.currentTimeMillis());
@@ -203,17 +204,16 @@ public final class ForeignStatistics {
     public static Object sysGetThreadStat(Thread t, String name)
             throws InterpreterMessage {
         if (OP_SYS_LOCAL_CLAUSES.equals(name)) {
-            Controller contr = Controller.currentController(t);
-            if (contr != null) {
-                long total = contr.getThreadLocalClauses();
+            Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(t);
+            if (s != null) {
+                long total = s.getThreadLocalClauses();
                 return TermAtomic.normBigInteger(total);
             } else {
                 return Integer.valueOf(0);
             }
         } else if (OP_SYS_TIME_MANAGED.equals(name)) {
-            Controller contr = Controller.currentController(t);
-            if (contr != null) {
-                Supervisor s = (Supervisor) contr.getVisor();
+            Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(t);
+            if (s != null) {
                 return TermAtomic.normBigInteger(s.getMillis());
             } else {
                 return Integer.valueOf(0);
@@ -235,11 +235,9 @@ public final class ForeignStatistics {
      * @param n The CPU time.
      */
     public static void sysManagedAdd(Thread t, Number n) {
-        Controller contr = Controller.currentController(t);
-        if (contr != null) {
-            Supervisor s = (Supervisor) contr.getVisor();
+        Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(t);
+        if (s != null)
             s.addMillis(n.longValue());
-        }
     }
 
 }

@@ -53,7 +53,7 @@ public final class ForeignPivot {
      * @param val   The value.
      */
     public static void sysPivotSet(Interpreter inter, SetEntry pivot, Object val) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         pivot.value = AbstractSkel.copySkel(val, ref, en);
@@ -83,7 +83,7 @@ public final class ForeignPivot {
     public static void sysPivotAdd(Interpreter inter,
                                    SetEntry<ListArray<Object>> pivot,
                                    Object val) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         ListArray<Object> help = pivot.value;
@@ -129,7 +129,7 @@ public final class ForeignPivot {
     public static boolean sysPivotPut(Interpreter inter,
                                       SetEntry<AbstractSet<Object>> pivot,
                                       Object val) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         AbstractSet<Object> help = pivot.value;
@@ -158,7 +158,7 @@ public final class ForeignPivot {
                                       SetEntry<AbstractSet<Object>> pivot,
                                       AbstractLexical el,
                                       Object val) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Display ref = AbstractTerm.getDisplay(val);
         val = AbstractTerm.getSkel(val);
         AbstractSet<Object> help = pivot.value;

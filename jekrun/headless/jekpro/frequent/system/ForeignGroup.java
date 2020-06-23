@@ -5,12 +5,12 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.config.ArrayEnumeration;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;
 import matula.util.wire.Fence;
 import matula.util.wire.ManagedGroup;
-import matula.util.config.ArrayEnumeration;
 
 /**
  * The foreign predicates for the module system/group.
@@ -244,7 +244,7 @@ public final class ForeignGroup {
     public static Thread sysCurrentThread(CallOut co, Interpreter inter) {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
-            Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+            Foyer foyer = inter.getKnowledgebase().getFoyer();
             dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(foyer));
             if (!dc.hasMoreElements())
                 return null;
@@ -285,7 +285,7 @@ public final class ForeignGroup {
      * @return True if the thread is managed, otherwise false.
      */
     public static boolean sysCurrentThreadChk(Interpreter inter, Thread t) {
-        Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+        Foyer foyer = inter.getKnowledgebase().getFoyer();
         AbstractLivestock al = Fence.DEFAULT.getLivestock(t);
         return (al != null && al.source == foyer);
     }

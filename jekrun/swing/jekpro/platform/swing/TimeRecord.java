@@ -3,6 +3,7 @@ package jekpro.platform.swing;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
+import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
 import matula.util.config.ArrayEnumeration;
 
@@ -107,14 +108,11 @@ public final class TimeRecord {
      * @param inter The interpreter.
      * @param co    The call out.
      * @return The statistics key.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
      */
-    public static String sysCurrentStat(Interpreter inter, CallOut co)
-            throws InterpreterMessage, InterpreterException {
+    public static String sysCurrentStat(Interpreter inter, CallOut co) {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            int hint = ((Integer) inter.getProperty("sys_hint")).intValue();
+            int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
             switch (hint) {
                 case Foyer.HINT_WEB:
                     dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);

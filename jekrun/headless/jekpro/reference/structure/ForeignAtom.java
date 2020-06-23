@@ -75,8 +75,8 @@ public final class ForeignAtom {
      */
     public static Object sysAtomToList(Interpreter inter,
                                        String str, int rep) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Object res = lobby.ATOM_NIL;
+        Knowledgebase know = inter.getKnowledgebase();
+        Object res = know.getTermNil();
         int i = str.length();
         while (i > 0) {
             int ch = str.codePointBefore(i);
@@ -92,7 +92,7 @@ public final class ForeignAtom {
                     throw new IllegalArgumentException("illegal rep");
             }
             i -= Character.charCount(ch);
-            res = new TermCompound(lobby.ATOM_CONS, val, res);
+            res = new TermCompound(know.getTermCons(), val, res);
         }
         return res;
     }

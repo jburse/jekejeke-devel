@@ -14,7 +14,10 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.*;
+import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.TermAtomic;
+import jekpro.tools.term.TermCompound;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -128,7 +131,7 @@ public final class ForeignPath {
     public static String sysFindWrite(Interpreter inter,
                                       String path)
             throws IOException {
-        Store store = (Store) inter.getKnowledgebase().getStore();
+        Store store = inter.getKnowledgebase().getStore();
         return LookupBase.findWrite(path, store);
     }
 
@@ -143,7 +146,7 @@ public final class ForeignPath {
     public static String sysUnfindWrite(Interpreter inter,
                                         String path)
             throws IOException {
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         String res = LookupBase.unfindWrite(path, engine);
         if (res != null)
             return res;
@@ -166,7 +169,7 @@ public final class ForeignPath {
                                        Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
@@ -200,7 +203,7 @@ public final class ForeignPath {
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Object res;
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         try {
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
             AbstractSource scope;
@@ -233,7 +236,7 @@ public final class ForeignPath {
                                     Object opt)
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
@@ -266,7 +269,7 @@ public final class ForeignPath {
             throws InterpreterMessage, IOException {
         int mask = decodeFindOptions(opt);
         Object res;
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         try {
             AbstractSource scope;
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
@@ -399,13 +402,12 @@ public final class ForeignPath {
      */
     public static Object sysGetClassPaths(Interpreter inter)
             throws InterpreterMessage {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
         Knowledgebase know = inter.getKnowledgebase();
-        Object end = lobby.ATOM_NIL;
+        Object end = know.getTermNil();
         while (know != null) {
             String[] paths = know.getClassPaths();
             for (int i = paths.length - 1; i >= 0; i--)
-                end = new TermCompound(lobby.ATOM_CONS, paths[i], end);
+                end = new TermCompound(know.getTermCons(), paths[i], end);
             know = know.getParent();
         }
         return end;
@@ -520,7 +522,7 @@ public final class ForeignPath {
     /**
      * <p>Retrieve the file extensions along the knowledge bases.</p>
      *
-     * @param co The call-out.
+     * @param co    The call-out.
      * @param inter The interpreter.
      * @return The list of class paths.
      */
@@ -548,14 +550,13 @@ public final class ForeignPath {
      */
     private static ListArray<Object> listFileExtensions(Interpreter inter) {
         Knowledgebase know = inter.getKnowledgebase();
-        Lobby lobby = know.getLobby();
-        ListArray<Object> res=new ListArray<Object>();
+        ListArray<Object> res = new ListArray<Object>();
         do {
             MapEntry<String, FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {
                 MapEntry<String, FileExtension> ext = exts[i];
                 Object val = encodeFileExtension(inter, ext.value);
-                val = new TermCompound(lobby.ATOM_SUB, ext.key, val);
+                val = new TermCompound(know.getTermSub(), ext.key, val);
                 res.add(val);
             }
             know = know.getParent();
@@ -571,25 +572,25 @@ public final class ForeignPath {
      * @return The type and mime options.
      */
     private static Object encodeFileExtension(Interpreter inter, FileExtension fe) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Object end = lobby.ATOM_NIL;
+        Knowledgebase know = inter.getKnowledgebase();
+        Object end = know.getTermNil();
         if (fe.getMimeType() != null) {
             Object val = new TermCompound(OP_MIME, fe.getMimeType());
-            end = new TermCompound(lobby.ATOM_CONS, val, end);
+            end = new TermCompound(know.getTermCons(), val, end);
         }
         if ((fe.getType() & FileExtension.MASK_USES_BNRY) != 0) {
             Object val = new TermCompound(OP_USE, OP_USE_BINARY);
-            end = new TermCompound(lobby.ATOM_CONS, val, end);
+            end = new TermCompound(know.getTermCons(), val, end);
         } else if ((fe.getType() & FileExtension.MASK_USES_RSCS) != 0) {
             Object val = new TermCompound(OP_USE, OP_USE_RESOURCE);
-            end = new TermCompound(lobby.ATOM_CONS, val, end);
+            end = new TermCompound(know.getTermCons(), val, end);
         } else if ((fe.getType() & FileExtension.MASK_PCKG_LOAD) != 0) {
             Object val = new TermCompound(OP_USE, OP_USE_PACKAGE);
-            end = new TermCompound(lobby.ATOM_CONS, val, end);
+            end = new TermCompound(know.getTermCons(), val, end);
         }
         if ((fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
             Object val = new TermCompound(OP_DATA, OP_DATA_ENCRYPT);
-            end = new TermCompound(lobby.ATOM_CONS, val, end);
+            end = new TermCompound(know.getTermCons(), val, end);
         }
         return end;
     }

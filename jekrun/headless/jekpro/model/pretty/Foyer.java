@@ -14,6 +14,7 @@ import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractBundle;
@@ -126,6 +127,10 @@ public class Foyer extends Enforced {
     public final SkelAtom ATOM_LESS = new SkelAtom(Foyer.OP_LESS);
     public final SkelAtom ATOM_GREATER = new SkelAtom(Foyer.OP_GREATER);
     public final SkelAtom ATOM_JEKEJEKE = new SkelAtom(Foyer.OP_JEKEJEKE);
+
+    public final TermAtomic TERM_CONS = new TermAtomic(ATOM_CONS);
+    public final TermAtomic TERM_NIL = new TermAtomic(ATOM_NIL);
+    public final TermAtomic TERM_SUB = new TermAtomic(ATOM_SUB);
 
     public final SkelCompound CELL_CONS = new SkelCompound(ATOM_CONS,
             SkelVar.valueOf(0), SkelVar.valueOf(1));

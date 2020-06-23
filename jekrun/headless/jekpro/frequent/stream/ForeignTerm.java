@@ -103,7 +103,7 @@ public final class ForeignTerm {
     public static void unparseTerm(Interpreter inter, Writer wr,
                                    Object t, Object opt, int flags)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             PrologWriter pw;
             if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
@@ -188,7 +188,7 @@ public final class ForeignTerm {
     public static Object parseTerm(Interpreter inter, Reader lr,
                                    Object opt, int flags)
             throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Object val;
         PrologReader rd;
         try {

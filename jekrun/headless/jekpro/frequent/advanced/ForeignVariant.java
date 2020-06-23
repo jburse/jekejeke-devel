@@ -53,7 +53,7 @@ public final class ForeignVariant {
     public static AbstractLexical sysVariantDecode(Interpreter inter,
                                                    Object opt)
             throws InterpreterMessage {
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         AbstractLexical el;
         try {
             el = AbstractLexical.decodeSortOpts(AbstractTerm.getSkel(opt),
@@ -73,7 +73,7 @@ public final class ForeignVariant {
      */
     public static Object sysVariantEncode(Interpreter inter,
                                           AbstractLexical el) {
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         AbstractLexical.encodeSortOpts(el, engine);
         return AbstractTerm.createMolec(engine.skel, engine.display);
     }

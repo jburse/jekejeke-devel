@@ -107,7 +107,7 @@ public final class ForeignStream {
             switch (modecode) {
                 case MODE_READ:
                     Knowledgebase know = inter.getKnowledgebase();
-                    return options.openRead((Store) know.getStore(), sock);
+                    return options.openRead(know.getStore(), sock);
                 case MODE_WRITE:
                     return options.openWrite(sock);
                 default:
@@ -145,7 +145,7 @@ public final class ForeignStream {
             switch (modecode) {
                 case MODE_READ:
                     Knowledgebase know = inter.getKnowledgebase();
-                    return options.openRead((Store) know.getStore(), adr);
+                    return options.openRead(know.getStore(), adr);
                 case MODE_WRITE:
                     return options.openWrite(adr);
                 case MODE_APPEND:
@@ -234,7 +234,7 @@ public final class ForeignStream {
     public static Object sysStreamProperty(Interpreter inter,
                                            Object obj)
             throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             streamToProperties(obj, en);
             return AbstractTerm.createTerm(en.skel, en.display);
@@ -258,7 +258,7 @@ public final class ForeignStream {
     public static Object sysStreamPropertyChk(Interpreter inter,
                                               Object obj, Object key)
             throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(key),
                     AbstractTerm.getDisplay(key), en);
@@ -282,7 +282,7 @@ public final class ForeignStream {
     public static void sysSetStreamProperty(Interpreter inter,
                                             Object obj, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             setStreamProp(obj, AbstractTerm.getSkel(val),
                     AbstractTerm.getDisplay(val), en);
@@ -302,7 +302,7 @@ public final class ForeignStream {
     public static void sysResetStreamProperty(Interpreter inter,
                                               Object obj, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             resetStreamProp(obj, AbstractTerm.getSkel(val),
                     AbstractTerm.getDisplay(val), en);

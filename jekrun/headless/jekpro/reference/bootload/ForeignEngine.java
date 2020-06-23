@@ -15,7 +15,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Lobby;
+import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractTracking;
@@ -71,7 +71,7 @@ public final class ForeignEngine {
     public static String sysCurrentFlag(Interpreter inter, CallOut co) {
         Enumeration<String> dc;
         if (co.getFirst()) {
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             ListArray<String> list = ForeignEngine.listPrologFlags(en);
             ListArray<String> list2 = ForeignEngine.listSessionFlags(en.store);
             for (int i = 0; i < list2.size(); i++)
@@ -98,7 +98,7 @@ public final class ForeignEngine {
      */
     public static Object sysGetFlag(Interpreter inter, String flag)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         AbstractFlag<Engine> af = findPrologFlag(flag, en);
         if (af != null)
             return af.getObjFlag(en, en);
@@ -119,7 +119,7 @@ public final class ForeignEngine {
      */
     public static void sysSetFlag(Interpreter inter, String flag, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             AbstractFlag<Engine> af = findPrologFlag(flag, en);
             if (af != null) {
@@ -383,12 +383,12 @@ public final class ForeignEngine {
      * @return The Prolog version.
      */
     public static String sysPrologVersion(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Capability brand = lobby.getToolkit().getBrandCapability();
-        Engine en = (Engine) inter.getEngine();
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability brand = know.getToolkit().getBrandCapability();
+        Engine en = inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        ClassLoader loader = lobby.getRoot().getLoader();
-        AbstractRuntime runtime = lobby.getFramework().getRuntime();
+        ClassLoader loader = know.getRoot().getLoader();
+        AbstractRuntime runtime = know.getFramework().getRuntime();
         return brand.getFamily(locale, loader) + ", " +
                 brand.getProductReleaseDate(locale, loader, runtime);
     }
@@ -400,11 +400,11 @@ public final class ForeignEngine {
      * @return The Prolog vendor.
      */
     public static String sysPrologVendor(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Capability brand = lobby.getToolkit().getBrandCapability();
-        Engine en = (Engine) inter.getEngine();
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability brand = know.getToolkit().getBrandCapability();
+        Engine en = inter.getEngine();
         Locale locale = en.store.foyer.locale;
-        ClassLoader loader = lobby.getRoot().getLoader();
+        ClassLoader loader = know.getRoot().getLoader();
         return brand.getCompany(locale, loader);
     }
 
@@ -425,7 +425,7 @@ public final class ForeignEngine {
                                        TermAtomic obj, Object opt)
             throws InterpreterMessage, InterpreterException {
         try {
-            Engine engine = (Engine) inter.getEngine();
+            Engine engine = inter.getEngine();
             LoadForce opts2 = new LoadForce();
             opts2.decodeLoadForce(
                     AbstractTerm.getSkel(opt),
@@ -449,7 +449,7 @@ public final class ForeignEngine {
      * @return The top of the module stack, or null.
      */
     public static TermAtomic sysPeekStack(Interpreter inter) {
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         AbstractSource src = engine.visor.peekStack();
         return (src != null ? new TermAtomic(src.getPathAtom()) : null);
     }
@@ -461,7 +461,7 @@ public final class ForeignEngine {
      * @return The size of the module stack.
      */
     public static int sysCountStack(Interpreter inter) {
-        Engine engine = (Engine) inter.getEngine();
+        Engine engine = inter.getEngine();
         return engine.visor.countStack();
     }
 

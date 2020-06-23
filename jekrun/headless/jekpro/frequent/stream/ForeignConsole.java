@@ -174,7 +174,7 @@ public final class ForeignConsole {
             throws InterpreterMessage, InterpreterException {
         try {
             Locale locale = LangProperties.stringToLocale(locstr);
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             return EngineException.errorMake(AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, obj, en);
         } catch (EngineMessage x) {
@@ -201,7 +201,7 @@ public final class ForeignConsole {
             throws IOException, InterpreterMessage, InterpreterException {
         try {
             Locale locale = LangProperties.stringToLocale(locstr);
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             EngineException.printStackTrace(wr, AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, prop, en);
         } catch (EngineMessage x) {

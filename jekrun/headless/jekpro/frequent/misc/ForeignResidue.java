@@ -6,10 +6,7 @@ import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.UndoSerno;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.Lobby;
-import jekpro.tools.term.TermCompound;
-import jekpro.tools.term.TermVar;
+import jekpro.tools.term.*;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -58,7 +55,7 @@ public final class ForeignResidue {
     public static Object sysResidueAttr(CallOut co, Interpreter inter) {
         Enumeration<Object> dc;
         if (co.getFirst()) {
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             ListArray<Object> list = ForeignResidue.listResidueAttrs(en);
             if (list == null)
                 return null;
@@ -106,7 +103,7 @@ public final class ForeignResidue {
      * @return The current mark.
      */
     public static AbstractUndo sysCurrentMark(Interpreter inter) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         return en.bind;
     }
 
@@ -118,17 +115,17 @@ public final class ForeignResidue {
      * @return The list.
      */
     public static AbstractTerm sysMarkAttrs(Interpreter inter, AbstractUndo mark) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        AbstractTerm res = lobby.ATOM_NIL;
+        Knowledgebase know = inter.getKnowledgebase();
+        AbstractTerm res = know.getTermNil();
 
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         for (AbstractUndo bind = en.bind; bind != mark; bind = bind.next) {
             if (!(bind instanceof UndoSerno))
                 continue;
             TermVar var = ((UndoSerno) bind).getUniv().getAttr();
             if (var == null)
                 continue;
-            res = new TermCompound(inter, lobby.ATOM_CONS, var, res);
+            res = new TermCompound(inter, know.getTermCons(), var, res);
         }
         return res;
     }

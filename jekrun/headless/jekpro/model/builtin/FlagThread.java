@@ -6,9 +6,9 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.call.Controller;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
+import matula.util.wire.AbstractLivestock;
 
 /**
  * <p>Thread flags on runtime library level.</p>
@@ -87,10 +87,9 @@ public final class FlagThread extends AbstractFlag<Thread> {
             case FLAG_SYS_THREAD_GROUP:
                 return obj.getThreadGroup();
             case FLAG_SYS_TPROMPT:
-                Controller contr = Controller.currentController(obj);
-                if (contr == null) return new SkelAtom(AbstractFlag.OP_NULL);
+                Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(obj);
+                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
-                Supervisor s = (Supervisor) contr.getVisor();
                 return SpecialSession.promptToAtom(s.flags & SpecialSession.MASK_MODE_PRMT);
             default:
                 throw new IllegalArgumentException("illegal flag");
@@ -100,20 +99,20 @@ public final class FlagThread extends AbstractFlag<Thread> {
     /**
      * <p>Set the value of a this flag.</p>
      *
-     * @param t  The thread.
-     * @param m  The value skel.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param obj The thread.
+     * @param m   The value skel.
+     * @param d   The value display.
+     * @param en  The engine.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setObjFlag(Thread t, Object m, Display d,
+    public boolean setObjFlag(Thread obj, Object m, Display d,
                               Engine en)
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
                 String name = SpecialUniv.derefAndCastString(m, d);
-                t.setName(name);
+                obj.setName(name);
                 return true;
             case FLAG_SYS_THREAD_STATE:
                 /* can't modify */
@@ -122,10 +121,9 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 /* can't modify */
                 return false;
             case FLAG_SYS_TPROMPT:
-                Controller contr = Controller.currentController(t);
-                if (contr == null) return true;
+                Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(obj);
+                if (s == null) return true;
 
-                Supervisor s = (Supervisor) contr.getVisor();
                 s.setThreadPrompt(SpecialSession.atomToPrompt(m, d));
                 return true;
             default:

@@ -4,6 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
@@ -50,15 +51,21 @@ public final class FlagSession extends AbstractFlag<Store> {
     public final static String OP_USER_PREFS = "user_prefs";
     public final static String OP_BASE_URL = "base_url";
     public final static String OP_SYS_LOCALE = "sys_locale";
+    public final static String OP_SYS_HINT = "sys_hint";
+    public final static String OP_SYS_APPLICATION = "sys_application";
 
     private static final int FLAG_USER_PREFS = 0;
     private static final int FLAG_BASE_URL = 1;
     private static final int FLAG_SYS_LOCALE = 2;
+    private static final int FLAG_SYS_HINT = 3;
+    private static final int FLAG_SYS_APPLICATION = 4;
 
     static {
         DEFAULT.add(OP_USER_PREFS, new FlagSession(FLAG_USER_PREFS));
         DEFAULT.add(OP_BASE_URL, new FlagSession(FLAG_BASE_URL));
         DEFAULT.add(OP_SYS_LOCALE, new FlagSession(FLAG_SYS_LOCALE));
+        DEFAULT.add(OP_SYS_HINT, new FlagSession(FLAG_SYS_HINT));
+        DEFAULT.add(OP_SYS_APPLICATION, new FlagSession(FLAG_SYS_APPLICATION));
     }
 
     /**
@@ -87,6 +94,11 @@ public final class FlagSession extends AbstractFlag<Store> {
                 return new SkelAtom(path != null ? path : "");
             case FLAG_SYS_LOCALE:
                 return new SkelAtom(obj.foyer.locale.toString());
+            case FLAG_SYS_HINT:
+                return Integer.valueOf(obj.foyer.getHint());
+            case FLAG_SYS_APPLICATION:
+                Object val = obj.foyer.getApplication();
+                return val != null ? val : AbstractFlag.OP_NULL;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -103,20 +115,33 @@ public final class FlagSession extends AbstractFlag<Store> {
      */
     public boolean setObjFlag(Store obj, Object m, Display d, Engine en)
             throws EngineMessage {
-        switch (id) {
-            case FLAG_USER_PREFS:
-                /* can't modify */
-                return false;
-            case FLAG_BASE_URL:
-                String fun = SpecialUniv.derefAndCastString(m, d);
-                obj.setBase(!"".equals(fun) ? fun : null);
-                return true;
-            case FLAG_SYS_LOCALE:
-                fun = SpecialUniv.derefAndCastString(m, d);
-                obj.foyer.locale = LangProperties.stringToLocale(fun);
-                return true;
-            default:
-                throw new IllegalArgumentException("illegal flag");
+        try {
+            switch (id) {
+                case FLAG_USER_PREFS:
+                    /* can't modify */
+                    return false;
+                case FLAG_BASE_URL:
+                    String fun = SpecialUniv.derefAndCastString(m, d);
+                    obj.setBase(!"".equals(fun) ? fun : null);
+                    return true;
+                case FLAG_SYS_LOCALE:
+                    fun = SpecialUniv.derefAndCastString(m, d);
+                    obj.foyer.locale = LangProperties.stringToLocale(fun);
+                    return true;
+                case FLAG_SYS_HINT:
+                    Number num = SpecialEval.derefAndCastInteger(m, d);
+                    obj.foyer.setHint(SpecialEval.castIntValue(num));
+                    return true;
+                case FLAG_SYS_APPLICATION:
+                    Object val = SpecialUniv.derefAndCastRefOrNull(m, d);
+                    obj.foyer.setApplication(val);
+                    return true;
+                default:
+                    throw new IllegalArgumentException("illegal flag");
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

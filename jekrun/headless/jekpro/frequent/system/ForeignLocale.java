@@ -4,14 +4,9 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
-import jekpro.tools.call.Capability;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Lobby;
 import jekpro.tools.term.TermCompound;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignCache;
@@ -79,7 +74,7 @@ public final class ForeignLocale {
             return null;
         locstr = "_" + locstr;
         Properties prop = ForeignCache.getCached(cache, locstr);
-        ForeignCache.getProp(prop, (Store) know.getStore(), pin, locstr);
+        ForeignCache.getProp(prop, know.getStore(), pin, locstr);
         return (ForeignCache.isValid(prop) ? prop : null);
     }
 
@@ -140,7 +135,7 @@ public final class ForeignLocale {
      */
     private static Object[] prepareArguments(Interpreter inter, Object term)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         ListArray<Object> vec = new ListArray<Object>();
         while (term instanceof TermCompound &&
                 ((TermCompound) term).getArity() == 2 &&
@@ -190,7 +185,7 @@ public final class ForeignLocale {
             throws InterpreterMessage, InterpreterException {
         try {
             Locale locale = LangProperties.stringToLocale(locstr);
-            Engine en = (Engine) inter.getEngine();
+            Engine en = inter.getEngine();
             return EngineMessage.messageMake(AbstractTerm.getSkel(term),
                     AbstractTerm.getDisplay(term), locale, obj, en);
         } catch (EngineMessage x) {
@@ -230,10 +225,10 @@ public final class ForeignLocale {
     public static Properties sysGetDescrModel(Interpreter inter,
                                               String locstr, String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
         Locale locale = LangProperties.stringToLocale(locstr);
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        return capa.getDescrModel(locale, lobby.getRoot().getLoader());
+        return capa.getDescrModel(locale, know.getRoot().getLoader());
     }
 
     /**
@@ -248,9 +243,10 @@ public final class ForeignLocale {
     public static Properties sysGetDescrPlatform(Interpreter inter,
                                                  String locstr, String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
         Locale locale = LangProperties.stringToLocale(locstr);
-        return capa.getDescrPlatform(locale, inter.getKnowledgebase().getLobby());
+        return capa.getDescrPlatform(locale, know);
     }
 
     /**************************************************************/

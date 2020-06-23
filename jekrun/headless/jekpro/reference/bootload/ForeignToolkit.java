@@ -1,7 +1,7 @@
 package jekpro.reference.bootload;
 
 import jekpro.tools.call.*;
-import jekpro.tools.term.Lobby;
+import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermCompound;
 
 /**
@@ -49,8 +49,9 @@ public final class ForeignToolkit {
     public static void sysActivateCapability(Interpreter inter,
                                              String clazz, String hash)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        inter.getKnowledgebase().getLobby().activateCapability(capa, hash);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        Toolkit.activateCapability(capa, hash, know);
     }
 
     /**
@@ -65,8 +66,9 @@ public final class ForeignToolkit {
     public static String sysCalcInstallID(Interpreter inter,
                                           String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        return inter.getKnowledgebase().getLobby().calcInstallID(capa);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        return Toolkit.calcInstallID(capa,know);
     }
 
     /**
@@ -81,8 +83,9 @@ public final class ForeignToolkit {
     public static void sysRegLicenseText(Interpreter inter,
                                          String clazz, String text)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        inter.getKnowledgebase().getLobby().regLicenseText(capa, text);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        Toolkit.regLicenseText(capa, text, know);
     }
 
     /**
@@ -97,8 +100,9 @@ public final class ForeignToolkit {
     public static String sysRegedLicenseText(Interpreter inter,
                                              String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        return inter.getKnowledgebase().getLobby().regedLicenseText(capa);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        return Toolkit.regedLicenseText(capa, know);
     }
 
     /**
@@ -113,7 +117,8 @@ public final class ForeignToolkit {
     public static void sysInitCapability(Interpreter inter,
                                          String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
         capa.initCapability(inter);
     }
 
@@ -130,7 +135,8 @@ public final class ForeignToolkit {
     public static void sysInitCapabilityOpt(Interpreter inter,
                                             String clazz, Object opt)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
         InitOpts options = InitOpts.decodeInitOptions(opt);
         capa.initCapability(inter, options.getPrompt());
     }
@@ -146,8 +152,9 @@ public final class ForeignToolkit {
     public static void sysFiniCapability(Interpreter inter,
                                          String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        capa.finiCapability(inter.getKnowledgebase());
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        capa.finiCapability(know);
     }
 
     /**
@@ -157,12 +164,12 @@ public final class ForeignToolkit {
      * @return The list of capabilities.
      */
     public static Object sysGetCapabilities(Interpreter inter) {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Toolkit toolkit = inter.getKnowledgebase().getLobby().getToolkit();
-        Capability[] objs = inter.getKnowledgebase().getLobby().getCapabilities();
-        Object end = lobby.ATOM_NIL;
+        Knowledgebase know = inter.getKnowledgebase();
+        Toolkit toolkit = know.getToolkit();
+        Capability[] objs = Toolkit.getCapabilities(inter.getKnowledgebase());
+        Object end = know.getTermNil();
         for (int i = objs.length - 1; i >= 0; i--) {
-            end = new TermCompound(lobby.ATOM_CONS,
+            end = new TermCompound(know.getTermCons(),
                     toolkit.capabilityToString(objs[i]), end);
         }
         return end;
@@ -180,15 +187,15 @@ public final class ForeignToolkit {
     public static Object sysGetCapabilityProperties(Interpreter inter,
                                                     String clazz)
             throws InterpreterMessage, InterpreterException {
-        Lobby lobby = inter.getKnowledgebase().getLobby();
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        Object res = lobby.ATOM_NIL;
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        Object res = know.getTermNil();
         String[] props = Capability.getProperties();
         for (int i = 0; i < props.length; i++) {
             String prop = props[i];
-            Object val = capa.getProperty(prop, inter.getKnowledgebase().getLobby());
+            Object val = capa.getProperty(prop, inter.getKnowledgebase());
             val = new TermCompound(prop, val);
-            res = new TermCompound(lobby.ATOM_CONS, val, res);
+            res = new TermCompound(know.getTermCons(), val, res);
         }
         return res;
     }
@@ -206,8 +213,9 @@ public final class ForeignToolkit {
     public static Object sysGetCapabilityProperty(Interpreter inter,
                                                   String clazz, String prop)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        Object val = capa.getProperty(prop, inter.getKnowledgebase().getLobby());
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        Object val = capa.getProperty(prop, know);
         if (val == null)
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     "prolog_property", prop));
@@ -225,8 +233,9 @@ public final class ForeignToolkit {
     public static void sysCheckLicense(Interpreter inter,
                                        String clazz)
             throws InterpreterMessage, InterpreterException {
-        Capability capa = inter.getKnowledgebase().stringToCapability(clazz);
-        inter.getKnowledgebase().getLobby().checkLicense(capa);
+        Knowledgebase know = inter.getKnowledgebase();
+        Capability capa = Toolkit.stringToCapability(clazz, know);
+        Toolkit.checkLicense(capa, know);
     }
 
     /**
@@ -237,7 +246,8 @@ public final class ForeignToolkit {
      */
     public static void sysCheckLicenses(Interpreter inter)
             throws InterpreterMessage {
-        inter.getKnowledgebase().getLobby().checkLicenses();
+        Knowledgebase know = inter.getKnowledgebase();
+        Toolkit.checkLicenses(know);
     }
 
 }
