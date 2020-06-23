@@ -247,7 +247,7 @@ public abstract class AbstractTerm {
         Object m = AbstractTerm.getSkel(t);
         Display d = AbstractTerm.getDisplay(t);
 
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof SkelAtom) && !(t instanceof TermAtomic))
             return t;
@@ -267,7 +267,7 @@ public abstract class AbstractTerm {
         Object m = AbstractTerm.getSkel(t);
         Display d = AbstractTerm.getDisplay(t);
 
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && (t instanceof AbstractTerm))
             return (AbstractTerm) t;
@@ -286,7 +286,7 @@ public abstract class AbstractTerm {
         /* common lane */
         Object m = AbstractTerm.getSkel(t);
         Display d = AbstractTerm.getDisplay(t);
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Object val = AbstractSkel.copySkel(m, d, en);
         if (val == m && !(t instanceof String) && !(t instanceof TermAtomic))
             return t;
@@ -305,7 +305,7 @@ public abstract class AbstractTerm {
      * @return The current bind.
      */
     public static Object markBind(Interpreter inter) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         return en.bind;
     }
 
@@ -321,7 +321,7 @@ public abstract class AbstractTerm {
      */
     public static boolean unifyTerm(Interpreter inter, Object fst, Object snd)
             throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         boolean res;
@@ -347,7 +347,7 @@ public abstract class AbstractTerm {
      */
     public static void releaseBind(Interpreter inter, Object mark)
             throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
@@ -371,7 +371,7 @@ public abstract class AbstractTerm {
      */
     public static int compareTerm(Interpreter inter, Object fst, Object snd)
             throws ArithmeticException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         return en.compare(fst, snd);
     }
 

@@ -64,7 +64,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static String OP_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_SYS_RUNTIME_VERSION = "sys_runtime_version";
     public final static String OP_VERBOSE = "verbose";
-    public final static String OP_SYS_HINT = "sys_hint";
     public final static String OP_SYS_TOOL_INPUT = "sys_tool_input";
     public final static String OP_SYS_TOOL_OUTPUT = "sys_tool_output";
     public final static String OP_SYS_TOOL_ERROR = "sys_tool_error";
@@ -84,16 +83,15 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_CPU_COUNT = 7;
     private static final int FLAG_SYS_RUNTIME_VERSION = 8;
     private static final int FLAG_VERBOSE = 9;
-    private static final int FLAG_SYS_HINT = 10;
-    private static final int FLAG_SYS_TOOL_INPUT = 11;
-    private static final int FLAG_SYS_TOOL_OUTPUT = 12;
-    private static final int FLAG_SYS_TOOL_ERROR = 13;
-    private static final int FLAG_SYS_BELONGS_TO = 14;
-    private static final int FLAG_BOUNDED = 15;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 16;
-    private static final int FLAG_CHAR_CONVERSION = 17;
-    private static final int FLAG_MAX_ARITY = 18;
-    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 19;
+    private static final int FLAG_SYS_TOOL_INPUT = 10;
+    private static final int FLAG_SYS_TOOL_OUTPUT = 11;
+    private static final int FLAG_SYS_TOOL_ERROR = 12;
+    private static final int FLAG_SYS_BELONGS_TO = 13;
+    private static final int FLAG_BOUNDED = 14;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 15;
+    private static final int FLAG_CHAR_CONVERSION = 16;
+    private static final int FLAG_MAX_ARITY = 17;
+    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 18;
 
     /**
      * <p>Create a flag.</p>
@@ -114,7 +112,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
         DEFAULT.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
         DEFAULT.add(OP_VERBOSE, new FlagFactory(FLAG_VERBOSE));
-        DEFAULT.add(OP_SYS_HINT, new FlagFactory(FLAG_SYS_HINT));
         DEFAULT.add(OP_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
         DEFAULT.add(OP_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
         DEFAULT.add(OP_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
@@ -180,8 +177,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                         throw new IllegalArgumentException("illegal verbosity");
                 }
                 return new SkelAtom(name);
-            case FLAG_SYS_HINT:
-                return Integer.valueOf(en.store.foyer.getHint());
             case FLAG_SYS_TOOL_INPUT:
                 return en.store.foyer.getFactory().toolinput;
             case FLAG_SYS_TOOL_OUTPUT:
@@ -261,9 +256,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                     en.store.foyer.resetBit(Foyer.MASK_FOYER_DTLS);
                 }
                 return true;
-            case FLAG_SYS_HINT:
-                /* can't modify */
-                return false;
             case FLAG_SYS_TOOL_INPUT:
                 m = SpecialUniv.derefAndCastRef(m, d);
                 checkRead(m);

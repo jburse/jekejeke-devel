@@ -77,11 +77,11 @@ public abstract class AbstractDescription {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param loader      The class loader.
+     * @param loader The class loader.
      * @return The properties or null.
      */
     public Properties getDescrModel(Locale locale,
-                                             ClassLoader loader) {
+                                    ClassLoader loader) {
         String name = getMainRoot() + MODEL_DEFAULT;
         return LangProperties.getLang(loader, name, locale);
     }
@@ -89,14 +89,14 @@ public abstract class AbstractDescription {
     /**
      * <p>Retrieve the bundle description.</p>
      *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
+     * @param locale  The locale.
+     * @param loader  The class loader.
+     * @param runtime The runtime.
      * @return The properties or null.
      */
     public Properties getDescrPlatform(Locale locale,
-                                                ClassLoader loader,
-                                                AbstractRuntime runtime) {
+                                       ClassLoader loader,
+                                       AbstractRuntime runtime) {
         String aspect = runtime.getAspect();
         String name = getMainRoot() + PLATFORM_DIR + aspect + PLATFORM_FILE;
         return LangProperties.getLang(loader, name, locale);
@@ -125,7 +125,7 @@ public abstract class AbstractDescription {
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param locale The locale.
+     * @param locale  The locale.
      * @param loader  The class loader.
      * @param runtime The runtime.
      * @return The product and release.

@@ -1,10 +1,10 @@
 package jekpro.tools.term;
 
 import derek.util.protect.LicenseError;
-import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -13,7 +13,11 @@ import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignEngine;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.call.*;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.call.Toolkit;
+import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
@@ -102,6 +106,8 @@ public final class Knowledgebase {
     public final static String PROP_USER_PREFS = FlagSession.OP_USER_PREFS;
     public final static String PROP_BASE_URL = FlagSession.OP_BASE_URL;
     public final static String PROP_SYS_LOCALE = FlagSession.OP_SYS_LOCALE;
+    public final static String PROP_SYS_HINT = FlagSession.OP_SYS_HINT;
+    public final static String PROP_SYS_APPLICATION = FlagSession.OP_SYS_APPLICATION;
 
     private final Store store;
 
@@ -119,8 +125,8 @@ public final class Knowledgebase {
      * @param k The toolkit.
      */
     public Knowledgebase(Toolkit k) {
-        Lobby lobby = new Lobby(k);
-        Foyer foyer = (Foyer) lobby.getFoyer();
+        AbstractFactory factory = (AbstractFactory) k.getFactory();
+        Foyer foyer = factory.createFoyer();
 
         store = foyer.createStore(null);
         store.loader = getClass().getClassLoader();
@@ -131,19 +137,19 @@ public final class Knowledgebase {
      * <p>Create a new root knowledge base </p></o>
      *
      * @param k The toolkit.
-     * @param c The class loader.
+     * @param l The class loader.
      */
-    public Knowledgebase(Toolkit k, ClassLoader c)
-            throws InterpreterMessage{
-        Lobby lobby = new Lobby(k);
-        Foyer foyer = (Foyer) lobby.getFoyer();
+    public Knowledgebase(Toolkit k, ClassLoader l)
+            throws InterpreterMessage {
+        AbstractFactory factory = (AbstractFactory) k.getFactory();
+        Foyer foyer = factory.createFoyer();
 
-        if (!AbstractRuntime.inChain(c, null, getClass().getClassLoader()))
+        if (!AbstractRuntime.inChain(l, null, getClass().getClassLoader()))
             throw new InterpreterMessage(InterpreterMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_LOADER, getClass().getClassLoader()));
 
         store = foyer.createStore(null);
-        store.loader = c;
+        store.loader = l;
         store.proxy = this;
     }
 
@@ -153,7 +159,7 @@ public final class Knowledgebase {
      * @param p The parent.
      */
     public Knowledgebase(Knowledgebase p) {
-        Store parent = (Store) p.getStore();
+        Store parent = p.getStore();
         Foyer foyer = parent.foyer;
 
         store = foyer.createStore(parent);
@@ -170,7 +176,7 @@ public final class Knowledgebase {
      */
     public Knowledgebase(Knowledgebase p, ClassLoader c)
             throws InterpreterMessage {
-        Store parent = (Store) p.getStore();
+        Store parent = p.getStore();
         Foyer foyer = parent.foyer;
 
         if (!AbstractRuntime.inChain(c, null, parent.loader))
@@ -183,15 +189,6 @@ public final class Knowledgebase {
     }
 
     /**
-     * <p>Retrieve the lobby.</p>
-     *
-     * @return The lobby.
-     */
-    public Lobby getLobby() {
-        return (Lobby) store.foyer.proxy;
-    }
-
-    /**
      * <p>Retrieve the parent.</p>
      *
      * @return The parent.
@@ -199,6 +196,66 @@ public final class Knowledgebase {
     public Knowledgebase getParent() {
         Store parent = store.parent;
         return (parent != null ? (Knowledgebase) parent.proxy : null);
+    }
+
+    /**
+     * <p>Retrieve the toolkit.</p>
+     *
+     * @return The toolkit.
+     */
+    public Toolkit getToolkit() {
+        return (Toolkit) store.foyer.getFactory().proxy;
+    }
+
+    /**
+     * <p>Retrieve the root knowledge base.</p>
+     *
+     * @return The root knowledge base.
+     */
+    public Knowledgebase getRoot() {
+        Store other = (Store) store.foyer.getRoot();
+        return (other != null ? (Knowledgebase) other.proxy : null);
+    }
+
+
+    /**
+     * <p>Retrieve the framework.</p>
+     *
+     * @return The framework.
+     */
+    public AbstractFramework getFramework() {
+        return store.foyer.getFramework();
+    }
+
+    /***********************************************************/
+    /* Predefined Atoms                                        */
+    /***********************************************************/
+
+    /**
+     * <p>Return the '[]' term.</p>
+     *
+     * @return The '[]' term.
+     */
+    public TermAtomic getTermNil() {
+        return store.foyer.TERM_NIL;
+    }
+
+    /**
+     * <p>Return the '.' term.</p>
+     *
+     * @return The '.' term.
+     */
+    public TermAtomic getTermCons() {
+        return store.foyer.TERM_CONS;
+    }
+
+    /**
+     * <p>Return the '-' term.</p>
+     *
+     * @return The '-' term.
+     */
+    public TermAtomic getTermSub() {
+        return store.foyer.TERM_SUB;
     }
 
     /*****************************************************************/
@@ -211,8 +268,12 @@ public final class Knowledgebase {
      * @return The iterable.
      */
     public Interpreter iterable() {
-        return new Interpreter(this,
-                new Controller(getLobby(), this));
+        Foyer foyer = getFoyer();
+        Store store = getStore();
+
+        Supervisor visor = foyer.createSupervisor();
+        visor.pushStack(store.user);
+        return new Interpreter(this, visor);
     }
 
     /*****************************************************************/
@@ -243,11 +304,11 @@ public final class Knowledgebase {
      */
     public static void initKnowledgebase(Interpreter inter, boolean prompt)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
-            en.store.initStore((Engine) inter.getEngine(), prompt);
+            en.store.initStore(inter.getEngine(), prompt);
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);
         } catch (EngineMessage x) {
@@ -396,31 +457,6 @@ public final class Knowledgebase {
     /* Capabilities                                        */
     /*******************************************************/
 
-    /**
-     * <p>Find a capability.</p>
-     *
-     * @param name The name.
-     * @return The capability.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public Capability stringToCapability(String name)
-            throws InterpreterMessage, InterpreterException {
-        Store store = (Store) getStore();
-        AbstractFactory factory = store.foyer.getFactory();
-        AbstractBranch branch;
-        try {
-            branch = factory.getReflection().stringToBranch(name, store.loader);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        Capability capa = (Capability) branch.proxy;
-        if (capa == null)
-            throw new NullPointerException("capability missing");
-        return capa;
-    }
-
     /***********************************************************/
     /* Error Properties                                        */
     /***********************************************************/
@@ -452,21 +488,30 @@ public final class Knowledgebase {
     /***********************************************************/
 
     /**
-     * <p>Retrieve the store.</p>
-     *
-     * @return The store.
-     */
-    public Object getStore() {
-        return store;
-    }
-
-    /**
      * <p>Retrieve the class loader.</p>
      *
      * @return The class loader.
      */
     public ClassLoader getLoader() {
         return store.getLoader();
+    }
+
+    /**
+     * <p>Retrieve the store.</p>
+     *
+     * @return The store.
+     */
+    public Store getStore() {
+        return store;
+    }
+
+    /**
+     * <p>Retrieve the foyer.</p>
+     *
+     * @return The foyer.
+     */
+    public Foyer getFoyer() {
+        return store.foyer;
     }
 
 }

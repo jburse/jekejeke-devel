@@ -2,7 +2,6 @@ package matula.util.config;
 
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
-import matula.util.config.AbstractBundle;
 import matula.util.wire.AbstractDomestic;
 
 /**

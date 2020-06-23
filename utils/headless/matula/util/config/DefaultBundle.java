@@ -3,12 +3,9 @@ package matula.util.config;
 import derek.util.protect.ActivatorNet;
 import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
-import matula.comp.sharik.Enforced;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * *

@@ -100,7 +100,7 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, String sym, Object... args) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         display = createCount(args, en);
         skel = createAlloc(new SkelAtom(sym), args, en);
     }
@@ -113,7 +113,7 @@ public final class TermCompound extends AbstractTerm {
      * @param args  The arguments.
      */
     public TermCompound(Interpreter inter, TermAtomic sym, Object... args) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         display = createCount(args, en);
         skel = createAlloc(getFun(sym), args, en);
     }

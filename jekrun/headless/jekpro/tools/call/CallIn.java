@@ -131,7 +131,7 @@ public final class CallIn implements Runnable {
                 if (unfoldFirst()) {
                     state = STATE_SUCCESS;
                 } else if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -141,7 +141,7 @@ public final class CallIn implements Runnable {
                 if (unfoldNext()) {
                     state = STATE_SUCCESS;
                 } else if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -170,7 +170,7 @@ public final class CallIn implements Runnable {
                 if (unfoldFirst()) {
                     state = STATE_NEXT;
                 } else if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -180,7 +180,7 @@ public final class CallIn implements Runnable {
                 if (unfoldNext()) {
                     state = STATE_NEXT;
                 } else if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -216,7 +216,7 @@ public final class CallIn implements Runnable {
                 state = STATE_FAILURE;
                 unfoldClose();
                 if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -227,7 +227,7 @@ public final class CallIn implements Runnable {
                 state = STATE_FAILURE;
                 unfoldClose();
                 if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -251,11 +251,11 @@ public final class CallIn implements Runnable {
             case STATE_FIRST:
                 return true;
             case STATE_NEXT:
-                return ((Engine) inter.getEngine()).number != snap;
+                return (inter.getEngine()).number != snap;
             case STATE_FAILURE:
                 return false;
             case STATE_SUCCESS:
-                return ((Engine) inter.getEngine()).number != snap;
+                return (inter.getEngine()).number != snap;
             default:
                 throw new IllegalArgumentException("illagel state");
         }
@@ -306,7 +306,7 @@ public final class CallIn implements Runnable {
                 state = STATE_FAILURE;
                 x = unfoldCleanup(x);
                 if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -317,7 +317,7 @@ public final class CallIn implements Runnable {
                 state = STATE_FAILURE;
                 x = unfoldCleanup(x);
                 if (ext) {
-                    Engine en = (Engine) inter.getEngine();
+                    Engine en = inter.getEngine();
                     Display ref = AbstractTerm.getDisplay(goal);
                     ref.remTab(en);
                 }
@@ -340,7 +340,7 @@ public final class CallIn implements Runnable {
      */
     private boolean unfoldFirst()
             throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
@@ -405,7 +405,7 @@ public final class CallIn implements Runnable {
      * @throws InterpreterException Shit happens.
      */
     private boolean unfoldNext() throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         Engine backuse = en.visor.setInuse(en);
@@ -457,7 +457,7 @@ public final class CallIn implements Runnable {
      * @throws InterpreterException Shit happens.
      */
     private void unfoldClose() throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
@@ -483,7 +483,7 @@ public final class CallIn implements Runnable {
      * @throws InterpreterException Shit happens.
      */
     private void unfoldCut() throws InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 
@@ -506,7 +506,7 @@ public final class CallIn implements Runnable {
      * @return The new current interpreter exception, or null.
      */
     private InterpreterException unfoldCleanup(InterpreterException e) {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
 

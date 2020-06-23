@@ -59,8 +59,8 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop   The properties.
-     * @param in     The input stream.
+     * @param prop  The properties.
+     * @param in    The input stream.
      * @param param The param or null.
      * @throws IOException  Problem reading.
      * @throws ScannerError Problem reading.
@@ -74,7 +74,7 @@ public abstract class AbstractRecognizer {
      *
      * @param prop   The properties.
      * @param reader The reader.
-     * @param param The param or null.
+     * @param param  The param or null.
      * @throws IOException  Problem reading.
      * @throws ScannerError Problem reading.
      */
@@ -85,8 +85,8 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param adr    The URI.
-     * @param prop   The properties.
+     * @param adr   The URI.
+     * @param prop  The properties.
      * @param param The param or null.
      * @throws LicenseError Problem reading.
      * @throws IOException  Problem reading.
@@ -113,8 +113,8 @@ public abstract class AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param adr    The URI.
-     * @param prop   The properties.
+     * @param adr   The URI.
+     * @param prop  The properties.
      * @param param The param or null.
      * @throws LicenseError Problem reading.
      * @throws IOException  Problem reading.

@@ -3,7 +3,7 @@ package jekpro.tools.bundle;
 import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.Lobby;
+import jekpro.tools.term.Knowledgebase;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractDescription;
 import matula.util.config.FileExtension;
@@ -58,15 +58,15 @@ public final class AirDrop {
     /**
      * <p>Discover capabilities from know paths.</p>
      *
-     * @param lobby The lobby.
-     * @param cps   The class paths.
+     * @param know The knowledge base.
+     * @param cps  The class paths.
      * @return The discovered capabilities.
      * @throws InterpreterMessage Shit happens.
      */
-    public static ListArray<AirDropEntry> load(Lobby lobby, ListArray<String> cps)
+    public static ListArray<AirDropEntry> load(Knowledgebase know, ListArray<String> cps)
             throws InterpreterMessage {
         try {
-            Store store = (Store) lobby.getRoot().getStore();
+            Store store = know.getRoot().getStore();
             ListArray<String> roots = findRoots(store, cps);
             if (roots == null)
                 return null;

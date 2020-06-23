@@ -62,10 +62,10 @@ public final class DefaultRecognizer extends AbstractRecognizer {
     /**
      * <p>Load binary properties.</p>
      *
-     * @param prop   The properties.
-     * @param in The reader.
+     * @param prop  The properties.
+     * @param in    The reader.
      * @param param The param or null.
-     * @throws IOException  Problem reading.
+     * @throws IOException Problem reading.
      */
     public void loadBinary(Properties prop, InputStream in,
                            Object param)
@@ -75,9 +75,10 @@ public final class DefaultRecognizer extends AbstractRecognizer {
 
     /**
      * <p>Load text properties.</p>
-     *  @param prop   The properties.
+     *
+     * @param prop   The properties.
      * @param reader The reader.
-     * @param param The param or null.
+     * @param param  The param or null.
      */
     public void loadText(Properties prop, Reader reader,
                          Object param) {

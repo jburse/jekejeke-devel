@@ -116,9 +116,9 @@ final class BranchSWI extends AbstractBranch {
     /**
      * <p>Precompute the uris of a root.</p>
      *
-     * @param res  The target list.
-     * @param root The root.
-     * @param foyer    The enforced.
+     * @param res   The target list.
+     * @param root  The root.
+     * @param foyer The enforced.
      * @throws IOException Shit happens.
      */
     public void rootToAbsolute(ListArray<String> res, String root, Foyer foyer)

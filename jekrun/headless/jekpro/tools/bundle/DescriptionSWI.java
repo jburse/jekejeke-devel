@@ -56,7 +56,7 @@ public final class DescriptionSWI extends AbstractDescription {
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.
-     * @param loader      The class loader.
+     * @param loader The class loader.
      * @return The properties or null.
      */
     public Properties getDescrModel(Locale locale, ClassLoader loader) {
@@ -70,9 +70,9 @@ public final class DescriptionSWI extends AbstractDescription {
      * <p>Will be configured to display SWI-Prolog icons from here:
      * https://github.com/SWI-Prolog/plweb-www/tree/master/icons</p>
      *
-     * @param locale The locale.
-     * @param loader      The class loader.
-     * @param runtime     The runtime.
+     * @param locale  The locale.
+     * @param loader  The class loader.
+     * @param runtime The runtime.
      * @return The properties.
      */
     public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {

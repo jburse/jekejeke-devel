@@ -1,6 +1,7 @@
 package jekpro.tools.proxy;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
@@ -11,6 +12,7 @@ import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.wire.AbstractLivestock;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -84,8 +86,9 @@ public final class ProxyHandler implements InvocationHandler {
      * @return The return value.
      */
     public Object invoke(Object proxy, Method method, Object[] args) {
-        Controller contr = Controller.currentController(Thread.currentThread());
-        Interpreter inter = (contr != null ? contr.getInuse() : null);
+        Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(Thread.currentThread());
+        Engine en = (s != null ? s.inuse : null);
+        Interpreter inter = (en != null ? (Interpreter) en.proxy : null);
         if (inter == null) {
             Knowledgebase know = (Knowledgebase) src.getStore().proxy;
             inter = know.iterable();
@@ -105,7 +108,7 @@ public final class ProxyHandler implements InvocationHandler {
                 return at(proxy, ((Integer) args[0]).intValue());
             } else if (name.equals("set_at")) {
                 set_at(proxy, ((Integer) args[0]).intValue(),
-                        (AbstractTerm) args[1], (Engine) inter.getEngine());
+                        (AbstractTerm) args[1], inter.getEngine());
                 return null;
             } else if (name.equals("length")) {
                 return Integer.valueOf(length(proxy));

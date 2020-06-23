@@ -110,19 +110,10 @@ public final class Interpreter {
      * @param k The knowledge base.
      */
     public void setKnowledgebase(Knowledgebase k) {
-        Store store = (Store) k.getStore();
+        Store store = k.getStore();
         engine.visor.popStack();
         engine.visor.pushStack(store.user);
         engine.store = store;
-    }
-
-    /**
-     * <p>Retrieve the controller.</p>
-     *
-     * @return The controller.
-     */
-    public Controller getController() {
-        return (Controller) engine.visor.proxy;
     }
 
     /*****************************************************************/
@@ -135,7 +126,7 @@ public final class Interpreter {
      * @return The iterable.
      */
     public Interpreter iterable() {
-        return new Interpreter(getKnowledgebase(), getController());
+        return new Interpreter(getKnowledgebase(), getVisor());
     }
 
     /**
@@ -309,11 +300,9 @@ public final class Interpreter {
      * <p>Create an interpreter.</p>
      *
      * @param k The knowledgebase.
-     * @param i The controller.
      */
-    public Interpreter(Knowledgebase k, Controller i) {
-        Store store = (Store) k.getStore();
-        Supervisor visor = (Supervisor) i.getVisor();
+    public Interpreter(Knowledgebase k, Supervisor visor) {
+        Store store = k.getStore();
 
         switch (store.foyer.getHint()) {
             case Foyer.HINT_WEB:
@@ -332,8 +321,17 @@ public final class Interpreter {
      *
      * @return The engine.
      */
-    public Object getEngine() {
+    public Engine getEngine() {
         return engine;
+    }
+
+    /**
+     * <p>Retrieve the supervisor.</p>
+     *
+     * @return The supervisor.
+     */
+    public Supervisor getVisor() {
+        return engine.visor;
     }
 
 }

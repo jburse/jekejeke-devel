@@ -7,10 +7,8 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.Lobby;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;
 
@@ -143,7 +141,7 @@ public abstract class Capability {
      */
     public void initCapability(Interpreter inter, boolean prompt)
             throws InterpreterMessage, InterpreterException {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         Engine backuse = en.visor.setInuse(en);
         Thread backthread = en.visor.setFence(Thread.currentThread());
         try {
@@ -171,7 +169,7 @@ public abstract class Capability {
     public void finiCapability(Knowledgebase know)
             throws InterpreterMessage, InterpreterException {
         try {
-            branch.finiBranch((Store) know.getStore(), false);
+            branch.finiBranch(know.getStore(), false);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -191,12 +189,12 @@ public abstract class Capability {
     /**
      * <p>Retrieve a capability property.</p>
      *
-     * @param prop  The property name.
-     * @param lobby The lobby.
+     * @param prop The property name.
+     * @param know The knowledge base.
      * @return The property value or null.
      */
-    public Object getProperty(String prop, Lobby lobby) {
-        Object res = branch.getProperty(prop, (Foyer) lobby.getFoyer());
+    public Object getProperty(String prop, Knowledgebase know) {
+        Object res = branch.getProperty(prop, know.getFoyer());
         return (res != null ? AbstractTerm.createTerm(res, Display.DISPLAY_CONST) : null);
     }
 
@@ -211,7 +209,7 @@ public abstract class Capability {
      */
     public InputStream prepareStream(InputStream in, Knowledgebase know)
             throws LicenseError, IOException {
-        return branch.prepareStream(in, (Store) know.getStore());
+        return branch.prepareStream(in, know.getStore());
     }
 
     /**
@@ -228,26 +226,13 @@ public abstract class Capability {
     /**
      * <p>Retrieve the bundle description.</p>
      *
-     * @param locale  The locale.
-     * @param loader  The class loader.
-     * @param runtime The runtime.
-     * @return The properties.
-     */
-    public Properties getDescrPlatform(Locale locale, ClassLoader loader,
-                                       AbstractRuntime runtime) {
-        return branch.getDescription().getDescrPlatform(locale, loader, runtime);
-    }
-
-    /**
-     * <p>Retrieve the bundle description.</p>
-     *
      * @param locale The locale.
-     * @param lobby  The lobby.
+     * @param know   The knowledege base.
      * @return The properties.
      */
-    public Properties getDescrPlatform(Locale locale, Lobby lobby) {
-        ClassLoader loader = lobby.getRoot().getLoader();
-        Foyer foyer = (Foyer) lobby.getFoyer();
+    public Properties getDescrPlatform(Locale locale, Knowledgebase know) {
+        ClassLoader loader = know.getRoot().getLoader();
+        Foyer foyer = know.getFoyer();
         AbstractRuntime runtime = foyer.getFramework().getRuntime();
         return branch.getDescription().getDescrPlatform(locale, loader, runtime);
     }

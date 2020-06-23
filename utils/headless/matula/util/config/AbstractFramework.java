@@ -1,7 +1,6 @@
 package matula.util.config;
 
 import matula.comp.sharik.AbstractActivator;
-import matula.util.config.AbstractRuntime;
 
 import java.util.Locale;
 import java.util.Properties;

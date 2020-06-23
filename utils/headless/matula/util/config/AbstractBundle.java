@@ -3,21 +3,9 @@ package matula.util.config;
 import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Check;
-import matula.comp.sharik.Enforced;
-import matula.util.data.ListArray;
-import matula.util.system.ForeignUri;
-import matula.util.wire.LangProperties;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * <p>An abstract bundle such as a capability.</p>
