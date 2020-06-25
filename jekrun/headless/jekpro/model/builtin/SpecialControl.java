@@ -1,7 +1,7 @@
 package jekpro.model.builtin;
 
-import jekpro.frequent.standard.ChoiceAtomic;
-import jekpro.frequent.standard.SpecialSignal;
+import jekpro.frequent.advanced.ChoiceAtomic;
+import jekpro.frequent.advanced.SpecialSignal;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;

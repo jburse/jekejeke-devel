@@ -1,4 +1,4 @@
-package jekpro.frequent.standard;
+package jekpro.frequent.advanced;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;

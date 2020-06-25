@@ -109,7 +109,7 @@ broker_stop :-
    server_endpoint(Authority, Endpoint),
    term_block(end, Block),
    make_authority(_, Host, Port, Authority),
-   sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
+   sys_mask(endpoint_send(Endpoint, Block, Host, Port)),
    spawn_cleanup.
 
 % broker_run(+Lock, +Atom)
@@ -174,7 +174,7 @@ control(pid(Authority, Name), Message) :-               /* remote control */
    server_endpoint(_, Endpoint),
    term_block(control(Name, Message), Block),
    make_authority(_, Host, Port, Authority),
-   sys_atomic(endpoint_send(Endpoint, Block, Host, Port)).
+   sys_mask(endpoint_send(Endpoint, Block, Host, Port)).
 
 /***********************************************************/
 /* Actor Primitives                                        */
@@ -198,7 +198,7 @@ spawn(Authority, Goal, pid(Authority, Name)) :-         /* remote run */
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_block(spawn(Goal, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
-   sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
+   sys_mask(endpoint_send(Endpoint, Block, Host, Port)),
    receive(spawned(Name), _).
 
 % spawn_run(+Goal, -Atom)
@@ -264,7 +264,7 @@ exit(pid(Authority, Name), Message) :-                  /* remote exit */
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_block(exit(Name, Message, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
-   sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
+   sys_mask(endpoint_send(Endpoint, Block, Host, Port)),
    receive(exited, _).
 
 % exit_actor(+Atom, +Term)
@@ -296,7 +296,7 @@ send(pid(Authority, Name), Message) :-                  /* remote send */
    current_thread_flag(Thread, sys_thread_name, Name2),
    term_block(send(Name, Message, pid(Authority2, Name2)), Block),
    make_authority(_, Host, Port, Authority),
-   sys_atomic(endpoint_send(Endpoint, Block, Host, Port)),
+   sys_mask(endpoint_send(Endpoint, Block, Host, Port)),
    receive(sent, _).
 
 /**

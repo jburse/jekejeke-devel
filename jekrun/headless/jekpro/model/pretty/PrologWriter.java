@@ -657,7 +657,7 @@ public class PrologWriter {
                 return;
             }
         }
-        if (Foyer.OP_UNIT.equals(sa.fun)) {
+        if (PrologReader.OP_UNIT.equals(sa.fun)) {
             if ((spez & SPEZ_FUNC) != 0)
                 append(' ');
             appendLink(sa.fun, cp);
@@ -725,8 +725,8 @@ public class PrologWriter {
         if (!CompLang.ISO_COMPLANG.relevantToken(fun))
             return true;
         if (!CodeType.ISO_CODETYPE.singleToken(fun) &&
-                !fun.equals(Foyer.OP_UNIT) &&
-                !fun.equals(Foyer.OP_SET) &&
+                !fun.equals(PrologReader.OP_UNIT) &&
+                !fun.equals(PrologReader.OP_SET) &&
                 !fun.equals(Foyer.OP_NIL))
             return true;
         return false;
@@ -1544,7 +1544,7 @@ public class PrologWriter {
             }
         }
         if (engine != null && (flags & PrologWriter.FLAG_IGNO) == 0) {
-            if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
+            if (sc.args.length == 1 && sc.sym.fun.equals(PrologReader.OP_SET)) {
                 writeSet(sc, ref, mod, nsa);
                 return;
             }
@@ -1630,7 +1630,7 @@ public class PrologWriter {
             if (PrologReader.noOperChs.indexOf(s.charAt(0)) != -1)
                 return true;
         }
-        return Foyer.OP_UNIT.equals(s);
+        return PrologReader.OP_UNIT.equals(s);
     }
 
     /************************************************************/

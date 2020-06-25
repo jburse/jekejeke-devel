@@ -8,6 +8,7 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.ForeignPath;
@@ -290,7 +291,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             }
         } else if (!comp && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
+                ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
             SkelAtom sa = slashToPackageSkel(temp.args[0], true, err);
             if (sa == null)
@@ -358,7 +359,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             }
         } else if (set && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
+                ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
             SkelAtom sa = slashToPackageSkel(temp.args[0], true, err);
             if (sa == null)
@@ -426,7 +427,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      */
     public static Object packageToSlashSkel(String fun, AbstractSource scope) {
         if (CachePackage.isArray(fun)) {
-            return new SkelCompound(new SkelAtom(Foyer.OP_SET, scope),
+            return new SkelCompound(new SkelAtom(PrologReader.OP_SET, scope),
                     packageToSlashSkel(CachePackage.sepComp(fun), null));
         } else if (CachePackage.isStruct(fun)) {
             return new SkelCompound(new SkelAtom(Foyer.OP_SLASH, scope),

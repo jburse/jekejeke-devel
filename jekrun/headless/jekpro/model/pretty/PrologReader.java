@@ -69,6 +69,9 @@ public class PrologReader {
     public final static String OP_LBRACE = "{";
     public final static String OP_RBRACE = "}";
 
+    public final static String OP_SET = "{}";
+    public final static String OP_UNIT = "()";
+
     /* only read opts */
     public final static int FLAG_WRAP = 0x00000080;
 
@@ -297,7 +300,7 @@ public class PrologReader {
         } else if (OP_LPAREN.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
-                skel = Foyer.OP_UNIT;
+                skel = OP_UNIT;
                 current = -1;
             } else {
                 skel = readParen();
@@ -306,7 +309,7 @@ public class PrologReader {
         } else if (OP_LBRACE.equals(st.getData())) {
             nextToken();
             if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
-                skel = Foyer.OP_SET;
+                skel = OP_SET;
                 current = -1;
             } else {
                 skel = readSet();
@@ -346,7 +349,7 @@ public class PrologReader {
                 nextToken();
                 if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
                     Operator oper = (engine != null ? OperatorSearch.getOper(source,
-                            Foyer.OP_UNIT, Operator.TYPE_POSTFIX, engine) : null);
+                            OP_UNIT, Operator.TYPE_POSTFIX, engine) : null);
                     if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                         if (oper.getLevel() - oper.getLeft() < current)
                             throw new ScannerError(ERROR_SYNTAX_OPERATOR_CLASH,
@@ -409,7 +412,7 @@ public class PrologReader {
             } else if (OP_LBRACE.equals(st.getData())) {
                 fun = Foyer.OP_STRUCT;
             } else if (OP_LPAREN.equals(st.getData())) {
-                fun = Foyer.OP_UNIT;
+                fun = OP_UNIT;
             } else {
                 int h = st.getData().codePointAt(0);
                 if (CodeType.ISO_CODETYPE.isUpper(h) ||
@@ -658,7 +661,7 @@ public class PrologReader {
      */
     protected Object readSet()
             throws EngineException, IOException, ScannerError, EngineMessage {
-        SkelAtom help = makePos(Foyer.OP_SET, getAtomPos());
+        SkelAtom help = makePos(OP_SET, getAtomPos());
         Object arg = read(Operator.LEVEL_HIGH);
         if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
             throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,

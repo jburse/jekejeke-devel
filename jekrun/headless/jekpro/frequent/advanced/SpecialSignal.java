@@ -1,13 +1,11 @@
-package jekpro.frequent.standard;
+package jekpro.frequent.advanced;
 
+import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.SkelCompound;
@@ -79,14 +77,13 @@ public final class SpecialSignal extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
 
-                Directive dire = SupervisorCall.callGoal(0, en);
+                Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
                 Display d2 = en.display;
 
                 boolean mask = (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0;
                 boolean verify = (en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0;
-                Intermediate r = en.contskel;
-                CallFrame u = en.contdisplay;
-                en.choices = new ChoiceCleanup(en.choices, r, u, en.bind, mask, verify, d2, dire);
+                en.choices = new ChoiceCleanup(en.choices, en.contskel, en.contdisplay,
+                        en.bind, mask, verify, dire, d2);
                 en.number++;
                 return true;
             case SPECIAL_SYS_ATOMIC:

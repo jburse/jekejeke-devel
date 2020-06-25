@@ -26,7 +26,7 @@
  * operations of the method setSignal() are disabled as long as the mask
  * flag is set to false. The mask flag can be read off from the
  * corresponding Prolog flag. It can be temporarily reset by the
- * system predicate sys_atomic/1.
+ * system predicate sys_mask/1.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -57,7 +57,7 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- use_package(foreign(jekpro/frequent/standard)).
+:- use_package(foreign(jekpro/frequent/advanced)).
 
 :- module(user, []).
 
@@ -73,7 +73,7 @@
 :- meta_predicate call_cleanup(0, 0).
 :- set_predicate_property(call_cleanup/2, sys_notrace).
 call_cleanup(G, C) :-
-   sys_atomic(sys_cleanup(C)),
+   sys_mask(sys_cleanup(C)),
    current_prolog_flag(sys_choices, X),
    G,
    current_prolog_flag(sys_choices, Y),
@@ -93,7 +93,7 @@ call_cleanup(G, C) :-
 :- meta_predicate setup_call_cleanup(0, 0, 0).
 :- set_predicate_property(setup_call_cleanup/3, sys_notrace).
 setup_call_cleanup(A, G, C) :-
-   sys_atomic((once(A), sys_cleanup(C))),
+   sys_mask((once(A), sys_cleanup(C))),
    current_prolog_flag(sys_choices, X),
    G,
    current_prolog_flag(sys_choices, Y),
@@ -111,15 +111,15 @@ setup_call_cleanup(A, G, C) :-
 :- special(sys_cleanup/1, 'SpecialSignal', 0).
 
 /**
- * sys_atomic(A):
+ * sys_mask(A):
  * The predicate succeeds whenever A succeeds. The goal A is
  * invoked with the signal mask temporarily set to off.
  */
-% sys_atomic(+Goal)
-:- public sys_atomic/1.
-:- meta_predicate sys_atomic(0).
-:- set_predicate_property(sys_atomic/1, sys_notrace).
-:- special(sys_atomic/1, 'SpecialSignal', 1).
+% sys_mask(+Goal)
+:- public sys_mask/1.
+:- meta_predicate sys_mask(0).
+:- set_predicate_property(sys_mask/1, sys_notrace).
+:- special(sys_mask/1, 'SpecialSignal', 1).
 
 /**
  * sys_ignore(A):

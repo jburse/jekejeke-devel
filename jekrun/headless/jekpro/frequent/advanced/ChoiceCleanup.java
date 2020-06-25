@@ -1,10 +1,11 @@
-package jekpro.frequent.standard;
+package jekpro.frequent.advanced;
 
 import jekpro.model.inter.AbstractChoice;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.tools.term.SkelAtom;
 
 /**
  * <p>The class provides a choice point for cleanup calls.</p>
@@ -42,8 +43,8 @@ final class ChoiceCleanup extends AbstractChoice {
     private final AbstractUndo mark;
     private final boolean mask;
     private final boolean verify;
-    private final Display d2;
     private final Directive dire;
+    private final Display d2;
 
     /**
      * <p>Create a choice cleanup.</p>
@@ -55,7 +56,7 @@ final class ChoiceCleanup extends AbstractChoice {
      */
     ChoiceCleanup(AbstractChoice n, Intermediate r, CallFrame u,
                   AbstractUndo m, boolean f, boolean v,
-                  Display k, Directive d) {
+                  Directive d, Display k) {
         super(n, u);
         goalskel = r;
         mark = m;
@@ -75,11 +76,11 @@ final class ChoiceCleanup extends AbstractChoice {
      */
     public boolean moniNext(Engine en)
             throws EngineException {
-        /* remove choice point */
+        // remove choice point
         en.choices = next;
         en.number--;
 
-        /* undo bindings */
+        // undo bindings
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
         en.fault = null;
@@ -87,7 +88,7 @@ final class ChoiceCleanup extends AbstractChoice {
         if (en.fault != null)
             throw en.fault;
 
-        /* call cleanup handler */
+        // call cleanup handler
         unfoldCleanup(en);
         return false;
     }
@@ -100,24 +101,24 @@ final class ChoiceCleanup extends AbstractChoice {
      * @param en The engine.
      */
     public final void moniCut(Engine en) {
-        /* remove choice point */
+        // remove choice point
         en.choices = next;
         en.number--;
 
-        /* backup exception */
+        // backup exception
         EngineException back2 = en.fault;
 
-        /* fetch term argument */
+        // fetch term argument
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
 
-        /* call cleanup handler */
+        // call cleanup handler
         try {
             unfoldCleanup(en);
         } catch (EngineException x) {
-            /* aggregate_all exception */
+            // aggregate_all exception
             if (back2 != null) {
                 back2 = new EngineException(back2, x);
             } else {
@@ -125,11 +126,11 @@ final class ChoiceCleanup extends AbstractChoice {
             }
         }
 
-        /* restore continuation */
+        // restore continuation
         en.contskel = r;
         en.contdisplay = u;
 
-        /* restore exception */
+        // restore exception
         en.fault = back2;
     }
 

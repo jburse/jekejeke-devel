@@ -218,7 +218,7 @@ public class PrologReaderAnno extends PrologReader {
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
             return super.readSet();
-        SkelAtom help = makePos(Foyer.OP_SET, getAtomPos());
+        SkelAtom help = makePos(PrologReader.OP_SET, getAtomPos());
         String[] filler = getFiller();
         Object arg = read(Operator.LEVEL_HIGH);
         if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))

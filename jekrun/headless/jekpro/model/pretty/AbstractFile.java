@@ -294,7 +294,7 @@ public abstract class AbstractFile extends AbstractSource {
         d = en.display;
         if (file && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
+                ((SkelCompound) t).sym.fun.equals(PrologReader.OP_SET)) {
             SkelCompound sc = (SkelCompound) t;
             String name = slashToOsString(sc.args[0], d, file, en);
             return CachePackage.composeArray(name);
@@ -331,7 +331,7 @@ public abstract class AbstractFile extends AbstractSource {
                                        AbstractSource scope) {
         String dir;
         if (file & CachePackage.isArray(fun)) {
-            return new SkelCompound(new SkelAtom(Foyer.OP_SET, scope),
+            return new SkelCompound(new SkelAtom(PrologReader.OP_SET, scope),
                     osToSlashSkel(CachePackage.sepComp(fun), file, null));
         } else if (CacheModule.isOs(fun) &&
                 !OP_DSLH2.equals(dir = CacheModule.sepDirectory(fun)) &&

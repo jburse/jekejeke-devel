@@ -71,8 +71,7 @@ public class Foyer extends Enforced {
     public final static String OP_LESS = "<";
     public final static String OP_GREATER = ">";
     private final static String OP_JEKEJEKE = "jekejeke";
-    public final static String OP_SET = "{}";
-    public final static String OP_UNIT = "()";
+
     public final static String OP_SEMICOLON = ";";
     public final static String OP_CONDITION = "->";
     public final static String OP_SOFT_CONDITION = "*->";
