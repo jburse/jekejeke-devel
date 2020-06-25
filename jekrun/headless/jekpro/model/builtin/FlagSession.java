@@ -6,6 +6,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
 import matula.util.data.MapHash;
@@ -130,7 +131,8 @@ public final class FlagSession extends AbstractFlag<Store> {
                     return true;
                 case FLAG_SYS_HINT:
                     Number num = SpecialEval.derefAndCastInteger(m, d);
-                    obj.foyer.setHint(SpecialEval.castIntValue(num));
+                    AbstractFactory factory = obj.foyer.getFactory();
+                    factory.setHint(obj.foyer, SpecialEval.castIntValue(num));
                     return true;
                 case FLAG_SYS_APPLICATION:
                     Object val = SpecialUniv.derefAndCastRefOrNull(m, d);

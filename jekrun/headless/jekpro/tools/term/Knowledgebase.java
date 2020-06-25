@@ -64,10 +64,6 @@ import java.util.Properties;
  * GUI console will automatically add the paths defined in the settings. The
  * GUI and the non-GUI console will also add the paths defined in the command line.
  * <p>
- * The method stringToCapability() allows retrieving a capability by name. The
- * capability need not already be defined in the toolkit. All that is need
- * is that the corresponding class is found in the added paths.
- * <p>
  * The getErrorProperties() allows retrieving the union of all error
  * properties that have been loaded and registered so far. The method might
  * return different properties for different locales. The method getCache()
@@ -189,6 +185,15 @@ public final class Knowledgebase {
     }
 
     /**
+     * <p>Retrieve the toolkit.</p>
+     *
+     * @return The toolkit.
+     */
+    public Toolkit getToolkit() {
+        return (Toolkit) store.foyer.getFactory().proxy;
+    }
+
+    /**
      * <p>Retrieve the parent.</p>
      *
      * @return The parent.
@@ -199,12 +204,12 @@ public final class Knowledgebase {
     }
 
     /**
-     * <p>Retrieve the toolkit.</p>
+     * <p>Retrieve the class loader.</p>
      *
-     * @return The toolkit.
+     * @return The class loader.
      */
-    public Toolkit getToolkit() {
-        return (Toolkit) store.foyer.getFactory().proxy;
+    public ClassLoader getLoader() {
+        return store.getLoader();
     }
 
     /**
@@ -215,16 +220,6 @@ public final class Knowledgebase {
     public Knowledgebase getRoot() {
         Store other = (Store) store.foyer.getRoot();
         return (other != null ? (Knowledgebase) other.proxy : null);
-    }
-
-
-    /**
-     * <p>Retrieve the framework.</p>
-     *
-     * @return The framework.
-     */
-    public AbstractFramework getFramework() {
-        return store.foyer.getFramework();
     }
 
     /***********************************************************/
@@ -453,10 +448,6 @@ public final class Knowledgebase {
         store.removeFileExtension(e);
     }
 
-    /*******************************************************/
-    /* Capabilities                                        */
-    /*******************************************************/
-
     /***********************************************************/
     /* Error Properties                                        */
     /***********************************************************/
@@ -486,15 +477,6 @@ public final class Knowledgebase {
     /***********************************************************/
     /* For Internal Use Only                                   */
     /***********************************************************/
-
-    /**
-     * <p>Retrieve the class loader.</p>
-     *
-     * @return The class loader.
-     */
-    public ClassLoader getLoader() {
-        return store.getLoader();
-    }
 
     /**
      * <p>Retrieve the store.</p>

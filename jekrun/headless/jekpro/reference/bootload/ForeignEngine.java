@@ -20,6 +20,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -385,12 +386,11 @@ public final class ForeignEngine {
     public static String sysPrologVersion(Interpreter inter) {
         Knowledgebase know = inter.getKnowledgebase();
         Capability brand = know.getToolkit().getBrandCapability();
-        Engine en = inter.getEngine();
-        Locale locale = en.store.foyer.locale;
+        Locale locale = know.getFoyer().locale;
         ClassLoader loader = know.getRoot().getLoader();
-        AbstractRuntime runtime = know.getFramework().getRuntime();
+        AbstractFramework framework = know.getFoyer().getFramework();
         return brand.getFamily(locale, loader) + ", " +
-                brand.getProductReleaseDate(locale, loader, runtime);
+                brand.getProductReleaseDate(locale, loader, framework);
     }
 
     /**
@@ -402,8 +402,7 @@ public final class ForeignEngine {
     public static String sysPrologVendor(Interpreter inter) {
         Knowledgebase know = inter.getKnowledgebase();
         Capability brand = know.getToolkit().getBrandCapability();
-        Engine en = inter.getEngine();
-        Locale locale = en.store.foyer.locale;
+        Locale locale = know.getFoyer().locale;
         ClassLoader loader = know.getRoot().getLoader();
         return brand.getCompany(locale, loader);
     }

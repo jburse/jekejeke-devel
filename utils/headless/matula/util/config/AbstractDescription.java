@@ -91,13 +91,13 @@ public abstract class AbstractDescription {
      *
      * @param locale  The locale.
      * @param loader  The class loader.
-     * @param runtime The runtime.
+     * @param framework The framework.
      * @return The properties or null.
      */
     public Properties getDescrPlatform(Locale locale,
                                        ClassLoader loader,
-                                       AbstractRuntime runtime) {
-        String aspect = runtime.getAspect();
+                                       AbstractFramework framework) {
+        String aspect = framework.getRuntime().getAspect();
         String name = getMainRoot() + PLATFORM_DIR + aspect + PLATFORM_FILE;
         return LangProperties.getLang(loader, name, locale);
     }
@@ -127,16 +127,16 @@ public abstract class AbstractDescription {
      *
      * @param locale  The locale.
      * @param loader  The class loader.
-     * @param runtime The runtime.
+     * @param framework The framework.
      * @return The product and release.
      */
     public String getProductReleaseDate(Locale locale, ClassLoader loader,
-                                        AbstractRuntime runtime) {
+                                        AbstractFramework framework) {
         Properties descr = getDescrModel(locale, loader);
         if (descr != null) {
             String product = descr.getProperty(PROP_CAPA_PRODUCT);
             String release = descr.getProperty(PROP_CAPA_RELEASE);
-            return product + " " + release + sysDate(locale, loader, runtime);
+            return product + " " + release + sysDate(locale, loader, framework);
         } else {
             Properties resources = LangProperties.getLang(AbstractDescription.class, "intl", locale);
             return resources.getProperty("capa.missing");
@@ -148,12 +148,12 @@ public abstract class AbstractDescription {
      *
      * @param locale  The locale.
      * @param loader  The class loader.
-     * @param runtime The runtime.
+     * @param framework The framework.
      * @return The date formatted or "".
      */
     private String sysDate(Locale locale, ClassLoader loader,
-                           AbstractRuntime runtime) {
-        Properties descr = getDescrPlatform(locale, loader, runtime);
+                           AbstractFramework framework) {
+        Properties descr = getDescrPlatform(locale, loader, framework);
         String datestr = (descr != null ? descr.getProperty(PROP_CAPA_DATE) : null);
         if (datestr != null) {
             try {

@@ -10,6 +10,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRuntime;
 
 import java.io.IOException;
@@ -233,8 +234,8 @@ public abstract class Capability {
     public Properties getDescrPlatform(Locale locale, Knowledgebase know) {
         ClassLoader loader = know.getRoot().getLoader();
         Foyer foyer = know.getFoyer();
-        AbstractRuntime runtime = foyer.getFramework().getRuntime();
-        return branch.getDescription().getDescrPlatform(locale, loader, runtime);
+        AbstractFramework framework = foyer.getFramework();
+        return branch.getDescription().getDescrPlatform(locale, loader, framework);
     }
 
     /***********************************************************/
@@ -303,12 +304,12 @@ public abstract class Capability {
      *
      * @param locale  The locale.
      * @param loader  The class loader.
-     * @param runtime The runtime.
+     * @param framework The framework.
      * @return The product and release.
      */
     public String getProductReleaseDate(Locale locale, ClassLoader loader,
-                                        AbstractRuntime runtime) {
-        return branch.getDescription().getProductReleaseDate(locale, loader, runtime);
+                                        AbstractFramework framework) {
+        return branch.getDescription().getProductReleaseDate(locale, loader, framework);
     }
 
 }

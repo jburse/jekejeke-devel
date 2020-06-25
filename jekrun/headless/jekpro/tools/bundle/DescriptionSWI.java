@@ -1,6 +1,7 @@
 package jekpro.tools.bundle;
 
 import matula.util.config.AbstractDescription;
+import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.wire.LangProperties;
@@ -72,10 +73,11 @@ public final class DescriptionSWI extends AbstractDescription {
      *
      * @param locale  The locale.
      * @param loader  The class loader.
-     * @param runtime The runtime.
+     * @param framework The framework.
      * @return The properties.
      */
-    public Properties getDescrPlatform(Locale locale, ClassLoader loader, AbstractRuntime runtime) {
+    public Properties getDescrPlatform(Locale locale, ClassLoader loader,
+                                       AbstractFramework framework) {
         String name = getMainRoot() + PLATFORM_SWI;
         return LangProperties.getLangCheck(loader, name, locale,
                 RecognizerSWI.DEFAULT, getMainRoot(), FileExtension.MASK_USES_TEXT);
