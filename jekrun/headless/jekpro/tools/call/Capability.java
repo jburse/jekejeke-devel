@@ -11,7 +11,6 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractFramework;
-import matula.util.config.AbstractRuntime;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -302,8 +301,8 @@ public abstract class Capability {
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param locale  The locale.
-     * @param loader  The class loader.
+     * @param locale    The locale.
+     * @param loader    The class loader.
      * @param framework The framework.
      * @return The product and release.
      */

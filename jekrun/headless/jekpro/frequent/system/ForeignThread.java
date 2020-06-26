@@ -159,6 +159,20 @@ public final class ForeignThread {
         }
     }
 
+    /**
+     * <p>Clear the signal.</p>
+     *
+     * @return The old signal, can be null.
+     */
+    public static Throwable sysThreadClear() {
+        Thread t = Thread.currentThread();
+        synchronized (t) {
+            Throwable m = AbstractLivestock.liveSetSignal(t, null);
+            t.notifyAll();
+            return m;
+        }
+    }
+
     /****************************************************************/
     /* Thread Joining                                               */
     /****************************************************************/

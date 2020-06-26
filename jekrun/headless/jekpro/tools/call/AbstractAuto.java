@@ -1,5 +1,6 @@
 package jekpro.tools.call;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
@@ -10,7 +11,6 @@ import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
 import matula.util.config.AbstractRuntime;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -271,7 +271,7 @@ public abstract class AbstractAuto extends AbstractSource {
         try {
             over = CachePredicate.performOverrides(sa, pick.getArity(), base);
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         if (over == null || !CachePredicate.visiblePred(over, src))
             return null;

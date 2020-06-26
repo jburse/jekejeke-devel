@@ -1,7 +1,10 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
+import jekpro.model.rope.Goal;
+import jekpro.model.rope.Success;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -80,7 +83,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         /* inlined deref */
         BindUniv b1;
         while (t instanceof SkelVar &&
-            (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                (b1 = d.bind[((SkelVar) t).id]).display != null) {
             t = b1.skel;
             d = b1.display;
         }

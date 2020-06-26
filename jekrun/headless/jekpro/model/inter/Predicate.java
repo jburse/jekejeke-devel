@@ -1,5 +1,6 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
@@ -13,7 +14,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.Reader;
 
@@ -732,7 +732,7 @@ public final class Predicate {
         try {
             over = CachePredicate.performOverrides(sa, pick.getArity(), base);
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         if (over == null || !CachePredicate.visiblePred(over, src))
             return;

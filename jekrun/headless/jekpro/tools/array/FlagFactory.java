@@ -10,7 +10,6 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
-import matula.util.wire.LangProperties;
 
 import java.io.InputStream;
 import java.io.OutputStream;

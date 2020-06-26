@@ -1,5 +1,6 @@
 package jekpro.model.rope;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.InterfaceInit;
 import jekpro.model.inter.Engine;
@@ -197,7 +198,7 @@ public final class LoadOpts extends LoadForce {
                 throw new EngineMessage(EngineMessage.limitError(
                         EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         ListArray<AbstractSource> backmodstack = en.visor.modstack;
         en.visor.modstack = null;
@@ -255,7 +256,7 @@ public final class LoadOpts extends LoadForce {
                 source.getRead().unlock();
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         LoadOpts opts = null;
         for (int i = 0; i < deps.length; i++) {
@@ -419,7 +420,7 @@ public final class LoadOpts extends LoadForce {
                 source.getRead().unlock();
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         for (int i = 0; i < deps.length; i++) {
             MapEntry<AbstractSource, Integer> dep = deps[i];
@@ -452,7 +453,7 @@ public final class LoadOpts extends LoadForce {
                 source.getWrite().unlock();
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 

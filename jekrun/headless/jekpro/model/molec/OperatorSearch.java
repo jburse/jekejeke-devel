@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -9,7 +10,6 @@ import jekpro.reference.reflect.SpecialOper;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.wire.AbstractLivestock;
 
 import java.util.concurrent.TimeUnit;
 
@@ -421,7 +421,7 @@ public final class OperatorSearch {
                 return oper;
             return null;
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 
@@ -450,7 +450,7 @@ public final class OperatorSearch {
                         SpecialOper.operToColonSkel(type, sa, en)));
             return oper;
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 

@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -9,7 +10,6 @@ import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.wire.AbstractLivestock;
 
 import java.util.concurrent.TimeUnit;
 
@@ -495,7 +495,7 @@ public final class CachePredicate extends AbstractCache {
                 temp = back.next;
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 
@@ -597,7 +597,7 @@ public final class CachePredicate extends AbstractCache {
                 temp = back.next;
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 

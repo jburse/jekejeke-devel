@@ -1,5 +1,6 @@
 package jekpro.model.rope;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -254,7 +255,7 @@ public class LoadForce {
                 throw new EngineMessage(EngineMessage.limitError(
                         EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         en.visor.pushStack(source);
         if (en.visor.cond != null) {

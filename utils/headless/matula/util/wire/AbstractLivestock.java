@@ -91,24 +91,6 @@ public abstract class AbstractLivestock extends AbstractDomestic {
     }
 
     /****************************************************************/
-    /* Java Foreign Function Helper                                 */
-    /****************************************************************/
-
-    /**
-     * <p>Clear the signal.</p>
-     *
-     * @return The old signal, can be null.
-     */
-    public static Object sysThreadClear() {
-        Thread t = Thread.currentThread();
-        synchronized (t) {
-            Object m = liveSetSignal(t, null);
-            t.notifyAll();
-            return m;
-        }
-    }
-
-    /****************************************************************/
     /* Livestock Helper                                             */
     /****************************************************************/
 
@@ -118,7 +100,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param t The the thread.
      * @return The signal, can be null.
      */
-    public static Object liveGetSignal(Thread t) {
+    public static Throwable liveGetSignal(Thread t) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return null;
@@ -132,7 +114,7 @@ public abstract class AbstractLivestock extends AbstractDomestic {
      * @param m The new signal, can be null.
      * @return the old signal, can be null.
      */
-    public static Object liveSetSignal(Thread t, Object m) {
+    public static Throwable liveSetSignal(Thread t, Throwable m) {
         AbstractLivestock live = currentLivestock(t);
         if (live == null)
             return null;

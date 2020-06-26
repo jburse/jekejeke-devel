@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.AbstractSource;
@@ -14,7 +15,6 @@ import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -242,7 +242,7 @@ public final class CacheSubclass extends AbstractCache {
                 temp = back.next;
             }
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
     }
 

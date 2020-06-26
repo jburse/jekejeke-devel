@@ -1,7 +1,10 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.rope.*;
+import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
+import jekpro.model.rope.Goal;
+import jekpro.model.rope.Success;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 

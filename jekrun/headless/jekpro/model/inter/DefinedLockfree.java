@@ -135,7 +135,7 @@ final class DefinedLockfree extends AbstractDefined {
      * @param en     The engine.
      */
     public boolean assertClause(Clause clause,
-                                      int flags, Engine en) {
+                                int flags, Engine en) {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         clause.flags |= Clause.MASK_CLAUSE_ASSE;

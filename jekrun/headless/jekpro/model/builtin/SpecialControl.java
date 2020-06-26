@@ -1,6 +1,6 @@
 package jekpro.model.builtin;
 
-import jekpro.frequent.advanced.ChoiceAtomic;
+import jekpro.frequent.advanced.ChoiceMask;
 import jekpro.frequent.advanced.SpecialSignal;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.inter.AbstractDefined;
@@ -206,7 +206,7 @@ public final class SpecialControl extends AbstractSpecial {
         en.skel = temp[2];
         en.display = ref;
         en.deref();
-        if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_MASK))
+        if (!SpecialSignal.invokeMask(en, ChoiceMask.MASK_FLAGS_MASK))
             return false;
         return true;
     }

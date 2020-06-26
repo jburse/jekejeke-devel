@@ -5,7 +5,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.SkelAtom;
 
 /**
  * <p>The class provides a choice point for cleanup calls.</p>

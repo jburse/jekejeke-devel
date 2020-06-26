@@ -1,21 +1,21 @@
-package jekpro.frequent.advanced;
+package jekpro.frequent.experiment;
 
 import jekpro.frequent.standard.SupervisorCall;
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
-import matula.util.wire.AbstractLivestock;
 
 /**
- * <p>Provides built-in predicates for the signal predicates.</p>
+ * <p>Provides built-in predicates for monitor predicates.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -45,17 +45,18 @@ import matula.util.wire.AbstractLivestock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SpecialSignal extends AbstractSpecial {
-    private final static int SPECIAL_SYS_CLEANUP = 0;
-    private final static int SPECIAL_SYS_MASK = 1;
-    private final static int SPECIAL_SYS_IGNORE = 2;
+public class SpecialMonitor extends AbstractSpecial  {
+    private final static int SPECIAL_SYS_OBJ = 0;
+    private final static int SPECIAL_SYS_SYNC = 1;
+    private final static int SPECIAL_SYS_WAIT = 2;
+    private final static int SPECIAL_SYS_NOTIFY = 3;
 
     /**
-     * <p>Create a signal special.</p>
+     * <p>Create a monitor special.</p>
      *
      * @param i The id of the special.
      */
-    public SpecialSignal(int i) {
+    public SpecialMonitor(int i) {
         super(i);
     }
 
@@ -68,47 +69,43 @@ public final class SpecialSignal extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
         switch (id) {
-            case SPECIAL_SYS_CLEANUP:
+            case SPECIAL_SYS_OBJ:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-
-                Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
-                Display d2 = en.display;
-
-                boolean mask = (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0;
-                boolean verify = (en.visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0;
-                en.choices = new ChoiceCleanup(en.choices, en.contskel, en.contdisplay,
-                        en.bind, mask, verify, dire, d2);
-                en.number++;
-                return true;
-            case SPECIAL_SYS_MASK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[0];
-                en.display = ref;
-                en.deref();
-                if (!SpecialSignal.invokeMask(en, ChoiceMask.MASK_FLAGS_MASK))
+                if (!en.unifyTerm(temp[0], ref, new Object(), Display.DISPLAY_CONST))
                     return false;
                 return true;
-            case SPECIAL_SYS_IGNORE:
+            case SPECIAL_SYS_SYNC:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                en.skel = temp[0];
+                en.skel = temp[1];
                 en.display = ref;
                 en.deref();
-                if (!SpecialSignal.invokeMask(en, ChoiceMask.MASK_FLAGS_IGNR))
+                if (!SpecialMonitor.invokeSync(en, SpecialUniv.derefAndCastRef(temp[0], ref)))
                     return false;
+                return true;
+            case SPECIAL_SYS_WAIT:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                try {
+                    SpecialUniv.derefAndCastRef(temp[0], ref).wait();
+                } catch (InterruptedException x) {
+                    throw (EngineMessage) ForeignThread.sysThreadClear();
+                }
+                return true;
+            case SPECIAL_SYS_NOTIFY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                SpecialUniv.derefAndCastRef(temp[0], ref).notify();
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+
         }
     }
 
@@ -117,15 +114,14 @@ public final class SpecialSignal extends AbstractSpecial {
      * <p>The term is passed via the skeleton and display of the engine</p>
      *
      * @param en   The engine.
-     * @param mask The flags mask.
+     * @param sync The synchronization object.
      * @return True if the predicate succeeded, otherwise false
      * @throws EngineException Shit happens.
      */
-    public static boolean invokeMask(Engine en, int mask)
+    private static boolean invokeSync(Engine en, Object sync)
             throws EngineException {
         Intermediate r = en.contskel;
         CallFrame u = en.contdisplay;
-        int backup = ChoiceMask.clearFlags(mask, en);
         int snap = en.number;
         try {
             Directive dire = SupervisorCall.callGoal(AbstractDefined.MASK_DEFI_CALL, en);
@@ -134,16 +130,17 @@ public final class SpecialSignal extends AbstractSpecial {
             CallFrame ref2 = CallFrame.getFrame(d2, dire, en);
             en.contskel = dire;
             en.contdisplay = ref2;
-            if (!en.runLoop(snap, true)) {
-                ChoiceMask.setFlags(mask, backup, en);
-                return false;
+            synchronized (sync) {
+                if (!en.runLoop(snap, true))
+                    return false;
             }
         } catch (EngineException x) {
             en.contskel = r;
             en.contdisplay = u;
             en.fault = x;
-            en.cutChoices(snap);
-            ChoiceMask.setFlags(mask, backup, en);
+            synchronized (sync) {
+                en.cutChoices(snap);
+            }
             throw en.fault;
         } catch (EngineMessage y) {
             EngineException x = new EngineException(y,
@@ -151,18 +148,18 @@ public final class SpecialSignal extends AbstractSpecial {
             en.contskel = r;
             en.contdisplay = u;
             en.fault = x;
-            en.cutChoices(snap);
-            ChoiceMask.setFlags(mask, backup, en);
+            synchronized (sync) {
+                en.cutChoices(snap);
+            }
             throw en.fault;
         }
         en.contskel = r;
         en.contdisplay = u;
         if (en.number != snap) {
             // create choice point
-            en.choices = new ChoiceMask(en.choices, snap, r, u, mask);
+            en.choices = new ChoiceSync(en.choices, snap, r, u, sync);
             en.number++;
         }
-        ChoiceMask.setFlags(mask, backup, en);
         return true;
     }
 

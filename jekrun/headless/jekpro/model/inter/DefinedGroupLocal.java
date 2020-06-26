@@ -1,5 +1,6 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -9,7 +10,6 @@ import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.InterfaceRope;
 import matula.util.data.ListArray;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -100,7 +100,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         try {
             ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             return ep.cr.getClauses();
@@ -123,7 +123,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         try {
             ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             Bouquet temp = ep.cr;
@@ -158,7 +158,7 @@ final class DefinedGroupLocal extends AbstractDefined {
      * @throws EngineMessage Shit happens.
      */
     public boolean assertClause(Clause clause,
-                                      int flags, Engine en)
+                                int flags, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
@@ -166,7 +166,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         try {
             ep.lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
@@ -195,7 +195,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         try {
             ep.lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
@@ -222,7 +222,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         try {
             ep.lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             try {

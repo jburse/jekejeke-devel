@@ -1,5 +1,6 @@
 package jekpro.tools.array;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -10,7 +11,6 @@ import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -449,7 +449,7 @@ public final class Types {
         } else if (x instanceof IOException) {
             return EngineMessage.mapIOException((IOException) x);
         } else if (x instanceof InterruptedException) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
+            return (EngineMessage) ForeignThread.sysThreadClear();
         } else if (x instanceof ArithmeticException) {
             String message = x.getMessage();
             if ("/ by zero".equals(message))

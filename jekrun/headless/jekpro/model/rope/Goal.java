@@ -1,5 +1,6 @@
 package jekpro.model.rope;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -81,7 +82,7 @@ public class Goal extends Intermediate {
             throws EngineException, EngineMessage {
         if (en.visor.signal != null &&
                 (en.visor.flags & AbstractLivestock.MASK_LIVESTOCK_NOSG) == 0)
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
 
         /* current term */
         Object alfa = term;

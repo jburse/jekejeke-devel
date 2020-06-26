@@ -38,7 +38,7 @@ public abstract class AbstractDomestic {
     public final static int MASK_LIVESTOCK_NOSG = 0x00000001;
 
     public int flags;
-    public Object signal;
+    public Throwable signal;
     public Thread thread;
     public Object source;
     public Closeable closer;
@@ -74,9 +74,9 @@ public abstract class AbstractDomestic {
      * @param m The signal.
      * @return The old signal.
      */
-    public final Object setSignal(Object m) {
+    public final Throwable setSignal(Throwable m) {
         synchronized (this) {
-            Object h = signal;
+            Throwable h = signal;
             if (m != null) {
                 signal = m;
                 if ((flags & MASK_LIVESTOCK_NOSG) == 0

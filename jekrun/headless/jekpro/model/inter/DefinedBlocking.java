@@ -1,5 +1,6 @@
 package jekpro.model.inter;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -9,8 +10,6 @@ import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.tools.term.SkelAtom;
-import matula.util.misc.Nonescalable;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -108,7 +107,7 @@ final class DefinedBlocking extends AbstractDefined {
         try {
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             return cr.getClauses();
@@ -130,7 +129,7 @@ final class DefinedBlocking extends AbstractDefined {
         try {
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             Bouquet temp = cr;
@@ -164,14 +163,14 @@ final class DefinedBlocking extends AbstractDefined {
      * @throws EngineMessage Shit happens.
      */
     public boolean assertClause(Clause clause,
-                                      int flags, Engine en)
+                                int flags, Engine en)
             throws EngineMessage {
         if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
             return false;
         try {
             lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
@@ -198,7 +197,7 @@ final class DefinedBlocking extends AbstractDefined {
         try {
             lock.writeLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
@@ -224,7 +223,7 @@ final class DefinedBlocking extends AbstractDefined {
         try {
             lock.readLock().lockInterruptibly();
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
             try {

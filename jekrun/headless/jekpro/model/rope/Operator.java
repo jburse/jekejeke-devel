@@ -1,5 +1,6 @@
 package jekpro.model.rope;
 
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -433,7 +434,7 @@ public class Operator {
         try {
             over = OperatorSearch.performOverrides(oper.getType(), sa.fun, base);
         } catch (InterruptedException x) {
-            throw (EngineMessage) AbstractLivestock.sysThreadClear();
+            throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         if (over == null || !OperatorSearch.visibleOper(oper, src))
             return;

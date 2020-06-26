@@ -63,15 +63,15 @@
 
 /**
  * call_cleanup(B, C):
- * The predicate succeeds whenever B succeeds. Additionally the
- * clean-up C is called when B fails or deterministically succeeds.
- * The clean-up C is also called when a cut or an exception happens
- * inside B or in the continuation.
+ * The predicate succeeds whenever B succeeds. Additionally
+ * the clean-up C is called when B fails, deterministically
+ * succeeds or throws an exception. The clean-up C is also
+ * called when an exception or a cut happens in the continuation.
  */
 % call_cleanup(+Goal, +Goal)
 :- public call_cleanup/2.
+:- sys_notrace call_cleanup/2.
 :- meta_predicate call_cleanup(0, 0).
-:- set_predicate_property(call_cleanup/2, sys_notrace).
 call_cleanup(G, C) :-
    sys_mask(sys_cleanup(C)),
    current_prolog_flag(sys_choices, X),
@@ -82,16 +82,14 @@ call_cleanup(G, C) :-
 /**
  * setup_call_cleanup(A, B, C):
  * The predicate succeeds when the setup A succeeds once and whenever
- * B succeeds. Additionally the clean-up C is called when B fails or
- * deterministically succeeds. The clean-up C is also called when a
- * cut or an exception happens inside B or in the continuation. The
- * setup A and the clean-up C are called with the signal mask temporarily
- * set to off.
+ * B succeeds. Additionally the clean-up C is called when B fails,
+ * deterministically succeeds or throws an exception. The clean-up C is
+ * also called when an exception or a cut happens in the continuation.
  */
 % setup_call_cleanup(+Goal, +Goal, +Goal)
 :- public setup_call_cleanup/3.
+:- sys_notrace setup_call_cleanup/3.
 :- meta_predicate setup_call_cleanup(0, 0, 0).
-:- set_predicate_property(setup_call_cleanup/3, sys_notrace).
 setup_call_cleanup(A, G, C) :-
    sys_mask((once(A), sys_cleanup(C))),
    current_prolog_flag(sys_choices, X),
@@ -100,14 +98,55 @@ setup_call_cleanup(A, G, C) :-
    (X == Y, !; true).
 
 /**
+ * call_finally(B, C):
+ * The predicate succeeds whenever B succeeds. Additionally
+ * the clean-up C is called when B fails, deterministically
+ * succeeds or throws an exception. The clean-up C is also
+ * called when B non-deterrministically succeeds.
+ */
+% call_finally(+Goal, +Goal, +Goal)
+:- public call_finally/2.
+:- sys_notrace call_finally/2.
+:- meta_predicate call_finally(0, 0).
+call_finally(G, C) :-
+   sys_mask(sys_cleanup(C)),
+   current_prolog_flag(sys_choices, X),
+   G,
+   current_prolog_flag(sys_choices, Y),
+   (X == Y, !; sys_mask(must(C))).
+
+/**
+ * try_call_finally(A, B, C):
+ * The predicate succeeds when the try A succeeds once and whenever
+ * B succeeds. Additionally the clean-up C is called when B fails,
+ * deterministically succeeds or throws an exception. The clean-up C
+ * is also called when B non-deterrministically succeeds. The try
+ * then aslo called when an exception or a cut happens in the continuation.
+ */
+% try_call_finally(+Goal, +Goal, +Goal)
+:- public try_call_finally/3.
+:- sys_notrace try_call_finally/3.
+:- meta_predicate try_call_finally(0, 0, 0).
+try_call_finally(A, G, C) :-
+   sys_mask((must(A), sys_cleanup(C))),
+   current_prolog_flag(sys_choices, X),
+   G,
+   current_prolog_flag(sys_choices, Y),
+   (X == Y, !; sys_mask((must(C), sys_cleanup(A)))).
+
+/******************************************************************/
+/* Low-Level API                                                  */
+/******************************************************************/
+
+/**
  * sys_cleanup(A):
  * The predicate creates a choice point and succeeds once. The goal
  * A is called upon redo or when the choice point is removed.
  */
 % sys_cleanup(+Goal)
 :- public sys_cleanup/1.
+:- sys_notrace sys_cleanup/1.
 :- meta_predicate sys_cleanup(0).
-:- set_predicate_property(sys_cleanup/1, sys_notrace).
 :- special(sys_cleanup/1, 'SpecialSignal', 0).
 
 /**
@@ -117,8 +156,8 @@ setup_call_cleanup(A, G, C) :-
  */
 % sys_mask(+Goal)
 :- public sys_mask/1.
+:- sys_notrace sys_mask/1.
 :- meta_predicate sys_mask(0).
-:- set_predicate_property(sys_mask/1, sys_notrace).
 :- special(sys_mask/1, 'SpecialSignal', 1).
 
 /**
@@ -128,6 +167,6 @@ setup_call_cleanup(A, G, C) :-
  */
 % sys_ignore(+Goal)
 :- public sys_ignore/1.
+:- sys_notrace sys_ignore/1.
 :- meta_predicate sys_ignore(0).
 :- special(sys_ignore/1, 'SpecialSignal', 2).
-:- set_predicate_property(sys_ignore/1, sys_notrace).

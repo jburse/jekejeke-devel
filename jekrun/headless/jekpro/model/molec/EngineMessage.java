@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.Engine;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.Resource;
@@ -13,7 +14,6 @@ import matula.util.data.MapEntry;
 import matula.util.regex.ScannerToken;
 import matula.util.system.ForeignCache;
 import matula.util.system.OpenCheck;
-import matula.util.wire.AbstractLivestock;
 import matula.util.wire.PropertiesWithImport;
 
 import java.io.FileNotFoundException;
@@ -583,7 +583,7 @@ public final class EngineMessage extends Exception {
      */
     public static EngineMessage mapIOException(IOException x) {
         if (OpenCheck.isInterrupt(x)) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
+            return (EngineMessage) ForeignThread.sysThreadClear();
         } else if (x instanceof SocketTimeoutException) {
             return new EngineMessage(EngineMessage.resourceError(
                     EngineMessage.OP_RESOURCE_SOCKET_TIMEOUT));
@@ -623,7 +623,7 @@ public final class EngineMessage extends Exception {
      */
     public static EngineMessage mapIOProblem(IOException x) {
         if (OpenCheck.isInterrupt(x)) {
-            return (EngineMessage) AbstractLivestock.sysThreadClear();
+            return (EngineMessage) ForeignThread.sysThreadClear();
         } else {
             return new EngineMessage(EngineMessage.systemError(
                     EngineMessage.OP_SYSTEM_READ_PROBLEM));

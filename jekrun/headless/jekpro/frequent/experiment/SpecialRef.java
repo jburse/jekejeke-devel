@@ -26,7 +26,7 @@ import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
- * <p>Provides built-in predicates for the internal database predicates.</p>
+ * <p>Provides built-in predicates for the reference predicates.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -398,12 +398,10 @@ public final class SpecialRef extends AbstractSpecial {
     public static InterfaceReference derefAndCastPtr(Object m, Display d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
-        if (m instanceof InterfaceReference) {
-            return (InterfaceReference) m;
-        } else {
+        if (!(m instanceof InterfaceReference))
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));
-        }
+        return (InterfaceReference) m;
     }
 
     /*******************************************************************/
