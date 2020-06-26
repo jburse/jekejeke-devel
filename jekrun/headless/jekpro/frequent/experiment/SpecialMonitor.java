@@ -11,6 +11,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
 
@@ -45,11 +46,13 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SpecialMonitor extends AbstractSpecial  {
-    private final static int SPECIAL_SYS_OBJ = 0;
-    private final static int SPECIAL_SYS_SYNC = 1;
-    private final static int SPECIAL_SYS_WAIT = 2;
-    private final static int SPECIAL_SYS_NOTIFY = 3;
+public class SpecialMonitor extends AbstractSpecial {
+    private final static int SPECIAL_NEW = 0;
+    private final static int SPECIAL_SYNCHRONIZED = 1;
+    private final static int SPECIAL_WAIT = 2;
+    private final static int SPECIAL_WAIT_TIMEOUT = 3;
+    private final static int SPECIAL_NOTIFY = 4;
+    private final static int SPECIAL_NOTIFY_ALL = 5;
 
     /**
      * <p>Create a monitor special.</p>
@@ -69,43 +72,62 @@ public class SpecialMonitor extends AbstractSpecial  {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
-        switch (id) {
-            case SPECIAL_SYS_OBJ:
-                Object[] temp = ((SkelCompound) en.skel).args;
-                Display ref = en.display;
-                if (!en.unifyTerm(temp[0], ref, new Object(), Display.DISPLAY_CONST))
-                    return false;
-                return true;
-            case SPECIAL_SYS_SYNC:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                if (!SpecialMonitor.invokeSync(en, SpecialUniv.derefAndCastRef(temp[0], ref)))
-                    return false;
-                return true;
-            case SPECIAL_SYS_WAIT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                try {
-                    SpecialUniv.derefAndCastRef(temp[0], ref).wait();
-                } catch (InterruptedException x) {
-                    throw (EngineMessage) ForeignThread.sysThreadClear();
-                }
-                return true;
-            case SPECIAL_SYS_NOTIFY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                SpecialUniv.derefAndCastRef(temp[0], ref).notify();
-                return true;
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
-
+        try {
+            switch (id) {
+                case SPECIAL_NEW:
+                    Object[] temp = ((SkelCompound) en.skel).args;
+                    Display ref = en.display;
+                    if (!en.unifyTerm(temp[0], ref, new Object(), Display.DISPLAY_CONST))
+                        return false;
+                    return true;
+                case SPECIAL_SYNCHRONIZED:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[1];
+                    en.display = ref;
+                    en.deref();
+                    if (!SpecialMonitor.invokeSync(en, SpecialUniv.derefAndCastRef(temp[0], ref)))
+                        return false;
+                    return true;
+                case SPECIAL_WAIT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    try {
+                        SpecialUniv.derefAndCastRef(temp[0], ref).wait();
+                    } catch (InterruptedException x) {
+                        throw (EngineMessage) ForeignThread.sysThreadClear();
+                    }
+                    return true;
+                case SPECIAL_WAIT_TIMEOUT:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    try {
+                        SpecialUniv.derefAndCastRef(temp[0], ref).wait(SpecialEval.castLongValue(num));
+                    } catch (InterruptedException x) {
+                        throw (EngineMessage) ForeignThread.sysThreadClear();
+                    }
+                    return true;
+                case SPECIAL_NOTIFY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialUniv.derefAndCastRef(temp[0], ref).notify();
+                    return true;
+                case SPECIAL_NOTIFY_ALL:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    SpecialUniv.derefAndCastRef(temp[0], ref).notifyAll();
+                    return true;
+                default:
+                    throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+            }
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 

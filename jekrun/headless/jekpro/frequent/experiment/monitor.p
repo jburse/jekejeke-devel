@@ -1,4 +1,10 @@
 /**
+ * The module allows using Java monitors inside Prolog texts. The
+ * meta-predicate synchronized/2 allows obtaining an intrinsic lock
+ * of a Java monitor. The predicates wait/1 and wait/2 allow waiting
+ * for a signal on the intrinsic condition of a Java monitor. The
+ * predicates notify/1 and notify_all/1 allow send a signal.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -43,8 +49,8 @@
 
 /**
  * synchronized(O, G):
- * The predicate succeeds whenever the goal G succeeds. The
- * first, next and cut are synchronized on the object O.
+ * The predicate succeeds whenever the goal G succeeds. The call port,
+ * the redo port and the cutter are synchronized on the object O.
  */
 % synchronized(+Object, +Goal)
 :- public synchronized/2.
@@ -60,9 +66,26 @@
 :- special(wait/1, 'SpecialMonitor', 2).
 
 /**
+ * wait_timeout(O, T):
+ * The predicate waits on the object O or timeouts after T milliseconds.
+ */
+% wait_timeout(+Object, +Integer)
+:- public wait_timeout/2.
+:- special(wait_timeout/2, 'SpecialMonitor', 3).
+
+/**
  * notify(O):
- * The predicate notifies the object O.
+ * The predicate notifies one wait on the object O.
  */
 % notify(+Object)
 :- public notify/1.
-:- special(notify/1, 'SpecialMonitor', 3).
+:- special(notify/1, 'SpecialMonitor', 4).
+
+/**
+ * notify_all(O):
+ * The predicate notifies all waits on the object O.
+ */
+% notify_all(+Object)
+:- public notify_all/1.
+:- special(notify_all/1, 'SpecialMonitor', 5).
+

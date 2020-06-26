@@ -62,7 +62,7 @@ public
 ^ /7	no	experiment/abstract
 ^ /8	no	experiment/abstract
 ^ /9	no	experiment/abstract
-above/2	no	advanced/arith
+above/2	no	standard/arith
 acosh/2	yes	basic/hyper
 aggregate/3	no	advanced/aggregate
 aggregate/4	no	advanced/aggregate
@@ -84,7 +84,7 @@ atanh/2	yes	basic/hyper
 bagof/3	no	advanced/bags
 bagof/4	no	advanced/bags
 base64_block/2	no	stream/xml
-between/3	no	advanced/arith
+between/3	no	standard/arith
 broker_start/1	no	experiment/broker
 broker_stop/0	no	experiment/broker
 call/2	no	standard/apply
@@ -94,7 +94,8 @@ call/5	no	standard/apply
 call/6	no	standard/apply
 call/7	no	standard/apply
 call/8	no	standard/apply
-call_cleanup/2	no	standard/signal
+call_cleanup/2	no	advanced/signal
+call_finally/2	no	advanced/signal
 call_nth/2	no	advanced/sequence
 call_residue/2	no	misc/residue
 call_residue_vars/2	no	misc/residue
@@ -256,9 +257,11 @@ member/2	no	basic/lists
 message_make/3	no	system/locale
 message_make/4	no	system/locale
 mutex_new/1	no	misc/lock
+new/1	no	experiment/monitor
 nl/0	no	stream/char
 nl/1	no	stream/char
 nonescalable_new/1	no	misc/lock
+notify/1	no	experiment/monitor
 nth0/3	no	basic/lists
 nth0/4	no	basic/lists
 nth1/3	no	basic/lists
@@ -303,7 +306,7 @@ pipe_poll/2	no	misc/pipe
 pipe_poll/3	no	misc/pipe
 pipe_put/2	no	misc/pipe
 pipe_take/2	no	misc/pipe
-plus/3	no	advanced/arith
+plus/3	no	standard/arith
 print_stack_trace/2	no	stream/console
 print_stack_trace/3	no	stream/console
 printable/2	no	misc/residue
@@ -384,7 +387,7 @@ set_thread_flag/3	no	system/thread
 set_time_file/2	no	system/file
 setof/3	no	advanced/bags
 setof/4	no	advanced/bags
-setup_call_cleanup/3	no	standard/signal
+setup_call_cleanup/3	no	advanced/signal
 sha1_hash/2	no	system/domain
 simplify_goal/2	no	experiment/simp
 simplify_rest/2	no	experiment/simp
@@ -395,15 +398,14 @@ sort/3	no	standard/sort
 spawn/3	no	experiment/broker
 stream_property/2	no	stream/stream
 subset/2	no	advanced/sets
-succ/2	no	advanced/arith
-surrogate_new/1	no	misc/residue
+succ/2	no	standard/arith
+synchronized/2	no	experiment/monitor
 sys_apropos_table/1	no	basic/utility
 sys_assignable_from/2	no	basic/proxy
 sys_atom_or_type_of/2	no	basic/score
-sys_atomic/1	no	standard/signal
 sys_boolean/1	no	basic/score
 sys_char16/1	no	basic/score
-sys_cleanup/1	no	standard/signal
+sys_cleanup/1	no	advanced/signal
 sys_cond/2	no	standard/expand
 sys_current_eq/2	no	misc/residue
 sys_current_mark/1	no	misc/residue
@@ -412,7 +414,7 @@ sys_float_mantissa/2	no	standard/approx
 sys_float_radix/2	no	standard/approx
 sys_ground/2	no	standard/sort
 sys_hash_code/3	no	standard/sort
-sys_ignore/1	no	standard/signal
+sys_ignore/1	no	advanced/signal
 sys_instance_of/2	no	basic/proxy
 sys_integer16/1	no	basic/score
 sys_integer16_and_not_integer8/1	no	basic/score
@@ -425,6 +427,7 @@ sys_integer64_or_float/1	no	basic/score
 sys_integer8/1	no	basic/score
 sys_integer_and_not_integer64/1	no	basic/score
 sys_mark_attrs/2	no	misc/residue
+sys_mask/1	no	advanced/signal
 sys_modext_args/3	no	standard/apply
 sys_modext_args/4	no	standard/apply
 sys_modext_args/5	no	standard/apply
@@ -459,6 +462,7 @@ thread_sleep/1	no	system/thread
 thread_start/1	no	system/thread
 threads/0	no	system/group
 time_out/2	no	misc/time
+try_call_finally/3	no	advanced/signal
 union/3	no	advanced/sets
 unit/0	no	standard/expand
 unslotted_new/1	no	misc/lock
@@ -467,6 +471,7 @@ upgrade/4	no	misc/http
 uri_encode/2	no	system/uri
 uri_puny/2	no	system/domain
 validate_meta/2	no	misc/http
+wait/1	no	experiment/monitor
 websock_new/2	no	misc/socket
 when/2	no	experiment/broker
 write/1	no	stream/term
