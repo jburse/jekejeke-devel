@@ -61,7 +61,7 @@
 :- package(library(jekpro/reference/runtime)).
 
 :- module(distributed, []).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 :- use_module(library(misc/pipe)).
 :- use_module(library(system/group)).
 :- use_module(library(system/thread)).
@@ -212,7 +212,7 @@ sys_put_all2(_, _, _, _).
 :- private sys_group_clean/1.
 :- meta_predicate sys_group_clean(?).
 sys_group_clean(G) :-
-   sys_atomic((group_new(G),
+   sys_mask((group_new(G),
       sys_cleanup(sys_group_fini(G)))).
 
 /**

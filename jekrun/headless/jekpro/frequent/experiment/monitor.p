@@ -3,7 +3,7 @@
  * cond_new/2. As a convenience a pair of a lock and condition variable
  * can be created by the predicate monitor_new/2. The resulting object
  * is suitable both for the lock predicates from the module "lock" and
- * the condtioon variable predicates from this module.
+ * for the condition variable predicates from this module.
  *
  * A condition variable allows a thread to temporarily leave a critical
  * region via the predicates cond_wait/1 and cond_wait_timeout/2. The
@@ -89,7 +89,7 @@ monitor_new(M) :-
 /**
  * cond_wait_timeout(C, T):
  * The predicate succeeds when the condition C was notified
- * in the time-out. Otherwise the predicate fails.
+ * in the time-out T. Otherwise the predicate fails.
  */
 % cond_wait_timeout(+Condition, +Integer)
 :- public cond_wait_timeout/2.
@@ -97,7 +97,7 @@ monitor_new(M) :-
 
 /**
  * cond_notify(C):
- * The predicate succeeds in notifying one waiting thread.
+ * The predicate succeeds in notifying one thread waiting on C.
  */
 % cond_notify(+Condition)
 :- public cond_notify/1.
@@ -106,7 +106,7 @@ monitor_new(M) :-
 
 /**
  * cond_notify_all(C):
- * The predicate succeeds in notifying all waiting threads.
+ * The predicate succeeds in notifying all threads waiting on C.
  */
 % cond_notify_all(+Condition)
 :- public cond_notify_all/1.

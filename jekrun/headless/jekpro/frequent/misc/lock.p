@@ -57,7 +57,7 @@
 /**
  * with_lock(L, G):
  * The predicate succeeds whenever the goal G succeeds. The
- * lock is acquired in the call port, and released in the
+ * lock L is acquired in the call port, and released in the
  * deterministic exit port, in the fail port or when an
  * exception happens.
  */

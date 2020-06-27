@@ -97,43 +97,6 @@ setup_call_cleanup(A, G, C) :-
    current_prolog_flag(sys_choices, Y),
    (X == Y, !; true).
 
-/**
- * call_finally(B, C):
- * The predicate succeeds whenever B succeeds. Additionally
- * the clean-up C is called when B fails, deterministically
- * succeeds or throws an exception. The clean-up C is also
- * called when B non-deterrministically succeeds.
- */
-% call_finally(+Goal, +Goal, +Goal)
-:- public call_finally/2.
-:- sys_notrace call_finally/2.
-:- meta_predicate call_finally(0, 0).
-call_finally(G, C) :-
-   sys_mask(sys_cleanup(C)),
-   current_prolog_flag(sys_choices, X),
-   G,
-   current_prolog_flag(sys_choices, Y),
-   (X == Y, !; sys_mask(must(C))).
-
-/**
- * try_call_finally(A, B, C):
- * The predicate succeeds when the try A succeeds once and whenever
- * B succeeds. Additionally the clean-up C is called when B fails,
- * deterministically succeeds or throws an exception. The clean-up C
- * is also called when B non-deterrministically succeeds. The try
- * then aslo called when an exception or a cut happens in the continuation.
- */
-% try_call_finally(+Goal, +Goal, +Goal)
-:- public try_call_finally/3.
-:- sys_notrace try_call_finally/3.
-:- meta_predicate try_call_finally(0, 0, 0).
-try_call_finally(A, G, C) :-
-   sys_mask((must(A), sys_cleanup(C))),
-   current_prolog_flag(sys_choices, X),
-   G,
-   current_prolog_flag(sys_choices, Y),
-   (X == Y, !; sys_mask((must(C), sys_cleanup(A)))).
-
 /******************************************************************/
 /* Low-Level API                                                  */
 /******************************************************************/
