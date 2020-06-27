@@ -11,7 +11,10 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.FileText;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.ReadOpts;
+import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
@@ -421,7 +424,7 @@ public final class SpecialRef extends AbstractSpecial {
      * @throws EngineMessage Validation Error.
      */
     public static MapHashLink<Object, String> decodeAssertOptions(Object t, Display d,
-                                                                         Engine en)
+                                                                  Engine en)
             throws EngineMessage {
         MapHashLink<Object, String> vars = null;
         en.skel = t;

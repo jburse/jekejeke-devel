@@ -16,7 +16,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
 
 /**
- * <p>Provides built-in predicates for monitor predicates.</p>
+ * <p>Provides built-in predicates for the monitor module.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -46,7 +46,7 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SpecialMonitor extends AbstractSpecial {
+public final class SpecialMonitor extends AbstractSpecial {
     private final static int SPECIAL_NEW = 0;
     private final static int SPECIAL_SYNCHRONIZED = 1;
     private final static int SPECIAL_WAIT = 2;

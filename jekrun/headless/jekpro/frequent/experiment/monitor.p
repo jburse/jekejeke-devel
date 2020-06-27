@@ -89,3 +89,10 @@
 :- public notify_all/1.
 :- special(notify_all/1, 'SpecialMonitor', 5).
 
+/**
+ * current_time:
+ * Returns the current time in milliseconds.
+ */
+% current_time(-Integer)
+:- public current_time/1.
+:- special(current_time/1, 'EvaluableMonitor', 0).
