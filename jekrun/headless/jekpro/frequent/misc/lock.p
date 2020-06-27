@@ -1,13 +1,13 @@
 /**
  * A mutex is a binary lock. A mutex can be created by the predicates
- * lock_new/1 and unslotted_new/2. A mutex need not be explicitly
+ * mutex_new/1 and unslotted_new/2. A mutex need not be explicitly
  * destroyed, it will automatically be reclaimed by the Java GC when
  * not anymore used. To balance acquires and releases of the same
  * lock the use of setup_call_cleanup/3 is recommended. Threads
  * waiting for a lock can be interrupted.
  *
  * Example:
- * ?- lock_new(M), lock_acquire(M), lock_release(M).
+ * ?- mutex_new(M), lock_acquire(M), lock_release(M).
  * M = 0r3f10bc2a
  *
  * The predicates lock_acquire/1 and lock_attempt/[1,2] allow to
@@ -81,13 +81,13 @@ synchronized(L, G) :-
 /****************************************************************/
 
 /**
- * lock_new(M):
+ * mutex_new(M):
  * The predicate succeeds for a new reentrant lock M.
  * The lock can produce condition variables.
  */
-% lock_new(-Lock)
-:- public lock_new/1.
-:- foreign_constructor(lock_new/1, 'ReentrantLock', new).
+% mutex_new(-Lock)
+:- public mutex_new/1.
+:- foreign_constructor(mutex_new/1, 'ReentrantLock', new).
 
 /**
  * unslotted_new(M):

@@ -116,11 +116,7 @@ code_upper/2	no	misc/text
 compilable_ref/2	no	experiment/ref
 compiled_match/2	no	misc/text
 compiled_ref/2	no	experiment/ref
-cond_new/2	no	misc/lock
-cond_notify/1	no	misc/lock
-cond_notify_all/1	no	misc/lock
-cond_wait/1	no	misc/lock
-cond_wait/2	no	misc/lock
+cond_new/2	no	experiment/monitor
 contains/2	no	advanced/sets
 cosh/2	yes	basic/hyper
 counter_new/1	no	basic/random
@@ -136,6 +132,7 @@ current_table/2	no	advanced/tabling
 current_thread/1	no	system/group
 current_thread/2	no	system/group
 current_thread_flag/3	no	system/thread
+current_time/1	yes	experiment/monitor
 date_atom/3	no	system/zone
 date_atom/4	no	system/zone
 delete_file/1	no	system/file
@@ -238,7 +235,7 @@ length/2	no	basic/lists
 limit/2	no	advanced/sequence
 lock_acquire/1	no	misc/lock
 lock_attempt/1	no	misc/lock
-lock_attempt/2	no	misc/lock
+lock_attempt_timeout/2	no	misc/lock
 lock_release/1	no	misc/lock
 make_authority/4	no	system/domain
 make_directory/1	no	system/file
@@ -256,12 +253,13 @@ maplist/5	no	basic/lists
 member/2	no	basic/lists
 message_make/3	no	system/locale
 message_make/4	no	system/locale
-lock_new/1	no	misc/lock
-new/1	no	experiment/monitor
+monitor_new/1	no	experiment/monitor
+mutex_new/1	no	misc/lock
 nl/0	no	stream/char
 nl/1	no	stream/char
 nonescalable_new/1	no	misc/lock
 notify/1	no	experiment/monitor
+notify_all/1	no	experiment/monitor
 nth0/3	no	basic/lists
 nth0/4	no	basic/lists
 nth1/3	no	basic/lists
@@ -399,7 +397,7 @@ spawn/3	no	experiment/broker
 stream_property/2	no	stream/stream
 subset/2	no	advanced/sets
 succ/2	no	standard/arith
-synchronized/2	no	experiment/monitor
+synchronized/2	no	misc/lock
 sys_apropos_table/1	no	basic/utility
 sys_assignable_from/2	no	basic/proxy
 sys_atom_or_type_of/2	no	basic/score
@@ -472,6 +470,7 @@ uri_encode/2	no	system/uri
 uri_puny/2	no	system/domain
 validate_meta/2	no	misc/http
 wait/1	no	experiment/monitor
+wait_timeout/2	no	experiment/monitor
 websock_new/2	no	misc/socket
 when/2	no	experiment/broker
 write/1	no	stream/term

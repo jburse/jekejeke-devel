@@ -36,11 +36,11 @@ import java.util.concurrent.locks.Lock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Monitor implements Lock, Condition {
+public final class Combo implements Lock, Condition {
     private final Lock lock;
     private final Condition cond;
 
-    public Monitor(Lock l, Condition c) {
+    public Combo(Lock l, Condition c) {
         lock = l;
         cond = c;
     }

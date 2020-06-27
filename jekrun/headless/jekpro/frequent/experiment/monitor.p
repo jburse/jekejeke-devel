@@ -44,13 +44,13 @@
 % monitor_new(-Monitor)
 :- public monitor_new/1.
 monitor_new(M) :-
-   lock_new(L),
+   mutex_new(L),
    cond_new(L, C),
    sys_monitor_new(L, C, M).
 
 % sys_monitor_new(+Lock, +Condition, -Monitor)
 :- private sys_monitor_new/3.
-:- foreign_constructor(sys_monitor_new/3, 'Monitor', new('Lock', 'Condition')).
+:- foreign_constructor(sys_monitor_new/3, 'Combo', new('Lock', 'Condition')).
 
 /****************************************************************/
 /* Condition Variables                                          */

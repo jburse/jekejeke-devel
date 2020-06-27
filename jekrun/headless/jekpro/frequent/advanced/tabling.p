@@ -390,7 +390,7 @@ sys_find_lock(Find, J, R) :-
 sys_find_lock(Find, _) :-
    Find, !.
 sys_find_lock(Find, R) :-
-   lock_new(R),
+   mutex_new(R),
    assertz(Find).
 
 /*****************************************************************/
