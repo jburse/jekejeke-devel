@@ -52,6 +52,7 @@ public final class EvaluableBits extends AbstractSpecial {
     private final static int EVALUABLE_MSB = 7;
     private final static int EVALUABLE_LSB = 8;
     private final static int EVALUABLE_POPCOUNT = 9;
+
     /**
      * <p>Create an evaluable bits.</p>
      *
@@ -70,6 +71,7 @@ public final class EvaluableBits extends AbstractSpecial {
      *
      * @param en The engine.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     public final void moniEvaluate(Engine en)
             throws EngineMessage, EngineException {

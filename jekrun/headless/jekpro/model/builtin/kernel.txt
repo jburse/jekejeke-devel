@@ -35,7 +35,6 @@ call/1	no	builtin/body
 catch/3	no	builtin/control
 fail/0	no	builtin/control
 false/0	no	builtin/control
-forall/2	no	builtin/control
 once/1	no	builtin/control
 otherwise/0	no	builtin/control
 reset_predicate_property/2	no	builtin/special

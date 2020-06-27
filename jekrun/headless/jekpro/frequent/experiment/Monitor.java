@@ -1,11 +1,12 @@
-package jekpro.frequent.misc;
+package jekpro.frequent.experiment;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
- * The foreign predicates for the module "lock".
+ * <p>The class provides a lock and condition combo.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -35,19 +36,65 @@ import java.util.concurrent.locks.Lock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignLock {
+public final class Monitor implements Lock, Condition {
+    private final Lock lock;
+    private final Condition cond;
 
-    /**
-     * <p>Perform a millisecond try lock on a lock.</p>
-     *
-     * @param lock    The lock.
-     * @param timeout The time-out in milliseconds.
-     * @return True if lock was acquired, or false otherwise.
-     * @throws InterruptedException If the request was cancelled.
-     */
-    public static boolean sysTryLock(Lock lock, long timeout)
-            throws InterruptedException {
-        return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
+    public Monitor(Lock l, Condition c) {
+        lock = l;
+        cond = c;
+    }
+
+    public void lock() {
+        lock.lock();
+    }
+
+    public void lockInterruptibly() throws InterruptedException {
+        lock.lockInterruptibly();
+    }
+
+    public boolean tryLock() {
+        return lock.tryLock();
+    }
+
+    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+        return lock.tryLock(time, unit);
+    }
+
+    public void unlock() {
+        lock.unlock();
+    }
+
+    public Condition newCondition() {
+        return lock.newCondition();
+    }
+
+    public void await() throws InterruptedException {
+        cond.await();
+    }
+
+    public void awaitUninterruptibly() {
+        cond.awaitUninterruptibly();
+    }
+
+    public long awaitNanos(long nanosTimeout) throws InterruptedException {
+        return cond.awaitNanos(nanosTimeout);
+    }
+
+    public boolean await(long time, TimeUnit unit) throws InterruptedException {
+        return cond.await(time, unit);
+    }
+
+    public boolean awaitUntil(Date deadline) throws InterruptedException {
+        return cond.awaitUntil(deadline);
+    }
+
+    public void signal() {
+        cond.signal();
+    }
+
+    public void signalAll() {
+        cond.signalAll();
     }
 
 }

@@ -118,7 +118,7 @@ compiled_match/2	no	misc/text
 compiled_ref/2	no	experiment/ref
 cond_new/2	no	misc/lock
 cond_notify/1	no	misc/lock
-cond_notifyall/1	no	misc/lock
+cond_notify_all/1	no	misc/lock
 cond_wait/1	no	misc/lock
 cond_wait/2	no	misc/lock
 contains/2	no	advanced/sets
@@ -256,7 +256,7 @@ maplist/5	no	basic/lists
 member/2	no	basic/lists
 message_make/3	no	system/locale
 message_make/4	no	system/locale
-mutex_new/1	no	misc/lock
+lock_new/1	no	misc/lock
 new/1	no	experiment/monitor
 nl/0	no	stream/char
 nl/1	no	stream/char

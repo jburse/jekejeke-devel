@@ -1,12 +1,10 @@
 package jekpro.frequent.experiment;
 
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.tools.term.TermAtomic;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 
 /**
- * <p>Provides evaluable functions for the "monitor" module.</p>
+ * The foreign predicates for the module "monitor".
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,36 +34,19 @@ import jekpro.tools.term.TermAtomic;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class EvaluableMonitor extends AbstractSpecial {
-    private final static int EVALUABLE_CURRENT_TIME = 0;
+public final class ForeignMonitor {
 
     /**
-     * <p>Create an evaluable bits.</p>
+     * <p>Perform a millisecond await on a condition.</p>
      *
-     * @param i The index.
+     * @param cond    The condition.
+     * @param timeout The time-out in milliseconds.
+     * @return True if condition was notified, or false otherwise.
+     * @throws InterruptedException If the request was cancelled.
      */
-    public EvaluableMonitor(int i) {
-        super(i);
-        subflags |= MASK_DELE_ARIT;
-    }
-
-    /**
-     * <p>Arithmetically evaluate an evaluable.</p>
-     * <p>The evaluable is passed via the skel and display of the engine.</p>
-     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
-     * <p>The result is passed via the skel and display of the engine.</p>
-     *
-     * @param en The engine.
-     */
-    public final void moniEvaluate(Engine en) {
-        switch (id) {
-            case EVALUABLE_CURRENT_TIME:
-                en.skel = TermAtomic.normBigInteger(System.currentTimeMillis());
-                en.display = Display.DISPLAY_CONST;
-                return;
-            default:
-                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
-        }
+    public static boolean sysAwait(Condition cond, long timeout)
+            throws InterruptedException {
+        return cond.await(timeout, TimeUnit.MILLISECONDS);
     }
 
 }

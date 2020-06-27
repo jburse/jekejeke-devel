@@ -1,13 +1,13 @@
 /**
  * A mutex is a binary lock. A mutex can be created by the predicates
- * mutex_new/1 and unslotted_new/2. A mutex need not be explicitly
+ * lock_new/1 and unslotted_new/2. A mutex need not be explicitly
  * destroyed, it will automatically be reclaimed by the Java GC when
  * not anymore used. To balance acquires and releases of the same
  * lock the use of setup_call_cleanup/3 is recommended. Threads
  * waiting for a lock can be interrupted.
  *
  * Example:
- * ?- mutex_new(M), lock_acquire(M), lock_release(M).
+ * ?- lock_new(M), lock_acquire(M), lock_release(M).
  * M = 0r3f10bc2a
  *
  * The predicates lock_acquire/1 and lock_attempt/[1,2] allow to
@@ -21,7 +21,7 @@
  * Some of the locks can produce condition variables via the predicate
  * cond_new/2. A condition variable allows a thread to temporarily
  * leaving a critical region via the predicates cond_wait/1 and cond_wait/2.
- * The predicates cond_notify/1 and cond_notifyall/1 on the other hand
+ * The predicates cond_notify/1 and cond_notify_all/1 on the other hand
  * let a waiting thread respectively all waiting threads enter their
  * critical region again.
  *
@@ -61,18 +61,33 @@
 
 :- module(lock, []).
 
+/**
+ * synchronized(L, G):
+ * The predicate succeeds whenever the goal G succeeds. The
+ * lock is acquired in the call port, and released in the
+ * deterministic exit port, in the fail port or when an
+ * exception happens.
+ */
+% synchronized(+Lock, +Goal)
+:- public synchronized/2.
+:- meta_predicate synchronized(?, 0).
+synchronized(L, G) :-
+   setup_call_cleanup(lock_acquire(L),
+      G,
+      lock_release(L)).
+
 /****************************************************************/
 /* Binary Locks                                                 */
 /****************************************************************/
 
 /**
- * mutex_new(M):
+ * lock_new(M):
  * The predicate succeeds for a new reentrant lock M.
  * The lock can produce condition variables.
  */
-% mutex_new(-Lock)
-:- public mutex_new/1.
-:- foreign_constructor(mutex_new/1, 'ReentrantLock', new).
+% lock_new(-Lock)
+:- public lock_new/1.
+:- foreign_constructor(lock_new/1, 'ReentrantLock', new).
 
 /**
  * unslotted_new(M):
@@ -103,13 +118,13 @@
 :- foreign(lock_attempt/1, 'Lock', tryLock).
 
 /**
- * lock_attempt(L, T):
+ * lock_attempt_timeout(L, T):
  * The predicate succeeds after locking the lock L
  * in the time-out T. Otherwise the predicate fails.
  */
-% lock_attempt(+Lock, +Integer)
-:- public lock_attempt/2.
-:- foreign(lock_attempt/2, 'ForeignLock', sysTryLock('Lock', long)).
+% lock_attempt_timeout(+Lock, +Integer)
+:- public lock_attempt_timeout/2.
+:- foreign(lock_attempt_timeout/2, 'ForeignLock', sysTryLock('Lock', long)).
 
 /**
  * lock_release(L):
@@ -159,52 +174,3 @@
 :- public get_write/2.
 :- virtual get_write/2.
 :- foreign(get_write/2, 'ReadWriteLock', writeLock).
-
-/****************************************************************/
-/* Condition Variables                                          */
-/****************************************************************/
-
-/**
- * cond_new(L, C):
- * The predicate succeeds in C with a new condition for the lock L.
- */
-% cond_new(+Lock, -Condition)
-:- public cond_new/2.
-:- virtual cond_new/2.
-:- foreign(cond_new/2, 'Lock', newCondition).
-
-/**
- * cond_wait(C):
- * The predicate succeeds when the condition C was notified.
- */
-% cond_wait(+Condition)
-:- public cond_wait/1.
-:- virtual cond_wait/1.
-:- foreign(cond_wait/1, 'Condition', await).
-
-/**
- * cond_wait(C, T):
- * The predicate succeeds when the condition C was notified
- * in the time-out. Otherwise the predicate fails.
- */
-% cond_wait(+Condition, +Integer)
-:- public cond_wait/2.
-:- foreign(cond_wait/2, 'ForeignLock', sysAwait('Condition', long)).
-
-/**
- * cond_notify(C):
- * The predicate succeeds in notifying one waiting thread.
- */
-% cond_notify(+Condition)
-:- public cond_notify/1.
-:- virtual cond_notify/1.
-:- foreign(cond_notify/1, 'Condition', signal).
-
-/**
- * cond_notifyall(C):
- * The predicate succeeds in notifying all waiting threads.
- */
-% cond_notifyall(+Condition)
-:- public cond_notifyall/1.
-:- virtual cond_notifyall/1.
-:- foreign(cond_notifyall/1, 'Condition', signalAll).

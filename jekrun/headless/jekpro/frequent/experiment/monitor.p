@@ -1,10 +1,4 @@
 /**
- * The module allows using Java monitors inside Prolog texts. The
- * meta-predicate synchronized/2 allows obtaining an intrinsic lock
- * of a Java monitor. The predicates wait/1 and wait/2 allow waiting
- * for a signal on the intrinsic condition of a Java monitor. The
- * predicates notify/1 and notify_all/1 allow send a signal.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -36,58 +30,80 @@
 
 :- package(library(jekpro/frequent/experiment)).
 :- use_package(foreign(jekpro/frequent/experiment)).
+:- use_package(foreign(java/util/concurrent/locks)).
 
 :- module(monitor, []).
+:- use_module(library(misc/lock)).
 
 /**
- * new(O):
- * The predicate succeeds in O with a new object.
+ * monitor_new(M):
+ * The predicate succeeds in M with a new monitor. The monitor
+ * implements the Java Lock interface and the Java Condition
+ * interface at the same time.
  */
-% new(-Object)
-:- public new/1.
-:- special(new/1, 'SpecialMonitor', 0).
+% monitor_new(-Monitor)
+:- public monitor_new/1.
+monitor_new(M) :-
+   lock_new(L),
+   cond_new(L, C),
+   sys_monitor_new(L, C, M).
+
+% sys_monitor_new(+Lock, +Condition, -Monitor)
+:- private sys_monitor_new/3.
+:- foreign_constructor(sys_monitor_new/3, 'Monitor', new('Lock', 'Condition')).
+
+/****************************************************************/
+/* Condition Variables                                          */
+/****************************************************************/
 
 /**
- * synchronized(O, G):
- * The predicate succeeds whenever the goal G succeeds. The call port,
- * the redo port and the cutter are synchronized on the object O.
+ * cond_new(L, C):
+ * The predicate succeeds in C with a new condition for the lock L.
  */
-% synchronized(+Object, +Goal)
-:- public synchronized/2.
-:- meta_predicate synchronized(?, 0).
-:- special(synchronized/2, 'SpecialMonitor', 1).
+% cond_new(+Lock, -Condition)
+:- public cond_new/2.
+:- virtual cond_new/2.
+:- foreign(cond_new/2, 'Lock', newCondition).
 
 /**
- * wait(O):
- * The predicate waits on the object O.
+ * wait(C):
+ * The predicate succeeds when the condition C was notified.
  */
-% wait(+Object)
+% wait(+Condition)
 :- public wait/1.
-:- special(wait/1, 'SpecialMonitor', 2).
+:- virtual wait/1.
+:- foreign(wait/1, 'Condition', await).
 
 /**
- * wait_timeout(O, T):
- * The predicate waits on the object O or timeouts after T milliseconds.
+ * wait_timeout(C, T):
+ * The predicate succeeds when the condition C was notified
+ * in the time-out. Otherwise the predicate fails.
  */
-% wait_timeout(+Object, +Integer)
+% wait_timeout(+Condition, +Integer)
 :- public wait_timeout/2.
-:- special(wait_timeout/2, 'SpecialMonitor', 3).
+:- foreign(wait_timeout/2, 'ForeignMonitor', sysAwait('Condition', long)).
 
 /**
- * notify(O):
- * The predicate notifies one wait on the object O.
+ * notify(C):
+ * The predicate succeeds in notifying one waiting thread.
  */
-% notify(+Object)
+% notify(+Condition)
 :- public notify/1.
-:- special(notify/1, 'SpecialMonitor', 4).
+:- virtual notify/1.
+:- foreign(notify/1, 'Condition', signal).
 
 /**
- * notify_all(O):
- * The predicate notifies all waits on the object O.
+ * notify_all(C):
+ * The predicate succeeds in notifying all waiting threads.
  */
-% notify_all(+Object)
+% notify_all(+Condition)
 :- public notify_all/1.
-:- special(notify_all/1, 'SpecialMonitor', 5).
+:- virtual notify_all/1.
+:- foreign(notify_all/1, 'Condition', signalAll).
+
+/****************************************************************/
+/* Current Time                                                 */
+/****************************************************************/
 
 /**
  * current_time:
@@ -95,4 +111,4 @@
  */
 % current_time(-Integer)
 :- public current_time/1.
-:- special(current_time/1, 'EvaluableMonitor', 0).
+:- foreign_fun(current_time/1, 'System', currentTimeMillis).
