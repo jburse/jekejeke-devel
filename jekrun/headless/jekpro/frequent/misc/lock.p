@@ -2,28 +2,21 @@
  * A mutex is a binary lock. A mutex can be created by the predicates
  * mutex_new/1 and unslotted_new/2. A mutex need not be explicitly
  * destroyed, it will automatically be reclaimed by the Java GC when
- * not anymore used. To balance acquires and releases of the same
- * lock the use of setup_call_cleanup/3 is recommended. Threads
- * waiting for a lock can be interrupted.
+ * not anymore used. Threads waiting for a lock can be interrupted.
  *
  * Example:
  * ?- mutex_new(M), lock_acquire(M), lock_release(M).
  * M = 0r3f10bc2a
  *
- * The predicates lock_acquire/1 and lock_attempt/[1,2] allow to
- * acquire a lock. These predicates will block, fail or timeout when
- * the lock has already been acquired by other threads. The predicate
- * lock_release/1 allows releasing the lock. A read write pair can be
- * created by the predicates readwrite_new/1 and nonescalable_new/1.
- * The predicates get_read/2 and get_write/2 allow retrieving the
- * corresponding lock.
+ * The predicates lock_acquire/1, lock_attempt/1 and lock_attempt_timeout/2
+ * allow to acquire a lock. These predicates will block, fail or timeout
+ * when the lock has already been acquired by other threads. The
+ * predicate lock_release/1 allows releasing the lock.
  *
- * Some of the locks can produce condition variables via the predicate
- * cond_new/2. A condition variable allows a thread to temporarily
- * leaving a critical region via the predicates cond_wait/1 and cond_wait/2.
- * The predicates cond_notify/1 and cond_notify_all/1 on the other hand
- * let a waiting thread respectively all waiting threads enter their
- * critical region again.
+ * As a convenience a lock can be acquired and released by the
+ * meta-predicate with_lock/2. A read write pair can be created by the
+ * predicates readwrite_new/1 and nonescalable_new/1. The predicates
+ * get_read/2 and get_write/2 allow retrieving the corresponding lock.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -62,16 +55,16 @@
 :- module(lock, []).
 
 /**
- * synchronized(L, G):
+ * with_lock(L, G):
  * The predicate succeeds whenever the goal G succeeds. The
  * lock is acquired in the call port, and released in the
  * deterministic exit port, in the fail port or when an
  * exception happens.
  */
-% synchronized(+Lock, +Goal)
-:- public synchronized/2.
-:- meta_predicate synchronized(?, 0).
-synchronized(L, G) :-
+% with_lock(+Lock, +Goal)
+:- public with_lock/2.
+:- meta_predicate with_lock(?, 0).
+with_lock(L, G) :-
    setup_call_cleanup(lock_acquire(L),
       G,
       lock_release(L)).

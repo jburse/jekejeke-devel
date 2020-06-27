@@ -1,4 +1,16 @@
 /**
+ * Some of the locks can produce condition variables via the predicate
+ * cond_new/2. As a convenience a pair of a lock and condition variable
+ * can be created by the predicate monitor_new/2. The resulting object
+ * is suitable both for the lock predicates from the module "lock" and
+ * the condtioon variable predicates from this module.
+ *
+ * A condition variable allows a thread to temporarily leave a critical
+ * region via the predicates cond_wait/1 and cond_wait_timeout/2. The
+ * predicates cond_notify/1 and cond_notify_all/1 on the other hand let
+ * a waiting thread respectively all waiting threads enter their
+ * critical region again.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -66,40 +78,40 @@ monitor_new(M) :-
 :- foreign(cond_new/2, 'Lock', newCondition).
 
 /**
- * wait(C):
+ * cond_wait(C):
  * The predicate succeeds when the condition C was notified.
  */
-% wait(+Condition)
-:- public wait/1.
-:- virtual wait/1.
-:- foreign(wait/1, 'Condition', await).
+% cond_wait(+Condition)
+:- public cond_wait/1.
+:- virtual cond_wait/1.
+:- foreign(cond_wait/1, 'Condition', await).
 
 /**
- * wait_timeout(C, T):
+ * cond_wait_timeout(C, T):
  * The predicate succeeds when the condition C was notified
  * in the time-out. Otherwise the predicate fails.
  */
-% wait_timeout(+Condition, +Integer)
-:- public wait_timeout/2.
-:- foreign(wait_timeout/2, 'ForeignMonitor', sysAwait('Condition', long)).
+% cond_wait_timeout(+Condition, +Integer)
+:- public cond_wait_timeout/2.
+:- foreign(cond_wait_timeout/2, 'ForeignMonitor', sysAwait('Condition', long)).
 
 /**
- * notify(C):
+ * cond_notify(C):
  * The predicate succeeds in notifying one waiting thread.
  */
-% notify(+Condition)
-:- public notify/1.
-:- virtual notify/1.
-:- foreign(notify/1, 'Condition', signal).
+% cond_notify(+Condition)
+:- public cond_notify/1.
+:- virtual cond_notify/1.
+:- foreign(cond_notify/1, 'Condition', signal).
 
 /**
- * notify_all(C):
+ * cond_notify_all(C):
  * The predicate succeeds in notifying all waiting threads.
  */
-% notify_all(+Condition)
-:- public notify_all/1.
-:- virtual notify_all/1.
-:- foreign(notify_all/1, 'Condition', signalAll).
+% cond_notify_all(+Condition)
+:- public cond_notify_all/1.
+:- virtual cond_notify_all/1.
+:- foreign(cond_notify_all/1, 'Condition', signalAll).
 
 /****************************************************************/
 /* Current Time                                                 */

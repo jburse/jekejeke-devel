@@ -267,7 +267,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
       sys_pivot_set(P, Key),
       (  Test -> List
       ;  sys_find_lock(Find, J, E),
-         synchronized(E, SubHead))),
+         with_lock(E, SubHead))),
    sys_univ(Head, [F|T]),
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
@@ -383,7 +383,7 @@ sys_find_lock(Find, _, _) :-
 sys_find_lock(Find, J, R) :-
    predicate_property(J, sys_readwrite_lock(U)),
    get_write(U, V),
-   synchronized(V, sys_find_lock(Find, R)).
+   with_lock(V, sys_find_lock(Find, R)).
 
 % sys_find_lock(+Clause, +Indicator)
 :- private sys_find_lock/2.
