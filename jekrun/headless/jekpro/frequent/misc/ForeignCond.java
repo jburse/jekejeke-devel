@@ -1,4 +1,4 @@
-package jekpro.frequent.experiment;
+package jekpro.frequent.misc;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -34,7 +34,7 @@ import java.util.concurrent.locks.Condition;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ForeignMonitor {
+public final class ForeignCond {
 
     /**
      * <p>Perform a millisecond await on a condition.</p>

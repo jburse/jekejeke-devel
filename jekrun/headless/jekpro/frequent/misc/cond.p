@@ -40,11 +40,12 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- package(library(jekpro/frequent/experiment)).
-:- use_package(foreign(jekpro/frequent/experiment)).
+:- package(library(jekpro/frequent/misc)).
+:- use_package(foreign(jekpro/frequent/misc)).
+:- use_package(foreign(matula/util/misc)).
 :- use_package(foreign(java/util/concurrent/locks)).
 
-:- module(monitor, []).
+:- module(cond, []).
 :- use_module(library(misc/lock)).
 
 /**
@@ -62,7 +63,7 @@ monitor_new(M) :-
 
 % sys_monitor_new(+Lock, +Condition, -Monitor)
 :- private sys_monitor_new/3.
-:- foreign_constructor(sys_monitor_new/3, 'Combo', new('Lock', 'Condition')).
+:- foreign_constructor(sys_monitor_new/3, 'Monitor', new('Lock', 'Condition')).
 
 /****************************************************************/
 /* Condition Variables                                          */
@@ -93,7 +94,7 @@ monitor_new(M) :-
  */
 % cond_wait_timeout(+Condition, +Integer)
 :- public cond_wait_timeout/2.
-:- foreign(cond_wait_timeout/2, 'ForeignMonitor', sysAwait('Condition', long)).
+:- foreign(cond_wait_timeout/2, 'ForeignCond', sysAwait('Condition', long)).
 
 /**
  * cond_notify(C):

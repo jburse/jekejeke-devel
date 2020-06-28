@@ -1,4 +1,4 @@
-package jekpro.frequent.experiment;
+package matula.util.misc;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -36,11 +36,17 @@ import java.util.concurrent.locks.Lock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Combo implements Lock, Condition {
+public final class Monitor implements Lock, Condition {
     private final Lock lock;
     private final Condition cond;
 
-    public Combo(Lock l, Condition c) {
+    /**
+     * <p>Create a new monitor.</p>
+     *
+     * @param l The lock.
+     * @param c The condition.
+     */
+    public Monitor(Lock l, Condition c) {
         lock = l;
         cond = c;
     }
