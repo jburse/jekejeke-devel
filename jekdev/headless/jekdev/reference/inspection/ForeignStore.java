@@ -65,9 +65,9 @@ public final class ForeignStore {
     public static Object sysStoreProperty(Interpreter inter,
                                           Knowledgebase know)
             throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
-            storeToProperties((Store) know.getStore(), en);
+            storeToProperties(know.getStore(), en);
             return AbstractTerm.createTerm(en.skel, en.display);
         } catch (EngineException x) {
             throw new InterpreterException(x);
@@ -89,11 +89,11 @@ public final class ForeignStore {
     public static Object sysStorePropertyChk(Interpreter inter,
                                              Knowledgebase know, Object key)
             throws InterpreterException, InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
             StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(key),
                     AbstractTerm.getDisplay(key), en);
-            storeToProperty((Store) know.getStore(), sk, en);
+            storeToProperty(know.getStore(), sk, en);
             return AbstractTerm.createTerm(en.skel, en.display);
         } catch (EngineException x) {
             throw new InterpreterException(x);
@@ -113,9 +113,9 @@ public final class ForeignStore {
     public static void sysSetStoreProperty(Interpreter inter,
                                            Knowledgebase know, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
-            setStoreProp((Store) know.getStore(),
+            setStoreProp(know.getStore(),
                     AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -133,9 +133,9 @@ public final class ForeignStore {
     public static void sysResetStoreProperty(Interpreter inter,
                                              Knowledgebase know, Object val)
             throws InterpreterMessage {
-        Engine en = (Engine) inter.getEngine();
+        Engine en = inter.getEngine();
         try {
-            resetStoreProp((Store) know.getStore(),
+            resetStoreProp(know.getStore(),
                     AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -157,7 +157,7 @@ public final class ForeignStore {
                                                 Interpreter inter) {
         ArrayEnumeration<Store> dc;
         if (co.getFirst()) {
-            Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
+            Foyer foyer = inter.getKnowledgebase().getFoyer();
             dc = new ArrayEnumeration<Store>(foyer.snapshotStores());
             co.setData(dc);
         } else {
@@ -179,8 +179,8 @@ public final class ForeignStore {
      */
     public static boolean sysCurrentStoreChk(Interpreter inter,
                                              Knowledgebase know) {
-        Foyer foyer = (Foyer) inter.getKnowledgebase().getLobby().getFoyer();
-        Store store = (Store) know.getStore();
+        Foyer foyer = inter.getKnowledgebase().getFoyer();
+        Store store = know.getStore();
         return (store.foyer == foyer);
     }
 

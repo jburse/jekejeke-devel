@@ -4,8 +4,8 @@ import jekdev.model.builtin.SupervisorTrace;
 import jekdev.model.pretty.FoyerTrace;
 import jekdev.model.pretty.StoreTrace;
 import jekdev.reference.debug.SpecialDefault;
-import jekpro.frequent.standard.ChoiceAtomic;
-import jekpro.frequent.standard.SpecialSignal;
+import jekpro.frequent.advanced.ChoiceMask;
+import jekpro.frequent.advanced.SpecialSignal;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -112,7 +112,7 @@ public final class SpecialMode extends AbstractSpecial {
                     return true;
 
                 int tflags = en.visor.flags & SpecialDefault.MASK_MODE_VIBL;
-                int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_VIBL;
+                int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_VIBL;
                 if (!SpecialMode.isPort((tflags != 0 ? tflags : flags) >> 24, port))
                     return true;
 
@@ -121,7 +121,7 @@ public final class SpecialMode extends AbstractSpecial {
                 u2 = u2.contdisplay;
 
                 tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
-                flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG;
+                flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
                 switch (tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) {
                     case SpecialDefault.MASK_DEBG_STIN:
                         break;
@@ -132,7 +132,7 @@ public final class SpecialMode extends AbstractSpecial {
                         if (frame == null) {
                             break;
                         } else if (frame.contskel == r2 &&
-                                    frame.contdisplay == u2) {
+                                frame.contdisplay == u2) {
                             visortrace.skipframe = null;
                             break;
                         }
@@ -165,8 +165,8 @@ public final class SpecialMode extends AbstractSpecial {
                 en.skel = new SkelCompound(((FoyerTrace)
                         en.store.foyer).ATOM_TRACE_GOAL, portToAtom(port, en), val);
                 en.display = Display.DISPLAY_CONST;
-                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_VRFY |
-                        ChoiceAtomic.MASK_FLAGS_IGNR))
+                if (!SpecialSignal.invokeMask(en, ChoiceMask.MASK_FLAGS_VRFY |
+                        ChoiceMask.MASK_FLAGS_IGNR))
                     return false;
                 return true;
             case SPECIAL_SYS_CUT_CHK:
@@ -411,7 +411,7 @@ public final class SpecialMode extends AbstractSpecial {
      */
     public static boolean isDebug(Engine en) {
         int tflags = en.visor.flags & SpecialDefault.MASK_MODE_DEBG;
-        int flags = ((StoreTrace)en.store).flags & SpecialDefault.MASK_MODE_DEBG;
+        int flags = ((StoreTrace) en.store).flags & SpecialDefault.MASK_MODE_DEBG;
         if ((tflags != SpecialDefault.MASK_DEBG_INHR ? tflags : flags) != 0 &&
                 (en.visor.flags & SpecialDefault.MASK_DEBG_NOFL) == 0)
             return true;

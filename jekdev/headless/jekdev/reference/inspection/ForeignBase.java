@@ -68,7 +68,7 @@ public final class ForeignBase {
                                           String orig, int lineno)
             throws InterpreterMessage {
         try {
-            Engine engine = (Engine) inter.getEngine();
+            Engine engine = inter.getEngine();
             ArrayEnumeration<Predicate> dc;
             if (co.getFirst()) {
                 AbstractSource src = derefAndCastSource(source, engine);
@@ -113,7 +113,7 @@ public final class ForeignBase {
                                      String orig, int lineno)
             throws InterpreterMessage {
         try {
-            Engine engine = (Engine) inter.getEngine();
+            Engine engine = inter.getEngine();
             ArrayEnumeration<Predicate> dc;
             if (co.getFirst()) {
                 AbstractSource src = derefAndCastSource(source, engine);
@@ -156,7 +156,7 @@ public final class ForeignBase {
                                          Object provable, TermAtomic source)
             throws InterpreterMessage, InterpreterException {
         try {
-            Engine engine = (Engine) inter.getEngine();
+            Engine engine = inter.getEngine();
             Predicate pick = SpecialPred.indicatorToPredicateDefined(AbstractTerm.getSkel(provable),
                     AbstractTerm.getDisplay(provable), engine, CachePredicate.MASK_CACH_UCHK);
             if (pick == null)
@@ -185,7 +185,7 @@ public final class ForeignBase {
                                        Object syntax, TermAtomic source)
             throws InterpreterMessage, InterpreterException {
         try {
-            Engine engine = (Engine) inter.getEngine();
+            Engine engine = inter.getEngine();
             Operator oper = SpecialOper.operToOperatorDefined(AbstractTerm.getSkel(syntax),
                     AbstractTerm.getDisplay(syntax), engine, CachePredicate.MASK_CACH_UCHK);
             if (oper == null)

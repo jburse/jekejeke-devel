@@ -49,10 +49,10 @@ debug/0	no	debug/default
 debugging/0	no	debug/default
 del_dict/4	no	notebook/dict
 del_json/4	no	notebook/json
-destroyed/2	no	wire/monitor
+destroyed/2	no	monitor/server
 diagnose_online/0	no	testing/diagnose
 dict_pairs/3	no	notebook/dict
-dispatch/4	no	wire/monitor
+dispatch/4	no	monitor/server
 dump/0	no	debug/dump
 dump/1	no	debug/dump
 elem_add_node/2	no	notebook/model
@@ -74,8 +74,8 @@ get_dict/3	no	notebook/dict
 get_json/3	no	notebook/json
 goal_tracing/2	no	debug/custom
 user:goal_tracing/2	no	testing/tracker
-user:goal_tracing/2	no	wire/monitor
-initialized/2	no	wire/monitor
+user:goal_tracing/2	no	monitor/server
+initialized/2	no	monitor/server
 instrumented/0	no	debug/friendly
 instrumented/1	no	debug/friendly
 is_dict/1	no	notebook/dict
@@ -135,9 +135,9 @@ sheet_transform/4	no	notebook/transform
 skip/0	no	debug/default
 spy/1	no	debug/default
 spying/1	no	debug/default
-start_monitor/0	no	wire/monitor
+start_monitor/0	no	monitor/server
 store_changing/1	no	debug/custom
-user:store_changing/1	no	wire/monitor
+user:store_changing/1	no	monitor/server
 store_property/2	no	inspection/store
 stores/0	no	inspection/store
 summary_batch/0	no	testing/summary
@@ -188,7 +188,7 @@ ttrace/0	no	system/attach
 tup/0	no	system/attach
 tvisible/1	no	system/attach
 up/0	no	debug/default
-upgrade/4	no	wire/monitor
+upgrade/4	no	monitor/server
 visible/1	no	debug/default
 with_input_from/2	no	system/charsio
 with_output_to/2	no	system/charsio
