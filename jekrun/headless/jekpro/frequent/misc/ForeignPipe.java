@@ -5,6 +5,8 @@ import jekpro.tools.term.AbstractTerm;
 import matula.util.misc.InterfacePipe;
 import matula.util.misc.Queue;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * The foreign predicates for the module misc/pipe.
  * <p/>
@@ -49,7 +51,8 @@ public final class ForeignPipe {
      * @param t     The term.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static void sysPipePut(Interpreter inter, InterfacePipe q, AbstractTerm t)
+    public static void sysPipePut(Interpreter inter, InterfacePipe q,
+                                  AbstractTerm t)
             throws InterruptedException {
         Object obj = AbstractTerm.copyMolec(inter, t);
         q.put(obj);
@@ -64,30 +67,44 @@ public final class ForeignPipe {
      * @param q     The bounded queue.
      * @param t     The term.
      */
-    public static boolean sysPipeOffer(Interpreter inter,
+    public static boolean sysQueueOffer(Interpreter inter,
                                        Queue q, AbstractTerm t) {
         Object obj = AbstractTerm.copyMolec(inter, t);
         return q.offer(obj);
     }
 
     /**
-     * <p>Enqueue a copy of a term in a pipe with a timeout. If
-     * the pipe has not reached max size, the copy is enqueued.
+     * <p>Enqueue a copy of a term in a queue with a timeout. If
+     * the queue has not reached max size, the copy is enqueued.
      * Otherwise the current thread waits maximum timeout time until
      * the pipe is depleted. There is no assurance of fairness.</p>
      *
      * @param inter The interpreter.
      * @param q     The bounded queue.
      * @param t     The term.
-     * @param sleep The timeout.
+     * @param sleep The timeout in milliseconds.
      * @return True if the term was enqueued, otherwise false.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static boolean sysPipeOffer(Interpreter inter, Queue q,
+    public static boolean sysQueueOffer(Interpreter inter, Queue q,
                                        AbstractTerm t, long sleep)
             throws InterruptedException {
         Object obj = AbstractTerm.copyMolec(inter, t);
-        return q.offer(obj, sleep);
+        return q.offer(obj, sleep, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * <p>Dequee a term from a pipe with a timeout. If the
+     * pipe is non empty the term is dequeued. Otherwise the
+     * current thread waits maximum timeout time util the
+     * pip is filled. There is no assurance of fairness.</p>
+     *
+     * @param q The pipe.
+     * @param sleep The timeout in milliseconds.
+     * @return The dequed term or null.
+     */
+    public static Object sysPipePoll(InterfacePipe q, long sleep)
+            throws InterruptedException {
+        return q.poll(sleep, TimeUnit.MILLISECONDS);
+    }
 }

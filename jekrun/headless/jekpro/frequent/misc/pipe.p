@@ -90,17 +90,17 @@
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
 :- foreign(pipe_offer/2, 'ForeignPipe',
-      sysPipeOffer('Interpreter', 'Queue', 'AbstractTerm')).
+      sysQueueOffer('Interpreter', 'Queue', 'AbstractTerm')).
 
 /**
- * pipe_offer(P, O, T):
+ * pipe_offer_timeout(P, O, T):
  * The predicate succeeds for sending a copy of the term O to the
  * bounded queue P in the timeout T. Otherwise the predicate fails.
  */
-% pipe_offer(+Pipe, +Term, +Integer)
-:- public pipe_offer/3.
-:- foreign(pipe_offer/3, 'ForeignPipe',
-      sysPipeOffer('Interpreter', 'Queue', 'AbstractTerm', long)).
+% pipe_offer_timeout(+Pipe, +Term, +Integer)
+:- public pipe_offer_timeout/3.
+:- foreign(pipe_offer_timeout/3, 'ForeignPipe',
+      sysQueueOffer('Interpreter', 'Queue', 'AbstractTerm', long)).
 
 /**
  * pipe_take(P, O):
@@ -122,11 +122,11 @@
 :- foreign(pipe_poll/2, 'InterfacePipe', poll).
 
 /**
- * pipe_poll(P, T, O):
+ * pipe_poll_timeout(P, T, O):
  * The predicate succeeds for getting a term O form the pipe P
  * in the timeout T. Otherwise the predicate fails.
  */
-% pipe_poll(+Pipe, +Integer, -Term)
-:- public pipe_poll/3.
-:- virtual pipe_poll/3.
-:- foreign(pipe_poll/3, 'InterfacePipe', poll(long)).
+% pipe_poll_timeout(+Pipe, +Integer, -Term)
+:- public pipe_poll_timeout/3.
+:- foreign(pipe_poll_timeout/3, 'ForeignPipe',
+      sysPipePoll('InterfacePipe', long)).

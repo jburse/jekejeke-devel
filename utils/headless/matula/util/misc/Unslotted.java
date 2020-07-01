@@ -51,7 +51,7 @@ public final class Unslotted extends Semaphore implements Lock {
      * <p>Blocks if lock is already held.</p>
      */
     public void lock() {
-        throw new IllegalArgumentException("not supported");
+        acquireUninterruptibly();
     }
 
     /**
@@ -62,7 +62,7 @@ public final class Unslotted extends Semaphore implements Lock {
      */
     public void lockInterruptibly()
             throws InterruptedException {
-        acquire(1);
+        acquire();
     }
 
     /**
@@ -72,7 +72,7 @@ public final class Unslotted extends Semaphore implements Lock {
      * @return True if lock was acquired, or false otherwise.
      */
     public boolean tryLock() {
-        return tryAcquire(1);
+        return tryAcquire();
     }
 
     /**
@@ -104,7 +104,7 @@ public final class Unslotted extends Semaphore implements Lock {
      * @throws IllegalStateException If the lock was not yet acquired.
      */
     public void unlock() {
-        release(1);
+        release();
     }
 
 }

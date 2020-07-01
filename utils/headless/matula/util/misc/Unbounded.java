@@ -2,6 +2,11 @@ package matula.util.misc;
 
 import matula.util.data.ListArray;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * <p>This class provides an unbounded queue.</p>
  * Warranty & Liability
@@ -34,6 +39,8 @@ import matula.util.data.ListArray;
  */
 public final class Unbounded<T> implements InterfacePipe<T> {
     private final ListArray<T> list = new ListArray<T>();
+    private final Lock lock = new ReentrantLock();
+    private final Condition cond = lock.newCondition();
 
     /**
      * <p>Dequeue an element.</p>
@@ -54,9 +61,12 @@ public final class Unbounded<T> implements InterfacePipe<T> {
     public void put(T t) {
         if (t == null)
             throw new NullPointerException("null_element");
-        synchronized (this) {
+        lock.lock();
+        try {
             list.add(t);
-            this.notify();
+            cond.signal();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -69,10 +79,13 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      */
     public T take()
             throws InterruptedException {
-        synchronized (this) {
+        lock.lock();
+        try {
             while (list.size() == 0)
-                this.wait();
+                cond.await();
             return dequeue();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -83,12 +96,15 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      * @return The object or null if no object was taken.
      */
     public T poll() {
-        synchronized (this) {
+        lock.lock();
+        try {
             if (list.size() != 0) {
                 return dequeue();
             } else {
                 return null;
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -99,20 +115,25 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public T poll(long sleep)
+    public T poll(long sleep, TimeUnit unit)
             throws InterruptedException {
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (this) {
+        long when = System.nanoTime() + unit.toNanos(sleep);
+        lock.lock();
+        try {
             for (; ; ) {
                 if (list.size() != 0) {
                     return dequeue();
-                } else if (sleep > 0) {
-                    this.wait(sleep);
-                    sleep = when - System.currentTimeMillis();
                 } else {
-                    return null;
+                    sleep = when - System.nanoTime();
+                    if (sleep > 0) {
+                        cond.awaitNanos(sleep);
+                    } else {
+                        return null;
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 

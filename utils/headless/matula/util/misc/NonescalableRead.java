@@ -52,7 +52,7 @@ public final class NonescalableRead implements Lock {
      * <p>Blocks if read lock is already held.</p>
      */
     public void lock() {
-        throw new IllegalArgumentException("not supported");
+        parent.acquireUninterruptibly();
     }
 
     /**
@@ -62,7 +62,7 @@ public final class NonescalableRead implements Lock {
      * @throws InterruptedException If the request was cancelled.
      */
     public void lockInterruptibly() throws InterruptedException {
-        parent.acquire(1);
+        parent.acquire();
     }
 
     /**
@@ -72,7 +72,7 @@ public final class NonescalableRead implements Lock {
      * @return True if read lock was acquired, or false otherwise.
      */
     public boolean tryLock() {
-        return parent.tryAcquire(1);
+        return parent.tryAcquire();
     }
 
     /**
@@ -102,7 +102,7 @@ public final class NonescalableRead implements Lock {
      * <p>Release a read lock.</p>
      */
     public void unlock() throws IllegalStateException {
-        parent.release(1);
+        parent.release();
     }
 
 }

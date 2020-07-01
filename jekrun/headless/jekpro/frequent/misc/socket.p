@@ -15,12 +15,6 @@
  * and client sockets can be closed with the ISO core standard
  * close/[1,2] predicates.
  *
- * The predicate websock_new/2 allows promoting a socket to a web
- * socket. The input and output streams will consume and generate
- * web socket frames, but can be used as ordinary ISO core standard
- * streams. During writing a final frame is generated when the
- * predicate flush_output/[1,2] is used.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -98,13 +92,6 @@
  */
 :- public client_new/3.
 :- foreign(client_new/3, 'ForeignSocket', sysClientNew('String', int)).
-
-/**
- * websock_new(S, W):
- * The predicate succeeds in a web socket W for the socket S.
- */
-:- public websock_new/2.
-:- foreign_constructor(websock_new/2, 'Framed', new('Socket')).
 
 /********************************************************************/
 /* UDP/IP Sockets                                                   */

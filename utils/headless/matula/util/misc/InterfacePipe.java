@@ -1,5 +1,7 @@
 package matula.util.misc;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * <p>This class provides an abstract pipe.</p>
  * Warranty & Liability
@@ -65,10 +67,11 @@ public interface InterfacePipe<T> {
      * <p>Fails if pipe is still empty after time-out.</p>
      *
      * @param sleep The time-out.
+     * @param unit The time unit.
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    T poll(long sleep)
+    T poll(long sleep, TimeUnit unit)
             throws InterruptedException;
 
 }

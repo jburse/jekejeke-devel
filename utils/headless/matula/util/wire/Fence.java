@@ -160,11 +160,13 @@ public final class Fence {
             for (; ; ) {
                 if (!hasActive(e)) {
                     return true;
-                } else if (sleep > 0) {
-                    this.wait(sleep);
-                    sleep = when - System.currentTimeMillis();
                 } else {
-                    return false;
+                    sleep = when - System.currentTimeMillis();
+                    if (sleep > 0) {
+                        this.wait(sleep);
+                    } else {
+                        return false;
+                    }
                 }
             }
         }

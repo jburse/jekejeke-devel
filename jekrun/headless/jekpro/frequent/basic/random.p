@@ -224,3 +224,14 @@ add_random_keys(X, _, _) :-
 remove_keys([_-X|L], [X|R]) :-
    remove_keys(L, R).
 remove_keys([], []).
+
+/****************************************************************/
+/* New Object                                                   */
+/****************************************************************/
+
+/**
+ * genref(O):
+ * The predicate succeeds in O with a new object.
+ */
+:- public genref/1.
+:- foreign_constructor(genref/1, 'Object', new).

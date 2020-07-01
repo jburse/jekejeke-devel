@@ -52,7 +52,7 @@ public final class NonescalableWrite implements Lock {
      * <p>Blocks if write lock is already held.</p>
      */
     public void lock() {
-        throw new IllegalArgumentException("not supported");
+        parent.acquireUninterruptibly(Nonescalable.WRITE_PERMIT);
     }
 
     /**

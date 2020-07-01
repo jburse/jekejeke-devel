@@ -53,6 +53,7 @@
 :- use_package(foreign(java/util/concurrent/locks)).
 
 :- module(lock, []).
+:- use_module(library(advanced/signal)).
 
 /**
  * with_lock(L, G):

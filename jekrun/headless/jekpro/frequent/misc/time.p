@@ -63,6 +63,7 @@
 
 :- module(time, []).
 :- use_module(library(system/thread)).
+:- use_module(library(advanced/signal)).
 
 /****************************************************************/
 /* Alarm Queue                                                  */

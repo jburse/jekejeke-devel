@@ -61,6 +61,7 @@
 :- use_module(library(system/domain)).
 :- use_module(library(experiment/ref)).
 :- use_module(library(structure/bytes)).
+:- use_module(library(advanced/signal)).
 
 :- public infix(when).
 :- op(1105, xfy, when).
@@ -342,7 +343,7 @@ receive(PatternGuards, Selected, Timeout) :-
    current_thread_flag(Thread, sys_thread_name, Name),
    actor_queue(Name, Queue, _),
    repeat,
-   (pipe_poll(Queue, Timeout, Selected)
+   (pipe_poll_timeout(Queue, Timeout, Selected)
 -> (  receive_member(SelectedGuard, PatternGuards),
       receive_check(SelectedGuard, Selected), !
    ;  assertz(actor_deferred(Name, Selected)),

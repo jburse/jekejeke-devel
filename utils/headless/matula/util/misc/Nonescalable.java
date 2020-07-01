@@ -39,8 +39,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 public final class Nonescalable extends Semaphore implements ReadWriteLock {
     public static final int WRITE_PERMIT = 0x01000000;
 
-    final NonescalableRead read = new NonescalableRead(this);
-    final NonescalableWrite write = new NonescalableWrite(this);
+    private final NonescalableRead read = new NonescalableRead(this);
+    private final NonescalableWrite write = new NonescalableWrite(this);
 
     /**
      * <p>Create a non-esalable read write lock.</p>

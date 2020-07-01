@@ -2,6 +2,11 @@ package matula.util.misc;
 
 import matula.util.data.ListArray;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * <p>This class provides a bounded queue. The advantage over the
  * usual Java class ArrayBlockingQueue is that an empty bounded queue
@@ -53,6 +58,9 @@ import matula.util.data.ListArray;
 public final class Queue<T> implements InterfacePipe<T> {
     private final ListArray<T> list = new ListArray<T>();
     private final int max;
+    private final Lock lock = new ReentrantLock();
+    private final Condition nonempty = lock.newCondition();
+    private final Condition nonfull = lock.newCondition();
 
     /**
      * <p>Create a queue.</p>
@@ -70,9 +78,9 @@ public final class Queue<T> implements InterfacePipe<T> {
      *
      * @param t The element.
      */
-    private void equene(T t) {
+    private void enqueue(T t) {
         list.add(t);
-        this.notifyAll();
+        nonempty.signal();
     }
 
     /**
@@ -83,7 +91,7 @@ public final class Queue<T> implements InterfacePipe<T> {
     private T dequeue() {
         T t = list.get(0);
         list.remove(0);
-        this.notifyAll();
+        nonfull.signal();
         return t;
     }
 
@@ -98,10 +106,13 @@ public final class Queue<T> implements InterfacePipe<T> {
             throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null_element");
-        synchronized (this) {
+        lock.lock();
+        try {
             while (list.size() >= max)
-                this.wait();
-            equene(t);
+                nonfull.await();
+            enqueue(t);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -114,13 +125,16 @@ public final class Queue<T> implements InterfacePipe<T> {
     public boolean offer(T t) {
         if (t == null)
             throw new NullPointerException("null_element");
-        synchronized (this) {
+        lock.lock();
+        try {
             if (list.size() < max) {
-                equene(t);
+                enqueue(t);
                 return true;
             } else {
                 return false;
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -129,25 +143,31 @@ public final class Queue<T> implements InterfacePipe<T> {
      *
      * @param t     The object, not null.
      * @param sleep The time-out.
+     * @param unit The time unit.
      * @return True if object was posted, or false otherwise.
      */
-    public boolean offer(T t, long sleep)
+    public boolean offer(T t, long sleep, TimeUnit unit)
             throws InterruptedException {
         if (t == null)
             throw new NullPointerException("null_element");
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (this) {
+        long when = System.nanoTime() + unit.toNanos(sleep);
+        lock.lock();
+        try {
             for (; ; ) {
                 if (list.size() < max) {
-                    equene(t);
+                    enqueue(t);
                     return true;
-                } else if (sleep > 0) {
-                    this.wait(sleep);
-                    sleep = when - System.currentTimeMillis();
                 } else {
-                    return false;
+                    sleep = when - System.nanoTime();
+                    if (sleep > 0) {
+                        nonfull.awaitNanos(sleep);
+                    } else {
+                        return false;
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -160,10 +180,13 @@ public final class Queue<T> implements InterfacePipe<T> {
      */
     public T take()
             throws InterruptedException {
-        synchronized (this) {
+        lock.lock();
+        try {
             while (list.size() == 0)
-                this.wait();
+                nonempty.await();
             return dequeue();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -174,12 +197,15 @@ public final class Queue<T> implements InterfacePipe<T> {
      * @return The object or null if no object was taken.
      */
     public T poll() {
-        synchronized (this) {
+        lock.lock();
+        try {
             if (list.size() != 0) {
                 return dequeue();
             } else {
                 return null;
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -187,23 +213,29 @@ public final class Queue<T> implements InterfacePipe<T> {
      * <p>Take an object or time-out.</p>
      *
      * @param sleep The time-out.
+     * @param unit The time unit.
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */
-    public T poll(long sleep)
+    public T poll(long sleep, TimeUnit unit)
             throws InterruptedException {
-        long when = System.currentTimeMillis() + sleep;
-        synchronized (this) {
+        long when = System.nanoTime() + unit.toNanos(sleep);
+        lock.lock();
+        try {
             for (; ; ) {
                 if (list.size() != 0) {
                     return dequeue();
-                } else if (sleep > 0) {
-                    this.wait(sleep);
-                    sleep = when - System.currentTimeMillis();
                 } else {
-                    return null;
+                    sleep = when - System.nanoTime();
+                    if (sleep > 0) {
+                        nonempty.awaitNanos(sleep);
+                    } else {
+                        return null;
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
