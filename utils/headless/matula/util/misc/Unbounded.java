@@ -42,6 +42,10 @@ public final class Unbounded<T> implements InterfacePipe<T> {
     private final Lock lock = new ReentrantLock();
     private final Condition cond = lock.newCondition();
 
+    /*************************************************************/
+    /* Recurring Helper                                          */
+    /*************************************************************/
+
     /**
      * <p>Dequeue an element.</p>
      *
@@ -52,6 +56,10 @@ public final class Unbounded<T> implements InterfacePipe<T> {
         list.remove(0);
         return t;
     }
+
+    /*************************************************************/
+    /* Interface Pipe                                            */
+    /*************************************************************/
 
     /**
      * <p>Post an object.</p>
@@ -68,6 +76,32 @@ public final class Unbounded<T> implements InterfacePipe<T> {
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * <p>Post an object.</p>
+     * <p>Fails if queue is full.</p>
+     *
+     * @return True if object was posted, or false otherwise.
+     */
+    public boolean offer(T t) {
+        put(t);
+        return true;
+    }
+
+    /**
+     * <p>Post an object or time-out.</p>
+     * <p>Fails if pipe is still full after time-out.</p>
+     *
+     * @param t     The object, not null.
+     * @param sleep The time-out.
+     * @param unit The time unit.
+     * @return True if object was posted, or false otherwise.
+     */
+    public boolean offer(T t, long sleep, TimeUnit unit)
+            throws InterruptedException {
+        put(t);
+        return true;
     }
 
     /**

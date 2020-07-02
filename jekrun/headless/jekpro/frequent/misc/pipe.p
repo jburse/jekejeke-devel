@@ -70,7 +70,7 @@
  */
 % pipe_new(+Integer, -Queue)
 :- public pipe_new/2.
-:- foreign_constructor(pipe_new/2, 'Queue', new(int)).
+:- foreign_constructor(pipe_new/2, 'Bounded', new(int)).
 
 /**
  * pipe_put(P, O):
@@ -90,7 +90,7 @@
 % pipe_offer(+Pipe, +Term)
 :- public pipe_offer/2.
 :- foreign(pipe_offer/2, 'ForeignPipe',
-      sysQueueOffer('Interpreter', 'Queue', 'AbstractTerm')).
+      sysPipeOffer('Interpreter', 'InterfacePipe', 'AbstractTerm')).
 
 /**
  * pipe_offer_timeout(P, O, T):
@@ -100,7 +100,7 @@
 % pipe_offer_timeout(+Pipe, +Term, +Integer)
 :- public pipe_offer_timeout/3.
 :- foreign(pipe_offer_timeout/3, 'ForeignPipe',
-      sysQueueOffer('Interpreter', 'Queue', 'AbstractTerm', long)).
+      sysPipeOffer('Interpreter', 'InterfacePipe', 'AbstractTerm', long)).
 
 /**
  * pipe_take(P, O):

@@ -55,7 +55,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Queue<T> implements InterfacePipe<T> {
+public final class Bounded<T> implements InterfacePipe<T> {
     private final ListArray<T> list = new ListArray<T>();
     private final int max;
     private final Lock lock = new ReentrantLock();
@@ -67,11 +67,15 @@ public final class Queue<T> implements InterfacePipe<T> {
      *
      * @param m The maximum size, must be greater than zero.
      */
-    public Queue(int m) {
+    public Bounded(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
         max = m;
     }
+
+    /*************************************************************/
+    /* Recurring Helper                                          */
+    /*************************************************************/
 
     /**
      * <p>Enquee an element.</p>
@@ -94,6 +98,10 @@ public final class Queue<T> implements InterfacePipe<T> {
         nonfull.signal();
         return t;
     }
+
+    /*************************************************************/
+    /* Interface Pipe                                            */
+    /*************************************************************/
 
     /**
      * <p>Post an object.</p>
@@ -140,6 +148,7 @@ public final class Queue<T> implements InterfacePipe<T> {
 
     /**
      * <p>Post an object or time-out.</p>
+     * <p>Fails if pipe is still full after time-out.</p>
      *
      * @param t     The object, not null.
      * @param sleep The time-out.

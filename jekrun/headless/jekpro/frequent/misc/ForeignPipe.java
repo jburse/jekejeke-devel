@@ -3,7 +3,6 @@ package jekpro.frequent.misc;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.misc.InterfacePipe;
-import matula.util.misc.Queue;
 
 import java.util.concurrent.TimeUnit;
 
@@ -67,8 +66,8 @@ public final class ForeignPipe {
      * @param q     The bounded queue.
      * @param t     The term.
      */
-    public static boolean sysQueueOffer(Interpreter inter,
-                                       Queue q, AbstractTerm t) {
+    public static boolean sysPipeOffer(Interpreter inter,
+                                       InterfacePipe q, AbstractTerm t) {
         Object obj = AbstractTerm.copyMolec(inter, t);
         return q.offer(obj);
     }
@@ -86,7 +85,7 @@ public final class ForeignPipe {
      * @return True if the term was enqueued, otherwise false.
      * @throws InterruptedException Thread was interrupted.
      */
-    public static boolean sysQueueOffer(Interpreter inter, Queue q,
+    public static boolean sysPipeOffer(Interpreter inter, InterfacePipe q,
                                        AbstractTerm t, long sleep)
             throws InterruptedException {
         Object obj = AbstractTerm.copyMolec(inter, t);

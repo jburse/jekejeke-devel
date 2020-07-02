@@ -45,6 +45,26 @@ public interface InterfacePipe<T> {
             throws InterruptedException;
 
     /**
+     * <p>Post an object.</p>
+     * <p>Fails if queue is full.</p>
+     *
+     * @return True if object was posted, or false otherwise.
+     */
+    boolean offer(T t);
+
+    /**
+     * <p>Post an object or time-out.</p>
+     * <p>Fails if pipe is still full after time-out.</p>
+     *
+     * @param t     The object, not null.
+     * @param sleep The time-out.
+     * @param unit The time unit.
+     * @return True if object was posted, or false otherwise.
+     */
+    boolean offer(T t, long sleep, TimeUnit unit)
+            throws InterruptedException;
+
+    /**
      * <p>Remove an object from the front of the pipe.</p>
      * <p>Blocks if pipe is empty.</p>
      *
