@@ -45,7 +45,7 @@ public final class ForeignLock {
      * @return True if lock was acquired, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public static boolean sysTryLock(Lock lock, long timeout)
+    public static boolean sysTryLock(Lock lock, int timeout)
             throws InterruptedException {
         return lock.tryLock(timeout, TimeUnit.MILLISECONDS);
     }

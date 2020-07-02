@@ -100,7 +100,7 @@
 % pipe_offer_timeout(+Pipe, +Term, +Integer)
 :- public pipe_offer_timeout/3.
 :- foreign(pipe_offer_timeout/3, 'ForeignPipe',
-      sysPipeOffer('Interpreter', 'InterfacePipe', 'AbstractTerm', long)).
+      sysPipeOffer('Interpreter', 'InterfacePipe', 'AbstractTerm', int)).
 
 /**
  * pipe_take(P, O):
@@ -129,4 +129,4 @@
 % pipe_poll_timeout(+Pipe, +Integer, -Term)
 :- public pipe_poll_timeout/3.
 :- foreign(pipe_poll_timeout/3, 'ForeignPipe',
-      sysPipePoll('InterfacePipe', long)).
+      sysPipePoll('InterfacePipe', int)).

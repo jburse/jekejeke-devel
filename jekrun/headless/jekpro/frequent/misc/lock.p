@@ -118,7 +118,7 @@ with_lock(L, G) :-
  */
 % lock_attempt_timeout(+Lock, +Integer)
 :- public lock_attempt_timeout/2.
-:- foreign(lock_attempt_timeout/2, 'ForeignLock', sysTryLock('Lock', long)).
+:- foreign(lock_attempt_timeout/2, 'ForeignLock', sysTryLock('Lock', int)).
 
 /**
  * lock_release(L):

@@ -86,7 +86,7 @@ public final class ForeignPipe {
      * @throws InterruptedException Thread was interrupted.
      */
     public static boolean sysPipeOffer(Interpreter inter, InterfacePipe q,
-                                       AbstractTerm t, long sleep)
+                                       AbstractTerm t, int sleep)
             throws InterruptedException {
         Object obj = AbstractTerm.copyMolec(inter, t);
         return q.offer(obj, sleep, TimeUnit.MILLISECONDS);
@@ -102,7 +102,7 @@ public final class ForeignPipe {
      * @param sleep The timeout in milliseconds.
      * @return The dequed term or null.
      */
-    public static Object sysPipePoll(InterfacePipe q, long sleep)
+    public static Object sysPipePoll(InterfacePipe q, int sleep)
             throws InterruptedException {
         return q.poll(sleep, TimeUnit.MILLISECONDS);
     }

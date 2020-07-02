@@ -111,7 +111,7 @@ public class Foyer extends Enforced {
     public Locale locale = Locale.getDefault();
     public Object proxy;
 
-    public long timeout = 30000; /* half minute */
+    public int timeout = 30000; /* half minute */
     public Random random = new Random();
     private int flags;
 

@@ -94,7 +94,7 @@ monitor_new(M) :-
  */
 % cond_wait_timeout(+Condition, +Integer)
 :- public cond_wait_timeout/2.
-:- foreign(cond_wait_timeout/2, 'ForeignCond', sysAwait('Condition', long)).
+:- foreign(cond_wait_timeout/2, 'ForeignCond', sysAwait('Condition', int)).
 
 /**
  * cond_notify(C):

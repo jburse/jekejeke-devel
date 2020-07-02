@@ -173,7 +173,7 @@ public final class Flag extends AbstractFlag<Engine> {
             case FLAG_SYS_RANDOM:
                 return en.store.foyer.random;
             case FLAG_SYS_TIMEOUT:
-                return TermAtomic.normBigInteger(en.store.foyer.timeout);
+                return Integer.valueOf(en.store.foyer.timeout);
             case FLAG_STYLE_CHECK:
                 return AbstractFlag.switchToAtom((en.visor.peekStack().getBits() &
                         AbstractSource.MASK_SRC_NSTY) == 0);
@@ -285,7 +285,7 @@ public final class Flag extends AbstractFlag<Engine> {
                     return true;
                 case FLAG_SYS_TIMEOUT:
                     num = SpecialEval.derefAndCastInteger(m, d);
-                    en.store.foyer.timeout = SpecialEval.castLongValue(num);
+                    en.store.foyer.timeout = SpecialEval.castIntValue(num);
                     return true;
                 case FLAG_STYLE_CHECK:
                     if (AbstractFlag.atomToSwitch(m, d)) {

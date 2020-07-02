@@ -44,7 +44,7 @@ public final class ForeignCond {
      * @return True if condition was notified, or false otherwise.
      * @throws InterruptedException If the request was cancelled.
      */
-    public static boolean sysAwait(Condition cond, long timeout)
+    public static boolean sysAwait(Condition cond, int timeout)
             throws InterruptedException {
         return cond.await(timeout, TimeUnit.MILLISECONDS);
     }
