@@ -17,9 +17,7 @@
  * directive --> "foreign(" indicator "," module "," signature ")"
  *            | "foreign_constructor(" indicator "," module "," signature ")"
  *            | "foreign_setter(" indicator "," module "," atom ")"
- *            | "foreign_getter(" indicator "," module "," atom ")"
- *            | "foreign_fun(" indicator "," module "," signature ")"
- *            | "foreign_const(" indicator "," module "," atom ")".
+ *            | "foreign_getter(" indicator "," module "," atom ")".
  *
  * signature --> atom [ "(" module { "," module } ")" ].
  *
@@ -163,38 +161,6 @@ foreign_setter(I, C, M) :-
 :- special(sys_foreign_setter/3, 'SpecialForeign', 3).
 :- set_predicate_property(sys_foreign_setter/3, visible(private)).
 
-/***************************************************************/
-/* Foreign Evaluable Functions                                 */
-/***************************************************************/
-
-/**
- * foreign_fun(I, C, M):
- * Succeeds with registering the evaluable indicator I as a foreign
- * evaluable function that calls the method M of the class C.
- */
-% foreign_fun(+IndicatorColon, +Class, +Signature)
-foreign_fun(I, C, M) :-
-   sys_foreign_fun(I, C, M),
-   sys_check_style_predicate(I).
-:- set_predicate_property(foreign_fun/3, visible(public)).
-
-:- special(sys_foreign_fun/3, 'SpecialForeign', 4).
-:- set_predicate_property(sys_foreign_fun/3, visible(private)).
-
-/**
- * foreign_const(I, C, M):
- * Succeeds with registering the evaluable indicator I as a foreign
- * evaluable function that gets the field M of the class C.
- */
-% foreign_const(+IndicatorColon, +Class, +Name)
-foreign_const(I, C, M) :-
-   sys_foreign_const(I, C, M),
-   sys_check_style_predicate(I).
-:- set_predicate_property(foreign_const/3, visible(public)).
-
-:- special(sys_foreign_const/3, 'SpecialForeign', 5).
-:- set_predicate_property(sys_foreign_const/3, visible(private)).
-
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
@@ -209,5 +175,3 @@ sys_declaration_indicator(foreign(I, _, _), I).
 sys_declaration_indicator(foreign_constructor(I, _, _), I).
 sys_declaration_indicator(foreign_getter(I, _, _), I).
 sys_declaration_indicator(foreign_setter(I, _, _), I).
-sys_declaration_indicator(foreign_fun(I, _, _), I).
-sys_declaration_indicator(foreign_const(I, _, _), I).

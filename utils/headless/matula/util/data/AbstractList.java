@@ -120,7 +120,7 @@ public abstract class AbstractList<E>
      *
      * @param capa The ahead capacity.
      */
-    void reinitialize(int capa) {
+    public void reinitialize(int capa) {
         size = 0;
     }
 

@@ -140,7 +140,7 @@ final class MemberMethodDet extends AbstractMember {
             default:
                 break;
         }
-        Object res = invokeMethod(method, obj, args, en);
+        Object res = invokeMethod(method, obj, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {

@@ -39,7 +39,7 @@ public abstract class AbstractMap<K, V>
     /************************************************************/
 
     /**
-     * <p>Add the key to the map.</p>
+     * <p>Add the key to the map at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
      * @param key   The key, can be null.
@@ -48,6 +48,18 @@ public abstract class AbstractMap<K, V>
     public final void add(K key, V value) {
         MapEntry<K, V> e = newEntry(key, value);
         putEntry(e);
+    }
+
+    /**
+     * <p>Add the key to the map at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param key   The key, can be null.
+     * @param value The value.
+     */
+    public final void addFirst(K key, V value) {
+        MapEntry<K, V> e = newEntry(key, value);
+        putEntryFirst(e);
     }
 
     /**
@@ -149,12 +161,20 @@ public abstract class AbstractMap<K, V>
     public abstract MapEntry<K, V> getEntry(K key);
 
     /**
-     * <p>Add the key to the map.</p>
+     * <p>Add the key to the map at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      *
      * @param f The enry, not null.
      */
     public abstract void putEntry(MapEntry<K, V> f);
+
+    /**
+     * <p>Add the key to the map at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param f The enry, not null.
+     */
+    public abstract void putEntryFirst(MapEntry<K, V> f);
 
     /**
      * <p>Create a new entry.</p>

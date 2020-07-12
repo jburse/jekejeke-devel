@@ -151,6 +151,17 @@ public class MapTree<K, V> extends AbstractMap<K, V> {
     }
 
     /**
+     * <p>Add the key to the map at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     * <p>Entry is create at the top.</p>
+     *
+     * @param f The entry.
+     */
+    public void putEntryFirst(MapEntry<K, V> f) {
+        throw new IllegalArgumentException("not supported");
+    }
+
+    /**
      * <p>Create a new entry.</p>
      *
      * @param key   The key.

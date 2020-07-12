@@ -76,7 +76,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
     }
 
     /**
-     * <p>Add the key to the map.</p>
+     * <p>Add the key to the map at end.</p>
      * <p>Assumption is that key is not yet present.</p>
      * <p>Entry is add at the bottom.</p>
      *
@@ -102,6 +102,39 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
             first = e;
         }
         last = e;
+
+        size++;
+        if (size > table.length * 3 / 4)
+            resize(table.length * 2);
+    }
+
+    /**
+     * <p>Add the key to the map at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     * <p>Entry is create at the top.</p>
+     *
+     * @param f The entry.
+     */
+    public void putEntryFirst(MapEntry<K, V> f) {
+        if (f == null)
+            throw new NullPointerException("entry missing");
+        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>) f;
+
+        int i = index(e.key);
+
+        MapHashLinkEntry<K, V> g = table[i];
+        if (g != null)
+            g.prev = e;
+        e.next = g;
+        table[i] = e;
+
+        e.after = first;
+        if (first != null) {
+            first.before = e;
+        } else {
+            last = e;
+        }
+        first = e;
 
         size++;
         if (size > table.length * 3 / 4)
@@ -173,38 +206,6 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
             len = len / 2;
         if (len != table.length)
             resize(len);
-    }
-
-    /**
-     * <p>Add the key to the map.</p>
-     * <p>Assumption is that key is not yet present.</p>
-     * <p>Entry is create at the top.</p>
-     *
-     * @param key   The key.
-     * @param value The value.
-     */
-    public void putFirst(K key, V value) {
-        MapHashLinkEntry<K, V> e = (MapHashLinkEntry<K, V>) newEntry(key, value);
-
-        int i = index(e.key);
-
-        MapHashLinkEntry<K, V> g = table[i];
-        if (g != null)
-            g.prev = e;
-        e.next = g;
-        table[i] = e;
-
-        e.after = first;
-        if (first != null) {
-            first.before = e;
-        } else {
-            last = e;
-        }
-        first = e;
-
-        size++;
-        if (size > table.length * 3 / 4)
-            resize(table.length * 2);
     }
 
     /**

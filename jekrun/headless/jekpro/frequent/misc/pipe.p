@@ -1,6 +1,6 @@
 /**
- * Pipes allow exchanging messages. Messages are Prolog terms and are
- * copied. An unbounded queue can be created by the predicate
+ * Pipes allow exchanging messages. Messages are Prolog terms and
+ * are copied. An unbounded queue can be created by the predicate
  * pipe_new/1. A bounded queue can be created by the predicate
  * pipe_new/2. Pipes need not be explicitly destroyed, they will
  * automatically be reclaimed by the Java GC when not anymore used.
@@ -11,13 +11,13 @@
  * Q = 0ra2a372,
  * R = p(_A)
  *
- * The predicates pipe_put/2 and pipe_offer/[2,3] allow sending
- * a message to a bounded queue. The predicates will block, fail
- * or timeout when the bounded queue is full. The predicate
- * pipe_put/2 can also be used for unbounded queues and will
- * never block. The predicates pipe_take/3 and pipe_poll/[2,3]
- * allow getting a message from a pipe. The predicates will block,
- * fail or timeout when the pipe is empty.
+ * The predicates pipe_put/2, pipe_offer/2 and pipe_offer_timeout/3
+ * allow sending a message to a bounded queue. The predicates will
+ * block, fail or timeout when the bounded queue is full. The
+ * predicate pipe_put/2 can also be used for unbounded queues and
+ * will never block. The predicates pipe_take/3, pipe_poll/2 and
+ * pipe_poll_timeout/3 allow getting a message from a pipe. The
+ * predicates will block, fail or timeout when the pipe is empty.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -599,24 +599,6 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Invoke the method.</p>
      *
-     * @param obj The receiver.
-     * @return The invokcation result.
-     * @throws EngineMessage FFI error.
-     */
-    public static Object invokeGetter(Field field, Object obj)
-            throws EngineMessage {
-        try {
-            return field.get(obj);
-        } catch (Exception x) {
-            throw Types.mapException(x, field);
-        } catch (Error x) {
-            throw Types.mapError(x);
-        }
-    }
-
-    /**
-     * <p>Invoke the method.</p>
-     *
      * @param constructor The constructor.
      * @param args        The arguments array.
      * @return The invokcation result.

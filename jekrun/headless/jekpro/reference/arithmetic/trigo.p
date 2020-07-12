@@ -57,7 +57,7 @@
  * argument must be given in radians.
  */
 :- public sin/2.
-:- foreign_fun(sin/2, 'Math', sin(double)).
+:- foreign(sin/2, 'Math', sin(double)).
 
 /**
  * cos(X): [ISO 9.3.3]
@@ -65,7 +65,7 @@
  * argument must be given in radians.
  */
 :- public cos/2.
-:- foreign_fun(cos/2, 'Math', cos(double)).
+:- foreign(cos/2, 'Math', cos(double)).
 
 /**
  * tan(X): [TC2 9.3.14]
@@ -73,7 +73,7 @@
  * argument must be given in radians.
  */
 :- public tan/2.
-:- foreign_fun(tan/2, 'Math', tan(double)).
+:- foreign(tan/2, 'Math', tan(double)).
 
 /**
  * asin(X): [TC2 9.3.11]
@@ -81,7 +81,7 @@
  * result is in radians.
  */
 :- public asin/2.
-:- foreign_fun(asin/2, 'Math', asin(double)).
+:- foreign(asin/2, 'Math', asin(double)).
 
 /**
  * acos(X): [TC2 9.3.12]
@@ -89,7 +89,7 @@
  * result is in radians.
  */
 :- public acos/2.
-:- foreign_fun(acos/2, 'Math', acos(double)).
+:- foreign(acos/2, 'Math', acos(double)).
 
 /**
  * atan(X): [ISO 9.3.4]
@@ -97,7 +97,7 @@
  * result is in radians.
  */
 :- public atan/2.
-:- foreign_fun(atan/2, 'Math', atan(double)).
+:- foreign(atan/2, 'Math', atan(double)).
 
 /**
  * X ** Y: [ISO 9.3.1]
@@ -105,7 +105,7 @@
  * power of Y.
  */
 :- public ** /3.
-:- foreign_fun(** /3, 'Math', pow(double, double)).
+:- foreign(** /3, 'Math', pow(double, double)).
 
 /**
  * exp(X): [ISO 9.3.5]
@@ -113,7 +113,7 @@
  * raised to the power of X.
  */
 :- public exp/2.
-:- foreign_fun(exp/2, 'Math', exp(double)).
+:- foreign(exp/2, 'Math', exp(double)).
 
 /**
  * log(X): [ISO 9.3.6]
@@ -121,30 +121,30 @@
  * logarithm of X.
  */
 :- public log/2.
-:- foreign_fun(log/2, 'Math', log(double)).
+:- foreign(log/2, 'Math', log(double)).
 
 /**
  * sqrt(X): [ISO 9.3.7]
  * Returns the float representation of the square root of X.
  */
 :- public sqrt/2.
-:- foreign_fun(sqrt/2, 'Math', sqrt(double)).
+:- foreign(sqrt/2, 'Math', sqrt(double)).
 
 /**
  * pi: [TC2 9.3.15]
  * Returns the float representation of π.
  */
 :- public pi/1.
-% :- foreign_const(pi/1, 'Math', 'PI').
-:- foreign_fun(pi/1, 'ForeignHyper', pi).
+% :- foreign_getter(pi/1, 'Math', 'PI').
+:- foreign(pi/1, 'ForeignHyper', pi).
 
 /**
  * e: [N208 9.7.2]
  * Returns the float representation of Euler’s number e.
  */
 :- public e/1.
-% :- foreign_const(e/1, 'Math', 'E').
-:- foreign_fun(e/1, 'ForeignHyper', e).
+% :- foreign_getter(e/1, 'Math', 'E').
+:- foreign(e/1, 'ForeignHyper', e).
 
 /**
  * atan2(X,Y): [TC2 9.3.13]
@@ -158,7 +158,7 @@ atan2(X, Y, Z) :-
    Z is sys_atan2(X, Y).
 
 :- private sys_atan2/3.
-:- foreign_fun(sys_atan2/3, 'Math', atan2(double, double)).
+:- foreign(sys_atan2/3, 'Math', atan2(double, double)).
 
 /**
  * epsilon: [N208 9.7.3]
@@ -166,8 +166,8 @@ atan2(X, Y, Z) :-
  */
 % epsilon32(-Number)
 :- public epsilon/1.
-% :- foreign_const(epsilon/1, 'SpecialCompare', 'EPSILON').
-:- foreign_fun(epsilon/1, 'ForeignHyper', epsilon).
+% :- foreign_getter(epsilon/1, 'SpecialCompare', 'EPSILON').
+:- foreign(epsilon/1, 'ForeignHyper', epsilon).
 
 /**
  * epsilon32:
@@ -175,5 +175,5 @@ atan2(X, Y, Z) :-
  */
 % epsilon32(-Number)
 :- public epsilon32/1.
-% :- foreign_const(epsilon32/1, 'SpecialCompare', 'EPSILON32').
-:- foreign_fun(epsilon32/1, 'ForeignHyper', epsilon32).
+% :- foreign_getter(epsilon32/1, 'SpecialCompare', 'EPSILON32').
+:- foreign(epsilon32/1, 'ForeignHyper', epsilon32).

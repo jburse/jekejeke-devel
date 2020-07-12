@@ -144,7 +144,7 @@ final class MemberMethodNondet extends AbstractMember {
         }
         co.flags |= CallOut.MASK_CALL_FIRST;
         for (; ; ) {
-            Object res = invokeMethod(method, obj, args, en);
+            Object res = invokeMethod(method, obj, args);
             if ((subflags & MASK_METH_FUNC) != 0) {
                 res = Types.normJava(encoderet, res);
             } else {

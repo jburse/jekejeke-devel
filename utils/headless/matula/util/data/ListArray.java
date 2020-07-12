@@ -327,7 +327,7 @@ public class ListArray<E> extends AbstractList<E> {
      *
      * @param capa The ahead capacity.
      */
-    void reinitialize(int capa) {
+    public void reinitialize(int capa) {
         super.reinitialize(capa);
         int len = MIN_SIZE;
         while (capa > len)

@@ -56,7 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Bounded<T> implements InterfacePipe<T> {
-    private final ListArray<T> list = new ListArray<T>();
+    private final ListArray<T> list;
     private final int max;
     private final Lock lock = new ReentrantLock();
     private final Condition nonempty = lock.newCondition();
@@ -70,6 +70,7 @@ public final class Bounded<T> implements InterfacePipe<T> {
     public Bounded(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
+        list = new ListArray<T>(m);
         max = m;
     }
 
@@ -94,7 +95,7 @@ public final class Bounded<T> implements InterfacePipe<T> {
      */
     private T dequeue() {
         T t = list.get(0);
-        list.remove(0);
+        list.removeEntry(0);
         nonfull.signal();
         return t;
     }
@@ -152,7 +153,7 @@ public final class Bounded<T> implements InterfacePipe<T> {
      *
      * @param t     The object, not null.
      * @param sleep The time-out.
-     * @param unit The time unit.
+     * @param unit  The time unit.
      * @return True if object was posted, or false otherwise.
      */
     public boolean offer(T t, long sleep, TimeUnit unit)
@@ -222,7 +223,7 @@ public final class Bounded<T> implements InterfacePipe<T> {
      * <p>Take an object or time-out.</p>
      *
      * @param sleep The time-out.
-     * @param unit The time unit.
+     * @param unit  The time unit.
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */

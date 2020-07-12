@@ -124,4 +124,4 @@ monitor_new(M) :-
  */
 % current_time(-Integer)
 :- public current_time/1.
-:- foreign_fun(current_time/1, 'System', currentTimeMillis).
+:- foreign(current_time/1, 'System', currentTimeMillis).

@@ -1,6 +1,6 @@
 package matula.util.misc;
 
-import matula.util.data.ListArray;
+import matula.util.data.SetEntry;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -38,7 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Unbounded<T> implements InterfacePipe<T> {
-    private final ListArray<T> list = new ListArray<T>();
+    private final SetLink<T> list = new SetLink<T>();
     private final Lock lock = new ReentrantLock();
     private final Condition cond = lock.newCondition();
 
@@ -52,9 +52,9 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      * @return The element.
      */
     private T dequeue() {
-        T t = list.get(0);
-        list.remove(0);
-        return t;
+        SetEntry<T> entry = list.getFirstEntry();
+        list.removeEntry(entry);
+        return entry.value;
     }
 
     /*************************************************************/
@@ -95,7 +95,7 @@ public final class Unbounded<T> implements InterfacePipe<T> {
      *
      * @param t     The object, not null.
      * @param sleep The time-out.
-     * @param unit The time unit.
+     * @param unit  The time unit.
      * @return True if object was posted, or false otherwise.
      */
     public boolean offer(T t, long sleep, TimeUnit unit)

@@ -89,26 +89,37 @@
  * remainder O. Can be used for parsing when I is input and for
  * un-parsing when I is output.
  */
-% phrase(+Goal, +List, -List)
+% phrase(+Grammar, +List, -List)
 :- public phrase/3.
 :- meta_predicate phrase(2, ?, ?).
-phrase(P, I, O) :- call(P, I, O).
+phrase(P, _, _) :- sys_var(P),
+   throw(error(instantiation_error, _)).
+phrase(P, I, O) :-
+   expand_goal(phrase(P, I, O), Q),
+   call(Q).
 
 % user:goal_expansion(+Goal, -Goal)
 :- discontiguous user:goal_expansion/2.
 :- public user:goal_expansion/2.
 :- multifile user:goal_expansion/2.
 :- meta_predicate user:goal_expansion(0, 0).
+user:goal_expansion(P, _) :- sys_var(P), !, fail.
+user:goal_expansion(phrase(P, _, _), _) :-
+   sys_var(P), !, fail.
 
 /**
  * phrase(A, I):
  * Succeeds when the list I starts with the phrase A giving
  * the empty remainder.
  */
-% phrase(+Goal, +List)
+% phrase(+Grammar, +List)
 :- public phrase/2.
 :- meta_predicate phrase(2, ?).
-phrase(P, I) :- call(P, I, []).
+phrase(P, _) :- sys_var(P),
+   throw(error(instantiation_error, _)).
+phrase(P, I) :-
+   expand_goal(phrase(P, I, []), Q),
+   call(Q).
 
 user:goal_expansion(phrase(P, I), phrase(P, I, [])).
 
@@ -117,54 +128,30 @@ user:goal_expansion(phrase(P, I), phrase(P, I, [])).
 /**********************************************************/
 
 /**
- * P (grammar):
- * The grammar non-terminal P succeeds whenever the callable P extended
- * by the current input and output succeeds.
- */
-% phrase(+Phrase, +List. -List)
-user:goal_expansion(phrase(P, I, O), call(P, I, O)) :-
-   sys_var(P).
-user:goal_expansion(phrase(P, I, O), R) :-
-   phrase_expansion(P, I, O, R).
-user:goal_expansion(phrase(P, I, O), Q) :-
-   sys_modext_args(P, I, O, Q).
-
-/**
- * phrase_expansion(A, I, O, G)
- * Succeeds when the phrase A extended by the input I and the
- * output O results in the steadfast goal G.
- */
-% phrase_expansion(+Phrase, +List, -List, -Goal)
-:- private phrase_expansion/4.
-:- meta_predicate phrase_expansion(2, ?, ?, 0).
-:- discontiguous phrase_expansion/4.
-:- set_predicate_property(phrase_expansion/4, sys_noexpand).
-
-/**
  * fail (grammar):
  * The grammar connective fails.
  */
+% fail(+List, +List)
 :- public fail/2.
 fail(I, O) :-
    expand_goal(phrase(fail, I, O), Q),
    call(Q).
 
-phrase_expansion(P, _, _, P) :- P = fail.
+user:goal_expansion(phrase(P, _, _), P) :- P = fail.
 
 /**
  * A, B (grammar):
  * The grammar connective succeeds whenever A and B succeed. The
  * output of A is conjoined with the input of B.
  */
+% ','(+Grammar, +Grammar, +List, +List)
 :- public ','/4.
 :- meta_predicate ','(2, 2, ?, ?).
 ','(A, B, I, O) :-
    expand_goal(phrase((A, B), I, O), Q),
    call(Q).
 
-phrase_expansion((A, B), I, O, (phrase(A, I, H), sys_phrase(B, H, O))) :- sys_var(A).
-phrase_expansion((U, B), I, O, (P, phrase(B, I, O))) :- phrase_barrier(U, I, P).
-phrase_expansion((A, B), I, O, (phrase(A, I, H), sys_phrase(B, H, O))).
+user:goal_expansion(phrase((A, B), I, O), (phrase(A, I, H), phrase(B, H, O))).
 
 /**
  * A ; B (grammar):
@@ -181,13 +168,14 @@ phrase_expansion((A, B), I, O, (phrase(A, I, H), sys_phrase(B, H, O))).
  * arguments B and C are cut transparent. The output of A is
  * conjoined with the input of B.
  */
+% ;(+Grammar, +Grammar, +List, +List)
 :- public ;/4.
 :- meta_predicate ;(2, 2, ?, ?).
 ;(A, B, I, O) :-
    expand_goal(phrase((A; B), I, O), Q),
    call(Q).
 
-phrase_expansion((A; B), I, O, (phrase(A, I, O); phrase(B, I, O))).
+user:goal_expansion(phrase((A; B), I, O), (phrase(A, I, O); phrase(B, I, O))).
 
 /**
  * A -> B (grammar):
@@ -196,13 +184,14 @@ phrase_expansion((A; B), I, O, (phrase(A, I, O); phrase(B, I, O))).
  * The output of A is conjoined with the input of B. When used
  * inside (;)/2 it is interpreted as if-then-else.
  */
+% ->(+Grammar, +Grammar, +List, +List)
 :- public -> /4.
 :- meta_predicate ->(2, 2, ?, ?).
 ->(A, B, I, O) :-
    expand_goal(phrase((A -> B), I, O), Q),
    call(Q).
 
-phrase_expansion((A -> B), I, O, (phrase(A, I, H) -> phrase(B, H, O))).
+user:goal_expansion(phrase((A -> B), I, O), (phrase(A, I, H) -> phrase(B, H, O))).
 
 /**
  * A *-> B (grammar):
@@ -211,72 +200,74 @@ phrase_expansion((A -> B), I, O, (phrase(A, I, H) -> phrase(B, H, O))).
  * The output of A is conjoined with the input of B. When used
  * inside (;)/2 it is interpreted as if-then-else.
  */
+% *->(+Grammar, +Grammar, +List, +List)
 :- public *-> /4.
 :- meta_predicate *->(2, 2, ?, ?).
 *->(A, B, I, O) :-
    expand_goal(phrase((A *-> B), I, O), Q),
    call(Q).
 
-phrase_expansion((A *-> B), I, O, (phrase(A, I, H) *-> phrase(B, H, O))).
-
-/**
- * call(A) (grammar):
- * Whenever the goal argument A succeeds then the grammar connective succeeds.
-  */
-phrase_expansion(call(P), I, O, phrase(P, I, O)).
+user:goal_expansion(phrase((A *-> B), I, O), (phrase(A, I, H) *-> phrase(B, H, O))).
 
 /**
  * [A1, …, An] (grammar):
  * The grammar connective succeeds when the terminals A1, …, An can be consumed.
  */
+% [](+List, +List)
 :- public []/2.
 [](I, O) :-
    expand_goal(phrase([], I, O), Q),
    call(Q).
 
-phrase_expansion(U, I, O, Q) :- U = [],
+user:goal_expansion(phrase(U, I, O), Q) :- U = [],
    sys_replace_site(Q, U, I = O).
 
+% '.'(+Term, +Term, +List, +List)
 :- public '.'/4.
 :- meta_predicate '.'(2, 2, ?, ?).
 '.'(A, B, I, O) :-
    expand_goal(phrase([A|B], I, O), Q),
    call(Q).
 
-phrase_expansion(U, H, O, (Q, sys_phrase(B, I, O))) :- U = [A|B],
-   sys_replace_site(Q, U, [A|I] = H).
+user:goal_expansion(phrase(U, I, O), Q) :- U = [X|L],
+   sys_phrase_list(L, O, R),
+   sys_replace_site(Q, U, I = [X|R]).
 
-phrase_expansion(U, I, O, (P, Q)) :- phrase_barrier(U, I, P),
-   sys_replace_site(Q, U, I = O).
-
-:- private phrase_barrier/3.
-:- meta_predicate phrase_barrier(2, ?, 0).
-:- discontiguous phrase_barrier/3.
-:- set_predicate_property(phrase_barrier/3, sys_noexpand).
+% sys_phrase_list(+List, +Term, -List)
+:- private sys_phrase_list/3.
+sys_phrase_list(X, _, _) :- var(X),
+   throw(erro(instantiation_error, _)).
+sys_phrase_list([], Y, Y).
+sys_phrase_list([X|L], Y, [X|R]) :-
+   sys_phrase_list(L, Y, R).
 
 /**
  * ! (grammar):
  * The grammar connective removes pending choice and then succeeds once.
  */
+% !(+List, +List)
 :- public !/2.
 !(I, O) :-
    expand_goal(phrase(!, I, O), Q),
    call(Q).
 
-phrase_barrier(U, _, U) :- U = !.
+user:goal_expansion(phrase(U, I, O), (U, Q)) :- U = !,
+   sys_replace_site(Q, U, I = O).
 
 /**
  * {A} (grammar):
  * The grammar connective succeeds whenever the goal argument A succeeds.
  * The goal argument A is cut transparent and not grammar translated.
  */
+% {}(+Goal, +List, +List)
 :- public {}/3.
 :- meta_predicate {}(0, ?, ?).
 {}(A, I, O) :-
    expand_goal(phrase({A}, I, O), Q),
    call(Q).
 
-phrase_barrier({A}, _, A).
+user:goal_expansion(phrase(U, I, O), (A, Q)) :- U = {A},
+   sys_replace_site(Q, U, I = O).
 
 /**
  * \+ A (grammar):
@@ -284,92 +275,52 @@ phrase_barrier({A}, _, A).
  * Otherwise the grammar connective succeeds. The second argument
  * is left loose.
  */
+% \+(+Grammar, +List, +List)
 :- public (\+)/3.
 :- meta_predicate \+(2, ?, ?).
 \+(A, I, O) :-
    expand_goal(phrase(\+ A, I, O), Q),
    call(Q).
 
-phrase_barrier(U, I, Q) :- U = (\+ A),
+user:goal_expansion(phrase(U, I, _), Q) :- U = (\+ A),
    sys_replace_site(Q, U, \+ phrase(A, I, _)).
 
-/**********************************************************/
-/* Goal Rewriting Non-Steadfast                           */
-/**********************************************************/
-
-:- private sys_phrase/3.
-:- meta_predicate sys_phrase(2, ?, ?).
-sys_phrase(_, _, _) :- throw(error(existence_error(body, sys_phrase/3), _)).
-
-user:goal_expansion(sys_phrase(P, I, O), call(P, I, O)) :-
-   sys_var(P).
-user:goal_expansion(sys_phrase(P, I, O), R) :-
-   sys_phrase_expansion(P, I, O, R).
-user:goal_expansion(sys_phrase(P, I, O), Q) :-
-   sys_modext_args(P, I, O, Q).
-
 /**
- * sys_phrase_expansion(A, I, O, G)
- * Succeeds when the phrase A extended by the input I and the
- * output O results in the not-necessarily steadfast goal G.
+ * P (grammar):
+ * The grammar non-terminal P succeeds whenever the callable P extended
+ * by the current input and output succeeds.
  */
-% sys_phrase_expansion(+Grammar, +List, -List, -Goal)
-:- private sys_phrase_expansion/4.
-:- meta_predicate sys_phrase_expansion(2, ?, ?, 0).
-:- set_predicate_property(sys_phrase_expansion/4, sys_noexpand).
-sys_phrase_expansion(P, _, _, P) :- P = fail.
-sys_phrase_expansion((A, B), I, O, (sys_phrase(A, I, H), sys_phrase(B, H, O))) :- sys_var(A).
-sys_phrase_expansion((U, B), I, O, (P, phrase(B, I, O))) :- phrase_barrier(U, I, P).
-sys_phrase_expansion((A, B), I, O, (sys_phrase(A, I, H), sys_phrase(B, H, O))).
-sys_phrase_expansion((A; B), I, O, (phrase(A, I, O); phrase(B, I, O))).
-sys_phrase_expansion((A -> B), I, O, (sys_phrase(A, I, H) -> phrase(B, H, O))).
-sys_phrase_expansion((A *-> B), I, O, (sys_phrase(A, I, H) *-> phrase(B, H, O))).
-sys_phrase_expansion(call(P), I, O, sys_phrase(P, I, O)).
-sys_phrase_expansion(U, I, I, Q) :- U = [],
-   sys_replace_site(Q, U, true).
-sys_phrase_expansion([A|B], [A|I], O, sys_phrase(B, I, O)).
-sys_phrase_expansion(U, I, O, (P, Q)) :- phrase_barrier(U, I, P),
-   sys_replace_site(Q, U, I = O).
+user:goal_expansion(phrase(P, I, O), Q) :-
+   sys_modext_args(P, I, O, Q).
 
 /**********************************************************/
 /* Term Rewriting                                         */
 /**********************************************************/
 
-% user:term_expansion(+Term, -Term)
-:- public user:term_expansion/2.
-:- multifile user:term_expansion/2.
-:- meta_predicate user:term_expansion(-1, -1).
-:- discontiguous user:term_expansion/2.
-
-/**
- * P (grammar):
- * The grammar non-terminal P is defined with the callable P extended
- * by the current input and output.
- */
-user:term_expansion(phrase(P, _, _), _) :-
-   sys_var(P), throw(error(instantiation_error, _)).
-user:term_expansion(phrase(P, I, O), Q) :-
-   sys_modext_args(P, I, O, Q).
-
 /**
  * H --> B:
  * The construct defines a grammar rule with grammar head H and
  * grammar body B.
- */
-
-/**
  * H, P --> B:
  * The construct defines a push back with grammar head H and,
  * push back P and grammar body B.
  */
-
 :- public --> /2.
 :- meta_predicate -->(2, -3).
 -->(_, _) :- throw(error(existence_error(body, --> /2), _)).
 
+% user:term_expansion(+Term, -Term)
+:- public user:term_expansion/2.
+:- multifile user:term_expansion/2.
+:- meta_predicate user:term_expansion(-1, -1).
+
 user:term_expansion((P --> _), _) :-
-   sys_var(P), throw(error(instantiation_error, _)).
+   sys_var(P), throw(erro(instantiation_error, _)).
 user:term_expansion((P, B --> C),
-   (phrase(P, I, O) :- sys_phrase(C, I, H), phrase(B, O, H))).
+   (phrase(P, I, O) :- phrase(C, I, H), phrase(B, O, H))).
 user:term_expansion((P --> B),
-   (phrase(P, I, O) :- sys_phrase(B, I, O))).
+   (phrase(P, I, O) :- phrase(B, I, O))).
+user:term_expansion(phrase(P, _, _), _) :-
+   sys_var(P), throw(erro(instantiation_error, _)).
+user:term_expansion(phrase(P, I, O), Q) :-
+   sys_modext_args(P, I, O, Q).

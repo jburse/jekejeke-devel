@@ -129,7 +129,7 @@ final class MemberFieldGet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = AutoClass.invokeGetter(field, obj);
+        Object res = AbstractMember.invokeGetter(field, obj);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {

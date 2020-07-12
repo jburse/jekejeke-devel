@@ -63,6 +63,7 @@
 :- use_module(library(misc/residue)).
 :- use_module(library(system/thread)).
 :- use_module(library(structure/bytes)).
+:- use_module(library(advanced/signal)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/

@@ -8,8 +8,7 @@
  * directive --> "foreign_dimension(" indicator "," module ")"
  *             | "foreign_element(" indicator "," module ")"
  *             | "foreign_update(" indicator "," module ")"
- *             | "foreign_length(" indicator "," module ")"
- *             | "foreign_member(" indicator "," module ")".
+ *             | "foreign_length(" indicator "," module ")".
  *
  * Example:
  * :- foreign_dimension(new/2, int[]).
@@ -111,16 +110,9 @@ foreign_length(I, C) :-
 :- private sys_foreign_length/2.
 :- special(sys_foreign_length/2, 'SpecialArray', 3).
 
-/**
- * foreign_member(I, C):
- * Succeeds with registering the predicate indicator I as a foreign
- * array numeric element getter for the array class C.
- */
-% foreign_member(+IndicatorColon, +Class)
-:- public foreign_member/2.
-foreign_member(I, C) :-
-   sys_foreign_member(I, C),
-   sys_check_style_predicate(I).
-
-:- private sys_foreign_member/2.
-:- special(sys_foreign_member/2, 'SpecialArray', 4).
+:- public user:sys_declaration_indicator/2.
+:- multifile user:sys_declaration_indicator/2.
+user:sys_declaration_indicator(foreign_dimension(I, _), I).
+user:sys_declaration_indicator(foreign_element(I, _), I).
+user:sys_declaration_indicator(foreign_update(I, _), I).
+user:sys_declaration_indicator(foreign_length(I, _), I).

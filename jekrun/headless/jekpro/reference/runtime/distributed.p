@@ -65,6 +65,7 @@
 :- use_module(library(misc/pipe)).
 :- use_module(library(system/group)).
 :- use_module(library(system/thread)).
+:- use_module(library(advanced/signal)).
 
 /**
  * horde(V1^..Vn^T):

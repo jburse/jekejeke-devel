@@ -58,7 +58,7 @@ public interface InterfacePipe<T> {
      *
      * @param t     The object, not null.
      * @param sleep The time-out.
-     * @param unit The time unit.
+     * @param unit  The time unit.
      * @return True if object was posted, or false otherwise.
      */
     boolean offer(T t, long sleep, TimeUnit unit)
@@ -87,7 +87,7 @@ public interface InterfacePipe<T> {
      * <p>Fails if pipe is still empty after time-out.</p>
      *
      * @param sleep The time-out.
-     * @param unit The time unit.
+     * @param unit  The time unit.
      * @return The object or null if no object was taken.
      * @throws InterruptedException If the request was cancelled.
      */

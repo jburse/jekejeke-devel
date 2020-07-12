@@ -14,6 +14,7 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelCompound;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -290,13 +291,12 @@ abstract class AbstractMember extends AbstractLense
      *
      * @param obj  The receiver.
      * @param args The arguments array.
-     * @param en   The engine.
      * @return The invokcation result.
      * @throws EngineException FFI error.
      * @throws EngineMessage   FFI error.
      */
     static Object invokeMethod(Method method, Object obj,
-                               Object[] args, Engine en)
+                               Object[] args)
             throws EngineException, EngineMessage {
         try {
             return method.invoke(obj, args);
@@ -311,6 +311,25 @@ abstract class AbstractMember extends AbstractLense
             }
         } catch (Exception x) {
             throw Types.mapException(x, method);
+        } catch (Error x) {
+            throw Types.mapError(x);
+        }
+    }
+
+
+    /**
+     * <p>Invoke the method.</p>
+     *
+     * @param obj The receiver.
+     * @return The invokcation result.
+     * @throws EngineMessage FFI error.
+     */
+    static Object invokeGetter(Field field, Object obj)
+            throws EngineMessage {
+        try {
+            return field.get(obj);
+        } catch (Exception x) {
+            throw Types.mapException(x, field);
         } catch (Error x) {
             throw Types.mapError(x);
         }

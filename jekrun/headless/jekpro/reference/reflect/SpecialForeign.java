@@ -62,8 +62,6 @@ public final class SpecialForeign extends AbstractSpecial {
     private final static int SPECIAL_SYS_FOREIGN_CONSTRUCTOR = 1;
     private final static int SPECIAL_SYS_FOREIGN_GETTER = 2;
     private final static int SPECIAL_SYS_FOREIGN_SETTER = 3;
-    private final static int SPECIAL_SYS_FOREIGN_FUN = 4;
-    private final static int SPECIAL_SYS_FOREIGN_CONST = 5;
 
     /**
      * <p>Create a foreign special.</p>
@@ -144,7 +142,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET_PRED))
+                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -165,47 +163,6 @@ public final class SpecialForeign extends AbstractSpecial {
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
                 if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_SET))
-                    throw new EngineMessage(en.skel);
-                del = (AbstractDelegate) en.skel;
-                if (arity.intValue() != del.getArity())
-                    throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
-                            Integer.valueOf(del.getArity())));
-                /* create the builtin */
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
-                return true;
-            case SPECIAL_SYS_FOREIGN_FUN:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
-                name = SpecialForeign.methodName(temp[2], ref, en);
-                paras = SpecialForeign.formalParameters(temp[2], ref, en);
-                mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
-                factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createMethod(mth, en, false))
-                    throw new EngineMessage(en.skel);
-                del = (AbstractDelegate) en.skel;
-                if (arity.intValue() != del.getArity())
-                    throw new EngineMessage(EngineMessage.domainError(
-                            EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
-                            Integer.valueOf(del.getArity())));
-                /* create the builtin */
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
-                return true;
-            case SPECIAL_SYS_FOREIGN_CONST:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
-                name = SpecialUniv.derefAndCastString(temp[2], ref);
-                fld = SpecialForeign.getDeclaredField(clazz, name);
-                factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET_EVAL))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())

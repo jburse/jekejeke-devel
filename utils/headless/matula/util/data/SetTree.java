@@ -145,6 +145,16 @@ public class SetTree<E> extends AbstractSet<E> {
     }
 
     /**
+     * <p>Add key to the set at beginning.</p>
+     * <p>Assumption is that key is not yet present.</p>
+     *
+     * @param f The entry.
+     */
+    public void putEntryFirst(SetEntry<E> f) {
+        throw new IllegalArgumentException("not supported");
+    }
+
+    /**
      * <p>Create a new entry.</p>
      *
      * @param key The key.
@@ -154,16 +164,6 @@ public class SetTree<E> extends AbstractSet<E> {
         SetEntry<E> h = new SetTreeEntry<E>();
         h.value = key;
         return h;
-    }
-
-    /**
-     * <p>Add key to the set at beginning.</p>
-     * <p>Assumption is that key is not yet present.</p>
-     *
-     * @param key The key, can be null.
-     */
-    public void addFirst(E key) {
-        throw new IllegalArgumentException("not supported");
     }
 
     /**
@@ -490,7 +490,7 @@ public class SetTree<E> extends AbstractSet<E> {
      *
      * @param capa The ahead capacity.
      */
-    void reinitialize(int capa) {
+    public void reinitialize(int capa) {
         super.reinitialize(capa);
         root = null;
     }
