@@ -51,66 +51,6 @@ public abstract class AbstractLense extends AbstractDelegate {
 
     /**
      * <p>Encode the signature of a foreign method.</p>
-     *
-     * @param en The engine.
-     * @return True if the signature is ok, otherwise false.
-     */
-    public boolean encodeSignatureEval(Engine en) {
-        if (!Modifier.isPublic(getModifiers())) {
-            en.skel = EngineMessage.domainError(
-                    AbstractFactory.OP_DOMAIN_FOREIGN_VISIBILITY,
-                    new SkelAtom(Modifier.toString(getModifiers())));
-            return false;
-        }
-
-        if (!Modifier.isStatic(getModifiers())) {
-            subflags |= AbstractDelegate.MASK_DELE_VIRT;
-            Class ret = getDeclaringClass();
-            Integer encode = Types.typeeval.get(ret);
-            if (encode == null ||
-                    encode.intValue() == Types.TYPE_INTERPRETER) {
-                en.skel = EngineMessage.domainError(
-                        AbstractFactory.OP_DOMAIN_FOREIGN_RECEIVER,
-                        SpecialForeign.classToName(ret));
-                return false;
-            } else {
-                encodeobj = encode.intValue();
-            }
-        }
-
-        Class ret = getReturnType();
-        Integer encode = Types.typeeval.get(ret);
-        if (encode == null ||
-                encode.intValue() == Types.TYPE_INTERPRETER) {
-            en.skel = EngineMessage.domainError(
-                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialForeign.classToName(ret));
-            return false;
-        } else {
-            encoderet = encode.intValue();
-        }
-
-        Class[] paras = getParameterTypes();
-        encodeparas = (paras.length != 0 ? new int[paras.length] :
-                VOID_PARAS);
-        for (int i = 0; i < paras.length; i++) {
-            ret = paras[i];
-            encode = Types.typeeval.get(ret);
-            if (encode == null) {
-                en.skel = EngineMessage.domainError(
-                        AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialForeign.classToName(ret));
-                return false;
-            } else {
-                encodeparas[i] = encode.intValue();
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * <p>Encode the signature of a foreign method.</p>
      * <p>The culprit is returned in the engine skel.</p>
      *
      * @param en The engine.

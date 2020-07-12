@@ -1,23 +1,22 @@
 /**
- * Tihs module provides delegates that allow to access and modify Java
- * arrays. Foreign predicates can be registered by one of the directives
- * foreign_dimension/2, foreign_element/2 and foreign_update/2. Foreign
- * evaluable functions can be registered by one of the directives
- * foreign_length/2 or foreign_member/2.
+ * This module provides delegates that allow to access and modify Java
+ * arrays. Foreign predicates respectively evaluable functions can be
+ * registered by one of the directives foreign_dimension/2, foreign_element/2,
+ * foreign_update/2 and foreign_length/2. The specified class must
+ * be an array class.
  *
- * directive --> "foreign_dimension(" indicator "," module ")"
- *             | "foreign_element(" indicator "," module ")"
- *             | "foreign_update(" indicator "," module ")"
- *             | "foreign_length(" indicator "," module ")".
+ * directive --> "foreign_dimension(" indicator "," class ")"
+ *             | "foreign_element(" indicator "," class ")"
+ *             | "foreign_update(" indicator "," class ")"
+ *             | "foreign_length(" indicator "," class ")".
  *
  * Example:
- * :- foreign_dimension(new/2, int[]).
+ * :- foreign_dimension(new/2, {int}).
  *
- * As a convenience we have defined the postfix operator [] and the path
- * resolution understands this syntax to find Java array classes. When
- * accessing or modifying array elements the delegates will see to it
- * that the values are automatically normalized or de-normalized Prolog
- * terms. The supported data types are the same as in the ordinary foreign
+ * Array classes are denoted using the ISO core standard set notation. When
+ * accessing or modifying array elements the delegates will see to it that
+ * the values are automatically normalized or de-normalized Prolog terms.
+ * The supported data types are the same as in the ordinary foreign
  * function interface.
  *
  * Warranty & Liability

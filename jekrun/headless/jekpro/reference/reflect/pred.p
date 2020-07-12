@@ -10,12 +10,12 @@
  *             | atom "/" integer
  *
  * module    --> package "/" atom
- *             | "{" array "}"
+ *             | "{" class "}"
  *             | reference
  *             | atom.
  *
- * array     --> package "/" atom.
- *             | "{" array "}"
+ * class     --> package "/" atom.
+ *             | "{" class "}"
  *             | atom.
  *
  * package   --> package "/" atom.

@@ -69,14 +69,12 @@ public abstract class AbstractFactory {
 
     public static final String OP_REPRESENTATION_NULL = "null";
 
-    public static final int FIELD_GET_PRED = 0;
-    public static final int FIELD_GET_EVAL = 1;
+    public static final int FIELD_GET = 0;
     public static final int FIELD_SET = 2;
 
     public static final int ARRAY_LENGTH = 0;
-    public static final int ARRAY_GET_EVAL = 1;
     public static final int ARRAY_NEW = 2;
-    public static final int ARRAY_GET_PRED = 3;
+    public static final int ARRAY_GET = 3;
     public static final int ARRAY_SET = 4;
 
     public Object proxy;

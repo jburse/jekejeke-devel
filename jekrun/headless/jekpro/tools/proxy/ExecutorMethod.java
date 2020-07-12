@@ -3,6 +3,7 @@ package jekpro.tools.proxy;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
 import jekpro.tools.call.Interpreter;
@@ -47,7 +48,20 @@ import java.lang.reflect.Modifier;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ExecutorMethod extends AbstractExecutor {
+final class ExecutorMethod {
+    public final static int MASK_METH_VIRT = 0x00000001;
+    public final static int MASK_METH_FUNC = 0x00000002;
+
+    final static int[] VOID_PARAS = new int[0];
+    final static Object[] VOID_PROLOG_ARGS = new Object[0];
+
+    private int subflags;
+
+    private int[] encodeparas;
+    private int encoderet;
+
+    private final Method method;
+    private TermAtomic functor;
 
     /**
      * <p>Create method predicate.</p>
@@ -55,7 +69,7 @@ final class ExecutorMethod extends AbstractExecutor {
      * @param m The method.
      */
     ExecutorMethod(Method m) {
-        super(m);
+        method = m;
     }
 
     /**
@@ -87,7 +101,7 @@ final class ExecutorMethod extends AbstractExecutor {
         }
 
         Class[] paras = method.getParameterTypes();
-        encodeparas = (paras.length != 0 ? new int[paras.length] : ExecutorMethod.VOID_PARAS);
+        encodeparas = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
             ret = paras[i];
             encode = Types.typepred.get(ret);
@@ -128,7 +142,7 @@ final class ExecutorMethod extends AbstractExecutor {
         try {
             Object[] termargs = uncompileArgs(proxy, args);
             Object help;
-            if ((subflags & AbstractExecutor.MASK_METH_FUNC) != 0) {
+            if ((subflags & MASK_METH_FUNC) != 0) {
                 help = new TermVar();
                 termargs[termargs.length - 1] = help;
             } else {
@@ -156,6 +170,43 @@ final class ExecutorMethod extends AbstractExecutor {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
+    }
+
+
+    /***********************************************************/
+    /* Parameter & Result Conversion                           */
+    /***********************************************************/
+
+    /**
+     * <p>Build the arguments.</p>
+     *
+     * @param args The Java arguments.
+     * @return The Prolog arguments.
+     * @throws EngineMessage Shit happens.
+     */
+    private Object[] uncompileArgs(Object proxy, Object[] args)
+            throws EngineMessage {
+        int len = encodeparas.length;
+        if ((subflags & ExecutorMethod.MASK_METH_VIRT) != 0)
+            len++;
+        if ((subflags & ExecutorMethod.MASK_METH_FUNC) != 0)
+            len++;
+        Object[] termargs = (len != 0 ?
+                new Object[len] : ExecutorMethod.VOID_PROLOG_ARGS);
+        int k = 0;
+        if ((subflags & ExecutorMethod.MASK_METH_VIRT) != 0) {
+            termargs[k] = proxy;
+            k++;
+        }
+        for (int i = 0; i < encodeparas.length; i++) {
+            Object res = Types.normJava(encodeparas[i], args[i]);
+            if (res == null)
+                throw new EngineMessage(EngineMessage.representationError(
+                        AbstractFactory.OP_REPRESENTATION_NULL));
+            termargs[k] = res;
+            k++;
+        }
+        return termargs;
     }
 
     /**

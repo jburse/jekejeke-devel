@@ -48,6 +48,7 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LenseElement extends AbstractLense {
+    public static final String OP_NAME_GETTER = "at";
     private static final String OP_FOREIGN_ELEMENT = "foreign_element";
 
     private final Class clazz;
@@ -104,6 +105,37 @@ final class LenseElement extends AbstractLense {
     /******************************************************************/
     /* Variation Points Predicate                                     */
     /******************************************************************/
+
+    /**
+     * <p>Arithmetically evaluate a compound.</p>
+     * <p>The evaluable is passed via the skel and display of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
+     * <p>The result is passed via the skel and display of the engine.</p>
+     *
+     * @param en The engine.
+     * @throws EngineMessage FFI error.
+     */
+    public final void moniEvaluate(Engine en)
+            throws EngineMessage {
+        try {
+            Object[] temp = ((SkelCompound) en.skel).args;
+            Display ref = en.display;
+            Object obj = Types.denormProlog(encodeobj, temp[0], ref);
+            Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
+            SpecialEval.checkNotLessThanZero(num);
+            int idx = SpecialEval.castIntValue(num);
+            Object res = get(obj, idx);
+            res = Types.normJava(encoderet, res);
+            if (res == null)
+                throw new EngineMessage(EngineMessage.representationError(
+                        AbstractFactory.OP_REPRESENTATION_NULL));
+            en.skel = AbstractTerm.getSkel(res);
+            en.display = AbstractTerm.getDisplay(res);
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
+        }
+    }
 
     /**
      * <p>Logically evaluate a term in a list of goals for the first time.</p>
@@ -222,7 +254,7 @@ final class LenseElement extends AbstractLense {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return LenseMember.OP_NAME_GETTER;
+        return OP_NAME_GETTER;
     }
 
     /**

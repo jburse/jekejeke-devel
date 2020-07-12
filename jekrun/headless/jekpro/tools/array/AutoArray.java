@@ -123,11 +123,8 @@ public final class AutoArray extends AbstractAuto {
             addForeign((AbstractLense) en.skel);
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_LENGTH))
             addForeign((AbstractLense) en.skel);
-        if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_EVAL)) {
+        if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET))
             addForeign((AbstractLense) en.skel);
-        } else if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET_PRED)) {
-            addForeign((AbstractLense) en.skel);
-        }
         if (createArray(getAuto(), en, AbstractFactory.ARRAY_SET))
             addForeign((AbstractLense) en.skel);
     }
@@ -206,12 +203,7 @@ public final class AutoArray extends AbstractAuto {
         switch (k) {
             case AbstractFactory.ARRAY_LENGTH:
                 del = new LenseLength(c);
-                if (!del.encodeSignatureEval(en))
-                    return false;
-                break;
-            case AbstractFactory.ARRAY_GET_EVAL:
-                del = new LenseMember(c);
-                if (!del.encodeSignatureEval(en))
+                if (!del.encodeSignaturePred(en))
                     return false;
                 break;
             case AbstractFactory.ARRAY_NEW:
@@ -219,7 +211,7 @@ public final class AutoArray extends AbstractAuto {
                 if (!del.encodeSignaturePred(en))
                     return false;
                 break;
-            case AbstractFactory.ARRAY_GET_PRED:
+            case AbstractFactory.ARRAY_GET:
                 del = new LenseElement(c);
                 if (!del.encodeSignaturePred(en))
                     return false;

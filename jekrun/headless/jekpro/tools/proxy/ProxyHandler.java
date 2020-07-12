@@ -52,7 +52,8 @@ import java.lang.reflect.Proxy;
 public final class ProxyHandler implements InvocationHandler {
     private final AbstractSource src;
     private Class gener;
-    private final MapHash<Method, AbstractExecutor> execs = new MapHash<Method, AbstractExecutor>();
+    private final MapHash<Method, ExecutorMethod> execs =
+            new MapHash<Method, ExecutorMethod>();
 
     /**
      * <p>Create a prolog handler for the given Prolog text.</p>
@@ -114,7 +115,7 @@ public final class ProxyHandler implements InvocationHandler {
                 return Integer.valueOf(length(proxy));
             }
         }
-        AbstractExecutor exe = findExecutor(method);
+        ExecutorMethod exe = findExecutor(method);
         try {
             return exe.runGoal(proxy, args, inter);
         } catch (InterpreterException x) {
@@ -130,31 +131,16 @@ public final class ProxyHandler implements InvocationHandler {
      * @param method The method.
      * @return The executor.
      */
-    private AbstractExecutor findExecutor(Method method) {
-        AbstractExecutor exe;
+    private ExecutorMethod findExecutor(Method method) {
+        ExecutorMethod exe;
         synchronized (this) {
             exe = execs.get(method);
             if (exe != null)
                 return exe;
-            exe = createFunction(method);
-            if (exe == null)
-                exe = createMethod(method);
+            exe = createMethod(method);
             exe.setSource(getSource());
             execs.add(method, exe);
         }
-        return exe;
-    }
-
-    /**
-     * <p>Create an executor.</p>
-     *
-     * @param method The method.
-     * @return The executor, or null.
-     */
-    private ExecutorFunction createFunction(Method method) {
-        ExecutorFunction exe = new ExecutorFunction(method);
-        if (!exe.encodeSignature())
-            return null;
         return exe;
     }
 

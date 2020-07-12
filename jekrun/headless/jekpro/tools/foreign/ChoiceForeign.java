@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
+import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
@@ -12,8 +13,6 @@ import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-
-import static jekpro.tools.array.AbstractLense.MASK_METH_FUNC;
 
 /**
  * <p>The class represents a choice point for a foreign predicate.
@@ -107,7 +106,7 @@ final class ChoiceForeign extends AbstractChoice {
             co.flags &= ~CallOut.MASK_CALL_CUTTR;
 
             Object res = AbstractMember.invokeMethod(del.method, obj, args);
-            if ((del.subflags & MASK_METH_FUNC) != 0) {
+            if ((del.subflags & AbstractLense.MASK_METH_FUNC) != 0) {
                 res = Types.normJava(del.encoderet, res);
             } else {
                 res = Types.noretNormJava(del.encoderet, res);

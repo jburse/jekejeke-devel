@@ -107,7 +107,7 @@ public final class Reflection extends AbstractReflection {
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public boolean createMethod(Method m, Engine en, boolean k) {
-        return AutoClass.createMethod(m, en, k);
+        return AutoClass.createMethod(m, en);
     }
 
     /**

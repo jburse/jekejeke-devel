@@ -175,11 +175,8 @@ public final class AutoClass extends AbstractAuto {
                 continue;
             if ((method.getModifiers() & SYNTHETIC) != 0)
                 continue;
-            if (createMethod(method, en, false)) {
+            if (createMethod(method, en))
                 addForeignScore((AbstractMember) en.skel);
-            } else if (createMethod(method, en, true)) {
-                addForeignScore((AbstractMember) en.skel);
-            }
         }
     }
 
@@ -196,11 +193,8 @@ public final class AutoClass extends AbstractAuto {
                 continue;
             if ((field.getModifiers() & SYNTHETIC) != 0)
                 continue;
-            if (createField(field, en, AbstractFactory.FIELD_GET_EVAL)) {
+            if (createField(field, en, AbstractFactory.FIELD_GET))
                 addForeignScore((AbstractMember) en.skel);
-            } else if (createField(field, en, AbstractFactory.FIELD_GET_PRED)) {
-                addForeignScore((AbstractMember) en.skel);
-            }
             if (Modifier.isFinal(field.getModifiers()))
                 continue;
             if (createField(field, en, AbstractFactory.FIELD_SET))
@@ -471,28 +465,19 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param m  The method.
      * @param en The engine.
-     * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public static boolean createMethod(Method m, Engine en, boolean k) {
+    public static boolean createMethod(Method m, Engine en) {
         AbstractMember del;
-        if (k) {
-            if (!validateExceptionTypes(m.getExceptionTypes(), en))
-                return false;
-            if (getNondet(m.getParameterTypes())) {
-                del = new MemberMethodNondet(m);
-            } else {
-                del = new MemberMethodDet(m);
-            }
-            if (!del.encodeSignaturePred(en))
-                return false;
+        if (!validateExceptionTypes(m.getExceptionTypes(), en))
+            return false;
+        if (getNondet(m.getParameterTypes())) {
+            del = new MemberMethodNondet(m);
         } else {
-            if (!validateExceptionTypes(m.getExceptionTypes(), en))
-                return false;
-            del = new MemberFunction(m);
-            if (!del.encodeSignatureEval(en))
-                return false;
+            del = new MemberMethodDet(m);
         }
+        if (!del.encodeSignaturePred(en))
+            return false;
         en.skel = del;
         return true;
     }
@@ -527,14 +512,9 @@ public final class AutoClass extends AbstractAuto {
     public static boolean createField(Field f, Engine en, int k) {
         AbstractMember del;
         switch (k) {
-            case AbstractFactory.FIELD_GET_PRED:
+            case AbstractFactory.FIELD_GET:
                 del = new MemberFieldGet(f);
                 if (!del.encodeSignaturePred(en))
-                    return false;
-                break;
-            case AbstractFactory.FIELD_GET_EVAL:
-                del = new MemberConstant(f);
-                if (!del.encodeSignatureEval(en))
                     return false;
                 break;
             case AbstractFactory.FIELD_SET:

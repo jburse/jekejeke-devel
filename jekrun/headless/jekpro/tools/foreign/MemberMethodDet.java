@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -113,6 +114,31 @@ final class MemberMethodDet extends AbstractMember {
     /******************************************************************/
     /* Variation Points Predicate                                     */
     /******************************************************************/
+
+    /**
+     * <p>Arithmetically evaluate a compound.</p>
+     * <p>The evaluable is passed via the skel and display of the engine.</p>
+     * <p>The continuation is passed via the contskel and contdisplay of the engine.</p>
+     * <p>The result is passed via the skel and display of the engine.</p>
+     *
+     * @param en The engine.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
+     */
+    public final void moniEvaluate(Engine en)
+            throws EngineMessage, EngineException {
+        Object temp = en.skel;
+        Display ref = en.display;
+        Object obj = convertRecv(temp, ref);
+        Object[] args = computeAndConvertArgs(temp, ref, en);
+        Object res = invokeMethod(method, obj, args);
+        res = Types.normJava(encoderet, res);
+        if (res == null)
+            throw new EngineMessage(EngineMessage.representationError(
+                    AbstractFactory.OP_REPRESENTATION_NULL));
+        en.skel = AbstractTerm.getSkel(res);
+        en.display = AbstractTerm.getDisplay(res);
+    }
 
     /**
      * <p>Logically evaluate a term in a list of goals for the first time.</p>

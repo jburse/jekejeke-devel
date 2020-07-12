@@ -6,35 +6,34 @@
  * about foreign predicates can be found in the Jekejeke Prolog
  * Programming Interface documentation.
  *
- * Foreign predicates can be registered by one of the directives
- * foreign/3, foreign_constructor/3, foreign_setter/3 and foreign_getter/3.
- * Foreign evaluable functions can be registered by one of the directives
- * foreign_fun/3 or foreign_const/3. The directives take as
- * arguments a predicate specification, a declaring class specification
- * and a method, constructor or field specification. We can describe
- * the arguments via the following syntax:
+ * Foreign predicates respectively evaluable functions can be
+ * registered by one of the directives foreign/3, foreign_constructor/3
+ * foreign_setter/3 and foreign_getter/3. The directives take as
+ * arguments a predicate indicator, a declaring class and a method,
+ * constructor or field specification. We can describe the arguments
+ * via the following syntax:
  *
- * directive --> "foreign(" indicator "," module "," signature ")"
- *            | "foreign_constructor(" indicator "," module "," signature ")"
- *            | "foreign_setter(" indicator "," module "," atom ")"
- *            | "foreign_getter(" indicator "," module "," atom ")".
+ * directive --> "foreign(" indicator "," class "," method ")"
+ *        | "foreign_constructor(" indicator "," class "," constructor ")"
+ *        | "foreign_setter(" indicator "," class "," atom ")"
+ *        | "foreign_getter(" indicator "," class "," atom ")".
  *
- * signature --> atom [ "(" module { "," module } ")" ].
+ * method --> atom [ "(" class { "," class } ")" ].
+ * constructor --> "new"" [ "(" class { "," class } ")" ].
+ * class --> module.
  *
  * Example:
  * :- foreign(hello/0, 'OutHello', hello('Interpreter')).
  *                       % is a foreign predicate directive.
  *
- * Not all declared classes or parameter types have to be fully
- * qualified. The below class names can be directly used without
- * specifying the package name. All formal parameters not of class
- * Term cause a range check and/or conversion of the actual argument.
- * A formal parameter of type BigDecimal or BigInteger causes a
- * widening, whereas a formal parameter of type Integer or Long
- * causes a range check.
+ * Formal parameters not of Java class AbstractTerm or of Java class
+ * Object cause a check and/or conversion. A formal parameter of type
+ * BigDecimal or BigInteger causes a widening conversion, whereas a
+ * formal parameter of type Integer or Long causes a range check.
+ * Formal parameters of type Float or Double are approximately converted.
+ * The corresponding primitive datatypes are handled analogously.
  *
- * The supported primitive datatypes are handled analogously. The
- * Java method, constructor or field might also have one of the
+ * The Java method, constructor or field might also have one of the
  + above classes as a return type. By returning a non-null object the
  * Java method, constructor or field can indicate success and the
  * interpreter will unify the object with the last argument of the
