@@ -263,7 +263,7 @@ final class LenseElement extends AbstractLense {
      * @return The string.
      */
     public String toString() {
-        return clazz.toString() + " (getter, evaluable)";
+        return clazz.toString() + " (getter)";
     }
 
 }
