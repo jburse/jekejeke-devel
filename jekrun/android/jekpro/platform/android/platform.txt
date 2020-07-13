@@ -26,5 +26,5 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-sys_apropos_table/1	no	android/stats
+sys_apropos_table/1	android/stats
 

@@ -26,460 +26,442 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-!/2	no	standard/dcg
-*-> /4	no	standard/dcg
-','/4	no	standard/dcg
---> /2	no	standard/dcg
--> /4	no	standard/dcg
-'.'/4	no	standard/dcg
-/\ /2	no	standard/expand
-: /4	no	standard/apply
-: /5	no	standard/apply
-: /6	no	standard/apply
-: /7	no	standard/apply
-: /8	no	standard/apply
-: /9	no	standard/apply
-:: /4	no	standard/apply
-:: /5	no	standard/apply
-:: /6	no	standard/apply
-:: /7	no	standard/apply
-:: /8	no	standard/apply
-:: /9	no	standard/apply
-;/4	no	standard/dcg
-[]/2	no	standard/dcg
-(\)/3	no	experiment/abstract
-(\)/4	no	experiment/abstract
-(\)/5	no	experiment/abstract
-(\)/6	no	experiment/abstract
-(\)/7	no	experiment/abstract
-(\)/8	no	experiment/abstract
-(\)/9	no	experiment/abstract
-(\+)/3	no	standard/dcg
-^ /2	no	advanced/bags
-^ /4	no	experiment/abstract
-^ /5	no	experiment/abstract
-^ /6	no	experiment/abstract
-^ /7	no	experiment/abstract
-^ /8	no	experiment/abstract
-^ /9	no	experiment/abstract
-above/2	no	standard/arith
-acosh/2	yes	basic/hyper
-aggregate/3	no	advanced/aggregate
-aggregate/4	no	advanced/aggregate
-aggregate_all/3	no	advanced/aggregate
-aggregate_all/4	no	advanced/aggregate
-alarm_cancel/2	no	misc/time
-alarm_new/1	no	misc/time
-alarm_next/2	no	misc/time
-alarm_schedule/4	no	misc/time
-append/3	no	basic/lists
-apropos/1	no	basic/utility
-archive_file/3	no	system/file
-asinh/2	yes	basic/hyper
-assertable_ref/2	no	experiment/ref
-assumable_ref/2	no	experiment/ref
-at_end_of_stream/0	no	stream/byte
-at_end_of_stream/1	no	stream/byte
-atanh/2	yes	basic/hyper
-bagof/3	no	advanced/bags
-bagof/4	no	advanced/bags
-base64_block/2	no	stream/xml
-between/3	no	standard/arith
-broker_start/1	no	experiment/broker
-broker_stop/0	no	experiment/broker
-call/2	no	standard/apply
-call/3	no	standard/apply
-call/4	no	standard/apply
-call/5	no	standard/apply
-call/6	no	standard/apply
-call/7	no	standard/apply
-call/8	no	standard/apply
-call_cleanup/2	no	advanced/signal
-call_finally/2	no	advanced/signal
-call_nth/2	no	advanced/sequence
-call_residue/2	no	misc/residue
-call_residue_vars/2	no	misc/residue
-canonical_path/2	no	system/file
-canonical_uri/2	no	system/uri
-char_class/2	no	misc/text
-char_class/3	no	misc/text
-char_digit/3	no	misc/text
-clause_ref/2	no	experiment/ref
-clause_ref/3	no	experiment/ref
-client_new/3	no	misc/socket
-close/1	no	stream/stream
-code_class/2	no	misc/text
-code_class/3	no	misc/text
-code_digit/3	no	misc/text
-code_lower/2	no	misc/text
-code_upper/2	no	misc/text
-compilable_ref/2	no	experiment/ref
-compiled_match/2	no	misc/text
-compiled_ref/2	no	experiment/ref
-cond_new/2	no	experiment/monitor
-contains/2	no	advanced/sets
-cosh/2	yes	basic/hyper
-counter_new/1	no	basic/random
-counter_new/2	no	basic/random
-counter_next/2	no	basic/random
-create_file/1	no	system/file
-current_error/1	no	stream/stream
-current_group/2	no	system/group
-current_group_flag/3	no	system/group
-current_input/1	no	stream/stream
-current_output/1	no	stream/stream
-current_table/2	no	advanced/tabling
-current_thread/1	no	system/group
-current_thread/2	no	system/group
-current_thread_flag/3	no	system/thread
-current_time/1	yes	experiment/monitor
-date_atom/3	no	system/zone
-date_atom/4	no	system/zone
-delete_file/1	no	system/file
-destroyed/2	no	container/http
-difference/3	no	advanced/sets
-directory_file/2	no	system/file
-dispatch/4	no	container/http
-dispatch_binary/3	no	container/http
-dispatch_error/2	no	container/http
-dispatch_head/3	no	container/http
-dispatch_redirect/2	no	container/http
-dispatch_text/3	no	container/http
-dispatch_upgrade/2	no	container/http
-distinct/1	no	advanced/sequence
-downcase_atom/2	no	misc/text
-endpoint_address/2	no	misc/socket
-endpoint_new/3	no	misc/socket
-endpoint_port/2	no	misc/socket
-endpoint_receive/2	no	misc/socket
-endpoint_send/4	no	misc/socket
-erase_ref/1	no	experiment/ref
-error_make/2	no	stream/console
-error_make/3	no	stream/console
-exists_directory/1	no	system/file
-exists_entry/2	no	system/file
-exists_file/1	no	system/file
-exit/2	no	experiment/broker
-expand_goal/2	no	standard/expand
-expand_rest/2	no	standard/expand
-expand_term/2	no	standard/expand
-fail/2	no	standard/dcg
-flush_output/0	no	stream/byte
-flush_output/1	no	stream/byte
-foldl/4	no	basic/lists
-foldl/5	no	basic/lists
-foldl/6	no	basic/lists
-foldl/7	no	basic/lists
-follow_path/3	no	system/file
-follow_uri/3	no	system/uri
-foreach/2	no	advanced/bags
-foreach/4	no	advanced/bags
-foreign_dimension/2	no	basic/array
-foreign_element/2	no	basic/array
-foreign_length/2	no	basic/array
-foreign_member/2	no	basic/array
-foreign_update/2	no	basic/array
-format/2	no	stream/console
-format/3	no	stream/console
-format_atom/3	no	system/locale
-format_atom/4	no	system/locale
-get/3	no	experiment/maps
-get_byte/1	no	stream/byte
-get_byte/2	no	stream/byte
-get_char/1	no	stream/char
-get_char/2	no	stream/char
-get_code/1	no	stream/char
-get_code/2	no	stream/char
-get_descr_model/2	no	system/locale
-get_descr_model/3	no	system/locale
-get_descr_platform/2	no	system/locale
-get_descr_platform/3	no	system/locale
-get_error_properties/1	no	system/locale
-get_error_properties/2	no	system/locale
-get_properties/2	no	system/locale
-get_properties/3	no	system/locale
-get_property/3	no	system/locale
-get_property/4	no	system/locale
-get_read/2	no	misc/lock
-get_time/1	no	system/zone
-get_time/2	no	system/zone
-get_time/3	no	system/zone
-get_time/4	no	system/zone
-get_time_file/2	no	system/file
-get_write/2	no	misc/lock
-getenv/2	no	system/file
-goal_expansion/2	no	standard/expand
-user:goal_expansion/2	no	standard/dcg
-goal_rebuilding/2	no	experiment/simp
-goal_simplification/2	no	experiment/simp
-group_new/1	no	system/group
-group_thread/2	no	system/group
-hash_code/2	no	standard/sort
-hex_block/2	no	stream/xml
-host_lookup/2	no	system/domain
-html_escape/1	no	stream/xml
-html_escape/2	no	stream/xml
-http_header/3	no	container/http
-http_parameter/3	no	container/http
-initialized/2	no	container/http
-intersection/3	no	advanced/sets
-is_relative_path/1	no	system/file
-is_relative_uri/1	no	system/uri
-keysort/2	no	standard/sort
-keysort/3	no	standard/sort
-last/2	no	basic/lists
-last/3	no	basic/lists
-last_pattern_replace/4	no	misc/text
-last_pattern_replace/5	no	misc/text
-length/2	no	basic/lists
-limit/2	no	advanced/sequence
-lock_acquire/1	no	misc/lock
-lock_attempt/1	no	misc/lock
-lock_attempt_timeout/2	no	misc/lock
-lock_release/1	no	misc/lock
-make_authority/4	no	system/domain
-make_directory/1	no	system/file
-make_link/4	no	system/uri
-make_name/3	no	system/file
-make_pack/3	no	system/file
-make_path/3	no	system/file
-make_query/4	no	system/uri
-make_spec/4	no	system/uri
-make_uri/4	no	system/uri
-maplist/2	no	basic/lists
-maplist/3	no	basic/lists
-maplist/4	no	basic/lists
-maplist/5	no	basic/lists
-member/2	no	basic/lists
-message_make/3	no	system/locale
-message_make/4	no	system/locale
-monitor_new/1	no	experiment/monitor
-mutex_new/1	no	misc/lock
-nl/0	no	stream/char
-nl/1	no	stream/char
-nonescalable_new/1	no	misc/lock
-notify/1	no	experiment/monitor
-notify_all/1	no	experiment/monitor
-nth0/3	no	basic/lists
-nth0/4	no	basic/lists
-nth1/3	no	basic/lists
-nth1/4	no	basic/lists
-number_compare/3	no	standard/approx
-number_compare/3	no	standard/sort
-offset/2	no	advanced/sequence
-open/3	no	stream/stream
-open/4	no	stream/stream
-open_resource/2	no	stream/stream
-open_resource/3	no	stream/stream
-ord_contains/2	no	advanced/ordsets
-ord_difference/3	no	advanced/ordsets
-ord_get/3	no	experiment/ordmaps
-ord_intersection/3	no	advanced/ordsets
-ord_put/4	no	experiment/ordmaps
-ord_remove/3	no	experiment/ordmaps
-ord_subset/2	no	advanced/ordsets
-ord_union/3	no	advanced/ordsets
-order_by/2	no	advanced/sequence
-pattern_compile/2	no	misc/text
-pattern_compile/3	no	misc/text
-pattern_match/2	no	misc/text
-pattern_match/3	no	misc/text
-pattern_replace/4	no	misc/text
-pattern_replace/5	no	misc/text
-peek_byte/1	no	stream/byte
-peek_byte/2	no	stream/byte
-peek_char/1	no	stream/char
-peek_char/2	no	stream/char
-peek_code/1	no	stream/char
-peek_code/2	no	stream/char
-permutation/2	no	advanced/sets
-phrase/2	no	standard/dcg
-phrase/3	no	standard/dcg
-ping_host/1	no	system/domain
-pipe_new/1	no	misc/pipe
-pipe_new/2	no	misc/pipe
-pipe_offer/2	no	misc/pipe
-pipe_offer/3	no	misc/pipe
-pipe_poll/2	no	misc/pipe
-pipe_poll/3	no	misc/pipe
-pipe_put/2	no	misc/pipe
-pipe_take/2	no	misc/pipe
-plus/3	no	standard/arith
-print_stack_trace/2	no	stream/console
-print_stack_trace/3	no	stream/console
-printable/2	no	misc/residue
-put/4	no	experiment/maps
-put_byte/1	no	stream/byte
-put_byte/2	no	stream/byte
-put_char/1	no	stream/char
-put_char/2	no	stream/char
-put_code/1	no	stream/char
-put_code/2	no	stream/char
-random/1	no	basic/random
-random/2	no	basic/random
-random32/1	no	basic/random
-random_new/1	no	basic/random
-random_new/2	no	basic/random
-random_next/2	no	basic/random
-random_next/3	no	basic/random
-random_next32/2	no	basic/random
-random_permutation/2	no	basic/random
-random_permutation/3	no	basic/random
-rational/2	no	standard/approx
-rationalize/2	no	standard/approx
-rationalize32/2	no	standard/approx
-read/1	no	stream/term
-read/2	no	stream/term
-read_line/1	no	stream/console
-read_line/2	no	stream/console
-read_line_max/2	no	stream/console
-read_line_max/3	no	stream/console
-read_punch/1	no	stream/console
-read_punch/2	no	stream/console
-read_punch_max/2	no	stream/console
-read_punch_max/3	no	stream/console
-read_term/2	no	stream/term
-read_term/3	no	stream/term
-readwrite_new/1	no	misc/lock
-rebuild_goal/2	no	experiment/simp
-rebuild_goal_arg/3	no	experiment/simp
-rebuild_rest/2	no	experiment/simp
-rebuild_term/2	no	experiment/simp
-receive/2	no	experiment/broker
-receive/3	no	experiment/broker
-recorda_ref/1	no	experiment/ref
-recordz_ref/1	no	experiment/ref
-ref_property/2	no	experiment/ref
-remove/3	no	advanced/sets
-remove/3	no	experiment/maps
-rename_file/2	no	system/file
-reset_ref_property/2	no	experiment/ref
-reset_stream_property/2	no	stream/stream
-response_binary/3	no	container/http
-response_text/3	no	container/http
-rest_expansion/2	no	standard/expand
-rest_rebuilding/2	no	experiment/simp
-rest_simplification/2	no	experiment/simp
-retract_table/1	no	advanced/tabling
-retractall_table/1	no	advanced/tabling
-reverse/2	no	basic/lists
-rfc1123_atom/2	no	system/zone
-rpc/2	no	experiment/broker
-rpc_wrap/3	no	experiment/broker
-run_http/2	no	container/http
-select/3	no	basic/lists
-self/1	no	experiment/broker
-send/2	no	experiment/broker
-server_accept/2	no	misc/socket
-server_address/2	no	misc/socket
-server_new/3	no	misc/socket
-server_port/2	no	misc/socket
-set_error/1	no	stream/stream
-set_input/1	no	stream/stream
-set_output/1	no	stream/stream
-set_ref_property/2	no	experiment/ref
-set_stream_length/2	no	stream/stream
-set_stream_position/2	no	stream/stream
-set_stream_property/2	no	stream/stream
-set_thread_flag/3	no	system/thread
-set_time_file/2	no	system/file
-setof/3	no	advanced/bags
-setof/4	no	advanced/bags
-setup_call_cleanup/3	no	advanced/signal
-sha1_hash/2	no	system/domain
-simplify_goal/2	no	experiment/simp
-simplify_rest/2	no	experiment/simp
-simplify_term/2	no	experiment/simp
-sinh/2	yes	basic/hyper
-sort/2	no	standard/sort
-sort/3	no	standard/sort
-spawn/3	no	experiment/broker
-stream_property/2	no	stream/stream
-subset/2	no	advanced/sets
-succ/2	no	standard/arith
-synchronized/2	no	misc/lock
-sys_apropos_table/1	no	basic/utility
-sys_assignable_from/2	no	basic/proxy
-sys_atom_or_type_of/2	no	basic/score
-sys_boolean/1	no	basic/score
-sys_char16/1	no	basic/score
-sys_cleanup/1	no	advanced/signal
-sys_cond/2	no	standard/expand
-sys_current_eq/2	no	misc/residue
-sys_current_mark/1	no	misc/residue
-sys_float_exponent/2	no	standard/approx
-sys_float_mantissa/2	no	standard/approx
-sys_float_radix/2	no	standard/approx
-sys_ground/2	no	standard/sort
-sys_hash_code/3	no	standard/sort
-sys_ignore/1	no	advanced/signal
-sys_instance_of/2	no	basic/proxy
-sys_integer16/1	no	basic/score
-sys_integer16_and_not_integer8/1	no	basic/score
-sys_integer32/1	no	basic/score
-sys_integer32_and_not_integer16/1	no	basic/score
-sys_integer32_or_float32/1	no	basic/score
-sys_integer64/1	no	basic/score
-sys_integer64_and_not_integer32/1	no	basic/score
-sys_integer64_or_float/1	no	basic/score
-sys_integer8/1	no	basic/score
-sys_integer_and_not_integer64/1	no	basic/score
-sys_mark_attrs/2	no	misc/residue
-sys_mask/1	no	advanced/signal
-sys_modext_args/3	no	standard/apply
-sys_modext_args/4	no	standard/apply
-sys_modext_args/5	no	standard/apply
-sys_modext_args/6	no	standard/apply
-sys_modext_args/7	no	standard/apply
-sys_modext_args/8	no	standard/apply
-sys_modext_args/9	no	standard/apply
-sys_new_instance/2	no	basic/proxy
-sys_new_instance/3	no	basic/proxy
-sys_printable_value/2	no	misc/residue
-sys_type_of/2	no	basic/score
-sys_unwrap_eq/3	no	misc/residue
-(table)/1	no	advanced/tabling
-tanh/2	yes	basic/hyper
-term_expansion/2	no	standard/expand
-user:term_expansion/2	no	advanced/tabling
-user:term_expansion/2	no	standard/dcg
-term_rebuilding/2	no	experiment/simp
-term_simplification/2	no	experiment/simp
-text_escape/2	no	stream/xml
-thread_abort/2	no	system/thread
-thread_combine/1	no	system/thread
-thread_combine/2	no	system/thread
-thread_current/1	no	system/thread
-thread_down/2	no	system/thread
-thread_down/3	no	system/thread
-thread_join/1	no	system/thread
-thread_kill/1	no	system/thread
-thread_new/2	no	system/thread
-thread_new/3	no	system/group
-thread_sleep/1	no	system/thread
-thread_start/1	no	system/thread
-threads/0	no	system/group
-time_out/2	no	misc/time
-try_call_finally/3	no	advanced/signal
-union/3	no	advanced/sets
-unit/0	no	standard/expand
-unslotted_new/1	no	misc/lock
-upcase_atom/2	no	misc/text
-upgrade/4	no	container/http
-uri_encode/2	no	system/uri
-uri_puny/2	no	system/domain
-validate_meta/2	no	container/http
-wait/1	no	experiment/monitor
-wait_timeout/2	no	experiment/monitor
-websock_new/2	no	misc/socket
-when/2	no	experiment/broker
-write/1	no	stream/term
-write/2	no	stream/term
-write_canonical/1	no	stream/term
-write_canonical/2	no	stream/term
-write_term/2	no	stream/term
-write_term/3	no	stream/term
-writeq/1	no	stream/term
-writeq/2	no	stream/term
-{}/3	no	standard/dcg
+!/2	standard/dcg
+*-> /4	standard/dcg
+','/4	standard/dcg
+--> /2	standard/dcg
+-> /4	standard/dcg
+'.'/4	standard/dcg
+/\ /2	standard/expand
+: /4	standard/apply
+: /5	standard/apply
+: /6	standard/apply
+: /7	standard/apply
+: /8	standard/apply
+: /9	standard/apply
+:: /4	standard/apply
+:: /5	standard/apply
+:: /6	standard/apply
+:: /7	standard/apply
+:: /8	standard/apply
+:: /9	standard/apply
+;/4	standard/dcg
+[]/2	standard/dcg
+(\)/3	experiment/abstract
+(\)/4	experiment/abstract
+(\)/5	experiment/abstract
+(\)/6	experiment/abstract
+(\)/7	experiment/abstract
+(\)/8	experiment/abstract
+(\)/9	experiment/abstract
+(\+)/3	standard/dcg
+^ /2	advanced/bags
+^ /4	experiment/abstract
+^ /5	experiment/abstract
+^ /6	experiment/abstract
+^ /7	experiment/abstract
+^ /8	experiment/abstract
+^ /9	experiment/abstract
+above/2	standard/arith
+acosh/2	basic/hyper
+aggregate/3	advanced/aggregate
+aggregate/4	advanced/aggregate
+aggregate_all/3	advanced/aggregate
+aggregate_all/4	advanced/aggregate
+alarm_cancel/2	misc/time
+alarm_new/1	misc/time
+alarm_next/2	misc/time
+alarm_schedule/4	misc/time
+append/3	basic/lists
+apropos/1	basic/utility
+archive_file/3	system/file
+asinh/2	basic/hyper
+assertable_ref/2	experiment/ref
+assumable_ref/2	experiment/ref
+at_end_of_stream/0	stream/byte
+at_end_of_stream/1	stream/byte
+atanh/2	basic/hyper
+bagof/3	advanced/bags
+bagof/4	advanced/bags
+base64_block/2	stream/xml
+between/3	standard/arith
+broker_start/1	experiment/broker
+broker_stop/0	experiment/broker
+call/2	standard/apply
+call/3	standard/apply
+call/4	standard/apply
+call/5	standard/apply
+call/6	standard/apply
+call/7	standard/apply
+call/8	standard/apply
+call_cleanup/2	advanced/signal
+call_nth/2	advanced/sequence
+call_residue/2	misc/residue
+call_residue_vars/2	misc/residue
+canonical_path/2	system/file
+canonical_uri/2	system/uri
+char_class/2	misc/text
+char_class/3	misc/text
+char_digit/3	misc/text
+clause_ref/2	experiment/ref
+clause_ref/3	experiment/ref
+client_new/3	misc/socket
+close/1	stream/stream
+code_class/2	misc/text
+code_class/3	misc/text
+code_digit/3	misc/text
+code_lower/2	misc/text
+code_upper/2	misc/text
+compilable_ref/2	experiment/ref
+compiled_match/2	misc/text
+compiled_ref/2	experiment/ref
+cond_new/2	misc/cond
+cond_notify/1	misc/cond
+cond_notify_all/1	misc/cond
+cond_wait/1	misc/cond
+cond_wait_timeout/2	misc/cond
+contains/2	advanced/sets
+cosh/2	basic/hyper
+counter_new/1	basic/random
+counter_new/2	basic/random
+counter_next/2	basic/random
+create_file/1	system/file
+current_error/1	stream/stream
+current_group/2	system/group
+current_group_flag/3	system/group
+current_input/1	stream/stream
+current_output/1	stream/stream
+current_table/2	advanced/tabling
+current_thread/1	system/group
+current_thread/2	system/group
+current_thread_flag/3	system/thread
+current_time/1	misc/cond
+date_atom/3	system/zone
+date_atom/4	system/zone
+delete_file/1	system/file
+difference/3	advanced/sets
+directory_file/2	system/file
+distinct/1	advanced/sequence
+downcase_atom/2	misc/text
+endpoint_address/2	misc/socket
+endpoint_new/3	misc/socket
+endpoint_port/2	misc/socket
+endpoint_receive/2	misc/socket
+endpoint_send/4	misc/socket
+erase_ref/1	experiment/ref
+error_make/2	stream/console
+error_make/3	stream/console
+exists_directory/1	system/file
+exists_entry/2	system/file
+exists_file/1	system/file
+exit/2	experiment/broker
+expand_goal/2	standard/expand
+expand_rest/2	standard/expand
+expand_term/2	standard/expand
+fail/2	standard/dcg
+flush_output/0	stream/byte
+flush_output/1	stream/byte
+foldl/4	basic/lists
+foldl/5	basic/lists
+foldl/6	basic/lists
+foldl/7	basic/lists
+follow_path/3	system/file
+follow_uri/3	system/uri
+foreach/2	advanced/bags
+foreach/4	advanced/bags
+foreign_dimension/2	basic/array
+foreign_element/2	basic/array
+foreign_length/2	basic/array
+foreign_update/2	basic/array
+format/2	stream/console
+format/3	stream/console
+format_atom/3	system/locale
+format_atom/4	system/locale
+genref/1	basic/random
+get/3	experiment/maps
+get_byte/1	stream/byte
+get_byte/2	stream/byte
+get_char/1	stream/char
+get_char/2	stream/char
+get_code/1	stream/char
+get_code/2	stream/char
+get_descr_model/2	system/locale
+get_descr_model/3	system/locale
+get_descr_platform/2	system/locale
+get_descr_platform/3	system/locale
+get_error_properties/1	system/locale
+get_error_properties/2	system/locale
+get_properties/2	system/locale
+get_properties/3	system/locale
+get_property/3	system/locale
+get_property/4	system/locale
+get_read/2	misc/lock
+get_time/1	system/zone
+get_time/2	system/zone
+get_time/3	system/zone
+get_time/4	system/zone
+get_time_file/2	system/file
+get_write/2	misc/lock
+getenv/2	system/file
+goal_expansion/2	standard/expand
+user:goal_expansion/2	standard/dcg
+goal_rebuilding/2	experiment/simp
+goal_simplification/2	experiment/simp
+group_new/1	system/group
+group_thread/2	system/group
+hash_code/2	standard/sort
+hex_block/2	stream/xml
+host_lookup/2	system/domain
+html_escape/1	stream/xml
+html_escape/2	stream/xml
+intersection/3	advanced/sets
+is_relative_path/1	system/file
+is_relative_uri/1	system/uri
+keysort/2	standard/sort
+keysort/3	standard/sort
+last/2	basic/lists
+last/3	basic/lists
+last_pattern_replace/4	misc/text
+last_pattern_replace/5	misc/text
+length/2	basic/lists
+limit/2	advanced/sequence
+lock_acquire/1	misc/lock
+lock_attempt/1	misc/lock
+lock_attempt_timeout/2	misc/lock
+lock_release/1	misc/lock
+make_authority/4	system/domain
+make_directory/1	system/file
+make_link/4	system/uri
+make_name/3	system/file
+make_pack/3	system/file
+make_path/3	system/file
+make_query/4	system/uri
+make_spec/4	system/uri
+make_uri/4	system/uri
+maplist/2	basic/lists
+maplist/3	basic/lists
+maplist/4	basic/lists
+maplist/5	basic/lists
+member/2	basic/lists
+message_make/3	system/locale
+message_make/4	system/locale
+monitor_new/1	misc/cond
+mutex_new/1	misc/lock
+nl/0	stream/char
+nl/1	stream/char
+nonescalable_new/1	misc/lock
+nth0/3	basic/lists
+nth0/4	basic/lists
+nth1/3	basic/lists
+nth1/4	basic/lists
+number_compare/3	standard/approx
+number_compare/3	standard/sort
+offset/2	advanced/sequence
+open/3	stream/stream
+open/4	stream/stream
+open_resource/2	stream/stream
+open_resource/3	stream/stream
+ord_contains/2	advanced/ordsets
+ord_difference/3	advanced/ordsets
+ord_get/3	experiment/ordmaps
+ord_intersection/3	advanced/ordsets
+ord_put/4	experiment/ordmaps
+ord_remove/3	experiment/ordmaps
+ord_subset/2	advanced/ordsets
+ord_union/3	advanced/ordsets
+order_by/2	advanced/sequence
+pattern_compile/2	misc/text
+pattern_compile/3	misc/text
+pattern_match/2	misc/text
+pattern_match/3	misc/text
+pattern_replace/4	misc/text
+pattern_replace/5	misc/text
+peek_byte/1	stream/byte
+peek_byte/2	stream/byte
+peek_char/1	stream/char
+peek_char/2	stream/char
+peek_code/1	stream/char
+peek_code/2	stream/char
+permutation/2	advanced/sets
+phrase/2	standard/dcg
+phrase/3	standard/dcg
+ping_host/1	system/domain
+pipe_new/1	misc/pipe
+pipe_new/2	misc/pipe
+pipe_offer/2	misc/pipe
+pipe_offer_timeout/3	misc/pipe
+pipe_poll/2	misc/pipe
+pipe_poll_timeout/3	misc/pipe
+pipe_put/2	misc/pipe
+pipe_take/2	misc/pipe
+plus/3	standard/arith
+print_stack_trace/2	stream/console
+print_stack_trace/3	stream/console
+printable/2	misc/residue
+put/4	experiment/maps
+put_byte/1	stream/byte
+put_byte/2	stream/byte
+put_char/1	stream/char
+put_char/2	stream/char
+put_code/1	stream/char
+put_code/2	stream/char
+random/1	basic/random
+random/2	basic/random
+random32/1	basic/random
+random_new/1	basic/random
+random_new/2	basic/random
+random_next/2	basic/random
+random_next/3	basic/random
+random_next32/2	basic/random
+random_permutation/2	basic/random
+random_permutation/3	basic/random
+rational/2	standard/approx
+rationalize/2	standard/approx
+rationalize32/2	standard/approx
+read/1	stream/term
+read/2	stream/term
+read_line/1	stream/console
+read_line/2	stream/console
+read_line_max/2	stream/console
+read_line_max/3	stream/console
+read_punch/1	stream/console
+read_punch/2	stream/console
+read_punch_max/2	stream/console
+read_punch_max/3	stream/console
+read_term/2	stream/term
+read_term/3	stream/term
+readwrite_new/1	misc/lock
+rebuild_goal/2	experiment/simp
+rebuild_goal_arg/3	experiment/simp
+rebuild_rest/2	experiment/simp
+rebuild_term/2	experiment/simp
+receive/2	experiment/broker
+receive/3	experiment/broker
+recorda_ref/1	experiment/ref
+recordz_ref/1	experiment/ref
+ref_property/2	experiment/ref
+remove/3	advanced/sets
+remove/3	experiment/maps
+rename_file/2	system/file
+reset_ref_property/2	experiment/ref
+reset_stream_property/2	stream/stream
+rest_expansion/2	standard/expand
+rest_rebuilding/2	experiment/simp
+rest_simplification/2	experiment/simp
+retract_table/1	advanced/tabling
+retractall_table/1	advanced/tabling
+reverse/2	basic/lists
+rfc1123_atom/2	system/zone
+rpc/2	experiment/broker
+rpc_wrap/3	experiment/broker
+select/3	basic/lists
+self/1	experiment/broker
+send/2	experiment/broker
+server_accept/2	misc/socket
+server_address/2	misc/socket
+server_new/3	misc/socket
+server_port/2	misc/socket
+set_error/1	stream/stream
+set_input/1	stream/stream
+set_output/1	stream/stream
+set_ref_property/2	experiment/ref
+set_stream_length/2	stream/stream
+set_stream_position/2	stream/stream
+set_stream_property/2	stream/stream
+set_thread_flag/3	system/thread
+set_time_file/2	system/file
+setof/3	advanced/bags
+setof/4	advanced/bags
+setup_call_cleanup/3	advanced/signal
+sha1_hash/2	system/domain
+simplify_goal/2	experiment/simp
+simplify_rest/2	experiment/simp
+simplify_term/2	experiment/simp
+sinh/2	basic/hyper
+sort/2	standard/sort
+sort/3	standard/sort
+spawn/3	experiment/broker
+stream_property/2	stream/stream
+subset/2	advanced/sets
+succ/2	standard/arith
+sys_apropos_table/1	basic/utility
+sys_assignable_from/2	basic/proxy
+sys_atom_or_type_of/2	basic/score
+sys_boolean/1	basic/score
+sys_char16/1	basic/score
+sys_cleanup/1	advanced/signal
+sys_cond/2	standard/expand
+sys_current_eq/2	misc/residue
+sys_current_mark/1	misc/residue
+user:sys_declaration_indicator/2	basic/array
+sys_float_exponent/2	standard/approx
+sys_float_mantissa/2	standard/approx
+sys_float_radix/2	standard/approx
+sys_ground/2	standard/sort
+sys_hash_code/3	standard/sort
+sys_ignore/1	advanced/signal
+sys_instance_of/2	basic/proxy
+sys_integer16/1	basic/score
+sys_integer16_and_not_integer8/1	basic/score
+sys_integer32/1	basic/score
+sys_integer32_and_not_integer16/1	basic/score
+sys_integer32_or_float32/1	basic/score
+sys_integer64/1	basic/score
+sys_integer64_and_not_integer32/1	basic/score
+sys_integer64_or_float/1	basic/score
+sys_integer8/1	basic/score
+sys_integer_and_not_integer64/1	basic/score
+sys_mark_attrs/2	misc/residue
+sys_mask/1	advanced/signal
+sys_modext_args/3	standard/apply
+sys_modext_args/4	standard/apply
+sys_modext_args/5	standard/apply
+sys_modext_args/6	standard/apply
+sys_modext_args/7	standard/apply
+sys_modext_args/8	standard/apply
+sys_modext_args/9	standard/apply
+sys_new_instance/2	basic/proxy
+sys_new_instance/3	basic/proxy
+sys_printable_value/2	misc/residue
+sys_type_of/2	basic/score
+sys_unwrap_eq/3	misc/residue
+(table)/1	advanced/tabling
+tanh/2	basic/hyper
+term_expansion/2	standard/expand
+user:term_expansion/2	advanced/tabling
+user:term_expansion/2	standard/dcg
+term_rebuilding/2	experiment/simp
+term_simplification/2	experiment/simp
+text_escape/2	stream/xml
+thread_abort/2	system/thread
+thread_combine/1	system/thread
+thread_combine/2	system/thread
+thread_current/1	system/thread
+thread_down/2	system/thread
+thread_down/3	system/thread
+thread_join/1	system/thread
+thread_kill/1	system/thread
+thread_new/2	system/thread
+thread_new/3	system/group
+thread_sleep/1	system/thread
+thread_start/1	system/thread
+threads/0	system/group
+time_out/2	misc/time
+union/3	advanced/sets
+unit/0	standard/expand
+unslotted_new/1	misc/lock
+upcase_atom/2	misc/text
+uri_encode/2	system/uri
+uri_puny/2	system/domain
+when/2	experiment/broker
+with_lock/2	misc/lock
+write/1	stream/term
+write/2	stream/term
+write_canonical/1	stream/term
+write_canonical/2	stream/term
+write_term/2	stream/term
+write_term/3	stream/term
+writeq/1	stream/term
+writeq/2	stream/term
+{}/3	standard/dcg
 

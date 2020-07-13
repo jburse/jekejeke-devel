@@ -26,40 +26,40 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-!/0	no	builtin/control
-','/2	no	builtin/body
-(:-)/1	no	builtin/body
-(:-)/2	no	builtin/body
-(\+)/1	no	builtin/control
-call/1	no	builtin/body
-catch/3	no	builtin/control
-fail/0	no	builtin/control
-false/0	no	builtin/control
-once/1	no	builtin/control
-otherwise/0	no	builtin/control
-reset_predicate_property/2	no	builtin/special
-reset_source_property/2	no	builtin/special
-set_oper_property/2	no	builtin/special
-set_predicate_property/2	no	builtin/special
-set_source_property/2	no	builtin/special
-special/3	no	builtin/special
-sys_alter/2	no	builtin/body
-sys_begin/0	no	builtin/body
-sys_check_style_predicate/1	no	builtin/special
-sys_commit/0	no	builtin/body
-sys_context_property/2	no	builtin/special
-sys_declaration_indicator/2	no	builtin/special
-sys_error_type/2	no	builtin/control
-sys_guard/1	no	builtin/body
-sys_neutral_oper/1	no	builtin/special
-sys_neutral_predicate/1	no	builtin/special
-sys_raise/1	no	builtin/control
-sys_sequen/1	no	builtin/body
-sys_soft_begin/0	no	builtin/body
-sys_soft_commit/0	no	builtin/body
-sys_trap/3	no	builtin/control
-throw/1	no	builtin/control
-throw/2	no	builtin/control
-true/0	no	builtin/control
-(virtual)/1	no	builtin/special
+!/0	builtin/control
+','/2	builtin/body
+(:-)/1	builtin/body
+(:-)/2	builtin/body
+(\+)/1	builtin/control
+call/1	builtin/body
+catch/3	builtin/control
+fail/0	builtin/control
+false/0	builtin/control
+once/1	builtin/control
+otherwise/0	builtin/control
+reset_predicate_property/2	builtin/special
+reset_source_property/2	builtin/special
+set_oper_property/2	builtin/special
+set_predicate_property/2	builtin/special
+set_source_property/2	builtin/special
+special/3	builtin/special
+sys_alter/2	builtin/body
+sys_begin/0	builtin/body
+sys_check_style_predicate/1	builtin/special
+sys_commit/0	builtin/body
+sys_context_property/2	builtin/special
+sys_declaration_indicator/2	builtin/special
+sys_error_type/2	builtin/control
+sys_guard/1	builtin/body
+sys_neutral_oper/1	builtin/special
+sys_neutral_predicate/1	builtin/special
+sys_raise/1	builtin/control
+sys_sequen/1	builtin/body
+sys_soft_begin/0	builtin/body
+sys_soft_commit/0	builtin/body
+sys_trap/3	builtin/control
+throw/1	builtin/control
+throw/2	builtin/control
+true/0	builtin/control
+(virtual)/1	builtin/special
 

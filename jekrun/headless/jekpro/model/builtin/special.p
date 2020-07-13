@@ -7,7 +7,7 @@
  * the given service number parameter.
  *
  * Syntax:
- * directive --> "special(" indicator "," module "," integer ")".
+ * directive --> "special(" indicator "," class "," integer ")".
  *
  * Example:
  * :- special(foo/1, 'FooAPI', 7). % is a special predicate directive.
