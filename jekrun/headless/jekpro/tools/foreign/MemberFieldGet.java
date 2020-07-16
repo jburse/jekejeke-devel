@@ -128,7 +128,7 @@ final class MemberFieldGet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = AbstractMember.invokeGetter(field, obj);
+        Object res = invokeGetter(obj);
         res = Types.normJava(encoderet, res);
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
@@ -153,7 +153,7 @@ final class MemberFieldGet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = AbstractMember.invokeGetter(field, obj);
+        Object res = invokeGetter(obj);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
@@ -171,6 +171,24 @@ final class MemberFieldGet extends AbstractMember {
         if (ext)
             d.remTab(en);
         return true;
+    }
+
+    /**
+     * <p>Invoke the method.</p>
+     *
+     * @param obj The receiver.
+     * @return The invokcation result.
+     * @throws EngineMessage FFI error.
+     */
+    private Object invokeGetter(Object obj)
+            throws EngineMessage {
+        try {
+            return field.get(obj);
+        } catch (Exception x) {
+            throw Types.mapException(x, field);
+        } catch (Error x) {
+            throw Types.mapError(x);
+        }
     }
 
     /***************************************************************/

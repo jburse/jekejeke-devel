@@ -6,7 +6,7 @@ import jekpro.model.inter.StackElement;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 
@@ -198,7 +198,7 @@ public final class EngineException extends Exception {
                 Object val;
                 if (sa != null) {
                     int arity = StackElement.callableToArity(en.skel);
-                    val = SpecialQuali.indicatorToColonSkel(sa, arity, en);
+                    val = SpecialPred.indicatorToColonSkel(sa, arity, en);
                     PositionKey pos = sa.getPosition();
                     if (pos != null) {
                         val = new SkelCompound(new SkelAtom(OP_PRED_FILE_LINE), val,

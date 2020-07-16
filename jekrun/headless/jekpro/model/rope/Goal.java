@@ -6,13 +6,12 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.ListArray;
 import matula.util.wire.AbstractLivestock;
 
 /**
@@ -112,7 +111,7 @@ public class Goal extends Intermediate {
             int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_PROCEDURE,
-                    SpecialQuali.indicatorToColonSkel(sa, arity, en)));
+                    SpecialPred.indicatorToColonSkel(sa, arity, en)));
         }
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
@@ -120,7 +119,7 @@ public class Goal extends Intermediate {
             int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_BODY,
-                    SpecialQuali.indicatorToColonSkel(sa, arity, en)));
+                    SpecialPred.indicatorToColonSkel(sa, arity, en)));
         }
         en.skel = alfa;
         en.display = d1;

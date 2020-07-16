@@ -10,10 +10,10 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.runtime.SpecialDynamic;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.AbstractRuntime;
@@ -89,7 +89,7 @@ public final class SpecialForeign extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 String name = SpecialForeign.methodName(temp[2], ref, en);
                 if (OP_NAME_CONSTRUCTOR.equals(name))
@@ -98,7 +98,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 Class[] paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 Method mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
                 AbstractFactory factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createMethod(mth, en, true))
+                if (!factory.getReflection().createMethod(mth, en))
                     throw new EngineMessage(en.skel);
                 AbstractDelegate del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -113,7 +113,7 @@ public final class SpecialForeign extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialForeign.methodName(temp[2], ref, en);
                 if (!OP_NAME_CONSTRUCTOR.equals(name))
@@ -137,12 +137,12 @@ public final class SpecialForeign extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_GETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_GET))
+                if (!factory.getReflection().createField(fld, en, AbstractReflection.FIELD_GET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -157,12 +157,12 @@ public final class SpecialForeign extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_SETTER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createField(fld, en, AbstractFactory.FIELD_SET))
+                if (!factory.getReflection().createField(fld, en, AbstractReflection.FIELD_SET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())

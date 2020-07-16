@@ -8,7 +8,8 @@ import jekpro.model.pretty.FileText;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -516,7 +517,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
         /* detect term and body */
-        SpecialQuali.colonToCallable(temp[0], ref, true, en);
+        SpecialLogic.colonToCallable(temp[0], ref, true, en);
         Object head = en.skel;
         Display refhead = en.display;
 
@@ -676,7 +677,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -697,7 +698,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -718,7 +719,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -738,7 +739,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }

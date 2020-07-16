@@ -22,6 +22,7 @@ import jekpro.tools.array.Types;
 import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
+import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -193,11 +194,11 @@ public final class AutoClass extends AbstractAuto {
                 continue;
             if ((field.getModifiers() & SYNTHETIC) != 0)
                 continue;
-            if (createField(field, en, AbstractFactory.FIELD_GET))
+            if (createField(field, en, AbstractReflection.FIELD_GET))
                 addForeignScore((AbstractMember) en.skel);
             if (Modifier.isFinal(field.getModifiers()))
                 continue;
-            if (createField(field, en, AbstractFactory.FIELD_SET))
+            if (createField(field, en, AbstractReflection.FIELD_SET))
                 addForeignScore((AbstractMember) en.skel);
         }
     }
@@ -333,26 +334,12 @@ public final class AutoClass extends AbstractAuto {
     private SkelCompound makeGoal(AbstractMember del, Predicate over,
                                   Object[] args, int i) {
         SkelCompound goal;
-        if (((del.subflags & AbstractDelegate.MASK_DELE_ARIT) != 0)) {
-            Object[] args1 = new Object[args.length - 1];
-            System.arraycopy(args, 0, args1, 0, args1.length);
-            SkelCompound expr;
-            if (!del.getDeclaringClass().equals(getAuto())) {
-                String fun = over.getFun();
-                expr = new SkelCompound(new SkelAtom(fun, this), args1);
-            } else {
-                String fun = del.getFun() + OP_VARIANT + i;
-                expr = new SkelCompound(new SkelAtom(fun, this), args1);
-            }
-            goal = new SkelCompound(new SkelAtom("is", this), args[args.length - 1], expr);
+        if (!del.getDeclaringClass().equals(getAuto())) {
+            String fun = over.getFun();
+            goal = new SkelCompound(new SkelAtom(fun, this), args);
         } else {
-            if (!del.getDeclaringClass().equals(getAuto())) {
-                String fun = over.getFun();
-                goal = new SkelCompound(new SkelAtom(fun, this), args);
-            } else {
-                String fun = del.getFun() + OP_VARIANT + i;
-                goal = new SkelCompound(new SkelAtom(fun, this), args);
-            }
+            String fun = del.getFun() + OP_VARIANT + i;
+            goal = new SkelCompound(new SkelAtom(fun, this), args);
         }
         return goal;
     }
@@ -512,12 +499,12 @@ public final class AutoClass extends AbstractAuto {
     public static boolean createField(Field f, Engine en, int k) {
         AbstractMember del;
         switch (k) {
-            case AbstractFactory.FIELD_GET:
+            case AbstractReflection.FIELD_GET:
                 del = new MemberFieldGet(f);
                 if (!del.encodeSignaturePred(en))
                     return false;
                 break;
-            case AbstractFactory.FIELD_SET:
+            case AbstractReflection.FIELD_SET:
                 if (Modifier.isFinal(f.getModifiers())) {
                     en.skel = EngineMessage.domainError(
                             AbstractFactory.OP_DOMAIN_FOREIGN_ACCESS,

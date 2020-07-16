@@ -11,6 +11,7 @@ import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.call.AbstractAuto;
+import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -119,13 +120,13 @@ public final class AutoArray extends AbstractAuto {
      */
     private void collectArrays(Engine en)
             throws EngineMessage {
-        if (createArray(getAuto(), en, AbstractFactory.ARRAY_NEW))
+        if (createArray(getAuto(), en, AbstractReflection.ARRAY_NEW))
             addForeign((AbstractLense) en.skel);
-        if (createArray(getAuto(), en, AbstractFactory.ARRAY_LENGTH))
+        if (createArray(getAuto(), en, AbstractReflection.ARRAY_LENGTH))
             addForeign((AbstractLense) en.skel);
-        if (createArray(getAuto(), en, AbstractFactory.ARRAY_GET))
+        if (createArray(getAuto(), en, AbstractReflection.ARRAY_GET))
             addForeign((AbstractLense) en.skel);
-        if (createArray(getAuto(), en, AbstractFactory.ARRAY_SET))
+        if (createArray(getAuto(), en, AbstractReflection.ARRAY_SET))
             addForeign((AbstractLense) en.skel);
     }
 
@@ -201,22 +202,22 @@ public final class AutoArray extends AbstractAuto {
         }
         AbstractLense del;
         switch (k) {
-            case AbstractFactory.ARRAY_LENGTH:
+            case AbstractReflection.ARRAY_LENGTH:
                 del = new LenseLength(c);
                 if (!del.encodeSignaturePred(en))
                     return false;
                 break;
-            case AbstractFactory.ARRAY_NEW:
+            case AbstractReflection.ARRAY_NEW:
                 del = new LenseDimension(c);
                 if (!del.encodeSignaturePred(en))
                     return false;
                 break;
-            case AbstractFactory.ARRAY_GET:
+            case AbstractReflection.ARRAY_GET:
                 del = new LenseElement(c);
                 if (!del.encodeSignaturePred(en))
                     return false;
                 break;
-            case AbstractFactory.ARRAY_SET:
+            case AbstractReflection.ARRAY_SET:
                 del = new LenseUpdate(c);
                 if (!del.encodeSignaturePred(en))
                     return false;

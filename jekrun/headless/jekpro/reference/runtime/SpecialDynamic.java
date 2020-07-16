@@ -197,7 +197,7 @@ public final class SpecialDynamic extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -217,7 +217,7 @@ public final class SpecialDynamic extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -237,7 +237,7 @@ public final class SpecialDynamic extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -255,7 +255,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * @param en   The engine.
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
-     * @see SpecialQuali#slashToClass
+     * @see EvaluableLogic#slashToClass
      */
     public static Object slashToClassSkel(Object t,
                                           boolean comp,
@@ -333,7 +333,7 @@ public final class SpecialDynamic extends AbstractSpecial {
      * @param err The error flag.
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
-     * @see SpecialQuali#slashToPackage
+     * @see EvaluableLogic#slashToPackage
      */
     private static SkelAtom slashToPackageSkel(Object t,
                                                boolean set,
@@ -455,13 +455,13 @@ public final class SpecialDynamic extends AbstractSpecial {
      * @param en The engine.
      * @return The output skeleton.
      * @throws EngineMessage Shit happens.
-     * @see SpecialQuali#colonToCallable
+     * @see SpecialLogic#colonToCallable
      */
     public static Object colonToCallableSkel(Object t, Engine en)
             throws EngineMessage {
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
             Object mod = slashToClassSkel(temp.args[0], false, true, en);
             if (!(mod instanceof AbstractSkel) &&
@@ -492,7 +492,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             }
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             SkelCompound temp = (SkelCompound) t;
             Object mod = slashToClassSkel(temp.args[0], true, true, en);
             if (!(mod instanceof AbstractSkel) &&
@@ -569,7 +569,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                     Object s = new SkelCompound(sa3, temp.args, temp.var);
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                    SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLON, sa.scope, m);
+                    SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
                     sa2.setPosition(sa.getPosition());
                     return new SkelCompound(sa2, t, s);
 
@@ -584,7 +584,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                         s = sa3;
                     }
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                    SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLONCOLON, sa.scope, m);
+                    SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLONCOLON, sa.scope, m);
                     sa2.setPosition(sa.getPosition());
                     return new SkelCompound(sa2, t, s);
                 }
@@ -598,7 +598,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLON, sa.scope, m);
+                SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
                 sa2.setPosition(sa.getPosition());
                 return new SkelCompound(sa2, t, s);
             }
@@ -635,7 +635,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                     Object s = new SkelCompound(sa3, temp.args, temp.var);
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                    SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLON, sa.scope, m);
+                    SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
                     sa2.setPosition(sa.getPosition());
                     return new SkelCompound(sa2, t, s);
 
@@ -650,7 +650,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                         s = sa3;
                     }
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                    SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLONCOLON, sa.scope, m);
+                    SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLONCOLON, sa.scope, m);
                     sa2.setPosition(sa.getPosition());
                     return new SkelCompound(sa2, t, s);
                 }
@@ -663,7 +663,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-                SkelAtom sa2 = en.store.foyer.createAtom(SpecialQuali.OP_COLON, sa.scope, m);
+                SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
                 sa2.setPosition(sa.getPosition());
                 return new SkelCompound(sa2, t, s);
             }

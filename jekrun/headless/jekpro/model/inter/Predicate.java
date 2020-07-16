@@ -7,7 +7,8 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
@@ -232,8 +233,8 @@ public final class Predicate {
                 return c;
             } else if (c instanceof SkelCompound &&
                     ((SkelCompound) c).args.length == 1 &&
-                    ((SkelCompound) c).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-                return new SkelCompound(new SkelAtom(SpecialQuali.OP_COLONCOLON),
+                    ((SkelCompound) c).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+                return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
                         checkMetaSpezArg2(((SkelCompound) c).args[0],
                                 ref, en));
             } else if (c instanceof SkelCompound &&
@@ -284,8 +285,8 @@ public final class Predicate {
             return num;
         } else if (c instanceof SkelCompound &&
                 ((SkelCompound) c).args.length == 1 &&
-                ((SkelCompound) c).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-            return new SkelCompound(new SkelAtom(SpecialQuali.OP_COLONCOLON),
+                ((SkelCompound) c).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
                     checkMetaSpezArg2(((SkelCompound) c).args[0],
                             ref, en));
         } else {
@@ -378,7 +379,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_REDEFINE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         getFun(), getSource().getStore().user,
                         getArity(), en)));
     }
@@ -625,7 +626,7 @@ public final class Predicate {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_COERCE,
                     EngineMessage.OP_PERMISSION_VIRTUAL,
-                    SpecialQuali.indicatorToColonSkel(
+                    SpecialPred.indicatorToColonSkel(
                             pick.getFun(), pick.getSource().getStore().user,
                             pick.getArity(), en)));
         }
@@ -636,7 +637,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -706,7 +707,7 @@ public final class Predicate {
         en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -738,7 +739,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -761,7 +762,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_MULTIFILE_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -784,7 +785,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_PUBLIC_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -807,7 +808,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -830,7 +831,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_FUNCTION_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -854,7 +855,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DYNAMIC_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -878,7 +879,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -902,7 +903,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }
@@ -961,7 +962,7 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_IMPLEMENTATION_PRED,
-                SpecialQuali.indicatorToColonSkel(
+                SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
     }

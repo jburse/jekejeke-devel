@@ -64,7 +64,6 @@ public final class EvaluableElem extends AbstractSpecial {
      */
     public EvaluableElem(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

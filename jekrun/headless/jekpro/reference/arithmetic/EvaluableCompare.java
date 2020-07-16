@@ -53,7 +53,6 @@ public final class EvaluableCompare extends AbstractSpecial {
      */
     public EvaluableCompare(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

@@ -64,6 +64,12 @@
 :- public infix(*->).
 :- op(1050, xfy, *->).
 
+:- public infix(:).
+:- op(600, xfy, :).
+
+:- public infix(::).
+:- op(600, xfy, ::).
+
 /**
  * A; B: [ISO 7.8.6]
  * The predicate succeeds whenever A or B succeeds. Both goal
@@ -84,7 +90,9 @@
 % +Goal ; +Goal
 :- public ;/2.
 :- sys_notrace ;/2.
-:- meta_predicate ;(0, 0).
+:- set_predicate_property(;/2, meta_predicate(;(0, 0))).
+:- sys_context_property(here, C),
+   set_predicate_property(;/2, sys_meta_predicate(C)).
 _; _ :- throw(error(existence_error(body, ;/2), _)).
 
 /**
@@ -95,7 +103,9 @@ _; _ :- throw(error(existence_error(body, ;/2), _)).
 % +Goal -> +Goal
 :- public -> /2.
 :- sys_notrace -> /2.
-:- meta_predicate ->(0, 0).
+:- set_predicate_property(-> /2, meta_predicate(->(0, 0))).
+:- sys_context_property(here, C),
+   set_predicate_property(-> /2, sys_meta_predicate(C)).
 _ -> _ :- throw(error(existence_error(body, -> /2), _)).
 
 /**
@@ -106,7 +116,9 @@ _ -> _ :- throw(error(existence_error(body, -> /2), _)).
 % +Goal *-> +Goal
 :- public *-> /2.
 :- sys_notrace *-> /2.
-:- meta_predicate *->(0, 0).
+:- set_predicate_property(*-> /2, meta_predicate(*->(0, 0))).
+:- sys_context_property(here, C),
+   set_predicate_property(*-> /2, sys_meta_predicate(C)).
 _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
 
 /**
@@ -124,7 +136,9 @@ repeat :- repeat.
  * such that B fails. Otherwise the predicate fails.
  */
 :- public forall/2.
-:- meta_predicate forall(0, 0).
+:- set_predicate_property(forall/2, meta_predicate(forall(0, 0))).
+:- sys_context_property(here, C),
+   set_predicate_property(forall/2, sys_meta_predicate(C)).
 forall(A, B) :- \+ (A, \+ B).
 
 /**
@@ -136,10 +150,88 @@ forall(A, B) :- \+ (A, \+ B).
  */
 % findall(+Template, +Goal, -List)
 :- public findall/3.
-:- meta_predicate findall(?, 0, ?).
+:- set_predicate_property(findall/3, meta_predicate(findall(?, 0, ?))).
+:- sys_context_property(here, C),
+   set_predicate_property(findall/3, sys_meta_predicate(C)).
 :- special(findall/3, 'SpecialLogic', 0).
 
 % findall(+Template, +Goal, -List, +List)
 :- public findall/4.
-:- meta_predicate findall(?, 0, ?, ?).
+:- set_predicate_property(findall/4, meta_predicate(findall(?, 0, ?, ?))).
+:- sys_context_property(here, C),
+   set_predicate_property(findall/4, sys_meta_predicate(C)).
 :- special(findall/4, 'SpecialLogic', 1).
+
+/*******************************************************/
+/* Qualified Calls & Evaluations                       */
+/*******************************************************/
+
+/**
+ * M:C:
+ * The predicate calls the callable C by qualifying the predicate
+ * name of C by the module name M. The call is performed in the
+ * same call-site as the colon notation.
+ */
+% +Slash : +Callable:
+:- public : /2.
+:- virtual : /2.
+:- set_predicate_property(: /2, meta_predicate(:(?, 0))).
+:- sys_context_property(here, C),
+   set_predicate_property(: /2, sys_meta_predicate(C)).
+:- special(: /2, 'SpecialLogic', 2).
+:- set_predicate_property(: /2, sys_notrace).
+
+/**
+ * R::C:
+ * The predicate calls the callable C by qualifying the predicate
+ * name of C by the module name of R and prepending R itself.
+ */
+% +Slash :: +Callable:
+:- public :: /2.
+:- virtual :: /2.
+:- set_predicate_property(:: /2, meta_predicate(::(?, ::(0)))).
+:- sys_context_property(here, C),
+   set_predicate_property(:: /2, sys_meta_predicate(C)).
+:- special(:: /2, 'SpecialLogic', 3).
+:- set_predicate_property(:: /2, sys_notrace).
+
+/**
+ * M:E:
+ * The function evaluates the expression E by qualifying the function
+ * name of E by the module name M.
+ */
+% +Slash : +Callable:
+:- public : /3.
+:- virtual : /3.
+:- set_predicate_property(: /3, meta_predicate(:(?, 1, ?))).
+:- sys_context_property(here, C),
+   set_predicate_property(: /3, sys_meta_predicate(C)).
+:- special(: /3, 'EvaluableLogic', 0).
+:- set_predicate_property(: /3, sys_notrace).
+
+/**
+ * R::E:
+ * The function evaluates the expression E by qualifying the function
+ * name of E by the module name of R and prepending R itself.
+ */
+% +Slash :: +Callable:
+:- public :: /3.
+:- virtual :: /3.
+:- set_predicate_property(:: /3, meta_predicate(::(?, ::(1), ?))).
+:- sys_context_property(here, C),
+   set_predicate_property(:: /3, sys_meta_predicate(C)).
+:- special(:: /3, 'EvaluableLogic', 1).
+:- set_predicate_property(:: /3, sys_notrace).
+
+/*******************************************************/
+/* Call Site                                           */
+/*******************************************************/
+
+/**
+ * sys_replace_site(B, Q, A):
+ * The predicate succeeds for a new callable B which is a clone of
+ * the callable A with all the site properties of the callable Q.
+ */
+% sys_replace_site(-Term, +Term, +Term)
+:- public sys_replace_site/3.
+:- special(sys_replace_site/3, 'SpecialLogic', 4).

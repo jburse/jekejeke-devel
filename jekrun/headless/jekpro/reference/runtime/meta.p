@@ -63,6 +63,7 @@
  */
 
 :- module(user, []).
+:- use_module(library(runtime/quali)).
 
 :- public prefix(meta_predicate).
 :- op(1150, fx, meta_predicate).
@@ -88,7 +89,7 @@ meta_predicate P :- sys_meta_predicate(P).
 
 :- private sys_meta_predicate/1.
 sys_meta_predicate(P) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    once((predicate_property(I, sys_usage(D)),
@@ -96,12 +97,12 @@ sys_meta_predicate(P) :-
    \+ predicate_property(I, sys_meta_predicate(D)),
    throw(error(permission_error(promote, meta_predicate, I), _)).
 sys_meta_predicate(P) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    sys_neutral_predicate(I),
    predicate_property(I, full_name(N)),
-   sys_univ(P, [_|L]),
+   P =.. [_|L],
    R =.. [N|L],
    set_predicate_property(I, meta_predicate(R)),
    set_predicate_property(I, sys_meta_predicate(C)).
@@ -120,7 +121,7 @@ meta_function P :- sys_meta_function(P).
 
 :- private sys_meta_function/1.
 sys_meta_function(P) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    once((predicate_property(I, sys_usage(D)),
@@ -128,12 +129,12 @@ sys_meta_function(P) :-
    \+ predicate_property(I, sys_meta_function(D)),
    throw(error(permission_error(promote, meta_function, I), _)).
 sys_meta_function(P) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I),
    sys_context_property(F, C),
    sys_neutral_predicate(I),
    predicate_property(I, full_name(N)),
-   sys_univ(P, [_|L]),
+   P =.. [_|L],
    R =.. [N|L],
    set_predicate_property(I, meta_function(R)),
    set_predicate_property(I, sys_meta_function(C)).
@@ -143,8 +144,8 @@ sys_meta_function(P) :-
 :- public sys_declaration_indicator/2.
 :- multifile sys_declaration_indicator/2.
 sys_declaration_indicator(meta_predicate(P), I) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I).
 sys_declaration_indicator(meta_function(P), I) :-
-   sys_functor(P, F, A),
+   functor(P, F, A),
    sys_make_indicator(F, A, I).

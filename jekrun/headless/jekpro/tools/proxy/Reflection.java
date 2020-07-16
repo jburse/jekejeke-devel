@@ -103,10 +103,9 @@ public final class Reflection extends AbstractReflection {
      *
      * @param m  The method.
      * @param en The engine.
-     * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public boolean createMethod(Method m, Engine en, boolean k) {
+    public boolean createMethod(Method m, Engine en) {
         return AutoClass.createMethod(m, en);
     }
 

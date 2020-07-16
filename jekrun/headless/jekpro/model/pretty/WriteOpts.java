@@ -9,7 +9,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractSkel;
@@ -510,7 +510,7 @@ public final class WriteOpts {
             return false;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             return true;
         } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
@@ -536,7 +536,7 @@ public final class WriteOpts {
             return false;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             return false;
         } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
@@ -562,7 +562,7 @@ public final class WriteOpts {
             return 0;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             int k = spezToOffset2(((SkelCompound) obj).args[0]);
             return (k >= 0 ? k + 1 : k - 1);
         } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
@@ -583,7 +583,7 @@ public final class WriteOpts {
             return ((Integer) obj).intValue();
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             int k = spezToOffset(((SkelCompound) obj).args[0]);
             return (k >= 0 ? k + 1 : k - 1);
         } else {
@@ -619,7 +619,7 @@ public final class WriteOpts {
             return 0;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             return spezToShift2(((SkelCompound) obj).args[0]) + 1;
         } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
@@ -639,7 +639,7 @@ public final class WriteOpts {
             return 0;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             return spezToShift(((SkelCompound) obj).args[0]) + 1;
         } else {
             throw new IllegalArgumentException("illegal meta spec");

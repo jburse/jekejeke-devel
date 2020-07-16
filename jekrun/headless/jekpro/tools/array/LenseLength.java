@@ -55,7 +55,6 @@ final class LenseLength extends AbstractLense {
      */
     LenseLength(Class c) {
         clazz = c;
-        subflags |= MASK_DELE_ARIT;
         subflags |= MASK_METH_FUNC;
     }
 

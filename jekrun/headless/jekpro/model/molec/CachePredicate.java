@@ -6,7 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -550,7 +550,7 @@ public final class CachePredicate extends AbstractCache {
                         throw new EngineMessage(EngineMessage.permissionError(
                                 EngineMessage.OP_PERMISSION_MODIFY,
                                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                                SpecialQuali.indicatorToColonSkel(sa, arity, en)));
+                                SpecialPred.indicatorToColonSkel(sa, arity, en)));
                     return cp;
                 }
                 if (temp instanceof CachePredicate) {
@@ -589,7 +589,7 @@ public final class CachePredicate extends AbstractCache {
                             throw new EngineMessage(EngineMessage.permissionError(
                                     EngineMessage.OP_PERMISSION_MODIFY,
                                     EngineMessage.OP_PERMISSION_PROCEDURE,
-                                    SpecialQuali.indicatorToColonSkel(sa, arity, en)));
+                                    SpecialPred.indicatorToColonSkel(sa, arity, en)));
                         return cp;
                     }
                 }

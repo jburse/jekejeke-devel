@@ -72,6 +72,8 @@ sys_oneof2([X|Y], Z, [W|T], W) :- sys_oneof2(Y, Z, T, X).
 % var(+Term)
 :- special(var/1, 'SpecialMember', 1).
 :- set_predicate_property(var/1, visible(public)).
+:- sys_context_property(here, C),
+   set_predicate_property(var/1, sys_public(C)).
 
 % nonvar(+Term)
 :- special(nonvar/1, 'SpecialMember', 2).
@@ -87,6 +89,8 @@ functor(T, F, A) :- var(T), !,
 functor(T, F, A) :-
    sys_term_to_functor(T, F, A).
 :- set_predicate_property(functor/3, visible(public)).
+:- sys_context_property(here, C),
+   set_predicate_property(functor/3, sys_public(C)).
 
 :- special(sys_functor_to_term/3, 'SpecialMember', 4).
 :- set_predicate_property(sys_functor_to_term/3, visible(private)).

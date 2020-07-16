@@ -10,7 +10,9 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialForeign;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.EvaluableLogic;
+import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.proxy.InterfaceSlots;
 import jekpro.tools.proxy.ProxyHandler;
@@ -58,6 +60,7 @@ public final class SpecialProxy extends AbstractSpecial {
     private final static int SPECIAL_SYS_PROXY_HANDLER = 0;
     private final static int SPECIAL_SYS_PROXY_STATE = 1;
     private final static int SPECIAL_SYS_ASSIGNABLE_FROM = 2;
+    private final static int SPECIAL_SYS_SYS_GET_CLASS = 3;
 
     private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
 
@@ -88,8 +91,8 @@ public final class SpecialProxy extends AbstractSpecial {
                 case SPECIAL_SYS_PROXY_HANDLER:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    SkelAtom sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
+                    Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                    SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
@@ -97,8 +100,8 @@ public final class SpecialProxy extends AbstractSpecial {
                 case SPECIAL_SYS_PROXY_STATE:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    sa = SpecialQuali.modToAtom(obj, temp[0], ref, en);
+                    obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                    sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
                     Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int size = SpecialEval.castIntValue(num);
@@ -109,11 +112,22 @@ public final class SpecialProxy extends AbstractSpecial {
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
-                    SkelAtom mod = SpecialQuali.modToAtom(obj, temp[0], ref, en);
-                    obj = SpecialQuali.slashToClass(temp[1], ref, false, true, en);
-                    sa = SpecialQuali.modToAtom(obj, temp[1], ref, en);
+                    obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                    SkelAtom mod = SpecialLogic.modToAtom(obj, temp[0], ref, en);
+                    obj = EvaluableLogic.slashToClass(temp[1], ref, false, true, en);
+                    sa = SpecialLogic.modToAtom(obj, temp[1], ref, en);
                     if (!CacheSubclass.getSubclass(sa, mod, en))
+                        return false;
+                    return true;
+                case SPECIAL_SYS_SYS_GET_CLASS:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    Object m = SpecialUniv.derefAndCastRef(temp[0], ref);
+                    obj = SpecialProxy.refClassOrProxy(m);
+                    if (obj == null)
+                        throw new EngineMessage(EngineMessage.domainError(
+                                EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
+                    if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return true;
                 default:

@@ -139,43 +139,6 @@ abstract class AbstractMember extends AbstractLense
     /***********************************************************/
 
     /**
-     * <p>Build the arguments array. The arguments of the term
-     * are computed, checked and converted if necessary.</p>
-     *
-     * @param temp The skeleton.
-     * @param ref  The display.
-     * @param en   The engine.
-     * @return The arguments array.
-     * @throws EngineMessage   FFI error.
-     * @throws EngineException FFI error.
-     */
-    final Object[] computeAndConvertArgs(Object temp, Display ref,
-                                         Engine en)
-            throws EngineMessage, EngineException {
-        if (encodeparas.length == 0)
-            return AbstractMember.VOID_ARGS;
-        Object[] args = new Object[encodeparas.length];
-        int k = 0;
-        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
-            k++;
-        for (int i = 0; i < encodeparas.length; i++) {
-            int typ = encodeparas[i];
-            if (typ == Types.TYPE_INTERPRETER) {
-                args[i] = en.proxy;
-            } else {
-                en.computeExpr(((SkelCompound) temp).args[k], ref);
-                Display d = en.display;
-                boolean multi = d.getAndReset();
-                args[i] = Types.denormProlog(typ, en.skel, d);
-                if (multi)
-                    d.remTab(en);
-                k++;
-            }
-        }
-        return args;
-    }
-
-    /**
      * <p>Convert the receiver, if any.</p>
      *
      * @param temp The arguments skeleton.
@@ -311,25 +274,6 @@ abstract class AbstractMember extends AbstractLense
             }
         } catch (Exception x) {
             throw Types.mapException(x, method);
-        } catch (Error x) {
-            throw Types.mapError(x);
-        }
-    }
-
-
-    /**
-     * <p>Invoke the method.</p>
-     *
-     * @param obj The receiver.
-     * @return The invokcation result.
-     * @throws EngineMessage FFI error.
-     */
-    static Object invokeGetter(Field field, Object obj)
-            throws EngineMessage {
-        try {
-            return field.get(obj);
-        } catch (Exception x) {
-            throw Types.mapException(x, field);
         } catch (Error x) {
             throw Types.mapError(x);
         }

@@ -26,299 +26,297 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-# /3	no	arithmetic/ratio
-* /3	yes	arithmetic/elem
-* /3	no	arithmetic/ratio
-** /3	yes	arithmetic/trigo
-*-> /2	no	runtime/logic
-(+)/2	yes	arithmetic/elem
-(+)/2	no	arithmetic/ratio
-(+)/3	yes	arithmetic/elem
-(+)/3	no	arithmetic/ratio
-(-)/2	yes	arithmetic/elem
-(-)/2	no	arithmetic/ratio
-(-)/3	yes	arithmetic/elem
-(-)/3	no	arithmetic/ratio
--> /2	no	runtime/logic
-'.'/2	no	bootload/load
-/ /3	yes	arithmetic/elem
-/ /3	no	arithmetic/ratio
-// /3	no	arithmetic/ratio
-// /3	yes	arithmetic/round
-/\ /3	yes	arithmetic/bits
-: /2	no	runtime/quali
-: /3	yes	runtime/quali
-:: /2	no	runtime/quali
-:: /3	yes	runtime/quali
-;/2	no	runtime/logic
-< /2	no	arithmetic/compare
-< /2	no	arithmetic/ratio
-<< /3	yes	arithmetic/bits
-=.. /2	no	structure/univ
-=:= /2	no	arithmetic/compare
-=:= /2	no	arithmetic/ratio
-=< /2	no	arithmetic/compare
-=< /2	no	arithmetic/ratio
-== /2	no	structure/lexical
-=\= /2	no	arithmetic/compare
-=\= /2	no	arithmetic/ratio
-> /2	no	arithmetic/ratio
->= /2	no	arithmetic/compare
->= /2	no	arithmetic/ratio
->> /3	yes	arithmetic/bits
-@< /2	no	structure/lexical
-@=< /2	no	structure/lexical
-@> /2	no	structure/lexical
-@>= /2	no	structure/lexical
-[]/0	no	bootload/load
-(\)/2	yes	arithmetic/bits
-\/ /3	yes	arithmetic/bits
-\= /2	no	structure/univ
-\== /2	no	structure/lexical
-^ /3	yes	arithmetic/elem
-^ /3	no	arithmetic/ratio
-abolish/1	no	runtime/dynamic
-abort/0	no	runtime/session
-abs/2	yes	arithmetic/elem
-abs/2	no	arithmetic/ratio
-absolute_file_name/2	no	bootload/path
-absolute_file_name/3	no	bootload/path
-absolute_resource_name/2	no	bootload/path
-acos/2	yes	arithmetic/trigo
-acyclic_term/1	no	structure/vars
-arg/3	no	structure/univ
-asin/2	yes	arithmetic/trigo
-asserta/1	no	runtime/dynamic
-assertz/1	no	runtime/dynamic
-atan/2	yes	arithmetic/trigo
-atan2/3	no	arithmetic/trigo
-atom/1	no	structure/type
-atom_block/2	no	structure/bytes
-atom_block/3	no	structure/bytes
-atom_chars/2	no	structure/atom
-atom_codes/2	no	structure/atom
-atom_concat/3	no	structure/atom
-atom_integer/3	no	structure/atom
-atom_length/2	no	structure/atom
-atom_number/2	no	structure/atom
-atom_split/3	no	structure/atom
-atomic/1	no	structure/type
-balance/1	no	runtime/distributed
-balance/2	no	runtime/distributed
-begin_module/1	no	bootload/engine
-break/0	no	runtime/session
-callable/1	no	structure/type
-ceiling/2	no	arithmetic/ratio
-ceiling/2	yes	arithmetic/round
-char_code/2	no	structure/atom
-clause/2	no	runtime/dynamic
-close/0	no	runtime/session
-compare/3	no	structure/lexical
-compare/4	no	structure/lexical
-compound/1	no	structure/type
-consult/1	no	bootload/load
-copy_term/2	no	structure/univ
-cos/2	yes	arithmetic/trigo
-current_module/1	no	reflect/source
-current_op/3	no	reflect/oper
-current_oper/1	no	reflect/oper
-current_predicate/1	no	reflect/pred
-current_prolog_flag/2	no	bootload/engine
-current_resource/1	no	reflect/source
-current_source/1	no	reflect/source
-decimal/1	no	structure/type
-decimal/2	yes	arithmetic/elem
-decimal/2	no	arithmetic/ratio
-denominator/2	no	arithmetic/ratio
-(discontiguous)/1	no	bootload/load
-div/3	no	arithmetic/ratio
-div/3	yes	arithmetic/round
-divmod/4	no	arithmetic/ratio
-divmod/4	no	arithmetic/round
-(dynamic)/1	no	runtime/dynamic
-e/1	yes	arithmetic/trigo
-end_all_modules/0	no	bootload/engine
-end_module/0	no	bootload/engine
-ensure_loaded/1	no	bootload/load
-epsilon/1	yes	arithmetic/trigo
-epsilon32/1	yes	arithmetic/trigo
-exit/0	no	runtime/session
-exp/2	yes	arithmetic/trigo
-findall/3	no	runtime/logic
-findall/4	no	runtime/logic
-float/1	no	structure/type
-float/2	yes	arithmetic/elem
-float/2	no	arithmetic/ratio
-float32/1	no	structure/type
-float32/2	yes	arithmetic/elem
-float32/2	no	arithmetic/ratio
-float64/1	no	structure/type
-floor/2	no	arithmetic/ratio
-floor/2	yes	arithmetic/round
-forall/2	no	runtime/logic
-foreign/3	no	reflect/foreign
-foreign_const/3	no	reflect/foreign
-foreign_constructor/3	no	reflect/foreign
-foreign_fun/3	no	reflect/foreign
-foreign_getter/3	no	reflect/foreign
-foreign_setter/3	no	reflect/foreign
-gcd/3	yes	arithmetic/bits
-gcd/3	no	arithmetic/ratio
-(group_local)/1	no	runtime/dynamic
-halt/0	no	bootload/engine
-halt/1	no	bootload/engine
-horde/1	no	runtime/distributed
-horde/2	no	runtime/distributed
-include/1	no	bootload/load
-integer/1	no	structure/type
-integer/2	no	arithmetic/ratio
-integer/2	yes	arithmetic/round
-integer_chars/3	no	structure/atom
-integer_codes/3	no	structure/atom
-is/2	no	arithmetic/eval
-last_atom_concat/3	no	structure/atom
-last_sub_atom/4	no	structure/atom
-last_sub_atom/5	no	structure/atom
-lcm/3	no	arithmetic/bits
-lcm/3	no	arithmetic/ratio
-listing/0	no	bootload/load
-listing/1	no	bootload/load
-log/2	yes	arithmetic/trigo
-lsb/2	yes	arithmetic/bits
-make/0	no	bootload/load
-max/3	yes	arithmetic/compare
-max/3	no	arithmetic/ratio
-memory_get/2	no	structure/bytes
-memory_get/3	no	structure/bytes
-memory_read/2	no	structure/bytes
-memory_write/1	no	structure/bytes
-(meta_function)/1	no	runtime/meta
-(meta_predicate)/1	no	runtime/meta
-min/3	yes	arithmetic/compare
-min/3	no	arithmetic/ratio
-mod/3	no	arithmetic/ratio
-mod/3	yes	arithmetic/round
-module/2	no	bootload/module
-msb/2	yes	arithmetic/bits
-(multifile)/1	no	bootload/load
-number/1	no	structure/type
-number_chars/2	no	structure/atom
-number_codes/2	no	structure/atom
-numbervars/3	no	structure/vars
-numerator/2	no	arithmetic/ratio
-op/3	no	reflect/oper
-oper_property/2	no	reflect/oper
-(override)/1	no	bootload/module
-package/1	no	bootload/module
-pi/1	yes	arithmetic/trigo
-popcount/2	yes	arithmetic/bits
-predicate_property/2	no	reflect/pred
-(private)/1	no	bootload/module
-prolog/0	no	runtime/session
-(public)/1	no	bootload/module
-rational/1	no	arithmetic/ratio
-rational/3	no	arithmetic/ratio
-rdiv/3	no	arithmetic/ratio
-read_block/2	no	structure/bytes
-read_block/3	no	structure/bytes
-rebuild/0	no	bootload/load
-reexport/1	no	bootload/module
-reference/1	no	structure/type
-rem/3	no	arithmetic/ratio
-rem/3	yes	arithmetic/round
-repeat/0	no	runtime/logic
-reset_oper_property/2	no	reflect/oper
-retract/1	no	runtime/dynamic
-retractall/1	no	runtime/dynamic
-round/2	no	arithmetic/ratio
-round/2	yes	arithmetic/round
-safe_term_variables/2	no	structure/vars
-safe_term_variables/3	no	structure/vars
-set_arg/4	no	structure/univ
-set_prolog_flag/2	no	bootload/engine
-setup_balance/1	no	runtime/distributed
-setup_balance/2	no	runtime/distributed
-sign/2	yes	arithmetic/elem
-sign/2	no	arithmetic/ratio
-sin/2	yes	arithmetic/trigo
-source_property/2	no	reflect/source
-sqrt/2	yes	arithmetic/trigo
-(static)/1	no	reflect/pred
-sub_atom/4	no	structure/atom
-sub_atom/5	no	structure/atom
-sys_activate_capability/2	no	bootload/toolkit
-sys_add_file_extension/2	no	bootload/path
-sys_add_path/1	no	bootload/path
-sys_add_resource/1	no	bootload/module
-sys_auto_load/1	no	bootload/module
-sys_calc_install_id/2	no	bootload/toolkit
-sys_callable/1	no	runtime/quali
-sys_capability_property/2	no	bootload/toolkit
-sys_check_license/1	no	bootload/toolkit
-sys_check_licenses/0	no	bootload/toolkit
-sys_current_capability/1	no	bootload/toolkit
-sys_current_file_extension/2	no	bootload/path
-sys_current_path/1	no	bootload/path
-sys_current_predicate/1	no	reflect/pred
-sys_declaration_indicator/2	no	bootload/load
-sys_declaration_indicator/2	no	bootload/module
-sys_declaration_indicator/2	no	reflect/foreign
-sys_declaration_indicator/2	no	reflect/oper
-sys_declaration_indicator/2	no	reflect/pred
-sys_declaration_indicator/2	no	runtime/dynamic
-sys_declaration_indicator/2	no	runtime/meta
-sys_error_message/1	no	runtime/session
-sys_finit_capability/1	no	bootload/toolkit
-sys_functor/3	no	runtime/quali
-sys_get_module/2	no	runtime/quali
-sys_goal_globals/2	no	structure/vars
-sys_goal_kernel/2	no	structure/vars
-sys_indicator/1	no	reflect/pred
-sys_init_capability/1	no	bootload/toolkit
-sys_init_capability/2	no	bootload/toolkit
-sys_listing_has_clause/2	no	bootload/load
-sys_listing_user/1	no	bootload/load
-sys_listing_user_chk/1	no	bootload/load
-sys_load_resource/1	no	bootload/module
-sys_make_indicator/3	no	reflect/pred
-sys_make_oper/3	no	reflect/oper
-(sys_notrace)/1	no	bootload/load
-sys_number_variables/4	no	structure/vars
-sys_predicate_property_idx/2	no	reflect/pred
-sys_provable_property_chk/3	no	reflect/pred
-sys_provable_property_idx/2	no	reflect/pred
-sys_quoted_var/2	no	runtime/session
-sys_reg_license_text/2	no	bootload/toolkit
-sys_reged_license_text/2	no	bootload/toolkit
-sys_remove_file_extension/1	no	bootload/path
-sys_replace_site/3	no	runtime/quali
-sys_set_context_property/3	no	reflect/source
-sys_short_base/1	no	bootload/load
-sys_show_base/1	no	bootload/load
-sys_show_provable_source/2	no	bootload/load
-sys_syntax_property_chk/3	no	reflect/oper
-sys_syntax_property_idx/2	no	reflect/oper
-sys_term_singletons/2	no	structure/vars
-sys_univ/2	no	runtime/quali
-sys_var/1	no	runtime/quali
-tan/2	yes	arithmetic/trigo
-term_atom/2	no	structure/bytes
-term_atom/3	no	structure/bytes
-term_block/2	no	structure/bytes
-term_block/3	no	structure/bytes
-term_variables/2	no	structure/vars
-term_variables/3	no	structure/vars
-(thread_local)/1	no	runtime/dynamic
-top_module/1	no	bootload/engine
-truncate/2	no	arithmetic/ratio
-truncate/2	yes	arithmetic/round
-unify_with_occurs_check/2	no	structure/univ
-unload_file/1	no	bootload/load
-use_module/1	no	bootload/module
-use_package/1	no	bootload/module
-version/0	no	bootload/engine
-welcome/0	no	bootload/engine
-write_block/1	no	structure/bytes
-write_block/2	no	structure/bytes
-xor/3	yes	arithmetic/bits
+# /3	arithmetic/ratio
+* /3	arithmetic/elem
+* /3	arithmetic/ratio
+** /3	arithmetic/trigo
+*-> /2	runtime/logic
+(+)/2	arithmetic/elem
+(+)/2	arithmetic/ratio
+(+)/3	arithmetic/elem
+(+)/3	arithmetic/ratio
+(-)/2	arithmetic/elem
+(-)/2	arithmetic/ratio
+(-)/3	arithmetic/elem
+(-)/3	arithmetic/ratio
+-> /2	runtime/logic
+'.'/2	bootload/load
+/ /3	arithmetic/elem
+/ /3	arithmetic/ratio
+// /3	arithmetic/ratio
+// /3	arithmetic/round
+/\ /3	arithmetic/bits
+: /2	runtime/quali
+: /3	runtime/quali
+:: /2	runtime/quali
+:: /3	runtime/quali
+;/2	runtime/logic
+< /2	arithmetic/compare
+< /2	arithmetic/ratio
+<< /3	arithmetic/bits
+=.. /2	structure/univ
+=:= /2	arithmetic/compare
+=:= /2	arithmetic/ratio
+=< /2	arithmetic/compare
+=< /2	arithmetic/ratio
+== /2	structure/lexical
+=\= /2	arithmetic/compare
+=\= /2	arithmetic/ratio
+> /2	arithmetic/ratio
+>= /2	arithmetic/compare
+>= /2	arithmetic/ratio
+>> /3	arithmetic/bits
+@< /2	structure/lexical
+@=< /2	structure/lexical
+@> /2	structure/lexical
+@>= /2	structure/lexical
+[]/0	bootload/load
+(\)/2	arithmetic/bits
+\/ /3	arithmetic/bits
+\= /2	structure/univ
+\== /2	structure/lexical
+^ /3	arithmetic/elem
+^ /3	arithmetic/ratio
+abolish/1	runtime/dynamic
+abort/0	runtime/session
+abs/2	arithmetic/elem
+abs/2	arithmetic/ratio
+absolute_file_name/2	bootload/path
+absolute_file_name/3	bootload/path
+absolute_resource_name/2	bootload/path
+acos/2	arithmetic/trigo
+acyclic_term/1	structure/vars
+arg/3	structure/univ
+asin/2	arithmetic/trigo
+asserta/1	runtime/dynamic
+assertz/1	runtime/dynamic
+atan/2	arithmetic/trigo
+atan2/3	arithmetic/trigo
+atom/1	structure/type
+atom_block/2	structure/bytes
+atom_block/3	structure/bytes
+atom_chars/2	structure/atom
+atom_codes/2	structure/atom
+atom_concat/3	structure/atom
+atom_integer/3	structure/atom
+atom_length/2	structure/atom
+atom_number/2	structure/atom
+atom_split/3	structure/atom
+atomic/1	structure/type
+balance/1	runtime/distributed
+balance/2	runtime/distributed
+begin_module/1	bootload/engine
+break/0	runtime/session
+callable/1	structure/type
+ceiling/2	arithmetic/ratio
+ceiling/2	arithmetic/round
+char_code/2	structure/atom
+clause/2	runtime/dynamic
+close/0	runtime/session
+compare/3	structure/lexical
+compare/4	structure/lexical
+compound/1	structure/type
+consult/1	bootload/load
+copy_term/2	structure/univ
+cos/2	arithmetic/trigo
+current_module/1	reflect/source
+current_op/3	reflect/oper
+current_oper/1	reflect/oper
+current_predicate/1	reflect/pred
+current_prolog_flag/2	bootload/engine
+current_resource/1	reflect/source
+current_source/1	reflect/source
+decimal/1	structure/type
+decimal/2	arithmetic/elem
+decimal/2	arithmetic/ratio
+denominator/2	arithmetic/ratio
+(discontiguous)/1	bootload/load
+div/3	arithmetic/ratio
+div/3	arithmetic/round
+divmod/4	arithmetic/ratio
+divmod/4	arithmetic/round
+(dynamic)/1	runtime/dynamic
+e/1	arithmetic/trigo
+end_all_modules/0	bootload/engine
+end_module/0	bootload/engine
+ensure_loaded/1	bootload/load
+epsilon/1	arithmetic/trigo
+epsilon32/1	arithmetic/trigo
+exit/0	runtime/session
+exp/2	arithmetic/trigo
+findall/3	runtime/logic
+findall/4	runtime/logic
+float/1	structure/type
+float/2	arithmetic/elem
+float/2	arithmetic/ratio
+float32/1	structure/type
+float32/2	arithmetic/elem
+float32/2	arithmetic/ratio
+float64/1	structure/type
+floor/2	arithmetic/ratio
+floor/2	arithmetic/round
+forall/2	runtime/logic
+foreign/3	reflect/foreign
+foreign_constructor/3	reflect/foreign
+foreign_getter/3	reflect/foreign
+foreign_setter/3	reflect/foreign
+gcd/3	arithmetic/bits
+gcd/3	arithmetic/ratio
+(group_local)/1	runtime/dynamic
+halt/0	bootload/engine
+halt/1	bootload/engine
+horde/1	runtime/distributed
+horde/2	runtime/distributed
+include/1	bootload/load
+integer/1	structure/type
+integer/2	arithmetic/ratio
+integer/2	arithmetic/round
+integer_chars/3	structure/atom
+integer_codes/3	structure/atom
+is/2	arithmetic/eval
+last_atom_concat/3	structure/atom
+last_sub_atom/4	structure/atom
+last_sub_atom/5	structure/atom
+lcm/3	arithmetic/bits
+lcm/3	arithmetic/ratio
+listing/0	bootload/load
+listing/1	bootload/load
+log/2	arithmetic/trigo
+lsb/2	arithmetic/bits
+make/0	bootload/load
+max/3	arithmetic/compare
+max/3	arithmetic/ratio
+memory_get/2	structure/bytes
+memory_get/3	structure/bytes
+memory_read/2	structure/bytes
+memory_write/1	structure/bytes
+(meta_function)/1	runtime/meta
+(meta_predicate)/1	runtime/meta
+min/3	arithmetic/compare
+min/3	arithmetic/ratio
+mod/3	arithmetic/ratio
+mod/3	arithmetic/round
+module/2	bootload/module
+msb/2	arithmetic/bits
+(multifile)/1	bootload/load
+number/1	structure/type
+number_chars/2	structure/atom
+number_codes/2	structure/atom
+numbervars/3	structure/vars
+numerator/2	arithmetic/ratio
+op/3	reflect/oper
+oper_property/2	reflect/oper
+(override)/1	bootload/module
+package/1	bootload/module
+pi/1	arithmetic/trigo
+popcount/2	arithmetic/bits
+predicate_property/2	reflect/pred
+(private)/1	bootload/module
+prolog/0	runtime/session
+(public)/1	bootload/module
+rational/1	arithmetic/ratio
+rational/3	arithmetic/ratio
+rdiv/3	arithmetic/ratio
+read_block/2	structure/bytes
+read_block/3	structure/bytes
+rebuild/0	bootload/load
+reexport/1	bootload/module
+reference/1	structure/type
+rem/3	arithmetic/ratio
+rem/3	arithmetic/round
+repeat/0	runtime/logic
+reset_oper_property/2	reflect/oper
+retract/1	runtime/dynamic
+retractall/1	runtime/dynamic
+round/2	arithmetic/ratio
+round/2	arithmetic/round
+safe_term_variables/2	structure/vars
+safe_term_variables/3	structure/vars
+set_arg/4	structure/univ
+set_prolog_flag/2	bootload/engine
+setup_balance/1	runtime/distributed
+setup_balance/2	runtime/distributed
+sign/2	arithmetic/elem
+sign/2	arithmetic/ratio
+sin/2	arithmetic/trigo
+source_property/2	reflect/source
+sqrt/2	arithmetic/trigo
+(static)/1	reflect/pred
+sub_atom/4	structure/atom
+sub_atom/5	structure/atom
+sys_activate_capability/2	bootload/toolkit
+sys_add_file_extension/2	bootload/path
+sys_add_path/1	bootload/path
+sys_add_resource/1	bootload/module
+sys_auto_load/1	bootload/module
+sys_calc_install_id/2	bootload/toolkit
+sys_callable/1	runtime/quali
+sys_capability_property/2	bootload/toolkit
+sys_check_license/1	bootload/toolkit
+sys_check_licenses/0	bootload/toolkit
+sys_current_capability/1	bootload/toolkit
+sys_current_file_extension/2	bootload/path
+sys_current_path/1	bootload/path
+sys_current_predicate/1	reflect/pred
+sys_declaration_indicator/2	bootload/load
+sys_declaration_indicator/2	bootload/module
+sys_declaration_indicator/2	reflect/foreign
+sys_declaration_indicator/2	reflect/oper
+sys_declaration_indicator/2	reflect/pred
+sys_declaration_indicator/2	runtime/dynamic
+sys_declaration_indicator/2	runtime/meta
+sys_error_message/1	runtime/session
+sys_finit_capability/1	bootload/toolkit
+sys_functor/3	runtime/quali
+sys_module/2	runtime/quali
+sys_goal_globals/2	structure/vars
+sys_goal_kernel/2	structure/vars
+sys_indicator/1	reflect/pred
+sys_init_capability/1	bootload/toolkit
+sys_init_capability/2	bootload/toolkit
+sys_listing_has_clause/2	bootload/load
+sys_listing_user/1	bootload/load
+sys_listing_user_chk/1	bootload/load
+sys_load_resource/1	bootload/module
+sys_make_indicator/3	reflect/pred
+sys_make_oper/3	reflect/oper
+(sys_notrace)/1	bootload/load
+sys_number_variables/4	structure/vars
+sys_predicate_property_idx/2	reflect/pred
+sys_provable_property_chk/3	reflect/pred
+sys_provable_property_idx/2	reflect/pred
+sys_quoted_var/2	runtime/session
+sys_reg_license_text/2	bootload/toolkit
+sys_reged_license_text/2	bootload/toolkit
+sys_remove_file_extension/1	bootload/path
+sys_replace_site/3	runtime/quali
+sys_set_context_property/3	reflect/source
+sys_short_base/1	bootload/load
+sys_show_base/1	bootload/load
+sys_show_provable_source/2	bootload/load
+sys_syntax_property_chk/3	reflect/oper
+sys_syntax_property_idx/2	reflect/oper
+sys_term_singletons/2	structure/vars
+sys_univ/2	runtime/quali
+sys_var/1	runtime/quali
+tan/2	arithmetic/trigo
+term_atom/2	structure/bytes
+term_atom/3	structure/bytes
+term_block/2	structure/bytes
+term_block/3	structure/bytes
+term_variables/2	structure/vars
+term_variables/3	structure/vars
+(thread_local)/1	runtime/dynamic
+top_module/1	bootload/engine
+truncate/2	arithmetic/ratio
+truncate/2	arithmetic/round
+unify_with_occurs_check/2	structure/univ
+unload_file/1	bootload/load
+use_module/1	bootload/module
+use_package/1	bootload/module
+version/0	bootload/engine
+welcome/0	bootload/engine
+write_block/1	structure/bytes
+write_block/2	structure/bytes
+xor/3	arithmetic/bits
 

@@ -358,9 +358,8 @@ sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 :- ensure_loaded(library(structure/univ)).
 :- ensure_loaded(library(structure/atom)).
 
-:- ensure_loaded(library(runtime/meta)).
-:- ensure_loaded(library(runtime/quali)).
 :- ensure_loaded(library(runtime/logic)).
+:- ensure_loaded(library(runtime/meta)).
 :- ensure_loaded(library(runtime/dynamic)).
 :- ensure_loaded(library(runtime/session)).
 

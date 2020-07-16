@@ -1,14 +1,17 @@
 package jekpro.reference.runtime;
 
+import jekpro.frequent.basic.SpecialProxy;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 
@@ -46,6 +49,9 @@ import matula.util.data.ListArray;
 public final class SpecialLogic extends AbstractSpecial {
     private final static int SPECIAL_FINDALL = 0;
     private final static int SPECIAL_FINDALL_END = 1;
+    private final static int SPECIAL_CALL_COLON = 2;
+    private final static int SPECIAL_CALL_COLONCOLON = 3;
+    private final static int SPECIAL_SYS_REPLACE_SITE = 4;
 
     /**
      * <p>Create a logic special.</p>
@@ -54,6 +60,19 @@ public final class SpecialLogic extends AbstractSpecial {
      */
     public SpecialLogic(int i) {
         super(i);
+        switch (i) {
+            case SPECIAL_FINDALL:
+            case SPECIAL_FINDALL_END:
+                break;
+            case SPECIAL_CALL_COLON:
+            case SPECIAL_CALL_COLONCOLON:
+                subflags |= MASK_DELE_VIRT;
+                break;
+            case SPECIAL_SYS_REPLACE_SITE:
+                break;
+            default:
+                throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
     }
 
     /**
@@ -65,9 +84,10 @@ public final class SpecialLogic extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineException {
+            throws EngineException, EngineMessage {
         switch (id) {
             case SPECIAL_FINDALL:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -109,6 +129,69 @@ public final class SpecialLogic extends AbstractSpecial {
                     return false;
                 if (multi)
                     d.remTab(en);
+                return true;
+            case SPECIAL_CALL_COLON:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                SkelAtom sym=((SkelCompound) en.skel).sym;
+
+                Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                SkelAtom mod = modToAtom(obj, temp[0], ref, en);
+                colonToCallable(temp[1], ref, true, en);
+                EvaluableLogic.colonToRoutine(mod, sym, true, en);
+
+                Directive dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                d = en.display;
+
+                CallFrame ref2 = CallFrame.getFrame(d, dire, en);
+                en.contskel = dire;
+                en.contdisplay = ref2;
+                return true;
+            case SPECIAL_CALL_COLONCOLON:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                sym=((SkelCompound) en.skel).sym;
+
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                Object recv = en.skel;
+                Display d2 = en.display;
+
+                obj = EvaluableLogic.slashToClass(recv, d2, true, true, en);
+                mod = objToAtom(obj, recv, d2, en);
+                colonToCallable(temp[1], ref, true, en);
+                EvaluableLogic.colonToMethod(mod, sym, recv, d2, true, en);
+
+                dire = SupervisorCall.callGoal2(AbstractDefined.MASK_DEFI_TRAN, en);
+                d = en.display;
+
+                ref2 = CallFrame.getFrame(d, dire, en);
+                en.contskel = dire;
+                en.contdisplay = ref2;
+                return true;
+            case SPECIAL_SYS_REPLACE_SITE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                en.skel = temp[2];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                obj = en.skel;
+                d = en.display;
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                SkelAtom sa2 = StackElement.callableToName(en.skel);
+
+                SkelAtom sa = StackElement.callableToName(obj);
+                sa = EvaluableLogic.makeAtom(sa.fun, en, sa2);
+                obj = StackElement.callableFromName(obj, sa);
+                if (!en.unifyTerm(temp[0], ref, obj, d))
+                    return false;
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -233,6 +316,121 @@ public final class SpecialLogic extends AbstractSpecial {
                 d.remTab(en);
             en.skel = sc;
             en.display = d3;
+        }
+    }
+
+    /****************************************************************/
+    /* Name Helper                                                  */
+    /****************************************************************/
+
+    /**
+     * <p>Retrieve the module name.</p>
+     *
+     * @param mod The object.
+     * @param t   The slash skeleton.
+     * @param d   The slash display.
+     * @param en  The engine.
+     * @return The nodule name.
+     * @throws EngineMessage Shit happens.
+     */
+    static SkelAtom objToAtom(Object mod, Object t, Display d,
+                              Engine en)
+            throws EngineMessage {
+        if (!(mod instanceof AbstractSkel) &&
+                !(mod instanceof Number)) {
+            /* reference */
+            mod = SpecialProxy.refClassOrProxy(mod);
+            if (mod == null)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, t), d);
+            mod = SpecialProxy.classOrProxyName(mod, en);
+            if (mod == null)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_CLASS, t), d);
+        } else {
+            /* atom */
+        }
+        return (SkelAtom) mod;
+    }
+
+    /**
+     * <p>Retrieve the module atom.</p>
+     *
+     * @param mod The object.
+     * @param t   The slash skeleton.
+     * @param d   The slash display.
+     * @param en  The engine.
+     * @return The nodule atom.
+     * @throws EngineMessage Shit happens.
+     */
+    public static SkelAtom modToAtom(Object mod, Object t, Display d, Engine en)
+            throws EngineMessage {
+        if (!(mod instanceof AbstractSkel) &&
+                !(mod instanceof Number)) {
+            /* reference */
+            mod = SpecialProxy.classOrProxyName(mod, en);
+            if (mod == null)
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_CLASS, t), d);
+        } else {
+            /* atom */
+        }
+        return (SkelAtom) mod;
+    }
+
+
+    /************************************************************/
+    /* Callable Colon                                           */
+    /************************************************************/
+
+    /**
+     * <p>Convert a colon to a callable.</p>
+     * <p>The result is return in skel and display of the engine.</p>
+     * <p>A qualified callable has the following syntax.</p>
+     * <pre>
+     *     colon --> module ":" colon
+     *             | receiver "::" colon
+     *             | term.
+     * </pre>
+     *
+     * @param t    The colon skeleton.
+     * @param d    The colon display.
+     * @param comp The compound flag.
+     * @param en   The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void colonToCallable(Object t, Display d,
+                                       boolean comp,
+                                       Engine en)
+            throws EngineMessage {
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        t = en.skel;
+        d = en.display;
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
+            SkelCompound temp = (SkelCompound) t;
+            Object obj = EvaluableLogic.slashToClass(temp.args[0], d, false, true, en);
+            SkelAtom mod = modToAtom(obj, temp.args[0], d, en);
+            colonToCallable(temp.args[1], d, comp, en);
+            EvaluableLogic.colonToRoutine(mod, temp.sym, comp, en);
+        } else if (comp && t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+            SkelCompound temp = (SkelCompound) t;
+
+            en.skel = temp.args[0];
+            en.display = d;
+            en.deref();
+            Object recv = en.skel;
+            Display d2 = en.display;
+
+            Object obj = EvaluableLogic.slashToClass(recv, d2, true, true, en);
+            SkelAtom mod = objToAtom(obj, recv, d2, en);
+            colonToCallable(temp.args[1], d, comp, en);
+            EvaluableLogic.colonToMethod(mod, temp.sym, recv, d2, comp, en);
         }
     }
 

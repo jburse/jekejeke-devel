@@ -70,7 +70,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     private final static String OP_MULTIFILE = "multifile";
     private final static String OP_VIRTUAL = "virtual";
-    private final static String OP_SYS_ARITHMETIC = "sys_arithmetic";
     private final static String OP_AUTOMATIC = "automatic";
 
     private final static String OP_SYS_NOTRACE = "sys_notrace";
@@ -101,22 +100,21 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     private final static int PROP_MULTIFILE = 10;
     private final static int PROP_VIRTUAL = 11;
-    private final static int PROP_SYS_ARITHMETIC = 12;
-    private final static int PROP_AUTOMATIC = 13;
+    private final static int PROP_AUTOMATIC = 12;
 
-    private final static int PROP_SYS_NOTRACE = 14;
+    private final static int PROP_SYS_NOTRACE = 13;
 
-    private final static int PROP_BUILT_IN = 15;
-    private final static int PROP_STATIC = 16;
-    private final static int PROP_DYNAMIC = 17;
-    private final static int PROP_THREAD_LOCAL = 18;
-    private final static int PROP_GROUP_LOCAL = 19;
+    private final static int PROP_BUILT_IN = 14;
+    private final static int PROP_STATIC = 15;
+    private final static int PROP_DYNAMIC = 16;
+    private final static int PROP_THREAD_LOCAL = 17;
+    private final static int PROP_GROUP_LOCAL = 18;
 
-    private final static int PROP_FULL_NAME = 20;
-    private final static int PROP_SYS_USAGE = 21;
-    private final static int PROP_SYS_NOBODY = 22;
-    private final static int PROP_SYS_NOSTACK = 23;
-    private final static int PROP_SYS_NOHEAD = 24;
+    private final static int PROP_FULL_NAME = 19;
+    private final static int PROP_SYS_USAGE = 20;
+    private final static int PROP_SYS_NOBODY = 21;
+    private final static int PROP_SYS_NOSTACK = 22;
+    private final static int PROP_SYS_NOHEAD = 23;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -141,7 +139,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
         DEFAULT.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-        DEFAULT.add(new StoreKey(OP_SYS_ARITHMETIC, 0), new PropertyPredicate(PROP_SYS_ARITHMETIC));
         DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
 
         DEFAULT.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
@@ -284,13 +281,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_SYS_ARITHMETIC:
-                AbstractDelegate fun = pick.del;
-                if (fun != null && ((fun.subflags & AbstractDelegate.MASK_DELE_ARIT) != 0)) {
-                    return new Object[]{new SkelAtom(OP_SYS_ARITHMETIC)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
             case PROP_AUTOMATIC:
                 if ((pick.getBits() & Predicate.MASK_PRED_AUTO) != 0) {
                     return new Object[]{new SkelAtom(OP_AUTOMATIC)};
@@ -306,7 +296,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 }
 
             case PROP_BUILT_IN:
-                fun = pick.del;
+                AbstractDelegate fun = pick.del;
                 if (fun != null && !(fun instanceof AbstractDefined)) {
                     return new Object[]{new SkelAtom(OP_BUILT_IN)};
                 } else {
@@ -462,9 +452,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_VIRTUAL:
                 pick.setBit(Predicate.MASK_PRED_VIRT);
                 return true;
-            case PROP_SYS_ARITHMETIC:
-                /* can't modify */
-                return false;
             case PROP_AUTOMATIC:
                 pick.setBit(Predicate.MASK_PRED_AUTO);
                 return true;
@@ -594,9 +581,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_VIRTUAL:
                 pick.resetBit(Predicate.MASK_PRED_VIRT);
                 return true;
-            case PROP_SYS_ARITHMETIC:
-                /* can't modify */
-                return false;
             case PROP_AUTOMATIC:
                 pick.resetBit(Predicate.MASK_PRED_AUTO);
                 return true;

@@ -7,7 +7,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -15,8 +14,9 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Resource;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialDynamic;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -430,8 +430,8 @@ public final class SpecialSource extends AbstractSpecial {
     private static AbstractSource nameToModule(Object t, Display d,
                                                Engine en)
             throws EngineMessage {
-        Object obj = SpecialQuali.slashToClass(t, d, false, true, en);
-        SkelAtom mod = SpecialQuali.modToAtom(obj, t, d, en);
+        Object obj = EvaluableLogic.slashToClass(t, d, false, true, en);
+        SkelAtom mod = SpecialLogic.modToAtom(obj, t, d, en);
         return AbstractSource.getModule(mod.fun, en.store);
     }
 }

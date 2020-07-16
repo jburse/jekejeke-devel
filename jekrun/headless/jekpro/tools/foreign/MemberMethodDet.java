@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
@@ -131,6 +132,14 @@ final class MemberMethodDet extends AbstractMember {
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
         Object[] args = computeAndConvertArgs(temp, ref, en);
+        switch (en.store.foyer.getHint()) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
         Object res = invokeMethod(method, obj, args);
         res = Types.normJava(encoderet, res);
         if (res == null)
@@ -138,6 +147,39 @@ final class MemberMethodDet extends AbstractMember {
                     AbstractFactory.OP_REPRESENTATION_NULL));
         en.skel = AbstractTerm.getSkel(res);
         en.display = AbstractTerm.getDisplay(res);
+    }
+
+    /**
+     * <p>Build the arguments array. The arguments of the term
+     * are computed, checked and converted if necessary.</p>
+     *
+     * @param temp The skeleton.
+     * @param ref  The display.
+     * @param en   The engine.
+     * @return The arguments array.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
+     */
+    private Object[] computeAndConvertArgs(Object temp, Display ref,
+                                         Engine en)
+            throws EngineMessage, EngineException {
+        if (encodeparas.length == 0)
+            return AbstractMember.VOID_ARGS;
+        Object[] args = new Object[encodeparas.length];
+        int k = 0;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+            k++;
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                args[i] = en.proxy;
+            } else {
+                en.computeExpr(((SkelCompound) temp).args[k], ref);
+                args[i] = Types.denormProlog(typ, en.skel, en.display);
+                k++;
+            }
+        }
+        return args;
     }
 
     /**
@@ -155,10 +197,9 @@ final class MemberMethodDet extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        int hint = en.store.foyer.getHint();
         Object obj = convertRecv(temp, ref);
         Object[] args = convertArgs(temp, ref, en, null);
-        switch (hint) {
+        switch (en.store.foyer.getHint()) {
             case Foyer.HINT_WEB:
                 checkRecv(obj);
                 checkArgs(args);

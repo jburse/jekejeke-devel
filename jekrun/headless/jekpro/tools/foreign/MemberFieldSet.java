@@ -142,7 +142,7 @@ final class MemberFieldSet extends AbstractMember {
      * @param arg The argument.
      * @throws EngineMessage FFI error.
      */
-    final void invokeSetter(Object obj, Object arg)
+    private void invokeSetter(Object obj, Object arg)
             throws EngineMessage {
         try {
             field.set(obj, arg);

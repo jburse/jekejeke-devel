@@ -8,7 +8,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.*;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
@@ -863,7 +863,7 @@ public final class SpecialLoad extends AbstractSpecial {
         int size = SupervisorCopy.displaySize(t);
         SkelVar res = SkelVar.valueOf(size);
         t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
-        t = new SkelCompound(new SkelAtom(SpecialQuali.OP_COLON, en.store.getRootSystem()),
+        t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, en.store.getRootSystem()),
                 new SkelAtom("experiment/simp"), t);
         Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
                 Directive.MASK_DIRE_LTGC, en);

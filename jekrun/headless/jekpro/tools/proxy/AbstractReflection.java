@@ -43,6 +43,13 @@ import java.lang.reflect.Method;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractReflection {
+    public static final int FIELD_GET = 0;
+    public static final int FIELD_SET = 2;
+
+    public static final int ARRAY_LENGTH = 0;
+    public static final int ARRAY_NEW = 2;
+    public static final int ARRAY_GET = 3;
+    public static final int ARRAY_SET = 4;
 
     /*******************************************************************/
     /* Special & Proxy Factory                                         */
@@ -79,10 +86,9 @@ public abstract class AbstractReflection {
      *
      * @param m  The method.
      * @param en The engine.
-     * @param k  The predicate flag.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public abstract boolean createMethod(Method m, Engine en, boolean k);
+    public abstract boolean createMethod(Method m, Engine en);
 
     /**
      * <p>Create a foreign constructor delegate.</p>

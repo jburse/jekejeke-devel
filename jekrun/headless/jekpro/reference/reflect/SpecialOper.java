@@ -12,7 +12,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.SpecialDynamic;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractTracking;
@@ -554,7 +554,7 @@ public final class SpecialOper extends AbstractSpecial {
     public static int colonToOper(Object t, Display d, Engine en)
             throws EngineMessage {
         int type = opToType(t, d, en);
-        SpecialQuali.colonToCallable(en.skel, en.display, false, en);
+        SpecialLogic.colonToCallable(en.skel, en.display, false, en);
         if (en.skel instanceof SkelAtom) {
             /* ok */
         } else {

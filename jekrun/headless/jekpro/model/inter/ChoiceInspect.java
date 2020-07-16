@@ -4,7 +4,7 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -111,7 +111,7 @@ class ChoiceInspect extends AbstractChoice {
         Object[] temp = ((SkelCompound) t).args;
 
         /* detect term and body */
-        SpecialQuali.colonToCallable(temp[0], d, true, en);
+        SpecialLogic.colonToCallable(temp[0], d, true, en);
         Object head = en.skel;
         Display refhead = en.display;
 

@@ -12,7 +12,6 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.TermAtomic;
 import matula.util.data.AbstractMap;
 import matula.util.data.MapHash;
 

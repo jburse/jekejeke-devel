@@ -5,7 +5,7 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
@@ -299,7 +299,7 @@ public class Engine extends StackElement implements Comparator<Object> {
             int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_EVALUABLE,
-                    SpecialQuali.indicatorToColonSkel(sa, arity, this)));
+                    SpecialPred.indicatorToColonSkel(sa, arity, this)));
         }
         AbstractDelegate fun = cp.pick.del;
         if (fun == null) {
@@ -307,7 +307,7 @@ public class Engine extends StackElement implements Comparator<Object> {
             int arity = StackElement.callableToArity(alfa);
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CODE,
-                    SpecialQuali.indicatorToColonSkel(sa, arity, this)));
+                    SpecialPred.indicatorToColonSkel(sa, arity, this)));
         }
         skel = alfa;
         display = d1;

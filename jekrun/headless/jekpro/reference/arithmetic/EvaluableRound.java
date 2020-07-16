@@ -70,7 +70,6 @@ public final class EvaluableRound extends AbstractSpecial {
      */
     public EvaluableRound(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

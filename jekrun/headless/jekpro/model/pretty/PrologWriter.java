@@ -5,7 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.ForeignAtom;
 import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
@@ -330,7 +330,7 @@ public class PrologWriter {
             return null;
         }
         if ((flags & FLAG_IGNM) == 0 && mod != null) {
-            if (nsa.fun.equals(SpecialQuali.OP_COLON)) {
+            if (nsa.fun.equals(EvaluableLogic.OP_COLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
                     mod = SpecialProxy.classOrProxyName(mod, engine);
@@ -453,7 +453,7 @@ public class PrologWriter {
      */
     public int modShift(Object mod, SkelAtom nsa) {
         if ((flags & FLAG_IGNM) == 0 && mod != null) {
-            if (nsa.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+            if (nsa.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
                 if (!(mod instanceof AbstractSkel) &&
                         !(mod instanceof Number)) {
                     return 1;
@@ -1395,12 +1395,12 @@ public class PrologWriter {
     Object decodeQualification(SkelCompound sc, Display ref)
             throws EngineMessage {
         if (sc.args.length == 2 &&
-                sc.sym.fun.equals(SpecialQuali.OP_COLON)) {
-            return (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                sc.sym.fun.equals(EvaluableLogic.OP_COLON)) {
+            return (engine != null ? EvaluableLogic.slashToClass(sc.args[0],
                     ref, false, false, engine) : null);
         } else if (sc.args.length == 2 &&
-                sc.sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
-            return (engine != null ? SpecialQuali.slashToClass(sc.args[0],
+                sc.sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+            return (engine != null ? EvaluableLogic.slashToClass(sc.args[0],
                     ref, true, false, engine) : null);
         } else {
             return null;

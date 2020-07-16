@@ -44,7 +44,7 @@
  * are the adaptations of callable/1, var/1, functor/3 and (=..)/2 in that
  * these predicates respect the module colon (:)/2 and receiver double
  * colon (::)/2 notation. A qualified functor  may only contains the colon
- * (:)/2 notation. The predicate sys_get_module/2 can be used to retrieve
+ * (:)/2 notation. The predicate sys_module/2 can be used to retrieve
  * the class reference or module name of a receiver.
  *
  * Warranty & Liability
@@ -76,98 +76,34 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- use_package(foreign(jekpro/reference/runtime)).
+:- package(library(jekpro/reference/runtime)).
 
-:- module(user, []).
-
-:- public infix(:).
-:- op(600, xfy, :).
-
-:- public infix(::).
-:- op(600, xfy, ::).
-
-/*******************************************************/
-/* Qualified Calls & Evaluations                       */
-/*******************************************************/
-
-/**
- * M:C:
- * The predicate calls the callable C by qualifying the predicate
- * name of C by the module name M. The call is performed in the
- * same call-site as the colon notation.
- */
-% +Slash : +Callable:
-:- public : /2.
-:- virtual : /2.
-:- set_predicate_property(: /2, meta_predicate(:(?, 0))).
-:- sys_context_property(here, C),
-   set_predicate_property(: /2, sys_meta_predicate(C)).
-:- special(: /2, 'SpecialQuali', 0).
-:- set_predicate_property(: /2, sys_notrace).
-
-/**
- * R::C:
- * The predicate calls the callable C by qualifying the predicate
- * name of C by the module name of R and prepending R itself.
- */
-% +Slash :: +Callable:
-:- public :: /2.
-:- virtual :: /2.
-:- set_predicate_property(:: /2, meta_predicate(::(?, ::(0)))).
-:- sys_context_property(here, C),
-   set_predicate_property(:: /2, sys_meta_predicate(C)).
-:- special(:: /2, 'SpecialQuali', 1).
-:- set_predicate_property(:: /2, sys_notrace).
-
-/**
- * M:E:
- * The function evaluates the expression E by qualifying the function
- * name of E by the module name M.
- */
-% +Slash : +Callable:
-:- public : /3.
-:- virtual : /3.
-:- set_predicate_property(: /3, meta_predicate(:(?, 1, ?))).
-:- sys_context_property(here, C),
-   set_predicate_property(: /3, sys_meta_predicate(C)).
-:- special(: /3, 'EvaluableQuali', 0).
-:- set_predicate_property(: /3, sys_notrace).
-
-/**
- * R::E:
- * The function evaluates the expression E by qualifying the function
- * name of E by the module name of R and prepending R itself.
- */
-% +Slash :: +Callable:
-:- public :: /3.
-:- virtual :: /3.
-:- set_predicate_property(:: /3, meta_predicate(::(?, ::(1), ?))).
-:- sys_context_property(here, C),
-   set_predicate_property(:: /3, sys_meta_predicate(C)).
-:- special(:: /3, 'EvaluableQuali', 1).
-:- set_predicate_property(:: /3, sys_notrace).
+:- module(quali, []).
+:- use_module(library(basic/proxy)).
 
 /******************************************************************/
 /* Improved Callable & Var                                        */
 /******************************************************************/
 
 /**
- * sys_callable(T):
+ * callable(T):
  * Check whether T is a fully qualified callable.
  */
-% sys_callable(+Term)
-:- public sys_callable/1.
-sys_callable(G) :-
+% callable(+Term)
+:- public callable/1.
+:- override callable/1.
+callable(G) :-
    sys_type_goal(G, N),
    N = 0.
 
 /**
- * sys_var(T):
+ * var(T):
  * Check whether T is a half qualified or not a qualified callable.
  */
-% sys_var(+Goal)
-:- public sys_var/1.
-sys_var(G) :-
+% var(+Goal)
+:- public var/1.
+:- override var/1.
+var(G) :-
    sys_type_goal(G, N),
    N \= 0.
 
@@ -178,7 +114,7 @@ sys_var(G) :-
 % sys_type_goal(+Term, -Integer)
 :- private sys_type_goal/2.
 sys_type_goal(S, 1) :-
-   var(S), !.
+   user:var(S), !.
 sys_type_goal(S:T, O) :- !,
    sys_type_module(S, M),
    sys_type_goal(T, N),
@@ -188,7 +124,7 @@ sys_type_goal(S::T, O) :- !,
    sys_type_goal(T, N),
    O is M+N.
 sys_type_goal(S, 0) :-
-   callable(S).
+   user:callable(S).
 
 /**
  * sys_type_module(T, N):
@@ -198,17 +134,53 @@ sys_type_goal(S, 0) :-
 % sys_type_module(+Term, -Integer)
 :- private sys_type_module/2.
 sys_type_module(S, 1) :-
-   var(S), !.
-sys_type_module(S, 0) :-
-   reference(S), !.
+   user:var(S), !.
 sys_type_module(S/T, O) :- !,
    sys_type_package(S, M),
    sys_type_atom(T, N),
    O is M+N.
 sys_type_module({S}, O) :- !,
-   sys_type_array(S, O).
+   sys_type_class(S, O).
+sys_type_module(S, 0) :-
+   reference(S), !.
 sys_type_module(S, 0) :-
    atom(S).
+
+/**
+ * sys_type_class(T, N):
+ * Check whether T is a package with N place holders.
+ * See pred.p for syntax.
+ */
+% sys_type_class(+Term, -Integer)
+:- private sys_type_class/2.
+sys_type_class(S, 1) :-
+   user:var(S), !.
+sys_type_class(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_atom(T, N),
+   O is M+N.
+sys_type_class({S}, O) :- !,
+   sys_type_class(S, O).
+sys_type_class(S, 0) :-
+   atom(S).
+
+/**
+ * sys_type_receiver(T, N):
+ * Check whether T is a receiver with N place holders.
+ * See quali.p for syntax.
+ */
+% sys_type_receiver(+Term, -Integer)
+:- private sys_type_receiver/2.
+sys_type_receiver(S, 1) :-
+   user:var(S), !.
+sys_type_receiver(S/T, O) :- !,
+   sys_type_package(S, M),
+   sys_type_callable(T, N),
+   O is M+N.
+sys_type_receiver(S, 0) :-
+   reference(S), !.
+sys_type_receiver(S, 0) :-
+   user:callable(S).
 
 /**
  * sys_type_package(T, N):
@@ -218,7 +190,7 @@ sys_type_module(S, 0) :-
 % sys_type_package(+Term, -Integer)
 :- private sys_type_package/2.
 sys_type_package(S, 1) :-
-   var(S), !.
+   user:var(S), !.
 sys_type_package(S/T, O) :- !,
    sys_type_package(S, M),
    sys_type_atom(T, N),
@@ -233,45 +205,9 @@ sys_type_package(S, 0) :-
 % sys_type_atom(+Term, -Integer)
 :- private sys_type_atom/2.
 sys_type_atom(S, 1) :-
-   var(S), !.
+   user:var(S), !.
 sys_type_atom(S, 0) :-
    atom(S).
-
-/**
- * sys_type_array(T, N):
- * Check whether T is a package with N place holders.
- * See pred.p for syntax.
- */
-% sys_type_array(+Term, -Integer)
-:- private sys_type_array/2.
-sys_type_array(S, 1) :-
-   var(S), !.
-sys_type_array(S/T, O) :- !,
-   sys_type_package(S, M),
-   sys_type_atom(T, N),
-   O is M+N.
-sys_type_array({S}, O) :- !,
-   sys_type_array(S, O).
-sys_type_array(S, 0) :-
-   atom(S).
-
-/**
- * sys_type_receiver(T, N):
- * Check whether T is a receiver with N place holders.
- * See quali.p for syntax.
- */
-% sys_type_receiver(+Term, -Integer)
-:- private sys_type_receiver/2.
-sys_type_receiver(S, 1) :-
-   var(S), !.
-sys_type_receiver(S, 0) :-
-   reference(S), !.
-sys_type_receiver(S/T, O) :- !,
-   sys_type_package(S, M),
-   sys_type_callable(T, N),
-   O is M+N.
-sys_type_receiver(S, 0) :-
-   callable(S).
 
 /**
  * sys_type_callable(T, N):
@@ -280,113 +216,90 @@ sys_type_receiver(S, 0) :-
 % sys_type_callable(+Term, -Integer)
 :- private sys_type_callable/2.
 sys_type_callable(S, 1) :-
-   var(S), !.
+   user:var(S), !.
 sys_type_callable(S, 0) :-
-   callable(S).
+   user:callable(S).
 
 /******************************************************************/
-/* Improved Functor & Univ                                        */
+/* Improved Univ                                                  */
 /******************************************************************/
 
 /**
- * sys_functor(T, F, A):
- * The predicate unifies F with the possibly quantified functor
- * of T and unifies A with the arity of T.
+ * =..(O, L):
+ * The predicate succeeds in L with the functor and arguments
+ * of the receiver object or qualified callable O.
  */
-% sys_functor(+-Term, -+Term, -+Integer)
-:- public sys_functor/3.
-sys_functor(T, F, A) :- var(T), !,
-   sys_functor2(F, A, T).
-sys_functor(K, J, A) :- K = M:T, !,
-   sys_functor(T, F, A),
-   sys_replace_site(J, K, M:F).
-sys_functor(K, J, B) :- K = R::T, !,
-   sys_get_module(R, M),
-   sys_functor(T, F, A),
-   sys_replace_site(J, K, M:F),
-   B is A+1.
-sys_functor(T, F, A) :-
-   functor(T, F, A).
+% =..(+Term, -List)
+:- public =.. /2.
+:- override =.. /2.
+=..(O, L) :- user:var(O), !,
+   univ2(L, O).
+=..(K, L) :- K = R:O, !,
+   =..(O, [H|J]),
+   sys_replace_site(F, K, R:H),
+   L = [F|J].
+=..(K, L) :- K = R::O, !,
+   sys_get_class(R, I),
+   =..(O, [H|J]),
+   sys_replace_site(F, K, I:H),
+   L = [F, R|J].
+=..(O, L) :-
+   user: =..(O, L).
 
-% sys_functor2(+Term, +Integer, -Term)
-:- private sys_functor2/3.
-sys_functor2(F, _, _) :- var(F),
+% univ2(+List, -Term)
+:- private univ2/2.
+univ2([F|_], _) :- user:var(F),
    throw(error(instantiation_error, _)).
-sys_functor2(J, A, K) :- J = M:F, !,
-   sys_functor2(F, A, T),
-   sys_replace_site(K, J, M:T).
-sys_functor2(F, A, T) :-
-   functor(T, F, A).
+univ2([K, R|L], O) :- K = I:F,
+   sys_is_class(R),
+   sys_get_class(R, J),
+   I == J, !,
+   univ2([F|L], H),
+   sys_replace_site(O, K, R::H).
+univ2([K|L], O) :- K = R:F, !,
+   univ2([F|L], H),
+   sys_replace_site(O, K, R:H).
+univ2(L, O) :-
+   user: =..(O, L).
+
+% sys_is_class(+Term)
+:- private sys_is_class/1.
+sys_is_class(O) :- user:var(O), !, fail.
+sys_is_class(_/O) :- !,
+   sys_is_class(O),
+   sys_is_class(_).
+
+/******************************************************************/
+/* Improved Functor & Arg                                         */
+/******************************************************************/
 
 /**
- * sys_univ(T, [F|L]):
- * The predicate unifies F with the possibly qualified functor of T
- * and unifies L with the arguments of T.
+ * functor(O, F, A):
+ * The predicate succeeds in F with the functor and in A with the arity
+ * of the receiver object or qualified callable O.
  */
-% sys_univ(+-Term, -+List)
-:- public sys_univ/2.
-sys_univ(T, U) :- var(T), !,
-   sys_univ2(U, T).
-sys_univ(K, [J|L]) :- K = M:T, !,
-   sys_univ(T, [F|L]),
-   sys_replace_site(J, K, M:F).
-sys_univ(K, [J, R|L]) :- K = R::T, !,
-   sys_get_module(R, M),
-   sys_univ(T, [F|L]),
-   sys_replace_site(J, K, M:F).
-sys_univ(T, U) :- T =.. U.
+% functor(+Term, -Package, -Integer)
+:- public functor/3.
+:- override functor/3.
+functor(O, F, A) :- user:var(O), !,
+   functor2(F, A, O).
+functor(K, F, A) :- K = R:O, !,
+   functor(O, H, A),
+   sys_replace_site(F, K, R:H).
+functor(K, F, A) :- K = R::O, !,
+   sys_get_class(R, J),
+   functor(O, H, B),
+   sys_replace_site(F, K, J:H),
+   A is B+1.
+functor(O, F, A) :-
+   user:functor(O, F, A).
 
-% sys_univ2(+List, -Term)
-:- private sys_univ2/2.
-sys_univ2([F|_], _) :- var(F),
+% functor2(+Package, +Integer, -Term)
+:- private functor2/3.
+functor2(F, _, _) :- user:var(F),
    throw(error(instantiation_error, _)).
-sys_univ2([J, R|L], K) :- J = M:F,
-   sys_get_module_test(R, N),
-   N == M, !,
-   sys_univ2([F|L], T),
-   sys_replace_site(K, J, R::T).
-sys_univ2([J|L], K) :- J = M:F, !,
-   sys_univ2([F|L], T),
-   sys_replace_site(K, J, M:T).
-sys_univ2(U, T) :- T =.. U.
-
-/**
- * sys_get_module(O, M):
- * The predicate succeeds in M with the class reference
- * or module name of O.
- */
-% sys_get_module(+Term, -Term)
-:- public sys_get_module/2.
-sys_get_module(O, _) :- var(O),
-   throw(error(instantiation_error, _)).
-sys_get_module(O, M) :-
-   sys_get_module_test(O, N), !,
-   M = N.
-sys_get_module(O, _) :-
-   throw(error(domain_error(receiver, O), _)).
-
-% sys_get_module_test(+Term, -Term)
-:- private sys_get_module_test/2.
-sys_get_module_test(O, _) :- var(O), !, fail.
-sys_get_module_test(K, J) :- K = R/O, !,
-   callable(O),
-   functor(O, M, _),
-   sys_replace_site(J, K, R/M).
-sys_get_module_test(O, M) :- reference(O), !,
-   sys_get_class(O, M).
-sys_get_module_test(O, M) :-
-   callable(O),
-   functor(O, M, _).
-
-% sys_get_class(+Ref, -Ref)
-:- private sys_get_class/2.
-:- special(sys_get_class/2, 'SpecialQuali', 3).
-
-/**
- * sys_replace_site(B, Q, A):
- * The predicate succeeds for a new callable B which is a clone of
- * the callable A with all the site properties of the callable Q.
- */
-% sys_replace_site(-Term, +Term, +Term)
-:- public sys_replace_site/3.
-:- special(sys_replace_site/3, 'SpecialQuali', 4).
+functor2(K, A, O) :- K = R:F, !,
+   functor2(F, A, H),
+   sys_replace_site(O, K, R:H).
+functor2(F, A, O) :-
+   user:functor(O, F, A).

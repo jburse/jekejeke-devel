@@ -63,7 +63,6 @@ import jekpro.tools.term.SkelVar;
  */
 public abstract class AbstractDelegate {
     public final static int MASK_DELE_VIRT = 0x00000001;
-    public final static int MASK_DELE_ARIT = 0x00000002;
     public final static int MASK_DELE_MULT = 0x00000004;
 
     public int subflags;

@@ -60,7 +60,6 @@ public final class EvaluableBits extends AbstractSpecial {
      */
     public EvaluableBits(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

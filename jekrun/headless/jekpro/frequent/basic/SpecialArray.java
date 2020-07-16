@@ -9,9 +9,9 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -77,10 +77,10 @@ public final class SpecialArray extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_DIMENSION:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 AbstractFactory factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createArray(clazz, en, AbstractFactory.ARRAY_NEW))
+                if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_NEW))
                     throw new EngineMessage(en.skel);
                 AbstractDelegate del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -95,10 +95,10 @@ public final class SpecialArray extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_ELEMENT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createArray(clazz, en, AbstractFactory.ARRAY_GET))
+                if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_GET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -113,10 +113,10 @@ public final class SpecialArray extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_UPDATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createArray(clazz, en, AbstractFactory.ARRAY_SET))
+                if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_SET))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -131,10 +131,10 @@ public final class SpecialArray extends AbstractSpecial {
             case SPECIAL_SYS_FOREIGN_LENGTH:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 clazz = SpecialModel.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createArray(clazz, en, AbstractFactory.ARRAY_LENGTH))
+                if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_LENGTH))
                     throw new EngineMessage(en.skel);
                 del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())

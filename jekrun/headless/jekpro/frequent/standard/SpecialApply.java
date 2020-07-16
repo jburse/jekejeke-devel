@@ -7,7 +7,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -128,7 +128,7 @@ public final class SpecialApply extends AbstractSpecial {
         d = en.display;
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLON)) {
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
             SkelCompound sc = (SkelCompound) t;
             moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
@@ -142,7 +142,7 @@ public final class SpecialApply extends AbstractSpecial {
             en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
         } else if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(SpecialQuali.OP_COLONCOLON)) {
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             SkelCompound sc = (SkelCompound) t;
             moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
             Object t4 = en.skel;
