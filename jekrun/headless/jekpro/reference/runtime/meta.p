@@ -5,12 +5,22 @@
  * and a number of meta-argument specifiers. We can describe
  * the arguments via the following grammar rules:
  *
- * meta_directive    --> "meta_predicate" meta_signature.
+ * meta_directive    --> "meta_predicate" meta_signature
  *                     | "meta_function" meta_signature.
- * meta_signature    --> predicate_name
- *         [ "(" meta_specifier { "," meta_specifier } ")" ].
- * meta_specifier    --> integer | "?" | "::(" meta_specifier2 ")".
- * meta_specifier2   --> integer | "::(" meta_specifier2 ")".
+ *
+ * meta_signature    --> module ":" meta_signature
+ *                     | name [ "(" meta_specifier
+ *                               { "," meta_specifier } ")" ].
+ *
+ * meta_specifier    --> integer
+ *                     | "?"
+ *                     | "::(" meta_specifier2 ")"
+ *                     | "#(" meta_specifier3 ")"
+ *
+ * meta_specifier2   --> integer
+ *                     | "::(" meta_specifier2 ")".
+ *
+ * meta_specifier3   --> integer.
  *
  * Example:
  * :- meta_predicate count(0,?).

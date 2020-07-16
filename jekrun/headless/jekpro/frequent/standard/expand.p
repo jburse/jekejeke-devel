@@ -87,6 +87,7 @@
 
 :- module(user, []).
 :- use_module(library(experiment/simp)).
+:- use_module(library(runtime/quali)).
 
 :- public sys_cond/2.
 :- meta_function sys_cond(?, 0).
@@ -140,11 +141,11 @@ sys_pack_cond(X, G, sys_cond(X, G)).
 :- public expand_term/2.
 :- meta_predicate expand_term(-1, -1).
 :- set_predicate_property(expand_term/2, sys_noexpand).
-expand_term(P, P) :- sys_var(P), !.
+expand_term(P, P) :- var(P), !.
 expand_term(A, C) :- term_expansion(A, B), !, expand_term(B, C).
 expand_term(G, N) :-
-   sys_callable(G),
-   sys_functor(G, J, A),
+   callable(G),
+   functor(G, J, A),
    sys_make_indicator(J, A, I),
    \+ predicate_property(I, sys_noexpand), !,
    expand_term_callable(G, I, H, U),
@@ -158,13 +159,13 @@ expand_term(T, U) :-
 expand_term_callable(G, I, H, U) :-
    predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    sys_expand_term_args(R, L, S, U),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 expand_term_callable(G, _, H, U) :-
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    sys_expand_rest_args(L, S, U),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 
 % sys_expand_term_args(+Modes, +Args, -Args, -Goal)
 :- private sys_expand_term_args/4.
@@ -209,11 +210,11 @@ sys_expand_term_arg(_, X, Y, G) :-
 :- public expand_goal/2.
 :- meta_predicate expand_goal(0, 0).
 :- set_predicate_property(expand_goal/2, sys_noexpand).
-expand_goal(P, P) :- sys_var(P), !.
+expand_goal(P, P) :- var(P), !.
 expand_goal(A, C) :- goal_expansion(A, B), !, expand_goal(B, C).
 expand_goal(G, N) :-
-   sys_callable(G),
-   sys_functor(G, J, A),
+   callable(G),
+   functor(G, J, A),
    sys_make_indicator(J, A, I),
    \+ predicate_property(I, sys_noexpand), !,
    expand_goal_callable(G, I, H, U),
@@ -227,13 +228,13 @@ expand_goal(G, H) :-
 expand_goal_callable(G, I, H, U) :-
    predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    sys_expand_goal_args(R, L, S, U),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 expand_goal_callable(G, _, H, U) :-
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    sys_expand_rest_args(L, S, U),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 
 % sys_expand_goal_args(+Modes, +Args, -Args, -Goal)
 :- private sys_expand_goal_args/4.
@@ -276,11 +277,11 @@ sys_expand_goal_arg(_, X, Y, G) :-
 % expand_rest(+Goal, -Goal)
 :- public expand_rest/2.
 :- set_predicate_property(expand_rest/2, sys_noexpand).
-expand_rest(P, P) :- var(P), !.
+expand_rest(P, P) :- user:var(P), !.
 expand_rest(A, C) :- rest_expansion(A, B), !, expand_rest(B, C).
 expand_rest(G, N) :-
-   callable(G),
-   functor(G, J, A),
+   user:callable(G),
+   user:functor(G, J, A),
    J/A = I,
    \+ predicate_property(I, sys_nomacro), !,
    expand_rest_callable(G, I, H, U),
@@ -294,13 +295,13 @@ expand_rest(G, H) :-
 expand_rest_callable(G, I, H, U) :-
    predicate_property(I, meta_function(P)), !,
    P =.. [_|R],
-   G =.. [K|L],
+   user:(G =.. [K|L]),
    sys_expand_goal_args(R, L, S, U),
-   H =.. [K|S].
+   user:(H =.. [K|S]).
 expand_rest_callable(G, _, H, U) :-
-   G =.. [K|L],
+   user:(G =.. [K|L]),
    sys_expand_rest_args(L, S, U),
-   H =.. [K|S].
+   user:(H =.. [K|S]).
 
 % sys_expand_rest_args(+Args, -Args, -Goal)
 :- private sys_expand_rest_args/3.

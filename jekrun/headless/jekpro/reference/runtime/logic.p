@@ -9,6 +9,7 @@
  * ?- X = a; X = b.
  * X = a ;
  * X = b
+ *
  * ?- X = a, !; X = b.
  * X = a
  *
@@ -17,6 +18,21 @@
  * Others are only cut transparent in the second argument. This
  * includes the predicates (->)/2 and (*->)/2. Other predicates,
  * such as call/1, once/1 and (\+)/1, are not cut transparent at all.
+ *
+ * Examples:
+ * ?- basic/lists:member(X, [1]).
+ * X = 1
+ *
+ * ?- current_error(X), X::write('abc'), X::nl.
+ * abc
+ * X = 0r398aef8b
+ *
+ * The module also provides qualified calls through the operator (:)/2
+ * and message sending through the operator (::)/2. Message sending
+ * accepts term objects and reference datatypes as receiver objects.
+ * A not yet loaded qualified call module or message-sending class is
+ * automati-cally loaded. The operators feature also evaluable
+ * function variants.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

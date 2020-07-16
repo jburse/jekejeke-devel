@@ -55,6 +55,7 @@
 :- package(library(jekpro/frequent/experiment)).
 
 :- module(simp, []).
+:- use_module(library(runtime/quali)).
 
 /*******************************************************/
 /* Term Simplify                                       */
@@ -178,11 +179,11 @@ simplify_rest(G, G).
 :- public rebuild_term/2.
 :- meta_predicate rebuild_term(-1, -1).
 :- set_predicate_property(rebuild_term/2, sys_noexpand).
-rebuild_term(P, P) :- sys_var(P), !.
+rebuild_term(P, P) :- var(P), !.
 rebuild_term(A, C) :- term_rebuilding(A, B), !, rebuild_term(B, C).
 rebuild_term(G, H) :-
-   sys_callable(G),
-   sys_functor(G, J, A),
+   callable(G),
+   functor(G, J, A),
    sys_make_indicator(J, A, I),
    \+ predicate_property(I, sys_noexpand), !,
    rebuild_term_callable(G, I, H).
@@ -193,13 +194,13 @@ rebuild_term(G, G).
 rebuild_term_callable(G, I, H) :-
    predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    rebuild_term_args(R, L, S),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 rebuild_term_callable(G, _, H) :-
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    rebuild_rest_args(L, S),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 
 % rebuild_term_args(+Modes, +Args, -Args)
 :- private rebuild_term_args/3.
@@ -239,11 +240,11 @@ rebuild_term_arg(_, X, Y) :- rebuild_rest(X, Y).
 :- public rebuild_goal/2.
 :- meta_predicate rebuild_goal(0, 0).
 :- set_predicate_property(rebuild_goal/2, sys_noexpand).
-rebuild_goal(P, P) :- sys_var(P), !.
+rebuild_goal(P, P) :- var(P), !.
 rebuild_goal(A, C) :- goal_rebuilding(A, B), !, rebuild_goal(B, C).
 rebuild_goal(G, H) :-
-   sys_callable(G),
-   sys_functor(G, J, A),
+   callable(G),
+   functor(G, J, A),
    sys_make_indicator(J, A, I),
    \+ predicate_property(I, sys_noexpand), !,
    rebuild_goal_callable(G, I, H).
@@ -254,13 +255,13 @@ rebuild_goal(G, G).
 rebuild_goal_callable(G, I, H) :-
    predicate_property(I, meta_predicate(P)), !,
    P =.. [_|R],
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    rebuild_goal_args(R, L, S),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 rebuild_goal_callable(G, _, H) :-
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    rebuild_rest_args(L, S),
-   sys_univ(H, [K|S]).
+   H =.. [K|S].
 
 % rebuild_goal_args(+Modes, +Args, -Args)
 :- private rebuild_goal_args/3.
@@ -298,11 +299,11 @@ rebuild_goal_arg(_, X, Y) :- rebuild_rest(X, Y).
 % rebuild_rest(+Goal, -Goal)
 :- public rebuild_rest/2.
 :- set_predicate_property(rebuild_rest/2, sys_noexpand).
-rebuild_rest(P, P) :- var(P), !.
+rebuild_rest(P, P) :- user:var(P), !.
 rebuild_rest(A, C) :- rest_rebuilding(A, B), !, rebuild_rest(B, C).
 rebuild_rest(G, H) :-
-   callable(G),
-   functor(G, J, A),
+   user:callable(G),
+   user:functor(G, J, A),
    J/A = I,
    \+ predicate_property(I, sys_nomacro), !,
    rebuild_rest_callable(G, I, H).
@@ -313,13 +314,13 @@ rebuild_rest(G, G).
 rebuild_rest_callable(G, I, H) :-
    predicate_property(I, meta_function(P)), !,
    P =.. [_|R],
-   G =.. [K|L],
+   user:(G =.. [K|L]),
    rebuild_goal_args(R, L, S),
-   H =.. [K|S].
+   user:(H =.. [K|S]).
 rebuild_rest_callable(G, _, H) :-
-   G =.. [K|L],
+   user:(G =.. [K|L]),
    rebuild_rest_args(L, S),
-   H =.. [K|S].
+   user:(H =.. [K|S]).
 
 % rebuild_rest_args(+Args, -Args)
 :- private rebuild_rest_args/2.

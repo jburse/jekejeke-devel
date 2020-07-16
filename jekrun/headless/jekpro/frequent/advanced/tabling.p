@@ -79,6 +79,7 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(experiment/ref)).
 :- use_module(library(misc/lock)).
+:- use_module(library(runtime/quali)).
 
 :- public prefix(table).
 :- op(1150, fx, table).
@@ -122,8 +123,8 @@ sys_table_def(I, C) :- sys_indicator(I), !,
    sys_table_wrapper(F, L, L, nil, nil, C),
    sys_table_mode(F, N).
 sys_table_def(M, C) :-
-   sys_callable(M),
-   sys_functor(M, F, N),
+   callable(M),
+   functor(M, F, N),
    sys_table_declare(F, N, C),
    length(L, N),
    M =.. [_|R],
@@ -246,11 +247,11 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    sys_variant_shared(C), !,
    length(T, N),
    sys_table_lock(F, N, V),
-   sys_univ(Find, [V, P, E]),
+   Find =.. [V, P, E],
    sys_make_indicator(V, 2, J),
    sys_table_call(F, T, L, A, S, C, Call, P, W),
    sys_table_help(F, G),
-   sys_univ(SubHead, [G, P, W|T]),
+   SubHead =.. [G, P, W|T],
    sys_make_indicator(F, N, I),
    (  predicate_property(I, multifile)
    -> compilable_ref((SubHead :- !, Call), U)
@@ -260,7 +261,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    Descr =.. [''|L],
    Key =.. [''|T],
    sys_table_cache(F, N, M),
-   sys_univ(Test, [M, P, R]),
+   Test =.. [M, P, R],
    sys_table_list(C, W, R, S, List),
    Body = (sys_goal_globals(A^Descr, W),
       sys_variant_key(P),
@@ -268,7 +269,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
       (  Test -> List
       ;  sys_find_lock(Find, J, E),
          with_lock(E, SubHead))),
-   sys_univ(Head, [F|T]),
+   Head =.. [F|T],
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -283,7 +284,7 @@ sys_table_wrapper(F, T, L, A, S, C) :-
       sys_variant_key(P),
       sys_pivot_set(P, Key),
       Call),
-   sys_univ(Head, [F|T]),
+   Head =.. [F|T],
    (  predicate_property(I, multifile)
    -> compilable_ref((Head :- !, Body), K)
    ;  compilable_ref((Head :- Body), K)),
@@ -305,9 +306,9 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
    sys_variant_eager(C), !,
    length(T, N),
    sys_table_aux(F, G),
-   sys_univ(Goal, [G|L]),
+   Goal =.. [G|L],
    sys_table_cache(F, N, M),
-   sys_univ(Test, [M, P, R]),
+   Test =.. [M, P, R],
    sys_table_new(C, R, New),
    sys_table_list(C, W, R, S, List),
    Call = (  Test -> List
@@ -319,9 +320,9 @@ sys_table_call(F, T, L, A, S, C, Call, P, W) :-
 sys_table_call(F, T, L, A, S, C, Call, P, W) :-
    length(T, N),
    sys_table_aux(F, G),
-   sys_univ(Goal, [G|L]),
+   Goal =.. [G|L],
    sys_table_cache(F, N, M),
-   sys_univ(Test, [M, P, R]),
+   Test =.. [M, P, R],
    sys_table_new(C, R, New),
    sys_table_list(C, W, R, S, List),
    Call = (  Test -> List
@@ -438,8 +439,8 @@ retractall_table(_).
 :- private sys_current_table/3.
 % :- meta_predicate sys_current_table(-1,?,?).
 sys_current_table(V, R, E) :-
-   sys_callable(V), !,
-   sys_functor(V, F, N),
+   callable(V), !,
+   functor(V, F, N),
    sys_make_indicator(F, N, I),
    predicate_property(I, sys_tabled),
    sys_current_table(V, F, N, R, E).
@@ -452,18 +453,18 @@ sys_current_table(V, R, E) :-
 :- private sys_current_table/5.
 sys_current_table(V, F, N, R, E) :-
    sys_table_cache(F, N, M),
-   sys_univ(Test, [M, P, E]),
+   Test =.. [M, P, E],
    clause_ref(Test, true, R),
    sys_pivot_get(P, Key),
    Key =.. [_|L],
-   sys_univ(V, [F|L]).
+   V =.. [F|L].
 sys_current_table(V, F, N, R, E) :-
    sys_table_lock(F, N, M),
-   sys_univ(Find, [M, P, E]),
+   Find =.. [M, P, E],
    clause_ref(Find, true, R),
    sys_pivot_get(P, Key),
    Key =.. [_|L],
-   sys_univ(V, [F|L]).
+   V =.. [F|L].
 
 /**
  * sys_table_cache(F, A, N):
@@ -502,13 +503,13 @@ sys_table_lock(F, N, H) :-
 % sys_table_head(+Callable, -Callable)
 :- private sys_table_head/2.
 sys_table_head(G, N) :-
-   sys_callable(G),
-   sys_functor(G, J, A),
+   callable(G),
+   functor(G, J, A),
    sys_make_indicator(J, A, I),
    sys_provable_property_chk(I, sys_tabled/0, [sys_tabled]),
-   sys_univ(G, [K|L]),
+   G =.. [K|L],
    sys_table_aux(K, U),
-   sys_univ(N, [U|L]).
+   N =.. [U|L].
 
 /**
  * sys_table_aux(F, N):

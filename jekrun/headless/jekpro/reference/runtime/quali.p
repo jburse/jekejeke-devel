@@ -2,7 +2,7 @@
  * For qualified names a notation based on the colon (:) operator can be
  * used when invoking predicates or evaluable functions. The module name
  * itself can be structured by means of the slash (/)/2 operator and
- * the set ({})/1 operator. This gives rise to a new primitive goal syntax
+ * the set ({})/1 operator. This gives rise to a new primitive goal syntax,
  * which reads as follows:
  *
  * goal         --> module ":" goal
@@ -13,39 +13,24 @@
  *                | reference
  *                | callable.
  *
- * Under the hood qualified names are flattened to atoms with the help
- * of an inline atom cache. Further the colon notation will also resolve
- * module names based on the class loader of the call-site, the prefix
- * list of the call-site and the prefix list of the system. A qualified
- * predicate will be also searched in the re-export chain of the
- * given module name.
+ * To validate the above goal syntax the predicates var/1 and callable/1
+ * provided by this module can be used. Further, the module provides
+ * constructor and destructors of the new goal syntax by the predicates
+ * (=..)/2 and functor/3. The module overrides the usual ISO core standard
+ * predicates semantics.
  *
  * Examples:
- * ?- basic/lists:member(X, [1]).
- * X = 1
- * ?- 'jekpro.frequent.basic.lists\bmember'(X, [1]).
- * X = 1
+ * ?- foo(1)::bar(2) =.. L.
+ * L = [foo:bar, foo(1), 2]
  *
- * Finally there is also a double colon notation based on the (::)/2
- * operator that can be used to send message to a receiver. The receiver
- * itself is prepended Python style to the callable before invoking it.
- * For auto loaded Java classes the reexport chain contains the super
- * class and implemented interfaces. If an unqualified predicate with
- * the same name is defined, then this fall-back is called.
+ * ?- C =.. [foo:bar, foo(1), 2].
+ * C = foo(1)::bar(2)
  *
- * Examples:
- * ?- 'System':err(X), X::println('abc').
- * X = 0r47733fca
- * ?- current_error(X), X::write('abc'), X::nl.
- * abc
- * X = 0r398aef8b
- *
- * The predicates sys_callable/1, sys_var/1, sys_functor/3 and sys_univ/2
- * are the adaptations of callable/1, var/1, functor/3 and (=..)/2 in that
- * these predicates respect the module colon (:)/2 and receiver double
- * colon (::)/2 notation. A qualified functor  may only contains the colon
- * (:)/2 notation. The predicate sys_module/2 can be used to retrieve
- * the class reference or module name of a receiver.
+ * The Jekejeke Prolog object orientation is based on the Pythonesk
+ * convention that the receiver object is found in the first argument
+ * of a routine. The destructors uses the Pythonesk convention on a message
+ * sending call. The constructor then applies a heuristics to reconstruct
+ * the Pythonesk convention from a qualified call.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -86,19 +71,9 @@
 /******************************************************************/
 
 /**
- * callable(T):
- * Check whether T is a fully qualified callable.
- */
-% callable(+Term)
-:- public callable/1.
-:- override callable/1.
-callable(G) :-
-   sys_type_goal(G, N),
-   N = 0.
-
-/**
  * var(T):
- * Check whether T is a half qualified or not a qualified callable.
+ * The predicate succeeds when the term T adheres to the
+ * colon notation with at least one non-argument variable.
  */
 % var(+Goal)
 :- public var/1.
@@ -106,6 +81,18 @@ callable(G) :-
 var(G) :-
    sys_type_goal(G, N),
    N \= 0.
+
+/**
+ * callable(T):
+ * The predicate succeeds when the term T adheres to the
+ * colon notation without a non-argument variable.
+ */
+% callable(+Term)
+:- public callable/1.
+:- override callable/1.
+callable(G) :-
+   sys_type_goal(G, N),
+   N = 0.
 
 /**
  * sys_type_goal(T, N):
@@ -221,62 +208,13 @@ sys_type_callable(S, 0) :-
    user:callable(S).
 
 /******************************************************************/
-/* Improved Univ                                                  */
-/******************************************************************/
-
-/**
- * =..(O, L):
- * The predicate succeeds in L with the functor and arguments
- * of the receiver object or qualified callable O.
- */
-% =..(+Term, -List)
-:- public =.. /2.
-:- override =.. /2.
-=..(O, L) :- user:var(O), !,
-   univ2(L, O).
-=..(K, L) :- K = R:O, !,
-   =..(O, [H|J]),
-   sys_replace_site(F, K, R:H),
-   L = [F|J].
-=..(K, L) :- K = R::O, !,
-   sys_get_class(R, I),
-   =..(O, [H|J]),
-   sys_replace_site(F, K, I:H),
-   L = [F, R|J].
-=..(O, L) :-
-   user: =..(O, L).
-
-% univ2(+List, -Term)
-:- private univ2/2.
-univ2([F|_], _) :- user:var(F),
-   throw(error(instantiation_error, _)).
-univ2([K, R|L], O) :- K = I:F,
-   sys_is_class(R),
-   sys_get_class(R, J),
-   I == J, !,
-   univ2([F|L], H),
-   sys_replace_site(O, K, R::H).
-univ2([K|L], O) :- K = R:F, !,
-   univ2([F|L], H),
-   sys_replace_site(O, K, R:H).
-univ2(L, O) :-
-   user: =..(O, L).
-
-% sys_is_class(+Term)
-:- private sys_is_class/1.
-sys_is_class(O) :- user:var(O), !, fail.
-sys_is_class(_/O) :- !,
-   sys_is_class(O),
-   sys_is_class(_).
-
-/******************************************************************/
-/* Improved Functor & Arg                                         */
+/* Improved Functor                                               */
 /******************************************************************/
 
 /**
  * functor(O, F, A):
  * The predicate succeeds in F with the functor and in A with the arity
- * of the receiver object or qualified callable O.
+ * of the colon notation O.
  */
 % functor(+Term, -Package, -Integer)
 :- public functor/3.
@@ -303,3 +241,50 @@ functor2(K, A, O) :- K = R:F, !,
    sys_replace_site(O, K, R:H).
 functor2(F, A, O) :-
    user:functor(O, F, A).
+
+/******************************************************************/
+/* Improved Univ                                                  */
+/******************************************************************/
+
+/**
+ * O =.. L:
+ * The predicate succeeds in L with the functor and arguments
+ * of the colon notation O.
+ */
+% +Term =.. -List
+:- public =.. /2.
+:- override =.. /2.
+O =.. L :- user:var(O), !,
+   univ2(L, O).
+K =.. L :- K = R:O, !,
+   =..(O, [H|J]),
+   sys_replace_site(F, K, R:H),
+   L = [F|J].
+K =.. L :- K = R::O, !,
+   sys_get_class(R, I),
+   =..(O, [H|J]),
+   sys_replace_site(F, K, I:H),
+   L = [F, R|J].
+O =.. L :-
+   user:(O =.. L).
+
+% univ2(+List, -Term)
+:- private univ2/2.
+univ2([F|_], _) :- user:var(F),
+   throw(error(instantiation_error, _)).
+univ2([K, R|L], O) :- K = I:F, univ3(R),
+   sys_get_class(R, J),
+   I == J, !,
+   univ2([F|L], H),
+   sys_replace_site(O, K, R::H).
+univ2([K|L], O) :- K = R:F, !,
+   univ2([F|L], H),
+   sys_replace_site(O, K, R:H).
+univ2(L, O) :-
+   user:(O =.. L).
+
+% univ3(+Term)
+:- private univ3/1.
+univ3(O) :- user:var(O), !, fail.
+univ3(_/O) :- !, univ3(O).
+univ3(_).

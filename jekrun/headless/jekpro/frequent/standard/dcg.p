@@ -92,7 +92,7 @@
 % phrase(+Grammar, +List, -List)
 :- public phrase/3.
 :- meta_predicate phrase(2, ?, ?).
-phrase(P, _, _) :- sys_var(P),
+phrase(P, _, _) :- var(P),
    throw(error(instantiation_error, _)).
 phrase(P, I, O) :-
    expand_goal(phrase(P, I, O), Q),
@@ -103,9 +103,9 @@ phrase(P, I, O) :-
 :- public user:goal_expansion/2.
 :- multifile user:goal_expansion/2.
 :- meta_predicate user:goal_expansion(0, 0).
-user:goal_expansion(P, _) :- sys_var(P), !, fail.
+user:goal_expansion(P, _) :- var(P), !, fail.
 user:goal_expansion(phrase(P, _, _), _) :-
-   sys_var(P), !, fail.
+   var(P), !, fail.
 
 /**
  * phrase(A, I):
@@ -115,7 +115,7 @@ user:goal_expansion(phrase(P, _, _), _) :-
 % phrase(+Grammar, +List)
 :- public phrase/2.
 :- meta_predicate phrase(2, ?).
-phrase(P, _) :- sys_var(P),
+phrase(P, _) :- var(P),
    throw(error(instantiation_error, _)).
 phrase(P, I) :-
    expand_goal(phrase(P, I, []), Q),
@@ -282,8 +282,9 @@ user:goal_expansion(phrase(U, I, O), (A, Q)) :- U = {A},
    expand_goal(phrase(\+ A, I, O), Q),
    call(Q).
 
-user:goal_expansion(phrase(U, I, _), Q) :- U = (\+ A),
-   sys_replace_site(Q, U, \+ phrase(A, I, _)).
+user:goal_expansion(phrase(U, I, O), (V, Q)) :- U = (\+ A),
+   sys_replace_site(V, U, \+ phrase(A, I, _)),
+   sys_replace_site(Q, U, I = O).
 
 /**
  * P (grammar):
@@ -315,12 +316,12 @@ user:goal_expansion(phrase(P, I, O), Q) :-
 :- meta_predicate user:term_expansion(-1, -1).
 
 user:term_expansion((P --> _), _) :-
-   sys_var(P), throw(erro(instantiation_error, _)).
+   var(P), throw(erro(instantiation_error, _)).
 user:term_expansion((P, B --> C),
    (phrase(P, I, O) :- phrase(C, I, H), phrase(B, O, H))).
 user:term_expansion((P --> B),
    (phrase(P, I, O) :- phrase(B, I, O))).
 user:term_expansion(phrase(P, _, _), _) :-
-   sys_var(P), throw(erro(instantiation_error, _)).
+   var(P), throw(erro(instantiation_error, _)).
 user:term_expansion(phrase(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).

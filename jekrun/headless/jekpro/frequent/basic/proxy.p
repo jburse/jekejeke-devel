@@ -104,21 +104,76 @@
 
 /**
  * sys_assignable_from(N, M):
- * The predicate succeeds when M is a subclass of N. N and M
- * can be either class references or module names.
+ * The predicate succeeds when the class M is a subclass
+ * of the class N.
  */
 % sys_assignable_from(+Atom, +Atom)
 :- public sys_assignable_from/2.
 :- special(sys_assignable_from/2, 'SpecialProxy', 2).
 
 /**
+ * sys_get_class(O, C):
+ * The predicate succeeds in C with the class of
+ * the receiver object O.
+ */
+% sys_get_class(+Term, -Package)
+:- public sys_get_class/2.
+sys_get_class(O, _) :- var(O),
+   throw(error(instantiation_error, _)).
+sys_get_class(K, F) :- K = R/O, !,
+   sys_get_class(O, H),
+   sys_replace_site(F, K, R/H).
+sys_get_class(O, F) :- reference(O), !,
+   sys_sys_get_class(O, F).
+sys_get_class(O, F) :-
+   :(user, functor(O, F, _)).
+
+% sys_sys_get_class(+Ref, -Ref)
+:- private sys_sys_get_class/2.
+:- special(sys_sys_get_class/2, 'SpecialProxy', 3).
+
+/**
  * sys_instance_of(O, N):
- * The predicate succeeds when O is an instance of N. O can be a
- * reference or callable. N can be either a class reference
- * or a module name.
+ * The predicate succeeds when the receiver object O
+ * is an instance of the class N.
  */
 % sys_instance_of(+Term, +Atom)
 :- public sys_instance_of/2.
 sys_instance_of(O, N) :-
-   sys_get_module(O, M),
+   sys_get_class(O, M),
    sys_assignable_from(N, M).
+
+/******************************************************************/
+/* Improved Arg & SetArg                                          */
+/******************************************************************/
+
+/**
+ * arg(N, O, A):
+ * The predicate succeeds in A with the N-th argument
+ * of receiver object O.
+ */
+% arg(+Integer, +Term, -Term)
+:- public arg/3.
+:- override arg/3.
+arg(_, O, _) :- :(user, var(O)),
+   throw(error(instantiation_error, _)).
+arg(N, _/O, A) :- !,
+   arg(N, O, A).
+arg(N, O, A) :-
+   :(user, arg(N, O, A)).
+
+/**
+ * set_arg(N, O, A, P):
+ * The predicate succeeds in P with a new receiver object with
+ * the N-th argument of the receiver object O replaced by A.
+ */
+% set_arg(+Integer, +Term, +Term, -Term)
+:- public set_arg/4.
+:- override set_arg/4.
+set_arg(_, O, _, _) :- :(user, var(O)),
+   throw(error(instantiation_error, _)).
+set_arg(N, K, A, P) :- K = R/O, !,
+   set_arg(N, O, A, H),
+   sys_replace_site(P, K, R/H).
+set_arg(N, O, A, P) :-
+   :(user, set_arg(N, O, A, P)).
