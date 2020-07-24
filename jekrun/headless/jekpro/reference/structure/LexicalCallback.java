@@ -158,11 +158,7 @@ public final class LexicalCallback extends AbstractLexical {
      */
     public int compareTermSkel(Object alfa, Object beta)
             throws ArithmeticException, RuntimeWrap {
-        Thread thread = Thread.currentThread();
-        Supervisor visor = (Supervisor) AbstractLivestock.currentLivestock(thread);
-        if (visor == null)
-            throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-        Engine en = visor.inuse;
+        Engine en = Engine.getEngine();
         if (en == null)
             throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
         int size = Math.max(SupervisorCopy.displaySize(alfa),

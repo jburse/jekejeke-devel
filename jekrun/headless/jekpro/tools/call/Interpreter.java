@@ -15,6 +15,7 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.system.ConnectionReader;
+import matula.util.wire.AbstractLivestock;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -290,6 +291,20 @@ public final class Interpreter {
         ConnectionReader cr = new ConnectionReader(new StringReader(s));
         return (AbstractTerm) ForeignTerm.parseTerm(this, cr,
                 opt, PrologReader.FLAG_TEOF + PrologReader.FLAG_WRAP);
+    }
+
+   /***********************************************************/
+    /* Some Convenience                                        */
+    /***********************************************************/
+
+    /**
+     * <p>Retrieve the current interpreter.</p>
+     *
+     * @return The current interpreter or null.
+     */
+    public static Interpreter getInter() {
+        Engine en = Engine.getEngine();
+        return (en != null ? (Interpreter) en.proxy : null);
     }
 
     /***********************************************************/

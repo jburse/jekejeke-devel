@@ -46,14 +46,15 @@ public
 // /3	arithmetic/ratio
 // /3	arithmetic/round
 /\ /3	arithmetic/bits
-: /2	runtime/quali
-: /3	runtime/quali
-:: /2	runtime/quali
-:: /3	runtime/quali
+: /2	runtime/logic
+: /3	runtime/logic
+:: /2	runtime/logic
+:: /3	runtime/logic
 ;/2	runtime/logic
 < /2	arithmetic/compare
 < /2	arithmetic/ratio
 << /3	arithmetic/bits
+=.. /2	runtime/quali
 =.. /2	structure/univ
 =:= /2	arithmetic/compare
 =:= /2	arithmetic/ratio
@@ -107,6 +108,7 @@ balance/1	runtime/distributed
 balance/2	runtime/distributed
 begin_module/1	bootload/engine
 break/0	runtime/session
+callable/1	runtime/quali
 callable/1	structure/type
 ceiling/2	arithmetic/ratio
 ceiling/2	arithmetic/round
@@ -160,6 +162,7 @@ foreign/3	reflect/foreign
 foreign_constructor/3	reflect/foreign
 foreign_getter/3	reflect/foreign
 foreign_setter/3	reflect/foreign
+functor/3	runtime/quali
 gcd/3	arithmetic/bits
 gcd/3	arithmetic/ratio
 (group_local)/1	runtime/dynamic
@@ -250,7 +253,6 @@ sys_add_path/1	bootload/path
 sys_add_resource/1	bootload/module
 sys_auto_load/1	bootload/module
 sys_calc_install_id/2	bootload/toolkit
-sys_callable/1	runtime/quali
 sys_capability_property/2	bootload/toolkit
 sys_check_license/1	bootload/toolkit
 sys_check_licenses/0	bootload/toolkit
@@ -267,8 +269,6 @@ sys_declaration_indicator/2	runtime/dynamic
 sys_declaration_indicator/2	runtime/meta
 sys_error_message/1	runtime/session
 sys_finit_capability/1	bootload/toolkit
-sys_functor/3	runtime/quali
-sys_module/2	runtime/quali
 sys_goal_globals/2	structure/vars
 sys_goal_kernel/2	structure/vars
 sys_indicator/1	reflect/pred
@@ -289,7 +289,7 @@ sys_quoted_var/2	runtime/session
 sys_reg_license_text/2	bootload/toolkit
 sys_reged_license_text/2	bootload/toolkit
 sys_remove_file_extension/1	bootload/path
-sys_replace_site/3	runtime/quali
+sys_replace_site/3	runtime/logic
 sys_set_context_property/3	reflect/source
 sys_short_base/1	bootload/load
 sys_show_base/1	bootload/load
@@ -297,8 +297,6 @@ sys_show_provable_source/2	bootload/load
 sys_syntax_property_chk/3	reflect/oper
 sys_syntax_property_idx/2	reflect/oper
 sys_term_singletons/2	structure/vars
-sys_univ/2	runtime/quali
-sys_var/1	runtime/quali
 tan/2	arithmetic/trigo
 term_atom/2	structure/bytes
 term_atom/3	structure/bytes
@@ -314,6 +312,7 @@ unify_with_occurs_check/2	structure/univ
 unload_file/1	bootload/load
 use_module/1	bootload/module
 use_package/1	bootload/module
+var/1	runtime/quali
 version/0	bootload/engine
 welcome/0	bootload/engine
 write_block/1	structure/bytes

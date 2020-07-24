@@ -1,7 +1,6 @@
 package jekpro.tools.proxy;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
@@ -15,10 +14,10 @@ import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
-import matula.util.wire.AbstractLivestock;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 
 /**
@@ -55,8 +54,8 @@ import java.lang.reflect.Proxy;
 public final class ProxyHandler implements InvocationHandler {
     private final AbstractSource src;
     private Class gener;
-    private final MapHash<Method, ExecutorMethod> execs =
-            new MapHash<Method, ExecutorMethod>();
+    private final MapHash<Method, AbstractExecutor> execs =
+            new MapHash<Method, AbstractExecutor>();
 
     /**
      * <p>Create a prolog handler for the given Prolog text.</p>
@@ -88,11 +87,11 @@ public final class ProxyHandler implements InvocationHandler {
      * @param proxy  The proxy object.
      * @param args   The arguments.
      * @return The return value.
+     * @throws Throwable Exception of the method.
      */
-    public Object invoke(Object proxy, Method method, Object[] args) {
-        Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(Thread.currentThread());
-        Engine en = (s != null ? s.inuse : null);
-        Interpreter inter = (en != null ? (Interpreter) en.proxy : null);
+    public Object invoke(Object proxy, Method method, Object[] args)
+            throws Throwable {
+        Interpreter inter = Interpreter.getInter();
         if (inter == null) {
             Knowledgebase know = (Knowledgebase) src.getStore().proxy;
             inter = know.iterable();
@@ -118,7 +117,7 @@ public final class ProxyHandler implements InvocationHandler {
                 return Integer.valueOf(length(proxy));
             }
         }
-        ExecutorMethod exe = findExecutor(method);
+        AbstractExecutor exe = findExecutor(method);
         try {
             return exe.runGoal(proxy, args, inter);
         } catch (InterpreterException x) {
@@ -134,8 +133,8 @@ public final class ProxyHandler implements InvocationHandler {
      * @param method The method.
      * @return The executor.
      */
-    private ExecutorMethod findExecutor(Method method) {
-        ExecutorMethod exe;
+    private AbstractExecutor findExecutor(Method method) {
+        AbstractExecutor exe;
         synchronized (this) {
             exe = execs.get(method);
             if (exe != null)
@@ -153,8 +152,13 @@ public final class ProxyHandler implements InvocationHandler {
      * @param method The method.
      * @return The executor, or null.
      */
-    private ExecutorMethod createMethod(Method method) {
-        ExecutorMethod exe = new ExecutorMethod(method);
+    private AbstractExecutor createMethod(Method method) {
+        AbstractExecutor exe;
+        if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
+            exe = new ExecutorInterface(method);
+        } else {
+            exe = new ExecutorDefault(method);
+        }
         if (!exe.encodeSignature())
             return null;
         return exe;

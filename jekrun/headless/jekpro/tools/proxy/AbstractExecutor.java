@@ -15,10 +15,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
- * <p>Java code for the instantiation example. This class
- * provides an executor for Prolog predicates that are
- * called as result of invoking a proxy class invocation
- * handler.
+ * <p>This class provides the base class for executors of
+ * Prolog predicates that are called as result of invoking
+ * a proxy class invocation handler.
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -48,29 +47,51 @@ import java.lang.reflect.Modifier;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class ExecutorMethod {
+abstract class AbstractExecutor {
     public final static int MASK_METH_VIRT = 0x00000001;
     public final static int MASK_METH_FUNC = 0x00000002;
 
     final static int[] VOID_PARAS = new int[0];
     final static Object[] VOID_PROLOG_ARGS = new Object[0];
 
-    private int subflags;
+    int subflags;
 
-    private int[] encodeparas;
-    private int encoderet;
+    int[] encodeparas;
+    int encoderet;
 
-    private final Method method;
-    private TermAtomic functor;
+    final Method method;
+    TermAtomic functor;
 
     /**
-     * <p>Create method predicate.</p>
+     * <p>Create an abstract executor.</p>
      *
      * @param m The method.
      */
-    ExecutorMethod(Method m) {
+    AbstractExecutor(Method m) {
         method = m;
     }
+
+    /***********************************************************/
+    /* Variation Point                                         */
+    /***********************************************************/
+
+    /**
+     * <p>Run the predicate.</p>
+     *
+     * @param proxy The proxy class instance.
+     * @param args  The arguments.
+     * @param inter The interpreter.
+     * @return The result, can be null.
+     * @throws InterpreterMessage   FFI error.
+     * @throws InterpreterException FFI error.
+     * @throws Throwable            FFI error.
+     */
+    abstract Object runGoal(Object proxy, Object[] args, Interpreter inter)
+            throws InterpreterMessage, InterpreterException, Throwable;
+
+    /***********************************************************/
+    /* Functor & Parameter Compilation                        */
+    /***********************************************************/
 
     /**
      * <p>Set the source.</p>
@@ -88,7 +109,7 @@ final class ExecutorMethod {
      *
      * @return True if the signature is ok, otherwise false.
      */
-    public boolean encodeSignature() {
+    boolean encodeSignature() {
         Class ret = method.getReturnType();
         Integer encode = Types.typepred.get(ret);
         if (encode == null) {
@@ -124,56 +145,6 @@ final class ExecutorMethod {
     }
 
     /***********************************************************/
-    /* Predicate Execution                                     */
-    /***********************************************************/
-
-    /**
-     * <p>Run the predicate.</p>
-     *
-     * @param proxy The proxy class instance.
-     * @param args  The arguments.
-     * @param inter The interpreter.
-     * @return The result, can be null.
-     * @throws InterpreterMessage   Shit happens.
-     * @throws InterpreterException Shit happens.
-     */
-    Object runGoal(Object proxy, Object[] args, Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
-        try {
-            Object[] termargs = uncompileArgs(proxy, args);
-            Object help;
-            if ((subflags & MASK_METH_FUNC) != 0) {
-                help = new TermVar();
-                termargs[termargs.length - 1] = help;
-            } else {
-                help = null;
-            }
-            AbstractTerm goal;
-            if (termargs.length != 0) {
-                goal = new TermCompound(inter, functor, termargs);
-            } else {
-                goal = functor;
-            }
-
-            CallIn callin = inter.iterator(goal);
-            if (callin.hasNext()) {
-                callin.next();
-                help = (help != null ? AbstractTerm.copyMolec(inter, help) : null);
-                callin.close();
-                help = (help != null ? Types.denormProlog(encoderet, AbstractTerm.getSkel(help),
-                        AbstractTerm.getDisplay(help)) : noretDenormProlog(true));
-            } else {
-                help = (help != null ? null : noretDenormProlog(false));
-            }
-
-            return help;
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-    }
-
-
-    /***********************************************************/
     /* Parameter & Result Conversion                           */
     /***********************************************************/
 
@@ -184,17 +155,17 @@ final class ExecutorMethod {
      * @return The Prolog arguments.
      * @throws EngineMessage Shit happens.
      */
-    private Object[] uncompileArgs(Object proxy, Object[] args)
+    protected Object[] uncompileArgs(Object proxy, Object[] args)
             throws EngineMessage {
         int len = encodeparas.length;
-        if ((subflags & ExecutorMethod.MASK_METH_VIRT) != 0)
+        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
             len++;
-        if ((subflags & ExecutorMethod.MASK_METH_FUNC) != 0)
+        if ((subflags & ExecutorInterface.MASK_METH_FUNC) != 0)
             len++;
         Object[] termargs = (len != 0 ?
-                new Object[len] : ExecutorMethod.VOID_PROLOG_ARGS);
+                new Object[len] : ExecutorInterface.VOID_PROLOG_ARGS);
         int k = 0;
-        if ((subflags & ExecutorMethod.MASK_METH_VIRT) != 0) {
+        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0) {
             termargs[k] = proxy;
             k++;
         }
@@ -215,8 +186,76 @@ final class ExecutorMethod {
      * @param f The desired value.
      * @return The Java return value.
      */
-    private Object noretDenormProlog(boolean f) {
+    protected Object noretDenormProlog(boolean f) {
         return (encoderet == Types.TYPE_VOID ? null : Boolean.valueOf(f));
+    }
+
+    /***********************************************************/
+    /* Make & Execute Goal                           */
+    /***********************************************************/
+
+    /**
+     * <p>Create the proxy call.</p>
+     *
+     * @param proxy The proxy instance.
+     * @param args  The arguments.
+     * @param inter The interpreter.
+     * @return The call.
+     * @throws InterpreterMessage Shit happens.
+     */
+    protected Object makeGoal(Object proxy, Object[] args, Interpreter inter)
+            throws InterpreterMessage {
+        Object[] termargs;
+        try {
+            termargs = uncompileArgs(proxy, args);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        if ((subflags & MASK_METH_FUNC) != 0)
+            termargs[termargs.length - 1] = new TermVar();
+        Object goal;
+        if (termargs.length != 0) {
+            return new TermCompound(inter, functor, termargs);
+        } else {
+            return functor;
+        }
+    }
+
+    /**
+     * <p>Execute a proxy call.</p>
+     *
+     * @param goal  The proxy call.
+     * @param inter The interpreter.
+     * @return The result.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    protected Object executeGoal(Object goal, Interpreter inter)
+            throws InterpreterException, InterpreterMessage {
+        CallIn callin = inter.iterator(goal);
+        if (callin.hasNext()) {
+            callin.next();
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                TermCompound tc = (TermCompound) goal;
+                goal = AbstractTerm.copyMolec(inter, tc.getArgMolec(tc.getArity() - 1));
+                callin.close();
+                try {
+                    return Types.denormProlog(encoderet, AbstractTerm.getSkel(goal),
+                            AbstractTerm.getDisplay(goal));
+                } catch (EngineMessage x) {
+                    throw new InterpreterMessage(x);
+                }
+            } else {
+                callin.close();
+                return noretDenormProlog(true);
+            }
+        } else {
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                return null;
+            } else {
+                return noretDenormProlog(false);
+            }
+        }
     }
 
 }
