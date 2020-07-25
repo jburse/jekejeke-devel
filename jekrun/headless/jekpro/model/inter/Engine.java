@@ -8,8 +8,10 @@ import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
+import matula.util.wire.AbstractLivestock;
 
 import java.util.Comparator;
 
@@ -398,6 +400,21 @@ public class Engine extends StackElement implements Comparator<Object> {
             throws ArithmeticException {
         return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
                 AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
+    }
+
+    /***********************************************************/
+    /* Some Convenience                                        */
+    /***********************************************************/
+
+    /**
+     * <p>Retrieve the current interpreter.</p>
+     *
+     * @return The current interpreter or null.
+     */
+    public static Engine getEngine() {
+        Thread thread = Thread.currentThread();
+        Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(thread);
+        return (s != null ? s.inuse : null);
     }
 
 }

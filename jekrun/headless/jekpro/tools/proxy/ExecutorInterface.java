@@ -1,8 +1,12 @@
 package jekpro.tools.proxy;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
 
 import java.lang.reflect.Method;
 
@@ -66,8 +70,33 @@ final class ExecutorInterface extends AbstractExecutor {
      */
     Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterMessage, InterpreterException {
-        Object goal = makeGoal(proxy, args, inter);
-        return executeGoal(goal, inter);
+        if (!currentProvable(inter)) {
+            throw new InterpreterMessage(existenceProvable(inter));
+        } else {
+            Object goal = makeGoal(proxy, args, inter);
+            return executeGoal(goal, inter);
+        }
+    }
+
+    /**
+     * <p>Create a realization missing error message.</p>
+     *
+     * @param inter The interpreter.
+     * @return The error message.
+     */
+    private EngineMessage existenceProvable(Interpreter inter) {
+        int len = encodeparas.length;
+        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
+            len++;
+        if ((subflags & ExecutorInterface.MASK_METH_FUNC) != 0)
+            len++;
+        SkelAtom sa = (SkelAtom) functor.getSkel();
+        Engine en = inter.getEngine();
+        return new EngineMessage(EngineMessage.existenceError(
+                EngineMessage.OP_EXISTENCE_BODY,
+                new SkelCompound(en.store.foyer.ATOM_SLASH,
+                        sa,
+                        Integer.valueOf(len))));
     }
 
 }

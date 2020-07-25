@@ -1,8 +1,9 @@
 package jekpro.tools.proxy;
 
-import jekpro.model.molec.Display;
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
@@ -256,6 +257,36 @@ abstract class AbstractExecutor {
                 return noretDenormProlog(false);
             }
         }
+    }
+
+    /**
+     * <p>Check whether the predicate is defined.</p>
+     *
+     * @param inter The interpreter.
+     * @return True if the predicate is defined, otherwise false.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    protected boolean currentProvable(Interpreter inter)
+            throws InterpreterException, InterpreterMessage {
+        int len = encodeparas.length;
+        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
+            len++;
+        if ((subflags & ExecutorInterface.MASK_METH_FUNC) != 0)
+            len++;
+        SkelAtom sa = (SkelAtom) functor.getSkel();
+        Engine en = inter.getEngine();
+        CachePredicate cp;
+        try {
+            cp = CachePredicate.getPredicateDefined(sa, len, en, 0);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return false;
+        return true;
     }
 
 }

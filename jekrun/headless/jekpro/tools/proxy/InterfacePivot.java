@@ -3,7 +3,12 @@ package jekpro.tools.proxy;
 import jekpro.tools.term.AbstractTerm;
 
 /**
- * <p>The slots interface for a state-full proxy.</p>
+ * <p>The pivot interface for a state-full proxy. The Java proxy
+ * class then understands the methods of the Java interface
+ * “InterfacePivot” and realizes a getter and setter for the
+ * pivot state. The corresponding Prolog module needs to re-export
+ * this interface directly or indirectly.</p>
+ * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -39,13 +44,13 @@ public interface InterfacePivot {
      *
      * @return The value.
      */
-     AbstractTerm value();
+    AbstractTerm value();
 
     /**
      * <p>Set the value.</p>
      *
      * @param data The value.
      */
-     void set_value(AbstractTerm data);
+    void set_value(AbstractTerm data);
 
 }
