@@ -3,17 +3,7 @@ package jekpro.tools.proxy;
 import jekpro.tools.term.AbstractTerm;
 
 /**
- * <p>The slots interface for a state-full proxy. The interface allows
- * accessing and modifying the slots of a proxy instance. The slots
- * are indexed starting with 1. The number of the slots is specified
- * when creating the proxy instance.
- * </p>
- * <p>The methods at() and set_at() tolerate an index that is outside
- * the range 1..size where size is the number of slots and indicate a
- * failure. The method length() returns the size of the given proxy
- * instance.
- * </p>
- * <p/>
+ * <p>The slots interface for a state-full proxy.</p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -42,31 +32,20 @@ import jekpro.tools.term.AbstractTerm;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public interface InterfaceSlots {
+public interface InterfacePivot {
 
     /**
-     * <p>Retrieve the data.</p>
-     * <p>Will instantiate the template.</p>
+     * <p>Retrieve the value.</p>
      *
-     * @param idx The index.
-     * @return The data.
+     * @return The value.
      */
-    AbstractTerm at(int idx);
+     AbstractTerm value();
 
     /**
-     * <p>Set the data.</p>
-     * <p>Will store a template.</p>
+     * <p>Set the value.</p>
      *
-     * @param idx  The index.
-     * @param data The data.
+     * @param data The value.
      */
-    void set_at(int idx, AbstractTerm data);
-
-    /**
-     * <p>Retrieve the length.</p>
-     *
-     * @return The length.
-     */
-    int length();
+     void set_value(AbstractTerm data);
 
 }

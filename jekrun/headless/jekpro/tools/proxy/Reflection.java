@@ -79,20 +79,6 @@ public final class Reflection extends AbstractReflection {
         return AutoClass.validateExceptionTypes(exces, en);
     }
 
-    /**
-     * <p>Create an instance.</p>
-     *
-     * @param con  The constructor.
-     * @param args The arguments.
-     * @return The special delegate.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public Object newInstance(Constructor con, Object[] args)
-            throws EngineMessage, EngineException {
-        return AutoClass.invokeNew(con, args);
-    }
-
     /*******************************************************************/
     /* Array & Foreign Factory                                         */
     /*******************************************************************/

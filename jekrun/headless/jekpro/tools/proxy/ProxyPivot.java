@@ -1,5 +1,10 @@
 package jekpro.tools.proxy;
 
+import jekpro.model.inter.Engine;
+import jekpro.model.molec.Display;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -34,19 +39,17 @@ import java.lang.reflect.Method;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class ProxyState implements InvocationHandler {
-    private final ProxyHandler handler;
-    private final Object[] template;
+public final class ProxyPivot implements InvocationHandler {
+    private ProxyHandler handler;
+    private Object template;
 
     /**
-     * <p>Create a data by a handler.</p>
+     * <p>Set the handler.</p>
      *
-     * @param h    The handler.
-     * @param size The size.
+     * @param h The handler.
      */
-    ProxyState(ProxyHandler h, int size) {
+    void setHandler(ProxyHandler h) {
         handler = h;
-        template = new Object[size];
     }
 
     /**
@@ -59,32 +62,28 @@ public final class ProxyState implements InvocationHandler {
     }
 
     /**
-     * <p>Retrieve the template skeleton.</p>
+     * <p>Retrieve the value.</p>
      *
-     * @param idx The index.
-     * @return The template skeleton.
+     * @return The value.
      */
-    Object at(int idx) {
-        return template[idx];
+    AbstractTerm value() {
+        Object m = template;
+        if (m == null)
+            return null;
+        Display ref = AbstractSkel.createMarker(m);
+        return AbstractTerm.createTermWrapped(m, ref);
     }
 
     /**
-     * <p>Set the template skeleton.</p>
+     * <p>Set the value.</p>
      *
-     * @param idx  The index.
-     * @param data The template skeleton.
+     * @param data The value.
+     * @param en   The engine.
      */
-    void set_at(int idx, Object data) {
-        template[idx] = data;
-    }
-
-    /**
-     * <p>Retrieve the length.</p>
-     *
-     * @return The length.
-     */
-    int length() {
-        return template.length;
+    void set_value(AbstractTerm data, Engine en) {
+        Display ref = AbstractTerm.getDisplay(data);
+        Object val = AbstractTerm.getSkel(data);
+        template = AbstractSkel.copySkel(val, ref, en);
     }
 
     /**

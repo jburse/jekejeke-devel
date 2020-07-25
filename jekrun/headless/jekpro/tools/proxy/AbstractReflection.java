@@ -63,19 +63,6 @@ public abstract class AbstractReflection {
      */
     public abstract boolean validateExceptionTypes(Class[] exces, Engine en);
 
-    /**
-     * <p>Create a special.</p>
-     *
-     * @param con  The constructor.
-     * @param args The constructor arguments.
-     * @return The special.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public abstract Object newInstance(Constructor con,
-                                       Object[] args)
-            throws EngineException, EngineMessage;
-
     /*******************************************************************/
     /* Array & Foreign Factory                                         */
     /*******************************************************************/

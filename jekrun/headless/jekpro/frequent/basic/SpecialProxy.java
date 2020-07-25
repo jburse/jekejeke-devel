@@ -2,7 +2,6 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -14,15 +13,13 @@ import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.call.Interpreter;
-import jekpro.tools.proxy.InterfaceSlots;
+import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.proxy.ProxyHandler;
-import jekpro.tools.proxy.ProxyState;
+import jekpro.tools.proxy.InterfacePivot;
+import jekpro.tools.proxy.ProxyPivot;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.AbstractRuntime;
-import matula.util.wire.AbstractLivestock;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -60,12 +57,9 @@ import java.lang.reflect.Proxy;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialProxy extends AbstractSpecial {
-    private final static int SPECIAL_SYS_PROXY_HANDLER = 0;
-    private final static int SPECIAL_SYS_PROXY_STATE = 1;
+    private final static int SPECIAL_SYS_NEW_INSTANCE = 0;
     private final static int SPECIAL_SYS_ASSIGNABLE_FROM = 2;
     private final static int SPECIAL_SYS_SYS_GET_CLASS = 3;
-
-    private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
 
     /**
      * <p>Create a foreign special.</p>
@@ -91,25 +85,13 @@ public final class SpecialProxy extends AbstractSpecial {
             throws EngineException, EngineMessage {
         try {
             switch (id) {
-                case SPECIAL_SYS_PROXY_HANDLER:
+                case SPECIAL_SYS_NEW_INSTANCE:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
-                    obj = SpecialProxy.newProxyHandler(CacheSubclass.getBase(sa, en));
+                    obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en));
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
-                        return false;
-                    return true;
-                case SPECIAL_SYS_PROXY_STATE:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
-                    sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
-                    Number num = SpecialEval.derefAndCastInteger(temp[1], ref);
-                    SpecialEval.checkNotLessThanZero(num);
-                    int size = SpecialEval.castIntValue(num);
-                    obj = SpecialProxy.newProxyState(CacheSubclass.getBase(sa, en), size);
-                    if (!en.unifyTerm(temp[2], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return true;
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
@@ -154,40 +136,16 @@ public final class SpecialProxy extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newProxyHandler(AbstractSource scope)
+    private static Object newInstance(AbstractSource scope)
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope);
-        Class clazz = handler.defineGener();
-        if (InterfaceSlots.class.isAssignableFrom(clazz))
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_PROXY,
-                    SpecialForeign.constructorToCallable(new Class[]{})));
-        Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
-        AbstractFactory factory = scope.getStore().foyer.getFactory();
-        return factory.getReflection().newInstance(constr, new Object[]{handler});
-    }
-
-    /**
-     * <p>Instantiate the Java proxy class of the given Prolog text.</p>
-     *
-     * @param scope The Prolog text.
-     * @param size  The size.
-     * @return The instance.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static Object newProxyState(AbstractSource scope, int size)
-            throws EngineMessage, EngineException {
-        ProxyHandler handler = defineHandler(scope);
-        Class clazz = handler.defineGener();
-        if (!InterfaceSlots.class.isAssignableFrom(clazz))
-            throw new EngineMessage(EngineMessage.existenceError(
-                    EngineMessage.OP_EXISTENCE_PROXY,
-                    SpecialForeign.constructorToCallable(new Class[]{Integer.TYPE})));
-        Constructor constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
-        ProxyState state = handler.createState(size);
-        AbstractFactory factory = scope.getStore().foyer.getFactory();
-        return factory.getReflection().newInstance(constr, new Object[]{state});
+        Constructor constr = handler.getProxyConstr();
+        if (handler.hasState()) {
+            ProxyPivot state = handler.createState();
+            return AutoClass.invokeNew(constr, new Object[]{state});
+        } else {
+            return AutoClass.invokeNew(constr, new Object[]{handler});
+        }
     }
 
     /**
@@ -196,7 +154,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * @return The handler.
      * @throws EngineMessage Shit happens.
      */
-    public static ProxyHandler defineHandler(AbstractSource scope)
+    private static ProxyHandler defineHandler(AbstractSource scope)
             throws EngineMessage {
         if (!(scope instanceof InterfaceProxyable))
             throw new EngineMessage(EngineMessage.permissionError(
@@ -211,7 +169,8 @@ public final class SpecialProxy extends AbstractSpecial {
             handler = proxable.getHandler();
             if (handler != null)
                 return handler;
-            handler = new ProxyHandler(scope);
+            handler = new ProxyHandler();
+            handler.setSource(scope);
             proxable.setHandler(handler);
         }
         return handler;
@@ -232,8 +191,8 @@ public final class SpecialProxy extends AbstractSpecial {
         if (!(obj instanceof Proxy))
             return obj.getClass();
         InvocationHandler iv = Proxy.getInvocationHandler(obj);
-        if (iv instanceof ProxyState)
-            return ((ProxyState) iv).getHandler().getSource();
+        if (iv instanceof ProxyPivot)
+            return ((ProxyPivot) iv).getHandler().getSource();
         if (iv instanceof ProxyHandler)
             return ((ProxyHandler) iv).getSource();
         return null;

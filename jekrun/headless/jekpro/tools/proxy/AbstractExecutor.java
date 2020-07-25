@@ -94,13 +94,13 @@ abstract class AbstractExecutor {
     /***********************************************************/
 
     /**
-     * <p>Set the source.</p>
+     * <p>Set the handler.</p>
      *
-     * @param src The source.
+     * @param handler The handler.
      */
-    void setSource(AbstractSource src) {
-        SkelAtom val = new SkelAtom(method.getName(), src);
-        functor = (TermAtomic) AbstractTerm.createTermWrapped(val, Display.DISPLAY_CONST);
+    void setHandler(ProxyHandler handler) {
+        SkelAtom val = new SkelAtom(method.getName(), handler.getSource());
+        functor = new TermAtomic(val);
     }
 
     /**

@@ -1,27 +1,22 @@
 package jekpro.tools.proxy;
 
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 
 /**
- * <p>Java code for the instantiation example.</p>
+ * <p>Common proxy invocation handler.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -52,18 +47,26 @@ import java.lang.reflect.Proxy;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ProxyHandler implements InvocationHandler {
-    private final AbstractSource src;
-    private Class gener;
-    private final MapHash<Method, AbstractExecutor> execs =
-            new MapHash<Method, AbstractExecutor>();
+    private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
+
+    private AbstractSource src;
+    private Class proxy;
+    private MapHash<Method, AbstractExecutor> execs;
+    private Constructor constr;
+    private boolean hasstate;
 
     /**
-     * <p>Create a prolog handler for the given Prolog text.</p>
+     * <p>Set the source.</p>
      *
      * @param s The source.
+     * @throws EngineMessage Shit happens.
      */
-    public ProxyHandler(AbstractSource s) {
+    public void setSource(AbstractSource s) throws EngineMessage {
         src = s;
+        proxy = createProxyClass();
+        execs = createProxyExecs();
+        constr = SpecialForeign.getDeclaredConstructor(proxy, SIG_INVOKE);
+        hasstate = InterfacePivot.class.isAssignableFrom(proxy);
     }
 
     /**
@@ -73,6 +76,79 @@ public final class ProxyHandler implements InvocationHandler {
      */
     public AbstractSource getSource() {
         return src;
+    }
+
+    /**
+     * <p>Retrieve the proxy constructor.</p>
+     *
+     * @return The proxy constructor.
+     */
+    public Constructor getProxyConstr() {
+        return constr;
+    }
+
+    /**************************************************************/
+    /* Class & Executors Initialization                           */
+    /**************************************************************/
+
+    /**
+     * <p>Create the proxy class.</p>
+     *
+     * @return The proxy class.
+     */
+    private Class createProxyClass() {
+        ListArray<Class> list = new ListArray<Class>();
+        MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
+        for (int i = 0; i < deps.length; i++) {
+            MapEntry<AbstractSource, Integer> entry = deps[i];
+            int flags = entry.value.intValue();
+            if ((flags & AbstractSource.MASK_IMPT_AUTO) == 0 ||
+                    (flags & AbstractSource.MASK_IMPT_MODL) == 0 ||
+                    (flags & AbstractSource.MASK_IMPT_REEX) == 0)
+                continue;
+            if (!(entry.key instanceof AbstractAuto))
+                continue;
+            Class clazz = ((AbstractAuto) entry.key).getAuto();
+            if (clazz == null || !clazz.isInterface())
+                continue;
+            list.add(clazz);
+        }
+
+        Class[] interfaces = new Class[list.size()];
+        list.toArray(interfaces);
+
+        ClassLoader loader = src.getStore().loader;
+        return Proxy.getProxyClass(loader, interfaces);
+    }
+
+    /**
+     * <p>Create the proxy executors.</p>
+     *
+     * @return The proxy executors.
+     */
+    public MapHash<Method, AbstractExecutor> createProxyExecs() {
+        MapHash<Method, AbstractExecutor> map = new MapHash<Method, AbstractExecutor>();
+        Class[] interfaces = proxy.getInterfaces();
+
+        for (int i = 0; i < interfaces.length; i++) {
+            Method[] list = interfaces[i].getMethods();
+            for (int j = 0; j < list.length; j++) {
+                Method method = list[j];
+                if (map.getEntry(method) != null)
+                    continue;
+                AbstractExecutor exec;
+                if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
+                    exec = new ExecutorInterface(method);
+                } else {
+                    exec = new ExecutorDefault(method);
+                }
+                if (!exec.encodeSignature())
+                    continue;
+                exec.setHandler(this);
+                map.add(method, exec);
+            }
+        }
+        return map;
     }
 
     /**************************************************************/
@@ -105,21 +181,20 @@ public final class ProxyHandler implements InvocationHandler {
             } else if (name.equals("toString")) {
                 return proxy.getClass().getName() + "@" + Integer.toHexString(proxy.hashCode());
             }
-        } else if (method.getDeclaringClass() == InterfaceSlots.class) {
+        } else if (method.getDeclaringClass() == InterfacePivot.class) {
             String name = method.getName();
-            if (name.equals("at")) {
-                return at(proxy, ((Integer) args[0]).intValue());
-            } else if (name.equals("set_at")) {
-                set_at(proxy, ((Integer) args[0]).intValue(),
-                        (AbstractTerm) args[1], inter.getEngine());
+            if (name.equals("value")) {
+                ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(proxy);
+                return state.value();
+            } else if (name.equals("set_value")) {
+                ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(proxy);
+                state.set_value((AbstractTerm) args[0], inter.getEngine());
                 return null;
-            } else if (name.equals("length")) {
-                return Integer.valueOf(length(proxy));
             }
         }
-        AbstractExecutor exe = findExecutor(method);
+        AbstractExecutor exec = execs.get(method);
         try {
-            return exe.runGoal(proxy, args, inter);
+            return exec.runGoal(proxy, args, inter);
         } catch (InterpreterException x) {
             throw new RuntimeWrap(x);
         } catch (InterpreterMessage x) {
@@ -127,158 +202,28 @@ public final class ProxyHandler implements InvocationHandler {
         }
     }
 
-    /**
-     * <p>Find an executor for a given method.</p>
-     *
-     * @param method The method.
-     * @return The executor.
-     */
-    private AbstractExecutor findExecutor(Method method) {
-        AbstractExecutor exe;
-        synchronized (this) {
-            exe = execs.get(method);
-            if (exe != null)
-                return exe;
-            exe = createMethod(method);
-            exe.setSource(getSource());
-            execs.add(method, exe);
-        }
-        return exe;
-    }
-
-    /**
-     * <p>Create an executor.</p>
-     *
-     * @param method The method.
-     * @return The executor, or null.
-     */
-    private AbstractExecutor createMethod(Method method) {
-        AbstractExecutor exe;
-        if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
-            exe = new ExecutorInterface(method);
-        } else {
-            exe = new ExecutorDefault(method);
-        }
-        if (!exe.encodeSignature())
-            return null;
-        return exe;
-    }
-
     /**************************************************************/
     /* Instance Handling                                          */
     /**************************************************************/
 
     /**
-     * <p>Create a new state and initialize it.</p>
+     * <p>Retrrieve the has state flag.</p>
      *
-     * @param size The size.
-     * @return The initialized state.
+     * @return The has state flag.
      */
-    public ProxyState createState(int size) {
-        ProxyState state = new ProxyState(this, size);
-        for (int i = 0; i < size; i++)
-            state.set_at(i, src.getStore().foyer.ATOM_NIL);
+    public boolean hasState() {
+        return hasstate;
+    }
+
+    /**
+     * <p>Create a new state.</p>
+     *
+     * @return The new state.
+     */
+    public ProxyPivot createState() {
+        ProxyPivot state = new ProxyPivot();
+        state.setHandler(this);
         return state;
-    }
-
-    /**
-     * <p>Retrieve the data.</p>
-     * <p>Will instantiate the template.</p>
-     *
-     * @param proxy The proxy.
-     * @param idx   The index.
-     * @return The data.
-     */
-    private static AbstractTerm at(Object proxy, int idx) {
-        ProxyState state = (ProxyState) Proxy.getInvocationHandler(proxy);
-        if (idx < 0 || state.length() <= idx)
-            throw new ArrayIndexOutOfBoundsException();
-        Object m = state.at(idx);
-        Display ref = AbstractSkel.createMarker(m);
-        return AbstractTerm.createTermWrapped(m, ref);
-    }
-
-    /**
-     * <p>Set the data.</p>
-     * <p>Will store a template.</p>
-     *
-     * @param proxy The proxy object.
-     * @param idx   The index.
-     * @param data  The data.
-     * @param en    The engine.
-     */
-    private static void set_at(Object proxy, int idx,
-                               AbstractTerm data, Engine en) {
-        ProxyState state = (ProxyState) Proxy.getInvocationHandler(proxy);
-        if (idx < 0 || state.length() <= idx)
-            throw new ArrayIndexOutOfBoundsException();
-        Object val = AbstractSkel.copySkel(AbstractTerm.getSkel(data),
-                AbstractTerm.getDisplay(data), en);
-        state.set_at(idx, val);
-    }
-
-    /**
-     * <p>Retrieve the length.</p>
-     *
-     * @param proxy The proxy object.
-     * @return The length.
-     */
-    private static int length(Object proxy) {
-        ProxyState state = (ProxyState) Proxy.getInvocationHandler(proxy);
-        return state.length();
-    }
-
-    /**************************************************************/
-    /* Class Handling                                             */
-    /**************************************************************/
-
-    /**
-     * <p>Define the generated proxy class.</p>
-     *
-     * @return The generated proxy class.
-     */
-    public Class defineGener() {
-        Class res = gener;
-        if (res != null)
-            return res;
-        synchronized (this) {
-            res = gener;
-            if (res != null)
-                return res;
-            res = createProxy();
-            gener = res;
-        }
-        return res;
-    }
-
-    /**
-     * <p>Create a generated proxy class.</p>
-     *
-     * @return The generated proxy class.
-     */
-    private Class createProxy() {
-        ListArray<Class> list = new ListArray<Class>();
-        MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
-        for (int i = 0; i < deps.length; i++) {
-            MapEntry<AbstractSource, Integer> entry = deps[i];
-            if (!(entry.key instanceof AbstractAuto))
-                continue;
-            int flags = entry.value.intValue();
-            if ((flags & AbstractSource.MASK_IMPT_AUTO) == 0 ||
-                    (flags & AbstractSource.MASK_IMPT_MODL) == 0 ||
-                    (flags & AbstractSource.MASK_IMPT_REEX) == 0)
-                continue;
-            Class clazz = ((AbstractAuto) entry.key).getAuto();
-            if (clazz == null || !clazz.isInterface())
-                continue;
-            list.add(clazz);
-        }
-
-        Class[] interfaces = new Class[list.size()];
-        list.toArray(interfaces);
-
-        Store store = src.getStore();
-        return Proxy.getProxyClass(store.loader, interfaces);
     }
 
 }

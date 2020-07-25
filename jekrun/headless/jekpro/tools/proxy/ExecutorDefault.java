@@ -96,7 +96,7 @@ final class ExecutorDefault extends AbstractExecutor {
      */
     Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterException, InterpreterMessage, Throwable {
-        if (!currentPredicate(inter)) {
+        if (!currentProvable(inter)) {
             return special.bindTo(proxy).invokeWithArguments(args);
         } else {
             Object goal = makeGoal(proxy, args, inter);
@@ -112,7 +112,7 @@ final class ExecutorDefault extends AbstractExecutor {
      * @throws InterpreterException Shit happens.
      * @throws InterpreterMessage   Shit happens.
      */
-    private boolean currentPredicate(Interpreter inter)
+    private boolean currentProvable(Interpreter inter)
             throws InterpreterException, InterpreterMessage {
         int len = encodeparas.length;
         if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
