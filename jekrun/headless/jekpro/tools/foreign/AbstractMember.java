@@ -5,6 +5,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractLense;
@@ -12,12 +13,10 @@ import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.proxy.RuntimeWrap;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 /**
  * <p>Base class for the Java class delegates.</p>
@@ -62,6 +61,22 @@ abstract class AbstractMember extends AbstractLense
      * @return The proxy.
      */
     public abstract Member getProxy();
+
+    /**
+     * <p>Retrieve the variant that is wrapped.</p>
+     *
+     * @return The variant.
+     */
+    public abstract String getVariant();
+
+    /**
+     * <p>Retrieve the declaring Java class.</p>
+     *
+     * @return The declaring Java class.
+     */
+    public final Class getDeclaringClass() {
+        return getProxy().getDeclaringClass();
+    }
 
     /*******************************************************************/
     /* Auto Loader Heuristics                                          */
@@ -189,6 +204,39 @@ abstract class AbstractMember extends AbstractLense
         return args;
     }
 
+    /**
+     * <p>Build the arguments array. The arguments of the term
+     * are computed, checked and converted if necessary.</p>
+     *
+     * @param temp The skeleton.
+     * @param ref  The display.
+     * @param en   The engine.
+     * @return The arguments array.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
+     */
+    final Object[] computeAndConvertArgs(Object temp, Display ref,
+                                           Engine en)
+            throws EngineMessage, EngineException {
+        if (encodeparas.length == 0)
+            return AbstractMember.VOID_ARGS;
+        Object[] args = new Object[encodeparas.length];
+        int k = 0;
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+            k++;
+        for (int i = 0; i < encodeparas.length; i++) {
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                args[i] = en.proxy;
+            } else {
+                en.computeExpr(((SkelCompound) temp).args[k], ref);
+                args[i] = Types.denormProlog(typ, en.skel, en.display);
+                k++;
+            }
+        }
+        return args;
+    }
+
     /***********************************************************/
     /* CheerpJ Workaround IllegalArgumentException             */
     /***********************************************************/
@@ -249,34 +297,83 @@ abstract class AbstractMember extends AbstractLense
     /* Invocation Helpers                                      */
     /***********************************************************/
 
+    /***************************************************************/
+    /* Object Protocol                                             */
+    /***************************************************************/
+
     /**
-     * <p>Invoke the method.</p>
+     * <p>Compute a hash code.</p>
      *
-     * @param obj  The receiver.
-     * @param args The arguments array.
-     * @return The invokcation result.
-     * @throws EngineException FFI error.
-     * @throws EngineMessage   FFI error.
+     * @return The hash code of this delegate.
      */
-    static Object invokeMethod(Method method, Object obj,
-                               Object[] args)
-            throws EngineException, EngineMessage {
-        try {
-            return method.invoke(obj, args);
-        } catch (InvocationTargetException y) {
-            Throwable x = y.getCause();
-            if (x instanceof RuntimeWrap)
-                x = x.getCause();
-            if (x instanceof InterpreterException) {
-                throw (EngineException) ((InterpreterException) x).getException();
-            } else {
-                throw Types.mapThrowable(x);
-            }
-        } catch (Exception x) {
-            throw Types.mapException(x, method);
-        } catch (Error x) {
-            throw Types.mapError(x);
+    public final int hashCode() {
+        return 31 * getProxy().hashCode() + getVariant().hashCode();
+    }
+
+    /**
+     * <p>Compare with another delegate.</p>
+     *
+     * @param o The other delegate.
+     * @return True if this delegate equals the other delegate, otherwise false.
+     */
+    public final boolean equals(Object o) {
+        if (!(o instanceof AbstractMember))
+            return false;
+        AbstractMember am = (AbstractMember) o;
+        return getProxy().equals(am.getProxy()) &&
+                getVariant().equals(am.getVariant());
+    }
+
+
+    /**
+     * <p>Generate the spec of this delegate.</p>
+     *
+     * @param source The source, non null.
+     * @return The spec.
+     * @throws EngineMessage FFI error.
+     */
+    public final Object toSpec(AbstractSource source)
+            throws EngineMessage {
+        return new SkelCompound(new SkelAtom(getVariant()),
+                SpecialForeign.classToName(getDeclaringClass(), source),
+                mapMemberCulprit(getProxy(), source));
+    }
+
+    /**
+     * <p>Map a Java member to a Prolog culprit.</p>
+     *
+     * @param y The Java member.
+     * @param source The source, non null.
+     * @return The Prolog culprit.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object mapMemberCulprit(Member y, AbstractSource source)
+            throws EngineMessage {
+        if (y instanceof Field) {
+            Field field = (Field) y;
+            return new SkelAtom(field.getName());
+        } else if (y instanceof Method) {
+            Method method = (Method) y;
+            return SpecialForeign.methodToCallable(method.getName(),
+                    method.getParameterTypes(), source);
+        } else if (y instanceof Constructor) {
+            Constructor constructor = (Constructor) y;
+            return SpecialForeign.constructorToCallable(
+                    constructor.getParameterTypes(), source);
+        } else {
+            throw new IllegalArgumentException("illegal member");
         }
+    }
+
+    /**
+     * <p>Encode the special of a foreign method.</p>
+     * <p>The culprit is returned in the engine skel.</p>
+     *
+     * @param en The engine.
+     * @return True if the signature is ok, otherwise false.
+     */
+    boolean encodeSpecial(Engine en) {
+        return true;
     }
 
 }

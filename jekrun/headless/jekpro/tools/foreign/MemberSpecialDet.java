@@ -4,20 +4,26 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.reference.reflect.SpecialForeign;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.proxy.ProxyExecutor;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
- * <p>Specialization of a delegate for a field getter.</p>
+ * <p>Specialization of a delegate for a deterministic predicate.</p>
+ * <p>Non-static Java method is called via invokespecial.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,18 +53,44 @@ import java.lang.reflect.Member;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberFieldGet extends AbstractMember {
-    private static final String OP_FOREIGN_GETTER = "foreign_getter";
+final class MemberSpecialDet extends AbstractMember {
+    static final String OP_FOREIGN_SPECIAL = "foreign_special";
 
-    private final Field field;
+    private final Method method;
+    private MethodHandle special;
 
     /**
-     * <p>Create field getter predicate.</p>
+     * <p>Create method predicate.</p>
      *
-     * @param f The field.
+     * @param m The method.
      */
-    MemberFieldGet(Field f) {
-        field = f;
+    MemberSpecialDet(Method m) {
+        method = m;
+    }
+
+    /**
+     * <p>Encode the special of a foreign method.</p>
+     * <p>The culprit is returned in the engine skel.</p>
+     *
+     * @param en The engine.
+     * @return True if the signature is ok, otherwise false.
+     */
+    boolean encodeSpecial(Engine en) {
+        if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
+            try {
+                MethodHandles.Lookup lookup = (MethodHandles.Lookup) ProxyExecutor.impl_lookup.get(null);
+                special = lookup.unreflectSpecial(method, method.getDeclaringClass());
+            } catch (Exception x) {
+                en.skel = Types.mapException(x, method);
+                return false;
+            } catch (Error x) {
+                en.skel = Types.mapError(x);
+                return false;
+            }
+        } else {
+            special = null;
+        }
+        return true;
     }
 
     /**
@@ -67,7 +99,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The proxy.
      */
     public Member getProxy() {
-        return field;
+        return method;
     }
 
     /**
@@ -76,7 +108,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The variant.
      */
     public String getVariant() {
-        return OP_FOREIGN_GETTER;
+        return OP_FOREIGN_SPECIAL;
     }
 
     /******************************************************************/
@@ -89,7 +121,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The modifier flags as an int.
      */
     public int getModifiers() {
-        return field.getModifiers();
+        return method.getModifiers();
     }
 
     /**
@@ -98,7 +130,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The return type as Java class.
      */
     public Class getReturnType() {
-        return field.getType();
+        return method.getReturnType();
     }
 
     /**
@@ -107,7 +139,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialForeign.VOID_TYPES;
+        return method.getParameterTypes();
     }
 
     /******************************************************************/
@@ -121,14 +153,29 @@ final class MemberFieldGet extends AbstractMember {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @throws EngineMessage FFI error.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     public final void moniEvaluate(Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = invokeGetter(obj);
+        Object[] args = computeAndConvertArgs(temp, ref, en);
+        switch (en.store.foyer.getHint()) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        Object res;
+        if (special != null) {
+            res = invokeSpecial(special, obj, args);
+        } else {
+            throw existenceProvable(this, en);
+        }
         res = Types.normJava(encoderet, res);
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
@@ -153,7 +200,21 @@ final class MemberFieldGet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = invokeGetter(obj);
+        Object[] args = convertArgs(temp, ref, en, null);
+        switch (en.store.foyer.getHint()) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        Object res;
+        if (special != null) {
+            res = invokeSpecial(special, obj, args);
+        } else {
+            throw existenceProvable(this, en);
+        }
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
@@ -176,19 +237,40 @@ final class MemberFieldGet extends AbstractMember {
     /**
      * <p>Invoke the method.</p>
      *
-     * @param obj The receiver.
+     * @param obj  The receiver.
+     * @param args The arguments array.
      * @return The invokcation result.
-     * @throws EngineMessage FFI error.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
-    private Object invokeGetter(Object obj)
-            throws EngineMessage {
+    static Object invokeSpecial(MethodHandle special, Object obj,
+                                Object[] args)
+            throws EngineException, EngineMessage {
         try {
-            return field.get(obj);
-        } catch (Exception x) {
-            throw Types.mapException(x, field);
-        } catch (Error x) {
-            throw Types.mapError(x);
+            return special.bindTo(obj).invokeWithArguments(args);
+        } catch (Throwable x) {
+            if (x instanceof RuntimeWrap)
+                x = x.getCause();
+            if (x instanceof InterpreterException) {
+                throw (EngineException) ((InterpreterException) x).getException();
+            } else {
+                throw Types.mapThrowable(x);
+            }
         }
+    }
+
+    /**
+     * <p>Create a realization missing error message.</p>
+     *
+     * @param en The engine.
+     * @return The error message.
+     */
+    static EngineMessage existenceProvable(AbstractMember mem, Engine en) {
+        return new EngineMessage(EngineMessage.existenceError(
+                EngineMessage.OP_EXISTENCE_BODY,
+                new SkelCompound(en.store.foyer.ATOM_SLASH,
+                        new SkelAtom(mem.getFun()),
+                        Integer.valueOf(mem.getArity()))));
     }
 
     /***************************************************************/
@@ -201,7 +283,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return field.getName();
+        return method.getName();
     }
 
     /**
@@ -210,7 +292,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return field.toString() + " (getter)";
+        return method.toString() + " (special)";
     }
 
 }

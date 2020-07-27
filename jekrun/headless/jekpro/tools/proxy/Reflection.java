@@ -89,10 +89,11 @@ public final class Reflection extends AbstractReflection {
      *
      * @param m  The method.
      * @param en The engine.
+     * @param k  The desired method delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public boolean createMethod(Method m, Engine en) {
-        return AutoClass.createMethod(m, en);
+    public boolean createMethod(Method m, Engine en, int k) {
+        return AutoClass.createMethod(m, en, k);
     }
 
     /**
@@ -113,7 +114,7 @@ public final class Reflection extends AbstractReflection {
      *
      * @param f  The field.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired field delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public boolean createField(Field f, Engine en, int k) {
@@ -126,7 +127,7 @@ public final class Reflection extends AbstractReflection {
      *
      * @param c  The class.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired array delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public boolean createArray(Class c, Engine en, int k) {

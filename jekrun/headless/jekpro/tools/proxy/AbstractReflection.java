@@ -44,7 +44,10 @@ import java.lang.reflect.Method;
  */
 public abstract class AbstractReflection {
     public static final int FIELD_GET = 0;
-    public static final int FIELD_SET = 2;
+    public static final int FIELD_SET = 1;
+
+    public static final int INVOKE_VIRTUAL = 0;
+    public static final int INVOKE_SPECIAL = 1;
 
     public static final int ARRAY_LENGTH = 0;
     public static final int ARRAY_NEW = 2;
@@ -73,9 +76,10 @@ public abstract class AbstractReflection {
      *
      * @param m  The method.
      * @param en The engine.
+     * @param k  The desired method delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public abstract boolean createMethod(Method m, Engine en);
+    public abstract boolean createMethod(Method m, Engine en, int k);
 
     /**
      * <p>Create a foreign constructor delegate.</p>
@@ -93,7 +97,7 @@ public abstract class AbstractReflection {
      *
      * @param f  The field.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired field delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public abstract boolean createField(Field f, Engine en, int k);
@@ -104,7 +108,7 @@ public abstract class AbstractReflection {
      *
      * @param c  The class.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired array delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public abstract boolean createArray(Class c, Engine en, int k);

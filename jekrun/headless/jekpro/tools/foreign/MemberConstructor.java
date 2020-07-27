@@ -71,6 +71,15 @@ final class MemberConstructor extends AbstractMember {
         return constructor;
     }
 
+    /**
+     * <p>Retrieve the variant that is wrapped.</p>
+     *
+     * @return The variant.
+     */
+    public String getVariant() {
+        return OP_FOREIGN_CONSTRUCTOR;
+    }
+
     /******************************************************************/
     /* Accessible Protocol                                            */
     /******************************************************************/
@@ -100,15 +109,6 @@ final class MemberConstructor extends AbstractMember {
      */
     public Class[] getParameterTypes() {
         return constructor.getParameterTypes();
-    }
-
-    /**
-     * <p>Retrieve the declaring Java class.</p>
-     *
-     * @return The declaring Java class.
-     */
-    public Class getDeclaringClass() {
-        return constructor.getDeclaringClass();
     }
 
     /******************************************************************/
@@ -158,47 +158,6 @@ final class MemberConstructor extends AbstractMember {
         if (ext)
             d.remTab(en);
         return true;
-    }
-
-    /***************************************************************/
-    /* Special Predicates                                          */
-    /***************************************************************/
-
-    /**
-     * <p>Compute a hash code.</p>
-     *
-     * @return The hash code of this delegate.
-     */
-    public int hashCode() {
-        return constructor.hashCode();
-    }
-
-    /**
-     * <p>Compare with another delegate.</p>
-     *
-     * @param o The other delegate.
-     * @return True if this delegate equals the other delegate, otherwise false.
-     */
-    public boolean equals(Object o) {
-        if (!(o instanceof MemberConstructor))
-            return false;
-        MemberConstructor dpc = (MemberConstructor) o;
-        return constructor.equals(dpc.constructor);
-    }
-
-    /**
-     * <p>Generate the spec of this delegate.</p>
-     *
-     * @param source The source, non null.
-     * @return The spec.
-     * @throws EngineMessage FFI error.
-     */
-    public Object toSpec(AbstractSource source)
-            throws EngineMessage {
-        return new SkelCompound(new SkelAtom(OP_FOREIGN_CONSTRUCTOR),
-                SpecialForeign.classToName(constructor.getDeclaringClass(), source),
-                SpecialForeign.constructorToCallable(
-                        constructor.getParameterTypes(), source));
     }
 
     /***************************************************************/

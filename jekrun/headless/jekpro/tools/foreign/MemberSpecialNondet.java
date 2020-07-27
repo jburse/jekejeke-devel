@@ -1,19 +1,24 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.AbstractUndo;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.reference.reflect.SpecialForeign;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.Types;
-import jekpro.tools.term.SkelAtom;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
 
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 /**
- * <p>Specialization of a delegate for a field setter.</p>
+ * <p>Specialization of a delegate accessible for a non-deterministic predicates.</p>
+ * <p>Non-static Java method is called via invokespecial.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,22 +48,17 @@ import java.lang.reflect.Member;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberFieldSet extends AbstractMember {
-    private static final String OP_FOREIGN_SETTER = "foreign_setter";
-
-    private final Field field;
-    private final String fastname;
-    private final Class[] fastpartys;
+final class MemberSpecialNondet extends AbstractMember {
+    private final Method method;
+    MethodHandle special;
 
     /**
-     * <p>Create field predicate.</p>
+     * <p>Create method predicate.</p>
      *
-     * @param f The field.
+     * @param m The method.
      */
-    MemberFieldSet(Field f) {
-        field = f;
-        fastname = "set_" + field.getName();
-        fastpartys = new Class[]{field.getType()};
+    MemberSpecialNondet(Method m) {
+        method = m;
     }
 
     /**
@@ -67,7 +67,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The proxy.
      */
     public Member getProxy() {
-        return field;
+        return method;
     }
 
     /**
@@ -76,7 +76,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The variant.
      */
     public String getVariant() {
-        return OP_FOREIGN_SETTER;
+        return MemberSpecialDet.OP_FOREIGN_SPECIAL;
     }
 
     /******************************************************************/
@@ -89,7 +89,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The modifier flags as an int.
      */
     public int getModifiers() {
-        return field.getModifiers();
+        return method.getModifiers();
     }
 
     /**
@@ -98,7 +98,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The return type as Java class.
      */
     public Class getReturnType() {
-        return Void.TYPE;
+        return method.getReturnType();
     }
 
     /**
@@ -107,11 +107,11 @@ final class MemberFieldSet extends AbstractMember {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return fastpartys;
+        return method.getParameterTypes();
     }
 
     /******************************************************************/
-    /* Execution Service                                              */
+    /* Variation Points Predicate                                     */
     /******************************************************************/
 
     /**
@@ -122,34 +122,78 @@ final class MemberFieldSet extends AbstractMember {
      *
      * @param en The interpreter.
      * @return True if the term succeeded, otherwise false.
-     * @throws EngineMessage FFI error.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineMessage {
+            throws EngineException, EngineMessage {
+        CallOut co = new CallOut();
+        AbstractUndo mark = en.bind;
         Object temp = en.skel;
         Display ref = en.display;
+        int hint = en.store.foyer.getHint();
         Object obj = convertRecv(temp, ref);
-        Object[] help = ((SkelCompound) temp).args;
-        Object arg = Types.denormProlog(encodeparas[0], help[help.length - 1], ref);
-        invokeSetter(obj, arg);
-        return true;
-    }
+        Object[] args = convertArgs(temp, ref, en, co);
+        switch (hint) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        co.flags |= CallOut.MASK_CALL_FIRST;
+        for (; ; ) {
+            Object res;
+            if (special != null) {
+                res = MemberSpecialDet.invokeSpecial(special, obj, args);
+            } else {
+                throw MemberSpecialDet.existenceProvable(this, en);
+            }
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                res = Types.normJava(encoderet, res);
+            } else {
+                res = Types.noretNormJava(encoderet, res);
+            }
+            if (res == null)
+                return false;
+            Display d = AbstractTerm.getDisplay(res);
+            Object[] help;
+            boolean ext = d.getAndReset();
+            if (res != AbstractSkel.VOID_OBJ &&
+                    !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
+                            AbstractTerm.getSkel(res), d)) {
+                if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
+                    return false;
 
-    /**
-     * <p>Invoke the method.</p>
-     *
-     * @param obj The receiver.
-     * @param arg The argument.
-     * @throws EngineMessage FFI error.
-     */
-    private void invokeSetter(Object obj, Object arg)
-            throws EngineMessage {
-        try {
-            field.set(obj, arg);
-        } catch (Exception x) {
-            throw Types.mapException(x, field);
-        } catch (Error x) {
-            throw Types.mapError(x);
+                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                    en.fault = null;
+                    en.releaseBind(mark);
+                    if (en.fault != null)
+                        throw en.fault;
+                }
+            } else {
+                if (ext)
+                    d.remTab(en);
+
+                if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
+                    ChoiceSpecial cp = new ChoiceSpecial(en.choices, en.contdisplay);
+                    cp.co = co;
+                    cp.del = this;
+                    cp.obj = obj;
+                    cp.args = args;
+                    cp.mark = mark;
+                    cp.goalskel = en.contskel;
+                    en.choices = cp;
+                    en.number++;
+                }
+                return true;
+            }
+            co.flags &= ~CallOut.MASK_CALL_FIRST;
+
+            co.flags &= ~CallOut.MASK_CALL_RETRY;
+            co.flags &= ~CallOut.MASK_CALL_SPECI;
+            co.flags &= ~CallOut.MASK_CALL_CUTTR;
         }
     }
 
@@ -163,7 +207,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return fastname;
+        return method.getName();
     }
 
     /**
@@ -172,7 +216,7 @@ final class MemberFieldSet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return field.toString() + " (setter)";
+        return method.toString()+ " (special)";
     }
 
 }

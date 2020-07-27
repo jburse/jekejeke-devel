@@ -176,8 +176,13 @@ public final class AutoClass extends AbstractAuto {
                 continue;
             if ((method.getModifiers() & SYNTHETIC) != 0)
                 continue;
-            if (createMethod(method, en))
-                addForeignScore((AbstractMember) en.skel);
+            if (Modifier.isStatic(method.getModifiers())) {
+                if (createMethod(method, en, AbstractReflection.INVOKE_VIRTUAL))
+                    addForeignScore((AbstractMember) en.skel);
+            } else {
+                if (createMethod(method, en, AbstractReflection.INVOKE_SPECIAL))
+                    addForeignScore((AbstractMember) en.skel);
+            }
         }
     }
 
@@ -454,14 +459,36 @@ public final class AutoClass extends AbstractAuto {
      * @param en The engine.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
-    public static boolean createMethod(Method m, Engine en) {
+    public static boolean createMethod(Method m, Engine en, int k) {
         AbstractMember del;
         if (!validateExceptionTypes(m.getExceptionTypes(), en))
             return false;
-        if (getNondet(m.getParameterTypes())) {
-            del = new MemberMethodNondet(m);
-        } else {
-            del = new MemberMethodDet(m);
+        switch (k) {
+            case AbstractReflection.INVOKE_VIRTUAL:
+                if (getNondet(m.getParameterTypes())) {
+                    del = new MemberVirtualNondet(m);
+                } else {
+                    del = new MemberVirtualDet(m);
+                }
+                break;
+            case AbstractReflection.INVOKE_SPECIAL:
+                if (Modifier.isStatic(m.getModifiers())) {
+                    en.skel = EngineMessage.domainError(
+                            AbstractFactory.OP_DOMAIN_FOREIGN_ACCESS,
+                            new SkelAtom(Modifier.toString(m.getModifiers())));
+                    return false;
+                }
+                if (getNondet(m.getParameterTypes())) {
+                    del = new MemberSpecialNondet(m);
+                } else {
+                    del = new MemberSpecialDet(m);
+                }
+                if (!del.encodeSpecial(en))
+                    return false;
+                break;
+            default:
+                throw new IllegalArgumentException("illegal delegate");
+
         }
         if (!del.encodeSignaturePred(en))
             return false;
@@ -493,7 +520,7 @@ public final class AutoClass extends AbstractAuto {
      *
      * @param f  The field.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired field delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public static boolean createField(Field f, Engine en, int k) {

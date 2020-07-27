@@ -190,7 +190,7 @@ public final class AutoArray extends AbstractAuto {
      *
      * @param c  The class.
      * @param en The engine.
-     * @param k  The desired delegate.
+     * @param k  The desired array delegate.
      * @return True if creation of the delegate succeeded, otherwise false.
      */
     public static boolean createArray(Class c, Engine en, int k) {

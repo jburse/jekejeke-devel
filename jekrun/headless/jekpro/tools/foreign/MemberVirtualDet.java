@@ -4,20 +4,23 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.reference.reflect.SpecialForeign;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
-import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 /**
- * <p>Specialization of a delegate for a field getter.</p>
+ * <p>Specialization of a delegate for a deterministic predicate.</p>
+ * <p>Non-static Java method is called via invokevirtual.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -47,18 +50,18 @@ import java.lang.reflect.Member;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberFieldGet extends AbstractMember {
-    private static final String OP_FOREIGN_GETTER = "foreign_getter";
+final class MemberVirtualDet extends AbstractMember {
+    static final String OP_FOREIGN = "foreign";
 
-    private final Field field;
+    private final Method method;
 
     /**
-     * <p>Create field getter predicate.</p>
+     * <p>Create method predicate.</p>
      *
-     * @param f The field.
+     * @param m The method.
      */
-    MemberFieldGet(Field f) {
-        field = f;
+    MemberVirtualDet(Method m) {
+        method = m;
     }
 
     /**
@@ -67,7 +70,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The proxy.
      */
     public Member getProxy() {
-        return field;
+        return method;
     }
 
     /**
@@ -76,7 +79,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The variant.
      */
     public String getVariant() {
-        return OP_FOREIGN_GETTER;
+        return OP_FOREIGN;
     }
 
     /******************************************************************/
@@ -89,7 +92,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The modifier flags as an int.
      */
     public int getModifiers() {
-        return field.getModifiers();
+        return method.getModifiers();
     }
 
     /**
@@ -98,7 +101,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The return type as Java class.
      */
     public Class getReturnType() {
-        return field.getType();
+        return method.getReturnType();
     }
 
     /**
@@ -107,7 +110,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialForeign.VOID_TYPES;
+        return method.getParameterTypes();
     }
 
     /******************************************************************/
@@ -121,14 +124,24 @@ final class MemberFieldGet extends AbstractMember {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @throws EngineMessage FFI error.
+     * @throws EngineMessage   FFI error.
+     * @throws EngineException FFI error.
      */
     public final void moniEvaluate(Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = invokeGetter(obj);
+        Object[] args = computeAndConvertArgs(temp, ref, en);
+        switch (en.store.foyer.getHint()) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        Object res = invokeVirtual(method, obj, args);
         res = Types.normJava(encoderet, res);
         if (res == null)
             throw new EngineMessage(EngineMessage.representationError(
@@ -153,7 +166,16 @@ final class MemberFieldGet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
-        Object res = invokeGetter(obj);
+        Object[] args = convertArgs(temp, ref, en, null);
+        switch (en.store.foyer.getHint()) {
+            case Foyer.HINT_WEB:
+                checkRecv(obj);
+                checkArgs(args);
+                break;
+            default:
+                break;
+        }
+        Object res = invokeVirtual(method, obj, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);
         } else {
@@ -176,16 +198,28 @@ final class MemberFieldGet extends AbstractMember {
     /**
      * <p>Invoke the method.</p>
      *
-     * @param obj The receiver.
+     * @param obj  The receiver.
+     * @param args The arguments array.
      * @return The invokcation result.
-     * @throws EngineMessage FFI error.
+     * @throws EngineException FFI error.
+     * @throws EngineMessage   FFI error.
      */
-    private Object invokeGetter(Object obj)
-            throws EngineMessage {
+    static Object invokeVirtual(Method method, Object obj,
+                                Object[] args)
+            throws EngineException, EngineMessage {
         try {
-            return field.get(obj);
+            return method.invoke(obj, args);
+        } catch (InvocationTargetException y) {
+            Throwable x = y.getCause();
+            if (x instanceof RuntimeWrap)
+                x = x.getCause();
+            if (x instanceof InterpreterException) {
+                throw (EngineException) ((InterpreterException) x).getException();
+            } else {
+                throw Types.mapThrowable(x);
+            }
         } catch (Exception x) {
-            throw Types.mapException(x, field);
+            throw Types.mapException(x, method);
         } catch (Error x) {
             throw Types.mapError(x);
         }
@@ -201,7 +235,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The name guess, or null.
      */
     public String getFun() {
-        return field.getName();
+        return method.getName();
     }
 
     /**
@@ -210,7 +244,7 @@ final class MemberFieldGet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return field.toString() + " (getter)";
+        return method.toString()+ " (virtual)";
     }
 
 }

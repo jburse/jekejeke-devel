@@ -13,7 +13,10 @@ import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
 /**
  * <p>Common proxy invocation handler.</p>
@@ -51,7 +54,7 @@ public final class ProxyHandler implements InvocationHandler {
 
     private AbstractSource src;
     private Class proxy;
-    private MapHash<Method, AbstractExecutor> execs;
+    private MapHash<Method, ProxyExecutor> execs;
     private Constructor constr;
     private boolean hasstate;
 
@@ -61,7 +64,8 @@ public final class ProxyHandler implements InvocationHandler {
      * @param s The source.
      * @throws EngineMessage Shit happens.
      */
-    public void setSource(AbstractSource s) throws EngineMessage {
+    public void setSource(AbstractSource s)
+            throws EngineMessage {
         src = s;
         proxy = createProxyClass();
         execs = createProxyExecs();
@@ -125,9 +129,11 @@ public final class ProxyHandler implements InvocationHandler {
      * <p>Create the proxy executors.</p>
      *
      * @return The proxy executors.
+     * @throws EngineMessage Shit happens.
      */
-    public MapHash<Method, AbstractExecutor> createProxyExecs() {
-        MapHash<Method, AbstractExecutor> map = new MapHash<Method, AbstractExecutor>();
+    public MapHash<Method, ProxyExecutor> createProxyExecs()
+            throws EngineMessage {
+        MapHash<Method, ProxyExecutor> map = new MapHash<Method, ProxyExecutor>();
         Class[] interfaces = proxy.getInterfaces();
 
         for (int i = 0; i < interfaces.length; i++) {
@@ -136,15 +142,10 @@ public final class ProxyHandler implements InvocationHandler {
                 Method method = list[j];
                 if (map.getEntry(method) != null)
                     continue;
-                AbstractExecutor exec;
-                if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
-                    exec = new ExecutorInterface();
-                } else {
-                    exec = new ExecutorDefault();
-                }
+                ProxyExecutor exec = new ProxyExecutor();
                 if (!exec.encodeSignature(method))
                     continue;
-                exec.setHandler(method,this);
+                exec.setHandler(method, this);
                 map.add(method, exec);
             }
         }
@@ -192,7 +193,7 @@ public final class ProxyHandler implements InvocationHandler {
                 return null;
             }
         }
-        AbstractExecutor exec = execs.get(method);
+        ProxyExecutor exec = execs.get(method);
         try {
             return exec.runGoal(proxy, args, inter);
         } catch (InterpreterException x) {
