@@ -45,17 +45,8 @@ import java.lang.reflect.Method;
  */
 final class ExecutorInterface extends AbstractExecutor {
 
-    /**
-     * <p>Create a method executor.</p>
-     *
-     * @param m The method.
-     */
-    ExecutorInterface(Method m) {
-        super(m);
-    }
-
     /***********************************************************/
-    /* Variation Point                                         */
+    /* Variation Points                                         */
     /***********************************************************/
 
     /**
@@ -67,14 +58,14 @@ final class ExecutorInterface extends AbstractExecutor {
      * @return The result, can be null.
      * @throws InterpreterMessage   FFI error.
      * @throws InterpreterException FFI error.
+     * @throws Throwable            FFI error.
      */
-    Object runGoal(Object proxy, Object[] args, Interpreter inter)
-            throws InterpreterMessage, InterpreterException {
+    protected Object runGoal(Object proxy, Object[] args, Interpreter inter)
+            throws InterpreterMessage, InterpreterException, Throwable {
         if (!currentProvable(inter)) {
             throw new InterpreterMessage(existenceProvable(inter));
         } else {
-            Object goal = makeGoal(proxy, args, inter);
-            return executeGoal(goal, inter);
+            return super.runGoal(proxy, args, inter);
         }
     }
 

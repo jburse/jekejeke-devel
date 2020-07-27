@@ -60,21 +60,22 @@ abstract class AbstractExecutor {
     int[] encodeparas;
     int encoderet;
 
-    final Method method;
     TermAtomic functor;
 
-    /**
-     * <p>Create an abstract executor.</p>
-     *
-     * @param m The method.
-     */
-    AbstractExecutor(Method m) {
-        method = m;
-    }
+    /***********************************************************/
+    /* Variation Points                                         */
+    /***********************************************************/
 
-    /***********************************************************/
-    /* Variation Point                                         */
-    /***********************************************************/
+    /**
+     * <p>Set the handler.</p>
+     *
+     * @param method The method.
+     * @param handler The handler.
+     */
+    protected void setHandler(Method method, ProxyHandler handler) {
+        SkelAtom val = new SkelAtom(method.getName(), handler.getSource());
+        functor = new TermAtomic(val);
+    }
 
     /**
      * <p>Run the predicate.</p>
@@ -87,30 +88,25 @@ abstract class AbstractExecutor {
      * @throws InterpreterException FFI error.
      * @throws Throwable            FFI error.
      */
-    abstract Object runGoal(Object proxy, Object[] args, Interpreter inter)
-            throws InterpreterMessage, InterpreterException, Throwable;
+    protected Object runGoal(Object proxy, Object[] args, Interpreter inter)
+            throws InterpreterMessage, InterpreterException, Throwable {
+        Object goal = makeGoal(proxy, args, inter);
+        return executeGoal(goal, inter);
+    }
+
 
     /***********************************************************/
     /* Functor & Parameter Compilation                        */
     /***********************************************************/
 
     /**
-     * <p>Set the handler.</p>
-     *
-     * @param handler The handler.
-     */
-    void setHandler(ProxyHandler handler) {
-        SkelAtom val = new SkelAtom(method.getName(), handler.getSource());
-        functor = new TermAtomic(val);
-    }
-
-    /**
      * <p>Encode the signature of a foreign method.</p>
      * <p>The culprit is returned in the engine skel.</p>
      *
+     * @param method The method.
      * @return True if the signature is ok, otherwise false.
      */
-    boolean encodeSignature() {
+    final boolean encodeSignature(Method method) {
         Class ret = method.getReturnType();
         Integer encode = Types.typepred.get(ret);
         if (encode == null) {
@@ -145,6 +141,103 @@ abstract class AbstractExecutor {
         return true;
     }
 
+    /**
+     * <p>Check whether the predicate is defined.</p>
+     *
+     * @param inter The interpreter.
+     * @return True if the predicate is defined, otherwise false.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    final boolean currentProvable(Interpreter inter)
+            throws InterpreterException, InterpreterMessage {
+        int len = encodeparas.length;
+        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
+            len++;
+        if ((subflags & ExecutorInterface.MASK_METH_FUNC) != 0)
+            len++;
+        SkelAtom sa = (SkelAtom) functor.getSkel();
+        Engine en = inter.getEngine();
+        CachePredicate cp;
+        try {
+            cp = CachePredicate.getPredicateDefined(sa, len, en, 0);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        } catch (EngineException x) {
+            throw new InterpreterException(x);
+        }
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
+            return false;
+        return true;
+    }
+
+    /***********************************************************/
+    /* Make & Execute Goal                                     */
+    /***********************************************************/
+
+    /**
+     * <p>Create the proxy call.</p>
+     *
+     * @param proxy The proxy instance.
+     * @param args  The arguments.
+     * @param inter The interpreter.
+     * @return The call.
+     * @throws InterpreterMessage Shit happens.
+     */
+    private Object makeGoal(Object proxy, Object[] args, Interpreter inter)
+            throws InterpreterMessage {
+        Object[] termargs;
+        try {
+            termargs = uncompileArgs(proxy, args);
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        if ((subflags & MASK_METH_FUNC) != 0)
+            termargs[termargs.length - 1] = new TermVar();
+        if (termargs.length != 0) {
+            return new TermCompound(inter, functor, termargs);
+        } else {
+            return functor;
+        }
+    }
+
+    /**
+     * <p>Execute a proxy call.</p>
+     *
+     * @param goal  The proxy call.
+     * @param inter The interpreter.
+     * @return The result.
+     * @throws InterpreterException Shit happens.
+     * @throws InterpreterMessage   Shit happens.
+     */
+    private Object executeGoal(Object goal, Interpreter inter)
+            throws InterpreterException, InterpreterMessage {
+        CallIn callin = inter.iterator(goal);
+        if (callin.hasNext()) {
+            callin.next();
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                TermCompound tc = (TermCompound) goal;
+                goal = AbstractTerm.copyMolec(inter, tc.getArgMolec(tc.getArity() - 1));
+                callin.close();
+                try {
+                    return Types.denormProlog(encoderet, AbstractTerm.getSkel(goal),
+                            AbstractTerm.getDisplay(goal));
+                } catch (EngineMessage x) {
+                    throw new InterpreterMessage(x);
+                }
+            } else {
+                callin.close();
+                return noretDenormProlog(true);
+            }
+        } else {
+            if ((subflags & MASK_METH_FUNC) != 0) {
+                return null;
+            } else {
+                return noretDenormProlog(false);
+            }
+        }
+    }
+
     /***********************************************************/
     /* Parameter & Result Conversion                           */
     /***********************************************************/
@@ -156,7 +249,7 @@ abstract class AbstractExecutor {
      * @return The Prolog arguments.
      * @throws EngineMessage Shit happens.
      */
-    protected Object[] uncompileArgs(Object proxy, Object[] args)
+    private Object[] uncompileArgs(Object proxy, Object[] args)
             throws EngineMessage {
         int len = encodeparas.length;
         if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
@@ -187,106 +280,8 @@ abstract class AbstractExecutor {
      * @param f The desired value.
      * @return The Java return value.
      */
-    protected Object noretDenormProlog(boolean f) {
+    private Object noretDenormProlog(boolean f) {
         return (encoderet == Types.TYPE_VOID ? null : Boolean.valueOf(f));
-    }
-
-    /***********************************************************/
-    /* Make & Execute Goal                           */
-    /***********************************************************/
-
-    /**
-     * <p>Create the proxy call.</p>
-     *
-     * @param proxy The proxy instance.
-     * @param args  The arguments.
-     * @param inter The interpreter.
-     * @return The call.
-     * @throws InterpreterMessage Shit happens.
-     */
-    protected Object makeGoal(Object proxy, Object[] args, Interpreter inter)
-            throws InterpreterMessage {
-        Object[] termargs;
-        try {
-            termargs = uncompileArgs(proxy, args);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        if ((subflags & MASK_METH_FUNC) != 0)
-            termargs[termargs.length - 1] = new TermVar();
-        Object goal;
-        if (termargs.length != 0) {
-            return new TermCompound(inter, functor, termargs);
-        } else {
-            return functor;
-        }
-    }
-
-    /**
-     * <p>Execute a proxy call.</p>
-     *
-     * @param goal  The proxy call.
-     * @param inter The interpreter.
-     * @return The result.
-     * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
-     */
-    protected Object executeGoal(Object goal, Interpreter inter)
-            throws InterpreterException, InterpreterMessage {
-        CallIn callin = inter.iterator(goal);
-        if (callin.hasNext()) {
-            callin.next();
-            if ((subflags & MASK_METH_FUNC) != 0) {
-                TermCompound tc = (TermCompound) goal;
-                goal = AbstractTerm.copyMolec(inter, tc.getArgMolec(tc.getArity() - 1));
-                callin.close();
-                try {
-                    return Types.denormProlog(encoderet, AbstractTerm.getSkel(goal),
-                            AbstractTerm.getDisplay(goal));
-                } catch (EngineMessage x) {
-                    throw new InterpreterMessage(x);
-                }
-            } else {
-                callin.close();
-                return noretDenormProlog(true);
-            }
-        } else {
-            if ((subflags & MASK_METH_FUNC) != 0) {
-                return null;
-            } else {
-                return noretDenormProlog(false);
-            }
-        }
-    }
-
-    /**
-     * <p>Check whether the predicate is defined.</p>
-     *
-     * @param inter The interpreter.
-     * @return True if the predicate is defined, otherwise false.
-     * @throws InterpreterException Shit happens.
-     * @throws InterpreterMessage   Shit happens.
-     */
-    protected boolean currentProvable(Interpreter inter)
-            throws InterpreterException, InterpreterMessage {
-        int len = encodeparas.length;
-        if ((subflags & ExecutorInterface.MASK_METH_VIRT) != 0)
-            len++;
-        if ((subflags & ExecutorInterface.MASK_METH_FUNC) != 0)
-            len++;
-        SkelAtom sa = (SkelAtom) functor.getSkel();
-        Engine en = inter.getEngine();
-        CachePredicate cp;
-        try {
-            cp = CachePredicate.getPredicateDefined(sa, len, en, 0);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        } catch (EngineException x) {
-            throw new InterpreterException(x);
-        }
-        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
-            return false;
-        return true;
     }
 
 }

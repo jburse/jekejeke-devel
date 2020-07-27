@@ -59,13 +59,18 @@ final class ExecutorDefault extends AbstractExecutor {
         }
     }
 
+    /***********************************************************/
+    /* Variation Points                                         */
+    /***********************************************************/
+
     /**
-     * <p>Create a default executor.</p>
+     * <p>Set the handler.</p>
      *
-     * @param m The method.
+     * @param method  The method.
+     * @param handler The handler.
      */
-    ExecutorDefault(Method m) {
-        super(m);
+    protected void setHandler(Method method, ProxyHandler handler) {
+        super.setHandler(method, handler);
         try {
             MethodHandles.Lookup lookup = (MethodHandles.Lookup) impl_lookup.get(null);
             special = lookup.unreflectSpecial(method, method.getDeclaringClass());
@@ -73,10 +78,6 @@ final class ExecutorDefault extends AbstractExecutor {
             special = null;
         }
     }
-
-    /***********************************************************/
-    /* Variation Point                                         */
-    /***********************************************************/
 
     /**
      * <p>Run the predicate.</p>
@@ -89,13 +90,12 @@ final class ExecutorDefault extends AbstractExecutor {
      * @throws InterpreterMessage   FFI error.
      * @throws Throwable            FFI error.
      */
-    Object runGoal(Object proxy, Object[] args, Interpreter inter)
+    protected Object runGoal(Object proxy, Object[] args, Interpreter inter)
             throws InterpreterException, InterpreterMessage, Throwable {
         if (!currentProvable(inter)) {
             return special.bindTo(proxy).invokeWithArguments(args);
         } else {
-            Object goal = makeGoal(proxy, args, inter);
-            return executeGoal(goal, inter);
+            return super.runGoal(proxy, args, inter);
         }
     }
 

@@ -138,13 +138,13 @@ public final class ProxyHandler implements InvocationHandler {
                     continue;
                 AbstractExecutor exec;
                 if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
-                    exec = new ExecutorInterface(method);
+                    exec = new ExecutorInterface();
                 } else {
-                    exec = new ExecutorDefault(method);
+                    exec = new ExecutorDefault();
                 }
-                if (!exec.encodeSignature())
+                if (!exec.encodeSignature(method))
                     continue;
-                exec.setHandler(this);
+                exec.setHandler(method,this);
                 map.add(method, exec);
             }
         }
