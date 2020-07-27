@@ -107,14 +107,15 @@
 /**
  * foreign(I, C, M):
  * Succeeds with registering the predicate indicator I as a foreign
- * predicate that calls the method M of the class C.
+ * predicate that virtually calls the method M of the class C.
  */
-% foreign(+IndicatorColon, +Class, +Signature)
+% foreign(+IndicatorColon, +Class, +Callable)
 foreign(I, C, M) :-
    sys_foreign(I, C, M),
    sys_check_style_predicate(I).
 :- set_predicate_property(foreign/3, visible(public)).
 
+% sys_foreign(+IndicatorColon, +Class, +Callable)
 :- special(sys_foreign/3, 'SpecialForeign', 0).
 :- set_predicate_property(sys_foreign/3, visible(private)).
 
@@ -123,12 +124,13 @@ foreign(I, C, M) :-
  * Succeeds with registering the predicate indicator I as a foreign
  * predicate that calls the constructor M of the class C.
  */
-% foreign_constructor(+IndicatorColon, +Class, +Signature)
+% foreign_constructor(+IndicatorColon, +Class, +Callable)
 foreign_constructor(I, C, M) :-
    sys_foreign_constructor(I, C, M),
    sys_check_style_predicate(I).
 :- set_predicate_property(foreign_constructor/3, visible(public)).
 
+% sys_foreign_constructor(+IndicatorColon, +Class, +Callable)
 :- special(sys_foreign_constructor/3, 'SpecialForeign', 1).
 :- set_predicate_property(sys_foreign_constructor/3, visible(private)).
 
@@ -137,12 +139,13 @@ foreign_constructor(I, C, M) :-
  * Succeeds with registering the predicate indicator I as a foreign
  * predicate that gets the field M of the class C.
  */
-% foreign_getter(+IndicatorColon, +Class, +Name)
+% foreign_getter(+IndicatorColon, +Class, +Atom)
 foreign_getter(I, C, M) :-
    sys_foreign_getter(I, C, M),
    sys_check_style_predicate(I).
 :- set_predicate_property(foreign_getter/3, visible(public)).
 
+% sys_foreign_getter(+IndicatorColon, +Class, +Atom)
 :- special(sys_foreign_getter/3, 'SpecialForeign', 2).
 :- set_predicate_property(sys_foreign_getter/3, visible(private)).
 
@@ -151,12 +154,13 @@ foreign_getter(I, C, M) :-
  * Succeeds with registering the predicate indicator I as a foreign
  * predicate that sets the field M of the class C.
  */
-% foreign_setter(+IndicatorColon, +Class, +Name)
+% foreign_setter(+IndicatorColon, +Class, +Atom)
 foreign_setter(I, C, M) :-
    sys_foreign_setter(I, C, M),
    sys_check_style_predicate(I).
 :- set_predicate_property(foreign_setter/3, visible(public)).
 
+% sys_foreign_setter(+IndicatorColon, +Class, +Atom)
 :- special(sys_foreign_setter/3, 'SpecialForeign', 3).
 :- set_predicate_property(sys_foreign_setter/3, visible(private)).
 

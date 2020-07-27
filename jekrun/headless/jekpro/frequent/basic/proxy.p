@@ -1,5 +1,5 @@
 /**
- * This module provides predicates to automatically turn a Prolog text
+ * This module provides predicates to automatically turn a Prolog module
  * into a Java class. The Java class will be a Java proxy class generated
  * for a set of interfaces. The set of interfaces is collected from the
  * reexported auto loaded Java classes of the given Prolog text. The Java
@@ -11,18 +11,20 @@
  * :- reexport(foreign(java/util/'Comparator')).
  *
  * :- public new/1.
- * new(X) :- sys_new_instance(mycomparator, X).  % define the constructor
+ * new(X) :-
+ *     sys_new_instance(mycomparator, X).  % create Java instance
  *
  * :- override compare/4.
  * :- public compare/4.
  * compare(_, X, Y, R) :- ... % define the method
  *
  * The predicate and evaluable functions of the Prolog text will be used
- * for the execution of the methods on the Java proxy instance. Only methods
- * that belong to the set of interfaces can be invoked directly from Java
- * on the Java proxy instances. If the set of interfaces contains the Java
- * interface InterfaceSlots the proxy instances should be created with the
- * predicate sys_new_instance/3 instead of the predicate sys_new_instance/2.
+ * for the execution of the methods on the Java proxy instance. Only
+ * methods that belong to the set of interfaces can be invoked directly
+ * from Java on the Java proxy instances. If the set of interfaces
+ * contains directly or indirectly the Java interface InterfacePivot
+ * the proxy instances will be state-full and understand the predicates
+ * value/2 and set_value/2.
  *
  * Example:
  * ?- sys_assignable_from(java/util/'Comparator', mycomparator).
@@ -82,21 +84,12 @@
 
 /**
  * sys_new_instance(M, R):
- * The predicate succeeds for a stateless instance R of the
+ * The predicate succeeds for an instance R of the
  * Java proxy class for the Prolog module M.
  */
 % sys_new_instance(+Slash, -Ref)
 :- public sys_new_instance/2.
 :- special(sys_new_instance/2, 'SpecialProxy', 0).
-
-/**
- * sys_new_instance(M, S, R):
- * The predicate succeeds for a state-full instance R of size S
- * of the Java proxy class for the Prolog module M.
- */
-% sys_new_instance(+Slash, +Integer, -Ref)
-:- public sys_new_instance/3.
-:- special(sys_new_instance/3, 'SpecialProxy', 1).
 
 /***************************************************************/
 /* Module Taxonomy                                             */

@@ -1,12 +1,23 @@
 package jekpro.frequent.basic;
 
+import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
+import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.reflect.SpecialForeign;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.proxy.AbstractReflection;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
+
+import java.lang.reflect.Method;
 
 /**
  * <p>Provides built-in predicates for the module foreign.</p>
@@ -41,6 +52,7 @@ import jekpro.tools.term.SkelCompound;
  */
 public final class SpecialScore extends AbstractSpecial {
     private final static int SPECIAL_SYS_TYPE_OF = 0;
+    private final static int SPECIAL_SYS_FOREIGN_SPECIAL = 1;
 
     /**
      * <p>Create a score special.</p>
@@ -60,9 +72,10 @@ public final class SpecialScore extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage Shit happens.
+     * @throws EngineException Shit happens.
      */
     public final boolean moniFirst(Engine en)
-            throws EngineMessage {
+            throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SYS_TYPE_OF:
                 Object[] temp = ((SkelCompound) en.skel).args;
@@ -78,6 +91,30 @@ public final class SpecialScore extends AbstractSpecial {
                 if ((en.skel instanceof AbstractSkel || en.skel instanceof Number) ||
                         !clazz.isInstance(en.skel))
                     return false;
+                return true;
+            case SPECIAL_SYS_FOREIGN_SPECIAL:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
+                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                String name = SpecialForeign.methodName(temp[2], ref, en);
+                if (SpecialForeign.OP_NAME_CONSTRUCTOR.equals(name))
+                    throw new EngineMessage(EngineMessage.typeError(
+                            EngineMessage.OP_TYPE_METHOD, temp[2]), ref);
+                Class[] paras = SpecialForeign.formalParameters(temp[2], ref, en);
+                Method mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
+                AbstractFactory factory = en.store.foyer.getFactory();
+                if (!factory.getReflection().createMethod(mth, en, AbstractReflection.INVOKE_SPECIAL))
+                    throw new EngineMessage(en.skel);
+                AbstractDelegate del = (AbstractDelegate) en.skel;
+                if (arity.intValue() != del.getArity())
+                    throw new EngineMessage(EngineMessage.domainError(
+                            EngineMessage.OP_DOMAIN_ARITY_MISMATCH,
+                            Integer.valueOf(del.getArity())));
+                /* create the builtin */
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_DEFI);
+                Predicate.definePredicate(pick, del, en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

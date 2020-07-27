@@ -98,7 +98,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 Class[] paras = SpecialForeign.formalParameters(temp[2], ref, en);
                 Method mth = SpecialForeign.getDeclaredMethod(clazz, name, paras);
                 AbstractFactory factory = en.store.foyer.getFactory();
-                if (!factory.getReflection().createMethod(mth, en))
+                if (!factory.getReflection().createMethod(mth, en, AbstractReflection.INVOKE_VIRTUAL))
                     throw new EngineMessage(en.skel);
                 AbstractDelegate del = (AbstractDelegate) en.skel;
                 if (arity.intValue() != del.getArity())
@@ -192,7 +192,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The method name.
      * @throws EngineMessage Validation error.
      */
-    private static String methodName(Object t, Display d, Engine en)
+    public static String methodName(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;
@@ -221,7 +221,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @return The formal parameters.
      * @throws EngineMessage Validation error.
      */
-    private static Class[] formalParameters(Object t, Display d, Engine en)
+    public static Class[] formalParameters(Object t, Display d, Engine en)
             throws EngineMessage {
         en.skel = t;
         en.display = d;

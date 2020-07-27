@@ -178,3 +178,24 @@ sys_atom_or_type_of(C, X) :- sys_type_of(C, X).
  */
 :- public sys_type_of/2.
 :- special(sys_type_of/2, 'SpecialScore', 0).
+
+/**
+ * foreign_special(I, C, M):
+ * Succeeds with registering the predicate indicator I as a foreign
+ * predicate that specially calls the method M of the class C.
+ */
+% foreign_special(+IndicatorColon, +Class, +Callable)
+:- public foreign_special/3.
+foreign_special(I, C, M) :-
+   sys_foreign_special(I, C, M),
+   sys_check_style_predicate(I).
+
+% sys_foreign_special(+IndicatorColon, +Class, +Callable)
+:- private sys_foreign_special/3.
+:- special(sys_foreign_special/3, 'SpecialScore', 1).
+
+% first defined in special.p
+% sys_declaration_indicator(+Declaration, -Indicator).
+:- public user:sys_declaration_indicator/2.
+:- multifile user:sys_declaration_indicator/2.
+user:sys_declaration_indicator(foreign_special(I, _, _), I).
