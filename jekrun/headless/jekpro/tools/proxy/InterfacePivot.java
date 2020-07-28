@@ -55,11 +55,11 @@ public interface InterfacePivot {
     /**
      * <p>Set the value.</p>
      *
+     * @param inter The interpreter.
      * @param data The value.
      */
-    default void set_value(AbstractTerm data) {
+    default void set_value(Interpreter inter, AbstractTerm data) {
         ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(this);
-        Interpreter inter = Interpreter.getInter();
         state.set_value(data, inter.getEngine());
     }
 

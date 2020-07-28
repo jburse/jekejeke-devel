@@ -87,7 +87,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Display ref = en.display;
                     Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
                     SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
-                    obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en));
+                    obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en), en);
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                         return false;
                     return true;
@@ -129,13 +129,14 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Instantiate the Java proxy class of the given Prolog text.</p>
      *
      * @param scope The Prolog text.
+     * @param en The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static Object newInstance(AbstractSource scope)
+    private static Object newInstance(AbstractSource scope, Engine en)
             throws EngineMessage, EngineException {
-        ProxyHandler handler = defineHandler(scope);
+        ProxyHandler handler = defineHandler(scope, en);
         Constructor constr = handler.getProxyConstr();
         if (handler.hasState()) {
             ProxyPivot state = handler.createState();
@@ -148,10 +149,12 @@ public final class SpecialProxy extends AbstractSpecial {
     /**
      * <p>Define a handler.</p>
      *
+     * @param scope The Prolog text.
+     * @param en The engine.
      * @return The handler.
      * @throws EngineMessage Shit happens.
      */
-    private static ProxyHandler defineHandler(AbstractSource scope)
+    private static ProxyHandler defineHandler(AbstractSource scope, Engine en)
             throws EngineMessage {
         if (!(scope instanceof InterfaceProxyable))
             throw new EngineMessage(EngineMessage.permissionError(
@@ -167,7 +170,7 @@ public final class SpecialProxy extends AbstractSpecial {
             if (handler != null)
                 return handler;
             handler = new ProxyHandler();
-            handler.setSource(scope);
+            handler.setSource(scope, en);
             proxable.setHandler(handler);
         }
         return handler;

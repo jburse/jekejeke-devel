@@ -1,5 +1,6 @@
 package jekpro.tools.proxy;
 
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialForeign;
@@ -61,14 +62,15 @@ public final class ProxyHandler implements InvocationHandler {
     /**
      * <p>Set the source.</p>
      *
-     * @param s The source.
+     * @param scope The Prolog text.
+     * @param en The engine.
      * @throws EngineMessage Shit happens.
      */
-    public void setSource(AbstractSource s)
+    public void setSource(AbstractSource scope, Engine en)
             throws EngineMessage {
-        src = s;
+        src = scope;
         proxy = createProxyClass();
-        execs = createProxyExecs();
+        execs = createProxyExecs(en);
         constr = SpecialForeign.getDeclaredConstructor(proxy, SIG_INVOKE);
         hasstate = InterfacePivot.class.isAssignableFrom(proxy);
     }
@@ -128,10 +130,11 @@ public final class ProxyHandler implements InvocationHandler {
     /**
      * <p>Create the proxy executors.</p>
      *
+     * @param en The engine.
      * @return The proxy executors.
      * @throws EngineMessage Shit happens.
      */
-    public MapHash<Method, ProxyExecutor> createProxyExecs()
+    public MapHash<Method, ProxyExecutor> createProxyExecs(Engine en)
             throws EngineMessage {
         MapHash<Method, ProxyExecutor> map = new MapHash<Method, ProxyExecutor>();
         Class[] interfaces = proxy.getInterfaces();
@@ -143,7 +146,7 @@ public final class ProxyHandler implements InvocationHandler {
                 if (map.getEntry(method) != null)
                     continue;
                 ProxyExecutor exec = new ProxyExecutor();
-                if (!exec.encodeSignature(method))
+                if (!exec.encodeSignature(method, en))
                     continue;
                 exec.setHandler(method, this);
                 map.add(method, exec);

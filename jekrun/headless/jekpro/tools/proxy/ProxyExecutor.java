@@ -4,12 +4,15 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallIn;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
+import jekpro.tools.foreign.AbstractMember;
 import jekpro.tools.term.*;
 
 import java.lang.invoke.MethodHandle;
@@ -52,18 +55,13 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ProxyExecutor {
-    public final static int MASK_METH_VIRT = 0x00000001;
-    public final static int MASK_METH_FUNC = 0x00000002;
-
-    final static int[] VOID_PARAS = new int[0];
-    final static Object[] VOID_PROLOG_ARGS = new Object[0];
-
     private int subflags;
 
     private int[] encodeparas;
     private int encoderet;
 
     private TermAtomic functor;
+    private int arity;
     private MethodHandle special;
 
     public static Field impl_lookup;
@@ -89,40 +87,25 @@ public final class ProxyExecutor {
      * <p>The culprit is returned in the engine skel.</p>
      *
      * @param method The method.
+     * @param en     The engine.
      * @return True if the signature is ok, otherwise false.
      */
-    boolean encodeSignature(Method method) {
+    boolean encodeSignature(Method method, Engine en) {
+        if (!Modifier.isStatic(method.getModifiers()))
+            subflags |= AbstractDelegate.MASK_DELE_VIRT;
+
         Class ret = method.getReturnType();
-        Integer encode = Types.typepred.get(ret);
-        if (encode == null) {
-            encoderet = Types.TYPE_REF;
-        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
-                encode.intValue() == Types.TYPE_CALLOUT) {
+        encoderet = AbstractLense.encodeRet(ret, en);
+        if (encoderet == -1)
             return false;
-        } else {
-            encoderet = encode.intValue();
-        }
 
         Class[] paras = method.getParameterTypes();
-        encodeparas = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
-        for (int i = 0; i < paras.length; i++) {
-            ret = paras[i];
-            encode = Types.typepred.get(ret);
-            if (encode == null) {
-                encodeparas[i] = Types.TYPE_REF;
-            } else if (encode.intValue() == Types.TYPE_VOID ||
-                    encode.intValue() == Types.TYPE_INTERPRETER ||
-                    encode.intValue() == Types.TYPE_CALLOUT) {
-                return false;
-            } else {
-                encodeparas[i] = encode.intValue();
-            }
-        }
+        encodeparas = AbstractLense.encodeParas(paras, en);
+        if (encodeparas == null)
+            return false;
 
-        if (!Modifier.isStatic(method.getModifiers()))
-            subflags |= MASK_METH_VIRT;
         if (Types.getRetFlag(encoderet))
-            subflags |= MASK_METH_FUNC;
+            subflags |= AbstractLense.MASK_METH_FUNC;
         return true;
     }
 
@@ -137,6 +120,11 @@ public final class ProxyExecutor {
             throws EngineMessage {
         SkelAtom val = new SkelAtom(method.getName(), handler.getSource());
         functor = new TermAtomic(val);
+        arity = AbstractLense.getParaCount(encodeparas);
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
+            arity++;
+        if ((subflags & AbstractLense.MASK_METH_FUNC) != 0)
+            arity++;
         if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
             try {
                 MethodHandles.Lookup lookup = (MethodHandles.Lookup) impl_lookup.get(null);
@@ -190,16 +178,11 @@ public final class ProxyExecutor {
      */
     private boolean currentProvable(Interpreter inter)
             throws InterpreterException, InterpreterMessage {
-        int len = encodeparas.length;
-        if ((subflags & ProxyExecutor.MASK_METH_VIRT) != 0)
-            len++;
-        if ((subflags & ProxyExecutor.MASK_METH_FUNC) != 0)
-            len++;
         SkelAtom sa = (SkelAtom) functor.getSkel();
         Engine en = inter.getEngine();
         CachePredicate cp;
         try {
-            cp = CachePredicate.getPredicateDefined(sa, len, en, 0);
+            cp = CachePredicate.getPredicateDefined(sa, arity, en, 0);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         } catch (EngineException x) {
@@ -217,18 +200,13 @@ public final class ProxyExecutor {
      * @return The error message.
      */
     private EngineMessage existenceProvable(Interpreter inter) {
-        int len = encodeparas.length;
-        if ((subflags & ProxyExecutor.MASK_METH_VIRT) != 0)
-            len++;
-        if ((subflags & ProxyExecutor.MASK_METH_FUNC) != 0)
-            len++;
         SkelAtom sa = (SkelAtom) functor.getSkel();
         Engine en = inter.getEngine();
         return new EngineMessage(EngineMessage.existenceError(
                 EngineMessage.OP_EXISTENCE_PROCEDURE,
                 new SkelCompound(en.store.foyer.ATOM_SLASH,
                         sa,
-                        Integer.valueOf(len))));
+                        Integer.valueOf(arity))));
     }
 
     /***********************************************************/
@@ -252,7 +230,7 @@ public final class ProxyExecutor {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        if ((subflags & MASK_METH_FUNC) != 0)
+        if ((subflags & AbstractLense.MASK_METH_FUNC) != 0)
             termargs[termargs.length - 1] = new TermVar();
         if (termargs.length != 0) {
             return new TermCompound(inter, functor, termargs);
@@ -275,7 +253,7 @@ public final class ProxyExecutor {
         CallIn callin = inter.iterator(goal);
         if (callin.hasNext()) {
             callin.next();
-            if ((subflags & MASK_METH_FUNC) != 0) {
+            if ((subflags & AbstractLense.MASK_METH_FUNC) != 0) {
                 TermCompound tc = (TermCompound) goal;
                 goal = AbstractTerm.copyMolec(inter, tc.getArgMolec(tc.getArity() - 1));
                 callin.close();
@@ -290,7 +268,7 @@ public final class ProxyExecutor {
                 return noretDenormProlog(true);
             }
         } else {
-            if ((subflags & MASK_METH_FUNC) != 0) {
+            if ((subflags & AbstractLense.MASK_METH_FUNC) != 0) {
                 return null;
             } else {
                 return noretDenormProlog(false);
@@ -311,25 +289,26 @@ public final class ProxyExecutor {
      */
     private Object[] uncompileArgs(Object proxy, Object[] args)
             throws EngineMessage {
-        int len = encodeparas.length;
-        if ((subflags & ProxyExecutor.MASK_METH_VIRT) != 0)
-            len++;
-        if ((subflags & ProxyExecutor.MASK_METH_FUNC) != 0)
-            len++;
-        Object[] termargs = (len != 0 ?
-                new Object[len] : ProxyExecutor.VOID_PROLOG_ARGS);
+        Object[] termargs = (arity != 0 ? new Object[arity] : AbstractMember.VOID_ARGS);
         int k = 0;
-        if ((subflags & ProxyExecutor.MASK_METH_VIRT) != 0) {
+        if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0) {
             termargs[k] = proxy;
             k++;
         }
         for (int i = 0; i < encodeparas.length; i++) {
-            Object res = Types.normJava(encodeparas[i], args[i]);
-            if (res == null)
-                throw new EngineMessage(EngineMessage.representationError(
-                        AbstractFactory.OP_REPRESENTATION_NULL));
-            termargs[k] = res;
-            k++;
+            int typ = encodeparas[i];
+            if (typ == Types.TYPE_INTERPRETER) {
+                /* do nothing */
+            } else if (typ == Types.TYPE_CALLOUT) {
+                /* do nothing */
+            } else {
+                Object res = Types.normJava(typ, args[i]);
+                if (res == null)
+                    throw new EngineMessage(EngineMessage.representationError(
+                            AbstractFactory.OP_REPRESENTATION_NULL));
+                termargs[k] = res;
+                k++;
+            }
         }
         return termargs;
     }

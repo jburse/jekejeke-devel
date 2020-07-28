@@ -82,40 +82,69 @@ public abstract class AbstractLense extends AbstractDelegate {
         }
 
         Class ret = getReturnType();
-        Integer encode = Types.typepred.get(ret);
-        if (encode == null) {
-            encoderet = Types.TYPE_REF;
-        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
-                encode.intValue() == Types.TYPE_CALLOUT) {
-            en.skel = EngineMessage.domainError(
-                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
-                    SpecialForeign.classToName(ret));
+        encoderet = encodeRet(ret, en);
+        if (encoderet == -1)
             return false;
-        } else {
-            encoderet = encode.intValue();
-        }
 
         Class[] paras = getParameterTypes();
-        encodeparas = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
-        for (int i = 0; i < paras.length; i++) {
-            ret = paras[i];
-            encode = Types.typepred.get(ret);
-            if (encode == null) {
-                encodeparas[i] = Types.TYPE_REF;
-            } else if (encode.intValue() == Types.TYPE_VOID) {
-                en.skel = EngineMessage.domainError(
-                        AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
-                        SpecialForeign.classToName(ret));
-                return false;
-            } else {
-                encodeparas[i] = encode.intValue();
-            }
-        }
+        encodeparas = encodeParas(paras, en);
+        if (encodeparas == null)
+            return false;
 
         if (Types.getRetFlag(encoderet))
             subflags |= MASK_METH_FUNC;
 
         return true;
+    }
+
+    /**
+     * <p>Encode the return type.</p>
+     * <p>Error is return in the engine skel.</p>
+     *
+     * @param clazz The return type.
+     * @param en    The engine.
+     * @return The code or -1.
+     */
+    public static int encodeRet(Class clazz, Engine en) {
+        Integer encode = Types.typepred.get(clazz);
+        if (encode == null) {
+            return Types.TYPE_REF;
+        } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
+                encode.intValue() == Types.TYPE_CALLOUT) {
+            en.skel = EngineMessage.domainError(
+                    AbstractFactory.OP_DOMAIN_FOREIGN_RETURN,
+                    SpecialForeign.classToName(clazz));
+            return -1;
+        } else {
+            return encode.intValue();
+        }
+    }
+
+    /**
+     * <p>Encode the formal parameters.</p>
+     * <p>Error is return in the engine skel.</p>
+     *
+     * @param paras The formal parameters.
+     * @param en    The engine.
+     * @return The codes or null.
+     */
+    public static int[] encodeParas(Class[] paras, Engine en) {
+        int[] res = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
+        for (int i = 0; i < paras.length; i++) {
+            Class clazz = paras[i];
+            Integer encode = Types.typepred.get(clazz);
+            if (encode == null) {
+                res[i] = Types.TYPE_REF;
+            } else if (encode.intValue() == Types.TYPE_VOID) {
+                en.skel = EngineMessage.domainError(
+                        AbstractFactory.OP_DOMAIN_FOREIGN_PARAMETER,
+                        SpecialForeign.classToName(clazz));
+                return null;
+            } else {
+                res[i] = encode.intValue();
+            }
+        }
+        return res;
     }
 
     /******************************************************************/
@@ -183,7 +212,7 @@ public abstract class AbstractLense extends AbstractDelegate {
      * @return The length guess, or -1.
      */
     public int getArity() {
-        int count = getParaCount();
+        int count = getParaCount(encodeparas);
         if ((subflags & AbstractDelegate.MASK_DELE_VIRT) != 0)
             count++;
         if ((subflags & MASK_METH_FUNC) != 0)
@@ -192,14 +221,14 @@ public abstract class AbstractLense extends AbstractDelegate {
     }
 
     /**
-     * <p>Compute the length.</p>
+     * <p>Compute the predicate length.</p>
      *
-     * @return The length.
+     * @return The predicate length.
      */
-    private int getParaCount() {
+    public static int getParaCount(int[] paras) {
         int k = 0;
-        for (int i = 0; i < encodeparas.length; i++) {
-            switch (encodeparas[i]) {
+        for (int i = 0; i < paras.length; i++) {
+            switch (paras[i]) {
                 case Types.TYPE_STRING:
                 case Types.TYPE_CHARSEQ:
                 case Types.TYPE_PRIMBOOL:

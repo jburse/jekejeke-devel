@@ -49,7 +49,7 @@ import java.lang.reflect.*;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-abstract class AbstractMember extends AbstractLense
+public abstract class AbstractMember extends AbstractLense
         implements Comparable<AbstractMember> {
     public final static Object[] VOID_ARGS = new Object[0];
 
@@ -292,10 +292,6 @@ abstract class AbstractMember extends AbstractLense
             }
         }
     }
-
-    /***********************************************************/
-    /* Invocation Helpers                                      */
-    /***********************************************************/
 
     /***************************************************************/
     /* Object Protocol                                             */
