@@ -1,7 +1,6 @@
 package jekpro.frequent.basic;
 
 import jekpro.reference.arithmetic.SpecialCompare;
-import jekpro.tools.term.AbstractTerm;
 
 /**
  * <p>The foreign evaluable functions for the module basic/hyper.</p>

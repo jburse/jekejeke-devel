@@ -267,7 +267,7 @@ final class MemberSpecialDet extends AbstractMember {
      */
     static EngineMessage existenceProvable(AbstractMember mem, Engine en) {
         return new EngineMessage(EngineMessage.existenceError(
-                EngineMessage.OP_EXISTENCE_BODY,
+                EngineMessage.OP_EXISTENCE_PROCEDURE,
                 new SkelCompound(en.store.foyer.ATOM_SLASH,
                         new SkelAtom(mem.getFun()),
                         Integer.valueOf(mem.getArity()))));

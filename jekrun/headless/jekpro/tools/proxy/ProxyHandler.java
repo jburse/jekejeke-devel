@@ -182,16 +182,6 @@ public final class ProxyHandler implements InvocationHandler {
             } else if (name.equals("toString")) {
                 return proxy.getClass().getName() + "@" + Integer.toHexString(proxy.hashCode());
             }
-        } else if (method.getDeclaringClass() == InterfacePivot.class) {
-            String name = method.getName();
-            if (name.equals("value")) {
-                ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(proxy);
-                return state.value();
-            } else if (name.equals("set_value")) {
-                ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(proxy);
-                state.set_value((AbstractTerm) args[0], inter.getEngine());
-                return null;
-            }
         }
         ProxyExecutor exec = execs.get(method);
         try {

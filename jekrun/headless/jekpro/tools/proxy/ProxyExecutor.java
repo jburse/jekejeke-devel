@@ -225,7 +225,7 @@ public final class ProxyExecutor {
         SkelAtom sa = (SkelAtom) functor.getSkel();
         Engine en = inter.getEngine();
         return new EngineMessage(EngineMessage.existenceError(
-                EngineMessage.OP_EXISTENCE_BODY,
+                EngineMessage.OP_EXISTENCE_PROCEDURE,
                 new SkelCompound(en.store.foyer.ATOM_SLASH,
                         sa,
                         Integer.valueOf(len))));

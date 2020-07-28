@@ -1,6 +1,9 @@
 package jekpro.tools.proxy;
 
+import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.AbstractTerm;
+
+import java.lang.reflect.Proxy;
 
 /**
  * <p>The pivot interface for a state-full proxy. The Java proxy
@@ -44,13 +47,20 @@ public interface InterfacePivot {
      *
      * @return The value.
      */
-    AbstractTerm value();
+    default AbstractTerm value() {
+        ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(this);
+        return state.value();
+    }
 
     /**
      * <p>Set the value.</p>
      *
      * @param data The value.
      */
-    void set_value(AbstractTerm data);
+    default void set_value(AbstractTerm data) {
+        ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(this);
+        Interpreter inter = Interpreter.getInter();
+        state.set_value(data, inter.getEngine());
+    }
 
 }
