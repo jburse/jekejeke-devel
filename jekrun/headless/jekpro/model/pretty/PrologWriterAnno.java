@@ -120,7 +120,7 @@ public class PrologWriterAnno extends PrologWriter {
             case '(':
                 return false;
             default:
-                return sc.args.length == 1;
+                return super.isUnary(sc);
         }
     }
 
@@ -132,14 +132,33 @@ public class PrologWriterAnno extends PrologWriter {
      */
     protected boolean isBinary(SkelCompound sc) {
         if ((flags & FLAG_FILL) == 0)
-            return sc.args.length == 2;
+            return super.isBinary(sc);
         int quote = (sc.sym instanceof SkelAtomAnno ?
                 ((SkelAtomAnno) sc.sym).getHint() : 0);
         switch (quote >> 8) {
             case '(':
                 return false;
             default:
-                return sc.args.length == 2;
+                return super.isBinary(sc);
+        }
+    }
+
+    /**
+     * <p>Check whether the compound is an index.</p>
+     *
+     * @param sc The compound.
+     * @return True if the compound is an index, otherwise false.
+     */
+    protected boolean isIndex(SkelCompound sc) {
+        if ((flags & FLAG_FILL) == 0)
+            return super.isIndex(sc);
+        int quote = (sc.sym instanceof SkelAtomAnno ?
+                ((SkelAtomAnno) sc.sym).getHint() : 0);
+        switch (quote >> 8) {
+            case '(':
+                return false;
+            default:
+                return super.isIndex(sc);
         }
     }
 
@@ -270,100 +289,6 @@ public class PrologWriterAnno extends PrologWriter {
         } else {
             return false;
         }
-    }
-
-    /*********************************************************************/
-    /* Special Compounds                                                 */
-    /*********************************************************************/
-
-    /**
-     * <p>Write an array index.</p>
-     *
-     * @param sc  The term.
-     * @param ref The display.
-     * @param mod The module.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected final void writeIndex(SkelCompound sc, Display ref,
-                                    CachePredicate cp, Object[] decl,
-                                    Object mod, SkelAtom nsa)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writeIndex(sc, ref, cp, decl, mod, nsa);
-            return;
-        }
-        int backtoff = getTextOffset() + SPACES;
-        appendLink(PrologReader.OP_LBRACKET, cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        int j = 1;
-        Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
-        offset = getOffset(z, backoffset);
-        shift = getShift(z);
-        SkelAtom sa = sc.sym;
-        String[][] fillers = (sa instanceof SkelAtomAnno ?
-                ((SkelAtomAnno) sa).getFillers() : null);
-        writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-        write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
-        for (j = 2; j < sc.args.length; j++) {
-            z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-            spez = getSpez(z);
-            offset = getOffset(z, backoffset);
-            shift = getShift(z);
-            append(',');
-            append(' ');
-            fillers = (sc.sym instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sc.sym).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[j] : null);
-            write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
-        }
-        append(PrologReader.OP_RBRACKET);
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
-    }
-
-    /**
-     * <p>Write an array index.</p>
-     *
-     * @param sc  The term.
-     * @param ref The display.
-     * @param mod The module.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected final void writeStruct(SkelCompound sc, Display ref,
-                                     CachePredicate cp, Object[] decl,
-                                     Object mod, SkelAtom nsa)
-            throws IOException, EngineMessage, EngineException {
-        if ((flags & FLAG_FILL) == 0) {
-            super.writeStruct(sc, ref, cp, decl, mod, nsa);
-            return;
-        }
-        int backtoff = getTextOffset() + SPACES;
-        appendLink(PrologReader.OP_LBRACE, cp);
-        int backspez = spez;
-        int backoffset = offset;
-        int backshift = shift;
-        if (sc.args.length == 2) {
-            Object z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-            spez = getSpez(z);
-            offset = getOffset(z, backoffset);
-            shift = getShift(z);
-            String[][] fillers = (sc.sym instanceof SkelAtomAnno ?
-                    ((SkelAtomAnno) sc.sym).getFillers() : null);
-            writeFiller(MARGIN, fillers != null ? fillers[1] : null);
-            write(sc.args[1], ref, Operator.LEVEL_HIGH, null, null);
-        }
-        append(PrologReader.OP_RBRACE);
-        spez = backspez;
-        offset = backoffset;
-        shift = backshift;
     }
 
     /************************************************************/

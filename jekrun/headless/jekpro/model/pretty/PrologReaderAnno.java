@@ -76,99 +76,30 @@ public class PrologReaderAnno extends PrologReader {
     }
 
     /**
-     * <p>Reads a postfix.</p>
-     * <p>Can be overridden by sub classes.</p>
+     * <p>Advance the operator.</p>
      *
-     * @param help The functor.
-     * @param skel The left argument.
-     * @return The postfix.
-     * @throws ScannerError    Error and position.
-     * @throws IOException     IO Error.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
+     * @param help  The functor.
+     * @param infix The infix flag.
+     * @return The functor.
+     * @throws ScannerError Error and position.
+     * @throws IOException  IO Error.
      */
-    protected final Object readPostfix(SkelAtom help, Object skel)
-            throws ScannerError, IOException, EngineMessage, EngineException {
+    protected final SkelAtom nextOperator(SkelAtom help, boolean infix)
+            throws ScannerError, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readPostfix(help, skel);
-        if (st.getHint() == 0 && OP_LBRACKET.equals(st.getData())) {
-            String[] filler = getFiller();
-            nextToken();
-            if (st.getHint() == 0 && OP_RBRACKET.equals(st.getData())) {
-                nextToken();
-                if (filler != null)
-                    help = makeFillers(help, new String[][]{null, filler});
-                skel = new SkelCompound(help, skel);
-            } else {
-                skel = readIndex(skel, filler, help);
-                if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
-                    throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
-                            st.getTokenOffset());
-                nextToken();
-            }
-        } else if (st.getHint() == 0 && OP_LBRACE.equals(st.getData())) {
-            String[] filler = getFiller();
-            nextToken();
-            if (st.getHint() == 0 && OP_RBRACE.equals(st.getData())) {
-                nextToken();
-                if (filler != null)
-                    help = makeFillers(help, new String[][]{null, filler});
-                skel = new SkelCompound(help, skel);
-            } else {
-                skel = readStruct(skel, filler, help);
-                if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
-                    throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
-                            st.getTokenOffset());
-                nextToken();
-            }
-        } else if (st.getHint() == 0 && OP_LPAREN.equals(st.getData())) {
-            String[] filler = getFiller();
-            nextToken();
-            if (st.getHint() == 0 && OP_RPAREN.equals(st.getData())) {
-                nextToken();
-                if (filler != null)
-                    help = makeFillers(help, new String[][]{null, filler});
-                skel = new SkelCompound(help, skel);
-            } else {
-                throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
-                        st.getTokenOffset());
-            }
-            return skel;
-        } else {
-            String[] filler = getFiller();
-            nextToken();
-            if (filler != null)
-                help = makeFillers(help, new String[][]{null, filler});
-            skel = new SkelCompound(help, skel);
-        }
-        return skel;
-    }
-
-    /**
-     * <p>Reads an infix.</p>
-     * <p>Can be overridden by sub classes.</p>
-     *
-     * @param help The functor.
-     * @param skel The left argument.
-     * @param oper The operator.
-     * @return The infix.
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     */
-    protected final Object readInfix(SkelAtom help, Object skel, Operator oper)
-            throws ScannerError, EngineMessage, EngineException, IOException {
-        if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readInfix(help, skel, oper);
+            return super.nextOperator(help, infix);
         String[] filler = getFiller();
-        nextOperator();
+        help = super.nextOperator(help, infix);
         String[] filler2 = getFiller();
         if (filler != null || filler2 != null) {
             filler = concatFiller(filler, filler2);
-            help = makeFillers(help, new String[][]{null, filler, null});
+            if (infix) {
+                help = makeFillers(help, new String[][]{null, filler, null});
+            } else {
+                help = makeFillers(help, new String[][]{null, filler});
+            }
         }
-        Object jack = read(oper.getLevel() - oper.getRight());
-        return new SkelCompound(help, skel, jack);
+        return help;
     }
 
     /*********************************************************************/
@@ -186,11 +117,10 @@ public class PrologReaderAnno extends PrologReader {
      */
     protected final Object readParen()
             throws EngineException, IOException, ScannerError, EngineMessage {
+        if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
+            return super.readParen();
         String[] filler = getFiller();
         Object arg = read(Operator.LEVEL_HIGH);
-        if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
-            throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
-                    st.getTokenOffset());
         String[] filler2 = getFiller();
         if ((filler != null || filler2 != null) &&
                 arg instanceof SkelCompound) {
@@ -208,26 +138,33 @@ public class PrologReaderAnno extends PrologReader {
     /**
      * <p>Reads a set.</p>
      *
+     * @param help The functor.
+     * @param skel The left argument.
      * @return The set.
      * @throws ScannerError    Error and position.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      * @throws IOException     IO Error.
      */
-    protected final Object readSet()
+    protected final Object readSet(SkelAtom help, Object skel)
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readSet();
-        SkelAtom help = makePos(PrologReader.OP_SET, getAtomPos());
+            return super.readSet(help, skel);
         String[] filler = getFiller();
         Object arg = read(Operator.LEVEL_HIGH);
-        if (st.getHint() != 0 || !OP_RBRACE.equals(st.getData()))
-            throw new ScannerError(ERROR_SYNTAX_BRACE_BALANCE,
-                    st.getTokenOffset());
         String[] filler2 = getFiller();
-        if (filler != null || filler2 != null)
-            help = makeFillers(help, new String[][]{filler, filler2});
-        return new SkelCompound(help, arg);
+        if (filler != null || filler2 != null) {
+            if (skel != null) {
+                help = makeFillers(help, new String[][]{null, filler, filler2});
+            } else {
+                help = makeFillers(help, new String[][]{filler, filler2});
+            }
+        }
+        if (skel != null) {
+            return new SkelCompound(help, skel, arg);
+        } else {
+            return new SkelCompound(help, arg);
+        }
     }
 
     /**
@@ -242,10 +179,7 @@ public class PrologReaderAnno extends PrologReader {
     protected final Object readList()
             throws EngineException, IOException, ScannerError, EngineMessage {
         String[] filler = getFiller();
-        Object arg = readArgs();
-        if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
-            throw new ScannerError(ERROR_SYNTAX_BRACKET_BALANCE,
-                    st.getTokenOffset());
+        Object arg = readElems();
         String[] filler2 = getFiller();
         if ((filler != null || filler2 != null) &&
                 arg instanceof SkelCompound) {
@@ -269,10 +203,10 @@ public class PrologReaderAnno extends PrologReader {
      * @throws EngineException Auto load problem.
      * @throws IOException     IO Error.
      */
-    protected final Object readArgs()
+    protected final Object readElems()
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readArgs();
+            return super.readElems();
         Object[] args = new Object[2];
         args[0] = read(Operator.LEVEL_MIDDLE);
         args[1] = null;
@@ -334,9 +268,9 @@ public class PrologReaderAnno extends PrologReader {
     }
 
     /**
-     * <p>Read a compound.</p>
-     * <p>Can be overridden by sub classes.</p>
+     * <p>Read the argumemts.</p>
      *
+     * @param vec  The initial arguments.
      * @param help The functor.
      * @return The compound.
      * @throws ScannerError    Error and position.
@@ -344,87 +278,42 @@ public class PrologReaderAnno extends PrologReader {
      * @throws EngineException Auto load problem.
      * @throws IOException     IO Error.
      */
-    protected final Object readCompound(SkelAtom help)
+    protected final Object readArgs(ListArray<Object> vec, SkelAtom help)
             throws ScannerError, EngineMessage, EngineException, IOException {
         if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readCompound(help);
-        ListArray<Object> vec = new ListArray<Object>();
+            return super.readArgs(vec, help);
         ListArray<String[]> fils = null;
         String[] filler = getFiller();
-        if (filler != null) {
-            fils = new ListArray<String[]>();
-            fils.add(filler);
-        }
-        vec.add(read(Operator.LEVEL_MIDDLE));
-        while (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
-            filler = getFiller();
-            nextToken();
-            String[] filler2 = getFiller();
-            if ((filler != null || filler2 != null) && fils == null) {
-                fils = new ListArray<String[]>();
-                for (int i = 0; i < vec.size(); i++)
-                    fils.add(null);
-            }
-            if (fils != null) {
-                filler = concatFiller(filler, filler2);
-                fils.add(filler);
-            }
-            vec.add(read(Operator.LEVEL_MIDDLE));
-        }
-        if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
-            throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
-                    st.getTokenOffset());
-        filler = getFiller();
-        if (filler != null && fils == null) {
+        nextToken();
+        String[] filler2 = getFiller();
+        if (filler != null || filler2 != null) {
             fils = new ListArray<String[]>();
             for (int i = 0; i < vec.size(); i++)
                 fils.add(null);
         }
-        if (fils != null)
-            fils.add(filler);
-        Object[] args = new Object[vec.size()];
-        vec.toArray(args);
         if (fils != null) {
-            String[][] fillers = new String[fils.size()][];
-            fils.toArray(fillers);
-            help = makeFillers(help, fillers);
-        }
-        return new SkelCompound(help, args);
-    }
-
-    /**
-     * <p>Reads an index.</p>
-     *
-     * @param skel   The indexed object.
-     * @param filler The filler.
-     * @return The compound.
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     * @throws IOException     IO error.
-     */
-    protected final Object readIndex(Object skel, String[] filler, SkelAtom help)
-            throws ScannerError, EngineMessage, EngineException, IOException {
-        if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readIndex(skel, filler, help);
-        ListArray<Object> vec = new ListArray<Object>();
-        ListArray<String[]> fils = null;
-        if (filler != null) {
-            fils = new ListArray<String[]>();
+            filler = concatFiller(filler, filler2);
             fils.add(filler);
         }
-        vec.add(skel);
-        filler = getFiller();
-        if (filler != null && fils == null) {
-            fils = new ListArray<String[]>();
-            for (int i = 0; i < vec.size(); i++)
-                fils.add(null);
-        }
-        if (fils != null)
-            fils.add(filler);
-        vec.add(read(Operator.LEVEL_MIDDLE));
-        while (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
-            nextToken();
+        if (isTemplate(-1) || isTemplates(noTermChs) || isTemplates(noOperChs)) {
+            /* */
+        } else {
+            vec.add(read(Operator.LEVEL_MIDDLE));
+            while (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
+                filler = getFiller();
+                nextToken();
+                filler2 = getFiller();
+                if ((filler != null || filler2 != null) && fils == null) {
+                    fils = new ListArray<String[]>();
+                    for (int i = 0; i < vec.size(); i++)
+                        fils.add(null);
+                }
+                if (fils != null) {
+                    filler = concatFiller(filler, filler2);
+                    fils.add(filler);
+                }
+                vec.add(read(Operator.LEVEL_MIDDLE));
+            }
             filler = getFiller();
             if (filler != null && fils == null) {
                 fils = new ListArray<String[]>();
@@ -433,52 +322,19 @@ public class PrologReaderAnno extends PrologReader {
             }
             if (fils != null)
                 fils.add(filler);
-            vec.add(read(Operator.LEVEL_MIDDLE));
         }
-        Object[] args = new Object[vec.size()];
-        vec.toArray(args);
-        if (fils != null) {
-            String[][] fillers = new String[fils.size()][];
-            fils.toArray(fillers);
-            help = makeFillers(help, fillers);
+        if (vec.size() == 0) {
+            return help;
+        } else {
+            Object[] args = new Object[vec.size()];
+            vec.toArray(args);
+            if (fils != null) {
+                String[][] fillers = new String[fils.size()][];
+                fils.toArray(fillers);
+                help = makeFillers(help, fillers);
+            }
+            return new SkelCompound(help, args);
         }
-        return new SkelCompound(help, args);
-    }
-
-    /**
-     * <p>Reads an index.</p>
-     *
-     * @param skel   The indexed object.
-     * @param filler The filler.
-     * @return The compound.
-     * @throws ScannerError    Error and position.
-     * @throws EngineMessage   Auto load problem.
-     * @throws EngineException Auto load problem.
-     * @throws IOException     IO error.
-     */
-    protected final Object readStruct(Object skel, String[] filler, SkelAtom help)
-            throws ScannerError, EngineMessage, EngineException, IOException {
-        if ((getFlags() & PrologWriter.FLAG_FILL) == 0)
-            return super.readStruct(skel, filler, help);
-        ListArray<String[]> fils = null;
-        if (filler != null) {
-            fils = new ListArray<String[]>();
-            fils.add(filler);
-        }
-        filler = getFiller();
-        if (filler != null && fils == null) {
-            fils = new ListArray<String[]>();
-            fils.add(null);
-        }
-        if (fils != null)
-            fils.add(filler);
-        Object arg = read(Operator.LEVEL_HIGH);
-        if (fils != null) {
-            String[][] fillers = new String[fils.size()][];
-            fils.toArray(fillers);
-            help = makeFillers(help, fillers);
-        }
-        return new SkelCompound(help, skel, arg);
     }
 
     /**

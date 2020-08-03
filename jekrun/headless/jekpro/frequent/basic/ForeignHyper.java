@@ -67,6 +67,7 @@ public final class ForeignHyper {
 
     /**************************************************************/
     /* CheerpJ Workaround                                         */
+
     /**************************************************************/
 
     public static double epsilon() {

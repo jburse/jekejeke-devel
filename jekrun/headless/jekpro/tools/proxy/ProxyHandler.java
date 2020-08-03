@@ -54,7 +54,6 @@ public final class ProxyHandler implements InvocationHandler {
     private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
 
     private AbstractSource src;
-    private Class proxy;
     private MapHash<Method, ProxyExecutor> execs;
     private Constructor constr;
     private boolean hasstate;
@@ -69,10 +68,10 @@ public final class ProxyHandler implements InvocationHandler {
     public void setSource(AbstractSource scope, Engine en)
             throws EngineMessage {
         src = scope;
-        proxy = createProxyClass();
-        execs = createProxyExecs(en);
-        constr = SpecialForeign.getDeclaredConstructor(proxy, SIG_INVOKE);
-        hasstate = InterfacePivot.class.isAssignableFrom(proxy);
+        Class clazz = createProxyClass();
+        execs = createProxyExecs(clazz,en);
+        constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
+        hasstate = InterfacePivot.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -130,14 +129,15 @@ public final class ProxyHandler implements InvocationHandler {
     /**
      * <p>Create the proxy executors.</p>
      *
+     * @param clazz The proxy class.
      * @param en The engine.
      * @return The proxy executors.
      * @throws EngineMessage Shit happens.
      */
-    public MapHash<Method, ProxyExecutor> createProxyExecs(Engine en)
+    public MapHash<Method, ProxyExecutor> createProxyExecs(Class clazz, Engine en)
             throws EngineMessage {
         MapHash<Method, ProxyExecutor> map = new MapHash<Method, ProxyExecutor>();
-        Class[] interfaces = proxy.getInterfaces();
+        Class[] interfaces = clazz.getInterfaces();
 
         for (int i = 0; i < interfaces.length; i++) {
             Method[] list = interfaces[i].getMethods();

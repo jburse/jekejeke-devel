@@ -64,6 +64,8 @@ public class Foyer extends Enforced {
     public final static String OP_COMMA = ",";
     public final static String OP_SLASH = "/";
     public final static String OP_NIL = "[]";
+    public final static String OP_SET = "{}";
+    public final static String OP_UNIT = "()";
     public final static String OP_CONS = ".";
     public final static String OP_SUB = "-";
     public final static String OP_TRUE = "true";
@@ -87,9 +89,6 @@ public class Foyer extends Enforced {
     public final static String OP_BOTT = "unit";
 
     public final static String OP_COMPARE = "compare";
-
-    public final static String OP_INDEX = "sys_index";
-    public final static String OP_STRUCT = "sys_struct";
 
     public final static int MASK_FOYER_NIST = 0x00000010;
     public final static int MASK_FOYER_CEXP = 0x00000020;
