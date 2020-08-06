@@ -5,7 +5,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.InterpreterException;
@@ -244,7 +243,7 @@ final class MemberVirtualDet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return method.toString()+ " (virtual)";
+        return method.toString() + " (virtual)";
     }
 
 }

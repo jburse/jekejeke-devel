@@ -47,8 +47,6 @@ import java.lang.reflect.*;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ProxyHandler implements InvocationHandler {
-    private final static Class[] SIG_INVOKE = new Class[]{InvocationHandler.class};
-
     private AbstractSource src;
     private MapHash<Method, ProxyExecutor> execs;
     private Constructor constr;
@@ -66,7 +64,7 @@ public final class ProxyHandler implements InvocationHandler {
         src = scope;
         Class clazz = createProxyClass();
         execs = createProxyExecs(clazz, en);
-        constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
+        constr = SpecialForeign.getDeclaredConstructor(clazz, InvocationHandler.class);
         pivot = InterfacePivot.class.isAssignableFrom(clazz);
     }
 
@@ -137,10 +135,8 @@ public final class ProxyHandler implements InvocationHandler {
      * @param clazz The proxy class.
      * @param en    The engine.
      * @return The proxy executors.
-     * @throws EngineMessage Shit happens.
      */
-    public MapHash<Method, ProxyExecutor> createProxyExecs(Class clazz, Engine en)
-            throws EngineMessage {
+    public MapHash<Method, ProxyExecutor> createProxyExecs(Class clazz, Engine en) {
         MapHash<Method, ProxyExecutor> map = new MapHash<Method, ProxyExecutor>();
         Class[] interfaces = clazz.getInterfaces();
 
@@ -154,6 +150,8 @@ public final class ProxyHandler implements InvocationHandler {
                     continue;
                 ProxyExecutor exec = new ProxyExecutor();
                 if (!exec.encodeSignature(method, en))
+                    continue;
+                if (!exec.encodeSpecial(method, en))
                     continue;
                 exec.setHandler(method, this);
                 map.add(method, exec);
@@ -205,11 +203,12 @@ public final class ProxyHandler implements InvocationHandler {
 
     /**
      * <p>Some testing.</p>
+     *
      * @param args Not used.
      */
     /*
     public static void main(String[] args) {
-        Object obj=Proxy.newProxyInstance(ProxyHandler.class.getClassLoader(),
+        Object obj = Proxy.newProxyInstance(ProxyHandler.class.getClassLoader(),
                 new Class[]{InterfacePivot.class},
                 new InvocationHandler() {
                     @Override
@@ -217,22 +216,24 @@ public final class ProxyHandler implements InvocationHandler {
                         return null;
                     }
                 });
-        Class clazz=InterfacePivot.class;
-        System.out.println("clazz="+clazz);
-        Method[] methods=clazz.getDeclaredMethods();
-        for (int i=0; i<methods.length; i++) {
-            Method method=methods[i];
-            boolean stat=Modifier.isStatic(method.getModifiers());
-            System.out.println("methods[" + i + "]=" + methods[i]+", static="+stat);
+        Class clazz = InterfacePivot.class;
+        System.out.println("clazz=" + clazz);
+        Method[] methods = clazz.getDeclaredMethods();
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            boolean stat = Modifier.isStatic(method.getModifiers());
+            System.out.println("methods[" + i + "]=" + methods[i] + ", static=" + stat);
         }
 
-        clazz=obj.getClass();
-        System.out.println("clazz="+clazz);
-        methods=clazz.getDeclaredMethods();
-        for (int i=0; i<methods.length; i++) {
-            Method method=methods[i];
-            boolean stat=Modifier.isStatic(method.getModifiers());
-            System.out.println("methods[" + i + "]=" + methods[i]+", static="+stat);
+        System.out.println();
+
+        clazz = obj.getClass();
+        System.out.println("clazz=" + clazz);
+        methods = clazz.getDeclaredMethods();
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            boolean stat = Modifier.isStatic(method.getModifiers());
+            System.out.println("methods[" + i + "]=" + methods[i] + ", static=" + stat);
         }
 
     }

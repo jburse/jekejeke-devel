@@ -6,7 +6,6 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
@@ -18,7 +17,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 /**
@@ -638,7 +636,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
      * @param m  The property skeleton.
      * @param d  The property display.
      * @return The properties.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public Predicate[] idxObjProp(Object m, Display d, Engine en)
             throws EngineMessage {

@@ -50,7 +50,7 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyOperator extends AbstractProperty<Operator> {
     public final static MapHashLink<StoreKey, AbstractProperty<Operator>> DEFAULT
-         = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
+            = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
 
     private final static String OP_OP = "op";
     private final static String OP_SYS_PORTRAY = "sys_portray";

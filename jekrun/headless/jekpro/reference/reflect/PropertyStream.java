@@ -6,12 +6,10 @@ import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -195,9 +193,9 @@ public final class PropertyStream extends AbstractProperty<Object> {
                 }
             case PROP_BUFFER:
                 if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader)obj).getUncoded();
+                    obj = ((ConnectionReader) obj).getUncoded();
                 } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter)obj).getUncoded();
+                    obj = ((ConnectionWriter) obj).getUncoded();
                 }
                 if (obj instanceof ConnectionInput) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
@@ -214,9 +212,9 @@ public final class PropertyStream extends AbstractProperty<Object> {
                 }
             case PROP_MODE:
                 if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader)obj).getUncoded();
+                    obj = ((ConnectionReader) obj).getUncoded();
                 } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter)obj).getUncoded();
+                    obj = ((ConnectionWriter) obj).getUncoded();
                 }
                 if (obj instanceof ConnectionInput) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
@@ -234,9 +232,9 @@ public final class PropertyStream extends AbstractProperty<Object> {
                 }
             case PROP_FILE_NAME:
                 if (obj instanceof ConnectionReader) {
-                    obj = ((ConnectionReader)obj).getUncoded();
+                    obj = ((ConnectionReader) obj).getUncoded();
                 } else if (obj instanceof ConnectionWriter) {
-                    obj = ((ConnectionWriter)obj).getUncoded();
+                    obj = ((ConnectionWriter) obj).getUncoded();
                 }
                 if (obj instanceof ConnectionInput) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
@@ -388,7 +386,7 @@ public final class PropertyStream extends AbstractProperty<Object> {
             m = ((SkelCompound) m).args[0];
             Number num = SpecialEval.derefAndCastInteger(m, d);
             return SpecialEval.castLongValue(num);
-         } else {
+        } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
@@ -423,5 +421,5 @@ public final class PropertyStream extends AbstractProperty<Object> {
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
     }
-    
+
 }

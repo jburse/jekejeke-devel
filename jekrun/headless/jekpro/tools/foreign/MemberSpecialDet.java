@@ -5,10 +5,10 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.InterpreterException;
-import jekpro.tools.proxy.ProxyExecutor;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
@@ -17,6 +17,7 @@ import jekpro.tools.term.SkelCompound;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -53,7 +54,7 @@ import java.lang.reflect.Modifier;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class MemberSpecialDet extends AbstractMember {
+public final class MemberSpecialDet extends AbstractMember {
     static final String OP_FOREIGN_SPECIAL = "foreign_special";
 
     private final Method method;
@@ -77,16 +78,9 @@ final class MemberSpecialDet extends AbstractMember {
      */
     boolean encodeSpecial(Engine en) {
         if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
-            try {
-                MethodHandles.Lookup lookup = (MethodHandles.Lookup) ProxyExecutor.impl_lookup.get(null);
-                special = lookup.unreflectSpecial(method, method.getDeclaringClass());
-            } catch (Exception x) {
-                en.skel = Types.mapException(x, method);
+            special = encodeSpecial(method, en);
+            if (special == null)
                 return false;
-            } catch (Error x) {
-                en.skel = Types.mapError(x);
-                return false;
-            }
         } else {
             special = null;
         }

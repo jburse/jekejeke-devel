@@ -151,7 +151,7 @@ public final class Reflection extends AbstractReflection {
         if (clazz == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_CLASS, new SkelAtom(name)));
-        String[] params = extractParams(name);
+        Object[] params = extractParams(name);
         Class[] types;
         if (params.length != 0) {
             types = new Class[params.length];
@@ -252,11 +252,11 @@ public final class Reflection extends AbstractReflection {
      * @return The parameters.
      * @throws EngineMessage Shit happens.
      */
-    private static String[] extractParams(String name)
+    private static Object[] extractParams(String name)
             throws EngineMessage {
         int i = name.indexOf('(');
         if (i != -1) {
-            ListArray<String> list = new ListArray<String>();
+            ListArray<Object> list = new ListArray<Object>();
 
             int k = name.indexOf(',', i + 1);
             while (k != -1) {
@@ -270,7 +270,7 @@ public final class Reflection extends AbstractReflection {
                         EngineMessage.OP_SYNTAX_PARAMETER_ERROR));
             list.add(name.substring(i + 1, k));
 
-            String[] res = new String[list.size()];
+            Object[] res = new Object[list.size()];
             list.toArray(res);
             return res;
         } else {

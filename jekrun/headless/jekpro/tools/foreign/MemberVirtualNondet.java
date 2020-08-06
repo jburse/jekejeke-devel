@@ -209,7 +209,7 @@ final class MemberVirtualNondet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return method.toString()+ " (virtual)";
+        return method.toString() + " (virtual)";
     }
 
 }

@@ -600,7 +600,7 @@ public final class AutoClass extends AbstractAuto {
      * @throws EngineMessage   FFI error.
      */
     public static Object invokeNew(Constructor constructor,
-                                   Object[] args)
+                                   Object... args)
             throws EngineException, EngineMessage {
         try {
             return constructor.newInstance(args);

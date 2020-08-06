@@ -5,7 +5,10 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CacheModule;
+import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractFile;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
@@ -154,7 +157,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
      * @param src The object.
      * @param en  The engine.
      * @return The properties.
-     * @throws EngineMessage   Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public Object[] getObjProps(AbstractSource src, Engine en)
             throws EngineMessage {

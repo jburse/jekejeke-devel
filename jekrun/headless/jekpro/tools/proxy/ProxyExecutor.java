@@ -13,11 +13,10 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.foreign.AbstractMember;
+import jekpro.tools.foreign.MemberSpecialDet;
 import jekpro.tools.term.*;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -64,20 +63,6 @@ public final class ProxyExecutor {
     private int arity;
     private MethodHandle special;
 
-    public static Field impl_lookup;
-
-    static {
-        try {
-            Class<?> clazz = Class.forName("java.lang.invoke.MethodHandles$Lookup");
-            impl_lookup = clazz.getDeclaredField("IMPL_LOOKUP");
-            impl_lookup.setAccessible(true);
-        } catch (ClassNotFoundException e) {
-            impl_lookup = null;
-        } catch (NoSuchFieldException e) {
-            impl_lookup = null;
-        }
-    }
-
     /***********************************************************/
     /* Proxy Executor API                                      */
     /***********************************************************/
@@ -110,14 +95,31 @@ public final class ProxyExecutor {
     }
 
     /**
+     * <p>Encode the special of a foreign method.</p>
+     * <p>The culprit is returned in the engine skel.</p>
+     *
+     * @param method The method.
+     * @param en     The engine.
+     * @return True if the signature is ok, otherwise false.
+     */
+    boolean encodeSpecial(Method method, Engine en) {
+        if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
+            special = AbstractMember.encodeSpecial(method, en);
+            if (special == null)
+                return false;
+        } else {
+            special = null;
+        }
+        return true;
+    }
+
+    /**
      * <p>Set the handler.</p>
      *
      * @param method  The method.
      * @param handler The handler.
-     * @throws EngineMessage Shit happens.
      */
-    void setHandler(Method method, ProxyHandler handler)
-            throws EngineMessage {
+    void setHandler(Method method, ProxyHandler handler) {
         SkelAtom val = new SkelAtom(method.getName(), handler.getSource());
         functor = new TermAtomic(val);
         arity = AbstractLense.getParaCount(encodeparas);
@@ -125,18 +127,6 @@ public final class ProxyExecutor {
             arity++;
         if ((subflags & AbstractLense.MASK_METH_FUNC) != 0)
             arity++;
-        if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
-            try {
-                MethodHandles.Lookup lookup = (MethodHandles.Lookup) impl_lookup.get(null);
-                special = lookup.unreflectSpecial(method, method.getDeclaringClass());
-            } catch (Exception x) {
-                throw Types.mapException(x, method);
-            } catch (Error x) {
-                throw Types.mapError(x);
-            }
-        } else {
-            special = null;
-        }
     }
 
     /**

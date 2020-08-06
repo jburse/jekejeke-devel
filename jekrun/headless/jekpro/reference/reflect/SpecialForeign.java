@@ -303,7 +303,7 @@ public final class SpecialForeign extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static Constructor getDeclaredConstructor(Class decl,
-                                                     Class[] paras)
+                                                     Class... paras)
             throws EngineMessage {
         try {
             return decl.getDeclaredConstructor(paras);

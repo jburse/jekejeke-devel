@@ -11,12 +11,15 @@ import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
-import jekpro.tools.call.InterpreterException;
-import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
-import java.lang.reflect.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 /**
  * <p>Base class for the Java class delegates.</p>
@@ -54,6 +57,22 @@ public abstract class AbstractMember extends AbstractLense
     public final static Object[] VOID_ARGS = new Object[0];
 
     int scores = -1;
+
+    private static Constructor constr;
+
+    static {
+        try {
+            Class<?> clazz = Class.forName("java.lang.invoke.MethodHandles$Lookup");
+            constr = SpecialForeign.getDeclaredConstructor(clazz, Class.class, Integer.TYPE);
+            constr.setAccessible(true);
+        } catch (ClassNotFoundException e) {
+            constr = null;
+        } catch (NoClassDefFoundError x) {
+            constr = null;
+        } catch (EngineMessage e) {
+            constr = null;
+        }
+    }
 
     /**
      * <p>Retrieve the proxy that is wrapped.</p>
@@ -216,7 +235,7 @@ public abstract class AbstractMember extends AbstractLense
      * @throws EngineException FFI error.
      */
     final Object[] computeAndConvertArgs(Object temp, Display ref,
-                                           Engine en)
+                                         Engine en)
             throws EngineMessage, EngineException {
         if (encodeparas.length == 0)
             return AbstractMember.VOID_ARGS;
@@ -338,7 +357,7 @@ public abstract class AbstractMember extends AbstractLense
     /**
      * <p>Map a Java member to a Prolog culprit.</p>
      *
-     * @param y The Java member.
+     * @param y      The Java member.
      * @param source The source, non null.
      * @return The Prolog culprit.
      * @throws EngineMessage Shit happens.
@@ -361,6 +380,10 @@ public abstract class AbstractMember extends AbstractLense
         }
     }
 
+    /***************************************************************/
+    /* Unreflect Special                                           */
+    /***************************************************************/
+
     /**
      * <p>Encode the special of a foreign method.</p>
      * <p>The culprit is returned in the engine skel.</p>
@@ -370,6 +393,37 @@ public abstract class AbstractMember extends AbstractLense
      */
     boolean encodeSpecial(Engine en) {
         return true;
+    }
+
+    /**
+     * <p>Encode the special of a foreign method.</p>
+     * <p>The culprit is returned in the engine skel.</p>
+     *
+     * @param method The method.
+     * @param en     The engine.
+     * @return The method handle or null.
+     */
+    public static MethodHandle encodeSpecial(Method method, Engine en) {
+        MethodHandles.Lookup lookup;
+        try {
+            lookup = (MethodHandles.Lookup) AutoClass.invokeNew(constr,
+                    method.getDeclaringClass(), MethodHandles.Lookup.PRIVATE);
+        } catch (EngineException x) {
+            en.skel = x;
+            return null;
+        } catch (EngineMessage x) {
+            en.skel = x;
+            return null;
+        }
+        try {
+            return lookup.unreflectSpecial(method, method.getDeclaringClass());
+        } catch (Exception x) {
+            en.skel = Types.mapException(x, method);
+            return null;
+        } catch (Error x) {
+            en.skel = Types.mapError(x);
+            return null;
+        }
     }
 
 }

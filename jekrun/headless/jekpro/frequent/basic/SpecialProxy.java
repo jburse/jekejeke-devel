@@ -140,9 +140,9 @@ public final class SpecialProxy extends AbstractSpecial {
         Constructor constr = handler.getProxyConstr();
         if (handler.getPivotFlag()) {
             ProxyPivot state = new ProxyPivot(handler);
-            return AutoClass.invokeNew(constr, new Object[]{state});
+            return AutoClass.invokeNew(constr, state);
         } else {
-            return AutoClass.invokeNew(constr, new Object[]{handler});
+            return AutoClass.invokeNew(constr, handler);
         }
     }
 

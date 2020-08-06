@@ -1,6 +1,5 @@
 package jekpro.tools.array;
 
-import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -90,7 +89,7 @@ final class LenseElement extends AbstractLense {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialModel.SIG_INT;
+        return LenseDimension.SIG_INT;
     }
 
     /**

@@ -20,8 +20,8 @@ import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 

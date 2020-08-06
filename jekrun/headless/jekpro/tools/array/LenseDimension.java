@@ -1,6 +1,5 @@
 package jekpro.tools.array;
 
-import jekpro.model.builtin.SpecialModel;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -46,6 +45,8 @@ import java.lang.reflect.Modifier;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class LenseDimension extends AbstractLense {
+    final static Class[] SIG_INT = new Class[]{Integer.TYPE};
+
     private static final String OP_FOREIGN_DIMENSION = "foreign_dimension";
 
     private final Class clazz;
@@ -87,7 +88,7 @@ final class LenseDimension extends AbstractLense {
      * @return The parameter types as Java classes.
      */
     public Class[] getParameterTypes() {
-        return SpecialModel.SIG_INT;
+        return SIG_INT;
     }
 
     /**

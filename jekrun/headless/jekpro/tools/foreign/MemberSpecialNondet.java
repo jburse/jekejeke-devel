@@ -15,6 +15,7 @@ import jekpro.tools.term.SkelCompound;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * <p>Specialization of a delegate accessible for a non-deterministic predicates.</p>
@@ -59,6 +60,24 @@ final class MemberSpecialNondet extends AbstractMember {
      */
     MemberSpecialNondet(Method m) {
         method = m;
+    }
+
+    /**
+     * <p>Encode the special of a foreign method.</p>
+     * <p>The culprit is returned in the engine skel.</p>
+     *
+     * @param en The engine.
+     * @return True if the signature is ok, otherwise false.
+     */
+    boolean encodeSpecial(Engine en) {
+        if ((method.getModifiers() & Modifier.ABSTRACT) == 0) {
+            special = encodeSpecial(method, en);
+            if (special == null)
+                return false;
+        } else {
+            special = null;
+        }
+        return true;
     }
 
     /**
@@ -216,7 +235,7 @@ final class MemberSpecialNondet extends AbstractMember {
      * @return The string.
      */
     public String toString() {
-        return method.toString()+ " (special)";
+        return method.toString() + " (special)";
     }
 
 }
