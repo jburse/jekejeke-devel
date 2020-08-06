@@ -129,7 +129,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Instantiate the Java proxy class of the given Prolog text.</p>
      *
      * @param scope The Prolog text.
-     * @param en The engine.
+     * @param en    The engine.
      * @return The instance.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
@@ -138,8 +138,8 @@ public final class SpecialProxy extends AbstractSpecial {
             throws EngineMessage, EngineException {
         ProxyHandler handler = defineHandler(scope, en);
         Constructor constr = handler.getProxyConstr();
-        if (handler.hasState()) {
-            ProxyPivot state = handler.createState();
+        if (handler.getPivotFlag()) {
+            ProxyPivot state = new ProxyPivot(handler);
             return AutoClass.invokeNew(constr, new Object[]{state});
         } else {
             return AutoClass.invokeNew(constr, new Object[]{handler});
@@ -150,7 +150,7 @@ public final class SpecialProxy extends AbstractSpecial {
      * <p>Define a handler.</p>
      *
      * @param scope The Prolog text.
-     * @param en The engine.
+     * @param en    The engine.
      * @return The handler.
      * @throws EngineMessage Shit happens.
      */
@@ -192,7 +192,7 @@ public final class SpecialProxy extends AbstractSpecial {
             return obj.getClass();
         InvocationHandler iv = Proxy.getInvocationHandler(obj);
         if (iv instanceof ProxyPivot)
-            return ((ProxyPivot) iv).getHandler().getSource();
+            iv = ((ProxyPivot) iv).getHandler();
         if (iv instanceof ProxyHandler)
             return ((ProxyHandler) iv).getSource();
         return null;

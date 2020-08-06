@@ -8,16 +8,12 @@ import jekpro.tools.call.AbstractAuto;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
-import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 
 /**
  * <p>Common proxy invocation handler.</p>
@@ -56,22 +52,22 @@ public final class ProxyHandler implements InvocationHandler {
     private AbstractSource src;
     private MapHash<Method, ProxyExecutor> execs;
     private Constructor constr;
-    private boolean hasstate;
+    private boolean pivot;
 
     /**
      * <p>Set the source.</p>
      *
      * @param scope The Prolog text.
-     * @param en The engine.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
     public void setSource(AbstractSource scope, Engine en)
             throws EngineMessage {
         src = scope;
         Class clazz = createProxyClass();
-        execs = createProxyExecs(clazz,en);
+        execs = createProxyExecs(clazz, en);
         constr = SpecialForeign.getDeclaredConstructor(clazz, SIG_INVOKE);
-        hasstate = InterfacePivot.class.isAssignableFrom(clazz);
+        pivot = InterfacePivot.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -90,6 +86,15 @@ public final class ProxyHandler implements InvocationHandler {
      */
     public Constructor getProxyConstr() {
         return constr;
+    }
+
+    /**
+     * <p>Retrieve the pivot flag.</p>
+     *
+     * @return The pivot flag.
+     */
+    public boolean getPivotFlag() {
+        return pivot;
     }
 
     /**************************************************************/
@@ -130,7 +135,7 @@ public final class ProxyHandler implements InvocationHandler {
      * <p>Create the proxy executors.</p>
      *
      * @param clazz The proxy class.
-     * @param en The engine.
+     * @param en    The engine.
      * @return The proxy executors.
      * @throws EngineMessage Shit happens.
      */
@@ -143,6 +148,8 @@ public final class ProxyHandler implements InvocationHandler {
             Method[] list = interfaces[i].getMethods();
             for (int j = 0; j < list.length; j++) {
                 Method method = list[j];
+                if (Modifier.isStatic(method.getModifiers()))
+                    continue;
                 if (map.getEntry(method) != null)
                     continue;
                 ProxyExecutor exec = new ProxyExecutor();
@@ -196,28 +203,39 @@ public final class ProxyHandler implements InvocationHandler {
         }
     }
 
-    /**************************************************************/
-    /* Instance Handling                                          */
-    /**************************************************************/
-
     /**
-     * <p>Retrrieve the has state flag.</p>
-     *
-     * @return The has state flag.
+     * <p>Some testing.</p>
+     * @param args Not used.
      */
-    public boolean hasState() {
-        return hasstate;
-    }
+    /*
+    public static void main(String[] args) {
+        Object obj=Proxy.newProxyInstance(ProxyHandler.class.getClassLoader(),
+                new Class[]{InterfacePivot.class},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        return null;
+                    }
+                });
+        Class clazz=InterfacePivot.class;
+        System.out.println("clazz="+clazz);
+        Method[] methods=clazz.getDeclaredMethods();
+        for (int i=0; i<methods.length; i++) {
+            Method method=methods[i];
+            boolean stat=Modifier.isStatic(method.getModifiers());
+            System.out.println("methods[" + i + "]=" + methods[i]+", static="+stat);
+        }
 
-    /**
-     * <p>Create a new state.</p>
-     *
-     * @return The new state.
-     */
-    public ProxyPivot createState() {
-        ProxyPivot state = new ProxyPivot();
-        state.setHandler(this);
-        return state;
+        clazz=obj.getClass();
+        System.out.println("clazz="+clazz);
+        methods=clazz.getDeclaredMethods();
+        for (int i=0; i<methods.length; i++) {
+            Method method=methods[i];
+            boolean stat=Modifier.isStatic(method.getModifiers());
+            System.out.println("methods[" + i + "]=" + methods[i]+", static="+stat);
+        }
+
     }
+    */
 
 }

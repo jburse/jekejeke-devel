@@ -56,7 +56,7 @@ public interface InterfacePivot {
      * <p>Set the value.</p>
      *
      * @param inter The interpreter.
-     * @param data The value.
+     * @param data  The value.
      */
     default void set_value(Interpreter inter, AbstractTerm data) {
         ProxyPivot state = (ProxyPivot) Proxy.getInvocationHandler(this);

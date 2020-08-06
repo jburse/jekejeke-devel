@@ -40,16 +40,16 @@ import java.lang.reflect.Method;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ProxyPivot implements InvocationHandler {
-    private ProxyHandler handler;
+    private final InvocationHandler handler;
     private Object template;
 
     /**
-     * <p>Set the handler.</p>
+     * <p>Create a new proxy pivot.</p>
      *
-     * @param h The handler.
+     * @param iv The invocation handler.
      */
-    void setHandler(ProxyHandler h) {
-        handler = h;
+    public ProxyPivot(InvocationHandler iv) {
+        handler = iv;
     }
 
     /**
@@ -57,7 +57,7 @@ public final class ProxyPivot implements InvocationHandler {
      *
      * @return The handler.
      */
-    public ProxyHandler getHandler() {
+    public InvocationHandler getHandler() {
         return handler;
     }
 
