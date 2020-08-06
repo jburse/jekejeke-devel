@@ -190,7 +190,7 @@ destroyed(_, _).
 % dispatch(+Object, +Spec, +Request, +Socket)
 :- public dispatch/4.
 dispatch(_, '/images/cookie.gif', Request, Session) :- !,
-   dispatch_binary(library(misc/images/cookie), Request, Session).
+   dispatch_binary(library(container/images/cookie), Request, Session).
 
 /**
  * upgrade(O, P, R, S):
@@ -335,27 +335,27 @@ response_error(501, Response) :-
 :- private send_error/2.
 send_error(400, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(misc/pages/err400), Stream),
+      open_resource(library(container/pages/err400), Stream),
       (response_error(400, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(404, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(misc/pages/err404), Stream),
+      open_resource(library(container/pages/err404), Stream),
       (response_error(404, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(415, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(misc/pages/err415), Stream),
+      open_resource(library(container/pages/err415), Stream),
       (response_error(415, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(422, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(misc/pages/err422), Stream),
+      open_resource(library(container/pages/err422), Stream),
       (response_error(422, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(501, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(misc/pages/err501), Stream),
+      open_resource(library(container/pages/err501), Stream),
       (response_error(501, Response), send_lines(Stream, Response)),
       close(Stream)).
 

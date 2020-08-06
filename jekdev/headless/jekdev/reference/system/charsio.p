@@ -50,6 +50,7 @@
 
 :- module(charsio, []).
 :- use_module(library(structure/bytes)).
+:- use_module(library(advanced/signal)).
 
 /***************************************************************/
 /* Temporarily Redirecting                                     */
@@ -105,22 +106,6 @@ with_input_from(bytes(L), G) :- !,
       G,
       set_input(S)).
 
-/**
- * try_call_finally(S, G, T):
- * The predicate succeeds whenever G succeeds. Calling T on the
- * exit, fail or exception port. and calling S on the call and
- * redo port.
- */
-% try_call_finally(+Goal, +Goal, +Goal)
-:- private try_call_finally/3.
-:- meta_predicate try_call_finally(0, 0, 0).
-try_call_finally(S, G, T) :-
-   (S; T, fail),
-   current_prolog_flag(sys_choices, X),
-   sys_trap(G, E, (T, sys_raise(E))),
-   current_prolog_flag(sys_choices, Y),
-   (X == Y, !, T; T; S, fail).
-
 /***************************************************************/
 /* Helper Predicates                                           */
 /***************************************************************/
@@ -164,3 +149,56 @@ create_text_input(A, K) :-
    atom_block(A, B, []),
    memory_read(B, S),
    open(S, read, K, [buffer(0)]).
+
+/***************************************************************/
+/* Call Utility                                                */
+/***************************************************************/
+
+/**
+ * call_finally(B, C):
+ * The predicate succeeds whenever B succeeds. Additionally
+ * the clean-up C is called when B fails, deterministically
+ * succeeds or throws an exception. The clean-up C is also
+ * called when B non-deterrministically succeeds.
+ */
+% call_finally(+Goal, +Goal, +Goal)
+:- private call_finally/2.
+:- sys_notrace call_finally/2.
+:- meta_predicate call_finally(0, 0).
+call_finally(G, C) :-
+   sys_mask(sys_cleanup(C)),
+   current_prolog_flag(sys_choices, X),
+   G,
+   current_prolog_flag(sys_choices, Y),
+   (X == Y, !; sys_mask(must(C))).
+
+/**
+ * try_call_finally(A, B, C):
+ * The predicate succeeds when the try A succeeds once and whenever
+ * B succeeds. Additionally the clean-up C is called when B fails,
+ * deterministically succeeds or throws an exception. The clean-up C
+ * is also called when B non-deterrministically succeeds. The try
+ * then aslo called when an exception or a cut happens in the continuation.
+ */
+% try_call_finally(+Goal, +Goal, +Goal)
+:- private try_call_finally/3.
+:- sys_notrace try_call_finally/3.
+:- meta_predicate try_call_finally(0, 0, 0).
+try_call_finally(A, G, C) :-
+   sys_mask((must(A), sys_cleanup(C))),
+   current_prolog_flag(sys_choices, X),
+   G,
+   current_prolog_flag(sys_choices, Y),
+   (X == Y, !; sys_mask((must(C), sys_cleanup(A)))).
+
+/**
+ * must(A):
+ * The predicate succeeds once if A succeeds. Otherwise,
+ * the predicate throws an error.
+ */
+% must(Goal)
+:- private must/1.
+:- meta_predicate must(0).
+must(X) :- X, !.
+must(_) :-
+   throw(error(syntax_error(directive_failed), _)).

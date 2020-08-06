@@ -70,10 +70,11 @@
 :- module(tracker, []).
 :- use_module(library(inspection/frame)).
 :- use_module(library(inspection/provable)).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 :- use_module(library(inspection/base)).
 :- use_module(library(inspection/notation)).
 :- use_module(library(system/file)).
+:- use_module(library(advanced/signal)).
 :- use_module(runner).
 :- use_module(helper).
 

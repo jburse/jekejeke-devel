@@ -54,6 +54,7 @@
 :- use_module(library(inspection/base)).
 :- use_module(library(system/uri)).
 :- use_module(library(structure/bytes)).
+:- use_module(library(advanced/signal)).
 :- use_module(tracker).
 :- use_module(helper).
 :- sys_load_resource(testing).

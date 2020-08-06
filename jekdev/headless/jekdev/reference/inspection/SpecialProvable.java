@@ -7,15 +7,18 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
 import matula.comp.sharik.AbstractTracking;
+import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
@@ -272,9 +275,9 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>The result is return in skel and display of engine.</p>
      *
      * @param molec The molec.
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param m     The value skeleton.
+     * @param d     The value display.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void setAtomProp(Object molec, Object m, Display d,
@@ -295,13 +298,13 @@ public final class SpecialProvable extends AbstractSpecial {
      * <p>The result is return in skel and display of engine.</p>
      *
      * @param molec The molec.
-     * @param m  The value skeleton.
-     * @param d  The value display.
-     * @param en The engine.
+     * @param m     The value skeleton.
+     * @param d     The value display.
+     * @param en    The engine.
      * @throws EngineMessage Shit happens.
      */
     private static void resetAtomProp(Object molec, Object m, Display d,
-                                    Engine en)
+                                      Engine en)
             throws EngineMessage {
         StoreKey sk = StackElement.callableToStoreKey(m);
         AbstractProperty<Object> prop = findAtomProperty(sk, en);

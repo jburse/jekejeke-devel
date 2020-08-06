@@ -135,7 +135,6 @@ user:term_expansion(V, _) :- var(V), !, fail.
 user:term_expansion(S, T) :- S = '.'(T), !,
    sys_get_printmap(N),
    write_term(S, [context(-1), quoted(true),
-      
       variable_names(N), annotation((makedot | filler))]),
    flush_output.
 user:term_expansion(?-(G), unit) :-

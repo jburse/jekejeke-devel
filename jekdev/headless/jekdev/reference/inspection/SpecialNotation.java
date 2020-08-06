@@ -3,15 +3,16 @@ package jekdev.reference.inspection;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
+import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialDynamic;
-import jekpro.reference.runtime.SpecialQuali;
+import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -81,7 +82,7 @@ public final class SpecialNotation extends AbstractSpecial {
             case SPECIAL_SYS_SLASH_TO_MODULE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Object obj = SpecialQuali.slashToClass(temp[0], ref, false, true, en);
+                Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return true;
@@ -97,7 +98,7 @@ public final class SpecialNotation extends AbstractSpecial {
             case SPECIAL_SYS_COLON_TO_CALLABLE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                SpecialQuali.colonToCallable(temp[0], ref, true, en);
+                SpecialLogic.colonToCallable(temp[0], ref, true, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
                 if (!en.unifyTerm(temp[1], ref, en.skel, d))
@@ -119,7 +120,7 @@ public final class SpecialNotation extends AbstractSpecial {
             case SPECIAL_SYS_COLON_TO_INDICATOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                Integer arity = SpecialQuali.colonToIndicator(temp[0], ref, en);
+                Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 obj = new SkelCompound(new SkelAtom(Foyer.OP_SLASH), en.skel, arity);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
@@ -130,7 +131,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 int arityint = StoreKey.derefAndCastIndicator(temp[0], ref, en);
                 sa = (SkelAtom) en.skel;
                 src = (sa.scope != null ? sa.scope : en.store.user);
-                obj = SpecialQuali.indicatorToColonSkel(sa.fun, src, arityint, en);
+                obj = SpecialPred.indicatorToColonSkel(sa.fun, src, arityint, en);
                 if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
                     return false;
                 return true;

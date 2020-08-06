@@ -35,7 +35,7 @@
 :- use_module(library(debug/default)).
 :- use_module(library(debug/custom)).
 :- use_module(library(system/mode)).
-:- use_module(library(wire/monitor)).
+:- use_module(library(monitor/server)).
 
 /***********************************************************/
 /* Apropos Utility                                         */

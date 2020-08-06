@@ -13,7 +13,6 @@ import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -170,7 +169,7 @@ public final class SpecialDefault extends AbstractSpecial {
         ListArray<StoreKey> spypoints = ((StoreTrace) en.store).snapshotSpyPoints();
         for (int i = 0; i < spypoints.size; i++) {
             StoreKey sk = spypoints.get(i);
-            Object decl = SpecialQuali.indicatorToColonSkel(sk.getFun(), en.store.user,
+            Object decl = SpecialPred.indicatorToColonSkel(sk.getFun(), en.store.user,
                     sk.getArity(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, decl, res);
         }

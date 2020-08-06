@@ -44,6 +44,7 @@
 :- use_module(library(advanced/sequence)).
 :- use_module(library(stream/xml)).
 :- use_module(library(system/uri)).
+:- use_module(library(advanced/signal)).
 :- use_module(runner).
 :- use_module(tracker).
 :- use_module(helper).

@@ -13,9 +13,11 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Operator;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.SpecialQuali;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.call.*;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterException;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
 import matula.util.config.ArrayEnumeration;
 
@@ -88,7 +90,7 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object t = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(),
                     pick.getSource().getStore().user,
                     pick.getArity(), engine);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
@@ -133,7 +135,7 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object t = SpecialQuali.indicatorToColonSkel(pick.getFun(),
+            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(),
                     pick.getSource().getStore().user,
                     pick.getArity(), engine);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
