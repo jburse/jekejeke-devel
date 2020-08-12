@@ -2,7 +2,10 @@ package matula.util.system;
 
 import matula.util.regex.CodeType;
 
-import java.io.*;
+import java.io.FilterReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * <p>Refinement of the filter reader.</p>

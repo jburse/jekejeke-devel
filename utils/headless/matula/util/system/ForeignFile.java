@@ -2,7 +2,6 @@ package matula.util.system;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.charset.CharacterCodingException;
 
 /**
@@ -298,13 +297,15 @@ public final class ForeignFile {
      *
      * @param args The arguments, unused.
      */
+    /*
     public static void main(String[] args) {
-        String base="/intr/en/docs/5_ext/92_arc2018/099_releases/topic_999262.html";
-        String absolute="/prod/en/docs/05_run/05_down.jsp";
-        String relative=sysPathRelative(base, absolute);
-        System.out.println("base="+base);
-        System.out.println("absolute="+absolute);
-        System.out.println("relative="+relative);
+        String base = "/intr/en/docs/5_ext/92_arc2018/099_releases/topic_999262.html";
+        String absolute = "/prod/en/docs/05_run/05_down.jsp";
+        String relative = sysPathRelative(base, absolute);
+        System.out.println("base=" + base);
+        System.out.println("absolute=" + absolute);
+        System.out.println("relative=" + relative);
     }
+     */
 
 }

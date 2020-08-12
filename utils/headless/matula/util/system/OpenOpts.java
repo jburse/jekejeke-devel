@@ -14,6 +14,7 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * <p>This class represent the stream open options.</p>
@@ -618,9 +619,12 @@ public final class OpenOpts extends OpenDuplex {
         if (controls == null)
             return -1;
         for (int i = 0; i < controls.size(); i++) {
-            String control = controls.get(i);
-            if (control.startsWith("max-age="))
-                return Integer.parseInt(control.substring("max-age=".length()));
+            StringTokenizer st = new StringTokenizer(controls.get(i), ",");
+            while (st.hasMoreTokens()) {
+                String control = st.nextToken().trim();
+                if (control.startsWith("max-age="))
+                    return Integer.parseInt(control.substring("max-age=".length()));
+            }
         }
         return -1;
     }
@@ -637,7 +641,7 @@ public final class OpenOpts extends OpenDuplex {
      */
     public static String getPath(Object o) {
         if (o instanceof ConnectionReader) {
-            InputStream uncoded = ((ConnectionReader)o).getUncoded();
+            InputStream uncoded = ((ConnectionReader) o).getUncoded();
             if (uncoded instanceof ConnectionInput) {
                 return ((ConnectionInput) uncoded).getPath();
             }
@@ -751,5 +755,23 @@ public final class OpenOpts extends OpenDuplex {
             throw new UnsupportedCharsetException(enc);
         }
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        StringTokenizer st = new StringTokenizer("foo, bar, baz", ",");
+        int k=0;
+        while (st.hasMoreTokens()) {
+            String control = st.nextToken().trim();
+            System.out.println("control["+k+"]="+control);
+            k++;
+        }
+    }
+    */
+
 
 }

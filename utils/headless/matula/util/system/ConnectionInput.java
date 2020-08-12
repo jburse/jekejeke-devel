@@ -1,6 +1,9 @@
 package matula.util.system;
 
-import java.io.*;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 
 /**
  * <p>Refinement of the filter input stream.</p>
