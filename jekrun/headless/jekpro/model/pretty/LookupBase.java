@@ -207,6 +207,26 @@ public final class LookupBase {
             } while (store != null);
         }
 
+        // failure
+        return null;
+    }
+
+    /**
+     * <p>Find a read path.</p>
+     *
+     * @param path The path.
+     * @param src  The call-site, non null.
+     * @param mask The mask.
+     * @param en   The engine.
+     * @return The source key, or null.
+     * @throws IOException Shit happens.
+     */
+    public static String findReadSuffix2(String path,
+                                        AbstractSource src,
+                                        int mask,
+                                        Engine en)
+            throws IOException {
+
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
@@ -279,6 +299,26 @@ public final class LookupBase {
             } while (store != null);
         }
 
+        // failure
+        return null;
+    }
+
+    /**
+     * <p>Remove the suffix in the best way.</p>
+     *
+     * @param path The path.
+     * @param src  The call-site, non null.
+     * @param mask The mask.
+     * @param en   The engine.
+     * @return The path without suffix.
+     * @throws IOException Shit happens.
+     */
+    public static String unfindReadSuffix2(String path,
+                                          AbstractSource src,
+                                          int mask,
+                                          Engine en)
+            throws IOException {
+
         /* system resource suffix */
         if ((mask & ForeignPath.MASK_SUFX_RSCS) != 0) {
             Store store = src.getStore();
@@ -290,7 +330,7 @@ public final class LookupBase {
                     if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
                         String path2;
                         if ((path2 = removeSuffix(path, fix.key)) != null) {
-                            if (path.equals(findReadSuffix(path2, src, mask, en)))
+                            if (path.equals(findReadSuffix2(path2, src, mask, en)))
                                 return path2;
                         }
                     }

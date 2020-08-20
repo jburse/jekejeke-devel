@@ -206,7 +206,7 @@ sys_auto_load(Path) :-
  */
 % sys_load_resource(+Atom)
 sys_load_resource(Path) :-
-   absolute_resource_name(Path, Pin),
+   absolute_file_name(Path, Pin),
    sys_load_file(Pin, [condition(on), sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
 
@@ -216,7 +216,7 @@ sys_load_resource(Path) :-
  */
 % sys_add_resource(+Atom)
 sys_add_resource(Path) :-
-   absolute_resource_name(Path, Pin),
+   absolute_file_name(Path, Pin),
    sys_register_file(Pin).
 :- set_predicate_property(sys_add_resource/1, visible(public)).
 

@@ -92,9 +92,11 @@ public final class ForeignPath {
     private static final String OP_PACKAGE_NONE = "none";
     private static final String OP_PACKAGE_BOTH = "both";
 
-    private static final String OP_FILE_EXTENSION = "file_extension";
-    private static final String OP_FILE_EXTENSION_FILE = "file";
-    private static final String OP_FILE_EXTENSION_RESOURCE = "resource";
+    private static final String OP_FILE_TYPE = "file_type";
+    private static final String OP_FILE_TYPE_TEXT = "text";
+    private static final String OP_FILE_TYPE_BINARY = "binary";
+    private static final String OP_FILE_TYPE_RESOURCE = "resource";
+    private static final String OP_FILE_TYPE_ALL = "all";
 
     private static final String OP_FAILURE = "failure";
     private static final String OP_FAILURE_READ = "read";
@@ -324,20 +326,24 @@ public final class ForeignPath {
                 }
             } else if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_FILE_EXTENSION)) {
+                    ((TermCompound) temp).getFunctor().equals(OP_FILE_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
-                if (fun.equals("none")) {
-                    mask &= ~MASK_SUFX_TEXT;
+                if (fun.equals(OP_FILE_TYPE_TEXT)) {
+                    mask |= MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask &= ~MASK_SUFX_RSCS;
-                } else if (fun.equals(OP_FILE_EXTENSION_FILE)) {
-                    mask |= MASK_SUFX_TEXT;
+                } else if (fun.equals(OP_FILE_TYPE_BINARY)) {
+                    mask &= ~MASK_SUFX_TEXT;
                     mask |= MASK_SUFX_BNRY;
                     mask &= ~MASK_SUFX_RSCS;
-                } else if (fun.equals(OP_FILE_EXTENSION_RESOURCE)) {
+                } else if (fun.equals(OP_FILE_TYPE_RESOURCE)) {
                     mask &= ~MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
+                    mask |= MASK_SUFX_RSCS;
+                } else if (fun.equals(OP_FILE_TYPE_ALL)) {
+                    mask |= MASK_SUFX_TEXT;
+                    mask |= MASK_SUFX_BNRY;
                     mask |= MASK_SUFX_RSCS;
                 } else {
                     throw new InterpreterMessage(

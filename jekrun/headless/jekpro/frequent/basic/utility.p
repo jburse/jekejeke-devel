@@ -121,15 +121,15 @@ sys_apropos_value(row(_, M), path, M).
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
-sys_apropos_table(library(builtin/kernel)).
-sys_apropos_table(library(bootload/reference)).
-sys_apropos_table(library(stream/frequent)).
+sys_apropos_table(resource(builtin/kernel)).
+sys_apropos_table(resource(bootload/reference)).
+sys_apropos_table(resource(stream/frequent)).
 
 % sys_enum_apropos(+Atom, -Row)
 :- private sys_enum_apropos/2.
 sys_enum_apropos(N, row(I, T)) :-
    setup_call_cleanup(
-      open_resource(N, S),
+      open(N, read, S),
       (repeat,
       (  read_line(S, L)
       -> (  sys_comment_line(L) -> fail
@@ -142,7 +142,7 @@ sys_enum_apropos(N, row(I, T)) :-
 % sys_comment_line(+Atom)
 :- private sys_comment_line/1.
 sys_comment_line(L) :-
-   sub_atom(L, 0, _, #).
+   sub_atom(L, 0, _, '# ').
 
 % sys_split_line(+List, -Atom, -Atom)
 :- private sys_split_line/3.

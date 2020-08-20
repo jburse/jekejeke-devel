@@ -382,6 +382,9 @@ public final class CacheSubclass extends AbstractCache {
             String key = LookupBase.findReadSuffix(path, src, mask, en);
             if (key != null)
                 return key;
+            key = LookupBase.findReadSuffix2(path, src, mask, en);
+            if (key != null)
+                return key;
             key = LookupBase.findRead(path, src, en);
             if (key != null)
                 return key;
@@ -461,16 +464,33 @@ public final class CacheSubclass extends AbstractCache {
             return new SkelAtom(path);
         }
 
+        int ext;
         String key = LookupBase.unfindReadSuffix(path, src, mask, en);
-        if (key != null)
+        if (key != null) {
             path = key;
+            ext = ForeignPath.MASK_SUFX_TEXT;
+        } else {
+            key = LookupBase.unfindReadSuffix2(path, src, mask, en);
+            if (key != null) {
+                path = key;
+                ext = ForeignPath.MASK_SUFX_RSCS;
+            } else {
+                ext = 0;
+            }
+        }
 
         /* library .p */
-        if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
+        if (ext != 0 && (mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             String res = LookupResource.unfindResourcePaths(path, src.getStore());
-            if (res != null)
-                return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
-                        new SkelAtom(res));
+            if (res != null) {
+                if (ext == ForeignPath.MASK_SUFX_TEXT) {
+                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_LIBRARY),
+                            new SkelAtom(res));
+                } else {
+                    return new SkelCompound(new SkelAtom(LoadOpts.OP_PREFIX_RESOURCE),
+                            new SkelAtom(res));
+                }
+            }
         }
 
         /* relative */

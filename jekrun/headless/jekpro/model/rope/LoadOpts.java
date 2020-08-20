@@ -71,14 +71,10 @@ public final class LoadOpts extends LoadForce {
     public final static String OP_PREFIX_LIBRARY = "library";
     public final static String OP_PREFIX_FOREIGN = "foreign";
     public final static String OP_PREFIX_VERBATIM = "verbatim";
+    public final static String OP_PREFIX_RESOURCE = "resource";
 
     public final static String OP_PACKAGE = "package";
     public final static String OP_USE_PACKAGE = "use_package";
-
-    public final static String OP_SUFFIX_TEXT = "text";
-    public final static String OP_SUFFIX_BINARY = "binary";
-    public final static String OP_SUFFIX_RESOURCE = "resource";
-    public final static String OP_USE_FILE_EXTENSION = "use_file_extension";
 
     public final static String OP_VERBOSE_DETAILS = "details";
     public final static String OP_VERBOSE_SUMMARY = "summary";

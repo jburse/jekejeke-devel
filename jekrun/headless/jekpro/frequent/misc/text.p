@@ -65,8 +65,8 @@
 
 :- module(text, []).
 
-:- sys_load_resource(library(scanner)).
-:- sys_add_resource(library(scanner)).
+:- sys_load_resource(resource(scanner)).
+:- sys_add_resource(resource(scanner)).
 
 /******************************************************************/
 /* Code Type Classification                                       */

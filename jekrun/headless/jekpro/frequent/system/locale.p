@@ -80,14 +80,14 @@
 % get_properties(+Slash, -Props)
 :- public get_properties/2.
 get_properties(Slash, Props) :-
-   absolute_resource_name(Slash, Pin),
+   absolute_file_name(Slash, Pin),
    current_prolog_flag(sys_locale, Locale),
    sys_get_properties(Pin, Locale, Props).
 
 % get_properties(+Slash, +Atom, -Props)
 :- public get_properties/3.
 get_properties(Slash, Locale, Props) :-
-   absolute_resource_name(Slash, Pin),
+   absolute_file_name(Slash, Pin),
    sys_get_properties(Pin, Locale, Props).
 
 :- private sys_get_properties/3.

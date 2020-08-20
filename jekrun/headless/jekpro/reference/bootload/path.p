@@ -7,30 +7,26 @@
  * command are used:
  *
  * Example:
- * ?- absolute_file_name('my folder/my file', X).
- * Error: File 'my folder/my file' not found.
- * 	     absolute_file_name/2
- *
  * ?- set_prolog_flag(base_url, '/C:/Users/Jan Burse/Desktop/').
- * Yes
  *
  * ?- sys_add_file_extension('.dcg', [mime('text/prolog')]).
- * Yes
  *
  * ?- absolute_file_name('my folder/my file', X).
  * X = 'file:/C:/Users/Jan Burse/Desktop/my folder/my file.dcg'
  *
- * Paths should not use a system specific directory separator but always use
- * the forward slash (/). For convenience paths have an automatic prefixing
- * of a schema. Paths starting with a double slash (//) are prefixed by the
- * “http” schema. Paths starting with a single slash (/) are prefixed by
- * the “file” schema. Drive letters are not considered schema.
+ * Paths should not use a system specific directory separator but
+ * always use the forward slash (/). For convenience, paths have
+ * an automatic prefixing of a schema. Paths starting with a double
+ * slash (//) are prefixed by the “http” schema. Paths starting with
+ * a single slash (/) are prefixed by the “file” schema. Drive
+ * letters are not considered schema.
  *
- * If the path is wrapped into a compound and if the functor of the compound
- * is either library/1, foreign/1 or verbatim/1 then the path is looked up
- * in the class path. The class path can be updated and queried by the
- * predicates sys_add_path/1 and sys_current_path/1. In these cases the
- * prefixes of the package/1 and use_package/1 command are also used.
+ * If the path is wrapped into a compound and if the functor of the
+ * compound is either library/1, foreign/1, verbatim/1 or resource/1
+ * then the path is looked up in the class path. The class path can
+ * be updated and queried by the predicates sys_add_path/1 and
+ * sys_current_path/1. The prefixes of the package/1 and use_package/1
+ * command are also used.
  *
  * Write or append access resolution:
  *   &lt;path&gt;              resolve &lt;path&gt; in base.
@@ -39,13 +35,14 @@
  *   library(&lt;path&gt;)     lookup text &lt;path&gt; in class path.
  *   foreign(&lt;path&gt;)     lookup class &lt;path&gt; in class path.
  *   verbatim(&lt;path&gt;)    like library(&lt;path&gt;) or take as is.
+ *   resource(&lt;path&gt;)    lookup resource &lt;path&gt; in class path.
  *   &lt;path&gt;              resolve &lt;path&gt; in scope or base.
  *
- * The predicates absolute_file_name/[2,3] and absolute_resource_name/1
- * provide file name resolving. The predicate absolute_file_name/2 works
- * bi-directionally. For a given already resolved path it will make a best
- * effort attempt to reconstruct either a compound form foreign/1, library/1
- * or verbatim/1 or a relative path.
+ * The predicates absolute_file_name/[2,3] provide file name resolving.
+ * The predicate absolute_file_name/2 works bi-directionally. For a
+ * given already resolved path it will make a best effort attempt
+ * to reconstruct either a compound form foreign/1, library/1, verbatim/1
+ * or resource/1. Otherwise, only a relative path is attempt.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -202,28 +199,35 @@ absolute_file_name2(Slash, _, _) :-
 sys_absolute_file_name(library(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_extension(file)], J),
-   sys_find_key(J, C, [package(library), file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(library), file_type(text)], J),
+   sys_find_key(J, C, [package(library), file_type(text)], H),
    sys_set_context_property(Pin, C, H).
 /* verbatim */
 sys_absolute_file_name(verbatim(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_extension(file), failure(child)], J),
-   sys_find_key(J, C, [package(library), file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(library), file_type(text), failure(child)], J),
+   sys_find_key(J, C, [package(library), file_type(text)], H),
    sys_set_context_property(Pin, C, H).
 /* foreign */
 sys_absolute_file_name(foreign(Slash), Pin) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(foreign), file_extension(file)], J),
-   sys_find_key(J, C, [package(foreign), file_extension(file)], H),
+   sys_find_prefix(Path, C, [package(foreign), file_type(binary)], J),
+   sys_find_key(J, C, [package(foreign), file_type(binary)], H),
+   sys_set_context_property(Pin, C, H).
+/* resource */
+sys_absolute_file_name(resource(Slash), Pin) :- !,
+   sys_context_property(Slash, C),
+   sys_path_to_atom(Slash, Path),
+   sys_find_prefix(Path, C, [package(library), file_type(resource)], J),
+   sys_find_key(J, C, [package(library), file_type(resource)], H),
    sys_set_context_property(Pin, C, H).
 /* absolute and relative */
 sys_absolute_file_name(Slash, Pin) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_key(Path, C, [file_extension(file), failure(read)], H),
+   sys_find_key(Path, C, [file_type(all), failure(read)], H),
    sys_set_context_property(Pin, C, H).
 :- set_predicate_property(sys_absolute_file_name/2, visible(private)).
 
@@ -265,16 +269,20 @@ sys_access_opt([_|L], V, W) :-
 % sys_absolute_file_name2(+Pin, -Spec)
 sys_absolute_file_name2(Pin, Slash) :-
    sys_context_property(Pin, C),
-   sys_unfind_key(Pin, C, [package(both), file_extension(file), failure(read)], H),
+   sys_unfind_key(Pin, C, [package(both), file_type(all), failure(read)], H),
    sys_absolute_file_name3(H, C, Slash).
 :- set_predicate_property(sys_absolute_file_name2/2, visible(private)).
 
 % sys_absolute_file_name3(+Spec, +Context, -Spec)
 sys_absolute_file_name3(library(Path), C, Slash) :- !,
-   sys_unfind_prefix(Path, C, [package(library), file_extension(file), failure(child)], J),
+   sys_unfind_prefix(Path, C, [package(library), file_type(text), failure(child)], J),
    sys_absolute_file_name4(J, C, Slash).
 sys_absolute_file_name3(foreign(Path), C, foreign(Slash)) :- !,
-   sys_unfind_prefix(Path, C, [package(foreign), file_extension(file)], J),
+   sys_unfind_prefix(Path, C, [package(foreign), file_type(binary)], J),
+   sys_path_to_atom(H, J),
+   sys_set_context_property(Slash, C, H).
+sys_absolute_file_name3(resource(Path), C, resource(Slash)) :- !,
+   sys_unfind_prefix(Path, C, [package(library), file_type(resource)], J),
    sys_path_to_atom(H, J),
    sys_set_context_property(Slash, C, H).
 sys_absolute_file_name3(Path, C, Slash) :-
@@ -315,27 +323,15 @@ sys_absolute_file_name2(Pin, Slash, _) :-
 
 :- foreign(sys_unfind_key/4, 'ForeignPath',
       sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
-:- set_predicate_property(sys_unfind_key/4, visible(private)).
+:- set_predicate_property(sys_unfind_key/4, visible(public)).
 
 :- foreign(sys_unfind_prefix/4, 'ForeignPath',
       sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
-:- set_predicate_property(sys_unfind_prefix/4, visible(private)).
+:- set_predicate_property(sys_unfind_prefix/4, visible(public)).
 
 /****************************************************************/
-/* Resource Resolution                                          */
+/* Error Message                                                */
 /****************************************************************/
-
-/**
- * absolute_resource_name(R, A):
- * The binary predicate succeeds when the read path R resolves to
- * an absolute resource path A.
- */
-% absolute_resource_name(+Slash, -Pin)
-absolute_resource_name(Slash, Pin) :-
-   sys_absolute_resource_name(Slash, Pin), !.
-absolute_resource_name(Slash, _) :-
-   sys_absolute_file_error(Slash).
-:- set_predicate_property(absolute_resource_name/2, visible(public)).
 
 % sys_absolute_file_error(+Slash
 sys_absolute_file_error(library(Slash)) :-
@@ -344,29 +340,11 @@ sys_absolute_file_error(foreign(Slash)) :-
    throw(error(existence_error(class, Slash), _)).
 sys_absolute_file_error(verbatim(Slash)) :-
    throw(error(existence_error(verbatim, Slash), _)).
+sys_absolute_file_error(resource(Slash)) :-
+   throw(error(existence_error(resource, Slash), _)).
 sys_absolute_file_error(Slash) :-
    throw(error(existence_error(source_sink, Slash), _)).
 :- set_predicate_property(sys_absolute_file_error/1, visible(private)).
-
-/****************************************************************/
-/* Resource Probing                                             */
-/****************************************************************/
-
-% sys_absolute_resource_name(+Spec, -Pin)
-/* library */
-sys_absolute_resource_name(library(Slash), Pin) :- !,
-   sys_context_property(Slash, C),
-   sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_extension(resource)], J),
-   sys_find_key(J, C, [package(library), file_extension(resource)], H),
-   sys_set_context_property(Pin, C, H).
-/* absolute and relative */
-sys_absolute_resource_name(Slash, Pin) :-
-   sys_context_property(Slash, C),
-   sys_path_to_atom(Slash, Path),
-   sys_find_key(Path, C, [file_extension(resource), failure(read)], H),
-   sys_set_context_property(Pin, C, H).
-:- set_predicate_property(sys_absolute_resource_name/2, visible(private)).
 
 /****************************************************************/
 /* Term Representation                                          */
