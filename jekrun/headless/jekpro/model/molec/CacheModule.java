@@ -258,7 +258,7 @@ public final class CacheModule extends AbstractCache {
             }
         }
 
-        /* system imported .class */
+        /* system foreign .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
             Store store = src.getStore();
             while (store != null) {
@@ -292,7 +292,7 @@ public final class CacheModule extends AbstractCache {
             }
         }
 
-        /* source imported .class */
+        /* source foreign .class */
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
             MapEntry<String, Integer>[] fixes = src2.snapshotFixes();
             for (int i = 0; i < fixes.length; i++) {

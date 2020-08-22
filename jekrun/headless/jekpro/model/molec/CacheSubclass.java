@@ -1,5 +1,6 @@
 package jekpro.model.molec;
 
+import derek.util.protect.LicenseError;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
@@ -406,12 +407,14 @@ public final class CacheSubclass extends AbstractCache {
      * @param mask  The mask.
      * @param en    The engine.
      * @return The path without suffix.
+     * @throws IOException  Shit happens.
+     * @throws LicenseError Shit happens.
      */
     public static Object unfindKey(String path,
                                    AbstractSource scope,
                                    int mask,
                                    Engine en)
-            throws EngineMessage, IOException {
+            throws IOException, LicenseError {
         if (isLocal(path)) {
             String res = sepHome(path);
             path = sepRest(path);
@@ -440,11 +443,12 @@ public final class CacheSubclass extends AbstractCache {
      * @param mask The mask.
      * @param en   The engine or null.
      * @return The path without suffix.
-     * @throws IOException Shit happens.
+     * @throws IOException  Shit happens.
+     * @throws LicenseError Shit happens.
      */
     private static Object unfindKeyParent(String path, AbstractSource src,
                                           int mask, Engine en)
-            throws IOException, EngineMessage {
+            throws IOException, LicenseError {
 
         /* special case */
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {

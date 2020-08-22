@@ -222,7 +222,7 @@ public abstract class AbstractFile extends AbstractSource {
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         } catch (LicenseError x) {
-            throw new EngineMessage(EngineMessage.licenseError(x.getError()));
+            throw new EngineMessage(EngineMessage.licenseError(x.getMessage()));
         }
         return reader;
     }

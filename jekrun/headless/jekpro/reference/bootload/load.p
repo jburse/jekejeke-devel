@@ -81,7 +81,7 @@ ensure_loaded(Path) :- var(Path), throw(error(instantiation_error, _)).
 ensure_loaded(X) :- =(X, user), !,
    sys_import_file(X, []).
 ensure_loaded(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(base)]),
    sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(ensure_loaded/1, visible(public)).
 :- set_predicate_property(ensure_loaded/1, sys_notrace).
@@ -99,7 +99,7 @@ consult(Path) :- var(Path), throw(error(instantiation_error, _)).
 consult(X) :- =(X, user), !,
    sys_import_file(X, []).
 consult(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(base)]),
    sys_load_file(Pin, [sys_link(use_module)]).
 :- set_predicate_property(consult/1, visible(public)).
 :- set_predicate_property(consult/1, sys_notrace).
@@ -110,7 +110,7 @@ consult(Path) :-
  */
 % unload_file(Path)
 unload_file(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(base)]),
    sys_detach_file(Pin, [sys_link(reexport)]).
 :- set_predicate_property(unload_file/1, visible(public)).
 :- set_predicate_property(unload_file/1, sys_notrace).
@@ -164,7 +164,7 @@ rebuild :-
  */
 % include(Path)
 include(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(text)]),
    sys_import_file(Pin, []).
 :- set_predicate_property(include/1, visible(public)).
 

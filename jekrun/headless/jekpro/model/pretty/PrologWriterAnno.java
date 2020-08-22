@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;

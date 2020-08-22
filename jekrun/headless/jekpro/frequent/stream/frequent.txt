@@ -261,8 +261,6 @@ number_compare/3	standard/sort
 offset/2	advanced/sequence
 open/3	stream/stream
 open/4	stream/stream
-open_resource/2	stream/stream
-open_resource/3	stream/stream
 ord_contains/2	advanced/ordsets
 ord_difference/3	advanced/ordsets
 ord_get/3	experiment/ordmaps

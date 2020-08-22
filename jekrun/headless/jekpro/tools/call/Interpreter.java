@@ -15,7 +15,6 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.data.ListArray;
 import matula.util.system.ConnectionReader;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -293,7 +292,7 @@ public final class Interpreter {
                 opt, PrologReader.FLAG_TEOF + PrologReader.FLAG_WRAP);
     }
 
-   /***********************************************************/
+    /***********************************************************/
     /* Some Convenience                                        */
     /***********************************************************/
 

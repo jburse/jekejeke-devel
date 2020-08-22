@@ -1,5 +1,6 @@
 package jekpro.model.pretty;
 
+import derek.util.protect.LicenseError;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
@@ -1415,7 +1416,11 @@ public abstract class AbstractSource {
                 return store.getSourceDeclared(key) != null;
             }
         } else {
-            return LookupResource.hasSourceFile(key, store);
+            try {
+                return LookupResource.hasSourceFile(key, store);
+            } catch (LicenseError x) {
+                throw new EngineMessage(EngineMessage.licenseError(x.getMessage()));
+            }
         }
     }
 

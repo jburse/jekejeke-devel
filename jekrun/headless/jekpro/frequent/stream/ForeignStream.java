@@ -10,7 +10,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.PropertyStream;
@@ -120,7 +119,7 @@ public final class ForeignStream {
                             Foyer.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
-                    x.getError()));
+                    x.getMessage()));
         }
     }
 
@@ -160,7 +159,7 @@ public final class ForeignStream {
                             Foyer.OP_TRUE)));
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(
-                    x.getError()));
+                    x.getMessage()));
         }
     }
 

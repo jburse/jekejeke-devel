@@ -72,7 +72,7 @@ public final class ReadOpts {
 
     private final static String OP_TERMINATOR_PERIOD = "period";
     private final static String OP_TERMINATOR_END_OF_FILE = "end_of_file";
-    private final static String OP_TERMINATOR_NONE = "none";
+    public final static String OP_TERMINATOR_NONE = "none";
 
     private final static int TERMINATOR_EOF = 0x00000001;
     private final static int TERMINATOR_NONE = 0x00000002;

@@ -171,7 +171,7 @@ sys_get_key(C, N) :-
  */
 % use_module(+Atom)
 use_module(Slash) :-
-   absolute_file_name(Slash, Pin),
+   absolute_file_name(Slash, Pin, [file_type(base)]),
    sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
 :- set_predicate_property(use_module/1, sys_notrace).
@@ -184,7 +184,7 @@ use_module(Slash) :-
  */
 % reexport(+Atom)
 reexport(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(base)]),
    sys_load_file(Pin, [condition(on), sys_link(reexport)]).
 :- set_predicate_property(reexport/1, visible(public)).
 
@@ -195,7 +195,7 @@ reexport(Path) :-
  */
 % sys_auto_load(+Atom)
 sys_auto_load(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(base)]),
    sys_load_file(Pin, [condition(on), verbose(off), sys_link(sys_auto_load)]).
 :- set_predicate_property(sys_auto_load/1, visible(public)).
 
@@ -206,7 +206,7 @@ sys_auto_load(Path) :-
  */
 % sys_load_resource(+Atom)
 sys_load_resource(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(resource)]),
    sys_load_file(Pin, [condition(on), sys_link(sys_load_resource)]).
 :- set_predicate_property(sys_load_resource/1, visible(public)).
 
@@ -216,7 +216,7 @@ sys_load_resource(Path) :-
  */
 % sys_add_resource(+Atom)
 sys_add_resource(Path) :-
-   absolute_file_name(Path, Pin),
+   absolute_file_name(Path, Pin, [file_type(resource)]),
    sys_register_file(Pin).
 :- set_predicate_property(sys_add_resource/1, visible(public)).
 

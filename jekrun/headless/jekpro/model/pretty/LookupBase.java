@@ -222,9 +222,9 @@ public final class LookupBase {
      * @throws IOException Shit happens.
      */
     public static String findReadSuffix2(String path,
-                                        AbstractSource src,
-                                        int mask,
-                                        Engine en)
+                                         AbstractSource src,
+                                         int mask,
+                                         Engine en)
             throws IOException {
 
         /* system resource suffix */
@@ -314,9 +314,9 @@ public final class LookupBase {
      * @throws IOException Shit happens.
      */
     public static String unfindReadSuffix2(String path,
-                                          AbstractSource src,
-                                          int mask,
-                                          Engine en)
+                                           AbstractSource src,
+                                           int mask,
+                                           Engine en)
             throws IOException {
 
         /* system resource suffix */

@@ -1,15 +1,14 @@
 package jekpro.reference.bootload;
 
+import derek.util.protect.LicenseError;
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.LookupBase;
-import jekpro.model.pretty.Store;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.reflect.PropertyStream;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
@@ -57,18 +56,23 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignPath {
-    /* prefix relationship flags */
+    /* prefix flags */
     public static final int MASK_PRFX_LIBR = 0x00000001;
     public static final int MASK_PRFX_FRGN = 0x00000002;
 
-    /* suffix relationship flags */
+    /* suffix flags */
     public static final int MASK_SUFX_TEXT = 0x00000010;
     public static final int MASK_SUFX_BNRY = 0x00000020;
     public static final int MASK_SUFX_RSCS = 0x00000040;
+    public static final int MASK_SUFX_BASE = MASK_SUFX_TEXT | MASK_SUFX_BNRY;
+    public static final int MASK_SUFX_ALL = MASK_SUFX_BASE | MASK_SUFX_RSCS;
 
-    /* failure relationship flags */
+    /* failure flags */
     public static final int MASK_FAIL_READ = 0x00000100;
     public static final int MASK_FAIL_CHLD = 0x00000200;
+
+    /* access flags */
+    public static final int MASK_ACES_WRTE = 0x00001000;
 
     /* combined prefix, suffix and failure flags */
     public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR |
@@ -88,19 +92,19 @@ public final class ForeignPath {
     public static final int MASK_MODL_BASE = MASK_MODL_LIBR |
             MASK_MODL_FRGN;
 
-    private static final String OP_PACKAGE = "package";
-    private static final String OP_PACKAGE_NONE = "none";
-    private static final String OP_PACKAGE_BOTH = "both";
+    private static final String OP_SEARCH_PATH = "search_path";
+    private static final String OP_SEARCH_PATH_ALL = "all";
 
     private static final String OP_FILE_TYPE = "file_type";
     private static final String OP_FILE_TYPE_TEXT = "text";
     private static final String OP_FILE_TYPE_BINARY = "binary";
     private static final String OP_FILE_TYPE_RESOURCE = "resource";
-    private static final String OP_FILE_TYPE_ALL = "all";
+    private static final String OP_FILE_TYPE_BASE = "base";
 
     private static final String OP_FAILURE = "failure";
-    private static final String OP_FAILURE_READ = "read";
     private static final String OP_FAILURE_CHILD = "child";
+
+    private static final String OP_ACCESS = "access";
 
     private static final String OP_MIME = "mime";
 
@@ -121,6 +125,10 @@ public final class ForeignPath {
 
     private static final int DATA_CLEAR = 0;
     private static final int DATA_ENCRYPT = 1;
+
+    /*************************************************************/
+    /* Search Write                                              */
+    /*************************************************************/
 
     /**
      * <p>Find a write key according to the auto loader.</p>
@@ -155,22 +163,25 @@ public final class ForeignPath {
         return path;
     }
 
+    /*************************************************************/
+    /* Search Prefix                                             */
+    /*************************************************************/
+
     /**
      * <p>Find a prefix according to the auto loader.</p>
      *
      * @param inter The interpreter.
      * @param path  The path.
      * @param key   The call-site.
-     * @param opt   The options list.
+     * @param mask   The search options flags.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      * @throws IOException        IO Error.
      */
     public static String sysFindPrefix(Interpreter inter,
                                        String path, TermAtomic key,
-                                       Object opt)
+                                       Integer mask)
             throws InterpreterMessage, IOException {
-        int mask = decodeFindOptions(opt);
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
@@ -185,7 +196,7 @@ public final class ForeignPath {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return CacheModule.findPrefix(path, scope, mask);
+        return CacheModule.findPrefix(path, scope, mask.intValue());
     }
 
     /**
@@ -194,50 +205,15 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The path.
      * @param key   The call-site.
-     * @param opt   The options list.
+     * @param mask   The search options flags.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      * @throws IOException        IO Error.
      */
     public static Object sysUnfindPrefix(Interpreter inter,
                                          String path, TermAtomic key,
-                                         Object opt)
+                                         Integer mask)
             throws InterpreterMessage, IOException {
-        int mask = decodeFindOptions(opt);
-        Object res;
-        Engine engine = inter.getEngine();
-        try {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
-            AbstractSource scope;
-            if (!"".equals(sa.fun)) {
-                scope = (sa.scope != null ? sa.scope : engine.store.user);
-                scope = scope.getStore().getSource(sa.fun);
-                AbstractSource.checkExistentSource(scope, sa);
-            } else {
-                scope = engine.store.user;
-            }
-            res = CacheModule.unfindPrefix(path, scope, mask);
-        } catch (EngineMessage x) {
-            throw new InterpreterMessage(x);
-        }
-        return res;
-    }
-
-    /**
-     * <p>Find a read key according to the auto loader.</p>
-     *
-     * @param inter The interpreter.
-     * @param path  The prefixed path.
-     * @param key   The call-site.
-     * @param opt   The options list.
-     * @return The source key.
-     * @throws InterpreterMessage Shit happens.
-     */
-    public static String sysFindKey(Interpreter inter,
-                                    String path, TermAtomic key,
-                                    Object opt)
-            throws InterpreterMessage, IOException {
-        int mask = decodeFindOptions(opt);
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
@@ -252,28 +228,30 @@ public final class ForeignPath {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return CacheSubclass.findKey(path, scope, mask, engine);
+        return CacheModule.unfindPrefix(path, scope, mask.intValue());
     }
 
+    /*************************************************************/
+    /* Search Key                                                */
+    /*************************************************************/
+
     /**
-     * <p>Unfind a key according to the auto loader.</p>
+     * <p>Find a read key according to the auto loader.</p>
      *
      * @param inter The interpreter.
      * @param path  The prefixed path.
      * @param key   The call-site.
-     * @param opt   The options list.
+     * @param mask   The search options flags.
      * @return The source key.
      * @throws InterpreterMessage Shit happens.
      */
-    public static Object sysUnfindKey(Interpreter inter,
-                                      String path, TermAtomic key,
-                                      Object opt)
+    public static String sysFindKey(Interpreter inter,
+                                    String path, TermAtomic key,
+                                    Integer mask)
             throws InterpreterMessage, IOException {
-        int mask = decodeFindOptions(opt);
-        Object res;
         Engine engine = inter.getEngine();
+        AbstractSource scope;
         try {
-            AbstractSource scope;
             SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
             if (!"".equals(sa.fun)) {
                 scope = (sa.scope != null ? sa.scope : engine.store.user);
@@ -282,12 +260,52 @@ public final class ForeignPath {
             } else {
                 scope = engine.store.user;
             }
-            res = CacheSubclass.unfindKey(path, scope, mask, engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return res;
+        return CacheSubclass.findKey(path, scope, mask.intValue(), engine);
     }
+
+    /**
+     * <p>Unfind a key according to the auto loader.</p>
+     *
+     * @param inter The interpreter.
+     * @param path  The prefixed path.
+     * @param key   The call-site.
+     * @param mask   The search options flags.
+     * @return The source key.
+     * @throws InterpreterMessage Shit happens.
+     * @throws IOException        Shit happens.
+     */
+    public static Object sysUnfindKey(Interpreter inter,
+                                      String path, TermAtomic key,
+                                      Integer mask)
+            throws InterpreterMessage, IOException {
+        Engine engine = inter.getEngine();
+        AbstractSource scope;
+        try {
+            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
+            if (!"".equals(sa.fun)) {
+                scope = (sa.scope != null ? sa.scope : engine.store.user);
+                scope = scope.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(scope, sa);
+            } else {
+                scope = engine.store.user;
+            }
+        } catch (EngineMessage x) {
+            throw new InterpreterMessage(x);
+        }
+        try {
+            return CacheSubclass.unfindKey(path, scope, mask.intValue(), engine);
+        } catch (LicenseError x) {
+            throw new InterpreterMessage(
+                    InterpreterMessage.licenseError(x.getMessage()));
+        }
+    }
+
+    /****************************************************************/
+    /* Find Options                                                 */
+    /****************************************************************/
 
     /**
      * <p>Decode the find options.</p>
@@ -295,9 +313,9 @@ public final class ForeignPath {
      * @param opt The find options term.
      * @return The find options.
      */
-    public static int decodeFindOptions(Object opt)
+    public static int sysSearchOptions(Object opt)
             throws InterpreterMessage {
-        int mask = 0;
+        int mask = MASK_SUFX_ALL + MASK_FAIL_READ;
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(
@@ -305,10 +323,10 @@ public final class ForeignPath {
             Object temp = ((TermCompound) opt).getArg(0);
             if (temp instanceof TermCompound &&
                     ((TermCompound) temp).getArity() == 1 &&
-                    ((TermCompound) temp).getFunctor().equals(OP_PACKAGE)) {
+                    ((TermCompound) temp).getFunctor().equals(OP_SEARCH_PATH)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
-                if (fun.equals(OP_PACKAGE_NONE)) {
+                if (fun.equals(ReadOpts.OP_TERMINATOR_NONE)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask &= ~MASK_PRFX_FRGN;
                 } else if (fun.equals(LoadOpts.OP_PREFIX_LIBRARY)) {
@@ -317,7 +335,7 @@ public final class ForeignPath {
                 } else if (fun.equals(LoadOpts.OP_PREFIX_FOREIGN)) {
                     mask &= ~MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
-                } else if (fun.equals(OP_PACKAGE_BOTH)) {
+                } else if (fun.equals(OP_SEARCH_PATH_ALL)) {
                     mask |= MASK_PRFX_LIBR;
                     mask |= MASK_PRFX_FRGN;
                 } else {
@@ -329,7 +347,11 @@ public final class ForeignPath {
                     ((TermCompound) temp).getFunctor().equals(OP_FILE_TYPE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
-                if (fun.equals(OP_FILE_TYPE_TEXT)) {
+                if (fun.equals(ReadOpts.OP_TERMINATOR_NONE)) {
+                    mask &= ~MASK_SUFX_TEXT;
+                    mask &= ~MASK_SUFX_BNRY;
+                    mask &= ~MASK_SUFX_RSCS;
+                } else if (fun.equals(OP_FILE_TYPE_TEXT)) {
                     mask |= MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask &= ~MASK_SUFX_RSCS;
@@ -341,7 +363,11 @@ public final class ForeignPath {
                     mask &= ~MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask |= MASK_SUFX_RSCS;
-                } else if (fun.equals(OP_FILE_TYPE_ALL)) {
+                } else if (fun.equals(OP_FILE_TYPE_BASE)) {
+                    mask |= MASK_SUFX_TEXT;
+                    mask |= MASK_SUFX_BNRY;
+                    mask &= ~MASK_SUFX_RSCS;
+                } else if (fun.equals(OP_SEARCH_PATH_ALL)) {
                     mask |= MASK_SUFX_TEXT;
                     mask |= MASK_SUFX_BNRY;
                     mask |= MASK_SUFX_RSCS;
@@ -354,15 +380,31 @@ public final class ForeignPath {
                     ((TermCompound) temp).getFunctor().equals(OP_FAILURE)) {
                 Object help = ((TermCompound) temp).getArg(0);
                 String fun = InterpreterMessage.castString(help);
-                if (fun.equals("none")) {
+                if (fun.equals(ReadOpts.OP_TERMINATOR_NONE)) {
                     mask &= ~MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
-                } else if (fun.equals(OP_FAILURE_READ)) {
+                } else if (fun.equals(PropertyStream.OP_MODE_READ)) {
                     mask |= MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
                 } else if (fun.equals(OP_FAILURE_CHILD)) {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
+                } else if (fun.equals(OP_SEARCH_PATH_ALL)) {
+                    mask |= MASK_FAIL_READ;
+                    mask |= MASK_FAIL_CHLD;
+                } else {
+                    throw new InterpreterMessage(InterpreterMessage.domainError(
+                            "fix_option", help));
+                }
+            } else if (temp instanceof TermCompound &&
+                    ((TermCompound) temp).getArity() == 1 &&
+                    ((TermCompound) temp).getFunctor().equals(OP_ACCESS)) {
+                Object help = ((TermCompound) temp).getArg(0);
+                String fun = InterpreterMessage.castString(help);
+                if (fun.equals(PropertyStream.OP_MODE_READ)) {
+                    mask &= ~MASK_ACES_WRTE;
+                } else if (fun.equals(PropertyStream.OP_MODE_WRITE)) {
+                    mask |= MASK_ACES_WRTE;
                 } else {
                     throw new InterpreterMessage(InterpreterMessage.domainError(
                             "fix_option", help));
@@ -382,6 +424,16 @@ public final class ForeignPath {
                     InterpreterMessage.OP_TYPE_LIST, opt));
         }
         return mask;
+    }
+
+    /**
+     * <p>Check if the search options is read.</p>
+     *
+     * @param mask The search options flags.
+     * @return True if the search options is read, otherwise false.
+     */
+    public static boolean sysSearchRead(Integer mask) {
+        return (mask.intValue() & MASK_ACES_WRTE) == 0;
     }
 
     /********************************************************/

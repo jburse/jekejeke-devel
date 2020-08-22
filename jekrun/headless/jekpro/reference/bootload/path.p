@@ -163,188 +163,190 @@ sys_current_file_extension(E, O) :-
  * path option. For a list of options see the API documentation.
  */
 % absolute_file_name(+Slash, -Pin)
-absolute_file_name(Slash, Pin) :- ground(Slash), !,
-   absolute_file_name2(Slash, Pin).
 absolute_file_name(Slash, Pin) :-
-   sys_absolute_file_name2(Pin, Slash).
+   absolute_file_name(Slash, Pin, []).
 :- set_predicate_property(absolute_file_name/2, visible(public)).
-
-% absolute_file_name2(+Slash, -Pin)
-absolute_file_name2(Slash, Pin) :-
-   sys_absolute_file_name(Slash, Pin), !.
-absolute_file_name2(Slash, _) :-
-   sys_absolute_file_error(Slash).
-:- set_predicate_property(absolute_file_name2/2, visible(private)).
 
 % absolute_file_name(+Slash, -Pin, +Opt)
 absolute_file_name(Slash, Pin, Opt) :- ground(Slash), !,
    absolute_file_name2(Slash, Pin, Opt).
 absolute_file_name(Slash, Pin, Opt) :-
-   sys_absolute_file_name2(Pin, Slash, Opt).
+   sys_unsearch_file_name(Pin, Slash, Opt).
 :- set_predicate_property(absolute_file_name/3, visible(public)).
 
 % absolute_file_name2(+Slash, -Pin, +Opt)
 absolute_file_name2(Slash, Pin, Opt) :-
-   sys_absolute_file_name(Slash, Pin, Opt), !.
+   sys_search_file_name(Slash, Pin, Opt), !.
+absolute_file_name2(library(Slash), _, _) :-
+   throw(error(existence_error(library, Slash), _)).
+absolute_file_name2(foreign(Slash), _, _) :-
+   throw(error(existence_error(class, Slash), _)).
+absolute_file_name2(verbatim(Slash), _, _) :-
+   throw(error(existence_error(verbatim, Slash), _)).
+absolute_file_name2(resource(Slash), _, _) :-
+   throw(error(existence_error(resource, Slash), _)).
 absolute_file_name2(Slash, _, _) :-
-   sys_absolute_file_error(Slash).
+   throw(error(existence_error(source_sink, Slash), _)).
 :- set_predicate_property(absolute_file_name2/3, visible(private)).
 
 /****************************************************************/
-/* File Probing                                                 */
+/* Search File                                                  */
 /****************************************************************/
 
-% sys_absolute_file_name(+Spec, -Pin)
+% sys_search_file_name2(+Spec, -Pin, +Integer)
 /* library */
-sys_absolute_file_name(library(Slash), Pin) :- !,
+sys_search_file_name2(library(Slash), Pin, _) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_type(text)], J),
-   sys_find_key(J, C, [package(library), file_type(text)], H),
+   sys_search_options([search_path(library), file_type(text), failure(none)], Mask),
+   sys_find_prefix(Path, C, Mask, J),
+   sys_find_key(J, C, Mask, H),
    sys_set_context_property(Pin, C, H).
 /* verbatim */
-sys_absolute_file_name(verbatim(Slash), Pin) :- !,
+sys_search_file_name2(verbatim(Slash), Pin, _) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_type(text), failure(child)], J),
-   sys_find_key(J, C, [package(library), file_type(text)], H),
+   sys_search_options([search_path(library), file_type(text), failure(child)], Mask),
+   sys_find_prefix(Path, C, Mask, J),
+   sys_find_key(J, C, Mask, H),
    sys_set_context_property(Pin, C, H).
 /* foreign */
-sys_absolute_file_name(foreign(Slash), Pin) :- !,
+sys_search_file_name2(foreign(Slash), Pin, _) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(foreign), file_type(binary)], J),
-   sys_find_key(J, C, [package(foreign), file_type(binary)], H),
+   sys_search_options([search_path(foreign), file_type(binary), failure(none)], Mask),
+   sys_find_prefix(Path, C, Mask, J),
+   sys_find_key(J, C, Mask, H),
    sys_set_context_property(Pin, C, H).
 /* resource */
-sys_absolute_file_name(resource(Slash), Pin) :- !,
+sys_search_file_name2(resource(Slash), Pin, _) :- !,
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_prefix(Path, C, [package(library), file_type(resource)], J),
-   sys_find_key(J, C, [package(library), file_type(resource)], H),
+   sys_search_options([search_path(library), file_type(resource), failure(none)], Mask),
+   sys_find_prefix(Path, C, Mask, J),
+   sys_find_key(J, C, Mask, H),
    sys_set_context_property(Pin, C, H).
 /* absolute and relative */
-sys_absolute_file_name(Slash, Pin) :-
+sys_search_file_name2(Slash, Pin, Mask) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
-   sys_find_key(Path, C, [file_type(all), failure(read)], H),
+   sys_find_prefix(Path, C, Mask, J),
+   sys_find_key(J, C, Mask, H),
    sys_set_context_property(Pin, C, H).
-:- set_predicate_property(sys_absolute_file_name/2, visible(private)).
+:- set_predicate_property(sys_search_file_name2/3, visible(private)).
 
-% sys_absolute_file_name(+Spec, -Pin, +Opt)
-sys_absolute_file_name(Spec, Pin, Opt) :-
-   sys_access_opt(Opt, read, read), !,
-   sys_absolute_file_name(Spec, Pin).
-sys_absolute_file_name(Slash, Pin, _) :-
+% sys_search_file_name(+Spec, -Pin, +Opt)
+sys_search_file_name(Spec, Pin, Opt) :-
+   sys_search_options(Opt, Mask),
+   sys_search_read(Mask), !,
+   sys_search_file_name2(Spec, Pin, Mask).
+sys_search_file_name(Slash, Pin, _) :-
    sys_context_property(Slash, C),
    sys_path_to_atom(Slash, Path),
    sys_find_write(Path, H),
    sys_set_context_property(Pin, C, H).
-:- set_predicate_property(sys_absolute_file_name/3, visible(private)).
+:- set_predicate_property(sys_search_file_name/3, visible(private)).
 
-% sys_access_opt(+Opt, +Value, -Value)
-sys_access_opt([], V, V).
-sys_access_opt([access(V)|L], _, W) :- !,
-   sys_access_opt(L, V, W).
-sys_access_opt([_|L], V, W) :-
-   sys_access_opt(L, V, W).
-:- set_predicate_property(sys_access_opt/3, visible(private)).
+% sys_search_options(+List, -Integer)
+:- foreign(sys_search_options/2, 'ForeignPath',
+      sysSearchOptions('Object')).
+:- set_predicate_property(sys_search_options/2, visible(private)).
 
+% sys_search_read(+Integer)
+:- foreign(sys_search_read/1, 'ForeignPath',
+      sysSearchRead('Integer')).
+:- set_predicate_property(sys_search_read/1, visible(private)).
+
+% sys_find_write(+Atom, -Atom)
 :- foreign(sys_find_write/2, 'ForeignPath',
       sysFindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_find_write/2, visible(private)).
 
+% sys_find_prefix(+Atom, +Atom, +Integer, -Atom)
 :- foreign(sys_find_prefix/4, 'ForeignPath',
-      sysFindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysFindPrefix('Interpreter', 'String', 'TermAtomic', 'Integer')).
 :- set_predicate_property(sys_find_prefix/4, visible(private)).
 
+% sys_find_key(+Atom, +Atom, +Integer, -Atom)
 :- foreign(sys_find_key/4, 'ForeignPath',
-      sysFindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
+      sysFindKey('Interpreter', 'String', 'TermAtomic', 'Integer')).
 :- set_predicate_property(sys_find_key/4, visible(private)).
 
 /****************************************************************/
 /* File Unprobing                                               */
 /****************************************************************/
 
-% sys_absolute_file_name2(+Pin, -Spec)
-sys_absolute_file_name2(Pin, Slash) :-
+% sys_unsearch_file_name2(+Pin, -Spec)
+sys_unsearch_file_name2(Pin, Slash) :-
    sys_context_property(Pin, C),
-   sys_unfind_key(Pin, C, [package(both), file_type(all), failure(read)], H),
-   sys_absolute_file_name3(H, C, Slash).
-:- set_predicate_property(sys_absolute_file_name2/2, visible(private)).
+   sys_search_options([search_path(all)], Mask),
+   sys_unfind_key(Pin, C, Mask, H),
+   sys_unsearch_file_name3(H, C, Slash).
+:- set_predicate_property(sys_unsearch_file_name2/2, visible(private)).
 
-% sys_absolute_file_name3(+Spec, +Context, -Spec)
-sys_absolute_file_name3(library(Path), C, Slash) :- !,
-   sys_unfind_prefix(Path, C, [package(library), file_type(text), failure(child)], J),
-   sys_absolute_file_name4(J, C, Slash).
-sys_absolute_file_name3(foreign(Path), C, foreign(Slash)) :- !,
-   sys_unfind_prefix(Path, C, [package(foreign), file_type(binary)], J),
+% sys_unsearch_file_name3(+Spec, +Context, -Spec)
+sys_unsearch_file_name3(library(Path), C, Slash) :- !,
+   sys_search_options([search_path(library), file_type(text), failure(child)], Mask),
+   sys_unfind_prefix(Path, C, Mask, J),
+   sys_unsearch_file_name4(J, C, Slash).
+sys_unsearch_file_name3(foreign(Path), C, foreign(Slash)) :- !,
+   sys_search_options([search_path(foreign), file_type(binary), failure(none)], Mask),
+   sys_unfind_prefix(Path, C, Mask, J),
    sys_path_to_atom(H, J),
    sys_set_context_property(Slash, C, H).
-sys_absolute_file_name3(resource(Path), C, resource(Slash)) :- !,
-   sys_unfind_prefix(Path, C, [package(library), file_type(resource)], J),
+sys_unsearch_file_name3(resource(Path), C, resource(Slash)) :- !,
+   sys_search_options([search_path(library), file_type(resource), failure(none)], Mask),
+   sys_unfind_prefix(Path, C, Mask, J),
    sys_path_to_atom(H, J),
    sys_set_context_property(Slash, C, H).
-sys_absolute_file_name3(Path, C, Slash) :-
+sys_unsearch_file_name3(Path, C, Slash) :-
    sys_is_relative_uri(Path), !,
    sys_path_to_atom(H, Path),
    sys_set_context_property(Slash, C, H).
-sys_absolute_file_name3(Path, C, Slash) :-
+sys_unsearch_file_name3(Path, C, Slash) :-
    sys_set_context_property(Slash, C, Path).
-:- set_predicate_property(sys_absolute_file_name3/3, visible(private)).
+:- set_predicate_property(sys_unsearch_file_name3/3, visible(private)).
 
-% sys_absolute_file_name4(+Spec, +Context, -Spec)
-sys_absolute_file_name4(verbatim(Path), C, verbatim(Slash)) :- !,
+% sys_unsearch_file_name4(+Spec, +Context, -Spec)
+sys_unsearch_file_name4(verbatim(Path), C, verbatim(Slash)) :- !,
    sys_path_to_atom(H, Path),
    sys_set_context_property(Slash, C, H).
-sys_absolute_file_name4(Path, C, library(Slash)) :- !,
+sys_unsearch_file_name4(Path, C, library(Slash)) :- !,
    sys_path_to_atom(H, Path),
    sys_set_context_property(Slash, C, H).
-:- set_predicate_property(sys_absolute_file_name4/3, visible(private)).
+:- set_predicate_property(sys_unsearch_file_name4/3, visible(private)).
 
-% sys_absolute_file_name2(+Pin, -Spec, +Opt)
-sys_absolute_file_name2(Pin, Slash, Opt) :-
-   sys_access_opt(Opt, read, read), !,
-   sys_absolute_file_name2(Pin, Slash).
-sys_absolute_file_name2(Pin, Slash, _) :-
+% sys_unsearch_file_name2(+Pin, -Spec, +Opt)
+sys_unsearch_file_name(Pin, Slash, Opt) :-
+   sys_search_options(Opt, Mask),
+   sys_search_read(Mask), !,
+   sys_unsearch_file_name2(Pin, Slash).
+sys_unsearch_file_name(Pin, Slash, _) :-
    sys_context_property(Pin, C),
    sys_unfind_write(Pin, Path),
    sys_path_to_atom(H, Path),
    sys_set_context_property(Slash, C, H).
-:- set_predicate_property(sys_absolute_file_name2/3, visible(private)).
+:- set_predicate_property(sys_unsearch_file_name/3, visible(private)).
 
+% sys_is_relative_uri(+Atom)
 :- foreign(sys_is_relative_uri/1, 'ForeignUri',
       sysUriIsRelative('String')).
 :- set_predicate_property(sys_is_relative_uri/1, visible(private)).
 
+% sys_unfind_write(+Atom, -Atom)
 :- foreign(sys_unfind_write/2, 'ForeignPath',
       sysUnfindWrite('Interpreter', 'String')).
 :- set_predicate_property(sys_unfind_write/2, visible(private)).
 
+% sys_unfind_key(+Atom, +Atom, +Integer, -Atom)
 :- foreign(sys_unfind_key/4, 'ForeignPath',
-      sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Object')).
-:- set_predicate_property(sys_unfind_key/4, visible(public)).
+      sysUnfindKey('Interpreter', 'String', 'TermAtomic', 'Integer')).
+:- set_predicate_property(sys_unfind_key/4, visible(private)).
 
+% sys_unfind_prefix(+Atom, +Atom, +Integer, -Atom)
 :- foreign(sys_unfind_prefix/4, 'ForeignPath',
-      sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Object')).
-:- set_predicate_property(sys_unfind_prefix/4, visible(public)).
-
-/****************************************************************/
-/* Error Message                                                */
-/****************************************************************/
-
-% sys_absolute_file_error(+Slash
-sys_absolute_file_error(library(Slash)) :-
-   throw(error(existence_error(library, Slash), _)).
-sys_absolute_file_error(foreign(Slash)) :-
-   throw(error(existence_error(class, Slash), _)).
-sys_absolute_file_error(verbatim(Slash)) :-
-   throw(error(existence_error(verbatim, Slash), _)).
-sys_absolute_file_error(resource(Slash)) :-
-   throw(error(existence_error(resource, Slash), _)).
-sys_absolute_file_error(Slash) :-
-   throw(error(existence_error(source_sink, Slash), _)).
-:- set_predicate_property(sys_absolute_file_error/1, visible(private)).
+      sysUnfindPrefix('Interpreter', 'String', 'TermAtomic', 'Integer')).
+:- set_predicate_property(sys_unfind_prefix/4, visible(private)).
 
 /****************************************************************/
 /* Term Representation                                          */

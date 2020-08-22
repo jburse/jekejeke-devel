@@ -1,5 +1,6 @@
 package jekpro.reference.reflect;
 
+import derek.util.protect.LicenseError;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
@@ -846,6 +847,8 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
             return new SkelCompound(sa, spec);
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
+        } catch (LicenseError x) {
+            throw new EngineMessage(EngineMessage.licenseError(x.getMessage()));
         }
     }
 

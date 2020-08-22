@@ -105,7 +105,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
         try {
             url = new URL(adr);
         } catch (MalformedURLException x) {
-            throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL, adr);
+            throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
         }
         if (parent != stop && parent instanceof ExtensibleClassLoader) {
             ((ExtensibleClassLoader) parent).addURL(url);
@@ -138,7 +138,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
             try {
                 adr = ForeignDomain.sysUriUnpuny(adr);
             } catch (MalformedURLException x) {
-                throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL, adr);
+                throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
             }
             res.add(adr);
         }

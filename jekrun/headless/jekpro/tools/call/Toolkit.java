@@ -159,7 +159,7 @@ public abstract class Toolkit {
         try {
             foyer.getFramework().getActivator().checkTracking(foyer, b, tracking);
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -176,7 +176,7 @@ public abstract class Toolkit {
         try {
             foyer.getFramework().getActivator().checkEnforced(foyer, snapshot);
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -224,7 +224,7 @@ public abstract class Toolkit {
         try {
             foyer.getFramework().getActivator().activateBundle(foyer, b, h);
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -244,7 +244,7 @@ public abstract class Toolkit {
         try {
             return foyer.getFramework().getActivator().calcInstallID(foyer, (AbstractBranch) c.getBranch());
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -267,7 +267,7 @@ public abstract class Toolkit {
         try {
             foyer.getFramework().getActivator().regLicenseText(foyer, branch, t);
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -289,7 +289,7 @@ public abstract class Toolkit {
         try {
             text = foyer.getFramework().getActivator().regedLicenseText(foyer, branch);
         } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getError()));
+            throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
         }
         return text;
     }

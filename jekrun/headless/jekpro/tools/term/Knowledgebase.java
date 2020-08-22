@@ -17,7 +17,6 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
-import matula.util.config.AbstractFramework;
 import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
@@ -396,7 +395,7 @@ public final class Knowledgebase {
             return store.snapshotClassPaths();
         } catch (LicenseError x) {
             throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getError()));
+                    InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 
@@ -415,7 +414,7 @@ public final class Knowledgebase {
             throw InterpreterMessage.mapIOException(x);
         } catch (LicenseError x) {
             throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getError()));
+                    InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 

@@ -2,7 +2,6 @@ package jekpro.tools.foreign;
 
 import derek.util.protect.LicenseError;
 import jekpro.model.molec.CacheModule;
-import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
@@ -178,10 +177,10 @@ public final class LookupResource {
      * @param path  The absolute path.
      * @param store The store.
      * @return The relative variant or null.
-     * @throws EngineMessage Shit happens.
+     * @throws LicenseError Shit happens.
      */
     public static String unfindResourcePaths(String path, Store store)
-            throws EngineMessage {
+            throws LicenseError {
         // parent success
         Store parent = store.parent;
         if (parent != null) {
@@ -191,12 +190,7 @@ public final class LookupResource {
         }
 
         // check paths
-        String[] cps;
-        try {
-            cps = store.snapshotClassPaths();
-        } catch (LicenseError x) {
-            throw new EngineMessage(EngineMessage.licenseError(x.getError()));
-        }
+        String[] cps = store.snapshotClassPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
             if (cp.endsWith(CacheModule.OP_STRING_OS)) {
@@ -224,17 +218,12 @@ public final class LookupResource {
      * @param path  The path.
      * @param store The store.
      * @return True if path belongs to class paths, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @throws LicenseError Shit happens.
      */
     public static boolean hasSourceFile(String path, Store store)
-            throws EngineMessage {
+            throws LicenseError {
         // check paths
-        String[] cps;
-        try {
-            cps = store.snapshotClassPaths();
-        } catch (LicenseError x) {
-            throw new EngineMessage(EngineMessage.licenseError(x.getError()));
-        }
+        String[] cps = store.snapshotClassPaths();
         for (int i = 0; i < cps.length; i++) {
             String cp = cps[i];
             if (cp.endsWith(CacheModule.OP_STRING_OS)) {

@@ -84,7 +84,6 @@ abs/2	arithmetic/elem
 abs/2	arithmetic/ratio
 absolute_file_name/2	bootload/path
 absolute_file_name/3	bootload/path
-absolute_resource_name/2	bootload/path
 acos/2	arithmetic/trigo
 acyclic_term/1	structure/vars
 arg/3	structure/univ
@@ -297,6 +296,8 @@ sys_show_provable_source/2	bootload/load
 sys_syntax_property_chk/3	reflect/oper
 sys_syntax_property_idx/2	reflect/oper
 sys_term_singletons/2	structure/vars
+sys_unfind_key/4	bootload/path
+sys_unfind_prefix/4	bootload/path
 tan/2	arithmetic/trigo
 term_atom/2	structure/bytes
 term_atom/3	structure/bytes

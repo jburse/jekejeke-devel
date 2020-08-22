@@ -68,7 +68,7 @@ public final class ForeignToolkit {
             throws InterpreterMessage, InterpreterException {
         Knowledgebase know = inter.getKnowledgebase();
         Capability capa = Toolkit.stringToCapability(clazz, know);
-        return Toolkit.calcInstallID(capa,know);
+        return Toolkit.calcInstallID(capa, know);
     }
 
     /**
