@@ -101,7 +101,7 @@ meta_predicate P :- sys_meta_predicate(P).
 sys_meta_predicate(P) :-
    functor(P, F, A),
    sys_make_indicator(F, A, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    once((predicate_property(I, sys_usage(D)),
       \+ C = D)),
    \+ predicate_property(I, sys_meta_predicate(D)),
@@ -109,7 +109,7 @@ sys_meta_predicate(P) :-
 sys_meta_predicate(P) :-
    functor(P, F, A),
    sys_make_indicator(F, A, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    predicate_property(I, full_name(N)),
    P =.. [_|L],
@@ -133,7 +133,7 @@ meta_function P :- sys_meta_function(P).
 sys_meta_function(P) :-
    functor(P, F, A),
    sys_make_indicator(F, A, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    once((predicate_property(I, sys_usage(D)),
       \+ C = D)),
    \+ predicate_property(I, sys_meta_function(D)),
@@ -141,7 +141,7 @@ sys_meta_function(P) :-
 sys_meta_function(P) :-
    functor(P, F, A),
    sys_make_indicator(F, A, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    predicate_property(I, full_name(N)),
    P =.. [_|L],

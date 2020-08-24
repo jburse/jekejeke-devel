@@ -78,12 +78,10 @@ public final class PropertyCallable extends AbstractProperty<Object> {
             case PROP_SYS_CONTEXT:
                 Object t = AbstractTerm.getSkel(obj);
                 SkelAtom sa = StackElement.callableToName(t);
-                AbstractSource src = sa.scope;
-                if (src == null)
-                    return AbstractBranch.FALSE_PROPERTY;
+                sa = (sa.scope != null ? sa.scope.getPathAtom() : new SkelAtom(""));
                 return new Object[]{AbstractTerm.createMolec(
-                        new SkelCompound(new SkelAtom(OP_SYS_CONTEXT),
-                                src.getPathAtom()), Display.DISPLAY_CONST)};
+                        new SkelCompound(new SkelAtom(OP_SYS_CONTEXT), sa),
+                        Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -145,14 +143,13 @@ public final class PropertyCallable extends AbstractProperty<Object> {
     /****************************************************************/
 
     /**
-     * <p>Deref and cast to position key.</p>
+     * <p>Deref and cast to context.</p>
      *
      * @param m  The term skeleton.
      * @param d  The term display.
      * @param en The engine.
-     * @return The position key.
+     * @return The scope.
      * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Shit happens.
      */
     private static AbstractSource derefAndCastContext(Object m, Display d, Engine en)
             throws EngineMessage {
@@ -165,16 +162,35 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 ((SkelCompound) m).args.length == 1 &&
                 ((SkelCompound) m).sym.fun.equals(OP_SYS_CONTEXT)) {
             SkelCompound sc = (SkelCompound) m;
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
-            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            src = src.getStore().getSource(sa.fun);
-            AbstractSource.checkExistentSource(src, sa);
-            return src;
+            return PropertyCallable.derefAndCastScope(sc.args[0], d, en);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
+    }
+
+    /**
+     * <p>Deref and cast to scope.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The position key.
+     * @throws EngineMessage      Shit happens.
+     */
+    public static AbstractSource derefAndCastScope(Object m, Display d, Engine en)
+            throws EngineMessage {
+        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(m, d);
+        AbstractSource scope;
+        if (!"".equals(sa.fun)) {
+            scope = (sa.scope != null ? sa.scope : en.store.user);
+            scope = scope.getStore().getSource(sa.fun);
+            AbstractSource.checkExistentSource(scope, sa);
+        } else {
+            scope = null;
+        }
+        return scope;
     }
 
 }

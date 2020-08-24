@@ -7,7 +7,6 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.Reader;
 
@@ -258,7 +257,7 @@ public class Operator {
      * <p>Add a source definition.</p>
      * <p>Can veto that an operator is extended.</p>
      *
-     * @param sa  The call-site, non-null.
+     * @param sa The call-site, non-null.
      * @param en The engine.
      * @throws EngineMessage Shit happens.
      */

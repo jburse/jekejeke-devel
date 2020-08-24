@@ -61,12 +61,11 @@ public final class SpecialSource extends AbstractSpecial {
     private final static int SPECIAL_SYS_CURRENT_SOURCE_CHK = 1;
     private final static int SPECIAL_SYS_SOURCE_PROPERTY = 2;
     private final static int SPECIAL_SYS_SOURCE_PROPERTY_CHK = 3;
-    private final static int SPECIAL_SYS_CURRENT_RESOURCE = 4;
-    private final static int SPECIAL_SYS_CURRENT_MODULE = 5;
-    private final static int SPECIAL_SYS_CURRENT_MODULE_CHK = 6;
-    /* private final static int SPECIAL_SYS_SCONTEXT_PROPERTY = 7; */
-    private final static int SPECIAL_SYS_SET_CONTEXT_PROPERTY = 8;
-
+    public final static int SPECIAL_SET_SOURCE_PROPERTY = 4;
+    public final static int SPECIAL_RESET_SOURCE_PROPERTY = 5;
+    private final static int SPECIAL_SYS_CURRENT_RESOURCE = 6;
+    private final static int SPECIAL_SYS_CURRENT_MODULE = 7;
+    private final static int SPECIAL_SYS_CURRENT_MODULE_CHK = 8;
 
     /**
      * <p>Create a source reflection special.</p>
@@ -140,6 +139,34 @@ public final class SpecialSource extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 return true;
+            case SPECIAL_SET_SOURCE_PROPERTY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(source, sa);
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                SpecialSource.setSrcProp(source, en.skel, en.display, en);
+                return true;
+            case SPECIAL_RESET_SOURCE_PROPERTY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                AbstractSource.checkExistentSource(source, sa);
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                SpecialSource.resetSrcProp(source, en.skel, en.display, en);
+                return true;
             case SPECIAL_SYS_CURRENT_RESOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -159,32 +186,6 @@ public final class SpecialSource extends AbstractSpecial {
                 ref = en.display;
                 AbstractSource base = SpecialSource.nameToModule(temp[0], ref, en);
                 if (base == null)
-                    return false;
-                return true;
-            case SPECIAL_SYS_SET_CONTEXT_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                en.skel = temp[2];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                Object t = en.skel;
-                d = en.display;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                AbstractSource scope;
-                if (!"".equals(sa.fun)) {
-                    scope = (sa.scope != null ? sa.scope : en.store.user);
-                    scope = scope.getStore().getSource(sa.fun);
-                    AbstractSource.checkExistentSource(scope, sa);
-                } else {
-                    scope = null;
-                }
-
-                sa = StackElement.callableToName(t);
-                sa = new SkelAtom(sa.fun, scope);
-                t = StackElement.callableFromName(t, sa);
-                if (!en.unifyTerm(temp[0], ref, t, d))
                     return false;
                 return true;
             default:
@@ -434,4 +435,5 @@ public final class SpecialSource extends AbstractSpecial {
         SkelAtom mod = SpecialLogic.modToAtom(obj, t, d, en);
         return AbstractSource.getModule(mod.fun, en.store);
     }
+
 }

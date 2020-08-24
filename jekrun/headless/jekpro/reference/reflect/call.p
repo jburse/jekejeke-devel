@@ -36,9 +36,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    reset_source_property(C, sys_source_visible(public)).
 
 /**
@@ -58,8 +58,9 @@ callable_property(I, R) :-
 :- special(sys_callable_property/2, 'SpecialCall', 0).
 :- set_predicate_property(sys_callable_property/2, visible(private)).
 
-:- special(sys_callable_property_chk/3, 'SpecialCall', 1).
-:- set_predicate_property(sys_callable_property_chk/3, visible(private)).
+% already defined in special.p
+% :- special(sys_callable_property_chk/3, 'SpecialCall', 1).
+% :- set_predicate_property(sys_callable_property_chk/3, visible(private)).
 
 /**
  * set_callable_property(B, Q, A):

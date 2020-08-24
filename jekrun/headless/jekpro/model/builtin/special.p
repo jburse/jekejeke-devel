@@ -69,9 +69,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:-(','(sys_context_property(here, C),
+:-(','(sys_callable_property_chk(here, /(sys_context, 1), [sys_context(C)]),
    set_source_property(C, use_package(foreign(/(/(jekpro, model), builtin)))))).
-:-(','(sys_context_property(here, C),
+:-(','(sys_callable_property_chk(here, /(sys_context, 1), [sys_context(C)]),
    reset_source_property(C, sys_source_visible(public)))).
 
 :-(sys_neutral_oper(prefix(:-))).
@@ -113,12 +113,20 @@ special(I, C, K) :-
    sys_special(I, C, K),
    sys_check_style_predicate(I).
 
-:- special(set_predicate_property/2, 'SpecialSpecial', 0).
+% already defined in special.p
+% :- special(sys_special/3, 'SpecialSpecial', 0).
+% :- set_predicate_property(sys_special/3, visible(public)).
+
+% already defined in special.p
+% :- special(sys_check_style_predicate/1, 'SpecialSpecial', 1).
+% :- set_predicate_property(sys_check_style_predicate/1, visible(public)).
+
+:- special(set_predicate_property/2, 'SpecialSpecial', 2).
 :- set_predicate_property(set_predicate_property/2, visible(public)).
 
 :- set_predicate_property(special/3, visible(public)).
 
-:- special(reset_predicate_property/2, 'SpecialSpecial', 1).
+:- special(reset_predicate_property/2, 'SpecialSpecial', 3).
 :- set_predicate_property(reset_predicate_property/2, visible(public)).
 
 :- reset_predicate_property(sys_special/3, visible(public)).
@@ -161,10 +169,10 @@ sys_virtual(I) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 
 sys_declaration_indicator(special(I, _, _), I).

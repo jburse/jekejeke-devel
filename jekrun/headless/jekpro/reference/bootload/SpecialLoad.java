@@ -9,6 +9,7 @@ import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.*;
 import jekpro.reference.runtime.EvaluableLogic;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
@@ -57,6 +58,9 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLoad extends AbstractSpecial {
+    private final static String OP_SET_PREDICATE_PROPERTY = "set_predicate_property";
+    private final static String OP_SET_OPER_PROPERTY = "set_oper_property";
+
     private final static int SPECIAL_SYS_LOAD_FILE = 0;
     private final static int SPECIAL_SYS_DETACH_FILE = 1;
     private final static int SPECIAL_SYS_IMPORT_FILE = 2;
@@ -298,7 +302,7 @@ public final class SpecialLoad extends AbstractSpecial {
             if (src != sa.scope)
                 continue;
             if (modifiers != null) {
-                Object decl = SpecialModel.provableToColonSkel(pick, src);
+                Object decl = provableToColonSkel(pick, src);
                 decl = prependModifiers(modifiers, decl);
                 modifiers = null;
                 decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
@@ -361,15 +365,15 @@ public final class SpecialLoad extends AbstractSpecial {
                     Object val = vals[j];
                     Object decl;
                     if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                        decl = SpecialModel.predDeclSkelSet(
+                        decl = SpecialLoad.predDeclSkelSet(
                                 AbstractTerm.getSkel(val), pick, src);
                     } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                        decl = SpecialModel.predDeclSkelMeta(
+                        decl = predDeclSkelMeta(
                                 AbstractTerm.getSkel(val), pick, src);
                     } else {
                         if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
                             val = firstArg(val);
-                        decl = SpecialModel.predDeclSkelIndicator(
+                        decl = predDeclSkelIndicator(
                                 AbstractTerm.getSkel(val), pick, src);
                     }
                     if (modifiers != null) {
@@ -448,15 +452,15 @@ public final class SpecialLoad extends AbstractSpecial {
                     Object val = vals[j];
                     Object decl;
                     if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                        decl = SpecialModel.operDeclSkelSet(
+                        decl = operDeclSkelSet(
                                 AbstractTerm.getSkel(val), oper, src);
                     } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                        decl = SpecialModel.operDeclSkelOp(
+                        decl = operDeclSkelOp(
                                 AbstractTerm.getSkel(val), oper, src);
                     } else {
                         if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
                             val = firstArg(val);
-                        decl = SpecialModel.operDeclSkelIndicator(
+                        decl = operDeclSkelIndicator(
                                 AbstractTerm.getSkel(val), oper, src);
                     }
                     decl = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), decl);
@@ -974,6 +978,223 @@ public final class SpecialLoad extends AbstractSpecial {
     private static Object firstArg(Object val) {
         SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(val);
         return AbstractTerm.createMolec(sc.args[0], Display.DISPLAY_CONST);
+    }
+
+    /*********************************************************/
+    /* Predicate Declaration Formatting                      */
+    /*********************************************************/
+
+    /**
+     * <p>Generate a set predicate declaration.</p>
+     *
+     * @param skel   The value.
+     * @param pick   The predicate.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object predDeclSkelSet(Object skel, Predicate pick,
+                                         AbstractSource source)
+            throws EngineMessage {
+        return new SkelCompound(new SkelAtom(OP_SET_PREDICATE_PROPERTY, source),
+                provableToColonSkel(pick,
+                        source), skel);
+    }
+
+    /**
+     * <p>Generate a meta predicate declaration.</p>
+     *
+     * @param skel   The value.
+     * @param pick   The predicate.
+     * @param source The source.
+     * @return The meta predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object predDeclSkelMeta(Object skel, Predicate pick,
+                                          AbstractSource source)
+            throws EngineMessage {
+        SkelCompound sc = (SkelCompound) skel;
+        Object[] args = new Object[sc.args.length];
+        args[sc.args.length - 1] = provableToColonSkel(pick,
+                sc.args[sc.args.length - 1], source);
+        if (sc.args.length > 1)
+            System.arraycopy(sc.args, 0, args, 0, sc.args.length - 1);
+        return new SkelCompound(sc.sym, args, sc.var);
+    }
+
+    /**
+     * <p>Generate a indicator predicate declaration.</p>
+     *
+     * @param skel   The value.
+     * @param pick   The predicate.
+     * @param source The source.
+     * @return The indicator predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object predDeclSkelIndicator(Object skel, Predicate pick,
+                                               AbstractSource source)
+            throws EngineMessage {
+        Object t = provableToColonSkel(pick, source);
+        if (skel instanceof SkelAtom) {
+            SkelAtom sa = (SkelAtom) skel;
+            return new SkelCompound(sa, t);
+        } else if (skel instanceof SkelCompound) {
+            SkelCompound sc = (SkelCompound) skel;
+            Object[] args = new Object[sc.args.length + 1];
+            System.arraycopy(sc.args, 0, args, 1, sc.args.length);
+            args[0] = t;
+            return new SkelCompound(sc.sym, args);
+        } else {
+            throw new IllegalArgumentException("illegal property");
+        }
+    }
+
+    /*********************************************************/
+    /* Operator Declaration Formatting                       */
+    /*********************************************************/
+
+    /**
+     * <p>Generate a set operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelSet(Object skel, Operator oper,
+                                         AbstractSource source)
+            throws EngineMessage {
+        Object t = syntaxToColonSkel(oper, source);
+        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
+        return new SkelCompound(new SkelAtom(OP_SET_OPER_PROPERTY, source),
+                t, skel);
+    }
+
+    /**
+     * <p>Generate a op operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelOp(Object skel, Operator oper,
+                                        AbstractSource source)
+            throws EngineMessage {
+        SkelCompound sc = (SkelCompound) skel;
+        Object[] args = new Object[sc.args.length + 1];
+        if (sc.args.length > 0)
+            System.arraycopy(sc.args, 0, args, 0, sc.args.length);
+        args[sc.args.length] = syntaxToColonSkel(oper, source);
+        return new SkelCompound(sc.sym, args, sc.var);
+    }
+
+    /**
+     * <p>Generate a op operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelIndicator(Object skel, Operator oper,
+                                               AbstractSource source)
+            throws EngineMessage {
+        SkelAtom sa = (SkelAtom) skel;
+        Object t = syntaxToColonSkel(oper, source);
+        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
+        return new SkelCompound(sa, t);
+    }
+
+    /*********************************************************/
+    /* Predicate Formatting Utilities                        */
+    /*********************************************************/
+
+    /**
+     * <p>Generate a provable indicator hash.</p>
+     *
+     * @param pick   The predicate.
+     * @param source The source, non null.
+     * @return The shortest predicate indicator.
+     * @throws EngineMessage Shit happens.
+     */
+    public static SkelCompound provableToColonSkel(Predicate pick,
+                                                   AbstractSource source)
+            throws EngineMessage {
+        SkelCompound t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
+                new SkelAtom(CacheFunctor.sepName(pick.getFun()), source),
+                Integer.valueOf(pick.getArity()));
+        String orig = source.getFullName();
+        String module = pick.getSource().getFullName();
+        if (!orig.equals(module)) {
+            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
+            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
+        } else {
+            return t;
+        }
+    }
+
+    /**
+     * <p>Convert a callable to a colon.</p>
+     * <p>A colon callable has the following syntax.</p>
+     * <pre>
+     *     colon_callable --> slash : callable
+     *                      | term.
+     * </pre>
+     * <p>The syntax is not recursive.</p>
+     *
+     * @param pick   The predicate.
+     * @param t      The callable.
+     * @param source The source, non null.
+     * @return The colon callable.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object provableToColonSkel(Predicate pick, Object t,
+                                             AbstractSource source)
+            throws EngineMessage {
+        String name = CacheFunctor.sepName(pick.getFun());
+        if (t instanceof SkelCompound) {
+            SkelCompound sc = (SkelCompound) t;
+            t = new SkelCompound(new SkelAtom(name, source), sc.args, sc.var);
+        } else {
+            t = new SkelAtom(name, source);
+        }
+        String orig = source.getFullName();
+        String module = pick.getSource().getFullName();
+        if (!orig.equals(module)) {
+            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
+            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
+        } else {
+            return t;
+        }
+    }
+
+    /*********************************************************/
+    /* Operator Formatting Utilities                         */
+    /*********************************************************/
+
+    /**
+     * <p>Generate an operator indicator hash.</p>
+     *
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The shortest predicate indicator.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object syntaxToColonSkel(Operator oper,
+                                           AbstractSource source)
+            throws EngineMessage {
+        Object t = new SkelAtom(CacheFunctor.sepName(oper.getKey()), source);
+        String orig = source.getFullName();
+        String module = oper.getSource().getFullName();
+        if (!orig.equals(module)) {
+            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
+            t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
+        }
+        return t;
     }
 
 }

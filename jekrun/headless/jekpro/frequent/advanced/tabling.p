@@ -207,8 +207,8 @@ sys_table_props(I, J) :-
    ;  true),
    (  predicate_property(I, multifile) -> multifile(J)
    ;  true),
-   sys_make_indicator(H, _, I),
-   sys_context_property(H, C),
+   sys_make_indicator(F, _, I),
+   callable_property(F, sys_context(C)),
    (  predicate_property(I, override(C)) -> override(J)
    ;  true),
    sys_notrace(J).

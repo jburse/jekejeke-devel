@@ -3,12 +3,24 @@ package jekpro.model.builtin;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.bootload.ForeignPath;
+import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.runtime.EvaluableLogic;
+import jekpro.reference.runtime.SpecialLogic;
+import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.foreign.AutoClass;
+import jekpro.tools.foreign.LookupBinary;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.config.AbstractRuntime;
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 /**
  * <p>Provides built-in predicates for the module special.</p>
@@ -42,8 +54,10 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialSpecial extends AbstractSpecial {
-    private final static int SPECIAL_SET_PREDICATE_PROPERTY = 0;
-    private final static int SPECIAL_RESET_PREDICATE_PROPERTY = 1;
+    public final static int SPECIAL_SYS_SPECIAL = 0;
+    public final static int SPECIAL_SYS_CHECK_STYLE_PREDICATE = 1;
+    private final static int SPECIAL_SET_PREDICATE_PROPERTY = 2;
+    private final static int SPECIAL_RESET_PREDICATE_PROPERTY = 3;
     private final static int SPECIAL_SYS_NEUTRAL_PREDICATE = 5;
 
     /**
@@ -70,10 +84,43 @@ public final class SpecialSpecial extends AbstractSpecial {
             throws EngineException, EngineMessage {
         try {
             switch (id) {
-                case SPECIAL_SET_PREDICATE_PROPERTY:
+                case SPECIAL_SYS_SPECIAL:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    Predicate pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    Class clazz = nameToClass(temp[1], ref, en);
+
+                    en.skel = temp[2];
+                    en.display = ref;
+                    en.deref();
+                    Number num = SpecialEval.derefAndCastInteger(en.skel, en.display);
+                    SpecialEval.checkNotLessThanZero(num);
+                    SpecialEval.castIntValue(num);
+                    Constructor con = SpecialForeign.getDeclaredConstructor(clazz, Integer.TYPE);
+                    AbstractFactory factory = en.store.foyer.getFactory();
+                    if (!factory.getReflection().validateExceptionTypes(con.getExceptionTypes(), en))
+                        throw new EngineMessage(en.skel);
+                    Object value = AutoClass.invokeNew(con, num);
+                    if (!(value instanceof AbstractSpecial))
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_SPECIAL,
+                                new SkelAtom(AbstractRuntime.classToString(value.getClass()))));
+                    AbstractDelegate del = (AbstractSpecial) value;
+                    Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                            ref, en, CachePredicate.MASK_CACH_DEFI);
+                    Predicate.definePredicate(pick, del, en);
+                    return true;
+                case SPECIAL_SYS_CHECK_STYLE_PREDICATE:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    SkelAtom sa = (SkelAtom) en.skel;
+                    Predicate.checkExistentPredicate(pick, temp[0], ref);
+                    Predicate.checkPredicateDecl(pick, sa, en);
+                    return true;
+                case SPECIAL_SET_PREDICATE_PROPERTY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                     Predicate.checkExistentPredicate(pick, temp[0], ref);
 
                     en.skel = temp[1];
@@ -106,6 +153,45 @@ public final class SpecialSpecial extends AbstractSpecial {
         } catch (ClassCastException x) {
             throw new EngineMessage(
                     EngineMessage.representationError(x.getMessage()));
+        }
+    }
+
+
+    /**
+     * <p>Convert an structured path to a class.</p>
+     *
+     * @param t  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The class.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Class nameToClass(Object t, Display d, Engine en)
+            throws EngineMessage {
+        try {
+            /* slash syntax */
+            Object obj = EvaluableLogic.slashToClass(t, d, false, true, en);
+            SkelAtom sa = SpecialLogic.modToAtom(obj, t, d, en);
+
+            /* find key */
+            AbstractSource scope = (sa.scope != null ? sa.scope : en.store.user);
+            String path = sa.fun.replace(CachePackage.OP_CHAR_SEG, CacheModule.OP_CHAR_OS);
+            String key = CacheSubclass.findKey(path, scope, ForeignPath.MASK_MODL_FRGN, null);
+            if (key == null) {
+                throw new EngineMessage(EngineMessage.existenceError(
+                        EngineMessage.OP_EXISTENCE_SOURCE_SINK, t), d);
+            }
+
+            /* key to class */
+            Class<?> clazz = LookupBinary.keyToClass(key, en.store);
+            if (clazz == null) {
+                throw new EngineMessage(EngineMessage.existenceError(
+                        EngineMessage.OP_EXISTENCE_CLASS, t), d);
+            }
+
+            return clazz;
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
     }
 

@@ -8,13 +8,12 @@ import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.LoadOpts;
+import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.PropertyStream;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 import matula.util.config.FileExtension;
@@ -173,7 +172,7 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The path.
      * @param key   The call-site.
-     * @param mask   The search options flags.
+     * @param mask  The search options flags.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      * @throws IOException        IO Error.
@@ -185,18 +184,14 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
-            if (!"".equals(sa.fun)) {
-                scope = (sa.scope != null ? sa.scope : engine.store.user);
-                scope = scope.getStore().getSource(sa.fun);
-                AbstractSource.checkExistentSource(scope, sa);
-            } else {
-                scope = engine.store.user;
-            }
+            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+                    key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return CacheModule.findPrefix(path, scope, mask.intValue());
+        return CacheModule.findPrefix(path,
+                (scope != null ? scope : engine.store.user),
+                mask.intValue());
     }
 
     /**
@@ -205,7 +200,7 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The path.
      * @param key   The call-site.
-     * @param mask   The search options flags.
+     * @param mask  The search options flags.
      * @return The prefixed name, or null.
      * @throws InterpreterMessage Shit happens.
      * @throws IOException        IO Error.
@@ -217,18 +212,14 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
-            if (!"".equals(sa.fun)) {
-                scope = (sa.scope != null ? sa.scope : engine.store.user);
-                scope = scope.getStore().getSource(sa.fun);
-                AbstractSource.checkExistentSource(scope, sa);
-            } else {
-                scope = engine.store.user;
-            }
+            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+                    key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return CacheModule.unfindPrefix(path, scope, mask.intValue());
+        return CacheModule.unfindPrefix(path,
+                (scope != null ? scope : engine.store.user),
+                mask.intValue());
     }
 
     /*************************************************************/
@@ -241,7 +232,7 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The prefixed path.
      * @param key   The call-site.
-     * @param mask   The search options flags.
+     * @param mask  The search options flags.
      * @return The source key.
      * @throws InterpreterMessage Shit happens.
      */
@@ -252,18 +243,14 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
-            if (!"".equals(sa.fun)) {
-                scope = (sa.scope != null ? sa.scope : engine.store.user);
-                scope = scope.getStore().getSource(sa.fun);
-                AbstractSource.checkExistentSource(scope, sa);
-            } else {
-                scope = engine.store.user;
-            }
+            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+                    key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        return CacheSubclass.findKey(path, scope, mask.intValue(), engine);
+        return CacheSubclass.findKey(path,
+                (scope != null ? scope : engine.store.user),
+                mask.intValue(), engine);
     }
 
     /**
@@ -272,7 +259,7 @@ public final class ForeignPath {
      * @param inter The interpreter.
      * @param path  The prefixed path.
      * @param key   The call-site.
-     * @param mask   The search options flags.
+     * @param mask  The search options flags.
      * @return The source key.
      * @throws InterpreterMessage Shit happens.
      * @throws IOException        Shit happens.
@@ -284,19 +271,15 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(key.getSkel(), key.getDisplay());
-            if (!"".equals(sa.fun)) {
-                scope = (sa.scope != null ? sa.scope : engine.store.user);
-                scope = scope.getStore().getSource(sa.fun);
-                AbstractSource.checkExistentSource(scope, sa);
-            } else {
-                scope = engine.store.user;
-            }
+            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+                    key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
         try {
-            return CacheSubclass.unfindKey(path, scope, mask.intValue(), engine);
+            return CacheSubclass.unfindKey(path,
+                    (scope != null ? scope : engine.store.user),
+                    mask.intValue(), engine);
         } catch (LicenseError x) {
             throw new InterpreterMessage(
                     InterpreterMessage.licenseError(x.getMessage()));

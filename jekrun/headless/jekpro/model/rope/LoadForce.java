@@ -10,7 +10,6 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
-import matula.util.wire.AbstractLivestock;
 
 import java.util.concurrent.TimeUnit;
 

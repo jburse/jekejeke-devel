@@ -1,6 +1,6 @@
 package jekpro.frequent.basic;
 
-import jekpro.model.builtin.SpecialModel;
+import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -96,7 +96,7 @@ public final class SpecialScore extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 String name = SpecialForeign.methodName(temp[2], ref, en);
                 if (SpecialForeign.OP_NAME_CONSTRUCTOR.equals(name))
                     throw new EngineMessage(EngineMessage.typeError(

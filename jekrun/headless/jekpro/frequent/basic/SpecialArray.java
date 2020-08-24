@@ -1,6 +1,6 @@
 package jekpro.frequent.basic;
 
-import jekpro.model.builtin.SpecialModel;
+import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -78,7 +78,7 @@ public final class SpecialArray extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 AbstractFactory factory = en.store.foyer.getFactory();
                 if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_NEW))
                     throw new EngineMessage(en.skel);
@@ -96,7 +96,7 @@ public final class SpecialArray extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
                 if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_GET))
                     throw new EngineMessage(en.skel);
@@ -114,7 +114,7 @@ public final class SpecialArray extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
                 if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_SET))
                     throw new EngineMessage(en.skel);
@@ -132,7 +132,7 @@ public final class SpecialArray extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 factory = en.store.foyer.getFactory();
                 if (!factory.getReflection().createArray(clazz, en, AbstractReflection.ARRAY_LENGTH))
                     throw new EngineMessage(en.skel);

@@ -21,7 +21,6 @@ import jekpro.tools.term.TermAtomic;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.system.OpenOpts;
-import matula.util.wire.AbstractLivestock;
 
 import java.io.IOException;
 import java.io.OutputStream;

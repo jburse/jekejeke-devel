@@ -28,9 +28,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/reference/bootload))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)).
 
 /*************************************************************************/

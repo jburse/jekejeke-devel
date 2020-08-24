@@ -84,18 +84,18 @@ final class BranchAPI extends Branch {
         root.system.addFix("jekpro/reference", AbstractSource.MASK_USES_LIBR);
         root.system.addFix("jekpro/platform", AbstractSource.MASK_USES_LIBR);
 
-        loadSystem("jekpro/reference/reflect/foreign.p", en, new InterfaceInit() {
+        loadSystem("jekpro/reference/reflect/member.p", en, new InterfaceInit() {
             public void init(AbstractSource scope, Engine en)
                     throws EngineMessage, EngineException {
                 addResource("jekpro/reference/reflect/api.properties", scope, en);
                 addResource("jekpro/frequent/stream/foreign.properties", scope, en);
             }
         });
-        loadSystem("jekpro/reference/reflect/member.p", en);
+        loadSystem("jekpro/reference/reflect/call.p", en);
         loadSystem("jekpro/reference/reflect/pred.p", en);
         loadSystem("jekpro/reference/reflect/oper.p", en);
         loadSystem("jekpro/reference/reflect/source.p", en);
-        loadSystem("jekpro/reference/reflect/call.p", en);
+        loadSystem("jekpro/reference/reflect/foreign.p", en);
 
         loadSystem("jekpro/reference/bootload/concat.p", en);
         loadSystem("jekpro/reference/bootload/path.p", en);

@@ -28,9 +28,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    reset_source_property(C, sys_source_visible(public)).
 
 /*************************************************************************/
@@ -72,7 +72,7 @@ sys_oneof2([X|Y], Z, [W|T], W) :- sys_oneof2(Y, Z, T, X).
 % var(+Term)
 :- special(var/1, 'SpecialMember', 1).
 :- set_predicate_property(var/1, visible(public)).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(var/1, sys_public(C)).
 
 % nonvar(+Term)
@@ -89,7 +89,7 @@ functor(T, F, A) :- var(T), !,
 functor(T, F, A) :-
    sys_term_to_functor(T, F, A).
 :- set_predicate_property(functor/3, visible(public)).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(functor/3, sys_public(C)).
 
 :- special(sys_functor_to_term/3, 'SpecialMember', 4).
@@ -105,8 +105,8 @@ functor(T, F, A) :-
 % >(+Expr, +Expr)
 :- special(> /2, 'SpecialMember', 6).
 :- set_predicate_property(> /2, meta_predicate(>(#(1), #(1)))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(> /2, sys_meta_predicate(C)).
 :- set_predicate_property(> /2, visible(public)).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(> /2, sys_public(C)).

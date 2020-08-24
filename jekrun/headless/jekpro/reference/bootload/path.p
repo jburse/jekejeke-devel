@@ -73,15 +73,15 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/reference/bootload))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/tools/call))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/tools/term))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(matula/util/system))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)).
 
 :- sys_neutral_oper(prefix(../)).
@@ -197,43 +197,43 @@ absolute_file_name2(Slash, _, _) :-
 % sys_search_file_name2(+Spec, -Pin, +Integer)
 /* library */
 sys_search_file_name2(library(Slash), Pin, _) :- !,
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_search_options([search_path(library), file_type(text), failure(none)], Mask),
    sys_find_prefix(Path, C, Mask, J),
    sys_find_key(J, C, Mask, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 /* verbatim */
 sys_search_file_name2(verbatim(Slash), Pin, _) :- !,
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_search_options([search_path(library), file_type(text), failure(child)], Mask),
    sys_find_prefix(Path, C, Mask, J),
    sys_find_key(J, C, Mask, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 /* foreign */
 sys_search_file_name2(foreign(Slash), Pin, _) :- !,
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_search_options([search_path(foreign), file_type(binary), failure(none)], Mask),
    sys_find_prefix(Path, C, Mask, J),
    sys_find_key(J, C, Mask, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 /* resource */
 sys_search_file_name2(resource(Slash), Pin, _) :- !,
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_search_options([search_path(library), file_type(resource), failure(none)], Mask),
    sys_find_prefix(Path, C, Mask, J),
    sys_find_key(J, C, Mask, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 /* absolute and relative */
 sys_search_file_name2(Slash, Pin, Mask) :-
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_find_prefix(Path, C, Mask, J),
    sys_find_key(J, C, Mask, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 :- set_predicate_property(sys_search_file_name2/3, visible(private)).
 
 % sys_search_file_name(+Spec, -Pin, +Opt)
@@ -242,10 +242,10 @@ sys_search_file_name(Spec, Pin, Opt) :-
    sys_search_read(Mask), !,
    sys_search_file_name2(Spec, Pin, Mask).
 sys_search_file_name(Slash, Pin, _) :-
-   sys_context_property(Slash, C),
+   callable_property(Slash, sys_context(C)),
    sys_path_to_atom(Slash, Path),
    sys_find_write(Path, H),
-   sys_set_context_property(Pin, C, H).
+   set_callable_property(Pin, sys_context(C), H).
 :- set_predicate_property(sys_search_file_name/3, visible(private)).
 
 % sys_search_options(+List, -Integer)
@@ -279,7 +279,7 @@ sys_search_file_name(Slash, Pin, _) :-
 
 % sys_unsearch_file_name2(+Pin, -Spec)
 sys_unsearch_file_name2(Pin, Slash) :-
-   sys_context_property(Pin, C),
+   callable_property(Pin, sys_context(C)),
    sys_search_options([search_path(all)], Mask),
    sys_unfind_key(Pin, C, Mask, H),
    sys_unsearch_file_name3(H, C, Slash).
@@ -294,27 +294,27 @@ sys_unsearch_file_name3(foreign(Path), C, foreign(Slash)) :- !,
    sys_search_options([search_path(foreign), file_type(binary), failure(none)], Mask),
    sys_unfind_prefix(Path, C, Mask, J),
    sys_path_to_atom(H, J),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 sys_unsearch_file_name3(resource(Path), C, resource(Slash)) :- !,
    sys_search_options([search_path(library), file_type(resource), failure(none)], Mask),
    sys_unfind_prefix(Path, C, Mask, J),
    sys_path_to_atom(H, J),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 sys_unsearch_file_name3(Path, C, Slash) :-
    sys_is_relative_uri(Path), !,
    sys_path_to_atom(H, Path),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 sys_unsearch_file_name3(Path, C, Slash) :-
-   sys_set_context_property(Slash, C, Path).
+   set_callable_property(Slash, sys_context(C), Path).
 :- set_predicate_property(sys_unsearch_file_name3/3, visible(private)).
 
 % sys_unsearch_file_name4(+Spec, +Context, -Spec)
 sys_unsearch_file_name4(verbatim(Path), C, verbatim(Slash)) :- !,
    sys_path_to_atom(H, Path),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 sys_unsearch_file_name4(Path, C, library(Slash)) :- !,
    sys_path_to_atom(H, Path),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 :- set_predicate_property(sys_unsearch_file_name4/3, visible(private)).
 
 % sys_unsearch_file_name2(+Pin, -Spec, +Opt)
@@ -323,10 +323,10 @@ sys_unsearch_file_name(Pin, Slash, Opt) :-
    sys_search_read(Mask), !,
    sys_unsearch_file_name2(Pin, Slash).
 sys_unsearch_file_name(Pin, Slash, _) :-
-   sys_context_property(Pin, C),
+   callable_property(Pin, sys_context(C)),
    sys_unfind_write(Pin, Path),
    sys_path_to_atom(H, Path),
-   sys_set_context_property(Slash, C, H).
+   set_callable_property(Slash, sys_context(C), H).
 :- set_predicate_property(sys_unsearch_file_name/3, visible(private)).
 
 % sys_is_relative_uri(+Atom)

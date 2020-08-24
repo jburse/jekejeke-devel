@@ -57,9 +57,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_source_property(C, use_package(foreign(jekpro/model/builtin))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    reset_source_property(C, sys_source_visible(public)).
 
 :- sys_neutral_oper(prefix(\+)).
@@ -113,7 +113,7 @@
 once(X) :- X, !.
 :- set_predicate_property(once/1, visible(public)).
 :- set_predicate_property(once/1, meta_predicate(once(0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(once/1, sys_meta_predicate(C)).
 
 /**
@@ -126,7 +126,7 @@ once(X) :- X, !.
 \+ _.
 :- set_predicate_property((\+)/1, visible(public)).
 :- set_predicate_property((\+)/1, meta_predicate(\+ 0)).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
 /******************************************************************/
@@ -198,7 +198,7 @@ catch(A, E, B) :-
    sys_trap(A, E, sys_ball_handler(E, B)).
 :- set_predicate_property(catch/3, visible(public)).
 :- set_predicate_property(catch/3, meta_predicate(catch(0, ?, 0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
 % sys_ball_handler(+Exception, +Goal)
@@ -210,7 +210,7 @@ sys_ball_handler(_, B) :-
    B.
 :- set_predicate_property(sys_ball_handler/2, visible(private)).
 :- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?, 0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_ball_handler/2, sys_meta_predicate(C)).
 
 /**
@@ -224,7 +224,7 @@ sys_ball_handler(_, B) :-
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
 :- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0, ?, 0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_trap/3, sys_meta_predicate(C)).
 
 /**

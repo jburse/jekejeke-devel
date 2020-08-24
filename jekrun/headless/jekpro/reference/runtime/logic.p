@@ -107,7 +107,7 @@
 :- public ;/2.
 :- sys_notrace ;/2.
 :- set_predicate_property(;/2, meta_predicate(;(0, 0))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(;/2, sys_meta_predicate(C)).
 _; _ :- throw(error(existence_error(body, ;/2), _)).
 
@@ -120,7 +120,7 @@ _; _ :- throw(error(existence_error(body, ;/2), _)).
 :- public -> /2.
 :- sys_notrace -> /2.
 :- set_predicate_property(-> /2, meta_predicate(->(0, 0))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(-> /2, sys_meta_predicate(C)).
 _ -> _ :- throw(error(existence_error(body, -> /2), _)).
 
@@ -133,7 +133,7 @@ _ -> _ :- throw(error(existence_error(body, -> /2), _)).
 :- public *-> /2.
 :- sys_notrace *-> /2.
 :- set_predicate_property(*-> /2, meta_predicate(*->(0, 0))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(*-> /2, sys_meta_predicate(C)).
 _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
 
@@ -153,7 +153,7 @@ repeat :- repeat.
  */
 :- public forall/2.
 :- set_predicate_property(forall/2, meta_predicate(forall(0, 0))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(forall/2, sys_meta_predicate(C)).
 forall(A, B) :- \+ (A, \+ B).
 
@@ -167,14 +167,14 @@ forall(A, B) :- \+ (A, \+ B).
 % findall(+Template, +Goal, -List)
 :- public findall/3.
 :- set_predicate_property(findall/3, meta_predicate(findall(?, 0, ?))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(findall/3, sys_meta_predicate(C)).
 :- special(findall/3, 'SpecialLogic', 0).
 
 % findall(+Template, +Goal, -List, +List)
 :- public findall/4.
 :- set_predicate_property(findall/4, meta_predicate(findall(?, 0, ?, ?))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(findall/4, sys_meta_predicate(C)).
 :- special(findall/4, 'SpecialLogic', 1).
 
@@ -192,7 +192,7 @@ forall(A, B) :- \+ (A, \+ B).
 :- public : /2.
 :- virtual : /2.
 :- set_predicate_property(: /2, meta_predicate(:(?, 0))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialLogic', 2).
 :- set_predicate_property(: /2, sys_notrace).
@@ -206,7 +206,7 @@ forall(A, B) :- \+ (A, \+ B).
 :- public :: /2.
 :- virtual :: /2.
 :- set_predicate_property(:: /2, meta_predicate(::(?, ::(0)))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
 :- special(:: /2, 'SpecialLogic', 3).
 :- set_predicate_property(:: /2, sys_notrace).
@@ -220,7 +220,7 @@ forall(A, B) :- \+ (A, \+ B).
 :- public : /3.
 :- virtual : /3.
 :- set_predicate_property(: /3, meta_predicate(:(?, 1, ?))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(: /3, sys_meta_predicate(C)).
 :- special(: /3, 'EvaluableLogic', 0).
 :- set_predicate_property(: /3, sys_notrace).
@@ -234,7 +234,7 @@ forall(A, B) :- \+ (A, \+ B).
 :- public :: /3.
 :- virtual :: /3.
 :- set_predicate_property(:: /3, meta_predicate(::(?, ::(1), ?))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(:: /3, sys_meta_predicate(C)).
 :- special(:: /3, 'EvaluableLogic', 1).
 :- set_predicate_property(:: /3, sys_notrace).

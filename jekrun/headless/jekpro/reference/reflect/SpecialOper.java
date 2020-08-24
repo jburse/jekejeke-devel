@@ -59,9 +59,10 @@ public final class SpecialOper extends AbstractSpecial {
     private final static int SPECIAL_SYS_OPER_PROPERTY = 4;
     private final static int SPECIAL_SYS_OPER_PROPERTY_CHK = 5;
     private final static int SPECIAL_SYS_OPER_PROPERTY_IDX = 6;
-    private final static int SPECIAL_RESET_OPER_PROPERTY = 7;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 8;
-    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 9;
+    public final static int SPECIAL_SET_OPER_PROPERTY = 7;
+    private final static int SPECIAL_RESET_OPER_PROPERTY = 8;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 9;
+    private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 10;
 
     public final static Operator[] FALSE_OPERS = new Operator[]{};
 
@@ -162,6 +163,18 @@ public final class SpecialOper extends AbstractSpecial {
                         SpecialOper.propertyToOperators(en.skel, en.display, en),
                         Display.DISPLAY_CONST))
                     return false;
+                return true;
+            case SPECIAL_SET_OPER_PROPERTY:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                oper = SpecialOper.operToOperator(temp[0], ref, en);
+                Operator.checkExistentOperator(oper, temp[0], ref);
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                EngineMessage.checkCallable(en.skel, en.display);
+                SpecialOper.setOperProp(oper, en.skel, en.display, en);
                 return true;
             case SPECIAL_RESET_OPER_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;

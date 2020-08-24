@@ -50,7 +50,7 @@ import matula.util.data.MapHash;
  */
 public final class SpecialCall extends AbstractSpecial {
     private final static int SPECIAL_SYS_CALLABLE_PROPERTY = 0;
-    private final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 1;
+    public final static int SPECIAL_SYS_CALLABLE_PROPERTY_CHK = 1;
     private final static int SPECIAL_SET_CALLABLE_PROPERTY = 2;
     private final static int SPECIAL_RESET_CALLABLE_PROPERTY = 3;
 

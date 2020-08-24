@@ -51,9 +51,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/reference/bootload))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)).
 
 :- op(1150, fy, discontiguous).
@@ -139,7 +139,7 @@ unload_file(Path) :-
  */
 % make
 make :-
-   sys_set_context_property(U, '', user),
+   set_callable_property(U, sys_context(''), user),
    sys_load_file(U, [condition(on)]).
 :- set_predicate_property(make/0, visible(public)).
 :- set_predicate_property(make/0, sys_notrace).
@@ -150,7 +150,7 @@ make :-
  */
 % rebuild
 rebuild :-
-   sys_set_context_property(U, '', user),
+   set_callable_property(U, sys_context(''), user),
    sys_load_file(U, []).
 :- set_predicate_property(rebuild/0, visible(public)).
 :- set_predicate_property(rebuild/0, sys_notrace).
@@ -220,8 +220,8 @@ sys_discontiguous(D) :- sys_declaration_indicator(D, I), !,
    sys_discontiguous(I),
    call(D).
 sys_discontiguous(I) :-
-   sys_make_indicator(J, _, I),
-   sys_context_property(J, C),
+   sys_make_indicator(F, _, I),
+   callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    set_predicate_property(I, discontiguous(C)).
 :- set_predicate_property(sys_discontiguous/1, visible(private)).
@@ -265,14 +265,14 @@ sys_multifile(D) :- sys_declaration_indicator(D, I), !,
    call(D).
 sys_multifile(I) :-
    sys_make_indicator(F, _, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    once((predicate_property(I, sys_usage(D)),
       \+ =(C, D))),
    \+ predicate_property(I, sys_multifile(D)),
    throw(error(permission_error(promote, multifile, I), _)).
 sys_multifile(I) :-
-   sys_make_indicator(J, _, I),
-   sys_context_property(J, C),
+   sys_make_indicator(F, _, I),
+   callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    set_predicate_property(I, multifile),
    set_predicate_property(I, sys_multifile(C)).
@@ -282,10 +282,10 @@ sys_multifile(I) :-
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- sys_neutral_predicate(sys_declaration_indicator/2).
 :- set_predicate_property(sys_declaration_indicator/2, visible(public)).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(sys_declaration_indicator/2, sys_public(C)).
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
 sys_declaration_indicator(discontiguous(D), I) :- sys_declaration_indicator(D, I).
 sys_declaration_indicator(sys_notrace(D), I) :- sys_declaration_indicator(D, I).

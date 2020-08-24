@@ -1,6 +1,6 @@
 package jekpro.reference.reflect;
 
-import jekpro.model.builtin.SpecialModel;
+import jekpro.model.builtin.SpecialSpecial;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -90,7 +90,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                Class clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                Class clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 String name = SpecialForeign.methodName(temp[2], ref, en);
                 if (OP_NAME_CONSTRUCTOR.equals(name))
                     throw new EngineMessage(EngineMessage.typeError(
@@ -114,7 +114,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 name = SpecialForeign.methodName(temp[2], ref, en);
                 if (!OP_NAME_CONSTRUCTOR.equals(name))
                     throw new EngineMessage(EngineMessage.typeError(
@@ -138,7 +138,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 Field fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
@@ -158,7 +158,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 arity = SpecialPred.colonToIndicator(temp[0], ref, en);
-                clazz = SpecialModel.nameToClass(temp[1], ref, en);
+                clazz = SpecialSpecial.nameToClass(temp[1], ref, en);
                 name = SpecialUniv.derefAndCastString(temp[2], ref);
                 fld = SpecialForeign.getDeclaredField(clazz, name);
                 factory = en.store.foyer.getFactory();
@@ -234,7 +234,7 @@ public final class SpecialForeign extends AbstractSpecial {
             SkelCompound sc = (SkelCompound) t;
             Class[] paras = new Class[sc.args.length];
             for (int i = 0; i < paras.length; i++)
-                paras[i] = SpecialModel.nameToClass(sc.args[i], d, en);
+                paras[i] = SpecialSpecial.nameToClass(sc.args[i], d, en);
             return paras;
         } else {
             EngineMessage.checkInstantiated(t);

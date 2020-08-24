@@ -98,7 +98,7 @@ dynamic P :- sys_dynamic(P).
 :- private sys_dynamic/1.
 sys_dynamic(I) :-
    sys_make_indicator(F, _, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    sys_ensure_shared_dynamic(I),
    set_predicate_property(I, sys_dynamic(C)),
    sys_check_style_predicate(I).
@@ -120,7 +120,7 @@ thread_local P :- sys_thread_local(P).
 :- private sys_thread_local/1.
 sys_thread_local(I) :-
    sys_make_indicator(F, _, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    sys_ensure_thread_local(I),
    set_predicate_property(I, sys_thread_local(C)),
    sys_check_style_predicate(I).
@@ -142,7 +142,7 @@ group_local P :- sys_group_local(P).
 :- private sys_group_local/1.
 sys_group_local(I) :-
    sys_make_indicator(F, _, I),
-   sys_context_property(F, C),
+   callable_property(F, sys_context(C)),
    sys_ensure_group_local(I),
    set_predicate_property(I, sys_group_local(C)),
    sys_check_style_predicate(I).

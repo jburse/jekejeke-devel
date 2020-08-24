@@ -59,9 +59,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    set_source_property(C, use_package(foreign(jekpro/reference/reflect))).
-:- sys_context_property(here, C),
+:- callable_property(here, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)).
 
 /****************************************************************/
@@ -111,16 +111,18 @@ source_property(I, R) :-
  * The predicate assigns the property P to the source path S.
  */
 % set_source_property(+Pin, +Property)
-% already defined in special
+% already defined in special.p
 % :- special(set_source_property/2, 'SpecialSource', 4).
+% :- set_predicate_property(set_source_property/2, visible(public)).
 
 /**
  * reset_source_property(S, P):
  * The predicate deassigns the property P from the source path S.
  */
 % reset_source_property(+Pin, +Property)
-% already defined in special
+% already defined in special.p
 % :- special(reset_source_property/2, 'SpecialSource', 5).
+% :- set_predicate_property(reset_source_property/2, visible(public)).
 
 /****************************************************************/
 /* Resource Handling                                            */
@@ -136,7 +138,7 @@ current_resource(X) :-
    sys_member(X, L).
 :- set_predicate_property(current_resource/1, visible(public)).
 
-:- special(sys_current_resource/1, 'SpecialSource', 4).
+:- special(sys_current_resource/1, 'SpecialSource', 6).
 :- set_predicate_property(sys_current_resource/1, visible(private)).
 
 /****************************************************************/
@@ -155,28 +157,8 @@ current_module(M) :-
    sys_current_module_chk(M).
 :- set_predicate_property(current_module/1, visible(public)).
 
-:- special(sys_current_module/1, 'SpecialSource', 5).
+:- special(sys_current_module/1, 'SpecialSource', 7).
 :- set_predicate_property(sys_current_module/1, visible(private)).
 
-:- special(sys_current_module_chk/1, 'SpecialSource', 6).
+:- special(sys_current_module_chk/1, 'SpecialSource', 8).
 :- set_predicate_property(sys_current_module_chk/1, visible(private)).
-
-/****************************************************************/
-/* Context Property                                             */
-/****************************************************************/
-
-/**
- * sys_context_property(C, Q):
- * The predicate succeeds for the context property Q of the callable C.
- */
-% natively bootstrapped by SpecialModel
-% sys_contex_property(+Callable, -Atom)
-
-/**
- * sys_set_context_property(B, Q, A):
- * The predicate succeeds for a new callable B which is a clone of
- * the callable A with the context property Q.
- */
-% sys_set_context_property(-Callable, +Atom, +Callable)
-:- special(sys_set_context_property/3, 'SpecialSource', 8).
-:- set_predicate_property(sys_set_context_property/3, visible(public)).

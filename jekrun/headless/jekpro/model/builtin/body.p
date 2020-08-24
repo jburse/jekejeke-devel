@@ -52,9 +52,9 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_source_property(C, use_package(foreign(jekpro/model/builtin))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    reset_source_property(C, sys_source_visible(public)).
 
 % already defined in special.p
@@ -75,7 +75,7 @@
 (:- _) :- throw(error(existence_error(body, (:-)/1), _)).
 :- set_predicate_property((:-)/1, visible(public)).
 :- set_predicate_property((:-)/1, meta_predicate((:- -1))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((:-)/1, sys_meta_predicate(C)).
 
 /**
@@ -87,7 +87,7 @@
 (_ :- _) :- throw(error(existence_error(body, (:-)/2), _)).
 :- set_predicate_property((:-)/2, visible(public)).
 :- set_predicate_property((:-)/2, meta_predicate((0 :- -1))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((:-)/2, sys_meta_predicate(C)).
 
 /**
@@ -102,7 +102,7 @@ _, _ :- throw(error(existence_error(body, ','/2), _)).
 :- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
 :- set_predicate_property(','/2, meta_predicate((0, 0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(','/2, sys_meta_predicate(C)).
 
 /**
@@ -114,7 +114,7 @@ _, _ :- throw(error(existence_error(body, ','/2), _)).
 :- special(call/1, 'SpecialBody', 0).
 :- set_predicate_property(call/1, visible(public)).
 :- set_predicate_property(call/1, meta_predicate(call(0))).
-:- sys_context_property(here, C),
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(call/1, sys_meta_predicate(C)).
 
 % sys_alter(+Directive, +Directive)
