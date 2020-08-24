@@ -26,7 +26,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
 /**
- * <p>Provides built-in predicates for the sources.</p>
+ * <p>Provides built-in predicates for the source reflection.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -69,7 +69,7 @@ public final class SpecialSource extends AbstractSpecial {
 
 
     /**
-     * <p>Create a consult special.</p>
+     * <p>Create a source reflection special.</p>
      *
      * @param i The id of the special.
      */

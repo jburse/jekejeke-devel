@@ -95,6 +95,7 @@ final class BranchAPI extends Branch {
         loadSystem("jekpro/reference/reflect/pred.p", en);
         loadSystem("jekpro/reference/reflect/oper.p", en);
         loadSystem("jekpro/reference/reflect/source.p", en);
+        loadSystem("jekpro/reference/reflect/call.p", en);
 
         loadSystem("jekpro/reference/bootload/concat.p", en);
         loadSystem("jekpro/reference/bootload/path.p", en);

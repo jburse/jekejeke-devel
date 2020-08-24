@@ -158,9 +158,10 @@ sys_current_file_extension(E, O) :-
 /**
  * absolute_file_name(R, A):
  * absolute_file_name(R, A, O):
- * The binary predicate succeeds when the read path R resolves to an absolute
- * file path A. The ternary predicate additionally recognizes the following
- * path option. For a list of options see the API documentation.
+ * The binary predicate succeeds when the read path R resolves to an
+ * absolute path and this absolute path unifies with S. The ternary
+ * predicate additionally recognizes the following path option. The
+ * predicates can be also used in a backward manner.
  */
 % absolute_file_name(+Slash, -Pin)
 absolute_file_name(Slash, Pin) :-

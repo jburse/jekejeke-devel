@@ -168,7 +168,8 @@ sys_toplevel_top.
 :- private sys_answer/2.
 sys_answer(G, N) :-
    current_prolog_flag(sys_choices, X),
-   expand_goal(G, H), call_residue(H, R),
+   expand_goal(G, H),
+   call_residue(H, R),
    current_prolog_flag(sys_choices, Y),
    (  X =:= Y -> !, sys_filter_show(N, R), nl
    ;  sys_answer_ask(N, R) -> !; true).

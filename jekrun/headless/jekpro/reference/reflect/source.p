@@ -73,7 +73,6 @@
  * The predicate succeeds for the user absolute source paths S.
  */
 % current_source(-+Pin)
-:- static current_source/1.
 current_source(X) :- var(X), !,
    sys_current_source(L),
    sys_member(X, L).
