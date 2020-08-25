@@ -1,6 +1,5 @@
 package jekpro.reference.reflect;
 
-import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -149,7 +148,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
      * @param d  The term display.
      * @param en The engine.
      * @return The scope.
-     * @throws EngineMessage      Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     private static AbstractSource derefAndCastContext(Object m, Display d, Engine en)
             throws EngineMessage {
@@ -177,7 +176,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
      * @param d  The term display.
      * @param en The engine.
      * @return The position key.
-     * @throws EngineMessage      Shit happens.
+     * @throws EngineMessage Shit happens.
      */
     public static AbstractSource derefAndCastScope(Object m, Display d, Engine en)
             throws EngineMessage {

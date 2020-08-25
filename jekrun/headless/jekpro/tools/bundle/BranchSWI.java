@@ -7,7 +7,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.tools.foreign.Tracking;
-import matula.comp.sharik.AbstractTracking;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 
@@ -95,18 +94,6 @@ final class BranchSWI extends AbstractBranch {
         setDescription(new DescriptionSWI(root));
 //        setFlags(AbstractBundle.MASK_BNDL_NACT);
         setArchiveRoots(new String[]{root});
-    }
-
-    /**
-     * <p>Create the info.
-     *
-     * @return The info.
-     */
-    public AbstractTracking createTracking() {
-        Tracking tracking = new Tracking();
-//        tracking.setLicense("");
-        tracking.setLicense("DIST");
-        return tracking;
     }
 
     /***************************************************************/

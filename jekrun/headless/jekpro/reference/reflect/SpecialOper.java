@@ -52,7 +52,7 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialOper extends AbstractSpecial {
-    private final static int SPECIAL_SYS_NEUTRAL_OPER = 0;
+    public final static int SPECIAL_SYS_NEUTRAL_OPER = 0;
     private final static int SPECIAL_SYS_CHECK_STYLE_OPER = 1;
     private final static int SPECIAL_SYS_CURRENT_OPER = 2;
     private final static int SPECIAL_SYS_CURRENT_OPER_CHK = 3;
@@ -101,9 +101,15 @@ public final class SpecialOper extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_CHECK_STYLE_OPER:
+            case SPECIAL_SYS_NEUTRAL_OPER:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
+                SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_CRTE);
+                return true;
+            case SPECIAL_SYS_CHECK_STYLE_OPER:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
                 Operator oper = SpecialOper.operToOperator(temp[0], ref, en);
                 SkelAtom sa = (SkelAtom) en.skel;
                 Operator.checkExistentOperator(oper, temp[0], ref);
