@@ -190,7 +190,7 @@ destroyed(_, _).
 % dispatch(+Object, +Spec, +Request, +Socket)
 :- public dispatch/4.
 dispatch(_, '/images/cookie.gif', Request, Session) :- !,
-   dispatch_binary(library(container/images/cookie), Request, Session).
+   dispatch_binary(resource(container/images/cookie), Request, Session).
 
 /**
  * upgrade(O, P, R, S):
@@ -335,27 +335,27 @@ response_error(501, Response) :-
 :- private send_error/2.
 send_error(400, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(container/pages/err400), Stream),
+      open(resource(container/pages/err400), read, Stream),
       (response_error(400, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(404, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(container/pages/err404), Stream),
+      open(resource(container/pages/err404), read, Stream),
       (response_error(404, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(415, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(container/pages/err415), Stream),
+      open(resource(container/pages/err415), read, Stream),
       (response_error(415, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(422, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(container/pages/err422), Stream),
+      open(resource(container/pages/err422), read, Stream),
       (response_error(422, Response), send_lines(Stream, Response)),
       close(Stream)).
 send_error(501, Response) :- !,
    setup_call_cleanup(
-      open_resource(library(container/pages/err501), Stream),
+      open(resource(container/pages/err501), read, Stream),
       (response_error(501, Response), send_lines(Stream, Response)),
       close(Stream)).
 
@@ -422,7 +422,7 @@ handle_text(File, Headers, Session) :-
 :- private send_text/3.
 send_text(File, Headers, Response) :-
    setup_call_cleanup(
-      open_resource(File, Stream),
+      open(File, read, Stream),
       (response_text(200, Headers, Response),
       send_lines(Stream, Response)),
       close(Stream)).
@@ -524,7 +524,7 @@ handle_binary(File, Headers, Session) :-
 :- private send_binary/3.
 send_binary(File, Headers, Response) :-
    setup_call_cleanup(
-      open_resource(File, Stream, [type(binary)]),
+      open(File, read, Stream, [type(binary)]),
       (response_binary(200, Headers, Response),
       send_blocks(Stream, Response)),
       close(Stream)).
@@ -617,7 +617,7 @@ response_redirect(Location, Response) :-
 :- private meta_binary/2.
 meta_binary(File, Headers) :-
    setup_call_cleanup(
-      open_resource(File, Stream, [type(binary)]),
+      open(File, read, Stream, [type(binary)]),
       (stream_property(Stream, last_modified(Millis)),
       stream_property(Stream, version_tag(ETag)),
       stream_property(Stream, mime_type(MimeType))),
@@ -634,7 +634,7 @@ meta_binary(File, Headers) :-
 :- private meta_text/2.
 meta_text(File, Headers) :-
    setup_call_cleanup(
-      open_resource(File, Stream),
+      open(File, read, Stream),
       (stream_property(Stream, last_modified(Millis)),
       stream_property(Stream, version_tag(ETag)),
       stream_property(Stream, mime_type(MimeType))),

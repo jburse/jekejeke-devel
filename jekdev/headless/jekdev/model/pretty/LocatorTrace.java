@@ -4,7 +4,6 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.term.PositionKey;
-import matula.util.data.MapEntry;
 
 /**
  * <p>This class provides a trace locator.</p>

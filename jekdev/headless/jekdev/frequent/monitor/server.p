@@ -99,13 +99,13 @@ destroyed(_, _) :-
 :- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', Request, Session) :- !,
-   dispatch_binary(library(monitor/images/closed), Request, Session).
+   dispatch_binary(resource(monitor/images/closed), Request, Session).
 dispatch(_, '/images/open.gif', Request, Session) :- !,
-   dispatch_binary(library(monitor/images/open), Request, Session).
+   dispatch_binary(resource(monitor/images/open), Request, Session).
 dispatch(_, '/images/blank.gif', Request, Session) :- !,
-   dispatch_binary(library(monitor/images/blank), Request, Session).
+   dispatch_binary(resource(monitor/images/blank), Request, Session).
 dispatch(_, '/images/break.gif', Request, Session) :- !,
-   dispatch_binary(library(monitor/images/break), Request, Session).
+   dispatch_binary(resource(monitor/images/break), Request, Session).
 dispatch(_, '/index.jsp', Request, Session) :- !,
    dispatch_index(Request, Session).
 dispatch(_, Path, Request, Session) :-

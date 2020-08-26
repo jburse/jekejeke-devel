@@ -4,7 +4,6 @@ import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Predicate;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.tools.term.PositionKey;
-import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
 /**

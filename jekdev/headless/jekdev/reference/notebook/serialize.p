@@ -44,8 +44,8 @@
 
 :- module(serialize, []).
 :- use_module(library(notebook/model)).
-:- sys_load_resource(library(dom)).
-:- sys_add_resource(library(dom)).
+:- sys_load_resource(resource(dom)).
+:- sys_add_resource(resource(dom)).
 
 /*******************************************************************/
 /* XML Format                                                      */

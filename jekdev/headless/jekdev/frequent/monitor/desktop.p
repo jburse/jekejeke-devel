@@ -50,7 +50,7 @@
 dispatch(_, '/layout.jsp', Request, Session) :- !,
    dispatch_layout(Request, Session).
 dispatch(_, '/white.html', Request, Session) :- !,
-   dispatch_text(library(monitor/pages/white), Request, Session).
+   dispatch_text(resource(monitor/pages/white), Request, Session).
 dispatch(Object, Spec, Request, Session) :-
    monitor/view:dispatch(Object, Spec, Request, Session).
 

@@ -69,8 +69,8 @@
 :- use_package(foreign(jekpro/tools/call)).
 
 :- module(transform, []).
-:- sys_load_resource(library(sheet)).
-:- sys_add_resource(library(sheet)).
+:- sys_load_resource(resource(sheet)).
+:- sys_add_resource(resource(sheet)).
 
 /*******************************************************************/
 /* XML Check                                                       */

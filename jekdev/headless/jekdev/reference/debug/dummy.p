@@ -47,6 +47,7 @@
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
-sys_apropos_table(library(debug/reference)).
+sys_apropos_table(resource(debug/reference)).
+sys_apropos_table(resource(misc/frequent)).
 
 :- start_monitor.
