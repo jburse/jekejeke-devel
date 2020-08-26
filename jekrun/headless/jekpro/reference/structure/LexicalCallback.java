@@ -2,7 +2,6 @@ package jekpro.reference.structure;
 
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -15,7 +14,6 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 import jekpro.tools.term.TermVar;
-import matula.util.wire.AbstractLivestock;
 
 /**
  * <p>Comparator that is a Prolog callback.</p>

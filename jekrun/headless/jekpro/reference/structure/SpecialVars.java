@@ -14,7 +14,10 @@ import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.runtime.SpecialLogic;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.*;
 
 /**
@@ -313,40 +316,36 @@ public final class SpecialVars extends AbstractSpecial {
     }
 
     /********************************************************************/
-    /* Raw Variable Names                                               */
+    /* Print Map                                                        */
     /********************************************************************/
 
     /**
-     * <p>Create a print map from variable names.</p>
-     * <p>Will not convert variables that have not yet been allocated.</p>
-     * <p>Will not convert variables that have already been deallocated.</p>
+     * <p>Convert a variable map into variable names.</p>
+     * <p>Will return the result in the skel and display of the engine.</p>
      *
-     * @param vars The var hash.
-     * @param d    The term display.
-     * @param en   The engine.
-     * @return The print map.
+     * @param mvs The variable map.
+     * @param en  The engine.
      */
-    public static MapHashLink<Object, String> hashToMap(MapHashLink<String, SkelVar> vars,
-                                                        Display d, Engine en) {
-        if (vars == null)
-            return null;
-        MapHashLink<Object, String> print = null;
-        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
-            SkelVar sv = entry.value;
-            if (sv.id >= d.bind.length || d.bind[sv.id] == null)
-                continue;
-            en.skel = sv;
-            en.display = d;
-            en.deref();
-            if (!(en.skel instanceof SkelVar))
-                continue;
-            Object key = AbstractTerm.createMolec(en.skel, en.display);
-            if (print == null)
-                print = new MapHashLink<Object, String>();
-            addMap(print, key, entry.key);
+    public static void mapToAssoc(MapHashLink<Object, String> mvs,
+                                  Engine en) {
+        en.skel = en.store.foyer.ATOM_NIL;
+        en.display = Display.DISPLAY_CONST;
+        for (MapEntry<Object, String> entry =
+             (mvs != null ? mvs.getFirstEntry() : null);
+             entry != null; entry = mvs.successor(entry)) {
+            Object elem2 = entry.key;
+            Object val2 = AbstractTerm.getSkel(elem2);
+            Display ref2 = AbstractTerm.getDisplay(elem2);
+            Object t4 = en.skel;
+            Display d2 = en.display;
+            SpecialLogic.pairValue(en.store.foyer.CELL_EQUAL,
+                    new SkelAtom(entry.value), Display.DISPLAY_CONST,
+                    val2, ref2, en);
+            val2 = en.skel;
+            ref2 = en.display;
+            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+                    val2, ref2, t4, d2, en);
         }
-        return print;
     }
 
     /****************************************************************/
@@ -366,10 +365,10 @@ public final class SpecialVars extends AbstractSpecial {
                                         Engine en)
             throws EngineMessage {
         SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
-        MapHashLink<Object, String> print = SpecialVars.assocToMap(temp[1], ref, en);
+        MapHash<BindUniv, String> print = SupervisorCopy.assocToMapUniv(temp[1], ref, en);
         SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
-        MapHashLink<Object, String> copy = SpecialVars.numberVars(vars, anon, print, 0);
-        SpecialVars.mapToAssoc(copy, en);
+        MapHashLink<Object, String> map = SpecialVars.numberVars(vars, anon, print, 0);
+        SpecialVars.mapToAssoc(map, en);
     }
 
     /**
@@ -383,7 +382,7 @@ public final class SpecialVars extends AbstractSpecial {
      */
     public static MapHashLink<Object, String> numberVars(SetHashLink<Object> vars,
                                                          SetHashLink<Object> anon,
-                                                         MapHashLink<Object, String> print,
+                                                         MapHash<BindUniv, String> print,
                                                          int flags) {
         if (vars == null)
             return null;
@@ -392,38 +391,17 @@ public final class SpecialVars extends AbstractSpecial {
         int k = 0;
         SetHash<String> range = null;
 
-        /* pass one, all non-anon */
         for (SetEntry<Object> entry = vars.getFirstEntry();
              entry != null; entry = vars.successor(entry)) {
-            if (anon != null && anon.getEntry(entry.value) != null)
-                continue;
+            SkelVar sv = (SkelVar) AbstractTerm.getSkel(entry.value);
+            Display d = AbstractTerm.getDisplay(entry.value);
             String t;
-            if (print != null && (t = print.get(entry.value)) != null) {
+            if (print != null && (t = print.get(d.bind[sv.id])) != null) {
                 copy.add(entry.value, t);
             } else {
-                if (range == null)
-                    range = nameRange(print);
-                String name = SkelVar.sernoToString(k, false);
-                k++;
-                while (range.getEntry(name) != null) {
-                    name = SkelVar.sernoToString(k, false);
-                    k++;
-                }
-                addAnon(copy, entry.value, name);
-            }
-        }
-
-        /* pass two, all anon */
-        for (SetEntry<Object> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
-            if (anon == null || anon.getEntry(entry.value) == null)
-                continue;
-            String t;
-            if (print != null && (t = print.get(entry.value)) != null) {
-                copy.add(entry.value, t);
-            } else {
-                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
-                    addAnon(copy, entry.value, PrologReader.OP_ANON);
+                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0 &&
+                        anon != null && anon.getEntry(entry.value) != null) {
+                    copy.add(entry.value, PrologReader.OP_ANON);
                 } else {
                     if (range == null)
                         range = nameRange(print);
@@ -433,7 +411,55 @@ public final class SpecialVars extends AbstractSpecial {
                         name = SkelVar.sernoToString(k, false);
                         k++;
                     }
-                    addAnon(copy, entry.value, name);
+                    copy.add(entry.value, name);
+                }
+            }
+        }
+
+        return copy;
+    }
+
+    /**
+     * <p>Complement the variable names.</p>
+     *
+     * @param vars  The var set, can be null.
+     * @param anon  The anon set, can be null.
+     * @param print The old variable names, can be null.
+     * @param flags The flags.
+     * @return The new variable names, can be null.
+     */
+    public static MapHash<BindUniv, String> numberVarsUniv(SetHashLink<Object> vars,
+                                                           SetHashLink<Object> anon,
+                                                           MapHash<BindUniv, String> print,
+                                                           int flags) {
+        if (vars == null)
+            return null;
+
+        MapHash<BindUniv, String> copy = new MapHash<BindUniv, String>();
+        int k = 0;
+        SetHash<String> range = null;
+
+        for (SetEntry<Object> entry = vars.getFirstEntry();
+             entry != null; entry = vars.successor(entry)) {
+            SkelVar sv = (SkelVar) AbstractTerm.getSkel(entry.value);
+            Display d = AbstractTerm.getDisplay(entry.value);
+            String t;
+            if (print != null && (t = print.get(d.bind[sv.id])) != null) {
+                copy.add(d.bind[sv.id], t);
+            } else {
+                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0 &&
+                        anon != null && anon.getEntry(entry.value) != null) {
+                    copy.add(d.bind[sv.id], PrologReader.OP_ANON);
+                } else {
+                    if (range == null)
+                        range = nameRange(print);
+                    String name = SkelVar.sernoToString(k, false);
+                    k++;
+                    while (range.getEntry(name) != null) {
+                        name = SkelVar.sernoToString(k, false);
+                        k++;
+                    }
+                    copy.add(d.bind[sv.id], name);
                 }
             }
         }
@@ -491,96 +517,6 @@ public final class SpecialVars extends AbstractSpecial {
         return set;
     }
 
-    /**
-     * <p>Convert a variable map into variable names.</p>
-     * <p>Will return the result in the skel and display of the engine.</p>
-     *
-     * @param mvs The variable map.
-     * @param en  The engine.
-     */
-    public static void mapToAssoc(MapHashLink<Object, String> mvs,
-                                  Engine en) {
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        for (MapEntry<Object, String> entry =
-             (mvs != null ? mvs.getFirstEntry() : null);
-             entry != null; entry = mvs.successor(entry)) {
-            Object elem2 = entry.key;
-            Object val2 = AbstractTerm.getSkel(elem2);
-            Display ref2 = AbstractTerm.getDisplay(elem2);
-            Object t4 = en.skel;
-            Display d2 = en.display;
-            SpecialLogic.pairValue(en.store.foyer.CELL_EQUAL,
-                    new SkelAtom(entry.value), Display.DISPLAY_CONST,
-                    val2, ref2, en);
-            val2 = en.skel;
-            ref2 = en.display;
-            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
-                    val2, ref2, t4, d2, en);
-        }
-    }
-
-    /**
-     * <p>Create variable map from variable names.</p>
-     * <p>Non variable associations are skipped.</p>
-     *
-     * @param t  The variable names skel.
-     * @param d  The variable names display.
-     * @param en The engine.
-     * @return The print map.
-     * @throws EngineMessage Shit happens.
-     */
-    public static MapHashLink<Object, String> assocToMap(Object t, Display d,
-                                                         Engine en)
-            throws EngineMessage {
-        MapHashLink<Object, String> print = null;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        while (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
-            Object[] mc = ((SkelCompound) en.skel).args;
-            d = en.display;
-            en.skel = mc[0];
-            en.deref();
-            if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 2 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
-                /* */
-            } else {
-                EngineMessage.checkInstantiated(en.skel);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_ASSOC,
-                        en.skel), en.display);
-            }
-            Object[] mc2 = ((SkelCompound) en.skel).args;
-            Display d2 = en.display;
-            en.skel = mc2[1];
-            en.deref();
-            if (en.skel instanceof SkelVar) {
-                Object pair = TermAtomic.createMolec(en.skel, en.display);
-                if (print == null)
-                    print = new MapHashLink<Object, String>();
-                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
-                addMap(print, pair, name);
-            }
-            en.skel = mc[1];
-            en.display = d;
-            en.deref();
-        }
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST,
-                    en.skel), en.display);
-        }
-        return print;
-    }
-
     /**************************************************************/
     /* Name Utilities                                             */
     /**************************************************************/
@@ -591,45 +527,14 @@ public final class SpecialVars extends AbstractSpecial {
      * @param print The print map.
      * @return The name range.
      */
-    public static <T> SetHash<String> nameRange(MapHashLink<T, String> print) {
-        SetHash<String> range = new SetHash<String>();
+    private static SetHash<String> nameRange(MapHash<BindUniv, String> print) {
         if (print == null)
-            return range;
-        for (MapEntry<T, String> entry = print.getFirstEntry();
+            return null;
+        SetHash<String> range = new SetHash<String>();
+        for (MapEntry<BindUniv, String> entry = print.getFirstEntry();
              entry != null; entry = print.successor(entry))
             range.add(entry.value);
         return range;
-    }
-
-    /**
-     * <p>Add an anonymous variable.</p>
-     *
-     * @param print The print map.
-     * @param key   The variable.
-     * @param name  The variable name.
-     */
-    public static <T> void addAnon(MapHashLink<T, String> print,
-                                   T key,
-                                   String name) {
-        print.add(key, name);
-    }
-
-    /**
-     * <p>Add priorized to the map hash.</p>
-     *
-     * @param print The print map.
-     * @param key   The variable.
-     * @param name  The variable name.
-     */
-    public static <T> void addMap(MapHashLink<T, String> print,
-                                  T key,
-                                  String name) {
-        MapEntry<T, String> entry = print.getEntry(key);
-        if (entry == null) {
-            print.add(key, name);
-        } else {
-            entry.value = name;
-        }
     }
 
 }

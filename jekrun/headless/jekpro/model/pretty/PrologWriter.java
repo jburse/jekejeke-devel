@@ -7,8 +7,11 @@ import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.ForeignAtom;
-import jekpro.tools.term.*;
-import matula.util.data.MapHashLink;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
+import matula.util.data.MapHash;
 import matula.util.regex.CodeType;
 import matula.util.regex.CompLang;
 
@@ -98,7 +101,7 @@ public class PrologWriter {
     private int lch = -1;
     public int flags = FLAG_DFLT;
     int lev = Operator.LEVEL_HIGH;
-    private MapHashLink<Object, String> printmap;
+    private MapHash<BindUniv, String> printmap;
     protected int spez;
     int offset;
     int shift;
@@ -257,7 +260,7 @@ public class PrologWriter {
      *
      * @param v The var map.
      */
-    public void setPrintMap(MapHashLink<Object, String> v) {
+    public void setPrintMap(MapHash<BindUniv, String> v) {
         printmap = v;
     }
 
@@ -785,8 +788,7 @@ public class PrologWriter {
         } else if (term instanceof SkelVar) {
             SkelVar sv = (SkelVar) term;
             if (printmap != null) {
-                Object obj = TermAtomic.createMolec(sv, ref);
-                String t = printmap.get(obj);
+                String t = printmap.get(ref.bind[sv.id]);
                 if (t != null) {
                     t = variableQuoted(t);
                     safeSpace(t);

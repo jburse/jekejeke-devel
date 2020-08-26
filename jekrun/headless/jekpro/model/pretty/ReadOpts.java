@@ -9,12 +9,11 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.MapEntry;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>This class provides read options.</p>
@@ -48,13 +47,12 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ReadOpts {
-    public final static String OP_LINE_NO = "line_no";
     public final static String OP_VARIABLES = "variables";
     public final static String OP_VARIABLE_NAMES = "variable_names";
     private final static String OP_SINGLETONS = "singletons";
     final static String OP_SOURCE = "source";
     final static String OP_ANNOTATION = "annotation";
-    final static String OP_TERMINATOR = "terminator";
+    public final static String OP_LINE_NO = "line_no";
 
     public final static String OP_VALUE_ERROR = "error";
     private final static String OP_VALUE_CODES = "codes";
@@ -70,6 +68,7 @@ public final class ReadOpts {
     public final static int UTIL_ATOM = 4;
     public final static int UTIL_STRING = 5;
 
+    final static String OP_TERMINATOR = "terminator";
     private final static String OP_TERMINATOR_PERIOD = "period";
     private final static String OP_TERMINATOR_END_OF_FILE = "end_of_file";
     public final static String OP_TERMINATOR_NONE = "none";
@@ -117,8 +116,8 @@ public final class ReadOpts {
         while (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
-            SkelCompound sc = (SkelCompound) t;
-            en.skel = sc.args[0];
+            Object[] mc = ((SkelCompound) t).args;
+            en.skel = mc[0];
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -205,7 +204,7 @@ public final class ReadOpts {
                         EngineMessage.OP_DOMAIN_READ_OPTION,
                         en.skel), en.display);
             }
-            en.skel = sc.args[1];
+            en.skel = mc[1];
             en.display = d;
             en.deref();
             t = en.skel;
@@ -271,13 +270,13 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
-                        makeAssoc(rd.getVars(), en.store), d2))
+                        SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
                 if (!en.unifyTerm(((SkelCompound) en.skel).args[0], en.display,
-                        makeAssoc(rd.getAnon(), en.store), d2))
+                        SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -327,25 +326,6 @@ public final class ReadOpts {
             throw new RuntimeException("internal error");
         }
         return true;
-    }
-
-    /**
-     * <p>Convert a named list to a Prolog association list.</p>
-     *
-     * @param vars  The named list.
-     * @param store The store.
-     * @return The Prolog association list.
-     */
-    private static Object makeAssoc(MapHashLink<String, SkelVar> vars, Store store) {
-        Object end = store.foyer.ATOM_NIL;
-        if (vars == null)
-            return end;
-        for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
-             entry != null; entry = vars.predecessor(entry))
-            end = new SkelCompound(store.foyer.ATOM_CONS,
-                    new SkelCompound(store.foyer.ATOM_EQUAL,
-                            new SkelAtom(entry.key), entry.value), end);
-        return end;
     }
 
     /**
@@ -441,9 +421,9 @@ public final class ReadOpts {
     /**
      * <p>Convert an atom to a terminator.</p>
      *
-     * @param m The annotation mode skel.
-     * @param d The annotation mode display.
-     * @return The annotation mode.
+     * @param m The terminator skel.
+     * @param d The terminator display.
+     * @return The terminator.
      * @throws EngineMessage Shit happens.
      */
     private static int atomToTerminator(Object m, Display d)

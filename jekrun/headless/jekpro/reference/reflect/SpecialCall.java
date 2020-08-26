@@ -122,8 +122,12 @@ public final class SpecialCall extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialCall.setCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                d = en.display;
+                multi = d.getAndReset();
+                if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return true;
             case SPECIAL_RESET_CALLABLE_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
@@ -139,8 +143,12 @@ public final class SpecialCall extends AbstractSpecial {
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialCall.resetCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
-                if (!en.unifyTerm(temp[0], ref, en.skel, en.display))
+                d = en.display;
+                multi = d.getAndReset();
+                if (!en.unifyTerm(temp[0], ref, en.skel, d))
                     return false;
+                if (multi)
+                    d.remTab(en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

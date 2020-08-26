@@ -4,16 +4,17 @@ import jekpro.frequent.experiment.SpecialRef;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.FileText;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
 import java.io.Writer;
@@ -482,9 +483,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object molec = ec.copyTermNew(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, String> printmap =
+            MapHash<BindUniv, String> print =
                     SpecialRef.decodeAssertOptions(temp[1], ref, en);
-            vars = FileText.copyVars(ec.vars, printmap);
+            vars = SupervisorCopy.copyVarsUniv(ec.vars, print);
         } else {
             vars = null;
         }

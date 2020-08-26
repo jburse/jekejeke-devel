@@ -72,7 +72,7 @@ public final class TermVar extends AbstractTerm {
     public TermVar() {
         skel = SkelVar.valueOf(0);
         display = new Display(1);
-        display.vars = Display.VARS_MARKER;
+        display.marker = true;
     }
 
     /************************************************************/

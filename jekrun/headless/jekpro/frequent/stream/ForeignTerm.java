@@ -246,7 +246,7 @@ public final class ForeignTerm {
             throw new InterpreterException(x);
         }
         if (SupervisorCopy.displaySize(val) != 0)
-            ref.vars = Display.VARS_MARKER;
+            ref.marker = true;
         if ((flags & PrologReader.FLAG_WRAP) != 0) {
             return AbstractTerm.createTermWrapped(val, ref);
         } else {

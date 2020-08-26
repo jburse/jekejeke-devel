@@ -11,6 +11,8 @@ import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>Provides built-in predicates for univ ops.</p>
@@ -44,14 +46,13 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialUniv extends AbstractSpecial {
-    private final static int SPECIAL_ARG = 1;
-    private final static int SPECIAL_SET_ARG = 2;
-    /* private final static int SPECIAL_UNIFY = 3; */
+    private final static int SPECIAL_SYS_LIST_TO_TERM = 0;
+    private final static int SPECIAL_SYS_TERM_TO_LIST = 1;
+    private final static int SPECIAL_ARG = 2;
+    private final static int SPECIAL_SET_ARG = 3;
     private final static int SPECIAL_UNIFY_CHECKED = 4;
     private final static int SPECIAL_NOT_UNIFY = 5;
-    private final static int SPECIAL_SYS_LIST_TO_TERM = 6;
-    private final static int SPECIAL_SYS_TERM_TO_LIST = 7;
-    private final static int SPECIAL_COPY_TERM = 8;
+    private final static int SPECIAL_COPY_TERM = 6;
 
     /**
      * <p>Create a univ special.</p>
@@ -77,9 +78,32 @@ public final class SpecialUniv extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case SPECIAL_ARG:
+                case SPECIAL_SYS_LIST_TO_TERM:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    boolean multi = SpecialUniv.listToTerm(en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return true;
+                case SPECIAL_SYS_TERM_TO_LIST:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    en.skel = SpecialUniv.termToList(en.skel, en);
+                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                        return false;
+                    return true;
+                case SPECIAL_ARG:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int nth = SpecialEval.castIntValue(num);
@@ -118,7 +142,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (1 > nth || nth > sc.args.length)
                             return false;
                         nth--;
-                        Display d = en.display;
+                        d = en.display;
 
                         en.skel = temp[2];
                         en.display = ref;
@@ -126,7 +150,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         Object t2 = en.skel;
                         Display d2 = en.display;
 
-                        boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
+                        multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
                         if (!en.unifyTerm(temp[3], ref, sc, d))
@@ -158,29 +182,6 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.releaseBind(mark);
                     if (en.fault != null)
                         throw en.fault;
-                    return true;
-                case SPECIAL_SYS_LIST_TO_TERM:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    boolean multi = SpecialUniv.listToTerm(en);
-                    Display d = en.display;
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
-                case SPECIAL_SYS_TERM_TO_LIST:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    en.skel = SpecialUniv.termToList(en.skel, en);
-                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
-                        return false;
                     return true;
                 case SPECIAL_COPY_TERM:
                     temp = ((SkelCompound) en.skel).args;

@@ -138,18 +138,29 @@ sys_toplevel_ask :-
    sys_toplevel_level,
    sys_toplevel_top,
    write('?- '), flush_output,
-   read_term(G, [variable_names(N)]),
-   (  G == end_of_file -> true
-   ;  current_prolog_flag(sys_print_map, M),
+   sys_read_expand(H, J),
+   (  H == end_of_file -> true
+   ;  set_callable_property(G, sys_variable_names(J), H),
+      callable_property(G, sys_variable_names(N)),
+      current_prolog_flag(sys_print_map, M),
       setup_call_cleanup(set_prolog_flag(sys_print_map, N),
          sys_answer(G, N),
          set_prolog_flag(sys_print_map, M)), fail).
 
+% sys_read_expand(-Term, -List)
+:- private sys_read_expand/2.
+sys_read_expand(G, N) :-
+   current_prolog_flag(sys_clause_expand, off), !,
+   read_term(G, [variable_names(N)]).
+sys_read_expand(G, N) :-
+   read_term(H, [variable_names(K)]),
+   expand_goal(H, J),
+   copy_term(J-K, G-N).
+
 % sys_toplevel_level
 :- private sys_toplevel_level/0.
 sys_toplevel_level :-
-   current_prolog_flag(sys_break_level, X),
-   X > 0, !,
+   current_prolog_flag(sys_break_level, X), X > 0, !,
    write('['), write(X), write('] ').
 sys_toplevel_level.
 
@@ -168,8 +179,7 @@ sys_toplevel_top.
 :- private sys_answer/2.
 sys_answer(G, N) :-
    current_prolog_flag(sys_choices, X),
-   expand_goal(G, H),
-   call_residue(H, R),
+   call_residue(G, R),
    current_prolog_flag(sys_choices, Y),
    (  X =:= Y -> !, sys_filter_show(N, R), nl
    ;  sys_answer_ask(N, R) -> !; true).
@@ -255,7 +265,7 @@ sys_filter_assoc([X = Y|L], N, K, R) :-
    sys_get_assoc(Y, N, Z),
    Z == X, !,
    sys_filter_assoc(L, N, K, R).
-sys_filter_assoc([X = Y|L], N, K, [X = Y|R]) :-
+sys_filter_assoc([E|L], N, K, [E|R]) :-
    sys_filter_assoc(L, N, K, R).
 sys_filter_assoc([], _, K, K).
 

@@ -8,6 +8,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.structure.SpecialVars;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -121,8 +123,8 @@ public final class SpecialSession extends AbstractSpecial {
      * @param en   The engine.
      * @return The Prolog association list.
      */
-    public static Object hashToRawAssoc(MapHashLink<String, SkelVar> vars, Display d,
-                                        Engine en) {
+    public static Object hashToAssoc(MapHashLink<String, SkelVar> vars,
+                                     Display d, Engine en) {
         Object end = en.store.foyer.ATOM_NIL;
         if (vars == null)
             return end;

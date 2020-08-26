@@ -72,10 +72,10 @@ T =.. L :-
    sys_term_to_list(T, L).
 
 :- private sys_list_to_term/2.
-:- special(sys_list_to_term/2, 'SpecialUniv', 6).
+:- special(sys_list_to_term/2, 'SpecialUniv', 0).
 
 :- private sys_term_to_list/2.
-:- special(sys_term_to_list/2, 'SpecialUniv', 7).
+:- special(sys_term_to_list/2, 'SpecialUniv', 1).
 
 /**
  * functor(X, N, A): [ISO 8.5.1]
@@ -98,7 +98,7 @@ T =.. L :-
  */
 % arg(+Integer, +Term, -Term)
 :- public arg/3.
-:- special(arg/3, 'SpecialUniv', 1).
+:- special(arg/3, 'SpecialUniv', 2).
 
 /**
  * set_arg(K, X, Y, Z):
@@ -108,7 +108,7 @@ T =.. L :-
  */
 % set_arg(+Integer, +Term, +Term, -Term)
 :- public set_arg/4.
-:- special(set_arg/4, 'SpecialUniv', 2).
+:- special(set_arg/4, 'SpecialUniv', 3).
 
 /**
  * X = Y: [ISO 8.2.1]
@@ -139,5 +139,4 @@ T =.. L :-
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialUniv', 8).
-
+:- special(copy_term/2, 'SpecialUniv', 6).

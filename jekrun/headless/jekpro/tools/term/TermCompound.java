@@ -308,7 +308,7 @@ public final class TermCompound extends AbstractTerm {
         }
         if (multi) {
             last = new Display(countvar);
-            last.vars = Display.VARS_MARKER;
+            last.marker = true;
         }
         en.skel = Boolean.valueOf(multi);
         return last;

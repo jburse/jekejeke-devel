@@ -5,15 +5,17 @@ import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.molec.CacheSubclass;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.PropertyStream;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
 import matula.util.config.FileExtension;
@@ -184,7 +186,7 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+            scope = derefAndCastScope(key.getSkel(),
                     key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -212,7 +214,7 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+            scope = derefAndCastScope(key.getSkel(),
                     key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -243,7 +245,7 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+            scope = derefAndCastScope(key.getSkel(),
                     key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -271,7 +273,7 @@ public final class ForeignPath {
         Engine engine = inter.getEngine();
         AbstractSource scope;
         try {
-            scope = PropertyCallable.derefAndCastScope(key.getSkel(),
+            scope = derefAndCastScope(key.getSkel(),
                     key.getDisplay(), engine);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -679,6 +681,29 @@ public final class ForeignPath {
             throw new InterpreterMessage(InterpreterMessage.domainError(
                     InterpreterMessage.OP_DOMAIN_FLAG_VALUE, t));
         }
+    }
+
+    /**
+     * <p>Deref and cast to scope.</p>
+     *
+     * @param m  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
+     * @return The position key.
+     * @throws EngineMessage Shit happens.
+     */
+    public static AbstractSource derefAndCastScope(Object m, Display d, Engine en)
+            throws EngineMessage {
+        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(m, d);
+        AbstractSource scope;
+        if (!"".equals(sa.fun)) {
+            scope = (sa.scope != null ? sa.scope : en.store.user);
+            scope = scope.getStore().getSource(sa.fun);
+            AbstractSource.checkExistentSource(scope, sa);
+        } else {
+            scope = null;
+        }
+        return scope;
     }
 
 }

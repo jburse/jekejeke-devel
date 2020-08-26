@@ -1,13 +1,16 @@
 package jekpro.reference.reflect;
 
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
-import jekpro.reference.structure.SpecialUniv;
+import jekpro.reference.bootload.ForeignPath;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -49,11 +52,14 @@ public final class PropertyCallable extends AbstractProperty<Object> {
             new MapHash<StoreKey, AbstractProperty<Object>>();
 
     public final static String OP_SYS_CONTEXT = "sys_context";
+    public final static String OP_SYS_VARIABLE_NAMES = "sys_variable_names";
 
     private static final int PROP_SYS_CONTEXT = 0;
+    private static final int PROP_SYS_VARIABLE_NAMES = 1;
 
     static {
         DEFAULT.add(new StoreKey(OP_SYS_CONTEXT, 1), new PropertyCallable(PROP_SYS_CONTEXT));
+        DEFAULT.add(new StoreKey(OP_SYS_VARIABLE_NAMES, 1), new PropertyCallable(PROP_SYS_VARIABLE_NAMES));
     }
 
     /**
@@ -81,6 +87,11 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 return new Object[]{AbstractTerm.createMolec(
                         new SkelCompound(new SkelAtom(OP_SYS_CONTEXT), sa),
                         Display.DISPLAY_CONST)};
+            case PROP_SYS_VARIABLE_NAMES:
+                Display d = AbstractTerm.getDisplay(obj);
+                return new Object[]{AbstractTerm.createMolec(
+                        new SkelCompound(new SkelAtom(OP_SYS_VARIABLE_NAMES),
+                                SpecialSession.hashToAssoc(d.vars, d, en)), d)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -107,6 +118,17 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 en.skel = StackElement.callableFromName(t, sa);
                 en.display = AbstractTerm.getDisplay(obj);
                 return true;
+            case PROP_SYS_VARIABLE_NAMES:
+                MapHash<BindUniv, String> print = derefAndCastAssoc(m, d, en);
+                t = AbstractTerm.getSkel(obj);
+                Display d2 = AbstractTerm.getDisplay(obj);
+                Display ref = Display.valueOf(d2.bind.length);
+                ref.vars = SupervisorCopy.copyVarsUniv(t, d2, print);
+                if (d2.bind.length != 0)
+                    ref.marker = true;
+                en.skel = t;
+                en.display = ref;
+                return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -119,11 +141,9 @@ public final class PropertyCallable extends AbstractProperty<Object> {
      * @param m   The property skeleton.
      * @param d   The property display.
      * @param en  The engine.
-     * @return True if property could be set, otherwise false.
-     * @throws EngineMessage Shit happens.
+     * @return True if property could be reset, otherwise false.
      */
-    public boolean resetObjProp(Object obj, Object m, Display d, Engine en)
-            throws EngineMessage {
+    public boolean resetObjProp(Object obj, Object m, Display d, Engine en) {
         switch (id) {
             case PROP_SYS_CONTEXT:
                 Object t = AbstractTerm.getSkel(obj);
@@ -131,6 +151,15 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 sa = new SkelAtom(sa.fun);
                 en.skel = StackElement.callableFromName(t, sa);
                 en.display = AbstractTerm.getDisplay(obj);
+                return true;
+            case PROP_SYS_VARIABLE_NAMES:
+                t = AbstractTerm.getSkel(obj);
+                Display d2 = AbstractTerm.getDisplay(obj);
+                Display ref = Display.valueOf(d2.bind.length);
+                if (d2.bind.length != 0)
+                    ref.marker = true;
+                en.skel = t;
+                en.display = ref;
                 return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
@@ -150,7 +179,8 @@ public final class PropertyCallable extends AbstractProperty<Object> {
      * @return The scope.
      * @throws EngineMessage Shit happens.
      */
-    private static AbstractSource derefAndCastContext(Object m, Display d, Engine en)
+    private static AbstractSource derefAndCastContext(Object m,
+                                                      Display d, Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -161,7 +191,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 ((SkelCompound) m).args.length == 1 &&
                 ((SkelCompound) m).sym.fun.equals(OP_SYS_CONTEXT)) {
             SkelCompound sc = (SkelCompound) m;
-            return PropertyCallable.derefAndCastScope(sc.args[0], d, en);
+            return ForeignPath.derefAndCastScope(sc.args[0], d, en);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
@@ -170,26 +200,32 @@ public final class PropertyCallable extends AbstractProperty<Object> {
     }
 
     /**
-     * <p>Deref and cast to scope.</p>
+     * <p>Deref and cast to assoc.</p>
      *
      * @param m  The term skeleton.
      * @param d  The term display.
      * @param en The engine.
-     * @return The position key.
+     * @return The print map.
      * @throws EngineMessage Shit happens.
      */
-    public static AbstractSource derefAndCastScope(Object m, Display d, Engine en)
+    private static MapHash<BindUniv, String> derefAndCastAssoc(Object m,
+                                                               Display d, Engine en)
             throws EngineMessage {
-        SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(m, d);
-        AbstractSource scope;
-        if (!"".equals(sa.fun)) {
-            scope = (sa.scope != null ? sa.scope : en.store.user);
-            scope = scope.getStore().getSource(sa.fun);
-            AbstractSource.checkExistentSource(scope, sa);
+        en.skel = m;
+        en.display = d;
+        en.deref();
+        m = en.skel;
+        d = en.display;
+        if (m instanceof SkelCompound &&
+                ((SkelCompound) m).args.length == 1 &&
+                ((SkelCompound) m).sym.fun.equals(OP_SYS_VARIABLE_NAMES)) {
+            SkelCompound sc = (SkelCompound) m;
+            return SupervisorCopy.assocToMapUniv(sc.args[0], d, en);
         } else {
-            scope = null;
+            EngineMessage.checkInstantiated(m);
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
-        return scope;
     }
 
 }

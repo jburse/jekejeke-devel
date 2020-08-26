@@ -181,7 +181,7 @@ public abstract class AbstractDelegate {
 
         AbstractDelegate.invokeOther(en);
 
-        ref.vars = Display.VARS_MARKER;
+        ref.marker = true;
         en.display = ref;
         en.skel = temp;
     }

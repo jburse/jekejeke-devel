@@ -1,9 +1,11 @@
 package jekpro.model.pretty;
 
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
@@ -11,13 +13,12 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
-import matula.util.data.MapHashLink;
+import matula.util.data.MapHash;
 
 /**
  * <p>This class provides write options.</p>
@@ -89,7 +90,7 @@ public final class WriteOpts {
     public byte utilback;
     public byte utilsingle;
     public AbstractSource source;
-    public MapHashLink<Object, String> printmap;
+    public MapHash<BindUniv, String> printmap;
 
     /***************************************************************/
     /* Write Options                                               */
@@ -217,7 +218,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                    printmap = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0], en.display, en);
+                    printmap = SupervisorCopy.assocToMapUniv(((SkelCompound) en.skel).args[0], en.display, en);
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_DOUBLE_QUOTES)) {
@@ -482,8 +483,7 @@ public final class WriteOpts {
             return;
         if (printmap == null)
             return;
-        PrologWriter pw = new PrologWriter();
-        for (MapEntry<Object, String> entry = printmap.getLastEntry();
+        for (MapEntry<BindUniv, String> entry = printmap.getLastEntry();
              entry != null; entry = printmap.predecessor(entry)) {
             if (PrologWriter.variableNeedsQuotes(entry.value))
                 throw new EngineMessage(EngineMessage.domainError(

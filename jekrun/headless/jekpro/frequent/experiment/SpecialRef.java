@@ -8,17 +8,16 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.FileText;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -227,7 +226,7 @@ public final class SpecialRef extends AbstractSpecial {
      *
      * @param flags The flags.
      * @param en    The engine.
-     * @return True if the ptr ref could be unified.
+     * @return The new clause..
      * @throws EngineMessage Validation Error.
      */
     private static Clause compileClause(int flags, Engine en)
@@ -240,9 +239,9 @@ public final class SpecialRef extends AbstractSpecial {
         Object molec = ec.copyTermNew(temp[0], ref);
         MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            MapHashLink<Object, String> printmap =
+            MapHash<BindUniv, String> print =
                     SpecialRef.decodeAssertOptions(temp[2], ref, en);
-            vars = FileText.copyVars(ec.vars, printmap);
+            vars = SupervisorCopy.copyVarsUniv(ec.vars, print);
         } else {
             vars = null;
         }
@@ -407,26 +406,27 @@ public final class SpecialRef extends AbstractSpecial {
         return (InterfaceReference) m;
     }
 
-    /*******************************************************************/
-    /* Assert Options                                                  */
-    /*******************************************************************/
+    /******************************************************************/
+    /* Assert Options                                                 */
+    /******************************************************************/
 
     /**
-     * <p>Decode the given clause options.</p>
+     * <p>Decode the given assert options.</p>
      * <p>Will look for the following option:</p>
      * <ul>
      * <li><b>variable_names:</b> The variables names with singletons (input).</li>
      * </ul>
      *
-     * @param t  The options skel.
-     * @param d  The options display.
+     * @param t  The assert options skel.
+     * @param d  The assert options display.
      * @param en The engine.
+     * @return The assert options.
      * @throws EngineMessage Validation Error.
      */
-    public static MapHashLink<Object, String> decodeAssertOptions(Object t, Display d,
-                                                                  Engine en)
+    public static MapHash<BindUniv, String> decodeAssertOptions(Object t, Display d,
+                                                                Engine en)
             throws EngineMessage {
-        MapHashLink<Object, String> vars = null;
+        MapHash<BindUniv, String> vars = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -440,8 +440,7 @@ public final class SpecialRef extends AbstractSpecial {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                vars = SpecialVars.assocToMap(((SkelCompound) en.skel).args[0],
-                        d, en);
+                vars = SupervisorCopy.assocToMapUniv(((SkelCompound) en.skel).args[0], d, en);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(

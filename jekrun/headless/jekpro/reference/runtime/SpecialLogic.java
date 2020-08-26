@@ -305,7 +305,7 @@ public final class SpecialLogic extends AbstractSpecial {
             en.display = d2;
         } else {
             Display d3 = new Display(2);
-            d3.vars = Display.VARS_MARKER;
+            d3.marker = true;
             boolean ext = d2.getAndReset();
             d3.bind[0].bindUniv(t2, d2, en);
             if (ext)

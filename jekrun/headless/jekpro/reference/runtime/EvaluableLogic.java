@@ -223,7 +223,7 @@ public final class EvaluableLogic extends AbstractSpecial {
         }
         if (multi) {
             last = new Display(countvar);
-            last.vars = Display.VARS_MARKER;
+            last.marker = true;
         }
         en.display = last;
         return multi;

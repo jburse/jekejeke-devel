@@ -45,9 +45,9 @@ set_source_property/2	builtin/special
 special/3	builtin/special
 sys_alter/2	builtin/body
 sys_begin/0	builtin/body
+sys_callable_property_chk/3	builtin/special
 sys_check_style_predicate/1	builtin/special
 sys_commit/0	builtin/body
-sys_context_property/2	builtin/special
 sys_declaration_indicator/2	builtin/special
 sys_error_type/2	builtin/control
 sys_guard/1	builtin/body

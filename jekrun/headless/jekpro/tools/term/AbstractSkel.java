@@ -99,9 +99,9 @@ public abstract class AbstractSkel {
     public static Object copySkel(Object m, Display d, Engine en) {
         SupervisorCopy ec = en.visor.getCopy();
         ec.vars = null;
-        Object val = ec.copyTerm(m, d);
+        m = ec.copyTerm(m, d);
         ec.vars = null;
-        return val;
+        return m;
     }
 
     /**
@@ -125,7 +125,7 @@ public abstract class AbstractSkel {
         int size = SupervisorCopy.displaySize(val);
         Display ref = Display.valueOf(size);
         if (size != 0)
-            ref.vars = Display.VARS_MARKER;
+            ref.marker = true;
         return ref;
     }
 

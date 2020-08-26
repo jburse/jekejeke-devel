@@ -38,11 +38,9 @@ import matula.util.data.MapHashLink;
 public final class Display {
     public final static Display DISPLAY_CONST = new Display(0);
 
-    public final static MapHashLink<String, SkelVar> VARS_MARKER
-            = new MapHashLink<String, SkelVar>();
-
     public BindUniv[] bind;
     public MapHashLink<String, SkelVar> vars;
+    public boolean marker;
 
     /**
      * <p>Create a new display.</p>
@@ -107,8 +105,8 @@ public final class Display {
      * @return The multi flag.
      */
     public boolean getAndReset() {
-        if (vars == VARS_MARKER) {
-            vars = null;
+        if (marker) {
+            marker = false;
             return true;
         } else {
             return false;
