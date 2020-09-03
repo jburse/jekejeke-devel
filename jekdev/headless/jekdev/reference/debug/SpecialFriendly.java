@@ -56,6 +56,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static int SPECIAL_SYS_INSTRUMENTED = 1;
 
     private final static String CODE_UNIFY_TERM = " unify_term";
+    private final static String CODE_UNIFY_COMB = " unify_comb";
     private final static String CODE_UNIFY_VAR = " unify_var";
 
     private final static String CODE_CALL_GOAL = " call_goal";
@@ -226,7 +227,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.flush();
                     } else if (n != Optimization.UNIFY_SKIP) {
                         fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_TERM);
+                        wr.write(SpecialFriendly.CODE_UNIFY_COMB);
                         wr.write(" _");
                         wr.write(Integer.toString(n));
                         wr.write(", _");
