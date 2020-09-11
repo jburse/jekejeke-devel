@@ -1527,6 +1527,26 @@ public class PrologWriter {
             }
         }
         if (engine != null && (flags & PrologWriter.FLAG_IGNO) == 0) {
+            if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
+                CachePredicate cp = offsetToPredicate(sc, mod, nsa);
+                Object[] decl = predicateToMeta(cp);
+                appendLink(PrologReader.OP_LBRACE, cp);
+                writeSet(sc, ref, 0, cp, decl, mod, nsa);
+                append(PrologReader.OP_RBRACE);
+                return;
+            }
+            if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
+                if (level > Operator.LEVEL_MIDDLE)
+                    indent += SPACES;
+                append(PrologReader.OP_LBRACKET);
+                writeBreak(sc.sym, 0, false);
+                writeList(sc, ref, mod, nsa);
+                writeBreak(sc.sym, 2, false);
+                append(PrologReader.OP_RBRACKET);
+                if (level > Operator.LEVEL_MIDDLE)
+                    indent -= SPACES;
+                return;
+            }
             if (isIndex(sc)) {
                 Operator oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_POSTFIX, engine);
@@ -1583,26 +1603,6 @@ public class PrologWriter {
                         indent -= SPACES;
                     return;
                 }
-            }
-            if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
-                CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-                Object[] decl = predicateToMeta(cp);
-                appendLink(PrologReader.OP_LBRACE, cp);
-                writeSet(sc, ref, 0, cp, decl, mod, nsa);
-                append(PrologReader.OP_RBRACE);
-                return;
-            }
-            if (sc.args.length == 2 && sc.sym.fun.equals(Foyer.OP_CONS)) {
-                if (level > Operator.LEVEL_MIDDLE)
-                    indent += SPACES;
-                append(PrologReader.OP_LBRACKET);
-                writeBreak(sc.sym, 0, false);
-                writeList(sc, ref, mod, nsa);
-                writeBreak(sc.sym, 2, false);
-                append(PrologReader.OP_RBRACKET);
-                if (level > Operator.LEVEL_MIDDLE)
-                    indent -= SPACES;
-                return;
             }
         }
         if (level > Operator.LEVEL_MIDDLE)

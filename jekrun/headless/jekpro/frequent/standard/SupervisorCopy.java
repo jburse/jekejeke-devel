@@ -387,46 +387,4 @@ public final class SupervisorCopy {
         return copy;
     }
 
-    /**
-     * <p>Make a copy of the given variable names.</p>
-     * <p>Only copy terms that are bound to a variable.</p>
-     * <p>Only copy variables that already exist in rule.</p>
-     *
-     * @param m     The term skeleton.
-     * @param d     The term display.
-     * @param print The print map.
-     * @return The named copy.
-     */
-    public static MapHashLink<String, SkelVar> copyVarsUniv(Object m, Display d,
-                                                            MapHash<BindUniv, String> print) {
-        Object var = SupervisorCopy.getVar(m);
-        if (print == null || var == null)
-            return null;
-        MapHashLink<String, SkelVar> copy = null;
-        SkelVar v;
-        if (var instanceof SkelVar) {
-            v = (SkelVar) var;
-        } else {
-            SkelVar[] temp = (SkelVar[]) var;
-            int i = 0;
-            for (; i < temp.length - 1; i++) {
-                v = temp[i];
-                String name = print.get(d.bind[v.id]);
-                if (name == null)
-                    continue;
-                if (copy == null)
-                    copy = new MapHashLink<String, SkelVar>();
-                copy.add(name, v);
-            }
-            v = temp[i];
-        }
-        String name = print.get(d.bind[v.id]);
-        if (name == null)
-            return null;
-        if (copy == null)
-            copy = new MapHashLink<String, SkelVar>();
-        copy.add(name, v);
-        return copy;
-    }
-
 }

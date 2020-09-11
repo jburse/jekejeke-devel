@@ -14,7 +14,9 @@ import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 /**
  * <p>Callable properties on runtime library level.</p>
@@ -123,7 +125,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 t = AbstractTerm.getSkel(obj);
                 Display d2 = AbstractTerm.getDisplay(obj);
                 Display ref = Display.valueOf(d2.bind.length);
-                ref.vars = SupervisorCopy.copyVarsUniv(t, d2, print);
+                ref.vars = collectNames(t, d2, print);
                 if (d2.bind.length != 0)
                     ref.marker = true;
                 en.skel = t;
@@ -226,6 +228,52 @@ public final class PropertyCallable extends AbstractProperty<Object> {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
         }
+    }
+
+    /****************************************************************/
+    /* Create Hash                                                  */
+    /****************************************************************/
+
+    /**
+     * <p>Make a copy of the given variable names.</p>
+     * <p>Only copy terms that are bound to a variable.</p>
+     * <p>Only copy variables that already exist in rule.</p>
+     *
+     * @param m     The term skeleton.
+     * @param d     The term display.
+     * @param print The print map.
+     * @return The named copy.
+     */
+    private static MapHashLink<String, SkelVar> collectNames(Object m, Display d,
+                                                             MapHash<BindUniv, String> print) {
+        Object var = SupervisorCopy.getVar(m);
+        if (print == null || var == null)
+            return null;
+        MapHashLink<String, SkelVar> copy = null;
+        SkelVar v;
+        if (var instanceof SkelVar) {
+            v = (SkelVar) var;
+        } else {
+            SkelVar[] temp = (SkelVar[]) var;
+            int i = 0;
+            for (; i < temp.length - 1; i++) {
+                v = temp[i];
+                String name = print.get(d.bind[v.id]);
+                if (name == null)
+                    continue;
+                if (copy == null)
+                    copy = new MapHashLink<String, SkelVar>();
+                copy.add(name, v);
+            }
+            v = temp[i];
+        }
+        String name = print.get(d.bind[v.id]);
+        if (name == null)
+            return copy;
+        if (copy == null)
+            copy = new MapHashLink<String, SkelVar>();
+        copy.add(name, v);
+        return copy;
     }
 
 }

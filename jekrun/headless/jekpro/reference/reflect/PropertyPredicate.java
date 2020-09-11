@@ -80,7 +80,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     public final static String OP_FULL_NAME = "full_name";
     public final static String OP_SYS_USAGE = "sys_usage";
-    private final static String OP_SYS_NOBODY = "sys_nobody";
+    private final static String OP_SYS_NOINDEX = "sys_noindex";
     private final static String OP_SYS_NOSTACK = "sys_nostack";
     private final static String OP_SYS_NOHEAD = "sys_nohead";
 
@@ -110,7 +110,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     private final static int PROP_FULL_NAME = 19;
     private final static int PROP_SYS_USAGE = 20;
-    private final static int PROP_SYS_NOBODY = 21;
+    private final static int PROP_SYS_NOINDEX = 21;
     private final static int PROP_SYS_NOSTACK = 22;
     private final static int PROP_SYS_NOHEAD = 23;
 
@@ -156,7 +156,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
         DEFAULT.add(new StoreKey(OP_FULL_NAME, 1), new PropertyPredicate(PROP_FULL_NAME));
         DEFAULT.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
-        DEFAULT.add(new StoreKey(OP_SYS_NOBODY, 0), new PropertyPredicate(PROP_SYS_NOBODY));
+        DEFAULT.add(new StoreKey(OP_SYS_NOINDEX, 0), new PropertyPredicate(PROP_SYS_NOINDEX));
         DEFAULT.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
         DEFAULT.add(new StoreKey(OP_SYS_NOHEAD, 0), new PropertyPredicate(PROP_SYS_NOHEAD));
     }
@@ -340,11 +340,11 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
                         new SkelAtom(OP_SYS_USAGE), res);
-            case PROP_SYS_NOBODY:
+            case PROP_SYS_NOINDEX:
                 fun = pick.del;
                 if ((fun instanceof AbstractDefined) &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NBDY) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOBODY)};
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NIDX) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NOINDEX)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -480,10 +480,10 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_USAGE:
                 /* can't modify */
                 return false;
-            case PROP_SYS_NOBODY:
+            case PROP_SYS_NOINDEX:
                 AbstractDelegate fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NBDY;
+                fun.subflags |= AbstractDefined.MASK_DEFI_NIDX;
                 return true;
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
@@ -609,10 +609,10 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_SYS_USAGE:
                 /* can't modify */
                 return false;
-            case PROP_SYS_NOBODY:
+            case PROP_SYS_NOINDEX:
                 AbstractDelegate fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick, en);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NBDY;
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NIDX;
                 return true;
             case PROP_SYS_NOSTACK:
                 fun = pick.del;

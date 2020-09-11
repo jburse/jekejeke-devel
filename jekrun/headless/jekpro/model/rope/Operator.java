@@ -60,8 +60,6 @@ public class Operator {
     public final static int MASK_OPER_VSPR = 0x00000100;
     public final static int MASK_OPER_VSPU = 0x00000200;
 
-    public final static int MASK_OPER_OVRD = 0x00001000;
-
     /* combined operator flags */
     public final static int MASK_OPER_MODE = MASK_OPER_LEFT | MASK_OPER_RGHT;
     public final static int MASK_OPER_VISI = MASK_OPER_VSPR | MASK_OPER_VSPU;
@@ -386,61 +384,6 @@ public class Operator {
         if (op == null)
             throw new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_OPERATOR, t), d);
-    }
-
-    /************************************************************************/
-    /* Style Checks Oper Declaration                                        */
-    /************************************************************************/
-
-    /**
-     * <p>Perform a style check on the given operator.</p>
-     * <p>This check is performed during the loading of a module.</p>
-     *
-     * @param op The operator.
-     * @param sa The call-site.
-     * @param en The engine.
-     * @throws EngineMessage Printing error.
-     */
-    public static void checkOperDecl(Operator op, SkelAtom sa,
-                                     Engine en)
-            throws EngineMessage, EngineException {
-        try {
-            checkOperOverride(op, sa, en);
-        } catch (EngineMessage x) {
-            EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            op.getPosition(), en), EngineException.OP_WARNING);
-            y.printStackTrace(en);
-        }
-    }
-
-    /**
-     * <p>Perform the override style check.</p>
-     *
-     * @param oper The operator.
-     * @param sa   The functor.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkOperOverride(Operator oper, SkelAtom sa,
-                                          Engine en)
-            throws EngineMessage, EngineException {
-        if ((oper.getBits() & MASK_OPER_OVRD) != 0)
-            return;
-        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-        AbstractSource base = OperatorSearch.performBase(sa.fun, src, en);
-        Operator over;
-        try {
-            over = OperatorSearch.performOverrides(oper.getType(), sa.fun, base);
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        if (over == null || !OperatorSearch.visibleOper(oper, src))
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_OVERRIDE_OPER,
-                SpecialOper.operToColonSkel(oper.getKey(),
-                        oper.getSource().getStore().user, oper.getType(), en)));
     }
 
     /************************************************************************/

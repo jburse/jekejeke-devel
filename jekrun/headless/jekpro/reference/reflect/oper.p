@@ -120,8 +120,7 @@ sys_oper2(I, L, M) :-
    set_oper_property(I, op(L, M)),
    sys_oper3(I, L),
    sys_oper4(I, L),
-   sys_oper5(I, L),
-   sys_check_style_oper(I).
+   sys_oper5(I, L).
 :- set_predicate_property(sys_oper2/3, visible(private)).
 
 % sys_oper3(+Indicator, +Integer)
@@ -164,10 +163,6 @@ sys_oper5(I, _) :-
  */
 % sys_neutral_oper(+Indicator)
 % natively bootstrapped by SpecialModel
-
-% sys_check_style_oper(+Indicator)
-:- special(sys_check_style_oper/1, 'SpecialOper', 1).
-:- set_predicate_property(sys_check_style_oper/1, visible(private)).
 
 /**
  * current_op(L, M, O): [ISO 8.14.4]

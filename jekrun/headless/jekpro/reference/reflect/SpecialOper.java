@@ -53,7 +53,6 @@ import matula.util.data.MapHashLink;
  */
 public final class SpecialOper extends AbstractSpecial {
     public final static int SPECIAL_SYS_NEUTRAL_OPER = 0;
-    private final static int SPECIAL_SYS_CHECK_STYLE_OPER = 1;
     private final static int SPECIAL_SYS_CURRENT_OPER = 2;
     private final static int SPECIAL_SYS_CURRENT_OPER_CHK = 3;
     private final static int SPECIAL_SYS_OPER_PROPERTY = 4;
@@ -107,14 +106,6 @@ public final class SpecialOper extends AbstractSpecial {
                 SpecialOper.operToOperatorDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_CRTE);
                 return true;
-            case SPECIAL_SYS_CHECK_STYLE_OPER:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                Operator oper = SpecialOper.operToOperator(temp[0], ref, en);
-                SkelAtom sa = (SkelAtom) en.skel;
-                Operator.checkExistentOperator(oper, temp[0], ref);
-                Operator.checkOperDecl(oper, sa, en);
-                return true;
             case SPECIAL_SYS_CURRENT_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -125,7 +116,7 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_OPER_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                oper = SpecialOper.operToOperator(temp[0], ref, en);
+                Operator oper = SpecialOper.operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
                 return true;

@@ -236,7 +236,7 @@ user:goal_expansion(phrase(U, I, O), Q) :- U = [X|L],
 % sys_phrase_list(+List, +Term, -List)
 :- private sys_phrase_list/3.
 sys_phrase_list(X, _, _) :- var(X),
-   throw(erro(instantiation_error, _)).
+   throw(error(instantiation_error, _)).
 sys_phrase_list([], Y, Y).
 sys_phrase_list([X|L], Y, [X|R]) :-
    sys_phrase_list(L, Y, R).
@@ -316,12 +316,12 @@ user:goal_expansion(phrase(P, I, O), Q) :-
 :- meta_predicate user:term_expansion(-1, -1).
 
 user:term_expansion((P --> _), _) :-
-   var(P), throw(erro(instantiation_error, _)).
+   var(P), throw(error(instantiation_error, _)).
 user:term_expansion((P, B --> C),
    (phrase(P, I, O) :- phrase(C, I, H), phrase(B, O, H))).
 user:term_expansion((P --> B),
    (phrase(P, I, O) :- phrase(B, I, O))).
 user:term_expansion(phrase(P, _, _), _) :-
-   var(P), throw(erro(instantiation_error, _)).
+   var(P), throw(error(instantiation_error, _)).
 user:term_expansion(phrase(P, I, O), Q) :-
    sys_modext_args(P, I, O, Q).

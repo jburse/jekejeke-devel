@@ -62,7 +62,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
 
     private static final int PROP_VISIBLE = 0;
     private static final int PROP_OP = 1;
-    private static final int PROP_OVERRIDE = 2;
     private static final int PROP_SYS_USAGE = 3;
     private static final int PROP_SYS_PORTRAY = 4;
     private static final int PROP_SYS_ALIAS = 5;
@@ -78,7 +77,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                         AbstractProperty.MASK_PROP_PRJF));
         DEFAULT.add(new StoreKey(OP_OP, 2), new PropertyOperator(PROP_OP,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        DEFAULT.add(new StoreKey(PropertyPredicate.OP_OVERRIDE, 0), new PropertyOperator(PROP_OVERRIDE));
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_SYS_USAGE, 1), new PropertyOperator(PROP_SYS_USAGE));
         DEFAULT.add(new StoreKey(OP_SYS_PORTRAY, 1), new PropertyOperator(PROP_SYS_PORTRAY,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
@@ -140,12 +138,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                             oper.getBits() & Operator.MASK_OPER_MODE, oper.getType()));
                     return new Object[]{AbstractTerm.createMolec(
                             new SkelCompound(new SkelAtom(OP_OP), val, val2), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_OVERRIDE:
-                if ((oper.getBits() & Operator.MASK_OPER_OVRD) != 0) {
-                    return new Object[]{new SkelAtom(PropertyPredicate.OP_OVERRIDE)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -234,9 +226,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     oper.resetBit(Operator.MASK_OPER_MODE);
                     oper.setBit(flags >> 16);
                     return true;
-                case PROP_OVERRIDE:
-                    oper.setBit(Operator.MASK_OPER_OVRD);
-                    return true;
                 case PROP_SYS_USAGE:
                     /* can't modify */
                     return false;
@@ -292,9 +281,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_OP:
                     oper.setLevel(0);
                     oper.resetBit(Operator.MASK_OPER_MODE);
-                    return true;
-                case PROP_OVERRIDE:
-                    oper.resetBit(Operator.MASK_OPER_OVRD);
                     return true;
                 case PROP_SYS_USAGE:
                     /* can't modify */

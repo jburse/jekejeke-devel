@@ -119,8 +119,6 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
-            if ((clause.flags & MASK_DEFI_NBDY) != 0)
-                dc.flags |= Directive.MASK_DIRE_LTGC;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefinedMultifile(en.choices, at, list, dc, mark);
@@ -130,16 +128,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
-            if ((clause.flags & MASK_DEFI_NBDY) != 0)
-                dc.flags |= Directive.MASK_DIRE_LTGC;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
-                if (d2.bind.length > 0)
-                    d2.remTab(en);
-            }
+            if (d2.bind.length > 0)
+                d2.remTab(en);
             return true;
         }
     }

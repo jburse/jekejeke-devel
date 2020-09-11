@@ -52,7 +52,7 @@ public final class Flag extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
             = new MapHash<String, AbstractFlag<Engine>>();
 
-    private final static String OP_SYS_BODY_VARIABLE = "sys_body_variable";
+    private final static String OP_DIALECT = "dialect";
     private final static String OP_SYS_STACK_FRAME = "sys_stack_frame";
     private final static String OP_SYS_HEAD_VARIABLE = "sys_head_variable";
     private final static String OP_SYS_CLAUSE_EXPAND = "sys_clause_expand";
@@ -70,9 +70,8 @@ public final class Flag extends AbstractFlag<Engine> {
     private final static String OP_SYS_RANDOM = "sys_random";
     private final static String OP_SYS_TIMEOUT = "sys_timeout";
     public final static String OP_STYLE_CHECK = "style_check";
-    private final static String OP_DIALECT = "dialect";
 
-    private static final int FLAG_SYS_BODY_VARIABLE = 0;
+    private static final int FLAG_DIALECT = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
     private static final int FLAG_SYS_HEAD_VARIABLE = 2;
     private static final int FLAG_SYS_CLAUSE_EXPAND = 3;
@@ -90,10 +89,9 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_RANDOM = 15;
     private static final int FLAG_SYS_TIMEOUT = 16;
     private static final int FLAG_STYLE_CHECK = 17;
-    private static final int FLAG_DIALECT = 18;
 
     static {
-        DEFAULT.add(OP_SYS_BODY_VARIABLE, new Flag(FLAG_SYS_BODY_VARIABLE));
+        DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
         DEFAULT.add(OP_SYS_STACK_FRAME, new Flag(FLAG_SYS_STACK_FRAME));
         DEFAULT.add(OP_SYS_HEAD_VARIABLE, new Flag(FLAG_SYS_HEAD_VARIABLE));
         DEFAULT.add(OP_SYS_CLAUSE_EXPAND, new Flag(FLAG_SYS_CLAUSE_EXPAND));
@@ -111,8 +109,6 @@ public final class Flag extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_RANDOM, new Flag(FLAG_SYS_RANDOM));
         DEFAULT.add(OP_SYS_TIMEOUT, new Flag(FLAG_SYS_TIMEOUT));
         DEFAULT.add(OP_STYLE_CHECK, new Flag(FLAG_STYLE_CHECK));
-        DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
-
     }
 
     /**
@@ -132,9 +128,6 @@ public final class Flag extends AbstractFlag<Engine> {
      */
     public Object getObjFlag(Engine obj, Engine en) {
         switch (id) {
-            case FLAG_SYS_BODY_VARIABLE:
-                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
-                        Foyer.MASK_FOYER_NBDY) == 0);
             case FLAG_SYS_STACK_FRAME:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_NSTK) == 0);
@@ -196,13 +189,6 @@ public final class Flag extends AbstractFlag<Engine> {
             throws EngineMessage {
         try {
             switch (id) {
-                case FLAG_SYS_BODY_VARIABLE:
-                    if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NBDY);
-                    } else {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_NBDY);
-                    }
-                    return true;
                 case FLAG_SYS_STACK_FRAME:
                     if (AbstractFlag.atomToSwitch(m, d)) {
                         en.store.foyer.resetBit(Foyer.MASK_FOYER_NSTK);

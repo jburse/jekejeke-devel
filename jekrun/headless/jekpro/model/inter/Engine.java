@@ -8,7 +8,6 @@ import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.call.Interpreter;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.wire.AbstractLivestock;

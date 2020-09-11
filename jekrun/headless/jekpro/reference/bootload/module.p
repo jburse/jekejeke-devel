@@ -310,15 +310,6 @@ sys_override(V) :- var(V), throw(error(instantiation_error, _)).
 sys_override(D) :- sys_declaration_indicator(D, I), !,
    sys_override(I),
    call(D).
-sys_override(prefix(X)) :- !,
-   sys_neutral_oper(prefix(X)),
-   set_oper_property(prefix(X), override).
-sys_override(infix(X)) :- !,
-   sys_neutral_oper(infix(X)),
-   set_oper_property(infix(X), override).
-sys_override(postfix(X)) :- !,
-   sys_neutral_oper(postfix(X)),
-   set_oper_property(postfix(X), override).
 sys_override(I) :-
    sys_make_indicator(F, _, I),
    callable_property(F, sys_context(C)),

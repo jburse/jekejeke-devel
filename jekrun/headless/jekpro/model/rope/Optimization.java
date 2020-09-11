@@ -138,10 +138,10 @@ public final class Optimization {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
-                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) != 0) {
-                    ov.flags |= MASK_VAR_HSTR;
-                } else {
+                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) == 0) {
                     ov.maxarg = i;
+                } else {
+                    ov.flags |= MASK_VAR_HSTR;
                 }
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;

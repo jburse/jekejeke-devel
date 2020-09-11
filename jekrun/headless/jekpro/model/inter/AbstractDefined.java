@@ -9,7 +9,6 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -72,15 +71,14 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_NOBR = 0x00000100;
     public final static int MASK_DEFI_STOP = 0x00000200;
     public final static int MASK_DEFI_NBCV = 0x00000400;
-    public final static int MASK_DEFI_NIST = 0x00000800;
+    public final static int MASK_DEFI_NSTK = 0x00000800;
 
-    public final static int MASK_DEFI_NBDY = 0x00001000;
-    public final static int MASK_DEFI_NLST = 0x00002000;
+    public final static int MASK_DEFI_NIDX = 0x00001000;
     public final static int MASK_DEFI_NHED = 0x00004000;
-    public final static int MASK_DEFI_NSTK = 0x00008000;
+    public final static int MASK_DEFI_NIST = 0x00008000;
 
     public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
-            AbstractDefined.MASK_DEFI_NLST | AbstractDefined.MASK_DEFI_NSTK;
+            AbstractDefined.MASK_DEFI_NSTK;
     public final static int MASK_DEFI_TRAN = AbstractDefined.MASK_DEFI_NOBR |
             AbstractDefined.MASK_DEFI_NBCV;
 
@@ -120,8 +118,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param flags The store flags.
      */
     AbstractDefined(int flags) {
-        if ((flags & Foyer.MASK_FOYER_NBDY) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NBDY;
+        if ((flags & Foyer.MASK_FOYER_NIDX) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NIDX;
         if ((flags & Foyer.MASK_FOYER_NSTK) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NSTK;
         if ((flags & Foyer.MASK_FOYER_NHED) != 0)
@@ -314,8 +312,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
-            if ((clause.flags & MASK_DEFI_NBDY) != 0)
-                dc.flags |= Directive.MASK_DIRE_LTGC;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
@@ -325,16 +321,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
             CallFrame dc = CallFrame.getFrame(d2, clause, en);
-            if ((clause.flags & MASK_DEFI_NBDY) != 0)
-                dc.flags |= Directive.MASK_DIRE_LTGC;
             en.contskel = clause;
             en.contdisplay = dc;
             return true;
         } else {
-            if ((clause.flags & MASK_DEFI_NBDY) == 0) {
-                if (d2.bind.length > 0)
-                    d2.remTab(en);
-            }
+            if (d2.bind.length > 0)
+                d2.remTab(en);
             return true;
         }
     }

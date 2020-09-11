@@ -5,7 +5,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.InterfaceRope;
@@ -129,7 +128,7 @@ final class DefinedGroupLocal extends AbstractDefined {
             Bouquet temp = ep.cr;
             InterfaceRope set = temp.set;
             if (set != null && set.size() != 1 &&
-                    (en.store.foyer.getBits() & Foyer.MASK_FOYER_NIDX) == 0)
+                    (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
                 temp = Bouquet.definedClauses(temp, m, d, en);
             return temp.getClauses();
         } finally {

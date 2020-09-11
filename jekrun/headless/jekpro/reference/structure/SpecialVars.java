@@ -403,13 +403,15 @@ public final class SpecialVars extends AbstractSpecial {
                         anon != null && anon.getEntry(entry.value) != null) {
                     copy.add(entry.value, PrologReader.OP_ANON);
                 } else {
-                    if (range == null)
-                        range = nameRange(print);
                     String name = SkelVar.sernoToString(k, false);
                     k++;
-                    while (range.getEntry(name) != null) {
-                        name = SkelVar.sernoToString(k, false);
-                        k++;
+                    if (print != null) {
+                        if (range == null)
+                            range = nameRange(print);
+                        while (range.getEntry(name) != null) {
+                            name = SkelVar.sernoToString(k, false);
+                            k++;
+                        }
                     }
                     copy.add(entry.value, name);
                 }
@@ -451,13 +453,15 @@ public final class SpecialVars extends AbstractSpecial {
                         anon != null && anon.getEntry(entry.value) != null) {
                     copy.add(d.bind[sv.id], PrologReader.OP_ANON);
                 } else {
-                    if (range == null)
-                        range = nameRange(print);
                     String name = SkelVar.sernoToString(k, false);
                     k++;
-                    while (range.getEntry(name) != null) {
-                        name = SkelVar.sernoToString(k, false);
-                        k++;
+                    if (print != null) {
+                        if (range == null)
+                            range = nameRange(print);
+                        while (range.getEntry(name) != null) {
+                            name = SkelVar.sernoToString(k, false);
+                            k++;
+                        }
                     }
                     copy.add(d.bind[sv.id], name);
                 }
