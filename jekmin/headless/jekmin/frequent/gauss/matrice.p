@@ -74,7 +74,7 @@
 :- module(matrice, []).
 
 :- use_module(../groebner/generic).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 :- use_module(library(misc/residue)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -89,7 +89,6 @@
  * of the matrix X.
  */
 % +Matrice [+Integer, -Vector]
-:- override sys_index/3.
 :- public sys_index/3.
 X[Y, Z] :- integer(Y),
    arg(Y, X, Z).
@@ -100,7 +99,6 @@ X[Y, Z] :- integer(Y),
  * of the Y-the vector of X.
  */
 % +Matrice [+Integer, +Integer, -Element]
-:- override sys_index/4.
 :- public sys_index/4.
 X[Y, Z, T] :- integer(Y), integer(Z),
    arg(Y, X, H),

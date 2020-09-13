@@ -86,6 +86,7 @@
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/cont)).
 :- use_module(library(misc/elem)).
+:- use_module(library(basic/random)).
 :- use_module(helper).
 :- use_module(linform).
 
@@ -294,7 +295,7 @@ true <=
 
 /* Create Surrogate */
 post(sys_set_ref(V, L, S, T)) <=
-   phaseout_posted(sys_set(L, S)), surrogate_new(V), sys_bound_set(S, T).
+   phaseout_posted(sys_set(L, S)), genref(V), sys_bound_set(S, T).
 
 /* Trivial Cases */
 fail <=

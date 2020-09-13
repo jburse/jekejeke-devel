@@ -65,6 +65,7 @@
 :- use_module(library(basic/lists)).
 :- use_module(library(experiment/simp)).
 :- use_module(library(minimal/assume)).
+:- use_module(library(runtime/quali)).
 :- reexport(library(experiment/ref)).
 
 :- public infix(<=).
@@ -174,10 +175,10 @@ sys_drop(_, _) :- throw(error(existence_error(body, sys_drop/2), _)).
 
 % sys_special(+Goal)
 :- private sys_special/1.
-sys_special(A) :- var(A), !, fail.
+sys_special(A) :- user:var(A), !, fail.
 sys_special(sys_keep(_, _)).
 sys_special(sys_drop(_, _)).
-sys_special((A, _)) :- var(A), !, fail.
+sys_special((A, _)) :- user:var(A), !, fail.
 sys_special((sys_keep(_, _), _)).
 sys_special((sys_drop(_, _), _)).
 sys_special((A; _)) :- sys_special(A).
@@ -192,11 +193,13 @@ simp:goal_simplification((U, _), U) :- U == sys_none.
 simp:goal_simplification((_, U), U) :- U == sys_none.
 
 % conjunction + disjunction distribution
-simp:goal_simplification((U, C), R) :- nonvar(U), U = (A; B), (sys_special(A); sys_special(B)),
+simp:goal_simplification((U, C), R) :- nonvar(U), U = (A; B),
+   (sys_special(A); sys_special(B)),
    simplify_goal((A, C), H),
    simplify_goal((B, C), J),
    simplify_goal((H; J), R).
-simp:goal_simplification((A, U), R) :- nonvar(U), U = (B; C), (sys_special(B); sys_special(C)),
+simp:goal_simplification((A, U), R) :- nonvar(U), U = (B; C),
+   (sys_special(B); sys_special(C)),
    simplify_goal((A, B), H),
    simplify_goal((A, C), J),
    simplify_goal((H; J), R).
@@ -215,7 +218,7 @@ simp:goal_simplification((A, U), R) :- nonvar(U), U = (B; C), (sys_special(B); s
 :- meta_predicate sys_new(0).
 sys_new(_) :- throw(error(existence_error(body, sys_new/1), _)).
 
-simp:goal_simplification(sys_new(A), _) :- var(A), !, fail.
+simp:goal_simplification(sys_new(A), _) :- user:var(A), !, fail.
 
 /**
  * phaseout(P):
@@ -307,7 +310,7 @@ sys_check(_) :- throw(error(existence_error(body, sys_check/1), _)).
 :- meta_predicate sys_withdraw(-1).
 sys_withdraw(_) :- throw(error(existence_error(body, sys_withdraw/1), _)).
 
-simp:goal_simplification(sys_old(A), _) :- var(A), !, fail.
+simp:goal_simplification(sys_old(A), _) :- user:var(A), !, fail.
 simp:goal_simplification(sys_old(phaseout(H)), sys_withdraw(H)).
 simp:goal_simplification(sys_old(posted(H)), sys_check(H)).
 simp:goal_simplification(sys_old(phaseout_posted(H)), sys_withdraw(H)).
@@ -332,7 +335,7 @@ simp:goal_simplification(sys_old(H), H).
 :- meta_predicate sys_oldnew(0).
 sys_oldnew(_) :- throw(error(existence_error(body, sys_oldnew/1), _)).
 
-simp:goal_simplification(sys_oldnew(A), _) :- var(A), !, fail.
+simp:goal_simplification(sys_oldnew(A), _) :- user:var(A), !, fail.
 simp:goal_simplification(sys_oldnew(phaseout(H)), sys_withdraw(H)).
 simp:goal_simplification(sys_oldnew(posted(H)), (sys_check(H); sys_keep(H, true))).
 simp:goal_simplification(sys_oldnew(phaseout_posted(H)), (sys_withdraw(H); sys_drop(H, true))).
@@ -351,9 +354,9 @@ simp:goal_simplification(sys_oldnew(H), H).
 /**********************************************************/
 
 % usual blockers
-simp:goal_simplification((A, _), _) :- var(A), !, fail.
-simp:goal_simplification((_, A), _) :- var(A), !, fail.
-simp:goal_simplification((_, A, _), _) :- var(A), !, fail.
+simp:goal_simplification((A, _), _) :- user:var(A), !, fail.
+simp:goal_simplification((_, A), _) :- user:var(A), !, fail.
+simp:goal_simplification((_, A, _), _) :- user:var(A), !, fail.
 
 % replace sys_keep/sys_keep by sys_keep
 simp:goal_simplification((sys_keep(B, P), sys_keep(C, Q)), sys_keep(B, H)) :-
@@ -424,20 +427,20 @@ simp:goal_simplification((A, sys_drop(C, Q), D), (sys_drop(C, Q), A, D)).
 % sys_unify(+Term, +Term, +Term, +List, -List)
 :- private sys_unify/5.
 sys_unify(A, B, D, L, R) :-
-   var(A), !,
+   user:var(A), !,
    sys_replace_site(G, D, sys_eq(A, B)),
    simplify_goal((L, G), R).
 sys_unify(A, B, D, L, R) :-
-   var(B), !,
+   user:var(B), !,
    sys_replace_site(G, D, sys_eq(A, B)),
    simplify_goal((L, G), R).
 sys_unify(A, B, _, _, _) :-
-   functor(A, P, Q),
-   functor(B, R, S),
+   user:functor(A, P, Q),
+   user:functor(B, R, S),
    P/Q \== R/S, !, fail.
 sys_unify(A, B, D, P, Q) :-
-   A =.. [_|L],
-   B =.. [_|R],
+   user:(A =.. [_|L]),
+   user:(B =.. [_|R]),
    sys_unify_list(L, R, D, P, Q).
 
 % sys_unify_list(+List, +List, +Term, +List, -List)
@@ -459,7 +462,7 @@ sys_unify_list([X|Y], [Z|T], D, P, Q) :-
  */
 % sys_minus(+Goal, +List, -List, -Goal)
 :- private sys_minus/4.
-sys_minus(A, I, I, A) :- var(A), !.
+sys_minus(A, I, I, A) :- user:var(A), !.
 sys_minus(sys_check(A), I, I, Q) :- !,
    sys_replace_site(Q, A, clause(A, true)).
 sys_minus(sys_withdraw(A), I, [R|I], Q) :- !,
@@ -508,15 +511,16 @@ sys_plus(_) :- throw(error(existence_error(body, sys_plus/1), _)).
 user:term_expansion((H <= B), (sys_plus(H) :- sys_new(B))).
 
 % Or Distribution
-simp:term_simplification((A :- U), K) :- nonvar(U), U = (D; E), (sys_special(D); sys_special(E)),
+simp:term_simplification((A :- U), K) :- nonvar(U), U = (D; E),
+   (sys_special(D); sys_special(E)),
    simplify_term((A :- D), H),
    simplify_term((A :- E), J),
    simplify_term(H/\J, K).
 
 % The usual blocking
-simp:term_simplification((A :- _), _) :- var(A), !, fail.
-simp:term_simplification((_ :- A), _) :- var(A), !, fail.
-simp:term_simplification((_ :- A, _), _) :- var(A), !, fail.
+simp:term_simplification((A :- _), _) :- user:var(A), !, fail.
+simp:term_simplification((_ :- A), _) :- user:var(A), !, fail.
+simp:term_simplification((_ :- A, _), _) :- user:var(A), !, fail.
 
 % Detect Keep & Minus and Drop & Minus Combination
 simp:term_simplification((sys_plus(B) :- sys_keep(D, Q)),
@@ -524,14 +528,14 @@ simp:term_simplification((sys_plus(B) :- sys_keep(D, Q)),
    sys_replace_site(G, D, sys_eq(M, sys_delta(B, []))),
    simplify_goal((Q, G), H),
    sys_modext_args(D, M, E),
-   sys_functor(E, F, A),
+   functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:term_simplification((sys_plus(B) :- sys_drop(D, Q)),
    (:- discontiguous I)/\(:- sys_notrace I)/\(E :- H)) :-
    sys_replace_site(G, D, sys_eq(M, sys_nabla(B, []))),
    simplify_goal((Q, G), H),
    sys_modext_args(D, M, E),
-   sys_functor(E, F, A),
+   functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:term_simplification((sys_plus(B) :- sys_keep(D, Q), P),
    (:- discontiguous I)/\(:- sys_notrace I)/\(F :- N)) :-
@@ -540,7 +544,7 @@ simp:term_simplification((sys_plus(B) :- sys_keep(D, Q), P),
    simplify_goal((Q, E), O),
    simplify_goal((O, G), N),
    sys_modext_args(D, M, F),
-   sys_functor(F, H, A),
+   functor(F, H, A),
    sys_make_indicator(H, A, I).
 simp:term_simplification((sys_plus(B) :- sys_drop(D, Q), P),
    (:- discontiguous I)/\(:- sys_notrace I)/\(F :- N)) :-
@@ -549,5 +553,5 @@ simp:term_simplification((sys_plus(B) :- sys_drop(D, Q), P),
    simplify_goal((Q, E), O),
    simplify_goal((O, G), N),
    sys_modext_args(D, M, F),
-   sys_functor(F, H, A),
+   functor(F, H, A),
    sys_make_indicator(H, A, I).

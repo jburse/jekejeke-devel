@@ -40,5 +40,5 @@
  */
 :- multifile sys_apropos_table/1.
 :- public sys_apropos_table/1.
-sys_apropos_table(library(experiment/reference)).
-sys_apropos_table(library(groebner/frequent)).
+sys_apropos_table(resource(experiment/reference)).
+sys_apropos_table(resource(groebner/frequent)).

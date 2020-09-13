@@ -26,185 +26,185 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-* /3	no	gauss/matrice
-* /3	no	groebner/fraction
-* /3	no	groebner/integer
-* /3	no	groebner/polynom
-* /3	no	groebner/rational
-* /3	no	groebner/variable
-* /3	no	leibniz/radical
-(+)/3	no	gauss/matrice
-(+)/3	no	gauss/vector
-(+)/3	no	groebner/fraction
-(+)/3	no	groebner/integer
-(+)/3	no	groebner/polynom
-(+)/3	no	groebner/rational
-(+)/3	no	groebner/variable
-(+)/3	no	leibniz/radical
-(-)/2	no	gauss/matrice
-(-)/2	no	gauss/vector
-(-)/2	no	groebner/fraction
-(-)/2	no	groebner/integer
-(-)/2	no	groebner/polynom
-(-)/2	no	groebner/rational
-(-)/2	no	groebner/variable
-(-)/2	no	leibniz/radical
-(-)/3	no	gauss/matrice
-(-)/3	no	gauss/vector
-(-)/3	no	groebner/fraction
-(-)/3	no	groebner/integer
-(-)/3	no	groebner/polynom
-(-)/3	no	groebner/rational
-(-)/3	no	groebner/variable
-(-)/3	no	leibniz/radical
-'.'/3	no	gauss/element
-'.'/3	no	gauss/vector
-/ /3	no	gauss/matrice
-/ /3	no	groebner/fraction
-/ /3	no	groebner/integer
-/ /3	no	groebner/polynom
-/ /3	no	groebner/rational
-/ /3	no	groebner/variable
-/ /3	no	leibniz/radical
-< /2	no	gauss/ordered
-=:= /2	no	gauss/ordered
-=< /2	no	gauss/ordered
-=\= /2	no	gauss/ordered
-> /2	no	gauss/ordered
->= /2	no	gauss/ordered
-^ /3	no	gauss/matrice
-^ /3	no	groebner/fraction
-^ /3	no	groebner/integer
-^ /3	no	groebner/polynom
-^ /3	no	groebner/rational
-^ /3	no	groebner/variable
-^ /3	no	leibniz/radical
-abs/2	no	gauss/ordered
-integer:ceiling/2	no	gauss/ordered
-radical:ceiling/2	no	gauss/ordered
-rational:ceiling/2	no	gauss/ordered
-ordered:degree/2	no	gauss/ring
-polynom:degree/2	no	gauss/ring
-variable:degree/2	no	gauss/ring
-fraction:deriv/3	no	leibniz/deriv
-ordered:deriv/3	no	leibniz/deriv
-polynom:deriv/3	no	leibniz/deriv
-variable:deriv/3	no	leibniz/deriv
-integer:float/2	no	gauss/ordered
-radical:float/2	no	gauss/ordered
-rational:float/2	no	gauss/ordered
-integer:floor/2	no	gauss/ordered
-radical:floor/2	no	gauss/ordered
-rational:floor/2	no	gauss/ordered
-gen_div/4	no	gauss/ring
-integer:gen_eq/2	no	gauss/ordered
-radical:gen_eq/2	no	gauss/ordered
-rational:gen_eq/2	no	gauss/ordered
-integer:gen_ls/2	no	gauss/ordered
-radical:gen_ls/2	no	gauss/ordered
-rational:gen_ls/2	no	gauss/ordered
-gen_red/3	no	gauss/ring
-ordered:hipow/3	no	gauss/ring
-polynom:hipow/3	no	gauss/ring
-variable:hipow/3	no	gauss/ring
-ordered:integ/3	no	leibniz/deriv
-polynom:integ/3	no	leibniz/deriv
-variable:integ/3	no	leibniz/deriv
-integer:integer/2	no	gauss/ordered
-radical:integer/2	no	gauss/ordered
-rational:integer/2	no	gauss/ordered
-is/2	no	groebner/generic
-generic:is/2	no	gauss/element
-generic:is/2	no	gauss/matrice
-generic:is/2	no	gauss/vector
-generic:is/2	no	groebner/fraction
-generic:is/2	no	groebner/polynom
-generic:is/2	no	groebner/rational
-generic:is/2	no	leibniz/radical
-is_abnormal/1	no	groebner/generic
-generic:is_abnormal/1	no	gauss/element
-generic:is_abnormal/1	no	gauss/matrice
-generic:is_abnormal/1	no	gauss/vector
-generic:is_abnormal/1	no	groebner/fraction
-generic:is_abnormal/1	no	groebner/polynom
-generic:is_abnormal/1	no	groebner/rational
-generic:is_abnormal/1	no	leibniz/radical
-element:laurent/4	no	leibniz/series
-element:laurent/5	no	leibniz/series
-len/2	no	gauss/matrice
-len/2	no	gauss/vector
-make_radical/2	no	leibniz/radical
-make_rational/3	no	groebner/rational
-max/2	no	gauss/vector
-max/3	no	gauss/ordered
-min/2	no	gauss/vector
-min/3	no	gauss/ordered
-mode/2	yes	decimal/scale
-mp/3	no	decimal/multi
-mp_abnormal/1	no	decimal/multi
-multi:mp_abnormal/1	no	decimal/poly
-multi:mp_abnormal/1	no	decimal/trigo
-mp_add/4	no	decimal/arith
-mp_clear/0	no	decimal/multi
-mp_decimal/3	no	decimal/arith
-mp_int_pow/4	no	decimal/arith
-mp_math/3	no	decimal/multi
-multi:mp_math/3	no	decimal/poly
-multi:mp_math/3	no	decimal/trigo
-mp_memo/4	no	decimal/multi
-mp_mul/4	no	decimal/arith
-mp_slash/4	no	decimal/arith
-mp_sub/4	no	decimal/arith
-new_context/2	yes	decimal/scale
-new_context/3	yes	decimal/scale
-new_decimal/3	yes	decimal/scale
-new_fraction/3	no	groebner/fraction
-precision/2	yes	decimal/scale
-quorem/4	no	gauss/ring
-vector:randpoly/2	no	gauss/ring
-reduced/3	no	gauss/ring
-requested/2	yes	decimal/scale
-integer:sign/2	no	gauss/ordered
-radical:sign/2	no	gauss/ordered
-rational:sign/2	no	gauss/ordered
-sqrt/2	no	groebner/integer
-sqrt/2	no	groebner/rational
-sqrt/2	no	leibniz/radical
-fraction:subst/4	no	leibniz/subst
-ordered:subst/4	no	leibniz/subst
-polynom:subst/4	no	leibniz/subst
-variable:subst/4	no	leibniz/subst
-sum/2	no	gauss/vector
-sys_eval_list/3	no	groebner/generic
-sys_index/3	no	gauss/matrice
-sys_index/3	no	gauss/vector
-sys_index/4	no	gauss/matrice
-sys_make_coeff/4	no	groebner/polynom
-sys_make_poly/3	no	groebner/polynom
-sys_new_radical/3	no	gauss/ordered
-sys_poly_comb/4	no	gauss/ring
-sys_poly_div/4	no	gauss/ring
-sys_poly_factor/2	no	gauss/ring
-sys_poly_groeb/2	no	groebner/fraction
-sys_poly_head/2	no	gauss/ring
-sys_poly_reduced/3	no	gauss/ring
-sys_poly_reduced2/4	no	gauss/ring
-sys_poly_send/3	no	groebner/generic
-sys_poly_sign/2	no	gauss/ring
-residue:sys_printable_value/2	no	gauss/matrice
-residue:sys_printable_value/2	no	gauss/vector
-residue:sys_printable_value/2	no	groebner/fraction
-residue:sys_printable_value/2	no	groebner/integer
-residue:sys_printable_value/2	no	groebner/polynom
-residue:sys_printable_value/2	no	groebner/rational
-residue:sys_printable_value/2	no	groebner/variable
-residue:sys_printable_value/2	no	leibniz/radical
-sys_radical_base/3	no	gauss/ordered
-sys_radical_level/2	no	gauss/ordered
-sys_radical_midlevel/2	no	gauss/ordered
-sys_radical_triage/3	no	gauss/ordered
-sys_test_lindep/3	no	gauss/ordered
-element:taylor/4	no	leibniz/series
-element:taylor/5	no	leibniz/series
-user:'|'/3	no	gauss/element
+* /3	gauss/matrice
+* /3	groebner/fraction
+* /3	groebner/integer
+* /3	groebner/polynom
+* /3	groebner/rational
+* /3	groebner/variable
+* /3	leibniz/radical
+(+)/3	gauss/matrice
+(+)/3	gauss/vector
+(+)/3	groebner/fraction
+(+)/3	groebner/integer
+(+)/3	groebner/polynom
+(+)/3	groebner/rational
+(+)/3	groebner/variable
+(+)/3	leibniz/radical
+(-)/2	gauss/matrice
+(-)/2	gauss/vector
+(-)/2	groebner/fraction
+(-)/2	groebner/integer
+(-)/2	groebner/polynom
+(-)/2	groebner/rational
+(-)/2	groebner/variable
+(-)/2	leibniz/radical
+(-)/3	gauss/matrice
+(-)/3	gauss/vector
+(-)/3	groebner/fraction
+(-)/3	groebner/integer
+(-)/3	groebner/polynom
+(-)/3	groebner/rational
+(-)/3	groebner/variable
+(-)/3	leibniz/radical
+'.'/3	gauss/element
+'.'/3	gauss/vector
+/ /3	gauss/matrice
+/ /3	groebner/fraction
+/ /3	groebner/integer
+/ /3	groebner/polynom
+/ /3	groebner/rational
+/ /3	groebner/variable
+/ /3	leibniz/radical
+< /2	gauss/ordered
+=:= /2	gauss/ordered
+=< /2	gauss/ordered
+=\= /2	gauss/ordered
+> /2	gauss/ordered
+>= /2	gauss/ordered
+^ /3	gauss/matrice
+^ /3	groebner/fraction
+^ /3	groebner/integer
+^ /3	groebner/polynom
+^ /3	groebner/rational
+^ /3	groebner/variable
+^ /3	leibniz/radical
+abs/2	gauss/ordered
+integer:ceiling/2	gauss/ordered
+radical:ceiling/2	gauss/ordered
+rational:ceiling/2	gauss/ordered
+ordered:degree/2	gauss/ring
+polynom:degree/2	gauss/ring
+variable:degree/2	gauss/ring
+fraction:deriv/3	leibniz/deriv
+ordered:deriv/3	leibniz/deriv
+polynom:deriv/3	leibniz/deriv
+variable:deriv/3	leibniz/deriv
+integer:float/2	gauss/ordered
+radical:float/2	gauss/ordered
+rational:float/2	gauss/ordered
+integer:floor/2	gauss/ordered
+radical:floor/2	gauss/ordered
+rational:floor/2	gauss/ordered
+gen_div/4	gauss/ring
+integer:gen_eq/2	gauss/ordered
+radical:gen_eq/2	gauss/ordered
+rational:gen_eq/2	gauss/ordered
+integer:gen_ls/2	gauss/ordered
+radical:gen_ls/2	gauss/ordered
+rational:gen_ls/2	gauss/ordered
+gen_red/3	gauss/ring
+ordered:hipow/3	gauss/ring
+polynom:hipow/3	gauss/ring
+variable:hipow/3	gauss/ring
+ordered:integ/3	leibniz/deriv
+polynom:integ/3	leibniz/deriv
+variable:integ/3	leibniz/deriv
+integer:integer/2	gauss/ordered
+radical:integer/2	gauss/ordered
+rational:integer/2	gauss/ordered
+is/2	groebner/generic
+generic:is/2	gauss/element
+generic:is/2	gauss/matrice
+generic:is/2	gauss/vector
+generic:is/2	groebner/fraction
+generic:is/2	groebner/polynom
+generic:is/2	groebner/rational
+generic:is/2	leibniz/radical
+is_abnormal/1	groebner/generic
+generic:is_abnormal/1	gauss/element
+generic:is_abnormal/1	gauss/matrice
+generic:is_abnormal/1	gauss/vector
+generic:is_abnormal/1	groebner/fraction
+generic:is_abnormal/1	groebner/polynom
+generic:is_abnormal/1	groebner/rational
+generic:is_abnormal/1	leibniz/radical
+element:laurent/4	leibniz/series
+element:laurent/5	leibniz/series
+len/2	gauss/matrice
+len/2	gauss/vector
+make_radical/2	leibniz/radical
+make_rational/3	groebner/rational
+max/2	gauss/vector
+max/3	gauss/ordered
+min/2	gauss/vector
+min/3	gauss/ordered
+mode/2	decimal/scale
+mp/3	decimal/multi
+mp_abnormal/1	decimal/multi
+multi:mp_abnormal/1	decimal/poly
+multi:mp_abnormal/1	decimal/trigo
+mp_add/4	decimal/arith
+mp_clear/0	decimal/multi
+mp_decimal/3	decimal/arith
+mp_int_pow/4	decimal/arith
+mp_math/3	decimal/multi
+multi:mp_math/3	decimal/poly
+multi:mp_math/3	decimal/trigo
+mp_memo/4	decimal/multi
+mp_mul/4	decimal/arith
+mp_slash/4	decimal/arith
+mp_sub/4	decimal/arith
+new_context/2	decimal/scale
+new_context/3	decimal/scale
+new_decimal/3	decimal/scale
+new_fraction/3	groebner/fraction
+precision/2	decimal/scale
+quorem/4	gauss/ring
+vector:randpoly/2	gauss/ring
+reduced/3	gauss/ring
+requested/2	decimal/scale
+integer:sign/2	gauss/ordered
+radical:sign/2	gauss/ordered
+rational:sign/2	gauss/ordered
+sqrt/2	groebner/integer
+sqrt/2	groebner/rational
+sqrt/2	leibniz/radical
+fraction:subst/4	leibniz/subst
+ordered:subst/4	leibniz/subst
+polynom:subst/4	leibniz/subst
+variable:subst/4	leibniz/subst
+sum/2	gauss/vector
+sys_eval_list/3	groebner/generic
+sys_index/3	gauss/matrice
+sys_index/3	gauss/vector
+sys_index/4	gauss/matrice
+sys_make_coeff/4	groebner/polynom
+sys_make_poly/3	groebner/polynom
+sys_new_radical/3	gauss/ordered
+sys_poly_comb/4	gauss/ring
+sys_poly_div/4	gauss/ring
+sys_poly_factor/2	gauss/ring
+sys_poly_groeb/2	groebner/fraction
+sys_poly_head/2	gauss/ring
+sys_poly_reduced/3	gauss/ring
+sys_poly_reduced2/4	gauss/ring
+sys_poly_send/3	groebner/generic
+sys_poly_sign/2	gauss/ring
+residue:sys_printable_value/2	gauss/matrice
+residue:sys_printable_value/2	gauss/vector
+residue:sys_printable_value/2	groebner/fraction
+residue:sys_printable_value/2	groebner/integer
+residue:sys_printable_value/2	groebner/polynom
+residue:sys_printable_value/2	groebner/rational
+residue:sys_printable_value/2	groebner/variable
+residue:sys_printable_value/2	leibniz/radical
+sys_radical_base/3	gauss/ordered
+sys_radical_level/2	gauss/ordered
+sys_radical_midlevel/2	gauss/ordered
+sys_radical_triage/3	gauss/ordered
+sys_test_lindep/3	gauss/ordered
+element:taylor/4	leibniz/series
+element:taylor/5	leibniz/series
+user:'|'/3	gauss/element
 

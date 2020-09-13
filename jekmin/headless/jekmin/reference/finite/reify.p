@@ -65,6 +65,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/cont)).
+:- use_module(library(basic/random)).
 :- use_module(helper).
 :- use_module(intset).
 :- use_module(linform).
@@ -477,7 +478,7 @@ true <=
 
 /* Create Surrogate */
 post(sys_pit_ref(R, L, T, B, C)) <=
-   phaseout_posted(sys_pit(L, T, B, C)), surrogate_new(R).
+   phaseout_posted(sys_pit(L, T, B, C)), genref(R).
 
 /* Trivial Cases */
 sys_melt_const(B, C) <=
@@ -652,7 +653,7 @@ true <=
 
 /* Create Surrogate */
 post(sys_lot_ref(V, L, S, T, B, C)) <=
-   phaseout_posted(sys_lot(L, S, B, C)), surrogate_new(V), sys_bound_set(S, T).
+   phaseout_posted(sys_lot(L, S, B, C)), genref(V), sys_bound_set(S, T).
 
 /* Trivial Cases */
 sys_melt_const(B, C) <=

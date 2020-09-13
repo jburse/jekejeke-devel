@@ -65,7 +65,7 @@
 :- module(vector, []).
 
 :- use_module(../groebner/generic).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 :- use_module(library(misc/residue)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
@@ -79,7 +79,6 @@
  * The predicate succeeds in Z with the consing of X and Y.
  */
 % .(+Vector, +List, -Matrice)
-:- override '.'/3.
 :- public '.'/3.
 '.'(X, L, Z) :-
    Z =.. [matrice, X|L].
@@ -90,7 +89,6 @@
  * of the vector X.
  */
 % +Vector [+Integer, -Element]
-:- override sys_index/3.
 :- public sys_index/3.
 X[Y, Z] :- integer(Y),
    arg(Y, X, Z).

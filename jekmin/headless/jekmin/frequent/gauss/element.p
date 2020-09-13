@@ -76,7 +76,6 @@
  * The predicate succeeds in Z with the consing of X and Y.
  */
 % .(+Element, +List, -Vector)
-:- override '.'/3.
 :- public '.'/3.
 '.'(X, L, Z) :-
    Z =.. [vector, X|L].

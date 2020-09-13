@@ -114,7 +114,7 @@ user:term_expansion((J <=> B), (body_post(B) <= head_phaseout_posted(J))).
 :- meta_predicate body_post(0).
 body_post(_) :- throw(error(existence_error(body, body_post/1), _)).
 
-user:goal_expansion(body_post(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(body_post(P), _) :- var(P), !, fail.
 user:goal_expansion(body_post((A, B)), (body_post(A), body_post(B))).
 user:goal_expansion(body_post(true), true).
 user:goal_expansion(body_post(fail), fail).
@@ -131,7 +131,7 @@ user:goal_expansion(body_post(P), Q) :-
 :- meta_predicate head_posted(0).
 head_posted(_) :- throw(error(existence_error(body, head_posted/1), _)).
 
-user:goal_expansion(head_posted(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(head_posted(P), _) :- var(P), !, fail.
 user:goal_expansion(head_posted((A, B)), (head_posted(A), head_posted(B))).
 user:goal_expansion(head_posted(P), Q) :-
    sys_replace_site(Q, P, posted(P)).
@@ -142,7 +142,7 @@ user:goal_expansion(head_posted(P), Q) :-
  * expansion wrapper, that wrappes the CHR delete head
  * with phaseout_posteds.
  */
-user:goal_expansion(head_phaseout_posted(P), _) :- sys_var(P), !, fail.
+user:goal_expansion(head_phaseout_posted(P), _) :- var(P), !, fail.
 user:goal_expansion(head_phaseout_posted((A, B)), (head_phaseout_posted(A), head_phaseout_posted(B))).
 user:goal_expansion(head_phaseout_posted(P), Q) :-
    sys_replace_site(Q, P, phaseout_posted(P)).

@@ -83,7 +83,7 @@
 :- module(enum, []).
 :- use_module(library(experiment/trail)).
 :- use_module(library(minimal/hypo)).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 :- use_module(library(basic/lists)).
 :- use_module(library(basic/random)).
 :- use_module(intset).

@@ -106,6 +106,7 @@
 :- use_module(library(experiment/cont)).
 :- use_module(library(misc/elem)).
 :- use_module(library(term/suspend)).
+:- use_module(library(basic/random)).
 :- use_module(helper).
 :- use_module(intset).
 
@@ -306,7 +307,7 @@ true <=
 
 /* Create Surrogate */
 post(sys_lin_ref(R, L, T)) <=
-   phaseout_posted(sys_lin(L, T)), surrogate_new(R).
+   phaseout_posted(sys_lin(L, T)), genref(R).
 
 /* Trivial Cases */
 fail <=
@@ -486,7 +487,7 @@ sys_value_expr(abs(X), S, H) :- !,
  * C (finite):
  * A callable C is also a value expression.
  */
-sys_value_expr(C, L, A) :- sys_callable(C), !,
+sys_value_expr(C, L, A) :- callable(C), !,
    X is C,
    sys_value_expr(X, L, A).
 
@@ -530,7 +531,7 @@ sys_value_expr_inv(abs(X), S, H) :- !,
    sys_fresh_var(_, V),
    sys_value_expr_inv(X, L, A),
    sys_abs_lin(L, A, S, H, V, G).
-sys_value_expr_inv(C, L, A) :- sys_callable(C), !,
+sys_value_expr_inv(C, L, A) :- callable(C), !,
    X is C,
    sys_value_expr(X, L, A).
 sys_value_expr_inv(A, _, _) :-

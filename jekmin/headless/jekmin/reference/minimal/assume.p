@@ -51,6 +51,7 @@
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/cont)).
+:- use_module(library(advanced/signal)).
 
 /***************************************************************/
 /* Clause & Hook References                                    */
@@ -70,7 +71,7 @@ deposita_ref([R|L]) :- !,
    deposita_ref(L).
 deposita_ref([]) :- !.
 deposita_ref(R) :-
-   sys_atomic((recorda_ref(R),
+   sys_mask((recorda_ref(R),
       sys_unbind(erase_ref(R)))).
 
 /**
@@ -87,7 +88,7 @@ depositz_ref([R|L]) :- !,
    depositz_ref(L).
 depositz_ref([]) :- !.
 depositz_ref(R) :-
-   sys_atomic((recordz_ref(R),
+   sys_mask((recordz_ref(R),
       sys_unbind(erase_ref(R)))).
 
 /**
@@ -105,7 +106,7 @@ withdrawa_ref([R|L]) :- !,
    withdrawz_ref(R).
 withdrawa_ref([]) :- !.
 withdrawa_ref(R) :-
-   sys_atomic((erase_ref(R),
+   sys_mask((erase_ref(R),
       sys_unbind(recorda_ref(R)))).
 
 /**
@@ -123,5 +124,5 @@ withdrawz_ref([R|L]) :- !,
    withdrawz_ref(R).
 withdrawz_ref([]) :- !.
 withdrawz_ref(R) :-
-   sys_atomic((erase_ref(R),
+   sys_mask((erase_ref(R),
       sys_unbind(recordz_ref(R)))).

@@ -55,7 +55,6 @@ public final class SupplementElem extends AbstractSpecial {
      */
     public SupplementElem(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

@@ -364,7 +364,7 @@ tree_equiv(N, node(Y, _, C, D), R) :-
    tree_make(E, F, Y, R).
 
 /**
- * tree_xor(P, Q, R):
+ * tree_diff(P, Q, R):
  * The predicate succeeds in R with the boolean difference of P and Q.
  */
 :- private tree_diff/3.
@@ -678,7 +678,6 @@ watch_failure(C, _, _) :-
  */
 % verify_attributes(+Attr, +Term)
 :- public verify_attributes/2.
-:- override verify_attributes/2.
 verify_attributes(watch_ref(F), W) :- var(W),
    get_atts(W, tree, watch_ref(G)), !,
    map_union(F, G, E),
@@ -746,7 +745,6 @@ interval_addition(F-T, V, F-U) :- U is T+V.
  */
 % portray_attributes(+Variable, -List, +List)
 :- public portray_attributes/3.
-:- override portray_attributes/3.
 portray_attributes(A, S, S) :-
    get_atts(A, tree, watch_ref(_)).
 portray_attributes(A, [pseudo(R, L, C, U)|S], S) :-

@@ -177,7 +177,6 @@ sat_propagate(_).
  */
 % attr_unify_hook(+Attr, +Term)
 :- public attr_unify_hook/2.
-:- override attr_unify_hook/2.
 attr_unify_hook(bdd_ref(K, F), W) :- var(W),
    get_attr(W, clpb, bdd_ref(I, G)), !,
    union(F, G, E),
@@ -237,7 +236,6 @@ sat_assign(T, U, W, S) :-
  */
 % attribute_goals(+Variable, -List, +List)
 :- public attribute_goals/3.
-:- override attribute_goals/3.
 attribute_goals(A, S, S) :-
    get_attr(A, clpb, bdd_ref(_, _)).
 attribute_goals(A, [sat(E)|S], S) :-

@@ -64,12 +64,16 @@
 
 % we could use '\x221A\' for square root.
 
-:- override prefix(-).
 :- public prefix(-).
 :- op(500, fx, -).
 
+:- public postfix([]).
+:- op(100, yf, [[]]).
+:- set_oper_property(postfix([]), sys_alias(sys_index)).
+
 :- public postfix(sys_index).
 :- op(100, yf, sys_index).
+:- set_oper_property(postfix(sys_index), sys_portray([])).
 
 :- reexport(../gauss/ordered).
 :- reexport(../gauss/ring).

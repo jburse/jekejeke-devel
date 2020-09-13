@@ -118,7 +118,7 @@ user:goal_expansion(words(U, I, O), (words(B, H, O), G)) :- U = [A|B],
 % chart(+Phrase, +Integer, -Integer)
 :- public chart/3.
 :- meta_predicate chart(2, ?, ?).
-chart(P, _, _) :- sys_var(P), throw(error(instantiation_error, _)).
+chart(P, _, _) :- var(P), throw(error(instantiation_error, _)).
 chart(P, I, O) :- expand_goal(chart(P, I, O), Q), call(Q).
 
 /**********************************************************/
@@ -130,7 +130,7 @@ chart(P, I, O) :- expand_goal(chart(P, I, O), Q), call(Q).
  * The non-terminal P is checked.
  */
 user:goal_expansion(chart(P, I, O), chart(P, I, O)) :-
-   sys_var(P).
+   var(P).
 user:goal_expansion(chart(P, I, O), R) :-
    chart_expansion(P, I, O, R).
 user:goal_expansion(chart(P, I, O), Q) :-
@@ -157,7 +157,7 @@ chart_expansion(P, _, _, P) :- P = fail.
  * A, B:
  * The output of A is conjoined with the input of B.
  */
-chart_expansion((A, B), I, O, (chart(A, I, H), sys_chart(B, H, O))) :- sys_var(A).
+chart_expansion((A, B), I, O, (chart(A, I, H), sys_chart(B, H, O))) :- var(A).
 chart_expansion((U, B), I, O, (P, chart(B, I, O))) :- chart_barrier(U, I, P).
 chart_expansion((A, B), I, O, (chart(A, I, H), sys_chart(B, H, O))).
 
@@ -212,7 +212,7 @@ chart_barrier(U, I, Q) :- U = (\+ A),
 sys_chart(_, _, _) :- throw(error(existence_error(body, sys_chart/3), _)).
 
 user:goal_expansion(sys_chart(P, I, O), chart(P, I, O)) :-
-   sys_var(P).
+   var(P).
 user:goal_expansion(sys_chart(P, I, O), R) :-
    sys_chart_expansion(P, I, O, R).
 user:goal_expansion(sys_chart(P, I, O), Q) :-
@@ -228,7 +228,7 @@ user:goal_expansion(sys_chart(P, I, O), Q) :-
 :- meta_predicate sys_chart_expansion(2, ?, ?, 0).
 :- set_predicate_property(sys_chart_expansion/4, sys_noexpand).
 sys_chart_expansion(P, _, _, P) :- P = fail.
-sys_chart_expansion((A, B), I, O, (sys_chart(A, I, H), sys_chart(B, H, O))) :- sys_var(A).
+sys_chart_expansion((A, B), I, O, (sys_chart(A, I, H), sys_chart(B, H, O))) :- var(A).
 sys_chart_expansion((U, B), I, O, (P, chart(B, I, O))) :- chart_barrier(U, I, P).
 sys_chart_expansion((A, B), I, O, (sys_chart(A, I, H), sys_chart(B, H, O))).
 sys_chart_expansion((A; B), I, O, (chart(A, I, O); chart(B, I, O))).
@@ -281,7 +281,7 @@ user:goal_expansion(chart_post(P, I, O), H) :-
 :- meta_predicate chart_posted(2, ?, ?).
 chart_posted(_, _, _) :- throw(error(existence_error(body, chart_posted/3), _)).
 
-user:goal_expansion(chart_posted(P, _, _), _) :- sys_var(P), throw(error(instantiation_error, _)).
+user:goal_expansion(chart_posted(P, _, _), _) :- var(P), throw(error(instantiation_error, _)).
 user:goal_expansion(chart_posted((A, B), I, O), (chart_posted(A, I, H), sys_chart(B, H, O))).
 user:goal_expansion(chart_posted((A; B), I, O), (chart_posted(A, I, O); chart_posted(B, I, O))).
 user:goal_expansion(chart_posted(U, I, O), (posted(Q), sys_chart(B, H, O))) :- U = [A|B],

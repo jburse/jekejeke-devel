@@ -60,7 +60,6 @@ public class SupplementScale extends AbstractSpecial {
      */
     public SupplementScale(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

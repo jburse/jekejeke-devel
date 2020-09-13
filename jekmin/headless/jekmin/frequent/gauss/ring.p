@@ -67,7 +67,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(basic/lists)).
 :- use_module(library(basic/random)).
-:- use_module(library(advanced/arith)).
+:- use_module(library(standard/arith)).
 
 /*********************************************************************/
 /* Facade                                                            */

@@ -53,7 +53,6 @@ public final class SupplementBits extends AbstractSpecial {
      */
     public SupplementBits(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

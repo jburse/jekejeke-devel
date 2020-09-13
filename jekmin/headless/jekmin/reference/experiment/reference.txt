@@ -26,130 +26,130 @@
 # Trademarks
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
-#/\ /2	no	finite/reify
-#< /2	no	finite/linform
-#<== /2	no	finite/reify
-#<==> /2	no	finite/reify
-#= /2	no	finite/linform
-#=< /2	no	finite/linform
-#==> /2	no	finite/reify
-#> /2	no	finite/linform
-#>= /2	no	finite/linform
-(#\)/1	no	finite/reify
-#\/ /2	no	finite/reify
-#\= /2	no	finite/linform
-','/3	no	minimal/hypo
-;/3	no	minimal/hypo
-<= /2	no	minimal/delta
-<=> /2	no	minimal/chr
-==: /2	no	minimal/chart
-==> /2	no	minimal/chr
-all_different/1	no	finite/linform
-assumea/1	no	minimal/hypo
-assumea/2	no	minimal/hypo
-assumez/1	no	minimal/hypo
-assumez/2	no	minimal/hypo
-attr_unify_hook/2	no	finite/clpb
-attribute_goals/3	no	finite/clpb
-b_delete/1	no	term/state
-b_setval/2	no	term/state
-chart/3	no	minimal/chart
-choose/1	no	minimal/asp
-choose/2	no	minimal/asp
-clearbit/3	yes	misc/bits
-count/2	no	finite/clpb
-del_attr/2	no	term/unify
-del_atts/2	no	term/verify
-deposita_ref/1	no	minimal/assume
-depositz_ref/1	no	minimal/assume
-dif/2	no	term/herbrand
-expr_vars/2	no	finite/tree
-fail/1	no	minimal/hypo
-(forward)/1	no	minimal/delta
-freeze/2	no	term/suspend
-get_attr/3	no	term/unify
-get_atts/3	no	term/verify
-user:goal_expansion/2	no	minimal/chart
-user:goal_expansion/2	no	minimal/chr
-simp:goal_simplification/2	no	minimal/delta
-in/2	no	finite/intset
-indomain/1	no	finite/enum
-ins/2	no	finite/intset
-iroot/3	no	misc/elem
-isqrt/2	no	misc/elem
-label/1	no	finite/enum
-label_maximum/2	no	finite/enum
-labeling/1	no	finite/clpb
-min_choose/2	no	minimal/asp
-min_choose/3	no	minimal/asp
-modinv/3	yes	misc/elem
-modpow/4	yes	misc/elem
-nb_current/2	no	term/state
-phaseout/1	no	minimal/delta
-phaseout_posted/1	no	minimal/delta
-portray_attributes/3	no	finite/tree
-post/1	no	minimal/delta
-post/2	no	minimal/delta
-posted/1	no	minimal/delta
-pseudo/4	no	finite/clpb
-put_attr/3	no	term/unify
-put_atts/3	no	term/verify
-random_choose/1	no	minimal/asp
-random_choose/2	no	minimal/asp
-random_indomain/1	no	finite/enum
-random_label/1	no	finite/enum
-random_labeling/1	no	finite/clpb
-random_min_choose/2	no	minimal/asp
-random_min_choose/3	no	minimal/asp
-random_min_choose2/3	no	minimal/asp
-retire/1	no	minimal/hypo
-retire/2	no	minimal/hypo
-retireall/1	no	minimal/hypo
-retireall/2	no	minimal/hypo
-rootrem/4	no	misc/elem
-sat/1	no	finite/clpb
-setbit/3	yes	misc/bits
-sqrtrem/3	no	misc/elem
-sto/1	no	term/herbrand
-sys_assume_cont/1	no	experiment/cont
-sys_bound_var/1	no	experiment/trail
-sys_clause_hook/3	no	experiment/attr
-sys_compile_hook/3	no	experiment/attr
-residue:sys_current_eq/2	no	finite/clpfd
-residue:sys_current_eq/2	no	finite/intset
-residue:sys_current_eq/2	no	finite/linform
-residue:sys_current_eq/2	no	finite/reify
-residue:sys_current_eq/2	no	term/herbrand
-residue:sys_current_eq/2	no	term/suspend
-residue:sys_current_eq/2	no	term/unify
-residue:sys_current_eq/2	no	term/verify
-sys_ensure_serno/1	no	experiment/attr
-sys_freeze_var/2	no	experiment/trail
-sys_freezer/1	no	experiment/trail
-sys_melt_var/2	no	experiment/trail
-sys_ripple/1	no	experiment/cont
-sys_serno_hooks/3	no	experiment/attr
-sys_unbind/1	no	experiment/trail
-residue:sys_unwrap_eq/3	no	finite/clpfd
-residue:sys_unwrap_eq/3	no	finite/intset
-residue:sys_unwrap_eq/3	no	finite/linform
-residue:sys_unwrap_eq/3	no	finite/reify
-residue:sys_unwrap_eq/3	no	term/herbrand
-residue:sys_unwrap_eq/3	no	term/suspend
-residue:sys_unwrap_eq/3	no	term/unify
-residue:sys_unwrap_eq/3	no	term/verify
-user:term_expansion/2	no	minimal/chart
-user:term_expansion/2	no	minimal/chr
-user:term_expansion/2	no	minimal/delta
-simp:term_simplification/2	no	minimal/delta
-testbit/2	no	misc/bits
-true/1	no	minimal/hypo
-ulp/2	yes	misc/elem
-verify_attributes/2	no	finite/tree
-weighted_maximum/3	no	finite/clpb
-when/2	no	term/suspend
-withdrawa_ref/1	no	minimal/assume
-withdrawz_ref/1	no	minimal/assume
-words/3	no	minimal/chart
-words/4	no	minimal/chart
+#/\ /2	finite/reify
+#< /2	finite/linform
+#<== /2	finite/reify
+#<==> /2	finite/reify
+#= /2	finite/linform
+#=< /2	finite/linform
+#==> /2	finite/reify
+#> /2	finite/linform
+#>= /2	finite/linform
+(#\)/1	finite/reify
+#\/ /2	finite/reify
+#\= /2	finite/linform
+','/3	minimal/hypo
+;/3	minimal/hypo
+<= /2	minimal/delta
+<=> /2	minimal/chr
+==: /2	minimal/chart
+==> /2	minimal/chr
+all_different/1	finite/linform
+assumea/1	minimal/hypo
+assumea/2	minimal/hypo
+assumez/1	minimal/hypo
+assumez/2	minimal/hypo
+attr_unify_hook/2	finite/clpb
+attribute_goals/3	finite/clpb
+b_delete/1	term/state
+b_setval/2	term/state
+chart/3	minimal/chart
+choose/1	minimal/asp
+choose/2	minimal/asp
+clearbit/3	misc/bits
+count/2	finite/clpb
+del_attr/2	term/unify
+del_atts/2	term/verify
+deposita_ref/1	minimal/assume
+depositz_ref/1	minimal/assume
+dif/2	term/herbrand
+expr_vars/2	finite/tree
+fail/1	minimal/hypo
+(forward)/1	minimal/delta
+freeze/2	term/suspend
+get_attr/3	term/unify
+get_atts/3	term/verify
+user:goal_expansion/2	minimal/chart
+user:goal_expansion/2	minimal/chr
+simp:goal_simplification/2	minimal/delta
+in/2	finite/intset
+indomain/1	finite/enum
+ins/2	finite/intset
+iroot/3	misc/elem
+isqrt/2	misc/elem
+label/1	finite/enum
+label_maximum/2	finite/enum
+labeling/1	finite/clpb
+min_choose/2	minimal/asp
+min_choose/3	minimal/asp
+modinv/3	misc/elem
+modpow/4	misc/elem
+nb_current/2	term/state
+phaseout/1	minimal/delta
+phaseout_posted/1	minimal/delta
+portray_attributes/3	finite/tree
+post/1	minimal/delta
+post/2	minimal/delta
+posted/1	minimal/delta
+pseudo/4	finite/clpb
+put_attr/3	term/unify
+put_atts/3	term/verify
+random_choose/1	minimal/asp
+random_choose/2	minimal/asp
+random_indomain/1	finite/enum
+random_label/1	finite/enum
+random_labeling/1	finite/clpb
+random_min_choose/2	minimal/asp
+random_min_choose/3	minimal/asp
+random_min_choose2/3	minimal/asp
+retire/1	minimal/hypo
+retire/2	minimal/hypo
+retireall/1	minimal/hypo
+retireall/2	minimal/hypo
+rootrem/4	misc/elem
+sat/1	finite/clpb
+setbit/3	misc/bits
+sqrtrem/3	misc/elem
+sto/1	term/herbrand
+sys_assume_cont/1	experiment/cont
+sys_bound_var/1	experiment/trail
+sys_clause_hook/3	experiment/attr
+sys_compile_hook/3	experiment/attr
+residue:sys_current_eq/2	finite/clpfd
+residue:sys_current_eq/2	finite/intset
+residue:sys_current_eq/2	finite/linform
+residue:sys_current_eq/2	finite/reify
+residue:sys_current_eq/2	term/herbrand
+residue:sys_current_eq/2	term/suspend
+residue:sys_current_eq/2	term/unify
+residue:sys_current_eq/2	term/verify
+sys_ensure_serno/1	experiment/attr
+sys_freeze_var/2	experiment/trail
+sys_freezer/1	experiment/trail
+sys_melt_var/2	experiment/trail
+sys_ripple/1	experiment/cont
+sys_serno_hooks/3	experiment/attr
+sys_unbind/1	experiment/trail
+residue:sys_unwrap_eq/3	finite/clpfd
+residue:sys_unwrap_eq/3	finite/intset
+residue:sys_unwrap_eq/3	finite/linform
+residue:sys_unwrap_eq/3	finite/reify
+residue:sys_unwrap_eq/3	term/herbrand
+residue:sys_unwrap_eq/3	term/suspend
+residue:sys_unwrap_eq/3	term/unify
+residue:sys_unwrap_eq/3	term/verify
+user:term_expansion/2	minimal/chart
+user:term_expansion/2	minimal/chr
+user:term_expansion/2	minimal/delta
+simp:term_simplification/2	minimal/delta
+testbit/2	misc/bits
+true/1	minimal/hypo
+ulp/2	misc/elem
+verify_attributes/2	finite/tree
+weighted_maximum/3	finite/clpb
+when/2	term/suspend
+withdrawa_ref/1	minimal/assume
+withdrawz_ref/1	minimal/assume
+words/3	minimal/chart
+words/4	minimal/chart
 

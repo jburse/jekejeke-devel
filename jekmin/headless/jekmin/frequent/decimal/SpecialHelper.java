@@ -50,7 +50,6 @@ public class SpecialHelper extends AbstractSpecial {
      */
     public SpecialHelper(int i) {
         super(i);
-        subflags |= MASK_DELE_ARIT;
     }
 
     /**

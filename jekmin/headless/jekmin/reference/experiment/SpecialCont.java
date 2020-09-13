@@ -1,7 +1,7 @@
 package jekmin.reference.experiment;
 
-import jekpro.frequent.standard.ChoiceAtomic;
-import jekpro.frequent.standard.SpecialSignal;
+import jekpro.frequent.advanced.ChoiceMask;
+import jekpro.frequent.advanced.SpecialSignal;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
@@ -88,7 +88,7 @@ public final class SpecialCont extends AbstractSpecial {
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
-                if (!SpecialSignal.invokeAtomic(en, ChoiceAtomic.MASK_FLAGS_VRFY))
+                if (!SpecialSignal.invokeMask(en, ChoiceMask.MASK_FLAGS_VRFY))
                     return false;
                 return true;
             default:
