@@ -318,13 +318,10 @@ public final class Interpreter {
     public Interpreter(Knowledgebase k, Supervisor visor) {
         Store store = k.getStore();
 
-        switch (store.foyer.getHint()) {
-            case Foyer.HINT_WEB:
-                engine = new EngineYield(store, visor);
-                break;
-            default:
-                engine = new Engine(store, visor);
-                break;
+        if ((store.foyer.getHint() & Foyer.HINT_MASK_LMTD)!=0) {
+            engine = new EngineYield(store, visor);
+        } else {
+            engine = new Engine(store, visor);
         }
 
         engine.proxy = this;

@@ -249,72 +249,73 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a slash module or receiver to an object.</p>
      *
      * @param t    The slash skeleton.
-     * @param comp The compound flag.
-     * @param err  The error flag.
+     * @param flags  The flags.
      * @param en   The engine.
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
      * @see EvaluableLogic#slashToClass
      */
     public static Object slashToClassSkel(Object t,
-                                          boolean comp,
-                                          boolean err,
+                                          int flags,
                                           Engine en)
             throws EngineMessage {
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageSkel(temp.args[0], false, err);
+            SkelAtom sa = slashToPackageSkel(temp.args[0], flags);
             if (sa == null)
                 return null;
             t = temp.args[1];
-            if (comp && (t instanceof SkelCompound)) {
+            if ((flags & CacheModule.MASK_MODULE_CMPD) != 0 && (t instanceof SkelCompound)) {
                 SkelCompound sc2 = (SkelCompound) t;
-                t = CacheModule.getModule(sa, sc2.sym.fun, false,
+                t = CacheModule.getModule(sa, sc2.sym.fun, (flags & CacheModule.MASK_MODULE_NAUT),
                         temp.sym.scope, en);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa2 = (SkelAtom) t;
-                t = CacheModule.getModule(sa, sa2.fun, false,
+                t = CacheModule.getModule(sa, sa2.fun, (flags & CacheModule.MASK_MODULE_NAUT),
                         temp.sym.scope, en);
             } else {
-                if (err) {
+                if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                     EngineMessage.checkInstantiated(t);
                     Display d = AbstractSkel.createDisplay(t);
                     throw new EngineMessage(EngineMessage.typeError(
-                            (comp ? EngineMessage.OP_TYPE_CALLABLE :
+                            ((flags & CacheModule.MASK_MODULE_CMPD) != 0 ? EngineMessage.OP_TYPE_CALLABLE :
                                     EngineMessage.OP_TYPE_ATOM), t), d);
                 } else {
                     return null;
                 }
             }
-        } else if (!comp && t instanceof SkelCompound &&
+        } else if ((flags & CacheModule.MASK_MODULE_CMPD) == 0 && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageSkel(temp.args[0], true, err);
+            SkelAtom sa = slashToPackageSkel(temp.args[0],
+                    (flags | CacheModule.MASK_MODULE_ARRC));
             if (sa == null)
                 return null;
-            t = CacheModule.getModule(sa, null, false,
+            t = CacheModule.getModule(sa, null, (flags & CacheModule.MASK_MODULE_NAUT),
                     temp.sym.scope, en);
         } else if (!(t instanceof Number) &&
                 !(t instanceof AbstractSkel)) {
             /* */
         } else {
-            if (comp && (t instanceof SkelCompound)) {
+            if ((flags & CacheModule.MASK_MODULE_CMPD) != 0 && (t instanceof SkelCompound)) {
                 SkelCompound sc = (SkelCompound) t;
-                t = CacheModule.getModule(sc.sym, null, true,
+                t = CacheModule.getModule(sc.sym, null, (flags & CacheModule.MASK_MODULE_NAUT) |
+                                CacheModule.MASK_MODULE_SOLE,
                         sc.sym.scope, en);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa = (SkelAtom) t;
-                t = CacheModule.getModule(sa, null, true,
+                t = CacheModule.getModule(sa, null, (flags & CacheModule.MASK_MODULE_NAUT) |
+                                CacheModule.MASK_MODULE_SOLE,
                         sa.scope, en);
             } else {
-                if (err) {
+                if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                     EngineMessage.checkInstantiated(t);
                     Display d = AbstractSkel.createDisplay(t);
                     throw new EngineMessage(EngineMessage.domainError(
-                            (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
+                            ((flags & CacheModule.MASK_MODULE_CMPD) != 0 ? EngineMessage.OP_DOMAIN_RECEIVER :
                                     EngineMessage.OP_DOMAIN_MODULE), t), d);
                 } else {
                     return null;
@@ -328,27 +329,26 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a slash to a package.</p>
      *
      * @param t   The slash skeleton.
-     * @param set The set flag.
-     * @param err The error flag.
+     * @param flags The flags.
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
      * @see EvaluableLogic#slashToPackage
      */
     private static SkelAtom slashToPackageSkel(Object t,
-                                               boolean set,
-                                               boolean err)
+                                               int flags)
             throws EngineMessage {
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageSkel(temp.args[0], false, err);
+            SkelAtom sa = slashToPackageSkel(temp.args[0],
+                    (flags & ~CacheModule.MASK_MODULE_ARRC));
             if (sa == null)
                 return null;
             t = temp.args[1];
             if (t instanceof SkelAtom)
                 return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
-            if (err) {
+            if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                 EngineMessage.checkInstantiated(t);
                 Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.typeError(
@@ -356,22 +356,22 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 return null;
             }
-        } else if (set && (t instanceof SkelCompound) &&
+        } else if ((flags & CacheModule.MASK_MODULE_ARRC)!=0 && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackageSkel(temp.args[0], true, err);
+            SkelAtom sa = slashToPackageSkel(temp.args[0], flags);
             if (sa == null)
                 return null;
             return CachePackage.getPackage(sa, null);
         } else {
             if (t instanceof SkelAtom)
                 return (SkelAtom) t;
-            if (err) {
+            if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                 EngineMessage.checkInstantiated(t);
                 Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
-                        (set ? EngineMessage.OP_DOMAIN_ARRAY :
+                        ((flags & CacheModule.MASK_MODULE_ARRC)!=0 ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
             } else {
                 return null;
@@ -462,7 +462,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object mod = slashToClassSkel(temp.args[0], false, true, en);
+            Object mod = slashToClassSkel(temp.args[0], 0, en);
             if (!(mod instanceof AbstractSkel) &&
                     !(mod instanceof Number)) {
                 /* reference */
@@ -493,7 +493,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object mod = slashToClassSkel(temp.args[0], true, true, en);
+            Object mod = slashToClassSkel(temp.args[0], CacheModule.MASK_MODULE_CMPD, en);
             if (!(mod instanceof AbstractSkel) &&
                     !(mod instanceof Number)) {
                 /* reference */
@@ -540,7 +540,6 @@ public final class SpecialDynamic extends AbstractSpecial {
     /* Colon Notation Encode                                     */
     /*************************************************************/
 
-
     /**
      * <p>Convert a callable to a colon.</p>
      *
@@ -556,7 +555,8 @@ public final class SpecialDynamic extends AbstractSpecial {
             SkelAtom sa = temp.sym;
             if (sa instanceof SkelAtomQuali) {
                 t = temp.args[0];
-                Object recv = slashToClassSkel(t, true, false, en);
+                Object recv = slashToClassSkel(t, CacheModule.MASK_MODULE_CMPD |
+                        CacheModule.MASK_MODULE_NERR, en);
                 if (recv != null)
                     recv = objToAtom(recv, t, en);
                 SkelAtom sa3 = new SkelAtom(CacheFunctor.sepName(sa.fun));
@@ -623,7 +623,8 @@ public final class SpecialDynamic extends AbstractSpecial {
             SkelAtom sa = temp.sym;
             if (CacheFunctor.isQuali(sa.fun)) {
                 t = temp.args[0];
-                Object recv = slashToClassSkel(t, true, false, en);
+                Object recv = slashToClassSkel(t, CacheModule.MASK_MODULE_CMPD |
+                        CacheModule.MASK_MODULE_NERR, en);
                 if (recv != null)
                     recv = objToAtom(recv, t, en);
                 SkelAtom sa3 = new SkelAtom(CacheFunctor.sepName(sa.fun));

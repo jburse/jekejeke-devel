@@ -431,7 +431,7 @@ public final class SpecialSource extends AbstractSpecial {
     private static AbstractSource nameToModule(Object t, Display d,
                                                Engine en)
             throws EngineMessage {
-        Object obj = EvaluableLogic.slashToClass(t, d, false, true, en);
+        Object obj = EvaluableLogic.slashToClass(t, d, 0, en);
         SkelAtom mod = SpecialLogic.modToAtom(obj, t, d, en);
         return AbstractSource.getModule(mod.fun, en.store);
     }

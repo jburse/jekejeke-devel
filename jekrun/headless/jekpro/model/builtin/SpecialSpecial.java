@@ -170,7 +170,7 @@ public final class SpecialSpecial extends AbstractSpecial {
             throws EngineMessage {
         try {
             /* slash syntax */
-            Object obj = EvaluableLogic.slashToClass(t, d, false, true, en);
+            Object obj = EvaluableLogic.slashToClass(t, d, CacheModule.MASK_MODULE_NAUT, en);
             SkelAtom sa = SpecialLogic.modToAtom(obj, t, d, en);
 
             /* find key */

@@ -50,13 +50,21 @@ public final class CacheModule extends AbstractCache {
     public final static char OP_CHAR_OS = '/';
     public final static String OP_STRING_OS = "/";
 
+    public static final int MASK_MODULE_SOLE = 0x00000001;
+    public static final int MASK_MODULE_NERR = 0x00000002;
+    public static final int MASK_MODULE_CMPD = 0x00000004;
+
+    public static final int MASK_MODULE_ARRC = 0x00000010;
+    public static final int MASK_MODULE_NAUT = 0x00000020;
+
     private static final int MASK_CACH_FRGN = AbstractSource.MASK_PCKG_FRGN |
             AbstractSource.MASK_USES_FRGN;
     private static final int MASK_CACH_LIBR = AbstractSource.MASK_PCKG_LIBR |
             AbstractSource.MASK_USES_LIBR;
 
+
     String fun;
-    boolean sole;
+    int flags;
     Object srcvers;
     SkelAtom res;
 
@@ -69,17 +77,17 @@ public final class CacheModule extends AbstractCache {
      *
      * @param sa    The atom.
      * @param fun   The package, or null.
-     * @param sole  The sole flag.
+     * @param flags The module flags.
      * @param scope The call-site, non null.
      * @return The module name.
      * @throws EngineMessage Shit happens.
      */
     private static SkelAtom lookupModule(SkelAtom sa,
-                                         String fun, boolean sole,
+                                         String fun, int flags,
                                          AbstractSource scope)
             throws EngineMessage {
         try {
-            if (!sole) {
+            if ((flags & MASK_MODULE_SOLE) == 0) {
                 if (fun != null) {
                     fun = CachePackage.composeStruct(sa.fun, fun);
                 } else {
@@ -91,7 +99,8 @@ public final class CacheModule extends AbstractCache {
 
             /* lookup prefix from call-site */
             fun = fun.replace(CachePackage.OP_CHAR_SEG, OP_CHAR_OS);
-            fun = findPrefix(fun, scope, ForeignPath.MASK_MODL_AUTO);
+            fun = findPrefix(fun, scope, ((flags & CacheModule.MASK_MODULE_NAUT) == 0 ?
+                    ForeignPath.MASK_MODL_AUTO : ForeignPath.MASK_MODL_FRGN));
             fun = fun.replace(OP_CHAR_OS, CachePackage.OP_CHAR_SEG);
 
             /* create with call-site */
@@ -110,14 +119,14 @@ public final class CacheModule extends AbstractCache {
      *
      * @param sa    The atom skeleton.
      * @param fun   The package, or null.
-     * @param sole  The sole flag.
+     * @param flags The module flags.
      * @param scope The call-site, or null.
      * @param en    The engine.
      * @return The module name.
      * @throws EngineMessage Shit happens.
      */
     public static SkelAtom getModule(SkelAtom sa, String fun,
-                                     boolean sole,
+                                     int flags,
                                      AbstractSource scope,
                                      Engine en)
             throws EngineMessage {
@@ -128,10 +137,10 @@ public final class CacheModule extends AbstractCache {
             if (temp == null) {
                 /* cache miss, so lookup */
                 Object fixvers = src.fixvers;
-                SkelAtom sa2 = lookupModule(sa, fun, sole, src);
+                SkelAtom sa2 = lookupModule(sa, fun, flags, src);
                 CacheModule ca = new CacheModule();
                 ca.fun = fun;
-                ca.sole = sole;
+                ca.flags = flags;
                 ca.res = sa2;
                 ca.srcvers = fixvers;
                 if (back == null) {
@@ -144,14 +153,14 @@ public final class CacheModule extends AbstractCache {
             if (temp instanceof CacheModule) {
                 CacheModule ca = (CacheModule) temp;
                 if ((ca.fun != null ? ca.fun.equals(fun) : null == fun) &&
-                        ca.sole == sole && ca.res.scope == src) {
+                        ca.flags == flags && ca.res.scope == src) {
                     SkelAtom sa2;
                     if (ca.srcvers != src.fixvers) {
                         /* cache invalidated, so lookup */
                         Object fixvers = src.fixvers;
-                        sa2 = lookupModule(sa, fun, sole, src);
+                        sa2 = lookupModule(sa, fun, flags, src);
                         ca.fun = fun;
-                        ca.sole = sole;
+                        ca.flags = flags;
                         ca.res = sa2;
                         ca.srcvers = fixvers;
                     } else {

@@ -131,15 +131,11 @@ final class MemberVirtualDet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkRecv(obj);
         Object[] args = computeAndConvertArgs(temp, ref, en);
-        switch (en.store.foyer.getHint()) {
-            case Foyer.HINT_WEB:
-                checkRecv(obj);
-                checkArgs(args);
-                break;
-            default:
-                break;
-        }
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkArgs(args);
         Object res = invokeVirtual(method, obj, args);
         res = Types.normJava(encoderet, res);
         if (res == null)
@@ -165,15 +161,11 @@ final class MemberVirtualDet extends AbstractMember {
         Object temp = en.skel;
         Display ref = en.display;
         Object obj = convertRecv(temp, ref);
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkRecv(obj);
         Object[] args = convertArgs(temp, ref, en, null);
-        switch (en.store.foyer.getHint()) {
-            case Foyer.HINT_WEB:
-                checkRecv(obj);
-                checkArgs(args);
-                break;
-            default:
-                break;
-        }
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkArgs(args);
         Object res = invokeVirtual(method, obj, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);

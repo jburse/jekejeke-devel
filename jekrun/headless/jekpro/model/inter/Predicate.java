@@ -664,6 +664,7 @@ public final class Predicate {
                 return;
             pick.addDef(src, MASK_TRCK_STYL, en);
             checkPredicateOverride(def, sa, pick, en);
+            checkPredicateFresh(def, sa, pick, en);
             checkPredicateMultifile(def, pick, en);
             if (sa.scope != null &&
                     (sa.scope.getBits() & AbstractSource.MASK_SRC_VSPU) == 0)
@@ -739,6 +740,38 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the override style check.</p>
+     *
+     * @param loc  The usage.
+     * @param sa   The functor.
+     * @param pick The redicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateFresh(Integer loc, SkelAtom sa,
+                                               Predicate pick,
+                                               Engine en)
+            throws EngineMessage, EngineException {
+        if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
+            return;
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        AbstractSource base = CachePredicate.performBase(sa, src, en);
+        Predicate over;
+        try {
+            over = CachePredicate.performOverrides(sa, pick.getArity(), base);
+        } catch (InterruptedException x) {
+            throw (EngineMessage) ForeignThread.sysThreadClear();
+        }
+        if (over != null && CachePredicate.visiblePred(over, src))
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_FRESH_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));

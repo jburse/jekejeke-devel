@@ -17,6 +17,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
+import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractRuntime;
 import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
@@ -103,6 +104,9 @@ public final class Knowledgebase {
     public final static String PROP_SYS_LOCALE = FlagSession.OP_SYS_LOCALE;
     public final static String PROP_SYS_HINT = FlagSession.OP_SYS_HINT;
     public final static String PROP_SYS_APPLICATION = FlagSession.OP_SYS_APPLICATION;
+
+    public final static int HINT_MASK_MNGR = Enforced.HINT_MASK_MNGR;
+    public final static int HINT_MASK_LMTD = Enforced.HINT_MASK_LMTD;
 
     private final Store store;
 

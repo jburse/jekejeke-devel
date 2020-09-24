@@ -135,7 +135,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 ref = en.display;
                 SkelAtom sym=((SkelCompound) en.skel).sym;
 
-                Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                 SkelAtom mod = modToAtom(obj, temp[0], ref, en);
                 colonToCallable(temp[1], ref, true, en);
                 EvaluableLogic.colonToRoutine(mod, sym, true, en);
@@ -158,7 +158,8 @@ public final class SpecialLogic extends AbstractSpecial {
                 Object recv = en.skel;
                 Display d2 = en.display;
 
-                obj = EvaluableLogic.slashToClass(recv, d2, true, true, en);
+                obj = EvaluableLogic.slashToClass(recv, d2,
+                        CacheModule.MASK_MODULE_CMPD, en);
                 mod = objToAtom(obj, recv, d2, en);
                 colonToCallable(temp[1], ref, true, en);
                 EvaluableLogic.colonToMethod(mod, sym, recv, d2, true, en);
@@ -412,7 +413,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
             SkelCompound temp = (SkelCompound) t;
-            Object obj = EvaluableLogic.slashToClass(temp.args[0], d, false, true, en);
+            Object obj = EvaluableLogic.slashToClass(temp.args[0], d, 0, en);
             SkelAtom mod = modToAtom(obj, temp.args[0], d, en);
             colonToCallable(temp.args[1], d, comp, en);
             EvaluableLogic.colonToRoutine(mod, temp.sym, comp, en);
@@ -427,7 +428,8 @@ public final class SpecialLogic extends AbstractSpecial {
             Object recv = en.skel;
             Display d2 = en.display;
 
-            Object obj = EvaluableLogic.slashToClass(recv, d2, true, true, en);
+            Object obj = EvaluableLogic.slashToClass(recv, d2,
+                    CacheModule.MASK_MODULE_CMPD, en);
             SkelAtom mod = objToAtom(obj, recv, d2, en);
             colonToCallable(temp.args[1], d, comp, en);
             EvaluableLogic.colonToMethod(mod, temp.sym, recv, d2, comp, en);

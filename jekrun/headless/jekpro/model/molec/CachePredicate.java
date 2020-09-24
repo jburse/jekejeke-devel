@@ -213,7 +213,7 @@ public final class CachePredicate extends AbstractCache {
         } finally {
             base.getRead().unlock();
         }
-        Predicate pick = performDependent(n, arity, base, deps2, f);
+        Predicate pick = performDependent(n, arity, base, deps2, true);
         if (pick != null)
             return pick;
         if (!Branch.OP_USER.equals(s))

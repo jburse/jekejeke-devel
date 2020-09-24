@@ -17,6 +17,11 @@ import matula.util.system.ConnectionWriter;
 
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * <p>This class provides an abstract factory.</p>
@@ -57,7 +62,6 @@ public abstract class AbstractFactory {
     public static final String OP_DOMAIN_FOREIGN_EXCEPTION = "foreign_exception";
     public static final String OP_DOMAIN_FOREIGN_ACCESS = "foreign_access";
     public static final String OP_DOMAIN_FOREIGN_ARRAY = "foreign_array";
-    public static final String OP_DOMAIN_FOREIGN_NOTYET = "foreign_notyet";
 
     public static final String OP_PERMISSION_LOOKUP = "lookup";
     public static final String OP_PERMISSION_APPLY = "apply";
@@ -79,6 +83,23 @@ public abstract class AbstractFactory {
             = new ListArray<MapHash<String, AbstractFlag<Store>>>();
     private AbstractReflection reflection;
 
+    private static Method encoding;
+
+    /**
+     * <p>Determine the console output encoding.</p>
+     */
+    static {
+        try {
+            Class<?> clazz = Class.forName("java.io.Console");
+            encoding = clazz.getDeclaredMethod("encoding");
+            encoding.setAccessible(true);
+        } catch (ClassNotFoundException e) {
+            encoding = null;
+        } catch (NoSuchMethodException e) {
+            encoding = null;
+       }
+    }
+
     /**
      * <p>Create an abstract factor.</p>
      */
@@ -94,9 +115,42 @@ public abstract class AbstractFactory {
      * <p>Can be overridden by subclasses.</p>
      */
     protected void prepareToolConnections() {
-        toolinput = new ConnectionReader(new InputStreamReader(System.in));
-        tooloutput = new ConnectionWriter(new OutputStreamWriter(System.out));
-        toolerror = new ConnectionWriter(new OutputStreamWriter(System.err));
+        Charset cs = getEncoding();
+        toolinput = new ConnectionReader(new InputStreamReader(System.in, cs));
+        tooloutput = new ConnectionWriter(new OutputStreamWriter(System.out, cs));
+        toolerror = new ConnectionWriter(new OutputStreamWriter(System.err, cs));
+    }
+
+    /**
+     * <p>Retrieve the console encoding.</p>
+     *
+     * @return The console encoding.
+     */
+    protected static Charset getEncoding() {
+        if (encoding != null) {
+            String csname;
+            try {
+                csname = (String) encoding.invoke(null);
+            } catch (IllegalAccessException e) {
+                csname = null;
+            } catch (InvocationTargetException e) {
+                csname = null;
+            } catch (NullPointerException e) {
+                /* CheerpJ issue: https://github.com/leaningtech/cheerpj-meta/issues/102 */
+                csname = null;
+            }
+            Charset cs;
+            try {
+                cs = (csname != null ? Charset.forName(csname) : null);
+            } catch (UnsupportedCharsetException e) {
+                cs = null;
+            } catch (IllegalCharsetNameException e) {
+                cs = null;
+            }
+            return (cs != null ? cs : Charset.defaultCharset());
+        } else {
+            return Charset.defaultCharset();
+        }
     }
 
     /**
@@ -200,7 +254,7 @@ public abstract class AbstractFactory {
     }
 
     /*******************************************************************/
-    /* Plaztform Specific                                              */
+    /* Platform Specific                                               */
     /*******************************************************************/
 
     /**

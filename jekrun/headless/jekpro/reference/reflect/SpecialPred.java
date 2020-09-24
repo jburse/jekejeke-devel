@@ -558,7 +558,7 @@ public final class SpecialPred extends AbstractSpecial {
                     ((SkelCompound) t).args.length == 2 &&
                     ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
                 SkelCompound temp = (SkelCompound) t;
-                Object obj = EvaluableLogic.slashToClass(temp.args[0], d, false, true, en);
+                Object obj = EvaluableLogic.slashToClass(temp.args[0], d, 0, en);
                 SkelAtom mod = SpecialLogic.modToAtom(obj, temp.args[0], d, en);
                 Integer arity = colonToIndicator(temp.args[1], d, en);
                 SkelAtom sa = (SkelAtom) en.skel;

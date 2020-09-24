@@ -85,7 +85,7 @@ public final class SpecialProxy extends AbstractSpecial {
                 case SPECIAL_SYS_NEW_INSTANCE:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                    Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                     SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en), en);
                     if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
@@ -94,9 +94,9 @@ public final class SpecialProxy extends AbstractSpecial {
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
+                    obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                     SkelAtom mod = SpecialLogic.modToAtom(obj, temp[0], ref, en);
-                    obj = EvaluableLogic.slashToClass(temp[1], ref, false, true, en);
+                    obj = EvaluableLogic.slashToClass(temp[1], ref, 0, en);
                     sa = SpecialLogic.modToAtom(obj, temp[1], ref, en);
                     if (!CacheSubclass.getSubclass(sa, mod, en))
                         return false;

@@ -128,15 +128,9 @@ final class MemberConstructor extends AbstractMember {
             throws EngineException, EngineMessage {
         Object temp = en.skel;
         Display ref = en.display;
-        int hint = en.store.foyer.getHint();
         Object[] args = convertArgs(temp, ref, en, null);
-        switch (hint) {
-            case Foyer.HINT_WEB:
-                checkArgs(args);
-                break;
-            default:
-                break;
-        }
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkArgs(args);
         Object res = AutoClass.invokeNew(constructor, args);
         if ((subflags & MASK_METH_FUNC) != 0) {
             res = Types.normJava(encoderet, res);

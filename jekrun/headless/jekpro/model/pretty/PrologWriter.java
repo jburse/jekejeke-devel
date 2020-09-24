@@ -1452,11 +1452,12 @@ public class PrologWriter {
         if (sc.args.length == 2 &&
                 sc.sym.fun.equals(EvaluableLogic.OP_COLON)) {
             return (engine != null ? EvaluableLogic.slashToClass(sc.args[0],
-                    ref, false, false, engine) : null);
+                    ref, CacheModule.MASK_MODULE_NERR, engine) : null);
         } else if (sc.args.length == 2 &&
                 sc.sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             return (engine != null ? EvaluableLogic.slashToClass(sc.args[0],
-                    ref, true, false, engine) : null);
+                    ref, CacheModule.MASK_MODULE_CMPD |
+                            CacheModule.MASK_MODULE_NERR, engine) : null);
         } else {
             return null;
         }

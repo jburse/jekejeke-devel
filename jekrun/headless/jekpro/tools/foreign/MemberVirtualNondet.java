@@ -131,15 +131,11 @@ final class MemberVirtualNondet extends AbstractMember {
         Display ref = en.display;
         int hint = en.store.foyer.getHint();
         Object obj = convertRecv(temp, ref);
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkRecv(obj);
         Object[] args = convertArgs(temp, ref, en, co);
-        switch (hint) {
-            case Foyer.HINT_WEB:
-                checkRecv(obj);
-                checkArgs(args);
-                break;
-            default:
-                break;
-        }
+        if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
+            checkArgs(args);
         co.flags |= CallOut.MASK_CALL_FIRST;
         for (; ; ) {
             Object res = MemberVirtualDet.invokeVirtual(method, obj, args);

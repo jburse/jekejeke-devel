@@ -79,7 +79,7 @@ public final class EvaluableLogic extends AbstractSpecial {
                 SkelCompound temp = (SkelCompound) en.skel;
                 Display ref = en.display;
 
-                Object obj = slashToClass(temp.args[0], ref, false, true, en);
+                Object obj = slashToClass(temp.args[0], ref, 0, en);
                 SkelAtom mod = SpecialLogic.modToAtom(obj, temp.args[0], ref, en);
                 SpecialLogic.colonToCallable(temp.args[1], ref, true, en);
                 colonToRoutine(mod, temp.sym, true, en);
@@ -99,7 +99,7 @@ public final class EvaluableLogic extends AbstractSpecial {
                 Object recv = en.skel;
                 Display d2 = en.display;
 
-                obj = slashToClass(recv, d2, true, true, en);
+                obj = slashToClass(recv, d2, CacheModule.MASK_MODULE_CMPD, en);
                 mod = SpecialLogic.objToAtom(obj, recv, d2, en);
                 SpecialLogic.colonToCallable(temp.args[1], ref, true, en);
                 colonToMethod(mod, temp.sym, recv, d2, true, en);
@@ -322,17 +322,15 @@ public final class EvaluableLogic extends AbstractSpecial {
      *            | callable.
      * </pre>
      *
-     * @param t    The slash skeleton.
-     * @param d    The slash display.
-     * @param comp The compound flag.
-     * @param err  The error flag.
-     * @param en   The engine.
+     * @param t     The slash skeleton.
+     * @param d     The slash display.
+     * @param flags The flags.
+     * @param en    The engine.
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
      */
     public static Object slashToClass(Object t, Display d,
-                                      boolean comp,
-                                      boolean err,
+                                      int flags,
                                       Engine en)
             throws EngineMessage {
         en.skel = t;
@@ -344,7 +342,7 @@ public final class EvaluableLogic extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackage(temp.args[0], d, false, err, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, flags, en);
             if (sa == null)
                 return null;
             t = temp.args[1];
@@ -353,50 +351,53 @@ public final class EvaluableLogic extends AbstractSpecial {
             en.deref();
             t = en.skel;
             d = en.display;
-            if (comp && (t instanceof SkelCompound)) {
+            if ((flags & CacheModule.MASK_MODULE_CMPD) != 0 && (t instanceof SkelCompound)) {
                 SkelCompound sc2 = (SkelCompound) t;
-                t = CacheModule.getModule(sa, sc2.sym.fun, false,
+                t = CacheModule.getModule(sa, sc2.sym.fun, (flags & CacheModule.MASK_MODULE_NAUT),
                         temp.sym.scope, en);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa2 = (SkelAtom) t;
-                t = CacheModule.getModule(sa, sa2.fun, false,
+                t = CacheModule.getModule(sa, sa2.fun, (flags & CacheModule.MASK_MODULE_NAUT),
                         temp.sym.scope, en);
             } else {
-                if (err) {
+                if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                     EngineMessage.checkInstantiated(t);
                     throw new EngineMessage(EngineMessage.typeError(
-                            (comp ? EngineMessage.OP_TYPE_CALLABLE :
+                            ((flags & CacheModule.MASK_MODULE_CMPD) != 0 ? EngineMessage.OP_TYPE_CALLABLE :
                                     EngineMessage.OP_TYPE_ATOM), t), d);
                 } else {
                     return null;
                 }
             }
-        } else if (!comp && t instanceof SkelCompound &&
+        } else if ((flags & CacheModule.MASK_MODULE_CMPD) == 0 && t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d,
+                    (flags | CacheModule.MASK_MODULE_ARRC), en);
             if (sa == null)
                 return null;
-            t = CacheModule.getModule(sa, null, false,
+            t = CacheModule.getModule(sa, null, (flags & CacheModule.MASK_MODULE_NAUT),
                     temp.sym.scope, en);
         } else if (!(t instanceof Number) &&
                 !(t instanceof AbstractSkel)) {
             /* */
         } else {
-            if (comp && (t instanceof SkelCompound)) {
+            if ((flags & CacheModule.MASK_MODULE_CMPD) != 0 && (t instanceof SkelCompound)) {
                 SkelCompound sc = (SkelCompound) t;
-                t = CacheModule.getModule(sc.sym, null, true,
+                t = CacheModule.getModule(sc.sym, null, (flags & CacheModule.MASK_MODULE_NAUT) |
+                                CacheModule.MASK_MODULE_SOLE,
                         sc.sym.scope, en);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa = (SkelAtom) t;
-                t = CacheModule.getModule(sa, null, true,
+                t = CacheModule.getModule(sa, null, (flags & CacheModule.MASK_MODULE_NAUT) |
+                                CacheModule.MASK_MODULE_SOLE,
                         sa.scope, en);
             } else {
-                if (err) {
+                if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                     EngineMessage.checkInstantiated(t);
                     throw new EngineMessage(EngineMessage.domainError(
-                            (comp ? EngineMessage.OP_DOMAIN_RECEIVER :
+                            ((flags & CacheModule.MASK_MODULE_CMPD) != 0 ? EngineMessage.OP_DOMAIN_RECEIVER :
                                     EngineMessage.OP_DOMAIN_MODULE), t), d);
                 } else {
                     return null;
@@ -420,15 +421,13 @@ public final class EvaluableLogic extends AbstractSpecial {
      *
      * @param t   The slash skeleton.
      * @param d   The slash display.
-     * @param set The set flag.
-     * @param err The error flag.
+     * @param flags The flag.
      * @param en  The engine.
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
      */
     public static SkelAtom slashToPackage(Object t, Display d,
-                                          boolean set,
-                                          boolean err,
+                                          int flags,
                                           Engine en)
             throws EngineMessage {
         en.skel = t;
@@ -440,7 +439,8 @@ public final class EvaluableLogic extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackage(temp.args[0], d, false, err, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d,
+                    (flags & ~CacheModule.MASK_MODULE_ARRC), en);
             if (sa == null)
                 return null;
             en.skel = temp.args[1];
@@ -449,28 +449,28 @@ public final class EvaluableLogic extends AbstractSpecial {
             t = en.skel;
             if (t instanceof SkelAtom)
                 return CachePackage.getPackage(sa, ((SkelAtom) t).fun);
-            if (err) {
+            if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                 EngineMessage.checkInstantiated(t);
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_ATOM, t), d);
             } else {
                 return null;
             }
-        } else if (set && (t instanceof SkelCompound) &&
+        } else if ((flags & CacheModule.MASK_MODULE_ARRC)!=0 && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
-            SkelAtom sa = slashToPackage(temp.args[0], d, true, err, en);
+            SkelAtom sa = slashToPackage(temp.args[0], d, flags, en);
             if (sa == null)
                 return null;
             return CachePackage.getPackage(sa, null);
         } else {
             if (t instanceof SkelAtom)
                 return (SkelAtom) t;
-            if (err) {
+            if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                 EngineMessage.checkInstantiated(t);
                 throw new EngineMessage(EngineMessage.domainError(
-                        (set ? EngineMessage.OP_DOMAIN_ARRAY :
+                        ((flags & CacheModule.MASK_MODULE_ARRC)!=0 ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
             } else {
                 return null;

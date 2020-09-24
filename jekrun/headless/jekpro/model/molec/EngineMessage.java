@@ -214,6 +214,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_END_MISSING = "end_missing";
 
     public static final String OP_SYNTAX_OVERRIDE_PRED = "override_pred";
+    public static final String OP_SYNTAX_FRESH_PRED = "fresh_pred";
     public static final String OP_SYNTAX_DISCONTIGUOUS_PRED = "discontiguous_pred";
     public static final String OP_SYNTAX_MULTIFILE_PRED = "multifile_pred";
     public static final String OP_SYNTAX_PUBLIC_PRED = "public_pred";
@@ -223,7 +224,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_THREAD_LOCAL_PRED = "thread_local_pred";
     public static final String OP_SYNTAX_IMPLEMENTATION_PRED = "implementation_pred";
 
-    public static final String OP_SYNTAX_OVERRIDE_OPER = "override_oper";
     public static final String OP_SYNTAX_IMPLEMENTATION_OPER = "implementation_oper";
 
     public static final String OP_SYNTAX_MODULE_EMPTY = "module_empty";
@@ -254,7 +254,6 @@ public final class EngineMessage extends Exception {
      * <p>No stack filling.</p>
      *
      * @return This throwable.
-     * @see com.sun.org.apache.xerces.internal.parsers.AbstractDOMParser.Abort
      */
     public Throwable fillInStackTrace() {
         return this;
@@ -588,9 +587,10 @@ public final class EngineMessage extends Exception {
             return new EngineMessage(EngineMessage.resourceError(
                     EngineMessage.OP_RESOURCE_SOCKET_TIMEOUT));
         } else if (x instanceof UnsupportedEncodingException) {
+            String msg = x.getMessage();
             return new EngineMessage(EngineMessage.existenceError(
                     EngineMessage.OP_EXISTENCE_ENCODING,
-                    new SkelAtom(x.getMessage())));
+                    new SkelAtom(msg != null ? msg : "")));
         } else if (x instanceof MalformedURLException) {
             return new EngineMessage(EngineMessage.syntaxError(
                     EngineMessage.OP_SYNTAX_MALFORMED_URL));
@@ -601,17 +601,24 @@ public final class EngineMessage extends Exception {
             return new EngineMessage(EngineMessage.syntaxError(
                     EngineMessage.OP_SYNTAX_MALFORMED_PATH));
         } else if (x instanceof FileNotFoundException) {
+            String msg = x.getMessage();
             return new EngineMessage(EngineMessage.existenceError(
-                    OP_EXISTENCE_SOURCE_SINK, new SkelAtom(x.getMessage())));
+                    OP_EXISTENCE_SOURCE_SINK,
+                    new SkelAtom(msg != null ? msg : "")));
         } else if (x instanceof UnknownHostException) {
+            String msg = x.getMessage();
             return new EngineMessage(EngineMessage.existenceError(
-                    OP_EXISTENCE_HOST, new SkelAtom(x.getMessage())));
+                    OP_EXISTENCE_HOST,
+                    new SkelAtom(msg != null ? msg : "")));
         } else if (x instanceof SocketException) {
+            String msg = x.getMessage();
             return new EngineMessage(EngineMessage.existenceError(
-                    OP_EXISTENCE_PORT, new SkelAtom(x.getMessage())));
+                    OP_EXISTENCE_PORT,
+                    new SkelAtom(msg != null ? msg : "")));
         } else {
+            String msg = x.getMessage();
             return new EngineMessage(EngineMessage.resourceError(
-                    x.getMessage()));
+                    msg != null ? msg : ""));
         }
     }
 
