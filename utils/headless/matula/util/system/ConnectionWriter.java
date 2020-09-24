@@ -41,7 +41,6 @@ import java.io.Writer;
  */
 public class ConnectionWriter extends FilterWriter {
     private boolean bom;
-    private Writer unbuf;
     private OutputStream uncoded;
 
     private String newline = OpenOpts.UNIX_NEWLINE;
@@ -49,11 +48,10 @@ public class ConnectionWriter extends FilterWriter {
     /**
      * <p>Create a connection writer from a writer.</p>
      *
-     * @param w The writer.
+     * @param out The writer.
      */
-    public ConnectionWriter(Writer w) {
-        super(w);
-        unbuf = w;
+    public ConnectionWriter(Writer out) {
+        super(out);
     }
 
     /**
@@ -80,7 +78,7 @@ public class ConnectionWriter extends FilterWriter {
      * @return The unbuffered and unadored write.
      */
     public Writer getUnbuf() {
-        return unbuf;
+        return out;
     }
 
     /**
@@ -155,6 +153,7 @@ public class ConnectionWriter extends FilterWriter {
                 if (k != off)
                     out.write(cbuf, off, k - off);
                 out.write(newline);
+
                 k++;
                 len = len - k + off;
                 off = k;
@@ -197,6 +196,7 @@ public class ConnectionWriter extends FilterWriter {
                 if (k != off)
                     out.write(str, off, k - off);
                 out.write(newline);
+
                 k++;
                 len = len - k + off;
                 off = k;

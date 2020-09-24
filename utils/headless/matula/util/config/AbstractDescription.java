@@ -89,8 +89,8 @@ public abstract class AbstractDescription {
     /**
      * <p>Retrieve the bundle description.</p>
      *
-     * @param locale  The locale.
-     * @param loader  The class loader.
+     * @param locale    The locale.
+     * @param loader    The class loader.
      * @param framework The framework.
      * @return The properties or null.
      */
@@ -125,8 +125,8 @@ public abstract class AbstractDescription {
     /**
      * <p>Retrieve the product and release text.</p>
      *
-     * @param locale  The locale.
-     * @param loader  The class loader.
+     * @param locale    The locale.
+     * @param loader    The class loader.
      * @param framework The framework.
      * @return The product and release.
      */
@@ -146,8 +146,8 @@ public abstract class AbstractDescription {
     /**
      * <p>Retrieve the date formatted.</p>
      *
-     * @param locale  The locale.
-     * @param loader  The class loader.
+     * @param locale    The locale.
+     * @param loader    The class loader.
      * @param framework The framework.
      * @return The date formatted or "".
      */

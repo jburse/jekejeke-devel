@@ -2,7 +2,7 @@ package matula.util.config;
 
 import derek.util.protect.LicenseError;
 import matula.util.data.MapEntry;
-import matula.util.data.MapTree;
+import matula.util.data.MapHashLink;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenDuplex;
 import matula.util.system.OpenOpts;
@@ -44,8 +44,8 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractRecognizer {
-    private MapTree<String, FileExtension> ext = new MapTree<String,
-            FileExtension>(MapTree.DEFAULT);
+    private final MapHashLink<String, FileExtension> ext = new MapHashLink<String,
+            FileExtension>();
     private MapEntry<String, FileExtension>[] cacheext;
 
     /**
@@ -149,7 +149,7 @@ public abstract class AbstractRecognizer {
      */
     public void addFileExtension(String e, FileExtension fe) {
         synchronized (this) {
-            if (ext.get(e) != null)
+            if (ext.getEntry(e) != null)
                 return;
             ext.add(e, fe);
             cacheext = null;
@@ -163,9 +163,11 @@ public abstract class AbstractRecognizer {
      */
     public void removeFileExtension(String e) {
         synchronized (this) {
-            if (ext.get(e) == null)
+            MapEntry<String, FileExtension> entry = ext.getEntry(e);
+            if (entry == null)
                 return;
-            ext.remove(e);
+            ext.removeEntry(entry);
+            ext.resize();
             cacheext = null;
         }
     }

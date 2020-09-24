@@ -47,15 +47,14 @@ public final class ConnectionInput extends FilterInputStream {
     private int buffer;
     private long date;
     private int maxage = -1;
-    private InputStream unbuf;
 
     /**
      * <p>Create a buffered input stream from an input stream.</p>
      *
-     * @param i The input stream reader.
+     * @param in The input stream reader.
      */
-    ConnectionInput(InputStream i) {
-        super(i);
+    ConnectionInput(InputStream in) {
+        super(in);
     }
 
     /**
@@ -226,7 +225,7 @@ public final class ConnectionInput extends FilterInputStream {
      * @return The unbuffered and unadored input.
      */
     public InputStream getUnbuf() {
-        return unbuf;
+        return in;
     }
 
     /**

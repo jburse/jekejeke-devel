@@ -42,7 +42,6 @@ public final class ConnectionOutput extends FilterOutputStream {
     private String path = "";
     private boolean append;
     private int buffer;
-    private OutputStream unbuf;
 
     /**
      * <p>Create a filter output stream from an output stream.</p>
@@ -51,7 +50,6 @@ public final class ConnectionOutput extends FilterOutputStream {
      */
     ConnectionOutput(OutputStream out) {
         super(out);
-        unbuf = out;
     }
 
     /**
@@ -132,7 +130,7 @@ public final class ConnectionOutput extends FilterOutputStream {
      * @return The unbuffered and unadored output.
      */
     public OutputStream getUnbuf() {
-        return unbuf;
+        return out;
     }
 
     /**

@@ -43,7 +43,6 @@ public class ConnectionReader extends FilterReader {
     private final static int MAX_LINE = 1024;
 
     private boolean bom;
-    private Reader unbuf;
     private InputStream uncoded;
 
     private String line = "";
@@ -51,16 +50,15 @@ public class ConnectionReader extends FilterReader {
     private int mark = -1;
     private int lineno = 1;
     private boolean skiplf;
-    private StringBuilder buf = new StringBuilder();
+    private final StringBuilder buf = new StringBuilder();
 
     /**
      * <p>Create a connection reader from a reader.</p>
      *
-     * @param r The reader.
+     * @param in The reader.
      */
-    public ConnectionReader(Reader r) {
-        super(r);
-        unbuf = r;
+    public ConnectionReader(Reader in) {
+        super(in);
     }
 
     /**
@@ -105,7 +103,7 @@ public class ConnectionReader extends FilterReader {
      * @return The unbuffered and unadored reader.
      */
     public Reader getUnbuf() {
-        return unbuf;
+        return in;
     }
 
     /**

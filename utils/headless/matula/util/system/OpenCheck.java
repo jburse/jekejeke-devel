@@ -77,11 +77,8 @@ public class OpenCheck {
             if (ForeignUri.SCHEME_FILE.equals(scheme)) {
                 String path = ForeignUri.sysSpecPath(spec);
                 File file = new File(path.replace('/', File.separatorChar));
-
-                /* spare an IOException */
-                if (!file.exists())
-                    return false;
-                return true;
+                boolean res = file.exists();
+                return res;
             } else {
                 adr = ForeignDomain.sysUriPuny(adr);
                 adr = ForeignUri.sysUriEncode(adr);
