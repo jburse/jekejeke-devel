@@ -113,13 +113,10 @@ public final class TimeRecord {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
-                    dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);
-                    break;
-                default:
-                    dc = new ArrayEnumeration<String>(OP_STATISTICS);
-                    break;
+            if ((hint & Foyer.HINT_MASK_LMTD) != 0) {
+                dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);
+            } else {
+                dc = new ArrayEnumeration<String>(OP_STATISTICS);
             }
             co.setData(dc);
         } else {

@@ -2,16 +2,18 @@ package jekpro.platform.swing;
 
 import jekpro.model.inter.Supervisor;
 import jekpro.model.pretty.Foyer;
-import jekpro.tools.call.*;
+import jekpro.tools.call.CallOut;
+import jekpro.tools.call.Interpreter;
+import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
+import matula.util.config.ArrayEnumeration;
+import matula.util.wire.AbstractLivestock;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Iterator;
-import matula.util.config.ArrayEnumeration;
-import matula.util.wire.AbstractLivestock;
 
 /**
  * The foreign predicates for the module stats.
@@ -85,13 +87,10 @@ public final class ForeignStatistics {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
             int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
-                    dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);
-                    break;
-                default:
-                    dc = new ArrayEnumeration<String>(OP_STATISTICS);
-                    break;
+            if ((hint & Foyer.HINT_MASK_LMTD) != 0) {
+                dc = new ArrayEnumeration<String>(OP_STATISTICS_WEB);
+            } else {
+                dc = new ArrayEnumeration<String>(OP_STATISTICS);
             }
             co.setData(dc);
         } else {
@@ -124,43 +123,40 @@ public final class ForeignStatistics {
             return TermAtomic.normBigInteger(Runtime.getRuntime().freeMemory());
         } else if (OP_UPTIME.equals(name)) {
             int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
-                    return TermAtomic.normBigInteger(System.currentTimeMillis() - 1545076144751L);
-                default:
-                    return TermAtomic.normBigInteger(ManagementFactory.getRuntimeMXBean().getUptime());
+            if ((hint & Foyer.HINT_MASK_LMTD) != 0) {
+                return TermAtomic.normBigInteger(System.currentTimeMillis() - 1545076144751L);
+            } else {
+                return TermAtomic.normBigInteger(ManagementFactory.getRuntimeMXBean().getUptime());
             }
         } else if (OP_GCTIME.equals(name)) {
             int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
+            if ((hint & Foyer.HINT_MASK_LMTD) != 0) {
+                return null;
+            } else {
+                Iterator<GarbageCollectorMXBean> iter =
+                        ManagementFactory.getGarbageCollectorMXBeans().iterator();
+                long gcsum = 0;
+                boolean has = false;
+                while (iter.hasNext()) {
+                    GarbageCollectorMXBean gb = iter.next();
+                    long gctime = gb.getCollectionTime();
+                    if (gctime != -1) {
+                        gcsum += gctime;
+                        has = true;
+                    }
+                }
+                if (has) {
+                    return TermAtomic.normBigInteger(gcsum);
+                } else {
                     return null;
-                default:
-                    Iterator<GarbageCollectorMXBean> iter =
-                            ManagementFactory.getGarbageCollectorMXBeans().iterator();
-                    long gcsum = 0;
-                    boolean has = false;
-                    while (iter.hasNext()) {
-                        GarbageCollectorMXBean gb = iter.next();
-                        long gctime = gb.getCollectionTime();
-                        if (gctime != -1) {
-                            gcsum += gctime;
-                            has = true;
-                        }
-                    }
-                    if (has) {
-                        return TermAtomic.normBigInteger(gcsum);
-                    } else {
-                        return null;
-                    }
+                }
             }
         } else if (OP_SYS_TIME_SELF.equals(name)) {
             int hint = ((Integer) inter.getKnowledgebase().getProperty(Knowledgebase.PROP_SYS_HINT)).intValue();
-            switch (hint) {
-                case Foyer.HINT_WEB:
-                    return Integer.valueOf(0);
-                default:
-                    ThreadMXBean tb = ManagementFactory.getThreadMXBean();
+            if ((hint & Foyer.HINT_MASK_LMTD) != 0) {
+                return Integer.valueOf(0);
+            } else {
+                ThreadMXBean tb = ManagementFactory.getThreadMXBean();
                     if (tb.isCurrentThreadCpuTimeSupported()) {
                         long cputime = tb.getCurrentThreadCpuTime() / 1000000L;
                         return TermAtomic.normBigInteger(cputime);
