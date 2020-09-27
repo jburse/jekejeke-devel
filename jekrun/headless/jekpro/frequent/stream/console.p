@@ -75,7 +75,7 @@
  * read_line(T, C):
  * The predicate succeeds in C in reading a line. The predicate fails
  * upon an empty line and an end of file. The binary predicate
- * allows specifying a text stream T
+ * allows specifying a text stream T.
  */
 % read_line(-Atom)
 :- public read_line/1.

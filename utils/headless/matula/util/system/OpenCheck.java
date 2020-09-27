@@ -39,7 +39,6 @@ import java.nio.channels.FileLockInterruptionException;
  */
 public class OpenCheck {
     public static final int MASK_OPEN_CACH = 0x00000001;
-
     public static final OpenCheck DEFAULT_CHECK = new OpenCheck();
 
     private int flags;
@@ -65,112 +64,64 @@ public class OpenCheck {
     /**
      * <p>Check a read stream.</p>
      *
-     * @param adr The uri.
-     * @return True if a reader could be optained, otherwise false.
+     * @param path  The uri.
+     * @param check The check flag.
+     * @return TThe new uri, null or CHECK_ERROR.
      * @throws IOException IO error.
      */
-    public boolean checkHead(String adr)
+    public String checkHead(String path, boolean check)
             throws IOException {
         try {
-            String spec = ForeignUri.sysUriSpec(adr);
-            String scheme = ForeignUri.sysSpecScheme(spec);
-            if (ForeignUri.SCHEME_FILE.equals(scheme)) {
-                String path = ForeignUri.sysSpecPath(spec);
-                File file = new File(path.replace('/', File.separatorChar));
-                boolean res = file.exists();
-                return res;
-            } else {
-                adr = ForeignDomain.sysUriPuny(adr);
-                adr = ForeignUri.sysUriEncode(adr);
-                URL url = new URL(adr);
-                URLConnection con = url.openConnection();
-                con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
+            for (;;) {
+                String adr = path;
+                String spec = ForeignUri.sysUriSpec(adr);
+                String scheme = ForeignUri.sysSpecScheme(spec);
+                if (ForeignUri.SCHEME_FILE.equals(scheme)) {
+                    adr = ForeignUri.sysSpecPath(spec);
+                    File file = new File(adr.replace('/', File.separatorChar));
+                    if (file.exists())
+                        return path;
+                    break;
+                } else {
+                    adr = ForeignDomain.sysUriPuny(adr);
+                    adr = ForeignUri.sysUriEncode(adr);
+                    URL url = new URL(adr);
+                    URLConnection con = url.openConnection();
+                    con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
 
-                if (con instanceof HttpURLConnection) {
-                    ((HttpURLConnection) con).setInstanceFollowRedirects(false);
-                    /* Workaround for https://code.google.com/p/android/issues/detail?id=61013 */
-                    con.addRequestProperty("Accept-Encoding", "identity");
-                    ((HttpURLConnection) con).setRequestMethod("HEAD");
-                    int res = ((HttpURLConnection) con).getResponseCode();
-                    if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
-                        return false;
-                    if (res == HttpURLConnection.HTTP_UNAVAILABLE)
-                        return false;
-                    if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
-                        return false;
-                    /* spare an IOException */
-                    if (res != HttpURLConnection.HTTP_OK)
-                        return false;
+                    if (con instanceof HttpURLConnection) {
+                        ((HttpURLConnection) con).setInstanceFollowRedirects(false);
+                        /* Workaround for https://code.google.com/p/android/issues/detail?id=61013 */
+                        con.addRequestProperty("Accept-Encoding", "identity");
+                        ((HttpURLConnection) con).setRequestMethod("HEAD");
+                        int res = ((HttpURLConnection) con).getResponseCode();
+                        /* spare an IOException */
+                        if (res != HttpURLConnection.HTTP_OK &&
+                                res != HttpURLConnection.HTTP_MOVED_PERM &&
+                                res != HttpURLConnection.HTTP_MOVED_TEMP)
+                            break;
+                    }
+
+                    String loc = con.getHeaderField("Location");
+                    if (loc == null) {
+                        InputStream in = con.getInputStream();
+                        in.close();
+                        return path;
+                    }
+                    adr = ForeignUri.sysUriAbsolute(adr, loc);
+                    adr = ForeignUri.sysUriDecode(adr);
+                    adr = ForeignDomain.sysUriUnpuny(adr);
+                    path = adr;
                 }
-
-                InputStream in = con.getInputStream();
-                in.close();
-                return true;
             }
-        } catch (FileNotFoundException x) {
-            return false;
-        } catch (UnknownHostException x) {
-            return false;
-        } catch (SocketException x) {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check a read stream.</p>
-     *
-     * @param adr The uri.
-     * @return The new uri or null..
-     * @throws IOException IO error.
-     */
-    public String checkRedirect(String adr)
-            throws IOException {
-        try {
-            String spec = ForeignUri.sysUriSpec(adr);
-            String scheme = ForeignUri.sysSpecScheme(spec);
-            if (ForeignUri.SCHEME_FILE.equals(scheme)) {
-                return adr;
+        } catch (IOException x) {
+            if (OpenCheck.isInterrupt(x)) {
+                throw x;
             } else {
-                adr = ForeignDomain.sysUriPuny(adr);
-                adr = ForeignUri.sysUriEncode(adr);
-                URL url = new URL(adr);
-                URLConnection con = url.openConnection();
-                con.setUseCaches((getFlags() & MASK_OPEN_CACH) != 0);
-
-                /* server change check */
-                if (con instanceof HttpURLConnection) {
-                    ((HttpURLConnection) con).setInstanceFollowRedirects(false);
-                    /* Workaround for https://code.google.com/p/android/issues/detail?id=61013 */
-                    con.addRequestProperty("Accept-Encoding", "identity");
-                    ((HttpURLConnection) con).setRequestMethod("HEAD");
-                    int res = ((HttpURLConnection) con).getResponseCode();
-                    if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
-                        return null;
-                    if (res == HttpURLConnection.HTTP_UNAVAILABLE)
-                        return null;
-                    if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
-                        return null;
-                    /* spare an IOException */
-                    if (res != HttpURLConnection.HTTP_MOVED_PERM &&
-                            res != HttpURLConnection.HTTP_MOVED_TEMP)
-                        return null;
-                }
-
-                String loc = con.getHeaderField("Location");
-                if (loc == null)
-                    return null;
-                adr = ForeignUri.sysUriAbsolute(adr, loc);
-                adr = ForeignUri.sysUriDecode(adr);
-                adr = ForeignDomain.sysUriUnpuny(adr);
-                return adr;
+                /* */
             }
-        } catch (FileNotFoundException x) {
-            return null;
-        } catch (UnknownHostException x) {
-            return null;
-        } catch (SocketException x) {
-            return null;
         }
+        return (check ? null : path);
     }
 
     /**

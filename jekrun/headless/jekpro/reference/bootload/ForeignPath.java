@@ -65,15 +65,15 @@ public final class ForeignPath {
     public static final int MASK_SUFX_TEXT = 0x00000010;
     public static final int MASK_SUFX_BNRY = 0x00000020;
     public static final int MASK_SUFX_RSCS = 0x00000040;
-    public static final int MASK_SUFX_BASE = MASK_SUFX_TEXT | MASK_SUFX_BNRY;
-    public static final int MASK_SUFX_ALL = MASK_SUFX_BASE | MASK_SUFX_RSCS;
 
     /* failure flags */
     public static final int MASK_FAIL_READ = 0x00000100;
     public static final int MASK_FAIL_CHLD = 0x00000200;
+    public static final int MASK_FAIL_PASS = 0x00000400;
 
     /* access flags */
     public static final int MASK_ACES_WRTE = 0x00001000;
+    public static final int MASK_ACES_APND = 0x00002000;
 
     /* combined prefix, suffix and failure flags */
     public static final int MASK_MODL_LIBR = MASK_PRFX_LIBR |
@@ -100,10 +100,10 @@ public final class ForeignPath {
     private static final String OP_FILE_TYPE_TEXT = "text";
     private static final String OP_FILE_TYPE_BINARY = "binary";
     private static final String OP_FILE_TYPE_RESOURCE = "resource";
-    private static final String OP_FILE_TYPE_BASE = "base";
 
     private static final String OP_FAILURE = "failure";
     private static final String OP_FAILURE_CHILD = "child";
+    private static final String OP_FAILURE_PASS = "pass";
 
     private static final String OP_ACCESS = "access";
 
@@ -300,7 +300,7 @@ public final class ForeignPath {
      */
     public static int sysSearchOptions(Object opt)
             throws InterpreterMessage {
-        int mask = MASK_SUFX_ALL + MASK_FAIL_READ;
+        int mask = MASK_FAIL_READ;
         while (opt instanceof TermCompound &&
                 ((TermCompound) opt).getArity() == 2 &&
                 ((TermCompound) opt).getFunctor().equals(
@@ -348,10 +348,6 @@ public final class ForeignPath {
                     mask &= ~MASK_SUFX_TEXT;
                     mask &= ~MASK_SUFX_BNRY;
                     mask |= MASK_SUFX_RSCS;
-                } else if (fun.equals(OP_FILE_TYPE_BASE)) {
-                    mask |= MASK_SUFX_TEXT;
-                    mask |= MASK_SUFX_BNRY;
-                    mask &= ~MASK_SUFX_RSCS;
                 } else if (fun.equals(OP_SEARCH_PATH_ALL)) {
                     mask |= MASK_SUFX_TEXT;
                     mask |= MASK_SUFX_BNRY;
@@ -368,15 +364,19 @@ public final class ForeignPath {
                 if (fun.equals(ReadOpts.OP_TERMINATOR_NONE)) {
                     mask &= ~MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
+                    mask &= ~MASK_FAIL_PASS;
                 } else if (fun.equals(PropertyStream.OP_MODE_READ)) {
                     mask |= MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
+                    mask &= ~MASK_FAIL_PASS;
                 } else if (fun.equals(OP_FAILURE_CHILD)) {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
-                } else if (fun.equals(OP_SEARCH_PATH_ALL)) {
-                    mask |= MASK_FAIL_READ;
-                    mask |= MASK_FAIL_CHLD;
+                    mask &= ~MASK_FAIL_PASS;
+                } else if (fun.equals(OP_FAILURE_PASS)) {
+                    mask &= ~MASK_FAIL_READ;
+                    mask &= ~MASK_FAIL_CHLD;
+                    mask |= MASK_FAIL_PASS;
                 } else {
                     throw new InterpreterMessage(InterpreterMessage.domainError(
                             "fix_option", help));
@@ -388,8 +388,13 @@ public final class ForeignPath {
                 String fun = InterpreterMessage.castString(help);
                 if (fun.equals(PropertyStream.OP_MODE_READ)) {
                     mask &= ~MASK_ACES_WRTE;
+                    mask &= ~MASK_ACES_APND;
                 } else if (fun.equals(PropertyStream.OP_MODE_WRITE)) {
                     mask |= MASK_ACES_WRTE;
+                    mask &= ~MASK_ACES_APND;
+                } else if (fun.equals(PropertyStream.OP_MODE_APPEND)) {
+                    mask |= MASK_ACES_WRTE;
+                    mask |= MASK_ACES_APND;
                 } else {
                     throw new InterpreterMessage(InterpreterMessage.domainError(
                             "fix_option", help));

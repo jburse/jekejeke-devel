@@ -171,7 +171,7 @@ sys_get_key(C, N) :-
  */
 % use_module(+Atom)
 use_module(Slash) :-
-   absolute_file_name(Slash, Pin, [file_type(base)]),
+   absolute_file_name(Slash, Pin, [file_type(text)]),
    sys_load_file(Pin, [condition(on), sys_link(use_module)]).
 :- set_predicate_property(use_module/1, visible(public)).
 :- set_predicate_property(use_module/1, sys_notrace).
@@ -184,7 +184,7 @@ use_module(Slash) :-
  */
 % reexport(+Atom)
 reexport(Path) :-
-   absolute_file_name(Path, Pin, [file_type(base)]),
+   absolute_file_name(Path, Pin, [file_type(text)]),
    sys_load_file(Pin, [condition(on), sys_link(reexport)]).
 :- set_predicate_property(reexport/1, visible(public)).
 
@@ -195,7 +195,7 @@ reexport(Path) :-
  */
 % sys_auto_load(+Atom)
 sys_auto_load(Path) :-
-   absolute_file_name(Path, Pin, [file_type(base)]),
+   absolute_file_name(Path, Pin, [file_type(text)]),
    sys_load_file(Pin, [condition(on), verbose(off), sys_link(sys_auto_load)]).
 :- set_predicate_property(sys_auto_load/1, visible(public)).
 
@@ -226,7 +226,7 @@ sys_add_resource(Path) :-
 
 /**
  * private P, ..:
- * The predicate sets the operator, evaluable or predicate P to private.
+ * The predicate sets the operator or predicate indicator P to private.
  */
 % private +Indicators
 private [P|Q] :- !, sys_private(P), private(Q).
@@ -256,7 +256,7 @@ sys_private(I) :-
 
 /**
  * public P, ..:
- * The predicate sets the operator, evaluable or predicate P to public.
+ * The predicate sets the operator or predicate indicator P to public.
  */
 % public +Indicators
 public [P|Q] :- !, sys_public(P), public(Q).

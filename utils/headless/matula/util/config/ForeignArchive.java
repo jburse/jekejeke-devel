@@ -181,10 +181,8 @@ public final class ForeignArchive {
      * @param path The file path.
      * @return The uri address.
      */
-    public static String condensePath(String path) {
+    public static String pathCondense(String path) {
         try {
-            File file = new File(path);
-            path = ForeignFile.sysSlashifyFile(file);
             String spec = ForeignUri.sysSpecMake(ForeignUri.SCHEME_FILE,
                     ForeignFile.STRING_EMPTY, path);
             return ForeignUri.sysUriMake(spec, ForeignFile.STRING_EMPTY,

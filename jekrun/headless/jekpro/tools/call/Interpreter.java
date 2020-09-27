@@ -318,7 +318,7 @@ public final class Interpreter {
     public Interpreter(Knowledgebase k, Supervisor visor) {
         Store store = k.getStore();
 
-        if ((store.foyer.getHint() & Foyer.HINT_MASK_LMTD)!=0) {
+        if ((store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0) {
             engine = new EngineYield(store, visor);
         } else {
             engine = new Engine(store, visor);

@@ -354,13 +354,13 @@ public final class CacheSubclass extends AbstractCache {
                                        Engine en)
             throws IOException {
 
-        /* special case */
+        // special case
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (Branch.OP_USER.equals(path))
                 return path;
         }
 
-        /* library .p */
+        // library .p
         if ((mask & ForeignPath.MASK_PRFX_LIBR) != 0) {
             if (ForeignUri.sysUriIsRelative(path)) {
                 String key = LookupResource.findResourcePackSuffix(path, src, mask);
@@ -369,7 +369,7 @@ public final class CacheSubclass extends AbstractCache {
             }
         }
 
-        /* foreign .class */
+        // foreign .class
         if ((mask & ForeignPath.MASK_PRFX_FRGN) != 0) {
             if (ForeignUri.sysUriIsRelative(path)) {
                 String key = LookupBinary.findBinarySuffix(path, src, mask);
@@ -378,7 +378,7 @@ public final class CacheSubclass extends AbstractCache {
             }
         }
 
-        /* failure read */
+        // failure read
         if ((mask & ForeignPath.MASK_FAIL_READ) != 0) {
             String key = LookupBase.findReadSuffix(path, src, mask, en);
             if (key != null)
@@ -386,10 +386,14 @@ public final class CacheSubclass extends AbstractCache {
             key = LookupBase.findReadSuffix2(path, src, mask, en);
             if (key != null)
                 return key;
-            key = LookupBase.findRead(path, src, en);
+            key = LookupBase.findRead(path, src, true, en);
             if (key != null)
                 return key;
         }
+
+        // failure pass
+        if ((mask & ForeignPath.MASK_FAIL_PASS) != 0)
+            return LookupBase.findRead(path, src, false, en);
 
         // failure
         return null;

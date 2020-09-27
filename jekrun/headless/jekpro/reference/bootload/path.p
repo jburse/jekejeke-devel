@@ -280,7 +280,7 @@ sys_search_file_name(Slash, Pin, _) :-
 % sys_unsearch_file_name2(+Pin, -Spec)
 sys_unsearch_file_name2(Pin, Slash) :-
    callable_property(Pin, sys_context(C)),
-   sys_search_options([search_path(all)], Mask),
+   sys_search_options([search_path(all), file_type(all)], Mask),
    sys_unfind_key(Pin, C, Mask, H),
    sys_unsearch_file_name3(H, C, Slash).
 :- set_predicate_property(sys_unsearch_file_name2/2, visible(private)).

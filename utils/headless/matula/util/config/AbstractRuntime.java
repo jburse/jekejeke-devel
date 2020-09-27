@@ -4,6 +4,7 @@ import derek.util.protect.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 
 /**
@@ -112,8 +113,9 @@ public abstract class AbstractRuntime {
      * <p>Retrieve the default base.</p>
      *
      * @return The default base.
+     * @throws IOException Shit happens.
      */
-    public abstract String getBase();
+    public abstract String getBase() throws IOException;
 
     /********************************************************************/
     /* Class Loaders                                                    */

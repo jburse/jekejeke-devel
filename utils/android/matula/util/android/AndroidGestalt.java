@@ -9,9 +9,11 @@ import android.os.Environment;
 import matula.util.config.ForeignArchive;
 import matula.util.config.GestaltEntry;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 
 /**
@@ -51,10 +53,12 @@ public final class AndroidGestalt {
      * <p>Retrieve the base url.</p>
      *
      * @return The base url.
+     * @throws IOException Shit happens.
      */
-    public static String getBase() {
-        File curdir = new File(Environment.getDataDirectory(), "app");
-        return ForeignArchive.condensePath(curdir.toString());
+    public static String getBase() throws IOException {
+        String path = new File(Environment.getDataDirectory(), "app").toString();
+        path = ForeignFile.sysCanonicalPath(path);
+        return ForeignArchive.pathCondense(path);
     }
 
     /**
@@ -66,7 +70,7 @@ public final class AndroidGestalt {
      * @throws MalformedURLException Shit happens.
      */
     public static ListArray<GestaltEntry> loadDiscoveries(String base, Object data)
-            throws MalformedURLException {
+            throws IOException {
         PackageManager pm = ((Application) data).getPackageManager();
         ListArray<GestaltEntry> paths = new ListArray<GestaltEntry>();
         String[] names = pm.getPackagesForUid(android.os.Process.myUid());
@@ -79,7 +83,9 @@ public final class AndroidGestalt {
                 continue;
             Object dstr = (bd != null ? bd.get(GestaltEntry.ATTR_DONTASK) : null);
             boolean dontask = (dstr != null ? dstr.equals(Boolean.TRUE) : true);
-            String path = ForeignArchive.condensePath(getSourceDir(pm, name));
+            String path = getSourceDir(pm, name);
+            path = ForeignFile.sysCanonicalPath(path);
+            path = ForeignArchive.pathCondense(path);
             path = ForeignUri.sysUriRelative(base, path);
             GestaltEntry pse = new GestaltEntry(path, dontask);
             paths.add(pse);

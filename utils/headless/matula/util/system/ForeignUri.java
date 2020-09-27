@@ -488,18 +488,35 @@ public final class ForeignUri {
     /************************************************************/
     /* Canonical URI                                           */
     /************************************************************/
+
     /**
      * <p>Determine a canonical URI and schemefy.</p>
      *
      * @param adr The uri.
-     * @return The canonical and schemefied URI.
+     * @return The canonical schemefied URI.
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
     public static String sysCanonicalUri(String adr)
             throws IOException {
+        return sysCanonicalUri(adr, false);
+    }
+
+    /**
+     * <p>Determine a canonical URI and schemefy.</p>
+     *
+     * @param adr   The uri.
+     * @param check The check flag.
+     * @return The canonical schemefied URI or null.
+     * @throws MalformedURLException    Spec assembling problem.
+     * @throws CharacterCodingException File canonization problem.
+     */
+    public static String sysCanonicalUri(String adr, boolean check)
+            throws IOException {
         String spec = ForeignUri.sysUriSpec(adr);
-        spec = ForeignUri.sysCanonicalSpec(spec);
+        spec = ForeignUri.sysCanonicalSpec(spec, check);
+        if (spec == null)
+            return null;
         String scheme = ForeignUri.sysSpecScheme(spec);
         if (SCHEME_FILE.equals(scheme)) {
             /* remove the query for file */
@@ -511,47 +528,20 @@ public final class ForeignUri {
             String hash = ForeignUri.sysUriHash(adr);
             adr = ForeignUri.sysUriMake(spec, query, hash);
             adr = ForeignDomain.sysUriUnpuny(adr);
-            adr = derefUri(adr);
         }
-        return adr;
-    }
-
-    /**
-     * <p>Deref an uri.</p>
-     *
-     * @param adr The uri.
-     * @return The derefed uri.
-     * @throws IOException Shit happen.
-     */
-    private static String derefUri(String adr)
-            throws IOException {
-        for (; ; ) {
-            String res;
-            try {
-                res = OpenCheck.DEFAULT_CHECK.checkRedirect(adr);
-            } catch (IOException x) {
-                if (OpenCheck.isInterrupt(x)) {
-                    throw x;
-                } else {
-                    res = null;
-                }
-            }
-            if (res == null)
-                break;
-            adr = res;
-        }
-        return adr;
+        return OpenCheck.DEFAULT_CHECK.checkHead(adr, check);
     }
 
     /**
      * <p>Determine a canonical spec and schemefy.</p>
      *
-     * @param spec The spec.
-     * @return The canonical and schemefied spec.
+     * @param spec  The spec.
+     * @param check The check flag.
+     * @return The canonical schemefied spec.
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
-    private static String sysCanonicalSpec(String spec)
+    private static String sysCanonicalSpec(String spec, boolean check)
             throws IOException {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
@@ -560,12 +550,16 @@ public final class ForeignUri {
             int k = path.lastIndexOf(ForeignUri.JAR_SEP);
             if (k != -1) {
                 spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path.substring(0, k));
-                spec = ForeignUri.sysCanonicalUri(spec);
+                spec = ForeignUri.sysCanonicalUri(spec, check);
+                if (spec == null)
+                    return null;
                 spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY,
                         spec + path.substring(k));
             } else {
                 spec = sysSpecMake(ForeignFile.STRING_EMPTY, authority, path);
-                spec = ForeignUri.sysCanonicalUri(spec);
+                spec = ForeignUri.sysCanonicalUri(spec, check);
+                if (spec == null)
+                    return null;
                 spec = ForeignUri.sysSpecMake(SCHEME_JAR, ForeignFile.STRING_EMPTY, spec);
             }
         } else if (SCHEME_FILE.equals(scheme)) {

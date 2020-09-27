@@ -6,6 +6,7 @@ import matula.util.data.ListArray;
 import matula.util.system.ForeignDomain;
 import matula.util.system.ForeignUri;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -173,8 +174,9 @@ public final class RuntimeHotspot extends AbstractRuntime {
      * <p>Retrieve the default base.</p>
      *
      * @return The default base.
+     * @throws IOException Shit happens.
      */
-    public String getBase() {
+    public String getBase() throws IOException {
         return SwingGestalt.getBase();
     }
 

@@ -139,13 +139,34 @@ open(Path, Mode, Stream, Opt) :-
 open2(Path, Mode, Stream, Opt) :- reference(Path), !,
    sys_duplex(Path, Mode, Opt, Stream).
 open2(Path, Mode, Stream, Opt) :-
-   absolute_file_name(Path, Pin, [access(Mode)]),
-   sys_open(Pin, Mode, Opt, Stream).
+   sys_partition(Opt, Search, Rest),
+   absolute_file_name(Path, Pin, [access(Mode)|Search]),
+   sys_open(Pin, Mode, Rest, Stream).
 
 % open(+Path, +Mode, -Stream)
 :- public open/3.
 open(Path, Mode, Stream) :-
    open(Path, Mode, Stream, []).
+
+% sys_partition(+List, -List, -List)
+:- private sys_partition/3.
+sys_partition(L, _, _) :- var(L),
+   throw(error(instanciation_error, _)).
+sys_partition([X|Y], [X|Z], T) :- sys_include(X), !,
+   sys_partition(Y, Z, T).
+sys_partition([X|Y], Z, [X|T]) :- !,
+   sys_partition(Y, Z, T).
+sys_partition([], [], []) :- !.
+sys_partition(L, _, _) :-
+   throw(error(type_error(list, L), _)).
+
+% sys_include(+Callable)
+:- private sys_include/1.
+sys_include(P) :- var(P),
+   throw(error(instantiation_error, _)).
+sys_include(search_path(_)).
+sys_include(file_type(_)).
+sys_include(failure(_)).
 
 % sys_duplex(+Pin, +Mode, +Options, -Stream)
 :- private sys_duplex/4.

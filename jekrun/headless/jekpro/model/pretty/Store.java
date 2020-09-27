@@ -169,7 +169,11 @@ public class Store extends AbstractRecognizer {
 
         if (parent == null) {
             AbstractFramework framework = foyer.getFramework();
-            setBase(framework.getRuntime().getBase());
+            try {
+                setBase(framework.getRuntime().getBase());
+            } catch (IOException x) {
+                throw EngineMessage.mapIOException(x);
+            }
             AbstractFactory factory = foyer.getFactory();
             factory.addMemListener(foyer);
             foyer.initFoyer(en, prompt);

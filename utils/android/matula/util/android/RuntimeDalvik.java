@@ -8,6 +8,7 @@ import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -147,8 +148,9 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * <p>Retrieve the default base.</p>
      *
      * @return The default base.
+     * @throws IOException Shit happens.
      */
-    public String getBase() {
+    public String getBase() throws IOException {
         return AndroidGestalt.getBase();
     }
 

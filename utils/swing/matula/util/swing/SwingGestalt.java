@@ -3,6 +3,7 @@ package matula.util.swing;
 import matula.util.config.ForeignArchive;
 import matula.util.config.GestaltEntry;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
@@ -50,9 +51,12 @@ public final class SwingGestalt {
      * <p>Retrieve the base.</p>
      *
      * @return The base.
+     * @throws IOException Shit happens.
      */
-    public static String getBase() {
-        return ForeignArchive.condensePath(System.getProperty("user.dir"));
+    public static String getBase() throws IOException {
+        String path = System.getProperty("user.dir");
+        path = ForeignFile.sysCanonicalPath(path);
+        return ForeignArchive.pathCondense(path);
     }
 
     /**
@@ -86,7 +90,9 @@ public final class SwingGestalt {
                 continue;
             String dstr = (at != null ? at.getValue(GestaltEntry.ATTR_DONTASK) : null);
             boolean dontask = (dstr != null ? Boolean.valueOf(dstr) : true);
-            path = ForeignArchive.condensePath(file2.toString());
+            path = file2.toString();
+            path = ForeignFile.sysCanonicalPath(path);
+            path = ForeignArchive.pathCondense(path);
             path = ForeignUri.sysUriRelative(base, path);
             GestaltEntry pse = new GestaltEntry(path, dontask);
             paths.add(pse);
