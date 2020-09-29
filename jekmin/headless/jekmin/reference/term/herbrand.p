@@ -95,49 +95,85 @@ sys_ensure_sto(V) :-
  * dif(S, T):
  * The predicate checks S and T for inequality and establishes
  * variable constraints, so that this inequality is maintained
- * in the continuation. The inequality neither decides for or
- * against the occurs check.
+ * in the continuation.
  */
 % dif(+Term, +Term)
 :- public dif/2.
 dif(X, Y) :-
-   sys_reduce_dif(X, Y, [], G), !, G \== [],
+   sys_reduce(X, Y, [], G), !, G \== [],
    sys_freeze_var(W, S),
-   W = sys_data_dif(N, G),
-   sys_listeners_difs(G, R),
+   W = sys_data(N, G),
+   sys_listeners(G, R),
    term_variables(R, L),
    sys_serno_hooks(L, sys_hook_dif(S), N),
    depositz_ref(N).
 dif(_, _).
 
 /**
- * sys_listeners_difs(G, L):
+ * dif_with_occurs_check(S, T):
+ * The predicate checks S and T for inequality with occurs check
+ * and establishes variable constraints, so that this inequality
+ * is maintained in the continuation.
  */
-% sys_listeners_difs(+Map, -Set)
-:- private sys_listeners_difs/2.
-sys_listeners_difs([X-Y|G], [X, Y|L]) :-
+% dif_with_occurs_check(+Term, +Term)
+:- public dif_with_occurs_check/2.
+dif_with_occurs_check(X, Y) :-
+   sys_reduce_with_occurs_check(X, Y, [], G), !, G \== [],
+   sys_freeze_var(W, S),
+   W = sys_data(N, G),
+   term_variables(G, L),
+   sys_serno_hooks(L, sys_hook_dif_with_occurs_check(S), N),
+   depositz_ref(N).
+dif_with_occurs_check(_, _).
+
+/**
+ * unifiable(S, T, L):
+ * The predicate checks S and T for equality and returns
+ * in L a binding that would make S and T this equal.
+ */
+% unifiable(+Term, +Term, +List)
+:- public unifiable/3.
+unifiable(X, Y, G) :-
+   sys_reduce(X, Y, [], G).
+
+/**
+ * unifiable_with_occurs_check(S, T, L):
+ * The predicate checks S and T for equality with occurs check
+ * and returns in L a binding that would make S and T this equal.
+ */
+% unifiable_with_occurs_check(+Term, +Term, +List)
+:- public unifiable_with_occurs_check/3.
+unifiable_with_occurs_check(X, Y, G) :-
+   sys_reduce_with_occurs_check(X, Y, [], G).
+
+/**
+ * sys_listeners(G, L):
+ */
+% sys_listeners(+Map, -Set)
+:- private sys_listeners/2.
+sys_listeners([X-Y|G], [X, Y|L]) :-
    var(Y), !,
-   sys_listeners_difs(G, L).
-sys_listeners_difs([X-_|G], [X|L]) :-
-   sys_listeners_difs(G, L).
-sys_listeners_difs([], []).
+   sys_listeners(G, L).
+sys_listeners([X-_|G], [X|L]) :-
+   sys_listeners(G, L).
+sys_listeners([], []).
 
 /******************************************************/
-/* Inequality Reduction                               */
+/* Equality Reduction                                 */
 /******************************************************/
 
 /**
- * sys_reduce_dif(S, T, L, R):
+ * sys_reduce(S, T, L, R):
  * The predicate derefs the terms S and T and then checks for
- * inequality and establishes residual pairs R as an extension
+ * equality and establishes residual pairs R as an extension
  * of the residual pairs L.
  */
-% sys_reduce_dif(+Term, +Term, +Map, -Map).
-:- private sys_reduce_dif/4.
-sys_reduce_dif(S, T, L, R) :-
+% sys_reduce(+Term, +Term, +Map, -Map).
+:- private sys_reduce/4.
+sys_reduce(S, T, L, R) :-
    sys_deref_term(S, L, A),
    sys_deref_term(T, L, B),
-   sys_reduce_uninst(A, B, L, R).
+   sys_reduce2(A, B, L, R).
 
 /**
  * sys_deref_term(S, L, T):
@@ -151,40 +187,134 @@ sys_deref_term(X, L, T) :- var(X), get(L, X, S), !,
 sys_deref_term(S, _, S).
 
 /**
- * sys_reduce_uninst(S, T, L, R):
- * The predicate checks the terms S and T for inequality and
+ * sys_reduce2(S, T, L, R):
+ * The predicate checks the terms S and T for equality and
  * establishes residual pairs R as an extension of the
  * residual pairs L.
  */
-% sys_reduce_uninst(+Term, +Term, +Map, -Map).
-:- private sys_reduce_uninst/4.
-sys_reduce_uninst(X, Y, L, R) :- var(X), var(Y), X == Y, !,
+% sys_reduce2(+Term, +Term, +Map, -Map).
+:- private sys_reduce2/4.
+sys_reduce2(X, Y, L, R) :- var(X), var(Y), X == Y, !,
    R = L.
-sys_reduce_uninst(X, T, L, R) :- var(X), !,
-   put(L, X, T, R).
-sys_reduce_uninst(T, X, L, R) :- var(X), !,
-   put(L, X, T, R).
-sys_reduce_uninst(S, T, _, _) :-
+sys_reduce2(X, T, L, R) :- var(X), !,
+   R = [X-T|L].
+sys_reduce2(T, X, L, R) :- var(X), !,
+   R = [X-T|L].
+sys_reduce2(S, T, _, _) :-
    functor(S, F, N),
    functor(T, G, M),
    F/N \== G/M, !, fail.
-sys_reduce_uninst(S, T, L, R) :-
+sys_reduce2(S, T, L, R) :-
    S =.. [_|F],
    T =.. [_|G],
-   sys_reduce_difs(F, G, L, R).
+   sys_reduce3(F, G, L, R).
 
 /**
- * sys_reduce_difs(S, T, L, R):
- * The predicate checks the lists S and T for inequality and
- * establishes residual pairs R as an extension of the residual
- * pairs R, taking into account the map M.
+ * sys_reduce3(S, T, L, R):
+ * The predicate checks the lists S and T for equality and
+ * establishes residual pairs R as an extension of the
+ * residual pairs L.
  */
-% sys_reduce_difs(+List, +List, +Map, +Map, -Map)
-:- private sys_reduce_difs/4.
-sys_reduce_difs([S|F], [T|G], L, R) :-
-   sys_reduce_dif(S, T, L, H),
-   sys_reduce_difs(F, G, H, R).
-sys_reduce_difs([], [], L, L).
+% sys_reduce3(+List, +List, +Map, +Map, -Map)
+:- private sys_reduce3/4.
+sys_reduce3([S|F], [T|G], L, R) :-
+   sys_reduce(S, T, L, H),
+   sys_reduce3(F, G, H, R).
+sys_reduce3([], [], L, L).
+
+/******************************************************/
+/* Equality With Occurs Check Reduction               */
+/******************************************************/
+
+/**
+ * sys_reduce_with_occurs_check(S, T, L, R):
+ * The predicate derefs the terms S and T and then checks for
+ * equality with occurs check and establishes residual pairs R
+ * as an extension of the residual pairs L.
+ */
+% sys_reduce_with_occurs_check(+Term, +Term, +Map, -Map).
+:- private sys_reduce_with_occurs_check/4.
+sys_reduce_with_occurs_check(S, T, L, R) :-
+   sys_deref_term(S, L, A),
+   sys_deref_term(T, L, B),
+   sys_reduce_with_occurs_check2(A, B, L, R).
+
+/**
+ * sys_reduce_with_occurs_check2(S, T, L, R):
+ * The predicate checks the terms S and T for equality with
+ * occurs check and establishes residual pairs R as an
+ * extension of the residual pairs L.
+ */
+% sys_reduce_with_occurs_check2(+Term, +Term, +Map, -Map).
+:- private sys_reduce_with_occurs_check2/4.
+sys_reduce_with_occurs_check2(X, Y, L, R) :- var(X), var(Y), X == Y, !,
+   R = L.
+sys_reduce_with_occurs_check2(X, T, L, R) :- var(X), !, \+ sys_occurs(T, X, L),
+   R = [X-T|L].
+sys_reduce_with_occurs_check2(T, X, L, R) :- var(X), !, \+ sys_occurs(T, X, L),
+   R = [X-T|L].
+sys_reduce_with_occurs_check2(S, T, _, _) :-
+   functor(S, F, N),
+   functor(T, G, M),
+   F/N \== G/M, !, fail.
+sys_reduce_with_occurs_check2(S, T, L, R) :-
+   S =.. [_|F],
+   T =.. [_|G],
+   sys_reduce_with_occurs_check3(F, G, L, R).
+
+/**
+ * sys_reduce_with_occurs_check3(S, T, L, R):
+ * The predicate checks the lists S and T for equality and
+ * establishes residual pairs R as an extension of the
+ * residual pairs L.
+ */
+% sys_reduce_with_occurs_check3(+List, +List, +Map, +Map, -Map)
+:- private sys_reduce_with_occurs_check3/4.
+sys_reduce_with_occurs_check3([S|F], [T|G], L, R) :-
+   sys_reduce_with_occurs_check(S, T, L, H),
+   sys_reduce_with_occurs_check3(F, G, H, R).
+sys_reduce_with_occurs_check3([], [], L, L).
+
+/******************************************************/
+/* Variable Occurence                                 */
+/******************************************************/
+
+/**
+ * sys_occurs(S, V, L):
+ * The predicate derefs the term S and then checks whether
+ * the variable V occurs in the term S. The variable bindings
+ * are given by the map L.
+ */
+% sys_occurs(+Term, +Variable, +Map)
+:- private sys_occurs/3.
+sys_occurs(S, V, L) :-
+   sys_deref_term(S, L, A),
+   sys_occurs2(A, V, L).
+
+/**
+ * sys_occurs2(S, V, L):
+ * The predicate checks whether the variable V occurs
+ * in the term S. The variable bindings are given by
+ * the map L.
+ */
+:- private sys_occurs2/3.
+sys_occurs2(S, V, _) :- var(S), !, V == S.
+sys_occurs2(S, V, L) :-
+   S =.. [_|F],
+   sys_occurs3(F, V, L).
+
+/**
+ * sys_occurs3(F, V, L):
+ * The predicate checks whether the variable V occurs
+ * in the list F. The variable bindings are given by
+ * the map L.
+ */
+% sys_occurs3(+List, +Variable, +Map)
+:- private sys_occurs3/3.
+sys_occurs3([S|_], V, L) :-
+   sys_occurs(S, V, L), !.
+sys_occurs3([_|F], V, L) :-
+   sys_occurs3(F, V, L).
 
 /********************************************************/
 /* Attribute Hooks                                      */
@@ -208,10 +338,21 @@ sys_hook_sto(V, T) :-
 % sys_hook_dif(+Warp, +Var, +Term)
 :- private sys_hook_dif/3.
 sys_hook_dif(S, _, _) :-
-   sys_melt_var(S, sys_data_dif(L, G)),
+   sys_melt_var(S, sys_data(L, G)),
    withdrawz_ref(L),
-   sys_make_dif(G, P, Q),
+   sys_make(G, P, Q),
    sys_assume_cont(dif(P, Q)).
+
+/**
+ * sys_hook_dif_with_occurs_check(S, V, T):
+ */
+% sys_hook_dif_with_occurs_check(+Warp, +Var, +Term)
+:- private sys_hook_dif_with_occurs_check/3.
+sys_hook_dif_with_occurs_check(S, _, _) :-
+   sys_melt_var(S, sys_data(L, G)),
+   withdrawz_ref(L),
+   sys_make(G, P, Q),
+   sys_assume_cont(dif_with_occurs_check(P, Q)).
 
 /********************************************************/
 /* Constraint Projection                                */
@@ -230,6 +371,8 @@ residue:sys_current_eq(V, sto(K)) :-
    sys_freeze_var(V, K).
 residue:sys_current_eq(V, dif(S)) :-
    sys_clause_hook(V, sys_hook_dif(S), _).
+residue:sys_current_eq(V, dif_with_occurs_check(S)) :-
+   sys_clause_hook(V, sys_hook_dif_with_occurs_check(S), _).
 
 /**
  * sys_unwrap_eq(H, I, O):
@@ -242,16 +385,19 @@ residue:sys_current_eq(V, dif(S)) :-
 residue:sys_unwrap_eq(sto(K), [sto(V)|L], L) :-
    sys_melt_var(K, V).
 residue:sys_unwrap_eq(dif(S), [dif(P, Q)|L], L) :-
-   sys_melt_var(S, sys_data_dif(_, G)),
-   sys_make_dif(G, P, Q).
+   sys_melt_var(S, sys_data(_, G)),
+   sys_make(G, P, Q).
+residue:sys_unwrap_eq(dif_with_occurs_check(S), [dif_with_occurs_check(P, Q)|L], L) :-
+   sys_melt_var(S, sys_data(_, G)),
+   sys_make(G, P, Q).
 
 /**
- * sys_make_dif(M, L, R):
+ * sys_make(M, L, R):
  * The predicate converts the non-empty map M into two comma
  * lists L and R.
  */
-% sys_make_dif(+Map, -List, -List)
-:- private sys_make_dif/3.
-sys_make_dif([X-T, U|V], (X, L), (T, R)) :- !,
-   sys_make_dif([U|V], L, R).
-sys_make_dif([X-T], X, T).
+% sys_make(+Map, -List, -List)
+:- private sys_make/3.
+sys_make([X-T, U|V], (X, L), (T, R)) :- !,
+   sys_make([U|V], L, R).
+sys_make([X-T], X, T).
