@@ -63,6 +63,7 @@ del_atts/2	term/verify
 deposita_ref/1	minimal/assume
 depositz_ref/1	minimal/assume
 dif/2	term/herbrand
+dif_with_occurs_check/2	term/herbrand
 expr_vars/2	finite/tree
 fail/1	minimal/hypo
 (forward)/1	minimal/delta
@@ -145,6 +146,8 @@ simp:term_simplification/2	minimal/delta
 testbit/2	misc/bits
 true/1	minimal/hypo
 ulp/2	misc/elem
+unifiable/3	term/herbrand
+unifiable_with_occurs_check/3	term/herbrand
 verify_attributes/2	finite/tree
 weighted_maximum/3	finite/clpb
 when/2	term/suspend

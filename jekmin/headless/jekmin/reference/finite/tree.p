@@ -220,7 +220,23 @@ expr_tree(X^A, R) :- !,
 expr_tree(card(P, L), R) :- !,
    sys_expr_list(L, H),
    tree_card(P, H, J),
-   tree_list(J, zero, R).
+   tree_or_list(J, zero, R).
+/**
+ * +(L):
+ * If L is an expression list then the n-ary disjunction +(L) is also
+ * an expression.
+ */
+expr_tree(+(L), R) :- !,
+   sys_expr_list(L, H),
+   tree_or_list(H, zero, R).
+/**
+ * *(L):
+ * If L is an expression list then the n-ary conjunction *(L) is also
+ * an expression.
+ */
+expr_tree(*(L), R) :- !,
+   sys_expr_list(L, H),
+   tree_and_list(H, one, R).
 expr_tree(E, _) :-
    throw(error(type_error(sat_expr, E), _)).
 
@@ -480,17 +496,6 @@ expr_vars(node(_, W, _, _), W).
 /* List Arguments                                                */
 /*****************************************************************/
 
-/**
- * tree(L, S, T):
- * The predicate succeeds in T with the disjunction of
- * the tree S with the trees of the list L.
- */
-% tree_list(+List, +Tree, -Tree)
-:- private tree_list/3.
-tree_list([A|L], S, T) :-
-   tree_or(S, A, H),
-   tree_list(L, H, T).
-tree_list([], T, T).
 
 /**
  * sys_expr_list(L, R).
@@ -507,6 +512,30 @@ sys_expr_list([A|L], [T|R]) :- !,
 sys_expr_list([], []) :- !.
 sys_expr_list(L, _) :-
    throw(error(type_error(list, L), _)).
+
+/**
+ * tree_or_list(L, S, T):
+ * The predicate succeeds in T with the disjunction of
+ * the tree S with the trees of the list L.
+ */
+% tree_or_list(+List, +Tree, -Tree)
+:- private tree_or_list/3.
+tree_or_list([A|L], S, T) :-
+   tree_or(S, A, H),
+   tree_or_list(L, H, T).
+tree_or_list([], T, T).
+
+/**
+ * tree_and_list(L, S, T):
+ * The predicate succeeds in T with the conjunction of
+ * the tree S with the trees of the list L.
+ */
+% tree_and_list(+List, +Tree, -Tree)
+:- private tree_and_list/3.
+tree_and_list([A|L], S, T) :-
+   tree_and(S, A, H),
+   tree_and_list(L, H, T).
+tree_and_list([], T, T).
 
 /*****************************************************************/
 /* Cardinality Constraint                                        */
@@ -544,7 +573,7 @@ tree_range(N, M, _, X) :-
    M < N, !, X = zero.
 tree_range(N, M, L, S) :-
    sys_exactly(L, M, N, H),
-   tree_list(H, zero, S).
+   tree_or_list(H, zero, S).
 
 % sys_exactly(+List, +Integer, +Integer, -List)
 :- private sys_exactly/4.
