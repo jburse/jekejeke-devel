@@ -109,6 +109,7 @@ retireall/1	minimal/hypo
 retireall/2	minimal/hypo
 rootrem/4	misc/elem
 sat/1	finite/clpb
+sat_count/2	finite/clpb
 setbit/3	misc/bits
 sqrtrem/3	misc/elem
 sto/1	term/herbrand

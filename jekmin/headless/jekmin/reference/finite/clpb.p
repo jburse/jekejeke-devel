@@ -297,6 +297,17 @@ count(L, _) :-
    throw(error(type_error(list, L), _)).
 
 /**
+ * sat_count(E, N):
+ * The predicate silently posts the expression E and silently labels
+ * the variables in E and succeeds in N with the count of the solution.
+ */
+% sat_count(+Boolean, -Integer)
+:- public sat_count/2.
+sat_count(E, N) :-
+   findall(M, (term_variables(E, L), sat(E), count(L, M)), R),
+   sys_sat_sum(R, N).
+
+/**
  * sys_sat_sum(L, N):
  * The predicate succeeds in N with the some of L.
  */
