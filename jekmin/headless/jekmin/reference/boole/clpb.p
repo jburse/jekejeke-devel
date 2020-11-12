@@ -82,10 +82,12 @@
  * where BDD is the binary decision diagram. The BDD gets
  * updated during forward checking.
  */
-:- package(library(jekmin/reference/finite)).
+
+:- package(library(jekmin/reference/boole)).
 :- module(clpb, []).
 
 :- reexport(tree).
+:- use_module(pseudo).
 :- use_module(library(term/unify)).
 :- use_module(library(basic/lists)).
 :- use_module(library(basic/random)).
