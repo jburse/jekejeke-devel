@@ -70,8 +70,8 @@ ord_contains([X|Y], Z) :- X @< Z, !,
    ord_contains(Y, Z).
 
 /**
- * ord_delete(O1, E, O2):
- * The predicate succeeds when O2 unifies with the subtract of O1 by [E].
+ * ord_delete(O, E, P):
+ * The predicate succeeds when P unifies with the subtract of O by [E].
  */
 % ord_delete(+OrdSet, +Elem, -OrdSet)
 :- public ord_delete/3.
@@ -81,8 +81,8 @@ ord_delete([X|Y], Z, [X|R]) :- X @< Z, !,
 ord_delete(X, _, X).
 
 /**
- * ord_add(O1, E, O2):
- * The predicate succeeds when O2 unifies with the union of [E] and O1.
+ * ord_add(O, E, P):
+ * The predicate succeeds when P unifies with the union of [E] and O.
  */
 % ord_add(+OrdSet, +Elem, -OrdSet)
 :- public ord_add/3.
@@ -96,8 +96,8 @@ ord_add(X, Y, [Y|X]).
 /*******************************************************************/
 
 /**
- * ord_subtract(O1, O2, O3):
- * The predicate succeeds when O3 unifies with the subtract of O1 by O2.
+ * ord_subtract(O, P, Q):
+ * The predicate succeeds when Q unifies with the subtract of O by P.
  */
 % ord_subtract(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_subtract/3.
@@ -111,8 +111,8 @@ ord_subtract([], _, []) :- !.
 ord_subtract(X, [], X).
 
 /**
- * ord_intersection(O1, O2, O3):
- * The predicate succeeds when O3 unifies with the intersection of O1 and O2.
+ * ord_intersection(O, P, Q):
+ * The predicate succeeds when Q unifies with the intersection of O and P.
  */
 % ord_intersection(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_intersection/3.
@@ -126,8 +126,8 @@ ord_intersection([], _, []) :- !.
 ord_intersection(_, [], []).
 
 /**
- * ord_union(O1, O2, O3):
- * The predicate succeeds when O3 unifies with the union of O1 and O2.
+ * ord_union(O, P, Q):
+ * The predicate succeeds when Q unifies with the union of O and P.
  */
 % ord_union(+OrdSet, +OrdSet, -OrdSet)
 :- public ord_union/3.
@@ -145,8 +145,8 @@ ord_union(X, [], X).
 /*******************************************************************/
 
 /**
- * ord_subset(O1, O2):
- * The predicate succeeds when O1 is a subset of O2.
+ * ord_subset(O, P):
+ * The predicate succeeds when O is a subset of P.
  */
 % ord_subset(+OrdSet, +OrdSet)
 :- public ord_subset/2.
@@ -158,8 +158,8 @@ ord_subset([X|Y], [_|Z]) :-
 ord_subset([], _).
 
 /**
- * ord_disjoint(O1, O2):
- * The predicate succeeds when O1 is disjoint to O2.
+ * ord_disjoint(O, P):
+ * The predicate succeeds when O is disjoint to P.
  */
 % ord_disjoint(+OrdSet, +OrdSet)
 :- public ord_disjoint/2.

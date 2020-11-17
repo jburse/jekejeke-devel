@@ -64,6 +64,7 @@ public
 ^ /9	experiment/abstract
 above/2	standard/arith
 acosh/2	basic/hyper
+add/3	advanced/sets
 aggregate/3	advanced/aggregate
 aggregate/4	advanced/aggregate
 aggregate_all/3	advanced/aggregate
@@ -139,8 +140,8 @@ current_thread_flag/3	system/thread
 current_time/1	misc/cond
 date_atom/3	system/zone
 date_atom/4	system/zone
+delete/3	advanced/sets
 delete_file/1	system/file
-difference/3	advanced/sets
 directory_file/2	system/file
 distinct/1	advanced/sequence
 downcase_atom/2	misc/text
@@ -261,13 +262,16 @@ number_compare/3	standard/sort
 offset/2	advanced/sequence
 open/3	stream/stream
 open/4	stream/stream
+ord_add/3	advanced/ordsets
 ord_contains/2	advanced/ordsets
-ord_difference/3	advanced/ordsets
+ord_delete/3	advanced/ordsets
+ord_disjoint/2	advanced/ordsets
 ord_get/3	experiment/ordmaps
 ord_intersection/3	advanced/ordsets
 ord_put/4	experiment/ordmaps
 ord_remove/3	experiment/ordmaps
 ord_subset/2	advanced/ordsets
+ord_subtract/3	advanced/ordsets
 ord_union/3	advanced/ordsets
 order_by/2	advanced/sequence
 pattern_compile/2	misc/text
@@ -340,7 +344,6 @@ receive/3	experiment/broker
 recorda_ref/1	experiment/ref
 recordz_ref/1	experiment/ref
 ref_property/2	experiment/ref
-remove/3	advanced/sets
 remove/3	experiment/maps
 rename_file/2	system/file
 reset_ref_property/2	experiment/ref
@@ -384,7 +387,9 @@ sort/3	standard/sort
 spawn/3	experiment/broker
 stream_property/2	stream/stream
 subset/2	advanced/sets
+subtract/3	advanced/sets
 succ/2	standard/arith
+symdiff/3	advanced/sets
 sys_apropos_table/1	basic/utility
 sys_assignable_from/2	basic/proxy
 sys_atom_or_type_of/2	basic/score

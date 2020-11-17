@@ -130,7 +130,7 @@ union([], X, X).
 
 /**
  * symdiff(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the symmetric difference of S1 and S2.
+ * The predicate succeeds when S3 unifies with the symmetric subtract of S1 and S2.
  */
 % symdiff(+Set, +Set, -Set)
 :- public symdiff/3.
