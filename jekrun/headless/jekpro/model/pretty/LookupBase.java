@@ -100,13 +100,12 @@ public final class LookupBase {
      *
      * @param path The path, in slash notation.
      * @param src  The call-site, non null.
-     * @param check The check flag.
      * @param en   The engine or null.
      * @return The source key, or null.
      * @throws IOException Shit happens.
      */
     public static String findRead(String path, AbstractSource src,
-                                    boolean check, Engine en)
+                                  Engine en)
             throws IOException {
         if (ForeignFile.STRING_EMPTY.equals(path))
             return null;
@@ -124,7 +123,7 @@ public final class LookupBase {
             path = ForeignUri.sysUriAbsolute(base, path);
         }
         /* make it canonical */
-        return ForeignUri.sysCanonicalUri(path, check);
+        return ForeignUri.sysCanonicalUri(path, OpenCheck.DEFAULT_CHECK);
     }
 
     /**
@@ -183,7 +182,7 @@ public final class LookupBase {
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_TEXT) != 0) {
-                        String key = findRead(addSuffix(path, fix.key), src, true, en);
+                        String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }
@@ -220,7 +219,7 @@ public final class LookupBase {
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, FileExtension> fix = fixes[i];
                     if ((fix.value.getType() & FileExtension.MASK_USES_RSCS) != 0) {
-                        String key = findRead(addSuffix(path, fix.key), src, true, en);
+                        String key = findRead(addSuffix(path, fix.key), src, en);
                         if (key != null)
                             return key;
                     }

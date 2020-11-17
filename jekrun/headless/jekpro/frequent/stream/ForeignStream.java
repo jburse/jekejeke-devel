@@ -88,7 +88,6 @@ public final class ForeignStream {
     /**
      * <p>Open the stream from the given socket, mode and options.</p>
      *
-     * @param inter The call-in.
      * @param sock  The socket.
      * @param mode  The mode.
      * @param opt   The options.
@@ -97,7 +96,7 @@ public final class ForeignStream {
      * @throws ClassCastException Validation error.
      * @throws InterpreterMessage Validation error.
      */
-    public static Object sysDuplex(Interpreter inter, Socket sock,
+    public static Object sysDuplex(Socket sock,
                                    String mode, Object opt)
             throws ClassCastException, InterpreterMessage, IOException {
         try {
@@ -105,10 +104,11 @@ public final class ForeignStream {
             OpenDuplex options = decodeOpenDuplex(modecode, opt);
             switch (modecode) {
                 case MODE_READ:
-                    Knowledgebase know = inter.getKnowledgebase();
-                    return options.openRead(know.getStore(), sock);
+                    InputStream in = sock.getInputStream();
+                    return options.wrapRead(in);
                 case MODE_WRITE:
-                    return options.openWrite(sock);
+                    OutputStream out = sock.getOutputStream();
+                    return options.wrapWrite(out);
                 default:
                     throw new IllegalArgumentException("illegal mode");
             }
@@ -117,9 +117,6 @@ public final class ForeignStream {
                     ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
                     new TermCompound(PropertyStream.OP_REPOSITION,
                             Foyer.OP_TRUE)));
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(
-                    x.getMessage()));
         }
     }
 
@@ -144,7 +141,8 @@ public final class ForeignStream {
             switch (modecode) {
                 case MODE_READ:
                     Knowledgebase know = inter.getKnowledgebase();
-                    return options.openRead(know.getStore(), adr);
+                    options.setRecognizer(know.getStore());
+                    return options.openRead(adr);
                 case MODE_WRITE:
                     return options.openWrite(adr);
                 case MODE_APPEND:

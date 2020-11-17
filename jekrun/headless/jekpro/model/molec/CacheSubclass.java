@@ -386,14 +386,10 @@ public final class CacheSubclass extends AbstractCache {
             key = LookupBase.findReadSuffix2(path, src, mask, en);
             if (key != null)
                 return key;
-            key = LookupBase.findRead(path, src, true, en);
+            key = LookupBase.findRead(path, src, en);
             if (key != null)
                 return key;
         }
-
-        // failure pass
-        if ((mask & ForeignPath.MASK_FAIL_PASS) != 0)
-            return LookupBase.findRead(path, src, false, en);
 
         // failure
         return null;

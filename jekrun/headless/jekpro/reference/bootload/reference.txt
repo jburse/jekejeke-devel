@@ -258,7 +258,6 @@ sys_calc_install_id/2	bootload/toolkit
 sys_capability_property/2	bootload/toolkit
 sys_check_license/1	bootload/toolkit
 sys_check_licenses/0	bootload/toolkit
-sys_copy_term/3	structure/univ
 sys_current_capability/1	bootload/toolkit
 sys_current_file_extension/2	bootload/path
 sys_current_path/1	bootload/path

@@ -69,7 +69,6 @@ public final class ForeignPath {
     /* failure flags */
     public static final int MASK_FAIL_READ = 0x00000100;
     public static final int MASK_FAIL_CHLD = 0x00000200;
-    public static final int MASK_FAIL_PASS = 0x00000400;
 
     /* access flags */
     public static final int MASK_ACES_WRTE = 0x00001000;
@@ -103,7 +102,6 @@ public final class ForeignPath {
 
     private static final String OP_FAILURE = "failure";
     private static final String OP_FAILURE_CHILD = "child";
-    private static final String OP_FAILURE_PASS = "pass";
 
     private static final String OP_ACCESS = "access";
 
@@ -364,19 +362,12 @@ public final class ForeignPath {
                 if (fun.equals(ReadOpts.OP_TERMINATOR_NONE)) {
                     mask &= ~MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
-                    mask &= ~MASK_FAIL_PASS;
                 } else if (fun.equals(PropertyStream.OP_MODE_READ)) {
                     mask |= MASK_FAIL_READ;
                     mask &= ~MASK_FAIL_CHLD;
-                    mask &= ~MASK_FAIL_PASS;
                 } else if (fun.equals(OP_FAILURE_CHILD)) {
                     mask &= ~MASK_FAIL_READ;
                     mask |= MASK_FAIL_CHLD;
-                    mask &= ~MASK_FAIL_PASS;
-                } else if (fun.equals(OP_FAILURE_PASS)) {
-                    mask &= ~MASK_FAIL_READ;
-                    mask &= ~MASK_FAIL_CHLD;
-                    mask |= MASK_FAIL_PASS;
                 } else {
                     throw new InterpreterMessage(InterpreterMessage.domainError(
                             "fix_option", help));

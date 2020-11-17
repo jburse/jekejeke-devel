@@ -55,30 +55,60 @@
 
 :- module(ordsets, []).
 
-/**
- * ord_contains(E, O):
- * The predicate succeeds when the set O contains the element E.
- */
-% ord_contains(+Elem, +OrdSet)
-:- public ord_contains/2.
-ord_contains(X, [Y|_]) :- X == Y, !.
-ord_contains(X, [Y|_]) :- X @< Y, !, fail.
-ord_contains(X, [_|Y]) :- ord_contains(X, Y).
+/*******************************************************************/
+/* Element Operations                                              */
+/*******************************************************************/
 
 /**
- * ord_difference(O1, O2, O3):
- * The predicate succeeds when O3 unifies with the difference of O1 by O2.
+ * ord_contains(O, E):
+ * The predicate succeeds when the set O contains the element E.
  */
-% ord_difference(+OrdSet, +OrdSet, -OrdSet)
-:- public ord_difference/3.
-ord_difference([X|Y], [Z|T], R) :- X == Z, !,
-   ord_difference(Y, T, R).
-ord_difference([X|Y], [Z|T], [X|R]) :- X @< Z, !,
-   ord_difference(Y, [Z|T], R).
-ord_difference([X|Y], [_|T], R) :-
-   ord_difference([X|Y], T, R).
-ord_difference([], _, []) :- !.
-ord_difference(X, [], X).
+% ord_contains(+OrdSet, +Elem)
+:- public ord_contains/2.
+ord_contains([X|_], Y) :- X == Y, !.
+ord_contains([X|Y], Z) :- X @< Z, !,
+   ord_contains(Y, Z).
+
+/**
+ * ord_delete(O1, E, O2):
+ * The predicate succeeds when O2 unifies with the subtract of O1 by [E].
+ */
+% ord_delete(+OrdSet, +Elem, -OrdSet)
+:- public ord_delete/3.
+ord_delete([X|Y], Z, Y) :- X == Z, !.
+ord_delete([X|Y], Z, [X|R]) :- X @< Z, !,
+   ord_delete(Y, Z, R).
+ord_delete(X, _, X).
+
+/**
+ * ord_add(O1, E, O2):
+ * The predicate succeeds when O2 unifies with the union of [E] and O1.
+ */
+% ord_add(+OrdSet, +Elem, -OrdSet)
+:- public ord_add/3.
+ord_add([X|Y], Z, [X|Y]) :- X == Z, !.
+ord_add([X|Y], Z, [X|R]) :- X @< Z, !,
+   ord_add(Y, Z, R).
+ord_add(X, Y, [Y|X]).
+
+/*******************************************************************/
+/* Set Operations                                               */
+/*******************************************************************/
+
+/**
+ * ord_subtract(O1, O2, O3):
+ * The predicate succeeds when O3 unifies with the subtract of O1 by O2.
+ */
+% ord_subtract(+OrdSet, +OrdSet, -OrdSet)
+:- public ord_subtract/3.
+ord_subtract([X|Y], [Z|T], R) :- X == Z, !,
+   ord_subtract(Y, T, R).
+ord_subtract([X|Y], [Z|T], [X|R]) :- X @< Z, !,
+   ord_subtract(Y, [Z|T], R).
+ord_subtract([X|Y], [_|T], R) :-
+   ord_subtract([X|Y], T, R).
+ord_subtract([], _, []) :- !.
+ord_subtract(X, [], X).
 
 /**
  * ord_intersection(O1, O2, O3):
@@ -110,6 +140,10 @@ ord_union([X|Y], [Z|T], [Z|R]) :-
 ord_union([], X, X) :- !.
 ord_union(X, [], X).
 
+/*******************************************************************/
+/* Test Operations                                                 */
+/*******************************************************************/
+
 /**
  * ord_subset(O1, O2):
  * The predicate succeeds when O1 is a subset of O2.
@@ -119,6 +153,20 @@ ord_union(X, [], X).
 ord_subset([X|Y], [Z|T]) :- X == Z, !,
    ord_subset(Y, T).
 ord_subset([X|_], [Z|_]) :- X @< Z, !, fail.
-ord_subset([X|Y], [_|T]) :-
-   ord_subset([X|Y], T).
+ord_subset([X|Y], [_|Z]) :-
+   ord_subset([X|Y], Z).
 ord_subset([], _).
+
+/**
+ * ord_disjoint(O1, O2):
+ * The predicate succeeds when O1 is disjoint to O2.
+ */
+% ord_disjoint(+OrdSet, +OrdSet)
+:- public ord_disjoint/2.
+ord_disjoint([X|_], [Y|_]) :- X == Y, !, fail.
+ord_disjoint([X|Y], [Z|T]) :- X @< Z, !,
+   ord_disjoint(Y, [Z|T]).
+ord_disjoint([X|Y], [_|Z]) :-
+   ord_disjoint([X|Y], Z).
+ord_disjoint([], _) :- !.
+ord_disjoint(_, []).

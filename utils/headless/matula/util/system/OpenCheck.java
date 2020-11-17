@@ -1,7 +1,13 @@
 package matula.util.system;
 
-import java.io.*;
-import java.net.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileLockInterruptionException;
@@ -39,9 +45,26 @@ import java.nio.channels.FileLockInterruptionException;
  */
 public class OpenCheck {
     public static final int MASK_OPEN_CACH = 0x00000001;
+    public static final int MASK_OPEN_NERR = 0x00000002;
+    public static final OpenCheck DEFAULT = new OpenCheck(MASK_OPEN_NERR);
     public static final OpenCheck DEFAULT_CHECK = new OpenCheck();
 
     private int flags;
+
+    /**
+     * <p>Create a new open check.</p>
+     */
+    public OpenCheck() {
+    }
+
+    /**
+     * <p>Create a new open check.</p>
+     *
+     * @param f The flags.
+     */
+    public OpenCheck(int f) {
+        flags = f;
+    }
 
     /**
      * <p>Retrieve the flags.</p>
@@ -64,15 +87,14 @@ public class OpenCheck {
     /**
      * <p>Check a read stream.</p>
      *
-     * @param path  The uri.
-     * @param check The check flag.
+     * @param path The uri.
      * @return TThe new uri, null or CHECK_ERROR.
      * @throws IOException IO error.
      */
-    public String checkHead(String path, boolean check)
+    public String openCheck(String path)
             throws IOException {
         try {
-            for (;;) {
+            for (; ; ) {
                 String adr = path;
                 String spec = ForeignUri.sysUriSpec(adr);
                 String scheme = ForeignUri.sysSpecScheme(spec);
@@ -121,7 +143,7 @@ public class OpenCheck {
                 /* */
             }
         }
-        return (check ? null : path);
+        return ((getFlags() & MASK_OPEN_NERR) == 0 ? null : path);
     }
 
     /**

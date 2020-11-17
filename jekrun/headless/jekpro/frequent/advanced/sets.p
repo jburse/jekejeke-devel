@@ -47,40 +47,60 @@
 :- package(library(jekpro/frequent/advanced)).
 
 :- module(sets, []).
+:- use_module(library(basic/lists)).
+
+/*******************************************************************/
+/* Element Operations                                              */
+/*******************************************************************/
 
 /**
- * contains(E, S):
+ * contains(S, E):
  * The predicate succeeds when the set S contains the element E.
  */
-% contains(+Elem, +Set)
+% contains(+Set, +Elem)
 :- public contains/2.
-contains(X, [Y|_]) :- X == Y, !.
-contains(X, [_|Y]) :-
+contains([X|_], Y) :- X == Y, !.
+contains([_|X], Y) :-
    contains(X, Y).
 
 /**
- * remove(E, S, T):
- * The predicate succeeds when the set S contains the element E
- * and T is the set without the element.
+ * delete(S, E, T):
+ * The predicate succeeds when O2 unifies with the subtract of O1 by [E].
  */
-% remove(+Elem, +Set, -Set)
-:- public remove/3.
-remove(X, [Y|Z], Z) :- X == Y, !.
-remove(X, [Y|Z], [Y|T]) :-
-   remove(X, Z, T).
+% delete(+Set, +Elem, -Set)
+:- public delete/3.
+delete([X|Y], Z, T) :- X == Z, !,
+   delete(Y, Z, T).
+delete([X|Y], Z, [X|T]) :-
+   delete(Y, Z, T).
+delete([], _, []).
 
 /**
- * difference(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the difference of S1 by S2.
+ * add(O1, E, O2):
+ * The predicate succeeds when O2 unifies with the union of [E] and O1.
  */
-% difference(+Set, +Set, -Set)
-:- public difference/3.
-difference([X|Y], Z, T) :-
-   contains(X, Z), !,
-   difference(Y, Z, T).
-difference([X|Y], Z, [X|T]) :-
-   difference(Y, Z, T).
-difference([], _, []).
+% add(+Set, +Elem, -Set)
+:- public add/3.
+add(X, Y, X) :-
+   contains(X, Y), !.
+add(X, Y, [Y|X]).
+
+/*******************************************************************/
+/* Set Operations                                               */
+/*******************************************************************/
+
+/**
+ * subtract(S1, S2, S3):
+ * The predicate succeeds when S3 unifies with the subtract of S1 by S2.
+ */
+% subtract(+Set, +Set, -Set)
+:- public subtract/3.
+subtract([X|Y], Z, T) :-
+   contains(Z, X), !,
+   subtract(Y, Z, T).
+subtract([X|Y], Z, [X|T]) :-
+   subtract(Y, Z, T).
+subtract([], _, []).
 
 /**
  * intersection(S1, S2, S3):
@@ -89,7 +109,7 @@ difference([], _, []).
 % intersection(+Set, +Set, -Set)
 :- public intersection/3.
 intersection([X|Y], Z, [X|T]) :-
-   contains(X, Z), !,
+   contains(Z, X), !,
    intersection(Y, Z, T).
 intersection([_|X], Y, Z) :-
    intersection(X, Y, Z).
@@ -102,11 +122,26 @@ intersection([], _, []).
 % union(+Set, +Set, -Set)
 :- public union/3.
 union([X|Y], Z, T) :-
-   contains(X, Z), !,
+   contains(Z, X), !,
    union(Y, Z, T).
 union([X|Y], Z, [X|T]) :-
    union(Y, Z, T).
 union([], X, X).
+
+/**
+ * symdiff(S1, S2, S3):
+ * The predicate succeeds when S3 unifies with the symmetric difference of S1 and S2.
+ */
+% symdiff(+Set, +Set, -Set)
+:- public symdiff/3.
+symdiff(X, Y, Z) :-
+   subtract(X, Y, H),
+   subtract(Y, X, J),
+   append(H, J, Z).
+
+/*******************************************************************/
+/* Test Operations                                                 */
+/*******************************************************************/
 
 /**
  * subset(S1, S2):
@@ -115,7 +150,7 @@ union([], X, X).
 % subset(+Set, +Set)
 :- public subset/2.
 subset([X|Y], Z) :-
-   contains(X, Z),
+   contains(Z, X),
    subset(Y, Z).
 subset([], _).
 
@@ -125,7 +160,8 @@ subset([], _).
  */
 % permutation(+Set, +Set)
 :- public permutation/2.
-permutation([X|Y], L) :-
-   remove(X, L, R),
-   permutation(Y, R).
-permutation([], []).
+permutation(X, Y) :-
+   subset(X, Y),
+   subset(Y, X).
+
+

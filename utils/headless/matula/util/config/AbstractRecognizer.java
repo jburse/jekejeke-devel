@@ -97,7 +97,8 @@ public abstract class AbstractRecognizer {
             throws LicenseError, IOException, ScannerError {
         OpenOpts opts = new OpenOpts();
         opts.setFlags(opts.getFlags() | OpenDuplex.MASK_OPEN_BINR);
-        InputStream in = (InputStream) opts.openRead(this, adr);
+        opts.setRecognizer(this);
+        InputStream in = (InputStream) opts.openRead(adr);
         try {
             loadBinary(prop, in, param);
         } catch (IOException x) {
@@ -124,7 +125,8 @@ public abstract class AbstractRecognizer {
                          Object param)
             throws LicenseError, IOException, ScannerError {
         OpenOpts opts = new OpenOpts();
-        Reader reader = (Reader) opts.openRead(this, adr);
+        opts.setRecognizer(this);
+        Reader reader = (Reader) opts.openRead(adr);
         try {
             loadText(prop, reader, param);
         } catch (IOException x) {

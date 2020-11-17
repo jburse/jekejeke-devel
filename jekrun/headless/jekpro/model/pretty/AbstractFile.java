@@ -209,6 +209,7 @@ public abstract class AbstractFile extends AbstractSource {
         }
 
         OpenOpts fopts = new OpenOpts();
+        fopts.setRecognizer(getStore());
         if (if_modified) {
             fopts.setIfModifiedSince(getLastModified());
             fopts.setIfNoneMatch(getETag());
@@ -218,7 +219,7 @@ public abstract class AbstractFile extends AbstractSource {
         }
         Reader reader;
         try {
-            reader = (Reader) fopts.openRead(getStore(), getPath());
+            reader = (Reader) fopts.openRead(getPath());
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
         } catch (LicenseError x) {

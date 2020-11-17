@@ -171,7 +171,7 @@ sys_include(failure(_)).
 % sys_duplex(+Pin, +Mode, +Options, -Stream)
 :- private sys_duplex/4.
 :- foreign(sys_duplex/4, 'ForeignStream',
-      sysDuplex('Interpreter', 'Socket', 'String', 'Object')).
+      sysDuplex('Socket', 'String', 'Object')).
 
 % sys_open(+Pin, +Mode, +Options, -Stream)
 :- private sys_open/4.

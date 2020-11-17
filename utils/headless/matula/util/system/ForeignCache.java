@@ -166,7 +166,7 @@ public final class ForeignCache {
         int k = adr.lastIndexOf('.');
         for (; ; ) {
             String key = adr.substring(0, k) + locstr + adr.substring(k);
-            key = OpenCheck.DEFAULT_CHECK.checkHead(key, true);
+            key = OpenCheck.DEFAULT_CHECK.openCheck(key);
             if (key != null)
                 return key;
             int j = locstr.lastIndexOf('_');

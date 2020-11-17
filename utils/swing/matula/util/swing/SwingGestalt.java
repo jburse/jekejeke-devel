@@ -45,7 +45,6 @@ import java.util.jar.Manifest;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SwingGestalt {
-    private static final String DIRECTORY_APK = "apk";
 
     /**
      * <p>Retrieve the base.</p>

@@ -499,7 +499,7 @@ public final class ForeignUri {
      */
     public static String sysCanonicalUri(String adr)
             throws IOException {
-        return sysCanonicalUri(adr, false);
+        return sysCanonicalUri(adr, OpenCheck.DEFAULT);
     }
 
     /**
@@ -511,7 +511,7 @@ public final class ForeignUri {
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
-    public static String sysCanonicalUri(String adr, boolean check)
+    public static String sysCanonicalUri(String adr, OpenCheck check)
             throws IOException {
         String spec = ForeignUri.sysUriSpec(adr);
         spec = ForeignUri.sysCanonicalSpec(spec, check);
@@ -529,7 +529,7 @@ public final class ForeignUri {
             adr = ForeignUri.sysUriMake(spec, query, hash);
             adr = ForeignDomain.sysUriUnpuny(adr);
         }
-        return OpenCheck.DEFAULT_CHECK.checkHead(adr, check);
+        return check.openCheck(adr);
     }
 
     /**
@@ -541,7 +541,7 @@ public final class ForeignUri {
      * @throws MalformedURLException    Spec assembling problem.
      * @throws CharacterCodingException File canonization problem.
      */
-    private static String sysCanonicalSpec(String spec, boolean check)
+    private static String sysCanonicalSpec(String spec, OpenCheck check)
             throws IOException {
         String scheme = ForeignUri.sysSpecScheme(spec);
         String authority = ForeignUri.sysSpecAuthority(spec);
