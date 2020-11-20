@@ -140,6 +140,21 @@ ord_union([X|Y], [Z|T], [Z|R]) :-
 ord_union([], X, X) :- !.
 ord_union(X, [], X).
 
+/**
+ * ord_symdiff(O, P, Q):
+ * The predicate succeeds when R unifies with the symmetric subtract of S and T.
+ */
+% ord_symdiff(+OrdSet, +OrdSet, -OrdSet)
+:- public ord_symdiff/3.
+ord_symdiff([X|Y], [Z|T], R) :- X == Z, !,
+   ord_symdiff(Y, T, R).
+ord_symdiff([X|Y], [Z|T], [X|R]) :- X @< Z, !,
+   ord_symdiff(Y, [Z|T], R).
+ord_symdiff([X|Y], [Z|T], [Z|R]) :-
+   ord_symdiff([X|Y], T, R).
+ord_symdiff([], X, X) :- !.
+ord_symdiff(X, [], X).
+
 /*******************************************************************/
 /* Test Operations                                                 */
 /*******************************************************************/

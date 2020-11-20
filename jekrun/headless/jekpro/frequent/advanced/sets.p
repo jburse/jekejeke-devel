@@ -59,25 +59,36 @@
  */
 % contains(+Set, +Elem)
 :- public contains/2.
+contains(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
 contains([X|_], Y) :- X == Y, !.
-contains([_|X], Y) :-
+contains([_|X], Y) :- !,
    contains(X, Y).
+contains([], _) :- !, fail.
+contains(X, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
  * delete(S, E, T):
- * The predicate succeeds when O2 unifies with the subtract of O1 by [E].
+ * The predicate succeeds when T unifies with the subtract of S by [E].
  */
 % delete(+Set, +Elem, -Set)
 :- public delete/3.
+delete(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
 delete([X|Y], Z, T) :- X == Z, !,
    delete(Y, Z, T).
-delete([X|Y], Z, [X|T]) :-
+delete([X|Y], Z, R) :- !,
+   R = [X|T],
    delete(Y, Z, T).
-delete([], _, []).
+delete([], _, R) :- !,
+   R = [].
+delete(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * add(O1, E, O2):
- * The predicate succeeds when O2 unifies with the union of [E] and O1.
+ * add(S, E, T):
+ * The predicate succeeds when T unifies with the union of [E] and S.
  */
 % add(+Set, +Elem, -Set)
 :- public add/3.
@@ -90,47 +101,65 @@ add(X, Y, [Y|X]).
 /*******************************************************************/
 
 /**
- * subtract(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the subtract of S1 by S2.
+ * subtract(S, T, R):
+ * The predicate succeeds when R unifies with the subtract of S by T.
  */
 % subtract(+Set, +Set, -Set)
 :- public subtract/3.
+subtract(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
 subtract([X|Y], Z, T) :-
    contains(Z, X), !,
    subtract(Y, Z, T).
-subtract([X|Y], Z, [X|T]) :-
+subtract([X|Y], Z, R) :- !,
+   R = [X|T],
    subtract(Y, Z, T).
-subtract([], _, []).
+subtract([], _, R) :- !,
+   R = [].
+subtract(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * intersection(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the intersection of S1 and S2.
+ * intersection(S, T, R):
+ * The predicate succeeds when R unifies with the intersection of S and T.
  */
 % intersection(+Set, +Set, -Set)
 :- public intersection/3.
-intersection([X|Y], Z, [X|T]) :-
+intersection(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+intersection([X|Y], Z, R) :-
    contains(Z, X), !,
+   R = [X|T],
    intersection(Y, Z, T).
-intersection([_|X], Y, Z) :-
+intersection([_|X], Y, Z) :- !,
    intersection(X, Y, Z).
-intersection([], _, []).
+intersection([], _, R) :- !,
+   R = [].
+intersection(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * union(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the union of S1 and S2.
+ * union(S, T, R):
+ * The predicate succeeds when R unifies with the union of S and T.
  */
 % union(+Set, +Set, -Set)
 :- public union/3.
+union(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
 union([X|Y], Z, T) :-
    contains(Z, X), !,
    union(Y, Z, T).
-union([X|Y], Z, [X|T]) :-
+union([X|Y], Z, R) :- !,
+   R = [X|T],
    union(Y, Z, T).
-union([], X, X).
+union([], X, R) :- !,
+   R = X.
+union(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * symdiff(S1, S2, S3):
- * The predicate succeeds when S3 unifies with the symmetric subtract of S1 and S2.
+ * symdiff(S, T, R):
+ * The predicate succeeds when R unifies with the symmetric subtract of S and T.
  */
 % symdiff(+Set, +Set, -Set)
 :- public symdiff/3.
@@ -144,24 +173,42 @@ symdiff(X, Y, Z) :-
 /*******************************************************************/
 
 /**
- * subset(S1, S2):
- * The predicate succeeds when S1 is a subset of S2.
+ * subset(S, T):
+ * The predicate succeeds when S is a subset of T.
  */
 % subset(+Set, +Set)
 :- public subset/2.
-subset([X|Y], Z) :-
+subset(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+subset([X|Y], Z) :- !,
    contains(Z, X),
    subset(Y, Z).
-subset([], _).
+subset([], _) :- !.
+subset(X, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * permutation(S1, S2):
- * The predicate succeeds when S1 is a permutation of S2.
+ * disjoint(S, T):
+ * The predicate succeeds when S is disjoint to T.
  */
-% permutation(+Set, +Set)
-:- public permutation/2.
-permutation(X, Y) :-
+% disjoint(+Set, +Set)
+:- public disjoint/2.
+disjoint(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+disjoint([X|_], Z) :-
+   contains(Z, X), !, fail.
+disjoint([_|Y], Z) :- !,
+   disjoint(Y, Z).
+disjoint([], _) :- !.
+disjoint(X, _) :-
+   throw(error(type_error(list, X), _)).
+
+/**
+ * equal(S, T):
+ * The predicate succeeds when S is equal to T.
+ */
+% equal(+Set, +Set)
+:- public equal/2.
+equal(X, Y) :-
    subset(X, Y),
    subset(Y, X).
-
-

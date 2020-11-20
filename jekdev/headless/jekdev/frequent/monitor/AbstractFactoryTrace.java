@@ -12,6 +12,7 @@ import jekpro.tools.proxy.CapabilityAPI;
 
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 
 /**
  * <p>This class provides an abstract factory.</p>
@@ -58,9 +59,10 @@ public abstract class AbstractFactoryTrace extends AbstractFactory {
      * <p>Can be overridden by subclasses.</p>
      */
     protected void prepareToolConnections() {
-        toolinput = new ConnectionReaderTrace(new InputStreamReader(System.in));
-        tooloutput = new ConnectionWriterTrace(new OutputStreamWriter(System.out));
-        toolerror = new ConnectionWriterTrace(new OutputStreamWriter(System.err));
+        Charset cs = getEncoding();
+        toolinput = new ConnectionReaderTrace(new InputStreamReader(System.in, cs));
+        tooloutput = new ConnectionWriterTrace(new OutputStreamWriter(System.out, cs));
+        toolerror = new ConnectionWriterTrace(new OutputStreamWriter(System.err, cs));
     }
 
     /*******************************************************************/
