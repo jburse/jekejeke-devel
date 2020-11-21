@@ -202,6 +202,7 @@ mod/3	arithmetic/round
 module/2	bootload/module
 msb/2	arithmetic/bits
 (multifile)/1	bootload/load
+nonground/2	structure/vars
 number/1	structure/type
 number_chars/2	structure/atom
 number_codes/2	structure/atom

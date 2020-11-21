@@ -115,9 +115,9 @@ final class ChoiceVirtual extends AbstractChoice {
             Object[] help;
             boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !en.unifyTerm((help = ((SkelCompound) term).args)[
-                                    help.length - 1], ref,
-                            AbstractTerm.getSkel(res), d)) {
+                    !en.unifyTerm(AbstractTerm.getSkel(res), d,
+                            (help = ((SkelCompound) term).args)[
+                                    help.length - 1], ref)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
 

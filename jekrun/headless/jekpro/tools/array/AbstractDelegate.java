@@ -129,7 +129,7 @@ public abstract class AbstractDelegate {
         en.computeExpr(expr, ref);
         Display d = en.display;
         boolean multi = d.getAndReset();
-        if (!en.unifyTerm(temp.args[temp.args.length - 1], ref, en.skel, d))
+        if (!en.unifyTerm(en.skel, d, temp.args[temp.args.length - 1], ref))
             return false;
         if (multi)
             d.remTab(en);

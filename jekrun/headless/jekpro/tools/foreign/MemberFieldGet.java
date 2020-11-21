@@ -163,8 +163,9 @@ final class MemberFieldGet extends AbstractMember {
         Object[] help;
         boolean ext = d.getAndReset();
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm((help = ((SkelCompound) temp).args)[help.length - 1], ref,
-                        AbstractTerm.getSkel(res), d))
+                !en.unifyTerm(AbstractTerm.getSkel(res), d,
+                        (help = ((SkelCompound) temp).args)[
+                        help.length - 1], ref))
             return false;
         if (ext)
             d.remTab(en);
