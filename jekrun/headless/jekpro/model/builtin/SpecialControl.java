@@ -113,9 +113,7 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        EngineException.fetchStack(en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(EngineException.fetchStack(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_RAISE:

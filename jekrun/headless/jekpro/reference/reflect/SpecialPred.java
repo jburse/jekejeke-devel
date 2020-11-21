@@ -97,9 +97,7 @@ public final class SpecialPred extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        SpecialPred.currentPredicates(en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(SpecialPred.currentPredicates(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_PREDICATE_CHK:
@@ -118,7 +116,7 @@ public final class SpecialPred extends AbstractSpecial {
                 SpecialPred.predicateToProperties(pick, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -133,7 +131,7 @@ public final class SpecialPred extends AbstractSpecial {
                 SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -145,9 +143,7 @@ public final class SpecialPred extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref,
-                        SpecialPred.propertyToPredicates(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(SpecialPred.propertyToPredicates(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
@@ -157,9 +153,7 @@ public final class SpecialPred extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref,
-                        propertyToProvables(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(propertyToProvables(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:
@@ -173,7 +167,7 @@ public final class SpecialPred extends AbstractSpecial {
                 SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

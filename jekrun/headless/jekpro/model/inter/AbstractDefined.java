@@ -336,8 +336,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param t1   The term skeleton arguments.
      * @param ref  The term display.
-     * @param t2   The cause term skeleton arguments.
-     * @param ref2 The cause term display.
+     * @param t2   The clause term skeleton arguments.
+     * @param ref2 The clause term display.
      * @param arr  The unify instructions.
      * @param en   The engine.
      * @return True if the unification was successful, otherwise false.
@@ -591,10 +591,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, ref1, en)) {
                 Object end = clause.interToBody(en);
-                if (en.unifyTerm(temp[1], ref, end, ref1)) {
+                if (en.unifyTerm(end, ref1, temp[1], ref)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (en.unifyTerm(temp[2], ref,
-                                clause, Display.DISPLAY_CONST))
+                        if (en.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref))
                             break;
                     } else {
                         break;

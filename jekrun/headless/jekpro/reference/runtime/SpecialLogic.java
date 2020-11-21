@@ -104,7 +104,7 @@ public final class SpecialLogic extends AbstractSpecial {
 
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -125,7 +125,7 @@ public final class SpecialLogic extends AbstractSpecial {
 
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -191,7 +191,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 SkelAtom sa = StackElement.callableToName(obj);
                 sa = EvaluableLogic.makeAtom(sa.fun, en, sa2);
                 obj = StackElement.callableFromName(obj, sa);
-                if (!en.unifyTerm(temp[0], ref, obj, d))
+                if (!en.unifyTerm(obj, d, temp[0], ref))
                     return false;
                 return true;
             default:

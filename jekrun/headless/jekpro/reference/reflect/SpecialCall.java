@@ -87,7 +87,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.callableToProperties(AbstractTerm.createMolec(en.skel, en.display), en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -103,7 +103,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.callableToProperty(AbstractTerm.createMolec(en.skel, en.display), prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -124,7 +124,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.setCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[0], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[0], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -145,7 +145,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.resetCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[0], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[0], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

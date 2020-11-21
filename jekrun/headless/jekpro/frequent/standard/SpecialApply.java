@@ -85,7 +85,7 @@ public final class SpecialApply extends AbstractSpecial {
                 moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[temp.length - 1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[temp.length - 1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

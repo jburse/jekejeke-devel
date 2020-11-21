@@ -135,13 +135,22 @@ term_variables(X, L) :-
 % already defined in member
 
 /**
+ * nonground(X, Y):
+ * The predicate succeeds when X is not a ground term, i.e.
+ * contains a variable, and unifies Y with the first variable.
+ */
+% nonground(+Term, -Var)
+:- public nonground/2.
+:- special(nonground/2, 'SpecialVars', 6).
+
+/**
  * acyclic_term(X): [TC2 8.3.11]
  * The predicate succeeds when X is an acyclic term, i.e. contains
  * no cycles.
  */
 % acyclic_term(+Term)
 :- public acyclic_term/1.
-:- special(acyclic_term/1, 'SpecialVars', 6).
+:- special(acyclic_term/1, 'SpecialVars', 7).
 
 /**
  * safe_term_variables(X, L):
@@ -157,4 +166,4 @@ safe_term_variables(X, L) :-
 
 % safe_term_variables(+Term, -List, +List)
 :- public safe_term_variables/3.
-:- special(safe_term_variables/3, 'SpecialVars', 7).
+:- special(safe_term_variables/3, 'SpecialVars', 8).

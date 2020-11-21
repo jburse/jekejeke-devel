@@ -109,8 +109,7 @@ public final class SpecialOper extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_OPER:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        currentOpers(en), Display.DISPLAY_CONST))
+                if (!en.unifyTerm(currentOpers(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_OPER_CHK:
@@ -129,7 +128,7 @@ public final class SpecialOper extends AbstractSpecial {
                 operToProperties(oper, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -144,7 +143,7 @@ public final class SpecialOper extends AbstractSpecial {
                 SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -156,9 +155,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref,
-                        SpecialOper.propertyToOperators(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(SpecialOper.propertyToOperators(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SET_OPER_PROPERTY:
@@ -191,9 +188,7 @@ public final class SpecialOper extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unifyTerm(temp[1], ref,
-                        propertyToSyntax(en.skel, en.display, en),
-                        Display.DISPLAY_CONST))
+                if (!en.unifyTerm(propertyToSyntax(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_SYNTAX_PROPERTY_CHK:
@@ -207,7 +202,7 @@ public final class SpecialOper extends AbstractSpecial {
                 SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

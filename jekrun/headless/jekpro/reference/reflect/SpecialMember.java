@@ -133,7 +133,7 @@ public final class SpecialMember extends AbstractSpecial {
                         d = Display.DISPLAY_CONST;
                         multi = false;
                     }
-                    if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -154,9 +154,9 @@ public final class SpecialMember extends AbstractSpecial {
                         obj = en.skel;
                         num = Integer.valueOf(0);
                     }
-                    if (!en.unifyTerm(temp[1], ref, obj, en.display))
+                    if (!en.unifyTerm(obj, en.display, temp[1], ref))
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(num, Display.DISPLAY_CONST, temp[2], ref))
                         return false;
                     return true;
                 case SPECIAL_COMPARE_GR:

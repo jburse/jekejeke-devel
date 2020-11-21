@@ -11,8 +11,6 @@ import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.MapHash;
-import matula.util.data.MapHashLink;
 
 /**
  * <p>Provides built-in predicates for univ ops.</p>
@@ -86,7 +84,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.deref();
                     boolean multi = SpecialUniv.listToTerm(en);
                     Display d = en.display;
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -98,7 +96,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.display = ref;
                     en.deref();
                     en.skel = SpecialUniv.termToList(en.skel, en);
-                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_ARG:
@@ -116,7 +114,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (nth < 1)
                             return false;
-                        if (!en.unifyTerm(temp[2], ref, cmp[nth - 1], en.display))
+                        if (!en.unifyTerm(cmp[nth - 1], en.display, temp[2], ref))
                             return false;
                         return true;
                     } else if (en.skel instanceof SkelAtom) {
@@ -153,7 +151,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
-                        if (!en.unifyTerm(temp[3], ref, sc, d))
+                        if (!en.unifyTerm(sc, d, temp[3], ref))
                             return false;
                         if (multi)
                             d.remTab(en);
@@ -189,7 +187,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     Object val = AbstractSkel.copySkel(temp[0], ref, en);
                     d = AbstractSkel.createMarker(val);
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, val, d))
+                    if (!en.unifyTerm(val, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);

@@ -60,8 +60,9 @@ public final class SpecialVars extends AbstractSpecial {
     private final static int SPECIAL_SYS_GOAL_GLOBALS = 3;
     private final static int SPECIAL_NUMBERVARS = 4;
     private final static int SPECIAL_SYS_NUMBER_VARIABLES = 5;
-    private final static int SPECIAL_ACYCLIC_TERM = 6;
-    private final static int SPECIAL_SAFE_TERM_VARIABLES = 7;
+    private final static int SPECIAL_NONGROUND = 6;
+    private final static int SPECIAL_ACYCLIC_TERM = 7;
+    private final static int SPECIAL_SAFE_TERM_VARIABLES = 8;
 
     /**
      * <p>Create a vars special.</p>
@@ -98,7 +99,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.vars, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -113,7 +114,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.anon, en, false);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -122,7 +123,7 @@ public final class SpecialVars extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     SpecialVars.goalKernel(temp[0], ref, en);
-                    if (!en.unifyTerm(temp[1], ref, en.skel, en.display))
+                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_GOAL_GLOBALS:
@@ -135,7 +136,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.vars, en, false);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -149,7 +150,7 @@ public final class SpecialVars extends AbstractSpecial {
                     num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
                     if (num == null)
                         return false;
-                    if (!en.unifyTerm(temp[2], ref, num, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(num, Display.DISPLAY_CONST, temp[2], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_NUMBER_VARIABLES:
@@ -158,10 +159,18 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialVars.numberVariables(temp, ref, en);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[3], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[3], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
+                    return true;
+                case SPECIAL_NONGROUND:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    if (!firstVariable(temp[0], ref, en))
+                        return false;
+                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
+                        return false;
                     return true;
                 case SPECIAL_ACYCLIC_TERM:
                     temp = ((SkelCompound) en.skel).args;
@@ -181,7 +190,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.vars, en, false);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -295,7 +304,7 @@ public final class SpecialVars extends AbstractSpecial {
                             return null;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                        if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                        if (!en.unifyTerm(t, Display.DISPLAY_CONST, v, d))
                             return null;
                         val = Integer.valueOf(val.intValue() + 1);
                     }
@@ -308,7 +317,7 @@ public final class SpecialVars extends AbstractSpecial {
                 d = b.display;
             } else {
                 Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                if (!en.unifyTerm(v, d, t, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(t, Display.DISPLAY_CONST, v, d))
                     return null;
                 return Integer.valueOf(val.intValue() + 1);
             }
@@ -539,6 +548,52 @@ public final class SpecialVars extends AbstractSpecial {
              entry != null; entry = print.successor(entry))
             range.add(entry.value);
         return range;
+    }
+
+    /**
+     * <p>Find the first variable.</p>
+     * <p>Tail recursive solution.</p>
+     * <p>The result in the engine skel and display</p>
+     *
+     * @param t The term skel.
+     * @param d The term display.
+     * @return True if the term is nonground, otherwise false.
+     */
+    private static boolean firstVariable(Object t, Display d, Engine en) {
+        for (; ; ) {
+            Object var = SupervisorCopy.getVar(t);
+            if (var == null)
+                return false;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int j = 0;
+                for (; j < temp.length - 1; j++) {
+                    v = temp[j];
+                    BindUniv b = d.bind[v.id];
+                    if (b.display != null) {
+                        if (firstVariable(b.skel, b.display, en))
+                            return true;
+                    } else {
+                        en.skel = v;
+                        en.display = d;
+                        return true;
+                    }
+                }
+                v = temp[j];
+            }
+            BindUniv b = d.bind[v.id];
+            if (b.display != null) {
+                t = b.skel;
+                d = b.display;
+            } else {
+                en.skel = v;
+                en.display = d;
+                return true;
+            }
+        }
     }
 
 }

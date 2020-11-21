@@ -77,7 +77,7 @@ public final class SpecialArith extends AbstractSpecial {
                 AbstractUndo mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
-                    if (en.unifyTerm(temp[2], ref, num1, Display.DISPLAY_CONST)) {
+                    if (en.unifyTerm(num1, Display.DISPLAY_CONST, temp[2], ref)) {
                         if (res != 0) {
                             /* create choice point */
                             en.choices = new ChoiceArith(en.choices, num1,
@@ -103,7 +103,7 @@ public final class SpecialArith extends AbstractSpecial {
                 num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 mark = en.bind;
                 while (true) {
-                    if (en.unifyTerm(temp[1], ref, num1, Display.DISPLAY_CONST)) {
+                    if (en.unifyTerm(num1, Display.DISPLAY_CONST, temp[1], ref)) {
                         /* create choice point */
                         en.choices = new ChoiceArith(en.choices, num1,
                                 en.contskel, en.contdisplay, mark, id);

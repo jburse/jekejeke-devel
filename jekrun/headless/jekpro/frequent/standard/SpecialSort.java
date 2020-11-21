@@ -97,7 +97,7 @@ public final class SpecialSort extends AbstractSpecial {
                     SpecialSort.createSet(set, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -120,7 +120,7 @@ public final class SpecialSort extends AbstractSpecial {
                     SpecialSort.createSet(set, en, (el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -135,7 +135,7 @@ public final class SpecialSort extends AbstractSpecial {
                     SpecialSort.createMap(map, en, false);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -158,7 +158,7 @@ public final class SpecialSort extends AbstractSpecial {
                     SpecialSort.createMap(map, en, (el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -167,7 +167,7 @@ public final class SpecialSort extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     Number val = Integer.valueOf(hashTerm(temp[0], ref, 0));
-                    if (!en.unifyTerm(temp[1], ref, val, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(val, Display.DISPLAY_CONST, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_GROUND:
@@ -183,7 +183,7 @@ public final class SpecialSort extends AbstractSpecial {
                     val = SpecialEval.derefAndCastInteger(temp[1], ref);
                     val = Integer.valueOf(termHash(temp[0], ref,
                             SpecialEval.castIntValue(val), 0));
-                    if (!en.unifyTerm(temp[2], ref, val, Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(val, Display.DISPLAY_CONST, temp[2], ref))
                         return false;
                     return true;
                 case SPECIAL_NUMBER_TEST:
@@ -192,8 +192,7 @@ public final class SpecialSort extends AbstractSpecial {
                     val = SpecialEval.derefAndCastNumber(temp[1], ref);
                     Number beta = SpecialEval.derefAndCastNumber(temp[2], ref);
                     int res2 = SpecialCompare.computeCmp(val, beta) ;
-                    if (!en.unifyTerm(temp[0], ref,
-                            SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;
                 default:

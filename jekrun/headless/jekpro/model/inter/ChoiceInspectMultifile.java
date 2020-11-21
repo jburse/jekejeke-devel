@@ -113,10 +113,9 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, newdisp, en)) {
                 Object end = clause.interToBody(en);
-                if (en.unifyTerm(temp[1], d, end, newdisp)) {
+                if (en.unifyTerm(end, newdisp, temp[1], d)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unifyTerm(temp[2], d,
-                                clause, Display.DISPLAY_CONST))
+                        if (en.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], d))
                             break;
                     } else {
                         break;
