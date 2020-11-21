@@ -143,6 +143,7 @@ date_atom/4	system/zone
 delete/3	advanced/sets
 delete_file/1	system/file
 directory_file/2	system/file
+disjoint/2	advanced/sets
 distinct/1	advanced/sequence
 downcase_atom/2	misc/text
 endpoint_address/2	misc/socket
@@ -150,6 +151,7 @@ endpoint_new/3	misc/socket
 endpoint_port/2	misc/socket
 endpoint_receive/2	misc/socket
 endpoint_send/4	misc/socket
+equal/2	advanced/sets
 erase_ref/1	experiment/ref
 error_make/2	stream/console
 error_make/3	stream/console
@@ -272,6 +274,7 @@ ord_put/4	experiment/ordmaps
 ord_remove/3	experiment/ordmaps
 ord_subset/2	advanced/ordsets
 ord_subtract/3	advanced/ordsets
+ord_symdiff/3	advanced/ordsets
 ord_union/3	advanced/ordsets
 order_by/2	advanced/sequence
 pattern_compile/2	misc/text
@@ -286,7 +289,6 @@ peek_char/1	stream/char
 peek_char/2	stream/char
 peek_code/1	stream/char
 peek_code/2	stream/char
-permutation/2	advanced/sets
 phrase/2	standard/dcg
 phrase/3	standard/dcg
 ping_host/1	system/domain

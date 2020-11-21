@@ -54,8 +54,15 @@
  * key K in the map M.
  */
 :- public get/3.
-get([K-V|_], J, U) :- J == K, !, U = V.
-get([_|M], J, U) :- get(M, J, U).
+get(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+get([K-V|_], J, U) :- J == K, !,
+   U = V.
+get([_|M], J, U) :- !,
+   get(M, J, U).
+get([], _, _) :- !, fail.
+get(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
  * put(M, K, V, N):
@@ -64,9 +71,17 @@ get([_|M], J, U) :- get(M, J, U).
  * the map M.
  */
 :- public put/4.
-put([K-_|M], J, U, R) :- J == K, !, R = [K-U|M].
-put([A|M], J, U, [A|N]) :- put(M, J, U, N).
-put([], J, U, [J-U]).
+put(X, _, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+put([K-_|M], J, U, R) :- J == K, !,
+   R = [K-U|M].
+put([A|M], J, U, H) :- !,
+   H = [A|N],
+   put(M, J, U, N).
+put([], J, U, R) :- !,
+   R = [J-U].
+put(X, _, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
  * remove(M, K, N):
@@ -74,8 +89,16 @@ put([], J, U, [J-U]).
  * and the other key values are associated as in the map M.
  */
 :- public remove/3.
-remove([K-_|M], J, R) :- J == K, !, R = M.
-remove([A|M], J, [A|N]) :- remove(M, J, N).
-remove([], _, []).
+remove(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+remove([K-_|M], J, R) :- J == K, !,
+   R = M.
+remove([A|M], J, H) :- !,
+   H = [A|N],
+   remove(M, J, N).
+remove([], _, R) :- !,
+   R = [].
+remove(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 
