@@ -1,4 +1,4 @@
-package jekmin.reference.misc;
+package jekmin.reference.experiment;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -9,11 +9,10 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * <p>Provides additional elementary evaluables.</p>
+ * <p>Provides additional bitwise evaluables.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -43,17 +42,16 @@ import java.math.BigInteger;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SupplementElem extends AbstractSpecial {
-    private final static int EVALUABLE_ULP = 0;
-    private final static int EVALUABLE_MODINV = 1;
-    private final static int EVALUABLE_MODPOW = 2;
+public final class SupplementBits extends AbstractSpecial {
+    private final static int EVALUABLE_SETBIT = 3;
+    private final static int EVALUABLE_CLEARBIT = 4;
 
     /**
-     * <p>Create an elementary evaluable.</p>
+     * <p>Create a special arithmetic.</p>
      *
      * @param i The built-in ID.
      */
-    public SupplementElem(int i) {
+    public SupplementBits(int i) {
         super(i);
     }
 
@@ -70,25 +68,13 @@ public final class SupplementElem extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case EVALUABLE_ULP:
+                case EVALUABLE_SETBIT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     en.computeExpr(temp[0], ref);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    Number alfa = SpecialEval.derefAndCastNumber(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = ulp(alfa);
-                    en.display = Display.DISPLAY_CONST;
-                    return;
-                case EVALUABLE_MODINV:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.computeExpr(temp[0], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    alfa = SpecialEval.derefAndCastInteger(en.skel, d);
+                    Number alfa = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
                     en.computeExpr(temp[1], ref);
@@ -97,10 +83,12 @@ public final class SupplementElem extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = modinv(alfa, beta);
+                    SpecialEval.checkNotLessThanZero(beta);
+                    int x = SpecialEval.castIntValue(beta);
+                    en.skel = setBit(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
-                case EVALUABLE_MODPOW:
+                case EVALUABLE_CLEARBIT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     en.computeExpr(temp[0], ref);
@@ -115,85 +103,69 @@ public final class SupplementElem extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.computeExpr(temp[2], ref);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    Number gamma = SpecialEval.derefAndCastInteger(en.skel, d);
-                    if (multi)
-                        d.remTab(en);
-                    en.skel = intModPow(alfa, beta, gamma);
+                    SpecialEval.checkNotLessThanZero(beta);
+                    x = SpecialEval.castIntValue(beta);
+                    en.skel = clearBit(alfa, x);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
         } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+            throw new EngineMessage(
+                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (ClassCastException x) {
+            throw new EngineMessage(
+                    EngineMessage.representationError(x.getMessage()));
         }
     }
 
     /********************************************************************/
-    /* Additional Unary Number Operations:                              */
-    /*      ulp/1: ulp()                                                */
+    /* Additional Binary Bitwise Built-in:                              */
+    /*      setbit/3: setBit()                                          */
+    /*      clearbit/3: clearBit()                                      */
     /********************************************************************/
 
     /**
-     * <p>Return the ulp.</p>
+     * <p>Set a bit.</p>
      *
-     * @param m The number.
-     * @return The ulp.
-     * @throws ArithmeticException Not a Prolog number.
+     * @param n The first operand.
+     * @param x The second operand.
+     * @return The result.
      */
-    private static Number ulp(Number m) throws ArithmeticException {
-        if (m instanceof Integer || m instanceof BigInteger) {
-            return Integer.valueOf(1);
-        } else if (m instanceof Float) {
-            return TermAtomic.makeFloat(Math.ulp(m.floatValue()));
-        } else if (m instanceof Double) {
-            return TermAtomic.makeDouble(Math.ulp(m.doubleValue()));
-        } else if (m instanceof Long) {
-            return Long.valueOf(1);
+    private static Number setBit(Number n, int x) {
+        if (n instanceof Integer) {
+            if (x <= 30) {
+                return Integer.valueOf(n.intValue() | (1 << x));
+            } else {
+                return TermAtomic.normBigInteger(
+                        BigInteger.valueOf(n.intValue()).setBit(x));
+            }
         } else {
-            return BigDecimal.valueOf(1, ((BigDecimal) m).scale());
+            return TermAtomic.normBigInteger(
+                    ((BigInteger) n).setBit(x));
         }
     }
 
-    /********************************************************************/
-    /* Additional Binary Number Operations:                             */
-    /*      modinv/2: modinv()                                          */
-    /********************************************************************/
-
     /**
-     * <p>Return the modpow.</p>
+     * <p>Clear a bit.</p>
      *
-     * @param m The first number.
-     * @param n The second number.
-     * @return The modinv.
+     * @param n The first operand.
+     * @param x The second operand.
+     * @return The result.
      */
-    private static Number modinv(Number m, Number n) {
-        return TermAtomic.normBigInteger(
-                TermAtomic.widenBigInteger(m).modInverse(
-                        TermAtomic.widenBigInteger(n)));
-    }
-
-    /********************************************************************/
-    /* Additional Ternary Number Operations:                            */
-    /*      modpow/3: modpow()                                          */
-    /********************************************************************/
-
-    /**
-     * <p>Return the modpow.</p>
-     *
-     * @param m The first number.
-     * @param n The second number.
-     * @param k The third number.
-     * @return The modpow.
-     */
-    private static Number intModPow(Number m, Number n, Number k) {
-           return TermAtomic.normBigInteger(
-                    TermAtomic.widenBigInteger(m).modPow(
-                            TermAtomic.widenBigInteger(n),
-                            TermAtomic.widenBigInteger(k)));
+    private static Number clearBit(Number n, int x) {
+        if (n instanceof Integer) {
+            if (x <= 30) {
+                return Integer.valueOf(n.intValue() & ~(1 << x));
+            } else {
+                return TermAtomic.normBigInteger(
+                        BigInteger.valueOf(n.intValue()).clearBit(x));
+            }
+        } else {
+            return TermAtomic.normBigInteger(
+                    ((BigInteger) n).clearBit(x));
+        }
     }
 
 }

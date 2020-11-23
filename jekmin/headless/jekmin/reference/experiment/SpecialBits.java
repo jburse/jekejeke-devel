@@ -1,4 +1,4 @@
-package jekmin.reference.misc;
+package jekmin.reference.experiment;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;

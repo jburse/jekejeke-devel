@@ -85,7 +85,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/cont)).
-:- use_module(library(misc/elem)).
+:- use_module(library(experiment/elem)).
 :- use_module(library(basic/random)).
 :- use_module(helper).
 :- use_module(linform).
