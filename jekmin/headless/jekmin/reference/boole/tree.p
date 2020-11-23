@@ -465,7 +465,6 @@ tree_make(A, B, X, node(X, [X|W], A, B)) :-
  * indexes in the tree T.
  */
 % expr_vars(+Tree, -List)
-:- public expr_vars/2.
 expr_vars(zero, R) :- !,
    R = [].
 expr_vars(one, R) :- !,
