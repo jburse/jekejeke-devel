@@ -1,4 +1,18 @@
 /**
+ * Backtracking can be also triggered by so called pseudo Boolean
+ * constraints. These are linear integer coefficient combinations of
+ * Boolean variables. Our implementation does not convert pseudo
+ * Boolean constraints into BDD but uses their own format. The
+ * optimization predicate weighted_maximum/3 then uses this search method:
+ *
+ • * Branch and Bound Search
+ *
+ * The labelling variant random_labeling/1 uses a random order among
+ * each variable. The maximization predicate uses random labeling in
+ * its initial value and in its search. A pseudo Boolean constraint is
+ * used in each step to improve the maximum. Since the weights can be
+ * negative, the predicate is also suitable to solve minimization problems.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -52,6 +66,91 @@
 
 :- use_module(library(experiment/maps)).
 :- use_module(library(term/verify)).
+:- use_module(library(basic/random)).
+
+/**
+ * random_labeling(L):
+ * The predicate randomly labels the variables in L.
+ */
+% random_labeling(+List)
+:- public random_labeling/1.
+random_labeling(L) :- var(L),
+   throw(error(instantiation_error, _)).
+random_labeling([B|L]) :- var(B), random(2, 1), !,
+   expr_value_reverse(B),
+   random_labeling(L).
+random_labeling([B|L]) :- !,
+   expr_value(B),
+   random_labeling(L).
+random_labeling([]) :- !.
+random_labeling(L) :-
+   throw(error(type_error(list, L), _)).
+
+/**
+ * pseudo(R, L, C, K):
+ * The predicate succeeds in a new pseudo Boolean constraint
+ * with weights R, variables L, comparator C and value K.
+ */
+% pseudo(+List, +List, +Atom, +Number)
+:- public pseudo/4.
+pseudo(R, L, C, K) :-
+   watch_add_vars(R, L, H, 0, V, 0-0, J),
+   U is K-V,
+   watch_trivial(H, J, L, C, U).
+
+/**
+ * weighted_maximum(W, L, O):
+ * The predicate succeeds in O with the maximum of the weighted
+ * sum from the values L and the weights W, and then succeeds
+ * for all corresponding labelings of L.
+ */
+% weighted_maximum(+list, +List, -Number)
+:- public weighted_maximum/3.
+weighted_maximum(R, L, O) :-
+   sat_find_start(R, L, K),
+   watch_add_vars(R, L, H, 0, V, 0-0, J),
+   sat_find_maximum(V, J, H, R, L, K, O),
+   U is O-V,
+   watch_trivial(H, J, L, >=, U),
+   labeling(L).
+
+/*****************************************************************/
+/* Branch and Bound                                              */
+/*****************************************************************/
+
+% sat_find_start(+List, +List, -Number)
+:- private sat_find_start/3.
+sat_find_start(R, L, K) :-
+   catch((random_labeling(L),
+      sys_weighted_sum(R, L, 0, F),
+      throw(sat_start_bound(F))),
+      sat_start_bound(K),
+      true).
+
+% sat_find_maximum(+Number, +Interval, +Var, +List, +List, +Number, -Number)
+:- private sat_find_maximum/7.
+sat_find_maximum(V, J, H, R, L, K, O) :-
+   catch((U is K-V,
+      watch_trivial(H, J, L, >, U),
+      random_labeling(L),
+      sys_weighted_sum(R, L, 0, F),
+      throw(sat_new_bound(F))),
+      sat_new_bound(P),
+      true), !,
+   sat_find_maximum(V, J, H, R, L, P, O).
+sat_find_maximum(_, _, _, _, _, K, K).
+
+/**
+ * sys_weighted_sum(R, L, S, T):
+ * The predicate succeeds in T with the scalar product
+ * of the weight R and the values L plus the number S.
+ */
+% sys_weighted_sum(+List, +List, +Number, -Number)
+:- private sys_weighted_sum/4.
+sys_weighted_sum([V|R], [B|L], S, T) :-
+   H is S+B*V,
+   sys_weighted_sum(R, L, H, T).
+sys_weighted_sum([], [], S, S).
 
 /*****************************************************************/
 /* Pseudo Booleans                                               */
@@ -65,6 +164,7 @@
  * interval P plus the estimated interval.
  */
 % watch_add_vars(+List, +List, +Var, +Number, -Number, +Interval, -Interval)
+:- private watch_add_vars/7.
 watch_add_vars(_, L, _, _, _, _, _) :- var(L),
    throw(error(instantiation_error, _)).
 watch_add_vars([V|R], [B|L], H, S, T, P, Q) :- var(B),
@@ -99,6 +199,7 @@ expr_value(0).
 expr_value(1).
 
 % expr_value_reverse(+Boolean)
+:- private expr_value_reverse/1.
 expr_value_reverse(1).
 expr_value_reverse(0).
 
@@ -107,6 +208,7 @@ expr_value_reverse(0).
 /*****************************************************************/
 
 % watch_trivial(+Vars, +Interval, +List, +Comparator, +Number)
+:- private watch_trivial/5.
 watch_trivial(H, J, _, C, U) :-
    watch_success(C, J, U), !, del_atts(H, pseudo).
 watch_trivial(_, J, _, C, U) :-
