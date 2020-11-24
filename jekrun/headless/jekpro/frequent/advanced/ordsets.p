@@ -111,14 +111,6 @@ ord_add(X, Y, R) :- ord_check(X), !,
 ord_add(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
-/**
- * ord_check(O):
- * The predicate succeeds if O is either nil or a cons cell.
- */
-:- private ord_check/1.
-ord_check([_|_]).
-ord_check([]).
-
 /*******************************************************************/
 /* Set Operations                                               */
 /*******************************************************************/
@@ -277,3 +269,15 @@ ord_disjoint(X, Y) :- ord_check(X),
    throw(error(type_error(list, Y), _)).
 ord_disjoint(X, _) :-
    throw(error(type_error(list, X), _)).
+
+/*******************************************************************/
+/* Helper                                                          */
+/*******************************************************************/
+
+/**
+ * ord_check(O):
+ * The predicate succeeds if O is either nil or a cons cell.
+ */
+:- private ord_check/1.
+ord_check([_|_]).
+ord_check([]).

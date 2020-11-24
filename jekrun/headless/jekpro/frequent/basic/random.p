@@ -56,6 +56,7 @@
 :- use_package(foreign(java/util)).
 
 :- module(random, []).
+:- use_module(library(basic/lists)).
 
 /****************************************************************/
 /* Knowledge Base Random Numbers                                */
@@ -224,6 +225,50 @@ add_random_keys(X, _, _) :-
 remove_keys([_-X|L], [X|R]) :-
    remove_keys(L, R).
 remove_keys([], []).
+
+/**
+ * random_member(X, L):
+ * random_member(G, X, L):
+ * The predicate succeeds in X with a randomly chosen element from the
+ * list L. The ternary predicate allows specifying a random generator G.
+ */
+% random_member(-Elem, +List)
+:- public random_member/2.
+random_member(X, L) :-
+   current_prolog_flag(sys_random, G),
+   random_member(G, X, L).
+
+% random_member(+Random, -Elem, +List)
+:- public random_member/3.
+random_member(G, X, L) :-
+   length(L, N),
+   random_next(G, N, I),
+   nth0(I, L, X).
+
+/**
+ * random_select(X, L, R):
+ * random_select(G, X, L, R):
+ * The predicate succeeds in X with a randomly chosen element from the
+ * list L and R being the remainder of the list. The ternary predicate
+ * allows specifying a random generator G.
+ */
+% random_select(-Elem, +List, -List)
+:- public random_select/3.
+random_select(X, L, R) :-
+   current_prolog_flag(sys_random, G),
+   random_select(G, X, L, R).
+
+% random_select(+Random, -Elem, +List, -List)
+:- public random_select/4.
+random_select(G, X, L, R) :- var(R), !,
+   length(L, N),
+   random_next(G, N, I),
+   nth0(I, L, X, R).
+random_select(G, X, L, R) :-
+   length(R, M),
+   N is M+1,
+   random_next(G, N, I),
+   nth0(I, L, X, R).
 
 /****************************************************************/
 /* New Object                                                   */
