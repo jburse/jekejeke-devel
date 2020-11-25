@@ -241,7 +241,8 @@ random_member(X, L) :-
 % random_member(+Random, -Elem, +List)
 :- public random_member/3.
 random_member(G, X, L) :-
-   length(L, N),
+   size(L, N),
+   N > 0,
    random_next(G, N, I),
    nth0(I, L, X).
 
@@ -261,11 +262,12 @@ random_select(X, L, R) :-
 % random_select(+Random, -Elem, +List, -List)
 :- public random_select/4.
 random_select(G, X, L, R) :- var(R), !,
-   length(L, N),
+   size(L, N),
+   N > 0,
    random_next(G, N, I),
    nth0(I, L, X, R).
 random_select(G, X, L, R) :-
-   length(R, M),
+   size(R, M),
    N is M+1,
    random_next(G, N, I),
    nth0(I, L, X, R).
@@ -278,5 +280,27 @@ random_select(G, X, L, R) :-
  * genref(O):
  * The predicate succeeds in O with a new object.
  */
+% genref(-Object)
 :- public genref/1.
 :- foreign_constructor(genref/1, 'Object', new).
+
+/*******************************************************************/
+/* Helper                                                          */
+/*******************************************************************/
+
+% size(+List, -Integer)
+:- private size/2.
+size(L, N) :-
+   size2(L, 0, N).
+
+% size2(+List, +Integer, -Integer)
+:- private size2/3.
+size2(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+size2([], N, R) :- !,
+   R = N.
+size2([_|L], N, M) :- !,
+   H is N+1,
+   size2(L, H, M).
+size2(X, _, _) :-
+   throw(error(type_error(list, X), _)).

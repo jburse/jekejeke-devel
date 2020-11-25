@@ -71,9 +71,14 @@ reverse(X, Y) :-
 
 % reverse2(+List, +List, -List)
 :- private reverse2/3.
-reverse2([], X, X).
-reverse2([X|Y], Z, T) :-
+reverse2(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+reverse2([], X, R) :- !,
+   R = X.
+reverse2([X|Y], Z, T) :- !,
    reverse2(Y, [X|Z], T).
+reverse2(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
  * member(E, L):
@@ -94,12 +99,12 @@ member2([Y|Z], X, _) :- member2(Z, X, Y).
  */
 % select(-Elem, +List, -List)
 :- public select/3.
-select(Z, [X|Y], T) :- select2(Y, X, Z, T).
+select(X, [Y|Z], T) :- select2(Z, X, Y, T).
 
 % select2(+List, +Elem, -Elem, -List)
 :- private select2/4.
 select2(Y, X, X, Y).
-select2([X|Y], W, Z, [W|T]) :- select2(Y, X, Z, T).
+select2([Y|Z], X, W, [W|T]) :- select2(Z, X, Y, T).
 
 /**
  * last(L, E):
@@ -107,12 +112,12 @@ select2([X|Y], W, Z, [W|T]) :- select2(Y, X, Z, T).
  */
 % last(+List, -Elem)
 :- public last/2.
-last([X|Y], Z) :- last2(Y, X, Z).
+last([X|Y], Z) :- last2(Y, Z, X).
 
 % last2(+List, +Elem, -Elem)
 :- private last2/3.
 last2([], X, X).
-last2([X|Y], _, Z) :- last2(Y, X, Z).
+last2([X|Y], Z, _) :- last2(Y, Z, X).
 
 /**
  * last(L, E, R):
@@ -121,12 +126,12 @@ last2([X|Y], _, Z) :- last2(Y, X, Z).
  */
 % last(+List, -Elem, -List)
 :- public last/3.
-last([X|Y], Z, T) :- last2(Y, X, Z, T).
+last([X|Y], Z, T) :- last2(Y, Z, X, T).
 
 % last2(+List, +Elem, -Elem, -List)
 :- private last2/4.
 last2([], X, X, []).
-last2([X|Y], U, Z, [U|T]) :- last2(Y, X, Z, T).
+last2([X|Y], Z, U, [U|T]) :- last2(Y, Z, X, T).
 
 /**
  * length(L, N):
