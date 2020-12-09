@@ -74,27 +74,6 @@ public final class ForeignPivot {
     }
 
     /**
-     * <p>Add a pivot value.</p>
-     *
-     * @param inter The interpreter.
-     * @param pivot The pivot.
-     * @param val   The value.
-     */
-    public static void sysPivotAdd(Interpreter inter,
-                                   SetEntry<ListArray<Object>> pivot,
-                                   Object val) {
-        Engine en = inter.getEngine();
-        Display ref = AbstractTerm.getDisplay(val);
-        val = AbstractTerm.getSkel(val);
-        ListArray<Object> help = pivot.value;
-        if (help == null) {
-            help = new ListArray<Object>();
-            pivot.value = help;
-        }
-        help.add(AbstractSkel.copySkel(val, ref, en));
-    }
-
-    /**
      * <p>List the pivot.</p>
      *
      * @param co    The call out.

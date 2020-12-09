@@ -74,6 +74,7 @@
 :- use_module(library(advanced/variant)).
 :- use_module(library(advanced/pivot)).
 :- use_module(library(advanced/revolve)).
+:- use_module(library(runtime/collector)).
 
 /**
  * limit(C, G):
@@ -179,15 +180,6 @@ order_by(S, Goal) :-
    sys_revolve_pair(R, W-P),
    sys_pivot_list(P, W-J).
 
-% sys_revolve_order(+Goal, +List, +Ref, +Term)
-:- private sys_revolve_order/4.
-:- meta_predicate sys_revolve_order(0, ?, ?, ?).
-sys_revolve_order(G, W, R, J) :-
-   sys_goal_kernel(G, B),
-   B,
-   sys_revolve_lookup(R, W, P),
-   sys_pivot_add(P, W-J).
-
 % sys_revolve_order(+Goal, +List, +Ref, +Term, +Comparator)
 :- private sys_revolve_order/5.
 :- meta_predicate sys_revolve_order(0, ?, ?, ?, ?).
@@ -196,6 +188,15 @@ sys_revolve_order(Goal, W, R, J, C) :-
    B,
    sys_revolve_lookup(R, W, P),
    sys_pivot_put(P, C, W-J).
+
+% sys_revolve_order(+Goal, +List, +Ref, +Term)
+:- private sys_revolve_order/4.
+:- meta_predicate sys_revolve_order(0, ?, ?, ?).
+sys_revolve_order(G, W, R, J) :-
+   sys_goal_kernel(G, B),
+   B,
+   sys_revolve_lookup(R, W, P),
+   sys_pivot_add(P, W-J).
 
 /**
  * sys_order_template(L, R):

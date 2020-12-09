@@ -314,6 +314,8 @@ put_code/2	stream/char
 random/1	basic/random
 random/2	basic/random
 random32/1	basic/random
+random_member/2	basic/random
+random_member/3	basic/random
 random_new/1	basic/random
 random_new/2	basic/random
 random_next/2	basic/random
@@ -321,6 +323,8 @@ random_next/3	basic/random
 random_next32/2	basic/random
 random_permutation/2	basic/random
 random_permutation/3	basic/random
+random_select/3	basic/random
+random_select/4	basic/random
 rational/2	standard/approx
 rationalize/2	standard/approx
 rationalize32/2	standard/approx

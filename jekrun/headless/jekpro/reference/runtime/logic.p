@@ -170,7 +170,6 @@ forall(A, B) :- \+ (A, \+ B).
 :- set_predicate_property(findall/3, meta_predicate(findall(?, 0, ?))).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(findall/3, sys_meta_predicate(C)).
-%:- special(findall/3, 'SpecialLogic', 0).
 findall(X, G, L) :-
    sys_pivot_new(P),
    (G, sys_pivot_add(P, X), fail; true),
@@ -181,7 +180,6 @@ findall(X, G, L) :-
 :- set_predicate_property(findall/4, meta_predicate(findall(?, 0, ?, ?))).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(findall/4, sys_meta_predicate(C)).
-% :- special(findall/4, 'SpecialLogic', 1).
 findall(X, G, L, E) :-
    sys_pivot_new(P),
    (G, sys_pivot_add(P, X), fail; true),

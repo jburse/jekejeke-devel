@@ -42,13 +42,6 @@
 :- module(pivot, []).
 
 /**
- * sys_pivot_new(P):
- * The predicate succeeds in P with a new pivot.
- */
-% sys_pivot_new(-Pivot)
-:- foreign_constructor(sys_pivot_new/1, 'SetEntry', new).
-
-/**
  * sys_pivot_set(P, O):
  * The predicate succeeds setting the pivot P to O.
  */
@@ -63,14 +56,6 @@
 % sys_pivot_get(+Pivot, -Term)
 :- foreign(sys_pivot_get/2, 'ForeignPivot',
       sysPivotGet('SetEntry')).
-
-/**
- * sys_pivot_add(P, O):
- * The predicate succeeds extending the pivot P by O.
- */
-% sys_pivot_add(+Pivot, +Term)
-:- foreign(sys_pivot_add/2, 'ForeignPivot',
-      sysPivotAdd('Interpreter', 'SetEntry', 'Object')).
 
 /**
  * sys_pivot_list(R, U):
