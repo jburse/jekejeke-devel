@@ -99,7 +99,7 @@ bagof(J, Goal, L) :-
    sys_revolve_new(R),
    (sys_revolve_bag(Goal, W, R, J), fail; true),
    sys_revolve_pair(R, W-P),
-   findall(W-J, sys_pivot_list(P, W-J), H),
+   sys_pivot_collect(P, [], H),
    sys_strip_list(H, W, L).
 
 % bagof(+Template, +QuantGoal, -List, +List)
@@ -111,7 +111,7 @@ bagof(J, Goal, L, O) :-
    sys_revolve_new(C, R),
    (sys_revolve_bag(Goal, W, R, J), fail; true),
    sys_revolve_pair(R, C, W-P),
-   findall(W-J, sys_pivot_list(P, W-J), H),
+   sys_pivot_collect(P, [], H),
    sys_strip_list(H, W, L).
 
 /**
@@ -130,7 +130,7 @@ setof(J, Goal, L) :-
    sys_revolve_new(R),
    (sys_revolve_set(Goal, W, R, J), fail; true),
    sys_revolve_pair(R, W-P),
-   findall(W-J, sys_pivot_enum(P, W-J), H),
+   sys_pivot_gather(P, [], H),
    sys_strip_list(H, W, L).
 
 % setof(+Template, +QuantGoal, -List, +List)
@@ -142,7 +142,7 @@ setof(J, Goal, L, O) :-
    sys_revolve_new(C, R),
    (sys_revolve_set(Goal, W, R, J), fail; true),
    sys_revolve_pair(R, C, W-P),
-   findall(W-J, sys_pivot_enum(P, W-J), H),
+   sys_pivot_gather(P, [], H),
    sys_strip_list(H, W, L).
 
 /**********************************************************/

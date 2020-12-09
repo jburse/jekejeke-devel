@@ -43,6 +43,10 @@
 :- public sys_pivot_new/1.
 :- foreign_constructor(sys_pivot_new/1, 'SetEntry', new).
 
+/*****************************************************************/
+/* List                                                          */
+/*****************************************************************/
+
 /**
  * sys_pivot_add(P, O):
  * The predicate succeeds extending the pivot P by O.
@@ -59,6 +63,28 @@
 :- public sys_pivot_collect/3.
 :- foreign(sys_pivot_collect/3, 'ForeignCollector',
       sysPivotCollect('Interpreter', 'SetEntry', 'Object')).
+
+/*****************************************************************/
+/* Tree                                                          */
+/*****************************************************************/
+
+/**
+ * sys_pivot_put(P, O):
+ * The predicate succeeds extending the pivot P by O. The
+ * predicate fails if O is already present in P.
+ */
+% sys_pivot_put(+Pivot, +Term)
+:- public sys_pivot_put/2.
+:- foreign(sys_pivot_put/2, 'ForeignCollector',
+      sysPivotPut('Interpreter', 'SetEntry', 'Object')).
+
+/**
+ * sys_pivot_gather(P, E, L):
+ * The predicate succceeds in L with the elements of P ending in E.
+ */
+:- public sys_pivot_gather/3.
+:- foreign(sys_pivot_gather/3, 'ForeignCollector',
+      sysPivotGather('Interpreter', 'SetEntry', 'Object')).
 
 
 

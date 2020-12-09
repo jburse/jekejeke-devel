@@ -103,33 +103,6 @@ public final class ForeignPivot {
      *
      * @param inter The interpreter.
      * @param pivot The pivot.
-     * @param val   The value.
-     */
-    public static boolean sysPivotPut(Interpreter inter,
-                                      SetEntry<AbstractSet<Object>> pivot,
-                                      Object val) {
-        Engine en = inter.getEngine();
-        Display ref = AbstractTerm.getDisplay(val);
-        val = AbstractTerm.getSkel(val);
-        AbstractSet<Object> help = pivot.value;
-        if (help == null) {
-            help = new SetTree<Object>(AbstractSkel.DEFAULT);
-            pivot.value = help;
-        }
-        val = AbstractSkel.copySkel(val, ref, en);
-        if (help.getEntry(val) == null) {
-            help.add(val);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Put a pivot value.</p>
-     *
-     * @param inter The interpreter.
-     * @param pivot The pivot.
      * @param el    The variant comparator.
      * @param val   The value.
      */

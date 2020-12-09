@@ -4,7 +4,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.runtime.ForeignCollector;
 import jekpro.tools.term.AbstractTerm;
 
 /**
@@ -179,7 +179,7 @@ public abstract class AbstractProperty<T> {
             Object elem = molecs[i];
             Object val = AbstractTerm.getSkel(elem);
             Display ref = AbstractTerm.getDisplay(elem);
-            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t4, d2, en);
         }
     }
