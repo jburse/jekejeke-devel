@@ -13,7 +13,7 @@ import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
-import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.runtime.ForeignCollector;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -347,12 +347,12 @@ public final class SpecialVars extends AbstractSpecial {
             Display ref2 = AbstractTerm.getDisplay(elem2);
             Object t4 = en.skel;
             Display d2 = en.display;
-            SpecialLogic.pairValue(en.store.foyer.CELL_EQUAL,
+            ForeignCollector.pairValue(en.store.foyer.CELL_EQUAL,
                     new SkelAtom(entry.value), Display.DISPLAY_CONST,
                     val2, ref2, en);
             val2 = en.skel;
             ref2 = en.display;
-            SpecialLogic.pairValue(en.store.foyer.CELL_CONS,
+            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
                     val2, ref2, t4, d2, en);
         }
     }
