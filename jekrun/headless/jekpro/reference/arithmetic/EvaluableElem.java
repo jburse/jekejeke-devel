@@ -530,8 +530,8 @@ public final class EvaluableElem extends AbstractSpecial {
     /**
      * <p>Power the two Prolog number.</p>
      *
-     * @param m The first operand.
-     * @param x The second operand.
+     * @param m The base number.
+     * @param x The exponent number.
      * @return The first integer raised to the power of the second integer.
      * @throws ArithmeticException Illegal value.
      * @throws EngineMessage Not a Prolog number.

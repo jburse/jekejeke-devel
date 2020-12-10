@@ -339,8 +339,8 @@ public final class SpecialCompare extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 Number[] res = new Number[2];
                 int v = a.intValue();
-                res[0] = TermAtomic.normBigInteger(floorDiv(v, u));
-                res[1] = Integer.valueOf(floorMod(v, u));
+                res[0] = TermAtomic.normBigInteger(div(v, u));
+                res[1] = Integer.valueOf(mod(v, u));
                 return res;
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
@@ -348,7 +348,7 @@ public final class SpecialCompare extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 res = new Number[2];
-                BigInteger[] res2 = floorDivMod(TermAtomic.widenBigInteger(a), p);
+                BigInteger[] res2 = divMod(TermAtomic.widenBigInteger(a), p);
                 res[0] = TermAtomic.normBigInteger(res2[0]);
                 res[1] = TermAtomic.normBigInteger(res2[1]);
                 return res;
@@ -360,7 +360,7 @@ public final class SpecialCompare extends AbstractSpecial {
                 res = new Number[2];
                 float g1 = a.floatValue();
                 res[0] = EvaluableRound.toInteger((float)Math.floor(g1 / f));
-                res[1] = TermAtomic.makeFloat(floorMod(g1,f));
+                res[1] = TermAtomic.makeFloat(mod(g1,f));
                 return res;
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
@@ -370,7 +370,7 @@ public final class SpecialCompare extends AbstractSpecial {
                 res = new Number[2];
                 double e1 = a.doubleValue();
                 res[0] = EvaluableRound.toInteger(Math.floor(e1 / d));
-                res[1] = TermAtomic.makeDouble(floorMod(e1,d));
+                res[1] = TermAtomic.makeDouble(mod(e1,d));
                 return res;
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:
@@ -389,14 +389,18 @@ public final class SpecialCompare extends AbstractSpecial {
         }
     }
 
+    /*******************************************************************/
+    /* int                                                             */
+    /*******************************************************************/
+
     /**
-     * <p>Compute the floor div.</p>
+     * <p>Compute the div.</p>
      *
      * @param v The numerator.
      * @param u The denumerator.
-     * @return The floor div.
+     * @return The div.
      */
-    public static long floorDiv(int v, int u) {
+    public static long div(int v, int u) {
         if ((v < 0) != (u < 0)) {
             int res = v % u;
             long h = (long) v / u;
@@ -411,13 +415,13 @@ public final class SpecialCompare extends AbstractSpecial {
     }
 
     /**
-     * <p>Compute the floor mod.</p>
+     * <p>Compute the mod.</p>
      *
      * @param v The numerator.
      * @param u The denumerator.
-     * @return The floor div.
+     * @return The mod.
      */
-    public static int floorMod(int v, int u) {
+    public static int mod(int v, int u) {
         if ((v < 0) != (u < 0)) {
             int res = v % u;
             if (res != 0) {
@@ -430,54 +434,18 @@ public final class SpecialCompare extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Compute the floor div.</p>
-     *
-     * @param v The numerator.
-     * @param u The denumerator.
-     * @return The floor div.
-     */
-    public static BigInteger floorDiv(BigInteger v, BigInteger u) {
-        if ((v.signum() < 0) != (u.signum() < 0)) {
-            BigInteger[] res = v.divideAndRemainder(u);
-            if (res[1].signum() != 0) {
-                return res[0].subtract(BigInteger.ONE);
-            } else {
-                return res[0];
-            }
-        } else {
-            return v.divide(u);
-        }
-    }
+    /*******************************************************************/
+    /* BigInteger                                                      */
+    /*******************************************************************/
 
     /**
-     * <p>Compute the floor mod.</p>
+     * <p>Compute the div.</p>
      *
      * @param v The numerator.
      * @param u The denumerator.
-     * @return The floor mod.
+     * @return The div and mod.
      */
-    public static BigInteger floorMod(BigInteger v, BigInteger u) {
-        if ((v.signum() < 0) != (u.signum() < 0)) {
-            BigInteger res = v.remainder(u);
-            if (res.signum() != 0) {
-                return res.add(u);
-            } else {
-                return res;
-            }
-        } else {
-            return v.remainder(u);
-        }
-    }
-
-    /**
-     * <p>Compute the floor div.</p>
-     *
-     * @param v The numerator.
-     * @param u The denumerator.
-     * @return The floor div.
-     */
-    public static BigInteger[] floorDivMod(BigInteger v, BigInteger u) {
+    private static BigInteger[] divMod(BigInteger v, BigInteger u) {
         if ((v.signum() < 0) != (u.signum() < 0)) {
             BigInteger[] res = v.divideAndRemainder(u);
             if (res[1].signum() != 0) {
@@ -492,14 +460,18 @@ public final class SpecialCompare extends AbstractSpecial {
         }
     }
 
+    /*******************************************************************/
+    /* float                                                           */
+    /*******************************************************************/
+
     /**
-     * <p>Compute the floor mod.</p>
+     * <p>Compute the mod.</p>
      *
      * @param v The numerator.
      * @param u The denumerator.
-     * @return The floor div.
+     * @return The mod.
      */
-    public static float floorMod(float v, float u) {
+    public static float mod(float v, float u) {
         if ((v < 0) != (u < 0)) {
             float res = v % u;
             if (res != 0) {
@@ -512,14 +484,18 @@ public final class SpecialCompare extends AbstractSpecial {
         }
     }
 
+    /*******************************************************************/
+    /* double                                                          */
+    /*******************************************************************/
+
     /**
-     * <p>Compute the floor mod.</p>
+     * <p>Compute the mod.</p>
      *
      * @param v The numerator.
      * @param u The denumerator.
-     * @return The floor div.
+     * @return The mod.
      */
-    public static double floorMod(double v, double u) {
+    public static double mod(double v, double u) {
         if ((v < 0) != (u < 0)) {
             double res = v % u;
             if (res != 0) {
@@ -532,61 +508,20 @@ public final class SpecialCompare extends AbstractSpecial {
         }
     }
 
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
     public static void main(String[] args) {
-        /*
-        int x=7;
-        int y=5;
-        System.out.println("x="+x+", y="+y+", floorDiv(x,y)="+floorDiv(x,y));
-        System.out.println("x="+x+", y="+y+", floorMod(x,y)="+floorMod(x,y));
-        x=-7;
-        y=5;
-        System.out.println("x="+x+", y="+y+", floorDiv(x,y)="+floorDiv(x,y));
-        System.out.println("x="+x+", y="+y+", floorMod(x,y)="+floorMod(x,y));
-        x=7;
-        y=-5;
-        System.out.println("x="+x+", y="+y+", floorDiv(x,y)="+floorDiv(x,y));
-        System.out.println("x="+x+", y="+y+", floorMod(x,y)="+floorMod(x,y));
-        x=-7;
-        y=-5;
-        System.out.println("x="+x+", y="+y+", floorDiv(x,y)="+floorDiv(x,y));
-        System.out.println("x="+x+", y="+y+", floorMod(x,y)="+floorMod(x,y));
-        */
-        /*
-        BigInteger x = BigInteger.valueOf(7);
-        BigInteger y = BigInteger.valueOf(5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDiv(x, y));
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorMod(x, y));
-        x = BigInteger.valueOf(7);
-        y = BigInteger.valueOf(-5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDiv(x, y));
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorMod(x, y));
-        x = BigInteger.valueOf(-7);
-        y = BigInteger.valueOf(5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDiv(x, y));
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorMod(x, y));
-        x = BigInteger.valueOf(-7);
-        y = BigInteger.valueOf(-5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDiv(x, y));
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorMod(x, y));
-        */
-        /*
-        BigInteger x = BigInteger.valueOf(7);
-        BigInteger y = BigInteger.valueOf(5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDivMod(x, y)[0]);
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorDivMod(x, y)[1]);
-        x = BigInteger.valueOf(7);
-        y = BigInteger.valueOf(-5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDivMod(x, y)[0]);
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorDivMod(x, y)[1]);
-        x = BigInteger.valueOf(-7);
-        y = BigInteger.valueOf(5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDivMod(x, y)[0]);
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorDivMod(x, y)[1]);
-        x = BigInteger.valueOf(-7);
-        y = BigInteger.valueOf(-5);
-        System.out.println("x=" + x + ", y=" + y + ", floorDiv(x,y)=" + floorDivMod(x, y)[0]);
-        System.out.println("x=" + x + ", y=" + y + ", floorMod(x,y)=" + floorDivMod(x, y)[1]);
-        */
+        int x = SpecialCompare.mod(Integer.MIN_VALUE, Integer.MIN_VALUE);
+        System.out.println("mod("+Integer.MIN_VALUE+","+Integer.MIN_VALUE+")=" + x);
+        x = (int)SpecialCompare.div(Integer.MIN_VALUE, 77);
+        System.out.println("div("+Integer.MIN_VALUE+",77)=" + x);
+        x = SpecialCompare.mod(Integer.MIN_VALUE, 77);
+        System.out.println("mod("+Integer.MIN_VALUE+",77)=" + x);
     }
+    */
 
 }

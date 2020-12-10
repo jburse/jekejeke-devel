@@ -5,6 +5,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
@@ -97,7 +98,7 @@ public final class SupplementElem extends AbstractSpecial {
                     Number beta = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = modinv(alfa, beta);
+                    en.skel = modInverse(alfa, beta);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 case EVALUABLE_MODPOW:
@@ -121,7 +122,7 @@ public final class SupplementElem extends AbstractSpecial {
                     Number gamma = SpecialEval.derefAndCastInteger(en.skel, d);
                     if (multi)
                         d.remTab(en);
-                    en.skel = intModPow(alfa, beta, gamma);
+                    en.skel = modPow(alfa, beta, gamma);
                     en.display = Display.DISPLAY_CONST;
                     return;
                 default:
@@ -166,14 +167,48 @@ public final class SupplementElem extends AbstractSpecial {
     /**
      * <p>Return the modpow.</p>
      *
-     * @param m The first number.
-     * @param n The second number.
+     * @param m The base number.
+     * @param n The modulus number.
      * @return The modinv.
      */
-    private static Number modinv(Number m, Number n) {
-        return TermAtomic.normBigInteger(
-                TermAtomic.widenBigInteger(m).modInverse(
-                        TermAtomic.widenBigInteger(n)));
+    private static Number modInverse(Number m, Number n) {
+        if (m instanceof Integer && n instanceof Integer) {
+            int x = m.intValue();
+            int y = n.intValue();
+            return Integer.valueOf(modInverse(x, y));
+        } else {
+            return TermAtomic.normBigInteger(
+                    TermAtomic.widenBigInteger(m).modInverse(
+                            TermAtomic.widenBigInteger(n)));
+        }
+    }
+
+    /**
+     * <p>Return the mod inverse of two integers.</p>
+     *
+     * @param a The base number, positive.
+     * @param b1 The modulus number.
+     * @return The mod inverse.
+     */
+    private static int modInverse(int a, int b1) {
+        if (b1 <= 0)
+            throw new ArithmeticException("BigInteger: modulus not positive");
+        a = SpecialCompare.mod(a, b1);
+        int b = b1;
+        int x = 1;
+        int x1 = 0;
+        while (b != 0) {
+            int h = x1;
+            x1 = x - a / b * x1;
+            x = h;
+
+            h = b;
+            b = a % b;
+            a = h;
+        }
+        if (a != 1)
+            throw new ArithmeticException("BigInteger not invertible.");
+        return SpecialCompare.mod(x, b1);
     }
 
     /********************************************************************/
@@ -184,16 +219,88 @@ public final class SupplementElem extends AbstractSpecial {
     /**
      * <p>Return the modpow.</p>
      *
-     * @param m The first number.
-     * @param n The second number.
-     * @param k The third number.
+     * @param m The base number.
+     * @param n The exponent number.
+     * @param k The modulus number.
      * @return The modpow.
      */
-    private static Number intModPow(Number m, Number n, Number k) {
-           return TermAtomic.normBigInteger(
+    private static Number modPow(Number m, Number n, Number k) {
+        int y;
+        if (n instanceof Integer && (y = n.intValue()) != Integer.MIN_VALUE &&
+                m instanceof Integer && k instanceof Integer) {
+            int x = m.intValue();
+            int z = k.intValue();
+            return Integer.valueOf(modPow(x, y, z));
+        } else {
+            return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).modPow(
                             TermAtomic.widenBigInteger(n),
                             TermAtomic.widenBigInteger(k)));
+        }
     }
+
+    /**
+     * <p>Compute the power.</p>
+     *
+     * @param m The base,.
+     * @param n1 The exponent.
+     * @return The exponentiation.
+     */
+    private static int modPow(int m, int n1, int k) {
+        if (k <= 0)
+            throw new ArithmeticException("BigInteger: modulus not positive");
+        if (k == 1)
+            return 0;
+        int n = Math.abs(n1);
+        int r = 1;
+        while (n != 0) {
+            if ((n & 1) != 0)
+                r = mod(r * (long) m, k);
+            n >>= 1;
+            if (n != 0)
+                m = mod(m * (long) m, k);
+        }
+        return (n1 >= 0 ? r : modInverse(r, k));
+    }
+
+    /*******************************************************************/
+    /* long                                                            */
+    /*******************************************************************/
+
+    /**
+     * <p>Compute the mod.</p>
+     *
+     * @param v The numerator.
+     * @param u The denumerator.
+     * @return The mod.
+     */
+    private static int mod(long v, int u) {
+        if ((v < 0) != (u < 0)) {
+            int res = (int) (v % u);
+            if (res != 0) {
+                return res + u;
+            } else {
+                return res;
+            }
+        } else {
+            return (int) (v % u);
+        }
+    }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        int x = modInverse(42, 79);
+        System.out.println("modInverse(42,79)=" + x);
+        x = modInverse(1, 69);
+        System.out.println("modInverse(1,69)=" + x);
+        x = modInverse(42, 77);
+        System.out.println("modInverse(42,77)=" + x);
+    }
+    */
 
 }

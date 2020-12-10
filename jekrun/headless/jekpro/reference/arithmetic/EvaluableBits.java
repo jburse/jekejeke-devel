@@ -69,7 +69,7 @@ public final class EvaluableBits extends AbstractSpecial {
      * <p>The result is passed via the skel and display of the engine.</p>
      *
      * @param en The engine.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     public final void moniEvaluate(Engine en)
@@ -378,13 +378,11 @@ public final class EvaluableBits extends AbstractSpecial {
      * @return The gcd.
      */
     private static Number gcd(Number m, Number n) {
-        if (m instanceof Integer && n instanceof Integer) {
-            int x = binaryGcd(Math.abs(m.intValue()), Math.abs(n.intValue()));
-            if (x != Integer.MIN_VALUE) {
-                return Integer.valueOf(x);
-            } else {
-                return BigInteger.valueOf(-(long) x);
-            }
+        int x;
+        int y;
+        if (m instanceof Integer && (x = m.intValue()) != Integer.MIN_VALUE &&
+                n instanceof Integer && (y = n.intValue()) != Integer.MIN_VALUE) {
+            return Integer.valueOf(gcd(Math.abs(x), Math.abs(y)));
         } else {
             return TermAtomic.normBigInteger(
                     TermAtomic.widenBigInteger(m).gcd(
@@ -395,34 +393,17 @@ public final class EvaluableBits extends AbstractSpecial {
     /**
      * <p>Return the gcd of two integers.</p>
      *
-     * @param m The first number.
-     * @param n The second number.
-     * @return The gcd.
+     * @param a The first number, positive.
+     * @param b The second number, positive.
+     * @return The gcd, positive.
      */
-    private static int binaryGcd(int m, int n) {
-        if (n == 0)
-            return m;
-        if (m == 0)
-            return n;
-
-        // Right shift a & b till their last bits equal to 1.
-        int aZeros = Integer.numberOfTrailingZeros(m);
-        int bZeros = Integer.numberOfTrailingZeros(n);
-        m >>>= aZeros;
-        n >>>= bZeros;
-
-        int t = (aZeros < bZeros ? aZeros : bZeros);
-
-        while (m != n) {
-            if ((m + 0x80000000) > (n + 0x80000000)) {  // a > b as unsigned
-                m -= n;
-                m >>>= Integer.numberOfTrailingZeros(m);
-            } else {
-                n -= m;
-                n >>>= Integer.numberOfTrailingZeros(n);
-            }
+    private static int gcd(int a, int b) {
+        while (b != 0) {
+            int h = b;
+            b = a % b;
+            a = h;
         }
-        return m << t;
+        return a;
     }
 
     /********************************************************************/
@@ -444,9 +425,9 @@ public final class EvaluableBits extends AbstractSpecial {
             int y = Math.abs(x);
             int k = 31 - Integer.numberOfLeadingZeros(y);
             if (x < 0 && Integer.bitCount(y) == 1) {
-               return k - 1;
+                return k - 1;
             } else {
-               return k;
+                return k;
             }
         } else {
             return ((BigInteger) m).bitLength() - 1;
@@ -492,5 +473,21 @@ public final class EvaluableBits extends AbstractSpecial {
             return ((BigInteger) m).bitCount();
         }
     }
+
+    /**
+     * <p>Some testing.</p>
+     *
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        int x = gcd(42, 79);
+        System.out.println("gdc(42,79)=" + x);
+        x = gcd(42, 77);
+        System.out.println("gdc(42,77)=" + x);
+        x = gcd(42, 77);
+        System.out.println("gdc(42,77)=" + x);
+    }
+    */
 
 }

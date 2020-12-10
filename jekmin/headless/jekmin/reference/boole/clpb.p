@@ -285,8 +285,10 @@ count(L, _) :-
 % sat_count(+Boolean, -Integer)
 :- public sat_count/2.
 sat_count(E, N) :-
-   findall(M, (term_variables(E, L), sat(E), count(L, M)), R),
-   sys_sat_sum(R, N).
+   term_variables(E, L),
+   sat(E), !,
+   count(L, N).
+sat_count(_, 0).
 
 /**
  * sys_sat_sum(L, N):

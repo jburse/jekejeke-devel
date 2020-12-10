@@ -539,14 +539,14 @@ public final class EvaluableRound extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
-                return TermAtomic.normBigInteger(SpecialCompare.floorDiv(v, u));
+                return TermAtomic.normBigInteger(SpecialCompare.div(v, u));
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger q = TermAtomic.widenBigInteger(a);
-                return TermAtomic.normBigInteger(SpecialCompare.floorDiv(q, p));
+                return TermAtomic.normBigInteger(div(q, p));
             case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
@@ -594,28 +594,28 @@ public final class EvaluableRound extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
-                return Integer.valueOf(SpecialCompare.floorMod(v, u));
+                return Integer.valueOf(SpecialCompare.mod(v, u));
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 BigInteger q = TermAtomic.widenBigInteger(a);
-                return TermAtomic.normBigInteger(SpecialCompare.floorMod(q, p));
+                return TermAtomic.normBigInteger(mod(q, p));
             case SpecialCompare.NUM_FLOAT:
                 float f = b.floatValue();
                 if (f == 0.0f)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 float g = a.floatValue();
-                return TermAtomic.makeFloat(SpecialCompare.floorMod(g, f));
+                return TermAtomic.makeFloat(SpecialCompare.mod(g, f));
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
                 if (d == 0.0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 double e = a.doubleValue();
-                return TermAtomic.makeDouble(SpecialCompare.floorMod(e, d));
+                return TermAtomic.makeDouble(SpecialCompare.mod(e, d));
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:
                 BigDecimal h = TermAtomic.widenBigDecimal(b);
@@ -714,40 +714,48 @@ public final class EvaluableRound extends AbstractSpecial {
                 Double.MIN_EXPONENT) - DOUBLE_SNIF_WIDTH;
     }
 
+    /*******************************************************************/
+    /* BigInteger                                                      */
+    /*******************************************************************/
+
     /**
-     * <p>Some testing.</p>
+     * <p>Compute the div.</p>
      *
-     * @param args Not used.
+     * @param v The numerator.
+     * @param u The denumerator.
+     * @return The div.
      */
-    /*
-    public static void main(String[] args) {
-        double x=19.0; double y=12.0;
-        System.out.println("("+x+"%"+y+")="+(x%y));
-        x=19.0; y=-12.0;
-        System.out.println("("+x+"%"+y+")="+(x%y));
-        x=-19.0; y=12.0;
-        System.out.println("("+x+"%"+y+")="+(x%y));
-        x=-19.0; y=-12.0;
-        System.out.println("("+x+"%"+y+")="+(x%y));
-
-        System.out.println();
-
-        x=19.0; y=12.0;
-        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
-        x=19.0; y=-12.0;
-        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
-        x=-19.0; y=12.0;
-        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
-        x=-19.0; y=-12.0;
-        System.out.println("IEEEremainder("+x+","+y+")="+Math.IEEEremainder(x,y));
-
-        int x=Integer.MIN_VALUE;
-        int y=-1;
-        System.out.println("x="+x+", y="+y+", x%y="+x%y);
-        System.out.println("x="+x+", y="+y+", x%y="+((long)x)%y);
-        System.out.println("x="+x+", y="+y+", x/y="+x/y);
-        System.out.println("x="+x+", y="+y+", x/y="+((long)x)/y);
+    private static BigInteger div(BigInteger v, BigInteger u) {
+        if ((v.signum() < 0) != (u.signum() < 0)) {
+            BigInteger[] res = v.divideAndRemainder(u);
+            if (res[1].signum() != 0) {
+                return res[0].subtract(BigInteger.ONE);
+            } else {
+                return res[0];
+            }
+        } else {
+            return v.divide(u);
+        }
     }
-    */
+
+    /**
+     * <p>Compute the mod.</p>
+     *
+     * @param v The numerator.
+     * @param u The denumerator.
+     * @return The mod.
+     */
+    private static BigInteger mod(BigInteger v, BigInteger u) {
+        if ((v.signum() < 0) != (u.signum() < 0)) {
+            BigInteger res = v.remainder(u);
+            if (res.signum() != 0) {
+                return res.add(u);
+            } else {
+                return res;
+            }
+        } else {
+            return v.remainder(u);
+        }
+    }
 
 }
