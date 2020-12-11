@@ -6,6 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
 
@@ -118,9 +119,8 @@ public final class FlagFactoryTrace extends AbstractFlag<Engine> {
                 default:
                     throw new IllegalArgumentException("illegal flag");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
