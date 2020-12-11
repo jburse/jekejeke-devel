@@ -77,8 +77,7 @@ public final class SpecialSyntax extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SYNTAX:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!en.unifyTerm(temp[0], ref,
-                        SpecialSyntax.currentSyntax(en), Display.DISPLAY_CONST))
+                if (!en.unifyTerm(SpecialSyntax.currentSyntax(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_SYNTAX_CHK:
@@ -99,7 +98,7 @@ public final class SpecialSyntax extends AbstractSpecial {
                 SpecialOper.operToProperties(oper, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

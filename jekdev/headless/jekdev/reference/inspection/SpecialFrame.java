@@ -92,7 +92,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperties(frame, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -106,7 +106,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperty(frame, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(temp[2], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

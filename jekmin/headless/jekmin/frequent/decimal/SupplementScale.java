@@ -6,6 +6,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -169,9 +170,8 @@ public class SupplementScale extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

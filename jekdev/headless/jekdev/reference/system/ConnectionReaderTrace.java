@@ -68,7 +68,6 @@ public final class ConnectionReaderTrace extends ConnectionReader {
         return protocol;
     }
 
-
     /**
      * <p>Read a character.</p>
      *

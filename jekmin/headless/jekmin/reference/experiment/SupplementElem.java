@@ -7,6 +7,7 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
@@ -128,8 +129,8 @@ public final class SupplementElem extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
-        } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -175,6 +176,9 @@ public final class SupplementElem extends AbstractSpecial {
         if (m instanceof Integer && n instanceof Integer) {
             int x = m.intValue();
             int y = n.intValue();
+            if (y <= 0)
+                throw new ArithmeticException("BigInteger: modulus not positive");
+            x = SpecialCompare.mod(x, y);
             return Integer.valueOf(modInverse(x, y));
         } else {
             return TermAtomic.normBigInteger(
@@ -186,14 +190,11 @@ public final class SupplementElem extends AbstractSpecial {
     /**
      * <p>Return the mod inverse of two integers.</p>
      *
-     * @param a The base number, positive.
+     * @param a  The base number.
      * @param b1 The modulus number.
      * @return The mod inverse.
      */
     private static int modInverse(int a, int b1) {
-        if (b1 <= 0)
-            throw new ArithmeticException("BigInteger: modulus not positive");
-        a = SpecialCompare.mod(a, b1);
         int b = b1;
         int x = 1;
         int x1 = 0;
@@ -208,7 +209,7 @@ public final class SupplementElem extends AbstractSpecial {
         }
         if (a != 1)
             throw new ArithmeticException("BigInteger not invertible.");
-        return SpecialCompare.mod(x, b1);
+        return (x >= 0 ? x : x + b1);
     }
 
     /********************************************************************/
@@ -230,6 +231,9 @@ public final class SupplementElem extends AbstractSpecial {
                 m instanceof Integer && k instanceof Integer) {
             int x = m.intValue();
             int z = k.intValue();
+            if (z <= 0)
+                throw new ArithmeticException("BigInteger: modulus not positive");
+            x = SpecialCompare.mod(x, z);
             return Integer.valueOf(modPow(x, y, z));
         } else {
             return TermAtomic.normBigInteger(
@@ -242,49 +246,22 @@ public final class SupplementElem extends AbstractSpecial {
     /**
      * <p>Compute the power.</p>
      *
-     * @param m The base,.
-     * @param n1 The exponent.
+     * @param m  The base number.
+     * @param n1 The exponent number.
+     * @param k  The modulus number.
      * @return The exponentiation.
      */
     private static int modPow(int m, int n1, int k) {
-        if (k <= 0)
-            throw new ArithmeticException("BigInteger: modulus not positive");
-        if (k == 1)
-            return 0;
         int n = Math.abs(n1);
-        int r = 1;
+        int r = (k != 1 ? 1 : 0);
         while (n != 0) {
             if ((n & 1) != 0)
-                r = mod(r * (long) m, k);
+                r = (int) ((r * (long) m) % k);
             n >>= 1;
             if (n != 0)
-                m = mod(m * (long) m, k);
+                m = (int) ((m * (long) m) % k);
         }
         return (n1 >= 0 ? r : modInverse(r, k));
-    }
-
-    /*******************************************************************/
-    /* long                                                            */
-    /*******************************************************************/
-
-    /**
-     * <p>Compute the mod.</p>
-     *
-     * @param v The numerator.
-     * @param u The denumerator.
-     * @return The mod.
-     */
-    private static int mod(long v, int u) {
-        if ((v < 0) != (u < 0)) {
-            int res = (int) (v % u);
-            if (res != 0) {
-                return res + u;
-            } else {
-                return res;
-            }
-        } else {
-            return (int) (v % u);
-        }
     }
 
     /**

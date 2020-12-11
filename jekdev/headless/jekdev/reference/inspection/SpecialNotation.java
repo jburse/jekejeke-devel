@@ -82,8 +82,8 @@ public final class SpecialNotation extends AbstractSpecial {
             case SPECIAL_SYS_SLASH_TO_MODULE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Object obj = EvaluableLogic.slashToClass(temp[0], ref, false, true, en);
-                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
+                if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_MODULE_TO_SLASH:
@@ -92,7 +92,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                 obj = SpecialDynamic.moduleToSlashSkel(sa.fun, src);
-                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_COLON_TO_CALLABLE:
@@ -101,7 +101,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 SpecialLogic.colonToCallable(temp[0], ref, true, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(temp[1], ref, en.skel, d))
+                if (!en.unifyTerm(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -114,7 +114,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 en.deref();
                 sa = StackElement.callableToName(en.skel);
                 obj = SpecialDynamic.callableToColonSkel(en.skel, (sa != null ? sa.scope : null), en);
-                if (!en.unifyTerm(temp[1], ref, obj, en.display))
+                if (!en.unifyTerm(obj, en.display, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_COLON_TO_INDICATOR:
@@ -122,7 +122,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 ref = en.display;
                 Integer arity = SpecialPred.colonToIndicator(temp[0], ref, en);
                 obj = new SkelCompound(new SkelAtom(Foyer.OP_SLASH), en.skel, arity);
-                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_INDICATOR_TO_COLON:
@@ -132,7 +132,7 @@ public final class SpecialNotation extends AbstractSpecial {
                 sa = (SkelAtom) en.skel;
                 src = (sa.scope != null ? sa.scope : en.store.user);
                 obj = SpecialPred.indicatorToColonSkel(sa.fun, src, arityint, en);
-                if (!en.unifyTerm(temp[1], ref, obj, Display.DISPLAY_CONST))
+                if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             default:

@@ -14,6 +14,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -126,7 +127,7 @@ public final class SpecialDefault extends AbstractSpecial {
                 case SPECIAL_SYS_SPYING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!en.unifyTerm(temp[0], ref, currentSpyPoints(en), Display.DISPLAY_CONST))
+                    if (!en.unifyTerm(currentSpyPoints(en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_NOTRACE_FRAME:
@@ -146,9 +147,8 @@ public final class SpecialDefault extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

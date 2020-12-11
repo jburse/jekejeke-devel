@@ -10,6 +10,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
@@ -145,9 +146,8 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -178,9 +178,8 @@ public final class PropertyTraceStore extends AbstractProperty<Store> {
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
