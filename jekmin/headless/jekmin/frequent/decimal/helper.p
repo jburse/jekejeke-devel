@@ -36,7 +36,6 @@
 :- module(helper, []).
 :- use_module(library(decimal/scale)).
 :- use_module(library(decimal/arith)).
-:- use_module(library(misc/bits)).
 :- use_module(library(standard/approx)).
 
 /****************************************************************/

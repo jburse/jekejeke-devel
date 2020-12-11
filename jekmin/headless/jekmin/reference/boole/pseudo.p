@@ -112,7 +112,7 @@ weighted_maximum(R, L, O) :-
    sat_find_maximum(V, J, H, R, L, K, O),
    U is O-V,
    watch_trivial(H, J, L, >=, U),
-   labeling(L).
+   random_labeling(L).
 
 /*****************************************************************/
 /* Branch and Bound                                              */
