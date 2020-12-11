@@ -13,6 +13,7 @@ import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.Types;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
@@ -150,9 +151,8 @@ public final class SpecialSpecial extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

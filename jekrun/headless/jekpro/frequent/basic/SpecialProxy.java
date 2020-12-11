@@ -11,6 +11,7 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.proxy.ProxyHandler;
 import jekpro.tools.proxy.ProxyPivot;
@@ -115,9 +116,8 @@ public final class SpecialProxy extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

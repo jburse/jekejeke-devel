@@ -7,6 +7,7 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
 import matula.util.data.MapHash;
@@ -141,9 +142,8 @@ public final class FlagSession extends AbstractFlag<Store> {
                 default:
                     throw new IllegalArgumentException("illegal flag");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

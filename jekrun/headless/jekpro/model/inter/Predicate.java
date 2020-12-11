@@ -10,6 +10,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -249,9 +250,8 @@ public final class Predicate {
                         EngineMessage.OP_DOMAIN_META_ARG,
                         c), ref);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

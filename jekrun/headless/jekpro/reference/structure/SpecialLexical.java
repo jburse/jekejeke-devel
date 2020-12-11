@@ -157,8 +157,6 @@ public final class SpecialLexical extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
-        } catch (ArithmeticException x) {
-            throw new EngineMessage(EngineMessage.evaluationError(x.getMessage()));
         } catch (RuntimeWrap x) {
             Throwable y = x.getCause();
             if (y instanceof InterpreterException) {
@@ -166,6 +164,8 @@ public final class SpecialLexical extends AbstractSpecial {
             } else {
                 throw Types.mapThrowable(y);
             }
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

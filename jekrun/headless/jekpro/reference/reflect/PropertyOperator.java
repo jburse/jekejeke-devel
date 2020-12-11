@@ -11,6 +11,7 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -255,9 +256,8 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -309,9 +309,8 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

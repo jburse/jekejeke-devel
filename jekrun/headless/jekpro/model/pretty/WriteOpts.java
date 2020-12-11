@@ -13,6 +13,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -283,9 +284,8 @@ public final class WriteOpts {
                         EngineMessage.OP_TYPE_LIST, t), d);
             }
             validatePrintMap();
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

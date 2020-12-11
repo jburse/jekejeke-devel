@@ -239,6 +239,7 @@ public final class EngineMessage extends Exception {
     public final static String OP_EVALUATION_FLOAT_UNDERFLOW = "float_underflow";
     public final static String OP_EVALUATION_ORDERED = "ordered";
     public static final String OP_EVALUATION_PARTIAL_FUNCTION = "partial_function";
+    public final static String OP_EVALUATION_NOT_INVERTIBLE = "not_invertible"; /* arithmetic */
 
     public static final String OP_LICENSE_TRACKING_LOST = "tracking_lost";
 

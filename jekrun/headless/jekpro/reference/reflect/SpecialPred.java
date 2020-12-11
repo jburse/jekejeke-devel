@@ -15,6 +15,7 @@ import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractTracking;
@@ -572,9 +573,8 @@ public final class SpecialPred extends AbstractSpecial {
                 throw new EngineMessage(EngineMessage.typeError(
                         EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

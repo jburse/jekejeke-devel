@@ -15,6 +15,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
@@ -562,9 +563,8 @@ public final class LoadOpts extends LoadForce {
                         EngineMessage.OP_TYPE_LIST,
                         en.skel), en.display);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

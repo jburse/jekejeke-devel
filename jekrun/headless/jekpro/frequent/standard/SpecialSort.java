@@ -198,9 +198,8 @@ public final class SpecialSort extends AbstractSpecial {
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
             }
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -236,9 +235,6 @@ public final class SpecialSort extends AbstractSpecial {
             try {
                 if (set.getEntry(elem) == null)
                     set.add(elem);
-            } catch (ArithmeticException x) {
-                throw new EngineMessage(EngineMessage.evaluationError(
-                        x.getMessage()));
             } catch (RuntimeWrap x) {
                 Throwable y = x.getCause();
                 if (y instanceof InterpreterException) {
@@ -246,6 +242,8 @@ public final class SpecialSort extends AbstractSpecial {
                 } else {
                     throw Types.mapThrowable(y);
                 }
+            } catch (RuntimeException x) {
+                throw Types.mapThrowable(x);
             }
             en.skel = sc.args[1];
             en.display = d;
@@ -354,9 +352,6 @@ public final class SpecialSort extends AbstractSpecial {
                 } else {
                     found = entry.value;
                 }
-            } catch (ArithmeticException x) {
-                throw new EngineMessage(EngineMessage.evaluationError(
-                        x.getMessage()));
             } catch (RuntimeWrap x) {
                 Throwable y = x.getCause();
                 if (y instanceof InterpreterException) {
@@ -364,6 +359,8 @@ public final class SpecialSort extends AbstractSpecial {
                 } else {
                     throw Types.mapThrowable(y);
                 }
+            } catch (RuntimeException x) {
+                throw Types.mapThrowable(x);
             }
             en.skel = sc2.args[1];
             en.display = d2;
