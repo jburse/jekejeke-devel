@@ -433,7 +433,12 @@ public final class EvaluableRound extends AbstractSpecial {
                 if (u == 0)
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
-                return TermAtomic.normBigInteger((long) a.intValue() / u);
+                int v = a.intValue();
+                if (v == Integer.MIN_VALUE && u == -1) {
+                    return SpecialCompare.NEG_MIN_INTEGER;
+                } else {
+                    return Integer.valueOf(v / u);
+                }
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -476,7 +481,7 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param b The second operand.
      * @return The remainder of the first operand by the second operand.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number rem(Number a, Number b)
             throws ArithmeticException, EngineMessage {
@@ -540,7 +545,11 @@ public final class EvaluableRound extends AbstractSpecial {
                     throw new ArithmeticException(
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 int v = a.intValue();
-                return TermAtomic.normBigInteger(SpecialCompare.div(v, u));
+                if (v == Integer.MIN_VALUE && u == -1) {
+                    return SpecialCompare.NEG_MIN_INTEGER;
+                } else {
+                    return Integer.valueOf(SpecialCompare.div(v, u));
+                }
             case SpecialCompare.NUM_BIG_INTEGER:
                 BigInteger p = TermAtomic.widenBigInteger(b);
                 if (p.signum() == 0)
@@ -584,7 +593,7 @@ public final class EvaluableRound extends AbstractSpecial {
      * @param b The second number.
      * @return The remainder of the first number by the second number.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number mod(Number a, Number b)
             throws ArithmeticException, EngineMessage {

@@ -43,6 +43,8 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialCompare extends AbstractSpecial {
+    public final static BigInteger NEG_MIN_INTEGER = BigInteger.valueOf(-(long)Integer.MIN_VALUE);
+
     private final static int SPECIAL_COMPARE_EQ = 0;
     private final static int SPECIAL_COMPARE_NQ = 1;
     private final static int SPECIAL_COMPARE_LS = 2;
@@ -339,7 +341,11 @@ public final class SpecialCompare extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 Number[] res = new Number[2];
                 int v = a.intValue();
-                res[0] = TermAtomic.normBigInteger(div(v, u));
+                if (v == Integer.MIN_VALUE && u == -1) {
+                    res[9] = NEG_MIN_INTEGER;
+                } else {
+                    res[0] = Integer.valueOf(div(v, u));
+                }
                 res[1] = Integer.valueOf(mod(v, u));
                 return res;
             case SpecialCompare.NUM_BIG_INTEGER:
@@ -400,17 +406,17 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param u The denumerator.
      * @return The div.
      */
-    public static long div(int v, int u) {
+    public static int div(int v, int u) {
         if ((v < 0) != (u < 0)) {
             int res = v % u;
-            long h = (long) v / u;
+            int h = v / u;
             if (res != 0) {
                 return h - 1;
             } else {
                 return h;
             }
         } else {
-            return (long) v / u;
+            return v / u;
         }
     }
 
@@ -515,12 +521,26 @@ public final class SpecialCompare extends AbstractSpecial {
      */
     /*
     public static void main(String[] args) {
+        int y = div2(Integer.MIN_VALUE, 1);
+        System.out.println("div2("+Integer.MIN_VALUE+",1)="+y);
+        y = div2(Integer.MIN_VALUE, 2);
+        System.out.println("div2("+Integer.MIN_VALUE+",2)="+y);
+        y = div2(Integer.MIN_VALUE, 777777);
+        System.out.println("div2("+Integer.MIN_VALUE+",777777)="+y);
+        y = div2(Integer.MIN_VALUE, (-1));
+        System.out.println("div2("+Integer.MIN_VALUE+",(-1))="+y+" (wrong)");
+        y = div2(Integer.MIN_VALUE, (-2));
+        System.out.println("div2("+Integer.MIN_VALUE+",(-2))="+y);
+        y = div2(Integer.MIN_VALUE, (-777777));
+        System.out.println("div2("+Integer.MIN_VALUE+",(-777777))="+y);
+
         int x = SpecialCompare.mod(Integer.MIN_VALUE, Integer.MIN_VALUE);
         System.out.println("mod("+Integer.MIN_VALUE+","+Integer.MIN_VALUE+")=" + x);
         x = (int)SpecialCompare.div(Integer.MIN_VALUE, 77);
         System.out.println("div("+Integer.MIN_VALUE+",77)=" + x);
         x = SpecialCompare.mod(Integer.MIN_VALUE, 77);
         System.out.println("mod("+Integer.MIN_VALUE+",77)=" + x);
+
     }
     */
 
