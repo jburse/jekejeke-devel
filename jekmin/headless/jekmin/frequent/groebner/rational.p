@@ -49,7 +49,7 @@
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekmin/frequent/leibniz)).
 :- use_package(library(jekpro/frequent/misc)).
-:- use_package(library(jekmin/reference/misc)).
+:- use_package(library(jekmin/reference/experiment)).
 
 :- module(rational, []).
 :- reexport(../gauss/ordered).

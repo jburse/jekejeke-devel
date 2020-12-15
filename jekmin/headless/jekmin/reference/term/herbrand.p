@@ -329,7 +329,7 @@ sys_occurs3([_|F], V, L) :-
 :- private sys_hook_sto/2.
 sys_hook_sto(V, T) :-
    term_variables(T, L),
-   (  contains(L, V) -> fail
+   (  eq_contains(L, V) -> fail
    ;  sys_ensure_stos(L)).
 
 /**

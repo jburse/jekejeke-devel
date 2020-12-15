@@ -56,7 +56,6 @@
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(reify, []).
-:- use_module(library(advanced/sets)).
 :- use_module(library(basic/lists)).
 :- use_module(library(minimal/assume)).
 :- use_module(library(minimal/hypo)).

@@ -91,6 +91,7 @@
 :- use_module(library(experiment/trail)).
 :- use_module(library(advanced/sets)).
 :- use_module(library(term/verify)).
+:- use_module(library(advanced/aggregate)).
 
 /**
  * sat(A):
@@ -178,7 +179,7 @@ sat_propagate(_).
 :- public attr_unify_hook/2.
 attr_unify_hook(bdd_ref(K, F), W) :- var(W),
    get_attr(W, clpb, bdd_ref(I, G)), !,
-   union(F, G, E),
+   eq_union(F, G, E),
    put_attr(W, clpb, bdd_ref(I, E)),
    bdd_unify(G, K, node(I, [I], one, zero)).
 attr_unify_hook(bdd_ref(K, F), W) :- var(W), !,
@@ -253,28 +254,13 @@ attribute_goals(A, [sat(E)|S], S) :-
 :- public labeling/1.
 labeling(L) :- var(L),
    throw(error(instantiation_error, _)).
-labeling([B|L]) :- !,
+labeling([B|L]) :- var(B), !,
    expr_value(B),
+   labeling(L).
+labeling([_|L]) :- !,
    labeling(L).
 labeling([]) :- !.
 labeling(L) :-
-   throw(error(type_error(list, L), _)).
-
-/**
- * count(L, N):
- * The predicate silently labels the variables in L and
- * succeeds in N with the count of the solutions.
- */
-% count(+List, -Integer)
-:- public count/2.
-count(L, _) :- var(L),
-   throw(error(instantiation_error, _)).
-count([B|L], N) :- !,
-   findall(M, (expr_value(B), count(L, M)), R),
-   sys_sat_sum(R, N).
-count([], N) :- !,
-   N = 1.
-count(L, _) :-
    throw(error(type_error(list, L), _)).
 
 /**
@@ -284,19 +270,19 @@ count(L, _) :-
  */
 % sat_count(+Boolean, -Integer)
 :- public sat_count/2.
-sat_count(E, N) :-
+sat_count(E, M) :-
    term_variables(E, L),
-   sat(E), !,
-   count(L, N).
-sat_count(_, 0).
+   aggregate_all(sum(H), (sat(E), sat_sum(L, H)), M).
 
 /**
- * sys_sat_sum(L, N):
- * The predicate succeeds in N with the some of L.
+ * sat_sum(L, M):
+ * The predicate silently labels the variables in L and
+ * succeeds in M with the sat_sum of the solutions.
  */
-% sys_sat_sum(+List, -Integer)
-:- private sys_sat_sum/2.
-sys_sat_sum([M|L], N) :- !,
-   sys_sat_sum(L, H),
-   N is M+H.
-sys_sat_sum([], 0).
+% sat_sum(+List, -Integer)
+:- private sat_sum/2.
+sat_sum([B|L], M) :- var(B), !,
+   aggregate_all(sum(H), (expr_value(B), sat_sum(L, H)), M).
+sat_sum([_|L], M) :-
+   sat_sum(L, M).
+sat_sum([], 1).

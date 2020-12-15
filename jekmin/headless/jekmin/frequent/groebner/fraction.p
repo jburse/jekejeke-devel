@@ -50,7 +50,7 @@
 
 :- package(library(jekmin/frequent/groebner)).
 :- use_package(library(jekmin/frequent/gauss)).
-:- use_package(library(jekmin/reference/misc)).
+:- use_package(library(jekmin/reference/experiment)).
 :- use_package(library(jekpro/frequent/misc)).
 
 :- module(fraction, []).

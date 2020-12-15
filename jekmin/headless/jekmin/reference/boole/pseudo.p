@@ -76,11 +76,11 @@
 :- public random_labeling/1.
 random_labeling(L) :- var(L),
    throw(error(instantiation_error, _)).
-random_labeling([B|L]) :- var(B), random(2, 1), !,
-   expr_value_reverse(B),
+random_labeling([B|L]) :- var(B), !,
+   random(2, C),
+   expr_value(C, B),
    random_labeling(L).
-random_labeling([B|L]) :- !,
-   expr_value(B),
+random_labeling([_|L]) :- !,
    random_labeling(L).
 random_labeling([]) :- !.
 random_labeling(L) :-
@@ -198,10 +198,10 @@ map_include(V, H, F, [H-V|F], S, T) :-
 expr_value(0).
 expr_value(1).
 
-% expr_value_reverse(+Boolean)
-:- private expr_value_reverse/1.
-expr_value_reverse(1).
-expr_value_reverse(0).
+% expr_value(+Boolean, -Boolean)
+:- private expr_value/2.
+expr_value(X, X).
+expr_value(X, Y) :- Y is 1-X.
 
 /*****************************************************************/
 /* Root Addition                                                 */
