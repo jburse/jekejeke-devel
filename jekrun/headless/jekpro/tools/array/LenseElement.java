@@ -130,9 +130,8 @@ final class LenseElement extends AbstractLense {
                         AbstractFactory.OP_REPRESENTATION_NULL));
             en.skel = AbstractTerm.getSkel(res);
             en.display = AbstractTerm.getDisplay(res);
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -172,9 +171,8 @@ final class LenseElement extends AbstractLense {
             if (ext)
                 d.remTab(en);
             return true;
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

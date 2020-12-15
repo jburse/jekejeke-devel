@@ -50,7 +50,6 @@
 :- use_package(foreign(jekpro/model/molec)).
 
 :- module(residue, []).
-:- use_module(library(advanced/sets)).
 :- use_module(library(misc/residue)).
 
 /**

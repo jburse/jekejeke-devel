@@ -5,9 +5,9 @@
  * necessarily preserve duplicates:
  *
  * Examples:
- * ?- union([2,3,4], [1,2,4,5], X).
+ * ?- eq_union([2,3,4], [1,2,4,5], X).
  * X = [3,1,2,4,5]
- * ?- union([1,2,4,5], [2,3,4], X).
+ * ?- eq_union([1,2,4,5], [2,3,4], X).
  * X = [1,5,2,3,4]
  *
  * The realization uses a membership check based on (==)/2. As a
@@ -54,118 +54,118 @@
 /*******************************************************************/
 
 /**
- * contains(S, E):
- * The predicate succeeds when the set S contains the element E.
+ * eq_contains(S, E):
+ * The predicate succeeds when the set S eq_contains the element E.
  */
-% contains(+Set, +Elem)
-:- public contains/2.
-contains(X, _) :- var(X),
+% eq_contains(+Set, +Elem)
+:- public eq_contains/2.
+eq_contains(X, _) :- var(X),
    throw(error(instantiation_error, _)).
-contains([X|_], Y) :- X == Y, !.
-contains([_|X], Y) :- !,
-   contains(X, Y).
-contains([], _) :- !, fail.
-contains(X, _) :-
+eq_contains([X|_], Y) :- X == Y, !.
+eq_contains([_|X], Y) :- !,
+   eq_contains(X, Y).
+eq_contains([], _) :- !, fail.
+eq_contains(X, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * delete(S, E, T):
- * The predicate succeeds when T unifies with the subtract of S by [E].
+ * eq_delete(S, E, T):
+ * The predicate succeeds when T unifies with the eq_subtract of S by [E].
  */
-% delete(+Set, +Elem, -Set)
-:- public delete/3.
-delete(X, _, _) :- var(X),
+% eq_delete(+Set, +Elem, -Set)
+:- public eq_delete/3.
+eq_delete(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-delete([X|Y], Z, T) :- X == Z, !,
-   delete(Y, Z, T).
-delete([X|Y], Z, R) :- !,
+eq_delete([X|Y], Z, T) :- X == Z, !,
+   eq_delete(Y, Z, T).
+eq_delete([X|Y], Z, R) :- !,
    R = [X|T],
-   delete(Y, Z, T).
-delete([], _, R) :- !,
+   eq_delete(Y, Z, T).
+eq_delete([], _, R) :- !,
    R = [].
-delete(X, _, _) :-
+eq_delete(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * add(S, E, T):
- * The predicate succeeds when T unifies with the union of [E] and S.
+ * eq_add(S, E, T):
+ * The predicate succeeds when T unifies with the eq_union of [E] and S.
  */
-% add(+Set, +Elem, -Set)
-:- public add/3.
-add(X, Y, X) :-
-   contains(X, Y), !.
-add(X, Y, [Y|X]).
+% eq_add(+Set, +Elem, -Set)
+:- public eq_add/3.
+eq_add(X, Y, X) :-
+   eq_contains(X, Y), !.
+eq_add(X, Y, [Y|X]).
 
 /*******************************************************************/
 /* Set Operations                                               */
 /*******************************************************************/
 
 /**
- * subtract(S, T, R):
- * The predicate succeeds when R unifies with the subtract of S by T.
+ * eq_subtract(S, T, R):
+ * The predicate succeeds when R unifies with the eq_subtract of S by T.
  */
-% subtract(+Set, +Set, -Set)
-:- public subtract/3.
-subtract(X, _, _) :- var(X),
+% eq_subtract(+Set, +Set, -Set)
+:- public eq_subtract/3.
+eq_subtract(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-subtract([X|Y], Z, T) :-
-   contains(Z, X), !,
-   subtract(Y, Z, T).
-subtract([X|Y], Z, R) :- !,
+eq_subtract([X|Y], Z, T) :-
+   eq_contains(Z, X), !,
+   eq_subtract(Y, Z, T).
+eq_subtract([X|Y], Z, R) :- !,
    R = [X|T],
-   subtract(Y, Z, T).
-subtract([], _, R) :- !,
+   eq_subtract(Y, Z, T).
+eq_subtract([], _, R) :- !,
    R = [].
-subtract(X, _, _) :-
+eq_subtract(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * intersection(S, T, R):
- * The predicate succeeds when R unifies with the intersection of S and T.
+ * eq_intersection(S, T, R):
+ * The predicate succeeds when R unifies with the eq_intersection of S and T.
  */
-% intersection(+Set, +Set, -Set)
-:- public intersection/3.
-intersection(X, _, _) :- var(X),
+% eq_intersection(+Set, +Set, -Set)
+:- public eq_intersection/3.
+eq_intersection(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-intersection([X|Y], Z, R) :-
-   contains(Z, X), !,
+eq_intersection([X|Y], Z, R) :-
+   eq_contains(Z, X), !,
    R = [X|T],
-   intersection(Y, Z, T).
-intersection([_|X], Y, Z) :- !,
-   intersection(X, Y, Z).
-intersection([], _, R) :- !,
+   eq_intersection(Y, Z, T).
+eq_intersection([_|X], Y, Z) :- !,
+   eq_intersection(X, Y, Z).
+eq_intersection([], _, R) :- !,
    R = [].
-intersection(X, _, _) :-
+eq_intersection(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * union(S, T, R):
- * The predicate succeeds when R unifies with the union of S and T.
+ * eq_union(S, T, R):
+ * The predicate succeeds when R unifies with the eq_union of S and T.
  */
-% union(+Set, +Set, -Set)
-:- public union/3.
-union(X, _, _) :- var(X),
+% eq_union(+Set, +Set, -Set)
+:- public eq_union/3.
+eq_union(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-union([X|Y], Z, T) :-
-   contains(Z, X), !,
-   union(Y, Z, T).
-union([X|Y], Z, R) :- !,
+eq_union([X|Y], Z, T) :-
+   eq_contains(Z, X), !,
+   eq_union(Y, Z, T).
+eq_union([X|Y], Z, R) :- !,
    R = [X|T],
-   union(Y, Z, T).
-union([], X, R) :- !,
+   eq_union(Y, Z, T).
+eq_union([], X, R) :- !,
    R = X.
-union(X, _, _) :-
+eq_union(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * symdiff(S, T, R):
- * The predicate succeeds when R unifies with the symmetric subtract of S and T.
+ * eq_symdiff(S, T, R):
+ * The predicate succeeds when R unifies with the symmetric eq_subtract of S and T.
  */
-% symdiff(+Set, +Set, -Set)
-:- public symdiff/3.
-symdiff(X, Y, Z) :-
-   subtract(X, Y, H),
-   subtract(Y, X, J),
+% eq_symdiff(+Set, +Set, -Set)
+:- public eq_symdiff/3.
+eq_symdiff(X, Y, Z) :-
+   eq_subtract(X, Y, H),
+   eq_subtract(Y, X, J),
    append(H, J, Z).
 
 /*******************************************************************/
@@ -173,42 +173,42 @@ symdiff(X, Y, Z) :-
 /*******************************************************************/
 
 /**
- * subset(S, T):
- * The predicate succeeds when S is a subset of T.
+ * eq_subset(S, T):
+ * The predicate succeeds when S is a eq_subset of T.
  */
-% subset(+Set, +Set)
-:- public subset/2.
-subset(X, _) :- var(X),
+% eq_subset(+Set, +Set)
+:- public eq_subset/2.
+eq_subset(X, _) :- var(X),
    throw(error(instantiation_error, _)).
-subset([X|Y], Z) :- !,
-   contains(Z, X),
-   subset(Y, Z).
-subset([], _) :- !.
-subset(X, _) :-
+eq_subset([X|Y], Z) :- !,
+   eq_contains(Z, X),
+   eq_subset(Y, Z).
+eq_subset([], _) :- !.
+eq_subset(X, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * disjoint(S, T):
- * The predicate succeeds when S is disjoint to T.
+ * eq_disjoint(S, T):
+ * The predicate succeeds when S is eq_disjoint to T.
  */
-% disjoint(+Set, +Set)
-:- public disjoint/2.
-disjoint(X, _) :- var(X),
+% eq_disjoint(+Set, +Set)
+:- public eq_disjoint/2.
+eq_disjoint(X, _) :- var(X),
    throw(error(instantiation_error, _)).
-disjoint([X|_], Z) :-
-   contains(Z, X), !, fail.
-disjoint([_|Y], Z) :- !,
-   disjoint(Y, Z).
-disjoint([], _) :- !.
-disjoint(X, _) :-
+eq_disjoint([X|_], Z) :-
+   eq_contains(Z, X), !, fail.
+eq_disjoint([_|Y], Z) :- !,
+   eq_disjoint(Y, Z).
+eq_disjoint([], _) :- !.
+eq_disjoint(X, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * equal(S, T):
- * The predicate succeeds when S is equal to T.
+ * eq_equal(S, T):
+ * The predicate succeeds when S is eq_equal to T.
  */
-% equal(+Set, +Set)
-:- public equal/2.
-equal(X, Y) :-
-   subset(X, Y),
-   subset(Y, X).
+% eq_equal(+Set, +Set)
+:- public eq_equal/2.
+eq_equal(X, Y) :-
+   eq_subset(X, Y),
+   eq_subset(Y, X).

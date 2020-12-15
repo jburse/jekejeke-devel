@@ -211,9 +211,8 @@ public final class Types {
                 default:
                     throw new IllegalArgumentException("illegal type");
             }
-        } catch (ArithmeticException x) {
-            throw new EngineMessage(
-                    EngineMessage.evaluationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -335,12 +334,8 @@ public final class Types {
                 default:
                     throw new IllegalArgumentException("illegal type");
             }
-        } catch (ArithmeticException x) {
-            throw new EngineMessage(
-                    EngineMessage.evaluationError(x.getMessage()));
-        } catch (ClassCastException x) {
-            throw new EngineMessage(
-                    EngineMessage.representationError(x.getMessage()));
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 
@@ -400,11 +395,7 @@ public final class Types {
      * @return True if the exception class is a mappable throwable.
      */
     public static boolean validateThrowable(Class ret) {
-        if (InterpreterMessage.class == ret) {
-        } else if (IOException.class.isAssignableFrom(ret)) {
-        } else if (InterruptedException.class.isAssignableFrom(ret)) {
-        } else if (ArithmeticException.class.isAssignableFrom(ret)) {
-        } else if (Exception.class.isAssignableFrom(ret)) {
+        if (Exception.class.isAssignableFrom(ret)) {
         } else if (Error.class.isAssignableFrom(ret)) {
         } else {
             return false;
@@ -427,8 +418,17 @@ public final class Types {
             return (EngineMessage) ForeignThread.sysThreadClear();
         } else if (x instanceof ArithmeticException) {
             String message = x.getMessage();
-            if ("/ by zero".equals(message))
+            if ("/ by zero".equals(message)) {
                 message = EngineMessage.OP_EVALUATION_ZERO_DIVISOR;
+            } else if ("BigInteger not invertible.".equals(message)) {
+                message = EngineMessage.OP_EVALUATION_NOT_INVERTIBLE;
+            } else if ("Non-invertible. (GCD != 1)".equals(message)) {
+                message = EngineMessage.OP_EVALUATION_NOT_INVERTIBLE;
+            } else if ("BigInteger: modulus not positive".equals(message)) {
+                message = EngineMessage.OP_EVALUATION_ILLEGAL_MODULUS;
+            } else {
+                System.out.println("messsage: "+message);
+            }
             return new EngineMessage(EngineMessage.evaluationError(
                     (message != null ? message : "")));
         } else if (x instanceof Exception) {
