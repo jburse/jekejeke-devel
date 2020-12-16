@@ -5,9 +5,9 @@
  * operations for duplicates the first key wins:
  *
  * Examples:
- * ?- get([2-a,1-b], 1, X).
+ * ?- eq_get([2-a,1-b], 1, X).
  * X = b
- * ?- put([2-a,1-b], 1, c, X).
+ * ?- eq_put([2-a,1-b], 1, c, X).
  * X = [2-a,1-c]
  *
  * The realization uses a membership check based on (==)/2. As a

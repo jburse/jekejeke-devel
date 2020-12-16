@@ -47,21 +47,21 @@ public
 :: /9	standard/apply
 ;/4	standard/dcg
 []/2	standard/dcg
-(\)/3	experiment/abstract
-(\)/4	experiment/abstract
-(\)/5	experiment/abstract
-(\)/6	experiment/abstract
-(\)/7	experiment/abstract
-(\)/8	experiment/abstract
-(\)/9	experiment/abstract
+(\)/3	advanced/abstract
+(\)/4	advanced/abstract
+(\)/5	advanced/abstract
+(\)/6	advanced/abstract
+(\)/7	advanced/abstract
+(\)/8	advanced/abstract
+(\)/9	advanced/abstract
 (\+)/3	standard/dcg
 ^ /2	advanced/bags
-^ /4	experiment/abstract
-^ /5	experiment/abstract
-^ /6	experiment/abstract
-^ /7	experiment/abstract
-^ /8	experiment/abstract
-^ /9	experiment/abstract
+^ /4	advanced/abstract
+^ /5	advanced/abstract
+^ /6	advanced/abstract
+^ /7	advanced/abstract
+^ /8	advanced/abstract
+^ /9	advanced/abstract
 above/2	standard/arith
 acosh/2	basic/hyper
 aggregate/3	advanced/aggregate
@@ -147,16 +147,16 @@ endpoint_new/3	misc/socket
 endpoint_port/2	misc/socket
 endpoint_receive/2	misc/socket
 endpoint_send/4	misc/socket
-eq_add/3	advanced/sets
-eq_contains/2	advanced/sets
-eq_delete/3	advanced/sets
-eq_disjoint/2	advanced/sets
-eq_equal/2	advanced/sets
-eq_intersection/3	advanced/sets
-eq_subset/2	advanced/sets
-eq_subtract/3	advanced/sets
-eq_symdiff/3	advanced/sets
-eq_union/3	advanced/sets
+eq_add/3	experiment/sets
+eq_contains/2	experiment/sets
+eq_delete/3	experiment/sets
+eq_disjoint/2	experiment/sets
+eq_equal/2	experiment/sets
+eq_intersection/3	experiment/sets
+eq_subset/2	experiment/sets
+eq_subtract/3	experiment/sets
+eq_symdiff/3	experiment/sets
+eq_union/3	experiment/sets
 erase_ref/1	experiment/ref
 error_make/2	stream/console
 error_make/3	stream/console
@@ -268,18 +268,18 @@ number_compare/3	standard/sort
 offset/2	advanced/sequence
 open/3	stream/stream
 open/4	stream/stream
-ord_add/3	advanced/ordsets
-ord_contains/2	advanced/ordsets
-ord_delete/3	advanced/ordsets
-ord_disjoint/2	advanced/ordsets
+ord_add/3	experiment/ordsets
+ord_contains/2	experiment/ordsets
+ord_delete/3	experiment/ordsets
+ord_disjoint/2	experiment/ordsets
 ord_get/3	experiment/ordmaps
-ord_intersection/3	advanced/ordsets
+ord_intersection/3	experiment/ordsets
 ord_put/4	experiment/ordmaps
 ord_remove/3	experiment/ordmaps
-ord_subset/2	advanced/ordsets
-ord_subtract/3	advanced/ordsets
-ord_symdiff/3	advanced/ordsets
-ord_union/3	advanced/ordsets
+ord_subset/2	experiment/ordsets
+ord_subtract/3	experiment/ordsets
+ord_symdiff/3	experiment/ordsets
+ord_union/3	experiment/ordsets
 order_by/2	advanced/sequence
 pattern_compile/2	misc/text
 pattern_compile/3	misc/text
