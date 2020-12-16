@@ -287,7 +287,9 @@ sys_make_oper/3	reflect/oper
 sys_number_variables/4	structure/vars
 sys_pivot_add/2	runtime/collector
 sys_pivot_collect/3	runtime/collector
+sys_pivot_gather/3	runtime/collector
 sys_pivot_new/1	runtime/collector
+sys_pivot_put/2	runtime/collector
 sys_predicate_property_idx/2	reflect/pred
 sys_provable_property_chk/3	reflect/pred
 sys_provable_property_idx/2	reflect/pred

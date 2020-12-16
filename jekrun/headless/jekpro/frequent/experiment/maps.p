@@ -49,56 +49,56 @@
 :- module(maps, []).
 
 /**
- * get(M, K, V):
+ * eq_get(M, K, V):
  * The predicate succeeds for the value V associated with the
  * key K in the map M.
  */
-:- public get/3.
-get(X, _, _) :- var(X),
+:- public eq_get/3.
+eq_get(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-get([K-V|_], J, U) :- J == K, !,
+eq_get([K-V|_], J, U) :- J == K, !,
    U = V.
-get([_|M], J, U) :- !,
-   get(M, J, U).
-get([], _, _) :- !, fail.
-get(X, _, _) :-
+eq_get([_|M], J, U) :- !,
+   eq_get(M, J, U).
+eq_get([], _, _) :- !, fail.
+eq_get(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * put(M, K, V, N):
+ * eq_put(M, K, V, N):
  * The predicate succeeds for a map N where the value V is associated
  * with the key K and the other key values are associated as in
  * the map M.
  */
-:- public put/4.
-put(X, _, _, _) :- var(X),
+:- public eq_put/4.
+eq_put(X, _, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-put([K-_|M], J, U, R) :- J == K, !,
+eq_put([K-_|M], J, U, R) :- J == K, !,
    R = [K-U|M].
-put([A|M], J, U, H) :- !,
+eq_put([A|M], J, U, H) :- !,
    H = [A|N],
-   put(M, J, U, N).
-put([], J, U, R) :- !,
+   eq_put(M, J, U, N).
+eq_put([], J, U, R) :- !,
    R = [J-U].
-put(X, _, _, _) :-
+eq_put(X, _, _, _) :-
    throw(error(type_error(list, X), _)).
 
 /**
- * remove(M, K, N):
+ * eq_remove(M, K, N):
  * The predicate succeeds for a map N where the key K has no value
  * and the other key values are associated as in the map M.
  */
-:- public remove/3.
-remove(X, _, _) :- var(X),
+:- public eq_remove/3.
+eq_remove(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-remove([K-_|M], J, R) :- J == K, !,
+eq_remove([K-_|M], J, R) :- J == K, !,
    R = M.
-remove([A|M], J, H) :- !,
+eq_remove([A|M], J, H) :- !,
    H = [A|N],
-   remove(M, J, N).
-remove([], _, R) :- !,
+   eq_remove(M, J, N).
+eq_remove([], _, R) :- !,
    R = [].
-remove(X, _, _) :-
+eq_remove(X, _, _) :-
    throw(error(type_error(list, X), _)).
 
 
