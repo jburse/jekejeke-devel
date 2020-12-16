@@ -59,31 +59,22 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static String OP_SYS_META_PREDICATE = "sys_meta_predicate";
     private final static String OP_SYS_META_FUNCTION = "sys_meta_function";
     private final static String OP_SYS_NOEXPAND = "sys_noexpand";
-    private final static String OP_SYS_NOMACRO = "sys_nomacro";
     private final static String OP_META_PREDICATE = "meta_predicate";
-    private final static String OP_META_FUNCTION = "meta_function";
     private final static String OP_SYS_TABLED = "sys_tabled";
     private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
 
     private final static int PROP_SYS_META_PREDICATE = 0;
-    private final static int PROP_SYS_META_FUNCTION = 1;
     private final static int PROP_SYS_NOEXPAND = 2;
     private final static int PROP_SYS_NOMACRO = 3;
     private final static int PROP_META_PREDICATE = 4;
-    private final static int PROP_META_FUNCTION = 5;
     private final static int PROP_SYS_TABLED = 6;
     private final static int PROP_SYS_READWRITE_LOCK = 7;
 
     static {
         DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_SYS_META_PREDICATE));
-        DEFAULT.add(new StoreKey(OP_SYS_META_FUNCTION, 1), new PropertyPredicateAPI(PROP_SYS_META_FUNCTION));
         DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicateAPI(PROP_SYS_NOEXPAND,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
-        DEFAULT.add(new StoreKey(OP_SYS_NOMACRO, 0), new PropertyPredicateAPI(PROP_SYS_NOMACRO,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_META_PREDICATE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
-        DEFAULT.add(new StoreKey(OP_META_FUNCTION, 1), new PropertyPredicateAPI(PROP_META_FUNCTION,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
         DEFAULT.add(new StoreKey(OP_SYS_TABLED, 0), new PropertyPredicateAPI(PROP_SYS_TABLED));
         DEFAULT.add(new StoreKey(OP_SYS_READWRITE_LOCK, 1), new PropertyPredicateAPI(PROP_SYS_READWRITE_LOCK));
@@ -125,22 +116,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
                         new SkelAtom(OP_SYS_META_PREDICATE), res);
-            case PROP_SYS_META_FUNCTION:
-                res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_FUNC, en);
-                if (res == null)
-                    return AbstractBranch.FALSE_PROPERTY;
-                return PropertyPredicate.snapshotToVals(
-                        new SkelAtom(OP_SYS_META_FUNCTION), res);
             case PROP_SYS_NOEXPAND:
                 if ((pick.getBits() & Predicate.MASK_PRED_NOEX) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOEXPAND)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_SYS_NOMACRO:
-                if ((pick.getBits() & Predicate.MASK_PRED_NOMC) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOMACRO)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -149,14 +127,6 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 if (t != null) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                             new SkelAtom(OP_META_PREDICATE), t), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
-            case PROP_META_FUNCTION:
-                t = pick.meta_function;
-                if (t != null) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_META_FUNCTION), t), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -198,25 +168,12 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_PRED, en);
                 return true;
-            case PROP_SYS_META_FUNCTION:
-                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.addDef(src, Predicate.MASK_TRCK_FUNC, en);
-                return true;
             case PROP_SYS_NOEXPAND:
                 pick.setBit(Predicate.MASK_PRED_NOEX);
-                return true;
-            case PROP_SYS_NOMACRO:
-                pick.setBit(Predicate.MASK_PRED_NOMC);
                 return true;
             case PROP_META_PREDICATE:
                 pick.meta_predicate = PropertyPredicateAPI.derefAndCastMeta(pick,
                         m, d, OP_META_PREDICATE, en);
-                return true;
-            case PROP_META_FUNCTION:
-                pick.meta_function = PropertyPredicateAPI.derefAndCastMeta(pick,
-                        m, d, OP_META_FUNCTION, en);
                 return true;
             case PROP_SYS_TABLED:
                 pick.setBit(Predicate.MASK_PRED_TABL);
@@ -248,23 +205,11 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_PRED);
                 return true;
-            case PROP_SYS_META_FUNCTION:
-                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_FUNCTION, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_FUNC);
-                return true;
             case PROP_SYS_NOEXPAND:
                 pick.resetBit(Predicate.MASK_PRED_NOEX);
                 return true;
-            case PROP_SYS_NOMACRO:
-                pick.resetBit(Predicate.MASK_PRED_NOMC);
-                return true;
             case PROP_META_PREDICATE:
                 pick.meta_predicate = null;
-                return true;
-            case PROP_META_FUNCTION:
-                pick.meta_function = null;
                 return true;
             case PROP_SYS_TABLED:
                 pick.resetBit(Predicate.MASK_PRED_TABL);

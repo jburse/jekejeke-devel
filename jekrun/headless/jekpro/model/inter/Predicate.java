@@ -63,7 +63,6 @@ public final class Predicate {
     public final static int MASK_PRED_VSPU = 0x00000020;
 
     public final static int MASK_PRED_NOEX = 0x00000100;
-    public final static int MASK_PRED_NOMC = 0x00000200;
     public final static int MASK_PRED_TABL = 0x00000400;
 
     /* combine masks */
@@ -94,7 +93,6 @@ public final class Predicate {
     public final MapHashLink<AbstractSource, Integer> defs = new MapHashLink<AbstractSource, Integer>();
     public MapEntry<AbstractSource, Integer>[] cachedefs;
     public Object meta_predicate;
-    public Object meta_function;
     public AbstractSource source;
 
     /**
@@ -670,7 +668,6 @@ public final class Predicate {
                     (sa.scope.getBits() & AbstractSource.MASK_SRC_VSPU) == 0)
                 checkPredicatePublic(def, pick, en);
             checkPredicateMetaPredicate(def, pick, en);
-            checkPredicateMetaFunction(def, pick, en);
             checkPredicateDynamic(def, pick, en);
             checkPredicateThreadLocal(def, pick, en);
             checkPredicateGroupLocal(def, pick, en);
@@ -841,29 +838,6 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
-     * <p>Perform the meta function style check.</p>
-     *
-     * @param loc  The location.
-     * @param pick The predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateMetaFunction(Integer loc,
-                                                   Predicate pick,
-                                                   Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_FUNC) != 0)
-            return;
-        if (pick.meta_function == null)
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_META_FUNCTION_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));

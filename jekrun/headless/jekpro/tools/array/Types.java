@@ -426,8 +426,6 @@ public final class Types {
                 message = EngineMessage.OP_EVALUATION_NOT_INVERTIBLE;
             } else if ("BigInteger: modulus not positive".equals(message)) {
                 message = EngineMessage.OP_EVALUATION_ILLEGAL_MODULUS;
-            } else {
-                System.out.println("messsage: "+message);
             }
             return new EngineMessage(EngineMessage.evaluationError(
                     (message != null ? message : "")));

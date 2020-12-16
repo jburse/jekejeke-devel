@@ -84,13 +84,14 @@
 simplify_term(A, B) :- term_simplification(A, B), !.
 simplify_term(T, T).
 
-/* Predefined term implifications */
+/* Predefined goal implifications */
 /* true unit */
-term_simplification((C :- U), C) :- U == true.
-/* (:-)/2 flattening */
-term_simplification((U :- C), J) :- nonvar(U), U = (A :- B),
-   simplify_goal((C, B), H),
-   simplify_term((A :- H), J).
+term_simplification([U|C], C) :- U == [].
+term_simplification([C|U], C) :- U == [].
+/* (,)/2 flattening */
+term_simplification([U|C], J) :- nonvar(U), U = [A|B],
+   simplify_term([B|C], H),
+   simplify_term([A|H], J).
 
 /*******************************************************/
 /* Goal Simplify                                       */
@@ -127,32 +128,6 @@ goal_simplification((C, U), C) :- U == true.
 goal_simplification((U, C), J) :- nonvar(U), U = (A, B),
    simplify_goal((B, C), H),
    simplify_goal((A, H), J).
-
-/*******************************************************/
-/* Rest Simplify                                       */
-/*******************************************************/
-
-/**
- * rest_simplification(C, D):
- * This predicate can be used to define custom rest
- * simplification rules.
- */
-% rest_simplification(+Goal, -Goal)
-:- public rest_simplification/2.
-:- multifile rest_simplification/2.
-:- set_predicate_property(rest_simplification/2, sys_noexpand).
-:- static rest_simplification/2.
-
-/**
- * simplify_rest(C, D):
- * The system predicate succeeds if the simplification of
- * the rest C unifies with D.
- */
-% simplify_rest(+Goal, -Goal)
-:- public simplify_rest/2.
-:- set_predicate_property(simplify_rest/2, sys_noexpand).
-simplify_rest(A, B) :- rest_simplification(A, B), !.
-simplify_rest(G, G).
 
 /*******************************************************/
 /* Term Rebuild                                        */
@@ -199,7 +174,7 @@ rebuild_term_callable(G, I, H) :-
    H =.. [K|S].
 rebuild_term_callable(G, _, H) :-
    G =.. [K|L],
-   rebuild_rest_args(L, S),
+   rebuild_term_args(_, L, S),
    H =.. [K|S].
 
 % rebuild_term_args(+Modes, +Args, -Args)
@@ -211,9 +186,10 @@ rebuild_term_args([M|R], [A|L], [B|S]) :-
 
 % rebuild_term_arg(+Mode, +Arg, -Arg)
 :- private rebuild_term_arg/3.
+rebuild_term_arg(-2, X, X) :- !.
 rebuild_term_arg(0, X, Y) :- !, rebuild_term(X, Y).
 rebuild_term_arg(-1, X, Y) :- !, rebuild_goal(X, Y).
-rebuild_term_arg(_, X, Y) :- rebuild_rest(X, Y).
+rebuild_term_arg(_, X, X).
 
 /*******************************************************/
 /* Goal Rebuild                                        */
@@ -260,7 +236,7 @@ rebuild_goal_callable(G, I, H) :-
    H =.. [K|S].
 rebuild_goal_callable(G, _, H) :-
    G =.. [K|L],
-   rebuild_rest_args(L, S),
+   rebuild_goal_args(_, L, S),
    H =.. [K|S].
 
 % rebuild_goal_args(+Modes, +Args, -Args)
@@ -271,60 +247,8 @@ rebuild_goal_args([M|R], [A|L], [B|S]) :-
    rebuild_goal_args(R, L, S).
 
 % rebuild_goal_arg(+Mode, +Arg, -Arg)
-:- public rebuild_goal_arg/3.
+:- private rebuild_goal_arg/3.
+rebuild_goal_arg(1, X, X) :- !.
 rebuild_goal_arg(0, X, Y) :- !, rebuild_goal(X, Y).
 rebuild_goal_arg(-1, X, Y) :- !, rebuild_term(X, Y).
-rebuild_goal_arg(_, X, Y) :- rebuild_rest(X, Y).
-
-/*******************************************************/
-/* Rest Rebuild                                        */
-/*******************************************************/
-
-/**
- * rest_rebuilding(C, D):
- * This predicate can be used to define custom rest
- * rebuilding rules.
- */
-% rest_rebuilding(+Goal, -Goal)
-:- public rest_rebuilding/2.
-:- multifile rest_rebuilding/2.
-:- set_predicate_property(rest_rebuilding/2, sys_noexpand).
-:- static rest_rebuilding/2.
-
-/**
- * rebuild_rest(C, D):
- * The system predicate succeeds if the rebuild of
- * the rest C unifies with D.
- */
-% rebuild_rest(+Goal, -Goal)
-:- public rebuild_rest/2.
-:- set_predicate_property(rebuild_rest/2, sys_noexpand).
-rebuild_rest(P, P) :- user:var(P), !.
-rebuild_rest(A, C) :- rest_rebuilding(A, B), !, rebuild_rest(B, C).
-rebuild_rest(G, H) :-
-   user:callable(G),
-   user:functor(G, J, A),
-   J/A = I,
-   \+ predicate_property(I, sys_nomacro), !,
-   rebuild_rest_callable(G, I, H).
-rebuild_rest(G, G).
-
-% rebuild_rest_callable(+Callable, +Indicator, -Callable)
-:- private rebuild_rest_callable/3.
-rebuild_rest_callable(G, I, H) :-
-   predicate_property(I, meta_function(P)), !,
-   P =.. [_|R],
-   user:(G =.. [K|L]),
-   rebuild_goal_args(R, L, S),
-   user:(H =.. [K|S]).
-rebuild_rest_callable(G, _, H) :-
-   user:(G =.. [K|L]),
-   rebuild_rest_args(L, S),
-   user:(H =.. [K|S]).
-
-% rebuild_rest_args(+Args, -Args)
-:- private rebuild_rest_args/2.
-rebuild_rest_args([], []).
-rebuild_rest_args([A|L], [B|S]) :-
-   rebuild_rest(A, B),
-   rebuild_rest_args(L, S).
+rebuild_goal_arg(_, X, X).

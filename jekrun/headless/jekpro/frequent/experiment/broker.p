@@ -66,10 +66,6 @@
 :- public infix(when).
 :- op(1105, xfy, when).
 
-:- public when/2.
-:- meta_function when(?, 0).
-when(_, _) :- throw(error(existence_error(body, when/2), _)).
-
 % server_endpoint(+Atom, +Endpoint)
 :- private server_endpoint/2.
 :- group_local server_endpoint/2.

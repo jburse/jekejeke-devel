@@ -96,7 +96,6 @@ public abstract class Branch extends AbstractBranch {
         en.store.foyer.ATOM_SYS_SOFT_BEGIN = new SkelAtom(Foyer.OP_SYS_SOFT_BEGIN, en.store.getRootSystem());
         en.store.foyer.ATOM_SYS_SOFT_COMMIT = new SkelAtom(Foyer.OP_SYS_SOFT_COMMIT, en.store.getRootSystem());
         en.store.foyer.ATOM_CALL = new SkelAtom(Foyer.OP_CALL, en.store.getRootSystem());
-        en.store.foyer.ATOM_BOTT = new SkelAtom(Foyer.OP_BOTT, en.store.getRootSystem());
 
         en.store.foyer.ATOM_COMPARE = new SkelAtom(Foyer.OP_COMPARE, en.store.getRootSystem());
 
@@ -201,7 +200,6 @@ public abstract class Branch extends AbstractBranch {
         store.foyer.ATOM_SYS_SOFT_BEGIN = null;
         store.foyer.ATOM_SYS_SOFT_COMMIT = null;
         store.foyer.ATOM_CALL = null;
-        store.foyer.ATOM_BOTT = null;
 
         store.foyer.ATOM_COMPARE = null;
 

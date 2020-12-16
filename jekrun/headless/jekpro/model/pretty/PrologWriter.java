@@ -377,12 +377,7 @@ public class PrologWriter {
     public Object[] predicateToMeta(CachePredicate cp) {
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
             return null;
-        Object t;
-        if ((spez & SPEZ_META) != 0) {
-            t = cp.pick.meta_predicate;
-        } else {
-            t = cp.pick.meta_function;
-        }
+        Object t = ((spez & SPEZ_META) != 0? cp.pick.meta_predicate : null);
         return (t != null ? ((SkelCompound) t).args : null);
     }
 
