@@ -84,6 +84,13 @@
 simplify_term(A, B) :- term_simplification(A, B), !.
 simplify_term(T, T).
 
+% simplify_term(+Clause, -Clause, -Integer)
+:- public simplify_term/3.
+:- meta_predicate simplify_term(-1, -1, ?).
+:- set_predicate_property(simplify_term/3, sys_noexpand).
+simplify_term(A, B, 1) :- term_simplification(A, B), !.
+simplify_term(T, T, 0).
+
 /* Predefined goal implifications */
 /* true unit */
 term_simplification([U|C], C) :- U == [].
@@ -119,6 +126,13 @@ term_simplification([U|C], J) :- nonvar(U), U = [A|B],
 :- set_predicate_property(simplify_goal/2, sys_noexpand).
 simplify_goal(A, B) :- goal_simplification(A, B), !.
 simplify_goal(G, G).
+
+% simplify_goal(+Goal, -Goal, +Integer, -Integer)
+:- public simplify_goal/3.
+:- meta_predicate simplify_goal(0, 0, ?).
+:- set_predicate_property(simplify_goal/3, sys_noexpand).
+simplify_goal(A, B, 1) :- goal_simplification(A, B), !.
+simplify_goal(G, G, 0).
 
 /* Predefined goal implifications */
 /* true unit */

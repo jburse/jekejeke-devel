@@ -108,6 +108,7 @@
  */
 % \(+Var, +Goal, +Term, ..)
 :- public (\)/3.
+:- nonstrict (\)/3.
 :- meta_predicate \(?, 0, ?).
 \(X, A, Y) :-
    sys_goal_kernel(A, B),

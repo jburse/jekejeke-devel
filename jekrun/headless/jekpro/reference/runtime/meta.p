@@ -5,8 +5,7 @@
  * and a number of meta-argument specifiers. We can describe
  * the arguments via the following grammar rules:
  *
- * meta_directive    --> "meta_predicate" meta_signature
- *                     | "meta_function" meta_signature.
+ * meta_directive    --> "meta_predicate" meta_signature.
  *
  * meta_signature    --> module ":" meta_signature
  *                     | name [ "(" meta_specifier

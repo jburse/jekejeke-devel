@@ -66,9 +66,9 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_THREAD_LOCAL = "sys_thread_local";
     private final static String OP_SYS_GROUP_LOCAL = "sys_group_local";
 
-    private final static String OP_MULTIFILE = "multifile";
-    private final static String OP_VIRTUAL = "virtual";
-    private final static String OP_AUTOMATIC = "automatic";
+    public final static String OP_MULTIFILE = "multifile";
+    public final static String OP_VIRTUAL = "virtual";
+    private final static String OP_NONSTRICT = "nonstrict";
 
     private final static String OP_SYS_NOTRACE = "sys_notrace";
 
@@ -98,7 +98,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     private final static int PROP_MULTIFILE = 10;
     private final static int PROP_VIRTUAL = 11;
-    private final static int PROP_AUTOMATIC = 12;
+    private final static int PROP_NONSTRICT = 12;
 
     private final static int PROP_SYS_NOTRACE = 13;
 
@@ -137,7 +137,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
         DEFAULT.add(new StoreKey(OP_VIRTUAL, 0), new PropertyPredicate(PROP_VIRTUAL,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
-        DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicate(PROP_AUTOMATIC));
+        DEFAULT.add(new StoreKey(OP_NONSTRICT, 0), new PropertyPredicate(PROP_NONSTRICT,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
 
         DEFAULT.add(new StoreKey(OP_SYS_NOTRACE, 0), new PropertyPredicate(PROP_SYS_NOTRACE,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_MODI));
@@ -269,19 +270,19 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
             case PROP_MULTIFILE:
                 if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                    return new Object[]{new SkelAtom(Predicate.OP_MULTIFILE)};
+                    return new Object[]{new SkelAtom(OP_MULTIFILE)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
             case PROP_VIRTUAL:
                 if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0) {
-                    return new Object[]{new SkelAtom(Predicate.OP_VIRTUAL)};
+                    return new Object[]{new SkelAtom(OP_VIRTUAL)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_AUTOMATIC:
-                if ((pick.getBits() & Predicate.MASK_PRED_AUTO) != 0) {
-                    return new Object[]{new SkelAtom(OP_AUTOMATIC)};
+            case PROP_NONSTRICT:
+                if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0) {
+                    return new Object[]{new SkelAtom(OP_NONSTRICT)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -450,8 +451,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_VIRTUAL:
                 pick.setBit(Predicate.MASK_PRED_VIRT);
                 return true;
-            case PROP_AUTOMATIC:
-                pick.setBit(Predicate.MASK_PRED_AUTO);
+            case PROP_NONSTRICT:
+                pick.setBit(Predicate.MASK_PRED_NOST);
                 return true;
 
             case PROP_SYS_NOTRACE:
@@ -579,8 +580,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_VIRTUAL:
                 pick.resetBit(Predicate.MASK_PRED_VIRT);
                 return true;
-            case PROP_AUTOMATIC:
-                pick.resetBit(Predicate.MASK_PRED_AUTO);
+            case PROP_NONSTRICT:
+                pick.resetBit(Predicate.MASK_PRED_NOST);
                 return true;
 
             case PROP_SYS_NOTRACE:

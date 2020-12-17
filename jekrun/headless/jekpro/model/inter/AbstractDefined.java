@@ -153,6 +153,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             }
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
+            if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_NOST;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             del.subflags |= AbstractDefined.MASK_DEFI_STAT;
@@ -186,6 +188,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             }
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
+            if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_NOST;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             del.subflags |= AbstractDefined.MASK_DEFI_DYNA;
@@ -216,6 +220,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             del = new DefinedThreadLocal(s, store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
+            if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_NOST;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             del.subflags |= AbstractDefined.MASK_DEFI_THLC;
@@ -246,6 +252,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             del = new DefinedGroupLocal(s, store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
+            if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
+                del.subflags |= AbstractDelegate.MASK_DELE_NOST;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_MULT;
             del.subflags |= AbstractDefined.MASK_DEFI_GRLC;

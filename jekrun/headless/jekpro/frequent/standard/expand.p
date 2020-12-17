@@ -28,12 +28,6 @@
  * argument it will look up the meta-declarations for the qualified
  * predicate name.
  *
- * The result of the expansion can be no clause, a single clause or
- * multiple clauses. No clause is indicated by unit/0 as a result. A
- * single clause is simply returned by itself. Multiple clauses can be
- * conjoined by the operator (/\)/2 and returned this way. Expansion is
- * also performed along the existential quantifier (^)/2 second argument.
- *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -66,6 +60,8 @@
 :- module(user, []).
 :- use_module(library(experiment/simp)).
 :- use_module(library(runtime/quali)).
+:- use_module(library(advanced/abstract)).
+:- use_module(library(basic/lists)).
 
 /*******************************************************/
 /* Term Expand                                         */
@@ -92,44 +88,63 @@
 :- public expand_term/2.
 :- meta_predicate expand_term(-1, -1).
 :- set_predicate_property(expand_term/2, sys_noexpand).
-expand_term(P, P) :- var(P), !.
-expand_term(A, C) :- term_expansion(A, B), !, expand_term(B, C).
-expand_term(G, N) :-
-   callable(G),
-   functor(G, J, A),
-   sys_make_indicator(J, A, I),
-   \+ predicate_property(I, sys_noexpand), !,
-   expand_term_callable(G, I, H),
-   simplify_term(H, N).
-expand_term(T, U) :-
-   simplify_term(T, U).
+expand_term(B, C) :-
+   sys_expand_term(B, C, _).
 
-% expand_term_callable(+Callable, +Indicator, -Callable)
-:- private expand_term_callable/3.
-expand_term_callable(G, I, H) :-
+% sys_expand_term(+Clause, -Clause, -Integer)
+:- private sys_expand_term/3.
+:- meta_predicate sys_expand_term(-1, -1, ?).
+:- set_predicate_property(sys_expand_term/3, sys_noexpand).
+sys_expand_term(T, T, 0) :- var(T), !.
+sys_expand_term(A, C, 1) :- term_expansion(A, B), !, sys_expand_term(B, C, _).
+sys_expand_term(T, N, R) :-
+   callable(T), !,
+   functor(T, J, A),
+   sys_make_indicator(J, A, I),
+   sys_expand_term_callable(T, I, H),
+   simplify_term(H, N, R).
+sys_expand_term(T, T, 0).
+
+% sys_expand_term_callable(+Callable, +Indicator, -Callable)
+:- private sys_expand_term_callable/3.
+sys_expand_term_callable(T, I, T) :-
+   predicate_property(I, sys_noexpand), !.
+sys_expand_term_callable(T, I, H) :-
    predicate_property(I, meta_predicate(P)), !,
-   P =.. [_|R],
-   G =.. [K|L],
-   sys_expand_term_args(R, L, S),
+   P =.. [_|M],
+   T =.. [K|L],
+   sys_expand_term_args(M, L, S),
    H =.. [K|S].
-expand_term_callable(G, _, H) :-
-   G =.. [K|L],
+sys_expand_term_callable(T, _, H) :-
+   T =.. [K|L],
    sys_expand_term_args(_, L, S),
    H =.. [K|S].
 
 % sys_expand_term_args(+Modes, +Args, -Args)
 :- private sys_expand_term_args/3.
 sys_expand_term_args([], [], []).
-sys_expand_term_args([M|R], [A|L], [B|S]) :-
+sys_expand_term_args([M|T], [A|L], [B|S]) :-
    sys_expand_term_arg(M, A, B),
-   sys_expand_term_args(R, L, S).
+   sys_expand_term_args(T, L, S).
 
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_term_arg/3.
-sys_expand_term_arg(-2, X, X) :- !.
-sys_expand_term_arg(0, X, Y) :- !, expand_term(X, Y).
-sys_expand_term_arg(-1, X, Y) :- !, expand_goal(X, Y).
+sys_expand_term_arg(1, X, Y) :- !, sys_expand_term_closure(X, Y, _).
+sys_expand_term_arg(0, X, Y) :- !, sys_expand_term(X, Y, _).
+sys_expand_term_arg(-1, X, Y) :- !, sys_expand_goal(X, Y, _).
+sys_expand_term_arg(-2, X, Y) :- !, sys_expand_goal_closure(X, Y, _).
 sys_expand_term_arg(_, X, X).
+
+% sys_expand_term_closure(+Closure, -Closure, -Integer)
+sys_expand_term_closure(X, Y, R) :- callable(X), !,
+   sys_callable_apply(X, V, H),
+   sys_expand_term(H, J, R),
+   (  R == 0
+   -> sys_callable_apply(Y, V, J)
+   ;  sys_goal_globals(H^J, L),
+      sys_kernel_goal(L, J, K),
+      Y = V\K).
+sys_expand_term_closure(T, T, 0).
 
 /*******************************************************/
 /* Goal Expand                                         */
@@ -156,25 +171,32 @@ sys_expand_term_arg(_, X, X).
 :- public expand_goal/2.
 :- meta_predicate expand_goal(0, 0).
 :- set_predicate_property(expand_goal/2, sys_noexpand).
-expand_goal(P, P) :- var(P), !.
-expand_goal(A, C) :- goal_expansion(A, B), !, expand_goal(B, C).
-expand_goal(G, N) :-
-   callable(G),
+expand_goal(B, C) :-
+   sys_expand_goal(B, C, _).
+
+% sys_expand_goal(+Goal, -Goal, -Integer)
+:- private sys_expand_goal/3.
+:- meta_predicate sys_expand_goal(0, 0, ?).
+:- set_predicate_property(sys_expand_goal/3, sys_noexpand).
+sys_expand_goal(G, G, 0) :- var(G), !.
+sys_expand_goal(A, C, 1) :- goal_expansion(A, B), !, sys_expand_goal(B, C, _).
+sys_expand_goal(G, N, R) :-
+   callable(G), !,
    functor(G, J, A),
    sys_make_indicator(J, A, I),
-   \+ predicate_property(I, sys_noexpand), !,
    sys_expand_goal_callable(G, I, H),
-   simplify_goal(H, N).
-expand_goal(G, H) :-
-   simplify_goal(G, H).
+   simplify_goal(H, N, R).
+sys_expand_goal(G, G, 0).
 
 % sys_expand_goal_callable(+Callable, +Indicator, -Callable)
 :- private sys_expand_goal_callable/3.
+sys_expand_goal_callable(G, I, G) :-
+   predicate_property(I, sys_noexpand), !.
 sys_expand_goal_callable(G, I, H) :-
    predicate_property(I, meta_predicate(P)), !,
-   P =.. [_|R],
+   P =.. [_|M],
    G =.. [K|L],
-   sys_expand_goal_args(R, L, S),
+   sys_expand_goal_args(M, L, S),
    H =.. [K|S].
 sys_expand_goal_callable(G, _, H) :-
    G =.. [K|L],
@@ -184,13 +206,56 @@ sys_expand_goal_callable(G, _, H) :-
 % sys_expand_goal_args(+Modes, +Args, -Args)
 :- private sys_expand_goal_args/3.
 sys_expand_goal_args([], [], []).
-sys_expand_goal_args([M|R], [A|L], [B|S]) :-
+sys_expand_goal_args([M|T], [A|L], [B|S]) :-
    sys_expand_goal_arg(M, A, B),
-   sys_expand_goal_args(R, L, S).
+   sys_expand_goal_args(T, L, S).
 
 % sys_expand_goal_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_goal_arg/3.
-sys_expand_goal_arg(1, X, X) :- !.
-sys_expand_goal_arg(0, X, Y) :- !, expand_goal(X, Y).
-sys_expand_goal_arg(-1, X, Y) :- !, expand_term(X, Y).
+sys_expand_goal_arg(1, X, Y) :- !, sys_expand_goal_closure(X, Y, _).
+sys_expand_goal_arg(0, X, Y) :- !, sys_expand_goal(X, Y, _).
+sys_expand_goal_arg(-1, X, Y) :- !, sys_expand_term(X, Y, _).
+sys_expand_goal_arg(-2, X, Y) :- !, sys_expand_term_closure(X, Y, _).
 sys_expand_goal_arg(_, X, X).
+
+% sys_expand_goal_closure(+Closure, -Closure, -Integer)
+sys_expand_goal_closure(X, Y, R) :- callable(X), !,
+   sys_callable_apply(X, V, H),
+   sys_expand_goal(H, J, R),
+   (  R == 0
+   -> sys_callable_apply(Y, V, J)
+   ;  sys_goal_globals(H^J, L),
+      sys_kernel_goal(L, J, K),
+      Y = V\K).
+sys_expand_goal_closure(G, G, 0).
+
+/******************************************************************/
+/* Helper                                                         */
+/******************************************************************/
+
+/**
+ * sys_kernel_goal(L, G, Q):
+ * The predicate succeeds in Q with the goal G quatified
+ * by the variables L.
+ */
+% sys_kernel_goal(+List, +Goal, -QuantGoal)
+:- private sys_kernel_goal/3.
+sys_kernel_goal([X|Y], Z, X^T) :-
+   sys_kernel_goal(Y, Z, T).
+sys_kernel_goal([], X, X).
+
+/**
+ * sys_callable_apply(G, V, H):
+ * The predicate succeeds in H with the callable G extended
+ * by the argument V.
+ */
+:- private sys_callable_apply/3.
+sys_callable_apply(G, V, H) :- var(G), !,
+   H =.. [F|R],
+   last(R, V, S),
+   G =.. [F|S].
+sys_callable_apply(G, V, H) :-
+   G =.. [F|S],
+   last(R, V, S),
+   H =.. [F|R].
+

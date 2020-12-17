@@ -73,7 +73,6 @@ public final class EngineException extends Exception {
      * <p>No stack filling.</p>
      *
      * @return This throwable.
-     * @see com.sun.org.apache.xerces.internal.parsers.AbstractDOMParser.Abort
      */
     public Throwable fillInStackTrace() {
         return this;

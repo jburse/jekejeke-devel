@@ -63,6 +63,7 @@ import jekpro.tools.term.SkelVar;
  */
 public abstract class AbstractDelegate {
     public final static int MASK_DELE_VIRT = 0x00000001;
+    public final static int MASK_DELE_NOST = 0x00000002;
     public final static int MASK_DELE_MULT = 0x00000004;
 
     public int subflags;
@@ -204,16 +205,25 @@ public abstract class AbstractDelegate {
         Object[] help = ((SkelCompound) temp).args;
         Object[] args = new Object[help.length + 1];
         int i = 0;
-        if ((subflags & MASK_DELE_VIRT) != 0) {
-            en.skel = help[0];
-            en.display = ref;
-            en.deref();
-            args[i] = AbstractTerm.createMolec(en.skel, en.display);
-            i++;
-        }
-        for (; i < help.length; i++) {
-            en.computeExpr(help[i], ref);
-            args[i] = AbstractTerm.createMolec(en.skel, en.display);
+        if ((subflags & MASK_DELE_NOST) != 0) {
+            for (; i < help.length; i++) {
+                en.skel = help[i];
+                en.display = ref;
+                en.deref();
+                args[i] = AbstractTerm.createMolec(en.skel, en.display);
+            }
+        } else {
+            if ((subflags & MASK_DELE_VIRT) != 0) {
+                en.skel = help[i];
+                en.display = ref;
+                en.deref();
+                args[i] = AbstractTerm.createMolec(en.skel, en.display);
+                i++;
+            }
+            for (; i < help.length; i++) {
+                en.computeExpr(help[i], ref);
+                args[i] = AbstractTerm.createMolec(en.skel, en.display);
+            }
         }
         return args;
     }

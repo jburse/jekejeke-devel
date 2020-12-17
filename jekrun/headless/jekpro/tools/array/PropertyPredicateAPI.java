@@ -57,21 +57,22 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
 
     private final static String OP_SYS_META_PREDICATE = "sys_meta_predicate";
-    private final static String OP_SYS_META_FUNCTION = "sys_meta_function";
+    private final static String OP_AUTOMATIC = "automatic";
     private final static String OP_SYS_NOEXPAND = "sys_noexpand";
     private final static String OP_META_PREDICATE = "meta_predicate";
     private final static String OP_SYS_TABLED = "sys_tabled";
     private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
 
     private final static int PROP_SYS_META_PREDICATE = 0;
+    private final static int PROP_AUTOMATIC = 1;
     private final static int PROP_SYS_NOEXPAND = 2;
-    private final static int PROP_SYS_NOMACRO = 3;
     private final static int PROP_META_PREDICATE = 4;
     private final static int PROP_SYS_TABLED = 6;
     private final static int PROP_SYS_READWRITE_LOCK = 7;
 
     static {
         DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_SYS_META_PREDICATE));
+        DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicateAPI(PROP_AUTOMATIC));
         DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicateAPI(PROP_SYS_NOEXPAND,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SETP));
         DEFAULT.add(new StoreKey(OP_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_META_PREDICATE,
@@ -116,6 +117,12 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
                         new SkelAtom(OP_SYS_META_PREDICATE), res);
+            case PROP_AUTOMATIC:
+                if ((pick.getBits() & Predicate.MASK_PRED_AUTO) != 0) {
+                    return new Object[]{new SkelAtom(OP_AUTOMATIC)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             case PROP_SYS_NOEXPAND:
                 if ((pick.getBits() & Predicate.MASK_PRED_NOEX) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOEXPAND)};
@@ -168,6 +175,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_PRED, en);
                 return true;
+            case PROP_AUTOMATIC:
+                pick.setBit(Predicate.MASK_PRED_AUTO);
+                return true;
             case PROP_SYS_NOEXPAND:
                 pick.setBit(Predicate.MASK_PRED_NOEX);
                 return true;
@@ -204,6 +214,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_PRED);
+                return true;
+            case PROP_AUTOMATIC:
+                pick.resetBit(Predicate.MASK_PRED_AUTO);
                 return true;
             case PROP_SYS_NOEXPAND:
                 pick.resetBit(Predicate.MASK_PRED_NOEX);

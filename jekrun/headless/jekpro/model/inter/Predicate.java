@@ -51,18 +51,16 @@ import java.io.Reader;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Predicate {
-    public final static String OP_MULTIFILE = "multifile";
-    public final static String OP_VIRTUAL = "virtual";
-
     public final static int MASK_PRED_MULT = 0x00000001;
     public final static int MASK_PRED_NOTR = 0x00000002;
     public final static int MASK_PRED_VIRT = 0x00000004;
-    public final static int MASK_PRED_AUTO = 0x00000008;
+    public final static int MASK_PRED_NOST = 0x00000008;
 
     public final static int MASK_PRED_VSPR = 0x00000010;
     public final static int MASK_PRED_VSPU = 0x00000020;
 
     public final static int MASK_PRED_NOEX = 0x00000100;
+    public final static int MASK_PRED_AUTO = 0x00000200;
     public final static int MASK_PRED_TABL = 0x00000400;
 
     /* combine masks */
@@ -82,7 +80,6 @@ public final class Predicate {
     public static final int MASK_TRCK_VSPU = 0x00000080;
 
     public static final int MASK_TRCK_PRED = 0x00000100;
-    public static final int MASK_TRCK_FUNC = 0x00000200;
     public static final int MASK_TRCK_TRLC = 0x00080400;
     public static final int MASK_TRCK_GRLC = 0x00080800;
 
