@@ -18,6 +18,7 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
 import java.io.Reader;
+import java.lang.reflect.Method;
 
 /**
  * <p>The class provides a predicate.</p>
@@ -203,7 +204,6 @@ public final class Predicate {
      *     meta_specifier    --> integer
      *                         | "?"
      *                         | "::(" meta_specifier2 ")"
-     *                         | "#(" meta_specifier3 ")".
      * </pre>
      *
      * @param c   The spezifier skeleton.
@@ -233,12 +233,6 @@ public final class Predicate {
                     ((SkelCompound) c).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
                 return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
                         checkMetaSpezArg2(((SkelCompound) c).args[0],
-                                ref, en));
-            } else if (c instanceof SkelCompound &&
-                    ((SkelCompound) c).args.length == 1 &&
-                    ((SkelCompound) c).sym.fun.equals(OP_HASH)) {
-                return new SkelCompound(new SkelAtom(OP_HASH),
-                        checkMetaSpezArg3(((SkelCompound) c).args[0],
                                 ref, en));
             } else {
                 EngineMessage.checkInstantiated(c);
@@ -599,10 +593,6 @@ public final class Predicate {
         }
     }
 
-    /***********************************************************/
-    /* Style Checks Predicate Declaration                      */
-    /***********************************************************/
-
     /**
      * <p>Define a built-in for a predicate.</p>
      *
@@ -638,6 +628,10 @@ public final class Predicate {
                         pick.getArity(), en)));
     }
 
+    /***********************************************************/
+    /* Style Checks Predicate Head                             */
+    /***********************************************************/
+
     /**
      * <p>Perform a style check on the given predicate.</p>
      * <p>This check is performed during the loading of a module for
@@ -665,6 +659,43 @@ public final class Predicate {
             y.printStackTrace(en);
         }
     }
+
+    /**
+     * <p>Perform the discontigous style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src  The call-site.
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateDiscontiguous(Integer loc,
+                                                    AbstractSource src,
+                                                    Predicate pick,
+                                                    Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
+            en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
+            pick.addDef(src, MASK_TRCK_HEAD, en);
+            return;
+        }
+        if ((loc.intValue() & MASK_TRCK_DISC) != 0)
+            return;
+        if (en.visor.lastsk != null &&
+                pick.getArity() == en.visor.lastsk.getArity() &&
+                pick.getFun() == en.visor.lastsk.getFun())
+            return;
+        en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /***********************************************************/
+    /* Style Checks Predicate Declaration                      */
+    /***********************************************************/
 
     /**
      * <p>Perform a style check on the given predicate.</p>
@@ -706,6 +737,7 @@ public final class Predicate {
             checkPredicateDynamic(def, pick, en);
             checkPredicateThreadLocal(def, pick, en);
             checkPredicateGroupLocal(def, pick, en);
+            checkPredicateMetaSuggested(pick, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
@@ -713,39 +745,6 @@ public final class Predicate {
                     EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
-    }
-
-    /**
-     * <p>Perform the discontigous style check.</p>
-     *
-     * @param loc  The usage.
-     * @param src The call-site.
-     * @param pick The predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateDiscontiguous(Integer loc,
-                                                    AbstractSource src,
-                                                    Predicate pick,
-                                                    Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
-            en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
-            pick.addDef(src, MASK_TRCK_HEAD, en);
-            return;
-        }
-        if ((loc.intValue() & MASK_TRCK_DISC) != 0)
-            return;
-        if (en.visor.lastsk != null &&
-                pick.getArity() == en.visor.lastsk.getArity() &&
-                pick.getFun() == en.visor.lastsk.getFun())
-            return;
-        en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
     }
 
     /**
@@ -790,8 +789,8 @@ public final class Predicate {
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateFresh(Integer loc, SkelAtom sa,
-                                               Predicate pick,
-                                               Engine en)
+                                            Predicate pick,
+                                            Engine en)
             throws EngineMessage, EngineException {
         if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
             return;
@@ -948,6 +947,33 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the meta predicate style check.</p>
+     *
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateMetaSuggested(Predicate pick,
+                                                    Engine en)
+            throws EngineMessage {
+        if (pick.meta_predicate != null)
+            return;
+        AbstractDelegate del = pick.del;
+        if (!(del instanceof AbstractSpecial))
+            return;
+        try {
+            Method meth = del.getClass().getDeclaredMethod("moniEvaluate", Engine.class);
+        } catch (NoSuchMethodException x) {
+            return;
+        }
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_META_PREDICATE_SUGG,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));

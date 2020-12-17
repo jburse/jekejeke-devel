@@ -146,6 +146,7 @@ epsilon/1	arithmetic/trigo
 epsilon32/1	arithmetic/trigo
 exit/0	runtime/session
 exp/2	arithmetic/trigo
+(export)/1	bootload/module
 findall/3	runtime/logic
 findall/4	runtime/logic
 float/1	structure/type
@@ -193,7 +194,6 @@ memory_get/2	structure/bytes
 memory_get/3	structure/bytes
 memory_read/2	structure/bytes
 memory_write/1	structure/bytes
-(meta_function)/1	runtime/meta
 (meta_predicate)/1	runtime/meta
 min/3	arithmetic/compare
 min/3	arithmetic/ratio

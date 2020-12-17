@@ -83,7 +83,6 @@ public class PrologWriter {
 
     public final static int SPEZ_LEFT = 0x00000001;
     public final static int SPEZ_META = 0x00000002;
-    public final static int SPEZ_EVAL = 0x00000004;
 
     public final static int SPEZ_OPER = 0x00000010;
     public final static int SPEZ_FUNC = 0x00000020;
@@ -395,14 +394,6 @@ public class PrologWriter {
         Object obj = (args != null ? args[k] : null);
         if (WriteOpts.spezToMeta(obj))
             return obj;
-        if ((backspez & SPEZ_EVAL) != 0) {
-            if (k != 0)
-                return AbstractSkel.VOID_OBJ;
-            if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
-                return AbstractSkel.VOID_OBJ;
-            if ((cp.pick.getBits() & Predicate.MASK_PRED_VIRT) == 0)
-                return AbstractSkel.VOID_OBJ;
-        }
         return obj;
     }
 
@@ -416,8 +407,6 @@ public class PrologWriter {
         int flags = 0;
         if (WriteOpts.spezToMeta(obj))
             flags |= SPEZ_META;
-        if (WriteOpts.spezToEval(obj))
-            flags |= SPEZ_EVAL;
         return flags;
     }
 

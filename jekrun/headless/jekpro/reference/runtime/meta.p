@@ -14,12 +14,9 @@
  * meta_specifier    --> integer
  *                     | "?"
  *                     | "::(" meta_specifier2 ")"
- *                     | "#(" meta_specifier3 ")"
  *
  * meta_specifier2   --> integer
  *                     | "::(" meta_specifier2 ")".
- *
- * meta_specifier3   --> integer.
  *
  * Example:
  * :- meta_predicate count(0,?).
@@ -37,10 +34,6 @@
  * are not supported during term expansion. Term expansion for clauses
  * can be switched on-off by the sys_clause_expand flag, and it is
  * on by default.
- *
- * The predicate sys_make_indicator/3 allows converting between
- * name arity pairs and indicators, but the predicate respects
- * the colon notation.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -209,11 +209,6 @@ public final class WriteOpts {
                     } else {
                         spez &= ~PrologWriter.SPEZ_META;
                     }
-                    if (spezToEval(obj)) {
-                        spez |= PrologWriter.SPEZ_EVAL;
-                    } else {
-                        spez &= ~PrologWriter.SPEZ_EVAL;
-                    }
                     offset = spezToOffset(obj);
                     shift = spezToShift(obj);
                 } else if (en.skel instanceof SkelCompound &&
@@ -511,36 +506,6 @@ public final class WriteOpts {
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
-            return true;
-        } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
-                ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(Predicate.OP_HASH))) {
-            return true;
-        } else {
-            throw new IllegalArgumentException("illegal meta spec");
-        }
-    }
-
-    /**
-     * <p>Retrieve the eval flag.</p>
-     * <p>The default is question mark.</p>
-     *
-     * @param obj The meta pecifier, can be null.
-     * @return The eval flag.
-     */
-    static boolean spezToEval(Object obj) {
-        if (obj instanceof Integer) {
-            return false;
-        } else if (obj == null || (obj instanceof SkelAtom &&
-                ((SkelAtom) obj).fun.equals(Predicate.OP_QUESTION))) {
-            return false;
-        } else if (obj instanceof SkelCompound &&
-                ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
-            return false;
-        } else if (obj == AbstractSkel.VOID_OBJ || (obj instanceof SkelCompound &&
-                ((SkelCompound) obj).args.length == 1 &&
-                ((SkelCompound) obj).sym.fun.equals(Predicate.OP_HASH))) {
             return true;
         } else {
             throw new IllegalArgumentException("illegal meta spec");

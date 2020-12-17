@@ -309,7 +309,7 @@ rat_make(P, Q, P#Q).
 
 :- public =:= /2.
 :- override =:= /2.
-:- meta_predicate =:=(#(1), #(1)).
+:- meta_predicate =:=(1, 1).
 =:=(A, B) :-
    H is A,
    J is B,
@@ -317,7 +317,7 @@ rat_make(P, Q, P#Q).
 
 :- public =\= /2.
 :- override =\= /2.
-:- meta_predicate =\=(#(1), #(1)).
+:- meta_predicate =\=(1, 1).
 =\=(A, B) :-
    H is A,
    J is B,
@@ -325,7 +325,7 @@ rat_make(P, Q, P#Q).
 
 :- public < /2.
 :- override < /2.
-:- meta_predicate <(#(1), #(1)).
+:- meta_predicate <(1, 1).
 <(A, B) :-
    H is A,
    J is B,
@@ -333,7 +333,7 @@ rat_make(P, Q, P#Q).
 
 :- public =< /2.
 :- override =< /2.
-:- meta_predicate =<(#(1), #(1)).
+:- meta_predicate =<(1, 1).
 =<(A, B) :-
    H is A,
    J is B,
@@ -341,7 +341,7 @@ rat_make(P, Q, P#Q).
 
 :- public > /2.
 :- override > /2.
-:- meta_predicate >(#(1), #(1)).
+:- meta_predicate >(1, 1).
 >(A, B) :-
    H is A,
    J is B,
@@ -349,7 +349,7 @@ rat_make(P, Q, P#Q).
 
 :- public >= /2.
 :- override >= /2.
-:- meta_predicate >=(#(1), #(1)).
+:- meta_predicate >=(1, 1).
 >=(A, B) :-
    H is A,
    J is B,

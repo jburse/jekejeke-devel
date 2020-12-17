@@ -222,6 +222,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_DYNAMIC_PRED = "dynamic_pred";
     public static final String OP_SYNTAX_THREAD_LOCAL_PRED = "thread_local_pred";
     public static final String OP_SYNTAX_IMPLEMENTATION_PRED = "implementation_pred";
+    public static final String OP_SYNTAX_META_PREDICATE_SUGG = "meta_predicate_sugg";
 
     public static final String OP_SYNTAX_IMPLEMENTATION_OPER = "implementation_oper";
 

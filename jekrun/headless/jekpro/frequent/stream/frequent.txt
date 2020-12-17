@@ -32,7 +32,6 @@ public
 --> /2	standard/dcg
 -> /4	standard/dcg
 '.'/4	standard/dcg
-/\ /2	standard/expand
 : /4	standard/apply
 : /5	standard/apply
 : /6	standard/apply
@@ -152,7 +151,10 @@ eq_contains/2	experiment/sets
 eq_delete/3	experiment/sets
 eq_disjoint/2	experiment/sets
 eq_equal/2	experiment/sets
+eq_get/3	experiment/maps
 eq_intersection/3	experiment/sets
+eq_put/4	experiment/maps
+eq_remove/3	experiment/maps
 eq_subset/2	experiment/sets
 eq_subtract/3	experiment/sets
 eq_symdiff/3	experiment/sets
@@ -165,7 +167,6 @@ exists_entry/2	system/file
 exists_file/1	system/file
 exit/2	experiment/broker
 expand_goal/2	standard/expand
-expand_rest/2	standard/expand
 expand_term/2	standard/expand
 fail/2	standard/dcg
 flush_output/0	stream/byte
@@ -188,7 +189,6 @@ format/3	stream/console
 format_atom/3	system/locale
 format_atom/4	system/locale
 genref/1	basic/random
-get/3	experiment/maps
 get_byte/1	stream/byte
 get_byte/2	stream/byte
 get_char/1	stream/char
@@ -308,7 +308,6 @@ plus/3	standard/arith
 print_stack_trace/2	stream/console
 print_stack_trace/3	stream/console
 printable/2	misc/residue
-put/4	experiment/maps
 put_byte/1	stream/byte
 put_byte/2	stream/byte
 put_char/1	stream/char
@@ -346,21 +345,15 @@ read_term/2	stream/term
 read_term/3	stream/term
 readwrite_new/1	misc/lock
 rebuild_goal/2	experiment/simp
-rebuild_goal_arg/3	experiment/simp
-rebuild_rest/2	experiment/simp
 rebuild_term/2	experiment/simp
 receive/2	experiment/broker
 receive/3	experiment/broker
 recorda_ref/1	experiment/ref
 recordz_ref/1	experiment/ref
 ref_property/2	experiment/ref
-remove/3	experiment/maps
 rename_file/2	system/file
 reset_ref_property/2	experiment/ref
 reset_stream_property/2	stream/stream
-rest_expansion/2	standard/expand
-rest_rebuilding/2	experiment/simp
-rest_simplification/2	experiment/simp
 retract_table/1	advanced/tabling
 retractall_table/1	advanced/tabling
 reverse/2	basic/lists
@@ -389,8 +382,9 @@ setof/4	advanced/bags
 setup_call_cleanup/3	advanced/signal
 sha1_hash/2	system/domain
 simplify_goal/2	experiment/simp
-simplify_rest/2	experiment/simp
+simplify_goal/3	experiment/simp
 simplify_term/2	experiment/simp
+simplify_term/3	experiment/simp
 sinh/2	basic/hyper
 sort/2	standard/sort
 sort/3	standard/sort
@@ -403,7 +397,6 @@ sys_atom_or_type_of/2	basic/score
 sys_boolean/1	basic/score
 sys_char16/1	basic/score
 sys_cleanup/1	advanced/signal
-sys_cond/2	standard/expand
 sys_current_eq/2	misc/residue
 sys_current_mark/1	misc/residue
 user:sys_declaration_indicator/2	basic/array
@@ -461,12 +454,10 @@ thread_sleep/1	system/thread
 thread_start/1	system/thread
 threads/0	system/group
 time_out/2	misc/time
-unit/0	standard/expand
 unslotted_new/1	misc/lock
 upcase_atom/2	misc/text
 uri_encode/2	system/uri
 uri_puny/2	system/domain
-when/2	experiment/broker
 with_lock/2	misc/lock
 write/1	stream/term
 write/2	stream/term

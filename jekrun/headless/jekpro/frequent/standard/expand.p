@@ -129,6 +129,7 @@ sys_expand_term_args([M|T], [A|L], [B|S]) :-
 
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_term_arg/3.
+sys_expand_term_arg(?, X, X) :- !.
 sys_expand_term_arg(1, X, Y) :- !, sys_expand_term_closure(X, Y, _).
 sys_expand_term_arg(0, X, Y) :- !, sys_expand_term(X, Y, _).
 sys_expand_term_arg(-1, X, Y) :- !, sys_expand_goal(X, Y, _).
@@ -212,6 +213,7 @@ sys_expand_goal_args([M|T], [A|L], [B|S]) :-
 
 % sys_expand_goal_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_goal_arg/3.
+sys_expand_goal_arg(?, X, X) :- !.
 sys_expand_goal_arg(1, X, Y) :- !, sys_expand_goal_closure(X, Y, _).
 sys_expand_goal_arg(0, X, Y) :- !, sys_expand_goal(X, Y, _).
 sys_expand_goal_arg(-1, X, Y) :- !, sys_expand_term(X, Y, _).
