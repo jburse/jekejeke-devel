@@ -54,6 +54,7 @@
  * If X and Y are integers than the function returns X \/ (1 << Y).
  */
 :- public setbit/3.
+:- meta_predicate setbit(1, 1, ?).
 :- special(setbit/3, 'SupplementBits', 3).
 
 /**
@@ -61,6 +62,7 @@
  * If X and Y are integers than the function returns X /\ \ (1 << Y).
  */
 :- public clearbit/3.
+:- meta_predicate clearbit(1, 1, ?).
 :- special(clearbit/3, 'SupplementBits', 4).
 
 /**

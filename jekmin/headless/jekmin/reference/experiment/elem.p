@@ -63,6 +63,7 @@
  * the number X.
  */
 :- public ulp/2.
+:- meta_predicate ulp(1, ?).
 :- special(ulp/2, 'SupplementElem', 0).
 
 /**
@@ -70,6 +71,7 @@
  * The predicate succeeds in R with B^(-1) mod M.
  */
 :- public modinv/3.
+:- meta_predicate modinv(1, 1, ?).
 :- special(modinv/3, 'SupplementElem', 1).
 
 /**
@@ -77,6 +79,7 @@
  * The predicate succeeds in R with B^E mod M.
  */
 :- public modpow/4.
+:- meta_predicate modpow(1, 1, 1, ?).
 :- special(modpow/4, 'SupplementElem', 2).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,6 +91,7 @@
  */
 % isqrt(+Integer, -Integer)
 :- public isqrt/2.
+:- meta_predicate isqrt(1, ?).
 isqrt(X, _) :- X < 0,
    throw(error(evaluation_error(undefined), _)).
 isqrt(X, Y) :-
@@ -148,6 +152,7 @@ newton2(X, Y, X, Y).
  */
 % iroot(+Integer, +Integer, -Integer)
 :- public iroot/3.
+:- meta_predicate iroot(1, 1, ?).
 iroot(X, _, _) :- X < 0,
    throw(error(evaluation_error(undefined), _)).
 iroot(_, Y, _) :- Y =< 0,

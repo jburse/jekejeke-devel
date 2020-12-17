@@ -71,7 +71,7 @@
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(minimal/assume)).
-:- use_module(library(advanced/ordsets)).
+:- use_module(library(experiment/ordsets)).
 :- use_module(library(experiment/ordmaps)).
 :- use_module(library(term/unify)).
 

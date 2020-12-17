@@ -64,6 +64,7 @@
  * The predicate succeeds in D with a decimal of unscaled value U and scale S.
  */
 :- public new_decimal/3.
+:- meta_predicate new_decimal(1, 1, ?).
 :- special(new_decimal/3, 'SupplementScale', 2).
 
 /**
@@ -71,6 +72,7 @@
  * Predicate succeeds in P with the precision of the decimal number X.
  */
 :- public precision/2.
+:- meta_predicate precision(1, ?).
 :- special(precision/2, 'SupplementScale', 3).
 
 /**
@@ -78,6 +80,7 @@
  * Predicate succeeds in P with requested precision of the math context C.
  */
 :- public requested/2.
+:- meta_predicate requested(1, ?).
 :- special(requested/2, 'SupplementScale', 4).
 
 /**
@@ -85,6 +88,7 @@
  * Predicate succeeds in C with a new math context of requested precision P.
  */
 :- public new_context/2.
+:- meta_predicate new_context(1, ?).
 :- special(new_context/2, 'SupplementScale', 5).
 
 /**
@@ -92,6 +96,7 @@
  * Predicate succeeds in P with requested rounding mode of the math context C.
  */
 :- public mode/2.
+:- meta_predicate mode(1, ?).
 :- special(mode/2, 'SupplementScale', 6).
 
 /**
@@ -100,4 +105,5 @@
  * and requested rounding mode R.
  */
 :- public new_context/3.
+:- meta_predicate new_context(1, 1, ?).
 :- special(new_context/3, 'SupplementScale', 7).

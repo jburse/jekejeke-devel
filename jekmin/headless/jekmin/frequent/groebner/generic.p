@@ -108,7 +108,7 @@
 :- override is/2.
 :- multifile is/2.
 :- public is/2.
-:- meta_predicate is(?, #(1)).
+:- meta_predicate is(?, 1).
 X is E :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).

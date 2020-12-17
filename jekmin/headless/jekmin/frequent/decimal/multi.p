@@ -59,7 +59,7 @@
  * the precision P.
  */
 % mp(+Expression, +Integer, -Decimal)
-:- meta_predicate mp(#(1), ?, ?).
+:- meta_predicate mp(1, ?, ?).
 :- public mp/3.
 :- virtual mp/3.
 mp(E, P, R) :-
@@ -73,7 +73,7 @@ mp(E, P, R) :-
  * extended.
  */
 % mp_math(+Expression, +Context, -Decimal)
-:- meta_predicate mp_math(#(1), ?, ?).
+:- meta_predicate mp_math(1, ?, ?).
 :- multifile mp_math/3.
 :- public mp_math/3.
 mp_math(V, _, _) :- var(V),

@@ -186,11 +186,11 @@ watch_add_vars(_, L, _, _, _, _, _) :-
 
 % map_include(+Number, +Var, +Map, -Map, +Number, -Number)
 :- private map_include/6.
-map_include(V, H, F, G, S, T) :- get(F, H, W), !,
+map_include(V, H, F, G, S, T) :- eq_get(F, H, W), !,
    J is V+W,
    interval_subtract(S, W, K),
    interval_addition(K, J, T),
-   put(F, H, J, G).
+   eq_put(F, H, J, G).
 map_include(V, H, F, [H-V|F], S, T) :-
    interval_addition(S, V, T).
 
@@ -278,10 +278,10 @@ watch_unify([], _).
 
 % map_union(+Map, +Map, -Map)
 :- private map_union/3.
-map_union([H-V|L], M, R) :- get(M, H, W), !,
+map_union([H-V|L], M, R) :- eq_get(M, H, W), !,
    S is V+W,
    watch_update(H, V, W, S),
-   put(M, H, S, N),
+   eq_put(M, H, S, N),
    map_union(L, N, R).
 map_union([H-V|L], M, [H-V|R]) :-
    map_union(L, M, R).
@@ -331,6 +331,6 @@ portray_attributes(A, S, S) :-
 :- private watch_get_weights/3.
 watch_get_weights([B|L], H, [V|R]) :-
    get_atts(B, pseudo, watch_ref(M)),
-   get(M, H, V),
+   eq_get(M, H, V),
    watch_get_weights(L, H, R).
 watch_get_weights([], _, []).

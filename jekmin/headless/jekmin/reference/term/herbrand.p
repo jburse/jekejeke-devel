@@ -56,7 +56,7 @@
 :- use_module(library(experiment/attr)).
 :- use_module(library(experiment/trail)).
 :- use_module(library(experiment/cont)).
-:- use_module(library(advanced/sets)).
+:- use_module(library(experiment/sets)).
 :- use_module(library(experiment/maps)).
 
 /********************************************************/
@@ -182,7 +182,7 @@ sys_reduce(S, T, L, R) :-
  */
 % sys_deref_term(+Term, +Map, -Term)
 :- private sys_deref_term/3.
-sys_deref_term(X, L, T) :- var(X), get(L, X, S), !,
+sys_deref_term(X, L, T) :- var(X), eq_get(L, X, S), !,
    sys_deref_term(S, L, T).
 sys_deref_term(S, _, S).
 

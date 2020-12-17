@@ -88,7 +88,7 @@
  * Experimental pretty printing set builder expressions.
  */
 :- public user:'|'/3.
-:- meta_predicate user:'|'(#(1), 0, ?).
+:- meta_predicate user:'|'(1, 0, ?).
 :- static user:'|'/3.
 
 /**
@@ -99,7 +99,7 @@
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?, #(1)).
+:- meta_predicate generic:is(?, 1).
 generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).

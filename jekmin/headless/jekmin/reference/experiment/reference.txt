@@ -57,7 +57,6 @@ chart/3	minimal/chart
 choose/1	minimal/asp
 choose/2	minimal/asp
 clearbit/3	experiment/bits
-count/2	boole/clpb
 del_attr/2	term/unify
 del_atts/2	term/verify
 deposita_ref/1	minimal/assume

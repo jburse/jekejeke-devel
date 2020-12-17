@@ -274,7 +274,7 @@ sys_make_integer(H, R, B, X) :-
 :- override generic:is/2.
 :- multifile generic:is/2.
 :- public generic:is/2.
-:- meta_predicate generic:is(?, #(1)).
+:- meta_predicate generic:is(?, 1).
 generic:(X is E) :- var(E), !,
    sys_ensure_serno(E),
    sys_freeze_var(E, X).

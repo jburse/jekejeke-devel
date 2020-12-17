@@ -89,7 +89,7 @@
 :- use_module(library(term/unify)).
 :- use_module(library(basic/lists)).
 :- use_module(library(experiment/trail)).
-:- use_module(library(advanced/sets)).
+:- use_module(library(experiment/sets)).
 :- use_module(library(term/verify)).
 :- use_module(library(advanced/aggregate)).
 

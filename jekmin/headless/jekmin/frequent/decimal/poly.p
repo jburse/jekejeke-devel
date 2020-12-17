@@ -130,7 +130,7 @@ bin_dec_sqrt(B, D, P, X) :-
 /****************************************************************/
 
 % mp_math(+Expression, +Context, -Decimal)
-:- meta_predicate multi:mp_math(#(1), ?, ?).
+:- meta_predicate multi:mp_math(1, ?, ?).
 :- multifile multi:mp_math/3.
 :- public multi:mp_math/3.
 multi:mp_math(V, _, _) :- var(V),
