@@ -101,7 +101,7 @@ sys_dynamic(I) :-
    callable_property(F, sys_context(C)),
    sys_ensure_shared_dynamic(I),
    set_predicate_property(I, sys_dynamic(C)),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_ensure_shared_dynamic/1.
 :- special(sys_ensure_shared_dynamic/1, 'SpecialDynamic', 0).
@@ -123,7 +123,7 @@ sys_thread_local(I) :-
    callable_property(F, sys_context(C)),
    sys_ensure_thread_local(I),
    set_predicate_property(I, sys_thread_local(C)),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_ensure_thread_local/1.
 :- special(sys_ensure_thread_local/1, 'SpecialDynamic', 1).
@@ -145,7 +145,7 @@ sys_group_local(I) :-
    callable_property(F, sys_context(C)),
    sys_ensure_group_local(I),
    set_predicate_property(I, sys_group_local(C)),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_ensure_group_local/1.
 :- special(sys_ensure_group_local/1, 'SpecialDynamic', 2).

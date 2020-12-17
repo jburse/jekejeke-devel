@@ -77,9 +77,6 @@
 :- public prefix(meta_predicate).
 :- op(1150, fx, meta_predicate).
 
-:- public prefix(meta_function).
-:- op(1150, fx, meta_function).
-
 /*******************************************************/
 /* The Directives                                      */
 /*******************************************************/
@@ -114,47 +111,13 @@ sys_meta_predicate(P) :-
    P =.. [_|L],
    R =.. [N|L],
    set_predicate_property(I, meta_predicate(R)),
-   set_predicate_property(I, sys_meta_predicate(C)).
-
-/**
- * meta_function M, …:
- * The predicate sets the corresponding functor to the meta-function
- * declaration M.
- */
-% meta_function +Callables
-:- public (meta_function)/1.
-meta_function [P|Q] :- !, sys_meta_function(P), meta_function(Q).
-meta_function P, Q :- !, sys_meta_function(P), meta_function(Q).
-meta_function [] :- !.
-meta_function P :- sys_meta_function(P).
-
-:- private sys_meta_function/1.
-sys_meta_function(P) :-
-   functor(P, F, A),
-   sys_make_indicator(F, A, I),
-   callable_property(F, sys_context(C)),
-   once((predicate_property(I, sys_usage(D)),
-      \+ C = D)),
-   \+ predicate_property(I, sys_meta_function(D)),
-   throw(error(permission_error(promote, meta_function, I), _)).
-sys_meta_function(P) :-
-   functor(P, F, A),
-   sys_make_indicator(F, A, I),
-   callable_property(F, sys_context(C)),
-   sys_neutral_predicate(I),
-   predicate_property(I, full_name(N)),
-   P =.. [_|L],
-   R =.. [N|L],
-   set_predicate_property(I, meta_function(R)),
-   set_predicate_property(I, sys_meta_function(C)).
+   set_predicate_property(I, sys_meta_predicate(C)),
+   sys_check_style_head(I).
 
 % first defined in special.p
 % sys_declaration_indicator(+Declaration, -Indicator).
 :- public sys_declaration_indicator/2.
 :- multifile sys_declaration_indicator/2.
 sys_declaration_indicator(meta_predicate(P), I) :-
-   functor(P, F, A),
-   sys_make_indicator(F, A, I).
-sys_declaration_indicator(meta_function(P), I) :-
    functor(P, F, A),
    sys_make_indicator(F, A, I).

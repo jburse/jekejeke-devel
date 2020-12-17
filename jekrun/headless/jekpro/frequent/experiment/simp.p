@@ -62,17 +62,6 @@
 /*******************************************************/
 
 /**
- * term_simplification(C, D):
- * This predicate can be used to define custom term
- * simplification rules.
- */
-% term_simplification(+Clause, -Clause)
-:- public term_simplification/2.
-:- multifile term_simplification/2.
-:- meta_predicate term_simplification(-1, -1).
-:- set_predicate_property(term_simplification/2, sys_noexpand).
-
-/**
  * simplify_term(C, D):
  * The system predicate succeeds if the simplification of
  * the term C unifies with D.
@@ -91,6 +80,16 @@ simplify_term(T, T).
 simplify_term(A, B, 1) :- term_simplification(A, B), !.
 simplify_term(T, T, 0).
 
+/**
+ * term_simplification(C, D):
+ * This predicate can be used to define custom term
+ * simplification rules.
+ */
+% term_simplification(+Clause, -Clause)
+:- public term_simplification/2.
+:- multifile term_simplification/2.
+:- meta_predicate term_simplification(-1, -1).
+:- set_predicate_property(term_simplification/2, sys_noexpand).
 /* Predefined goal implifications */
 /* true unit */
 term_simplification([U|C], C) :- U == [].
@@ -104,16 +103,6 @@ term_simplification([U|C], J) :- nonvar(U), U = [A|B],
 /* Goal Simplify                                       */
 /*******************************************************/
 
-/**
- * goal_simplification(C, D):
- * This predicate can be used to define custom goal
- * simplification rules.
- */
-% goal_simplification(+Goal, -Goal)
-:- public goal_simplification/2.
-:- multifile goal_simplification/2.
-:- meta_predicate goal_simplification(0, 0).
-:- set_predicate_property(goal_simplification/2, sys_noexpand).
 
 /**
  * simplify_goal(C, D):
@@ -134,6 +123,16 @@ simplify_goal(G, G).
 simplify_goal(A, B, 1) :- goal_simplification(A, B), !.
 simplify_goal(G, G, 0).
 
+/**
+ * goal_simplification(C, D):
+ * This predicate can be used to define custom goal
+ * simplification rules.
+ */
+% goal_simplification(+Goal, -Goal)
+:- public goal_simplification/2.
+:- multifile goal_simplification/2.
+:- meta_predicate goal_simplification(0, 0).
+:- set_predicate_property(goal_simplification/2, sys_noexpand).
 /* Predefined goal implifications */
 /* true unit */
 goal_simplification((U, C), C) :- U == true.

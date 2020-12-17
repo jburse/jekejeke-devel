@@ -70,7 +70,7 @@ public final class Predicate {
     public final static String OP_HASH = "#";
 
     public static final int MASK_TRCK_AUTO = 0x00000001;
-    public static final int MASK_TRCK_STYL = 0x00000002;
+    public static final int MASK_TRCK_BODY = 0x00000002;
     public static final int MASK_TRCK_DISC = 0x00000004;
     public static final int MASK_TRCK_DYNA = 0x00000008;
 
@@ -80,8 +80,9 @@ public final class Predicate {
     public static final int MASK_TRCK_VSPU = 0x00000080;
 
     public static final int MASK_TRCK_PRED = 0x00000100;
-    public static final int MASK_TRCK_TRLC = 0x00080400;
-    public static final int MASK_TRCK_GRLC = 0x00080800;
+    public static final int MASK_TRCK_HEAD = 0x00000200;
+    public static final int MASK_TRCK_TRLC = 0x00000400;
+    public static final int MASK_TRCK_GRLC = 0x00000800;
 
     private final int arity;
     private final String fun;
@@ -639,14 +640,15 @@ public final class Predicate {
 
     /**
      * <p>Perform a style check on the given predicate.</p>
-     * <p>This check is performed during the loading of a module.</p>
+     * <p>This check is performed during the loading of a module for
+     * directives that do not create a delegate.</p>
      *
      * @param pick The predicate.
      * @param sa   The call-site.
      * @param en   The engine.
      * @throws EngineMessage Printing error.
      */
-    public static void checkPredicateDecl(Predicate pick, SkelAtom sa,
+    public static void checkPredicateHead(Predicate pick, SkelAtom sa,
                                           Engine en)
             throws EngineMessage, EngineException {
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
@@ -654,10 +656,46 @@ public final class Predicate {
         if (def == null)
             return;
         try {
-            checkPredicateDiscontiguous(def, pick, en);
-            if ((def.intValue() & MASK_TRCK_STYL) != 0)
+            checkPredicateDiscontiguous(def, src, pick, en);
+        } catch (EngineMessage x) {
+            EngineException y = new EngineException(x,
+                    EngineException.fetchLoc(EngineException.fetchStack(en),
+                            sa.getPosition(), en),
+                    EngineException.OP_WARNING);
+            y.printStackTrace(en);
+        }
+    }
+
+    /**
+     * <p>Perform a style check on the given predicate.</p>
+     * <p>This check is performed during the loading of a module
+     * for directives that create a delegate or clauses.</p>
+     *
+     * @param pick The predicate.
+     * @param sa   The call-site.
+     * @param en   The engine.
+     * @throws EngineMessage Printing error.
+     */
+    public static void checkPredicateBody(Predicate pick, SkelAtom sa,
+                                          Engine en)
+            throws EngineMessage, EngineException {
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        Integer def = pick.getDef(src);
+        if (def == null)
+            return;
+        try {
+            checkPredicateDiscontiguous(def, src, pick, en);
+        } catch (EngineMessage x) {
+            EngineException y = new EngineException(x,
+                    EngineException.fetchLoc(EngineException.fetchStack(en),
+                            sa.getPosition(), en),
+                    EngineException.OP_WARNING);
+            y.printStackTrace(en);
+        }
+        try {
+            if ((def.intValue() & MASK_TRCK_BODY) != 0)
                 return;
-            pick.addDef(src, MASK_TRCK_STYL, en);
+            pick.addDef(src, MASK_TRCK_BODY, en);
             checkPredicateOverride(def, sa, pick, en);
             checkPredicateFresh(def, sa, pick, en);
             checkPredicateMultifile(def, pick, en);
@@ -681,16 +719,19 @@ public final class Predicate {
      * <p>Perform the discontigous style check.</p>
      *
      * @param loc  The usage.
+     * @param src The call-site.
      * @param pick The predicate.
      * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateDiscontiguous(Integer loc,
+                                                    AbstractSource src,
                                                     Predicate pick,
                                                     Engine en)
             throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_STYL) == 0) {
+        if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
             en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
+            pick.addDef(src, MASK_TRCK_HEAD, en);
             return;
         }
         if ((loc.intValue() & MASK_TRCK_DISC) != 0)
@@ -959,7 +1000,7 @@ public final class Predicate {
                                                   Predicate pick,
                                                   Engine en)
             throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_STYL) != 0)
+        if ((loc.intValue() & MASK_TRCK_BODY) != 0)
             return;
         AbstractDelegate fun = pick.del;
         if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)

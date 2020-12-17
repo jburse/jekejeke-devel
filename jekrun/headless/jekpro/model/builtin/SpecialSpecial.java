@@ -56,9 +56,10 @@ import java.lang.reflect.Constructor;
  */
 public final class SpecialSpecial extends AbstractSpecial {
     public final static int SPECIAL_SYS_SPECIAL = 0;
-    public final static int SPECIAL_SYS_CHECK_STYLE_PREDICATE = 1;
+    public final static int SPECIAL_SYS_CHECK_STYLE_BODY = 1;
     private final static int SPECIAL_SET_PREDICATE_PROPERTY = 2;
     private final static int SPECIAL_RESET_PREDICATE_PROPERTY = 3;
+    private final static int SPECIAL_SYS_CHECK_STYLE_HEAD = 4;
     private final static int SPECIAL_SYS_NEUTRAL_PREDICATE = 5;
 
     /**
@@ -110,13 +111,13 @@ public final class SpecialSpecial extends AbstractSpecial {
                             ref, en, CachePredicate.MASK_CACH_DEFI);
                     Predicate.definePredicate(pick, del, en);
                     return true;
-                case SPECIAL_SYS_CHECK_STYLE_PREDICATE:
+                case SPECIAL_SYS_CHECK_STYLE_BODY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                     SkelAtom sa = (SkelAtom) en.skel;
                     Predicate.checkExistentPredicate(pick, temp[0], ref);
-                    Predicate.checkPredicateDecl(pick, sa, en);
+                    Predicate.checkPredicateBody(pick, sa, en);
                     return true;
                 case SPECIAL_SET_PREDICATE_PROPERTY:
                     temp = ((SkelCompound) en.skel).args;
@@ -141,6 +142,14 @@ public final class SpecialSpecial extends AbstractSpecial {
                     en.deref();
                     EngineMessage.checkCallable(en.skel, en.display);
                     SpecialPred.resetPredProp(pick, en.skel, en.display, en);
+                    return true;
+                case SPECIAL_SYS_CHECK_STYLE_HEAD:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
+                    sa = (SkelAtom) en.skel;
+                    Predicate.checkExistentPredicate(pick, temp[0], ref);
+                    Predicate.checkPredicateHead(pick, sa, en);
                     return true;
                 case SPECIAL_SYS_NEUTRAL_PREDICATE:
                     temp = ((SkelCompound) en.skel).args;

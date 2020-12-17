@@ -283,7 +283,7 @@ public final class AutoClass extends AbstractAuto {
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
                     Predicate.definePredicate(pick, del, en);
-                    Predicate.checkPredicateDecl(pick, sa, en);
+                    Predicate.checkPredicateBody(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
                         Object[] args = new Object[sk.getArity()];
@@ -317,7 +317,7 @@ public final class AutoClass extends AbstractAuto {
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, en);
                         Predicate.definePredicate(pick, del, en);
-                        Predicate.checkPredicateDecl(pick, sa, en);
+                        Predicate.checkPredicateBody(pick, sa, en);
                     }
                 }
             } catch (EngineException x) {

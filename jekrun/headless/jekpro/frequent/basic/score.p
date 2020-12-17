@@ -188,7 +188,7 @@ sys_atom_or_type_of(C, X) :- sys_type_of(C, X).
 :- public foreign_special/3.
 foreign_special(I, C, M) :-
    sys_foreign_special(I, C, M),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 % sys_foreign_special(+IndicatorColon, +Class, +Callable)
 :- private sys_foreign_special/3.

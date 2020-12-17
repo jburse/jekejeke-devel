@@ -226,7 +226,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                         new SkelAtom(OP_DISCONTIGUOUS), res);
             case PROP_SYS_STYLE_CHECK:
                 res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_STYL, en);
+                        Predicate.MASK_TRCK_BODY, en);
                 if (res == null)
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
@@ -411,7 +411,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_STYL, en);
+                pick.addDef(src, Predicate.MASK_TRCK_BODY, en);
                 return true;
             case PROP_SYS_PUBLIC:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
@@ -540,7 +540,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_STYL);
+                pick.removeDef(src, Predicate.MASK_TRCK_BODY);
                 return true;
             case PROP_SYS_PUBLIC:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PUBLIC, en);

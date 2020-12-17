@@ -62,7 +62,7 @@
 :- public foreign_dimension/2.
 foreign_dimension(I, C) :-
    sys_foreign_dimension(I, C),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_foreign_dimension/2.
 :- special(sys_foreign_dimension/2, 'SpecialArray', 0).
@@ -76,7 +76,7 @@ foreign_dimension(I, C) :-
 :- public foreign_element/2.
 foreign_element(I, C) :-
    sys_foreign_element(I, C),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_foreign_element/2.
 :- special(sys_foreign_element/2, 'SpecialArray', 1).
@@ -90,7 +90,7 @@ foreign_element(I, C) :-
 :- public foreign_update/2.
 foreign_update(I, C) :-
    sys_foreign_update(I, C),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_foreign_update/2.
 :- special(sys_foreign_update/2, 'SpecialArray', 2).
@@ -104,7 +104,7 @@ foreign_update(I, C) :-
 :- public foreign_length/2.
 foreign_length(I, C) :-
    sys_foreign_length(I, C),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
 :- private sys_foreign_length/2.
 :- special(sys_foreign_length/2, 'SpecialArray', 3).

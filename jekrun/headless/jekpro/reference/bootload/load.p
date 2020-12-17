@@ -244,7 +244,8 @@ sys_sys_notrace(D) :- sys_declaration_indicator(D, I), !,
    call(D).
 sys_sys_notrace(I) :-
    sys_neutral_predicate(I),
-   set_predicate_property(I, sys_notrace).
+   set_predicate_property(I, sys_notrace),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_sys_notrace/1, visible(private)).
 
 /**
@@ -275,7 +276,8 @@ sys_multifile(I) :-
    callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    set_predicate_property(I, multifile),
-   set_predicate_property(I, sys_multifile(C)).
+   set_predicate_property(I, sys_multifile(C)),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_multifile/1, visible(private)).
 
 % first defined in special.p

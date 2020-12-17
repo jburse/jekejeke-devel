@@ -72,6 +72,9 @@
 :- callable_property(here, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)).
 
+:- op(1150, fy, export).
+:- set_oper_property(prefix(export), visible(public)).
+
 :- op(1150, fy, private).
 :- set_oper_property(prefix(private), visible(public)).
 
@@ -134,12 +137,12 @@ module(N, _) :- var(N), throw(error(instantiation_error, _)).
 module(N, L) :- =(N, user), !,
    callable_property(N, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)),
-   public(L).
+   export(L).
 module(N, L) :-
    callable_property(N, sys_context(C)),
    reset_source_property(C, sys_source_visible(public)),
    set_source_property(C, sys_source_name(N)),
-   public(L),
+   export(L),
    sys_get_key(C, K),
    set_callable_property(J, sys_context(C), K),
    sys_check_key(J, C).
@@ -225,6 +228,46 @@ sys_add_resource(Path) :-
 /*************************************************************/
 
 /**
+ * export P, ..:
+ * The predicate sets the operator or predicate indicator P to public.
+ */
+% export +Indicators
+export [P|Q] :- !, sys_export(P), export(Q).
+export P, Q :- !, sys_export(P), export(Q).
+export [] :- !.
+export P :- sys_export(P).
+:- set_predicate_property((export)/1, visible(public)).
+
+% sys_export(+IndicatorOrOperator)
+sys_export(X) :- var(X), throw(error(instantiation_error, _)).
+sys_export(D) :- sys_declaration_indicator(D, I), !,
+   sys_export(I),
+   call(D).
+sys_export(prefix(X)) :- !,
+   sys_neutral_oper(prefix(X)),
+   set_oper_property(prefix(X), visible(public)).
+sys_export(infix(X)) :- !,
+   sys_neutral_oper(infix(X)),
+   set_oper_property(infix(X), visible(public)).
+sys_export(postfix(X)) :- !,
+   sys_neutral_oper(postfix(X)),
+   set_oper_property(postfix(X), visible(public)).
+sys_export(I) :-
+   sys_make_indicator(F, _, I),
+   callable_property(F, sys_context(C)),
+   once((predicate_property(I, sys_usage(D)),
+      \+ =(C, D))),
+   \+ predicate_property(I, sys_public(D)),
+   throw(error(permission_error(promote, public, I), _)).
+sys_export(I) :-
+   sys_make_indicator(F, _, I),
+   callable_property(F, sys_context(C)),
+   sys_neutral_predicate(I),
+   set_predicate_property(I, visible(public)),
+   set_predicate_property(I, sys_public(C)).
+:- set_predicate_property(sys_export/1, visible(private)).
+
+/**
  * private P, ..:
  * The predicate sets the operator or predicate indicator P to private.
  */
@@ -251,7 +294,8 @@ sys_private(postfix(X)) :- !,
    set_oper_property(postfix(X), visible(private)).
 sys_private(I) :-
    sys_neutral_predicate(I),
-   set_predicate_property(I, visible(private)).
+   set_predicate_property(I, visible(private)),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_private/1, visible(private)).
 
 /**
@@ -291,7 +335,8 @@ sys_public(I) :-
    callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
    set_predicate_property(I, visible(public)),
-   set_predicate_property(I, sys_public(C)).
+   set_predicate_property(I, sys_public(C)),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_public/1, visible(private)).
 
 /**
@@ -314,7 +359,8 @@ sys_override(I) :-
    sys_make_indicator(F, _, I),
    callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
-   set_predicate_property(I, override(C)).
+   set_predicate_property(I, override(C)),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_override/1, visible(private)).
 
 % first defined in special.p
@@ -326,6 +372,7 @@ sys_override(I) :-
 :- set_predicate_property(sys_declaration_indicator/2, multifile).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(sys_declaration_indicator/2, sys_multifile(C)).
+sys_declaration_indicator(export(D), I) :- sys_declaration_indicator(D, I).
 sys_declaration_indicator(public(D), I) :- sys_declaration_indicator(D, I).
 sys_declaration_indicator(private(D), I) :- sys_declaration_indicator(D, I).
 sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).

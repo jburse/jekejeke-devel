@@ -95,7 +95,7 @@ static P :- sys_static(P).
 
 sys_static(I) :-
    sys_ensure_shared_static(I),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 :- set_predicate_property(sys_static/1, visible(private)).
 
 :- special(sys_ensure_shared_static/1, 'SpecialPred', 0).

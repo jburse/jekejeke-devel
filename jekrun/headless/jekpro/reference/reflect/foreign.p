@@ -112,7 +112,7 @@
 % foreign(+IndicatorColon, +Class, +Callable)
 foreign(I, C, M) :-
    sys_foreign(I, C, M),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 :- set_predicate_property(foreign/3, visible(public)).
 
 % sys_foreign(+IndicatorColon, +Class, +Callable)
@@ -127,7 +127,7 @@ foreign(I, C, M) :-
 % foreign_constructor(+IndicatorColon, +Class, +Callable)
 foreign_constructor(I, C, M) :-
    sys_foreign_constructor(I, C, M),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 :- set_predicate_property(foreign_constructor/3, visible(public)).
 
 % sys_foreign_constructor(+IndicatorColon, +Class, +Callable)
@@ -142,7 +142,7 @@ foreign_constructor(I, C, M) :-
 % foreign_getter(+IndicatorColon, +Class, +Atom)
 foreign_getter(I, C, M) :-
    sys_foreign_getter(I, C, M),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 :- set_predicate_property(foreign_getter/3, visible(public)).
 
 % sys_foreign_getter(+IndicatorColon, +Class, +Atom)
@@ -157,7 +157,7 @@ foreign_getter(I, C, M) :-
 % foreign_setter(+IndicatorColon, +Class, +Atom)
 foreign_setter(I, C, M) :-
    sys_foreign_setter(I, C, M),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 :- set_predicate_property(foreign_setter/3, visible(public)).
 
 % sys_foreign_setter(+IndicatorColon, +Class, +Atom)

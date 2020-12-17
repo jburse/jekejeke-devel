@@ -130,8 +130,8 @@ public abstract class Branch extends AbstractBranch {
                 new SpecialOper(SpecialOper.SPECIAL_SET_OPER_PROPERTY), en);
         registerProvable(new SkelAtom("sys_special", scope), 3,
                 new SpecialSpecial(SpecialSpecial.SPECIAL_SYS_SPECIAL), en);
-        registerProvable(new SkelAtom("sys_check_style_predicate", scope), 1,
-                new SpecialSpecial(SpecialSpecial.SPECIAL_SYS_CHECK_STYLE_PREDICATE), en);
+        registerProvable(new SkelAtom("sys_check_style_body", scope), 1,
+                new SpecialSpecial(SpecialSpecial.SPECIAL_SYS_CHECK_STYLE_BODY), en);
         registerProvable(new SkelAtom("sys_neutral_oper", scope), 1,
                 new SpecialOper(SpecialOper.SPECIAL_SYS_NEUTRAL_OPER), en);
         registerProvable(new SkelAtom("sys_callable_property_chk", scope), 3,
@@ -156,7 +156,7 @@ public abstract class Branch extends AbstractBranch {
                 arity, en, CachePredicate.MASK_CACH_CRTE);
         Predicate pick = cp.pick;
         Predicate.definePredicate(pick, del, en);
-        Predicate.checkPredicateDecl(pick, sa, en);
+        Predicate.checkPredicateBody(pick, sa, en);
     }
 
     /**
