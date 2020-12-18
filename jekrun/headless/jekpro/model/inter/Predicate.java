@@ -18,7 +18,6 @@ import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 
 import java.io.Reader;
-import java.lang.reflect.Method;
 
 /**
  * <p>The class provides a predicate.</p>
@@ -80,7 +79,7 @@ public final class Predicate {
     public static final int MASK_TRCK_VSPR = 0x00000040;
     public static final int MASK_TRCK_VSPU = 0x00000080;
 
-    public static final int MASK_TRCK_PRED = 0x00000100;
+    public static final int MASK_TRCK_META = 0x00000100;
     public static final int MASK_TRCK_HEAD = 0x00000200;
     public static final int MASK_TRCK_TRLC = 0x00000400;
     public static final int MASK_TRCK_GRLC = 0x00000800;
@@ -727,8 +726,7 @@ public final class Predicate {
             if ((def.intValue() & MASK_TRCK_BODY) != 0)
                 return;
             pick.addDef(src, MASK_TRCK_BODY, en);
-            checkPredicateOverride(def, sa, pick, en);
-            checkPredicateFresh(def, sa, pick, en);
+
             checkPredicateMultifile(def, pick, en);
             if (sa.scope != null &&
                     (sa.scope.getBits() & AbstractSource.MASK_SRC_VSPU) == 0)
@@ -737,7 +735,19 @@ public final class Predicate {
             checkPredicateDynamic(def, pick, en);
             checkPredicateThreadLocal(def, pick, en);
             checkPredicateGroupLocal(def, pick, en);
-            checkPredicateMetaSuggested(pick, en);
+
+            AbstractSource base = CachePredicate.performBase(sa, src, en);
+            Predicate over;
+            try {
+                over = CachePredicate.performOverrides(sa, pick.getArity(), base);
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+
+            checkPredicateOverride(def, src, pick, over, en);
+            checkPredicateFresh(def, src, pick, over, en);
+            checkPredicateMetaInherited(def, src, pick, over, en);
+            checkPredicateMetaIllegal(def, src, pick, over, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
@@ -751,25 +761,18 @@ public final class Predicate {
      * <p>Perform the override style check.</p>
      *
      * @param loc  The usage.
-     * @param sa   The functor.
-     * @param pick The redicate.
+     * @param src   The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
      * @param en   The engine.
      * @throws EngineMessage The warning.
      */
-    private static void checkPredicateOverride(Integer loc, SkelAtom sa,
-                                               Predicate pick,
+    private static void checkPredicateOverride(Integer loc, AbstractSource src,
+                                               Predicate pick, Predicate over,
                                                Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_OVRD) != 0)
             return;
-        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-        AbstractSource base = CachePredicate.performBase(sa, src, en);
-        Predicate over;
-        try {
-            over = CachePredicate.performOverrides(sa, pick.getArity(), base);
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
         if (over == null || !CachePredicate.visiblePred(over, src))
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
@@ -780,28 +783,21 @@ public final class Predicate {
     }
 
     /**
-     * <p>Perform the override style check.</p>
+     * <p>Perform the fresh style check.</p>
      *
      * @param loc  The usage.
-     * @param sa   The functor.
-     * @param pick The redicate.
+     * @param src   The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
      * @param en   The engine.
      * @throws EngineMessage The warning.
      */
-    private static void checkPredicateFresh(Integer loc, SkelAtom sa,
-                                            Predicate pick,
+    private static void checkPredicateFresh(Integer loc, AbstractSource src,
+                                            Predicate pick, Predicate over,
                                             Engine en)
-            throws EngineMessage, EngineException {
+            throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
             return;
-        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-        AbstractSource base = CachePredicate.performBase(sa, src, en);
-        Predicate over;
-        try {
-            over = CachePredicate.performOverrides(sa, pick.getArity(), base);
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
         if (over != null && CachePredicate.visiblePred(over, src))
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
@@ -835,7 +831,7 @@ public final class Predicate {
     }
 
     /**
-     * <p>Perform the meta predicate style check.</p>
+     * <p>Perform the public style check.</p>
      *
      * @param loc  The location.
      * @param pick The predicate.
@@ -869,12 +865,66 @@ public final class Predicate {
                                                     Predicate pick,
                                                     Engine en)
             throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_PRED) != 0)
+        if ((loc.intValue() & MASK_TRCK_META) != 0)
             return;
         if (pick.meta_predicate == null)
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the meta inherited style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src   The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateMetaInherited(Integer loc, AbstractSource src,
+                                                    Predicate pick, Predicate over,
+                                                    Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_META) != 0)
+            return;
+        if (over == null || !CachePredicate.visiblePred(over, src))
+            return;
+        if (over.meta_predicate == null)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_META_INHERITED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the meta illegal style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src   The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateMetaIllegal(Integer loc, AbstractSource src,
+                                                    Predicate pick, Predicate over,
+                                                    Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_META) == 0)
+            return;
+        if (over == null || !CachePredicate.visiblePred(over, src))
+            return;
+        if (over.meta_predicate != null)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_META_ILLEGAL,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));
@@ -947,35 +997,6 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
-     * <p>Perform the meta predicate style check.</p>
-     *
-     * @param pick The predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateMetaSuggested(Predicate pick,
-                                                    Engine en)
-            throws EngineMessage {
-        if (pick.getArity() <= 1)
-            return;
-        if (pick.meta_predicate != null)
-            return;
-        AbstractDelegate del = pick.del;
-        if (!(del instanceof AbstractSpecial))
-            return;
-        try {
-            Method meth = del.getClass().getDeclaredMethod("moniEvaluate", Engine.class);
-        } catch (NoSuchMethodException x) {
-            return;
-        }
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_META_PREDICATE_SUGG,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));

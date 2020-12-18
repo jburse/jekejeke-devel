@@ -150,6 +150,7 @@ denominator(X, _) :-
 
 :- public (-)/2.
 :- override (-)/2.
+:- meta_predicate -(1, ?).
 -(A#B, R) :- !,
    user: -(A, C),
    R = C#B.
@@ -158,6 +159,7 @@ denominator(X, _) :-
 
 :- public (+)/2.
 :- override (+)/2.
+:- meta_predicate +(1, ?).
 +(A#B, R) :- !,
    R = A#B.
 +(A, B) :-
@@ -165,6 +167,7 @@ denominator(X, _) :-
 
 :- public abs/2.
 :- override abs/2.
+:- meta_predicate abs(1, ?).
 abs(A#B, R) :- !,
    user:abs(A, C),
    R = C#B.
@@ -173,6 +176,7 @@ abs(A, B) :-
 
 :- public sign/2.
 :- override sign/2.
+:- meta_predicate sign(1, ?).
 sign(A#_, C) :- !,
    user:sign(A, C).
 sign(A, B) :-
@@ -180,6 +184,7 @@ sign(A, B) :-
 
 :- public float/2.
 :- override float/2.
+:- meta_predicate float(1, ?).
 float(A#B, C) :- !,
    user: /(A, B, C).
 float(A, B) :-
@@ -187,6 +192,7 @@ float(A, B) :-
 
 :- public decimal/2.
 :- override decimal/2.
+:- meta_predicate decimal(1, ?).
 decimal(A#B, C) :- !,
    user: /(A, B, H),
    user:decimal(H, C).
@@ -195,6 +201,7 @@ decimal(A, B) :-
 
 :- public float32/2.
 :- override float32/2.
+:- meta_predicate float32(1, ?).
 float32(A#B, C) :- !,
    user: /(A, B, H),
    user:float32(H, C).
@@ -203,6 +210,7 @@ float32(A, B) :-
 
 :- public (+)/3.
 :- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -222,6 +230,7 @@ float32(A, B) :-
 
 :- public (-)/3.
 :- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -241,6 +250,7 @@ float32(A, B) :-
 
 :- public * /3.
 :- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(A#B, C#D, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
@@ -256,6 +266,7 @@ float32(A, B) :-
 
 :- public / /3.
 :- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(A#B, D#C, R) :- !,
    user: *(A, C, P),
    user: *(B, D, Q),
@@ -271,6 +282,7 @@ float32(A, B) :-
 
 :- public ^ /3.
 :- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(X, C, R) :- user: <(C, 0), !,
    user: -(C, H),
    ^(X, H, J),
@@ -357,6 +369,7 @@ rat_make(P, Q, P#Q).
 
 :- public min/3.
 :- override min/3.
+:- meta_predicate min(1, 1, ?).
 min(A#B, C#D, R) :- !,
    (rat_less(A#B, C#D) -> R = A#B; R = C#D).
 min(A#B, C, R) :- !,
@@ -368,6 +381,7 @@ min(A, B, C) :-
 
 :- public max/3.
 :- override max/3.
+:- meta_predicate max(1, 1, ?).
 max(A#B, C#D, R) :- !,
    (rat_less(A#B, C#D) -> R = C#D; R = A#B).
 max(A#B, C, R) :- !,
@@ -408,6 +422,7 @@ rat_less(A, B) :-
 
 :- public gcd/3.
 :- override gcd/3.
+:- meta_predicate gcd(1, 1, ?).
 gcd(A#B, C#D, R) :- !,
    user:gcd(A, C, P),
    user:lcm(B, D, Q),
@@ -423,6 +438,7 @@ gcd(A, B, C) :-
 
 :- public lcm/3.
 :- override lcm/3.
+:- meta_predicate lcm(1, 1, ?).
 lcm(A#B, C#D, R) :- !,
    user:lcm(A, C, P),
    user:gcd(B, D, Q),
@@ -442,6 +458,7 @@ lcm(A, B, C) :-
 
 :- public integer/2.
 :- override integer/2.
+:- meta_predicate integer(1, ?).
 integer(A#B, C) :- !,
    user: //(A, B, C).
 integer(A, B) :-
@@ -449,6 +466,7 @@ integer(A, B) :-
 
 :- public truncate/2.
 :- override truncate/2.
+:- meta_predicate truncate(1, ?).
 truncate(A#B, C) :- !,
    user: //(A, B, C).
 truncate(A, B) :-
@@ -456,6 +474,7 @@ truncate(A, B) :-
 
 :- public floor/2.
 :- override floor/2.
+:- meta_predicate floor(1, ?).
 floor(A#B, C) :- !,
    user:div(A, B, C).
 floor(A, B) :-
@@ -463,6 +482,7 @@ floor(A, B) :-
 
 :- public ceiling/2.
 :- override ceiling/2.
+:- meta_predicate ceiling(1, ?).
 ceiling(A#B, C) :- !,
    user: -(A, H),
    user:div(H, B, J),
@@ -472,6 +492,7 @@ ceiling(A, B) :-
 
 :- public round/2.
 :- override round/2.
+:- meta_predicate round(1, ?).
 round(A#B, C) :- user: <(A, 0), !,
    user: >>(B, 1, H),
    user: -(A, H, J),
@@ -485,6 +506,7 @@ round(A, B) :-
 
 :- public // /3.
 :- override // /3.
+:- meta_predicate //(1, 1, ?).
 //(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -500,6 +522,7 @@ round(A, B) :-
 
 :- public rem/3.
 :- override rem/3.
+:- meta_predicate rem(1, 1, ?).
 rem(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -519,6 +542,7 @@ rem(A, B, C) :-
 
 :- public div/3.
 :- override div/3.
+:- meta_predicate div(1, 1, ?).
 div(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
@@ -534,6 +558,7 @@ div(A, B, C) :-
 
 :- public mod/3.
 :- override mod/3.
+:- meta_predicate mod(1, 1, ?).
 mod(A#B, C#D, R) :- !,
    user: *(A, D, H),
    user: *(B, C, J),
