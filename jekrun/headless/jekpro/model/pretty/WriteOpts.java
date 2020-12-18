@@ -204,11 +204,7 @@ public final class WriteOpts {
                         ((SkelCompound) en.skel).sym.fun.equals(OP_CONTEXT)) {
                     Object obj = Predicate.checkMetaSpezArg(
                             ((SkelCompound) en.skel).args[0], en.display, en);
-                    if (spezToMeta(obj)) {
-                        spez |= PrologWriter.SPEZ_META;
-                    } else {
-                        spez &= ~PrologWriter.SPEZ_META;
-                    }
+                    spez = spezToMeta(obj);
                     offset = spezToOffset(obj);
                     shift = spezToShift(obj);
                 } else if (en.skel instanceof SkelCompound &&
@@ -497,16 +493,16 @@ public final class WriteOpts {
      * @param obj The meta spezifier, can be null.
      * @return The meta flag.
      */
-    static boolean spezToMeta(Object obj) {
+    static int spezToMeta(Object obj) {
         if (obj instanceof Integer) {
-            return true;
+            return PrologWriter.SPEZ_META;
         } else if (obj == null || (obj instanceof SkelAtom &&
                 ((SkelAtom) obj).fun.equals(Predicate.OP_QUESTION))) {
-            return false;
+            return 0;
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 1 &&
                 ((SkelCompound) obj).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
-            return true;
+            return PrologWriter.SPEZ_META;
         } else {
             throw new IllegalArgumentException("illegal meta spec");
         }

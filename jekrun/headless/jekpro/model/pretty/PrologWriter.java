@@ -2,7 +2,6 @@ package jekpro.model.pretty;
 
 import jekpro.frequent.basic.SpecialProxy;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Operator;
 import jekpro.reference.runtime.EvaluableLogic;
@@ -385,29 +384,10 @@ public class PrologWriter {
      *
      * @param args     The argument meta spezifications.
      * @param k        The index.
-     * @param backspez The old spez.
-     * @param cp       The cache predicate.
      * @return The argument meta spezification.
      */
-    public static Object getArg(Object[] args, int k, int backspez,
-                                CachePredicate cp) {
-        Object obj = (args != null ? args[k] : null);
-        if (WriteOpts.spezToMeta(obj))
-            return obj;
-        return obj;
-    }
-
-    /**
-     * <p>Retrieve the spez flag.</p>
-     *
-     * @param obj The argument meta spezification.
-     * @return The new spez flag.
-     */
-    public static int getSpez(Object obj) {
-        int flags = 0;
-        if (WriteOpts.spezToMeta(obj))
-            flags |= SPEZ_META;
-        return flags;
+    private static Object getArg(Object[] args, int k) {
+        return (args != null ? args[k] : null);
     }
 
     /**
@@ -417,19 +397,9 @@ public class PrologWriter {
      * @param backoffset The old offset.
      * @return The meta offset.
      */
-    public static int getOffset(Object obj, int backoffset) {
+    private static int getOffset(Object obj, int backoffset) {
         int offset = WriteOpts.spezToOffset(obj);
         return (backoffset >= 0 ? offset : -offset - 1);
-    }
-
-    /**
-     * <p>Retrieve the meta shift.</p>
-     *
-     * @param obj The argument meta spezification.
-     * @return The meta shift.
-     */
-    public static int getShift(Object obj) {
-        return WriteOpts.spezToShift(obj);
     }
 
     /**
@@ -843,13 +813,13 @@ public class PrologWriter {
             writeBreak(sc.sym, 0, false);
         }
         /* left operand */
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        Object z = getArg(decl, backshift + modShift(mod, nsa));
         spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
                 (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPER) +
                 (isOperUnit(oper.getPortrayOrName()) ? SPEZ_UNIT : 0) +
-                getSpez(z);
+                WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         if (oper.getLeft() == 0)
             spez |= SPEZ_LEFT;
         write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
@@ -924,10 +894,10 @@ public class PrologWriter {
             }
         }
         /* right operand */
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = (spez & (SPEZ_OPER | SPEZ_FUNC | SPEZ_MINS | SPEZ_UNIT)) + getSpez(z);
+        Object z = getArg(decl, backshift + modShift(mod, nsa));
+        spez = (spez & (SPEZ_OPER | SPEZ_FUNC | SPEZ_MINS | SPEZ_UNIT)) + WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         write(sc.args[0], ref, oper.getLevel() - oper.getRight(), null, null);
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
                 (oper.getBits() & Operator.MASK_OPER_NEWR) != 0)
@@ -972,13 +942,13 @@ public class PrologWriter {
             writeBreak(sc.sym, 0, false);
         }
         /* left operand */
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        Object z = getArg(decl, backshift + modShift(mod, nsa));
         spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
                 (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPER) +
                 (isOperUnit(oper.getPortrayOrName()) ? SPEZ_UNIT : 0) +
-                getSpez(z);
+                WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         if (oper.getLeft() == 0)
             spez |= SPEZ_LEFT;
         write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
@@ -1030,13 +1000,13 @@ public class PrologWriter {
             }
         }
         /* left operand */
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
+        Object z = getArg(decl, backshift + modShift(mod, nsa));
         spez = (spez & (SPEZ_FUNC | SPEZ_MINS)) +
                 (isOperEscape(oper.getPortrayOrName()) ? 0 : SPEZ_OPER) +
                 (isOperUnit(oper.getPortrayOrName()) ? SPEZ_UNIT : 0) +
-                getSpez(z);
+                WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         if (oper.getLeft() == 0)
             spez |= SPEZ_LEFT;
         write(sc.args[0], ref, oper.getLevel() - oper.getLeft(), null, null);
@@ -1076,10 +1046,10 @@ public class PrologWriter {
         if ((oper.getBits() & Operator.MASK_OPER_TABR) != 0 &&
                 (oper.getBits() & Operator.MASK_OPER_NEWR) == 0)
             indent += SPACES;
-        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-        spez = (spez & (SPEZ_OPER | SPEZ_UNIT)) + getSpez(z);
+        z = getArg(decl, backshift + 1 + modShift(mod, nsa));
+        spez = (spez & (SPEZ_OPER | SPEZ_UNIT)) + WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         Object mod2 = decodeQualification(sc, ref);
         SkelAtom nsa2 = (mod2 != null ? sc.sym : null);
         write(sc.args[1], ref, oper.getLevel() - oper.getRight(), mod2, nsa2);
@@ -1289,10 +1259,10 @@ public class PrologWriter {
         int backoffset = offset;
         int backshift = shift;
         writeBreak(sc.sym, j, false);
-        Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        Object z = getArg(decl, backshift + j + modShift(mod, nsa));
+        spez = WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         write(sc.args[j], ref, Operator.LEVEL_HIGH, null, null);
         spez = backspez;
         offset = backoffset;
@@ -1320,15 +1290,15 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        Object z = getArg(decl, backshift + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        Object z = getArg(decl, backshift + modShift(mod, nsa));
+        spez = WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-        z = getArg(decl, backshift + 1 + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        z = getArg(decl, backshift + 1 + modShift(mod, nsa));
+        spez = WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         Object term = sc.args[1];
         for (; ; ) {
             if (engine != null) {
@@ -1348,16 +1318,16 @@ public class PrologWriter {
                 backspez = spez;
                 backoffset = offset;
                 backshift = shift;
-                z = getArg(decl, backshift, backspez, cp);
-                spez = getSpez(z);
+                z = getArg(decl, backshift);
+                spez = WriteOpts.spezToMeta(z);
                 offset = getOffset(z, backoffset);
-                shift = getShift(z);
+                shift = WriteOpts.spezToShift(z);
                 sc = (SkelCompound) term;
                 write(sc.args[0], ref, Operator.LEVEL_MIDDLE, null, null);
-                z = getArg(decl, backshift + 1, backspez, cp);
-                spez = getSpez(z);
+                z = getArg(decl, backshift + 1);
+                spez = WriteOpts.spezToMeta(z);
                 offset = getOffset(z, backoffset);
-                shift = getShift(z);
+                shift = WriteOpts.spezToShift(z);
                 term = sc.args[1];
             } else if (!(term instanceof SkelAtom) ||
                     !((SkelAtom) term).fun.equals(Foyer.OP_NIL)) {
@@ -1400,17 +1370,17 @@ public class PrologWriter {
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
-        Object z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-        spez = getSpez(z);
+        Object z = getArg(decl, backshift + j + modShift(mod, nsa));
+        spez = WriteOpts.spezToMeta(z);
         offset = getOffset(z, backoffset);
-        shift = getShift(z);
+        shift = WriteOpts.spezToShift(z);
         write(sc.args[j], ref, Operator.LEVEL_MIDDLE, null, null);
         j++;
         for (; j < sc.args.length; j++) {
-            z = getArg(decl, backshift + j + modShift(mod, nsa), backspez, cp);
-            spez = getSpez(z);
+            z = getArg(decl, backshift + j + modShift(mod, nsa));
+            spez = WriteOpts.spezToMeta(z);
             offset = getOffset(z, backoffset);
-            shift = getShift(z);
+            shift = WriteOpts.spezToShift(z);
             append(',');
             writeBreak(sc.sym, j, true);
             Object mod2 = (j == 1 ? decodeQualification(sc, ref) : null);

@@ -222,7 +222,4 @@
  * and in T with the modulo of X by Y.
  */
 :- public divmod/4.
-:- set_predicate_property(divmod/4, meta_predicate(divmod(1, 1, ?, ?))).
-:- callable_property(here, sys_context(C)),
-   set_predicate_property(divmod/4, sys_meta_predicate(C)).
 :- special(divmod/4, 'SpecialCompare', 6).

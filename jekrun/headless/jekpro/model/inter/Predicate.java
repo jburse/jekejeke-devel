@@ -962,6 +962,8 @@ public final class Predicate {
     private static void checkPredicateMetaSuggested(Predicate pick,
                                                     Engine en)
             throws EngineMessage {
+        if (pick.getArity() <= 1)
+            return;
         if (pick.meta_predicate != null)
             return;
         AbstractDelegate del = pick.del;
