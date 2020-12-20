@@ -1,26 +1,17 @@
 /**
- * The test predicate ground/1 checks whether the given term is
- * ground. This means that no un-instantiated variable occurs in
- * the term. The predicate term_variables/2 allows collecting the
+ * The predicate term_variables/2 allows collecting the
  * un-instantiated variables that occur in a term. The predicate
  * will thus return an empty list if the term was ground. Finally
- * the predicate sys_term_singletons/2 collects the un-instantiated
+ * the predicate term_singletons/2 collects the un-instantiated
  * variables that only occur once. They are a subset of all the
  * variables that occur in the term.
  *
  * Example:
- * ?- sys_goal_kernel(X^p(X,Y),K).
- * K = p(X,Y)
- * ?- sys_goal_globals(X^p(X,Y),L).
- * L = [Y]
+ * ?- term_variables(f(g(X,Y),X), L).
+ * L = [X, Y]
  *
- * Further there are predicates to deal with existential quantifiers.
- * The existential quantifier is represented by the (^)/2 operator.
- * In a goal X1^..^Xn^K we call K the kernel of the goal and the
- * variables K subtracted by the variables of X1,..,Xn the global
- * variables of the goal. The predicates sys_goal_kernel/2 and
- * sys_goal_globals/2 cater for the determination of the kernel
- * and the global variables of a goal.
+ * ?- term_singletons(f(g(X,Y),X), L).
+ * L = [Y]
  *
  * An alternative to using the ‘$VAR’(<number>) construct is dynamically
  * creating a variable names map. This has the advantage that the construct
@@ -28,11 +19,12 @@
  * in creating a variable names map. The resulting variable names map
  * can be used with the predicates write_term/[2,3].
  *
- * The variable names map from the current top-level query can be
- * retrieved via the predicate sys_get_variable_names/1. The predicate
- * will skip non-variable and duplicate entries. In the case of duplicates
- * the entry with a lower dereferencing count is preferred. The result is
- * intended to be used with the predicates write_term/[2,3].
+ * The predicate ground/1 suceeds if the term has no un-instantiated variables.
+ * The predicate nonground/2 can be used to pick the first un-instantiated
+ * variable of a term without listing all un-instantiated variables.
+ * The predicate acyclic_term/1 check whether the given term is non-cyclic.
+ * The predicate safe_term_variables/2 lists the un-instantiated variables
+ * even for a cyclic term.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -83,29 +75,13 @@ term_variables(X, L) :-
 :- special(term_variables/3, 'SpecialVars', 0).
 
 /**
- * sys_term_singletons(X, L):
+ * term_singletons(X, L):
  * The predicate succeeds when L unifies with the variables of X
  * that occur only once.
  */
-% sys_term_singletons(+Term, -List)
-:- public sys_term_singletons/2.
-:- special(sys_term_singletons/2, 'SpecialVars', 1).
-
-/**
- * sys_goal_kernel(G, K):
- * The predicate succeeds when K unifies with the kernel of the goal G.
- */
-% sys_goal_kernel(+GoalQuant, -Goal)
-:- public sys_goal_kernel/2.
-:- special(sys_goal_kernel/2, 'SpecialVars', 2).
-
-/**
- * sys_goal_globals(G, L):
- * The predicate succeeds when L unifies with the global variables of the goal G.
- */
-% sys_goal_globals(+GoalQuant, -List)
-:- public sys_goal_globals/2.
-:- special(sys_goal_globals/2, 'SpecialVars', 3).
+% term_singletons(+Term, -List)
+:- public term_singletons/2.
+:- special(term_singletons/2, 'SpecialVars', 1).
 
 /**
  * numbervars(X, N, M):
@@ -115,7 +91,7 @@ term_variables(X, L) :-
  */
 % numbervars(+Term, +Integer, -Integer)
 :- public numbervars/3.
-:- special(numbervars/3, 'SpecialVars', 4).
+:- special(numbervars/3, 'SpecialVars', 2).
 
 /**
  * sys_number_variables(V, N, S, M):
@@ -125,13 +101,14 @@ term_variables(X, L) :-
  */
 % sys_number_variables(+List, +Assoc, +List, -Assoc)
 :- public sys_number_variables/4.
-:- special(sys_number_variables/4, 'SpecialVars', 5).
+:- special(sys_number_variables/4, 'SpecialVars', 3).
 
 /**
  * ground(X): [TC2 8.3.10]
  * The predicate succeeds when X is a ground term, i.e. contains
  * no variables.
  */
+% ground(+Term)
 % already defined in member
 
 /**
@@ -141,7 +118,7 @@ term_variables(X, L) :-
  */
 % nonground(+Term, -Var)
 :- public nonground/2.
-:- special(nonground/2, 'SpecialVars', 6).
+:- special(nonground/2, 'SpecialVars', 4).
 
 /**
  * acyclic_term(X): [TC2 8.3.11]
@@ -150,7 +127,7 @@ term_variables(X, L) :-
  */
 % acyclic_term(+Term)
 :- public acyclic_term/1.
-:- special(acyclic_term/1, 'SpecialVars', 7).
+:- special(acyclic_term/1, 'SpecialVars', 5).
 
 /**
  * safe_term_variables(X, L):
@@ -166,4 +143,4 @@ safe_term_variables(X, L) :-
 
 % safe_term_variables(+Term, -List, +List)
 :- public safe_term_variables/3.
-:- special(safe_term_variables/3, 'SpecialVars', 8).
+:- special(safe_term_variables/3, 'SpecialVars', 6).

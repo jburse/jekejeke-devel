@@ -80,6 +80,7 @@
 :- use_module(library(experiment/ref)).
 :- use_module(library(misc/lock)).
 :- use_module(library(runtime/quali)).
+:- use_module(library(advanced/abstract)).
 
 :- public prefix(table).
 :- op(1150, fx, table).

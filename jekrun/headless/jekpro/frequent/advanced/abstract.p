@@ -36,6 +36,12 @@
  * K = X\Y^Y\ =(X),
  * R = Y                       % Now everything is fine.
  *
+ * Further there are predicates sys_goal_kernel/2 and sys_goal_globals/2 to
+ * deal with existential quantifiers. The existential quantifier is
+ * represented by the (^)/2 operator. In a goal X1^..^Xn^K we call K the
+ * kernel of the quantified goal and the variables of K subtracted by the
+ * variables of  X1,..,Xn the global variables of the quantified goal.
+ *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
@@ -66,6 +72,7 @@
  */
 
 :- package(library(jekpro/frequent/advanced)).
+:- package(foreign(jekpro/frequent/advanced)).
 
 :- module(abstract, []).
 
@@ -163,3 +170,23 @@
    sys_goal_globals(X^A, L),
    copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U, V, W, R).
+
+/****************************************************************/
+/* Helpers                                                      */
+/****************************************************************/
+
+/**
+ * sys_goal_kernel(G, K):
+ * The predicate succeeds when K unifies with the kernel of the goal G.
+ */
+% sys_goal_kernel(+GoalQuant, -Goal)
+:- public sys_goal_kernel/2.
+:- special(sys_goal_kernel/2, 'SpecialAbstract', 0).
+
+/**
+ * sys_goal_globals(G, L):
+ * The predicate succeeds when L unifies with the global variables of the goal G.
+ */
+% sys_goal_globals(+GoalQuant, -List)
+:- public sys_goal_globals/2.
+:- special(sys_goal_globals/2, 'SpecialAbstract', 1).

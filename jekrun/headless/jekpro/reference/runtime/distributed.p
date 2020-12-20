@@ -66,6 +66,7 @@
 :- use_module(library(system/group)).
 :- use_module(library(system/thread)).
 :- use_module(library(advanced/signal)).
+:- use_module(library(advanced/abstract)).
 
 /**
  * horde(V1^..Vn^T):

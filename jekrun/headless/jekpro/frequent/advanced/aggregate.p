@@ -64,6 +64,7 @@
 :- use_module(library(advanced/pivot)).
 :- use_module(library(advanced/revolve)).
 :- use_module(library(runtime/collector)).
+:- use_module(library(advanced/abstract)).
 
 /*************************************************************/
 /* Non-Grouping Aggregate                                    */

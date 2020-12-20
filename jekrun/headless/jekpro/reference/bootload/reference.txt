@@ -303,7 +303,7 @@ sys_show_base/1	bootload/load
 sys_show_provable_source/2	bootload/load
 sys_syntax_property_chk/3	reflect/oper
 sys_syntax_property_idx/2	reflect/oper
-sys_term_singletons/2	structure/vars
+term_singletons/2	structure/vars
 tan/2	arithmetic/trigo
 term_atom/2	structure/bytes
 term_atom/3	structure/bytes

@@ -56,14 +56,12 @@ public final class SpecialVars extends AbstractSpecial {
     private final static String OP_EXISTENTIAL = "^";
 
     private final static int SPECIAL_TERM_VARIABLES = 0;
-    private final static int SPECIAL_SYS_TERM_SINGELTONS = 1;
-    private final static int SPECIAL_SYS_GOAL_KERNEL = 2;
-    private final static int SPECIAL_SYS_GOAL_GLOBALS = 3;
-    private final static int SPECIAL_NUMBERVARS = 4;
-    private final static int SPECIAL_SYS_NUMBER_VARIABLES = 5;
-    private final static int SPECIAL_NONGROUND = 6;
-    private final static int SPECIAL_ACYCLIC_TERM = 7;
-    private final static int SPECIAL_SAFE_TERM_VARIABLES = 8;
+    private final static int SPECIAL_TERM_SINGELTONS = 1;
+    private final static int SPECIAL_NUMBERVARS = 2;
+    private final static int SPECIAL_SYS_NUMBER_VARIABLES = 3;
+    private final static int SPECIAL_NONGROUND = 4;
+    private final static int SPECIAL_ACYCLIC_TERM = 5;
+    private final static int SPECIAL_SAFE_TERM_VARIABLES = 6;
 
     /**
      * <p>Create a vars special.</p>
@@ -105,7 +103,7 @@ public final class SpecialVars extends AbstractSpecial {
                     if (multi)
                         d.remTab(en);
                     return true;
-                case SPECIAL_SYS_TERM_SINGELTONS:
+                case SPECIAL_TERM_SINGELTONS:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     ev = new EngineVars();
@@ -113,28 +111,6 @@ public final class SpecialVars extends AbstractSpecial {
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
                     SpecialSort.createSet(ev.anon, en, false);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
-                case SPECIAL_SYS_GOAL_KERNEL:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    SpecialVars.goalKernel(temp[0], ref, en);
-                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
-                        return false;
-                    return true;
-                case SPECIAL_SYS_GOAL_GLOBALS:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    ev = new EngineVars();
-                    SpecialVars.goalGlobals(temp[0], ref, ev);
-                    en.skel = en.store.foyer.ATOM_NIL;
-                    en.display = Display.DISPLAY_CONST;
-                    SpecialSort.createSet(ev.vars, en, false);
                     d = en.display;
                     multi = d.getAndReset();
                     if (!en.unifyTerm(en.skel, d, temp[1], ref))
