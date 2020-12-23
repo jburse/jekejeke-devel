@@ -272,8 +272,6 @@ sys_declaration_indicator/2	runtime/dynamic
 sys_declaration_indicator/2	runtime/meta
 sys_error_message/1	runtime/session
 sys_finit_capability/1	bootload/toolkit
-sys_goal_globals/2	structure/vars
-sys_goal_kernel/2	structure/vars
 sys_indicator/1	reflect/pred
 sys_init_capability/1	bootload/toolkit
 sys_init_capability/2	bootload/toolkit
@@ -303,12 +301,12 @@ sys_show_base/1	bootload/load
 sys_show_provable_source/2	bootload/load
 sys_syntax_property_chk/3	reflect/oper
 sys_syntax_property_idx/2	reflect/oper
-term_singletons/2	structure/vars
 tan/2	arithmetic/trigo
 term_atom/2	structure/bytes
 term_atom/3	structure/bytes
 term_block/2	structure/bytes
 term_block/3	structure/bytes
+term_singletons/2	structure/vars
 term_variables/2	structure/vars
 term_variables/3	structure/vars
 (thread_local)/1	runtime/dynamic
