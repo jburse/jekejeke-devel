@@ -44,8 +44,10 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialApply extends AbstractSpecial {
-    private final static int SPECIAL_SYS_MODEXT_ARGS_ANY = 0;
-    private final static int SPECIAL_SYS_CALL_ANY = 1;
+    private final static int SPECIAL_SYS_CALLN = 0;
+    private final static int SPECIAL_SYS_EXTEND_ARGS = 1;
+    private final static int SPECIAL_SYS_SHRINK_ARGS = 2;
+
 
     /**
      * <p>Create a meta special.</p>
@@ -55,10 +57,11 @@ public final class SpecialApply extends AbstractSpecial {
     public SpecialApply(int i) {
         super(i);
         switch (i) {
-            case SPECIAL_SYS_MODEXT_ARGS_ANY:
-                break;
-            case SPECIAL_SYS_CALL_ANY:
+            case SPECIAL_SYS_CALLN:
                 subflags |= MASK_DELE_VIRT;
+                break;
+            case SPECIAL_SYS_EXTEND_ARGS:
+            case SPECIAL_SYS_SHRINK_ARGS:
                 break;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -79,21 +82,13 @@ public final class SpecialApply extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_MODEXT_ARGS_ANY:
+            case SPECIAL_SYS_CALLN:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                moduleExtendGoal(temp[0], ref, temp, ref, temp.length - 1, en);
-                Display d = en.display;
-                boolean multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[temp.length - 1], ref))
-                    return false;
-                if (multi)
-                    d.remTab(en);
-                return true;
-            case SPECIAL_SYS_CALL_ANY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                moduleExtendGoal(temp[0], ref, temp, ref, temp.length, en);
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                moduleExtendGoal(temp, ref, temp.length, en);
 
                 Directive dire = SupervisorCall.callGoal2(0, en);
                 Display d2 = en.display;
@@ -102,6 +97,35 @@ public final class SpecialApply extends AbstractSpecial {
                 en.contskel = dire;
                 en.contdisplay = ref2;
                 return true;
+            case SPECIAL_SYS_EXTEND_ARGS:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[0];
+                en.display = ref;
+                en.deref();
+                moduleExtendGoal(temp, ref, temp.length - 1, en);
+                Display d = en.display;
+                boolean multi = d.getAndReset();
+                if (!en.unifyTerm(en.skel, d, temp[temp.length - 1], ref))
+                    return false;
+                if (multi)
+                    d.remTab(en);
+                return true;
+            case SPECIAL_SYS_SHRINK_ARGS:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                en.skel = temp[temp.length - 1];
+                en.display = ref;
+                en.deref();
+                if (!moduleShrinkGoal(temp, ref, en))
+                    return false;
+                d = en.display;
+                multi = d.getAndReset();
+                if (!en.unifyTerm(en.skel, d, temp[0], ref))
+                    return false;
+                if (multi)
+                    d.remTab(en);
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -109,7 +133,7 @@ public final class SpecialApply extends AbstractSpecial {
 
     /**
      * <p>Extend the given term.</p>
-     * <p>The argument is passed in skel and display.</p>
+     * <p>The term is passed in skel and display.</p>
      * <p>Result is returned in skel and display.</p>
      *
      * @param t2    The arguments skeleton.
@@ -117,20 +141,19 @@ public final class SpecialApply extends AbstractSpecial {
      * @param slice The slice length.
      * @param en    The engine.
      */
-    private static void moduleExtendGoal(Object t, Display d,
-                                         Object[] t2, Display d2,
+    private static void moduleExtendGoal(Object[] t2, Display d2,
                                          int slice, Engine en)
             throws EngineMessage {
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        t = en.skel;
-        d = en.display;
+        Object t = en.skel;
+        Display d = en.display;
         if (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
             SkelCompound sc = (SkelCompound) t;
-            moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
+            en.skel = sc.args[1];
+            en.display = d;
+            en.deref();
+            moduleExtendGoal(t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];
@@ -144,7 +167,10 @@ public final class SpecialApply extends AbstractSpecial {
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
             SkelCompound sc = (SkelCompound) t;
-            moduleExtendGoal(sc.args[1], d, t2, d2, slice, en);
+            en.skel = sc.args[1];
+            en.display = d;
+            en.deref();
+            moduleExtendGoal(t2, d2, slice, en);
             Object t4 = en.skel;
             d2 = en.display;
             en.skel = sc.args[0];
@@ -167,6 +193,91 @@ public final class SpecialApply extends AbstractSpecial {
             }
             boolean multi = extendCount(t, d, t2, d2, slice, en);
             en.skel = extendAlloc(sa, t, d, t2, d2, slice, multi, en);
+        }
+    }
+
+    /**
+     * <p>Shrink the given term.</p>
+     * <p>The term is passed in skel and display.</p>
+     * <p>Result is returned in skel and display.</p>
+     *
+     * @param t2 The arguments skeleton.
+     * @param d2 The arguments display.
+     * @param en The engine.
+     * @return True if the term is large enough, otherwise false.
+     */
+    private static boolean moduleShrinkGoal(Object[] t2, Display d2,
+                                            Engine en)
+            throws EngineMessage, EngineException {
+        Object t = en.skel;
+        Display d = en.display;
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
+            SkelCompound sc = (SkelCompound) t;
+            en.skel = sc.args[1];
+            en.display = d;
+            en.deref();
+            if (!moduleShrinkGoal(t2, d2, en))
+                return false;
+            Object t4 = en.skel;
+            d2 = en.display;
+            en.skel = sc.args[0];
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+            boolean multi = pairCount(t, d, t4, d2, en);
+            en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
+            return true;
+        } else if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+            SkelCompound sc = (SkelCompound) t;
+            en.skel = sc.args[1];
+            en.display = d;
+            en.deref();
+            if (!moduleShrinkGoal(t2, d2, en))
+                return false;
+            Object t4 = en.skel;
+            d2 = en.display;
+            en.skel = sc.args[0];
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+            boolean multi = pairCount(t, d, t4, d2, en);
+            en.skel = pairAlloc(sc.sym, t, d, t4, d2, multi, en);
+            return true;
+        } else {
+            SkelAtom sa;
+            int arity;
+            if (t instanceof SkelCompound) {
+                sa = ((SkelCompound) t).sym;
+                arity = ((SkelCompound) t).args.length;
+            } else if (t instanceof SkelAtom) {
+                sa = (SkelAtom) t;
+                arity = 0;
+            } else {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_CALLABLE, t), d);
+            }
+            int offset = arity - (t2.length - 2);
+            if (offset < 0)
+                return false;
+            for (int i = 0; i < t2.length - 2; i++) {
+                if (!en.unifyTerm(((SkelCompound) t).args[i + offset], d, t2[i+1], d2))
+                    return false;
+            }
+            if (offset != 0) {
+                boolean multi = shrinkCount(t, d, offset, en);
+                en.skel = shrinkAlloc(sa, t, d, offset, multi, en);
+            } else {
+                en.display = Display.DISPLAY_CONST;
+                en.skel = sa;
+            }
+            return true;
         }
     }
 
@@ -389,6 +500,94 @@ public final class SpecialApply extends AbstractSpecial {
                 args[len + i] = sv;
             } else {
                 args[len + i] = en.skel;
+            }
+        }
+        en.display = d3;
+        if (multi) {
+            return new SkelCompound(sa, args, vars);
+        } else {
+            return new SkelCompound(sa, args);
+        }
+    }
+
+    /***************************************************************/
+    /* Shrink Univ                                                 */
+    /***************************************************************/
+
+    /**
+     * <p>Count the needed variable place holders.</p>
+     * <p>The reused or new display is returned in the engine display.</p>
+     *
+     * @param t      The term skel.
+     * @param d      The term display.
+     * @param offset The offset, non-zero.
+     * @param en     The engine.
+     * @return True if new display is returned, otherwise false.
+     */
+    private static boolean shrinkCount(Object t, Display d,
+                                       int offset, Engine en) {
+        int countvar = 0;
+        Display last = Display.DISPLAY_CONST;
+        boolean multi = false;
+        SkelCompound sc = (SkelCompound) t;
+        for (int i = 0; i < offset; i++) {
+            en.skel = sc.args[i];
+            en.display = d;
+            en.deref();
+            if (SupervisorCopy.getVar(en.skel) != null) {
+                countvar++;
+                if (last == Display.DISPLAY_CONST) {
+                    last = en.display;
+                } else if (last != en.display) {
+                    multi = true;
+                }
+            }
+        }
+        if (multi) {
+            last = new Display(countvar);
+            last.marker = true;
+        }
+        en.display = last;
+        return multi;
+    }
+
+    /**
+     * <p>Copy the arguments.</p>
+     * <p>The reused or new display is passed via the engine display</p>
+     * <p>The reused or new display is returned in the engine display.</p>
+     *
+     * @param sa     The symbol.
+     * @param t      The term skel.
+     * @param d      The term display.
+     * @param offset The offset, non-zero.
+     * @param multi  The multi flag.
+     * @param en     The engine.
+     * @return The new compound.
+     */
+    private static SkelCompound shrinkAlloc(SkelAtom sa, Object t, Display d,
+                                            int offset, boolean multi,
+                                            Engine en) {
+        Display d3 = en.display;
+        SkelVar[] vars;
+        if (multi) {
+            vars = SkelVar.valueOfArray(d3.bind.length);
+        } else {
+            vars = null;
+        }
+        Object[] args = new Object[offset];
+        int countvar = 0;
+        SkelCompound sc = (SkelCompound) t;
+        for (int i = 0; i < offset; i++) {
+            en.skel = sc.args[i];
+            en.display = d;
+            en.deref();
+            if (multi && SupervisorCopy.getVar(en.skel) != null) {
+                SkelVar sv = vars[countvar];
+                countvar++;
+                d3.bind[sv.id].bindUniv(en.skel, en.display, en);
+                args[i] = sv;
+            } else {
+                args[i] = en.skel;
             }
         }
         en.display = d3;

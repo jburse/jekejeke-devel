@@ -16,7 +16,7 @@
  * is similarly extended to an unqualified closure. The arguments will be added
  * to the inner unqualified closure and the qualification will be preserved.
  * So extending a:b(X) by Y results in a:b(X,Y). The predicates
- * sys_modext_args/[3..9] allow to call the argument extension without further
+ * sys_extend_args/[3..9] allow to call the argument extension without further
  * invoking the result.
  *
  * Example:
@@ -148,35 +148,6 @@
 ::(_, _, _, _, _, _, _, _, _) :- throw(error(existence_error(body, :: /9), _)).
 
 /**
- * sys_modext_args(P, Y1, .., Yn, Q):
- * The predicate adds the arguments Y1, .., Yn to the
- * callable P and unifies the result with Q. The result Q will have
- * the same call-site information and the same colon and double
- * colon notation as the callable P. The predicate is currently
- * defined for 1 ≤ n ≤ 7.
- */
-:- public sys_modext_args/3.
-:- special(sys_modext_args/3, 'SpecialApply', 0).
-
-:- public sys_modext_args/4.
-:- special(sys_modext_args/4, 'SpecialApply', 0).
-
-:- public sys_modext_args/5.
-:- special(sys_modext_args/5, 'SpecialApply', 0).
-
-:- public sys_modext_args/6.
-:- special(sys_modext_args/6, 'SpecialApply', 0).
-
-:- public sys_modext_args/7.
-:- special(sys_modext_args/7, 'SpecialApply', 0).
-
-:- public sys_modext_args/8.
-:- special(sys_modext_args/8, 'SpecialApply', 0).
-
-:- public sys_modext_args/9.
-:- special(sys_modext_args/9, 'SpecialApply', 0).
-
-/**
  * call(P, Y1, .., Yn): [TC2 8.15.4]
  * The goal call(p(X1, .., Xm), Y1, .., Yn) succeeds whenever
  * the goal p(X1, .., Xm, Y1, .., Yn) succeeds. The predicate is
@@ -187,40 +158,98 @@
 :- virtual call/2.
 :- meta_predicate call(1, ?).
 :- set_predicate_property(call/2, sys_notrace).
-:- special(call/2, 'SpecialApply', 1).
+:- special(call/2, 'SpecialApply', 0).
 
 :- public call/3.
 :- virtual call/3.
 :- meta_predicate call(2, ?, ?).
 :- set_predicate_property(call/3, sys_notrace).
-:- special(call/3, 'SpecialApply', 1).
+:- special(call/3, 'SpecialApply', 0).
 
 :- public call/4.
 :- virtual call/4.
 :- meta_predicate call(3, ?, ?, ?).
 :- set_predicate_property(call/4, sys_notrace).
-:- special(call/4, 'SpecialApply', 1).
+:- special(call/4, 'SpecialApply', 0).
 
 :- public call/5.
 :- virtual call/5.
 :- meta_predicate call(4, ?, ?, ?, ?).
 :- set_predicate_property(call/5, sys_notrace).
-:- special(call/5, 'SpecialApply', 1).
+:- special(call/5, 'SpecialApply', 0).
 
 :- public call/6.
 :- virtual call/6.
 :- meta_predicate call(5, ?, ?, ?, ?, ?).
 :- set_predicate_property(call/6, sys_notrace).
-:- special(call/6, 'SpecialApply', 1).
+:- special(call/6, 'SpecialApply', 0).
 
 :- public call/7.
 :- virtual call/7.
 :- meta_predicate call(6, ?, ?, ?, ?, ?, ?).
 :- set_predicate_property(call/7, sys_notrace).
-:- special(call/7, 'SpecialApply', 1).
+:- special(call/7, 'SpecialApply', 0).
 
 :- public call/8.
 :- virtual call/8.
 :- meta_predicate call(7, ?, ?, ?, ?, ?, ?, ?).
 :- set_predicate_property(call/8, sys_notrace).
-:- special(call/8, 'SpecialApply', 1).
+:- special(call/8, 'SpecialApply', 0).
+
+/**
+ * sys_extend_args(P, Y1, .., Yn, Q):
+ * The predicate adds the arguments Y1, .., Yn to the
+ * callable P and unifies the result with Q. The result Q will have
+ * the same call-site information and the same colon and double
+ * colon notation as the callable P. The predicate is currently
+ * defined for 1 ≤ n ≤ 7.
+ */
+:- public sys_extend_args/3.
+:- special(sys_extend_args/3, 'SpecialApply', 1).
+
+:- public sys_extend_args/4.
+:- special(sys_extend_args/4, 'SpecialApply', 1).
+
+:- public sys_extend_args/5.
+:- special(sys_extend_args/5, 'SpecialApply', 1).
+
+:- public sys_extend_args/6.
+:- special(sys_extend_args/6, 'SpecialApply', 1).
+
+:- public sys_extend_args/7.
+:- special(sys_extend_args/7, 'SpecialApply', 1).
+
+:- public sys_extend_args/8.
+:- special(sys_extend_args/8, 'SpecialApply', 1).
+
+:- public sys_extend_args/9.
+:- special(sys_extend_args/9, 'SpecialApply', 1).
+
+/**
+ * sys_shrink_args(P, Y1, .., Yn, Q):
+ * The predicate removes the arguments Y1, .., Yn from the
+ * callable Q and unifies the result with P. The result P will
+ * have the same call-site information and the same colon and double
+ * colon notation as the callable Q. The predicate is currently
+ * defined for 1 ≤ n ≤ 7.
+ */
+:- public sys_shrink_args/3.
+:- special(sys_shrink_args/3, 'SpecialApply', 2).
+
+:- public sys_shrink_args/4.
+:- special(sys_shrink_args/4, 'SpecialApply', 2).
+
+:- public sys_shrink_args/5.
+:- special(sys_shrink_args/5, 'SpecialApply', 2).
+
+:- public sys_shrink_args/6.
+:- special(sys_shrink_args/6, 'SpecialApply', 2).
+
+:- public sys_shrink_args/7.
+:- special(sys_shrink_args/7, 'SpecialApply', 2).
+
+:- public sys_shrink_args/8.
+:- special(sys_shrink_args/8, 'SpecialApply', 2).
+
+:- public sys_shrink_args/9.
+:- special(sys_shrink_args/9, 'SpecialApply', 2).

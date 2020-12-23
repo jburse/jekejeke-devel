@@ -422,13 +422,7 @@ public final class EvaluableBits extends AbstractSpecial {
     private static int msb(Number m) {
         if (m instanceof Integer) {
             int x = m.intValue();
-            int y = Math.abs(x);
-            int k = 31 - Integer.numberOfLeadingZeros(y);
-            if (x < 0 && Integer.bitCount(y) == 1) {
-                return k - 1;
-            } else {
-                return k;
-            }
+            return 31 - Integer.numberOfLeadingZeros((x < 0 ? ~x : x));
         } else {
             return ((BigInteger) m).bitLength() - 1;
         }
@@ -481,12 +475,10 @@ public final class EvaluableBits extends AbstractSpecial {
      */
     /*
     public static void main(String[] args) {
-        int x = gcd(42, 79);
-        System.out.println("gdc(42,79)=" + x);
-        x = gcd(42, 77);
-        System.out.println("gdc(42,77)=" + x);
-        x = gcd(42, 77);
-        System.out.println("gdc(42,77)=" + x);
+        for (int x=-7; x<8; x++) {
+            System.out.print("msb("+x+")=" + msb(Integer.valueOf(x)));
+            System.out.println(", ~"+x+"=" + (~x));
+        }
     }
     */
 

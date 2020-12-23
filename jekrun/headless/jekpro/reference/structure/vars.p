@@ -19,7 +19,7 @@
  * in creating a variable names map. The resulting variable names map
  * can be used with the predicates write_term/[2,3].
  *
- * The predicate ground/1 suceeds if the term has no un-instantiated variables.
+ * The predicate ground/1 succeeds if the term has no un-instantiated variables.
  * The predicate nonground/2 can be used to pick the first un-instantiated
  * variable of a term without listing all un-instantiated variables.
  * The predicate acyclic_term/1 check whether the given term is non-cyclic.
