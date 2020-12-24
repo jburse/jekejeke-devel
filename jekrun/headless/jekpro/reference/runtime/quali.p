@@ -288,3 +288,45 @@ univ2(L, O) :-
 univ3(O) :- user:var(O), !, fail.
 univ3(_/O) :- !, univ3(O).
 univ3(_).
+
+/******************************************************************/
+/* Improved Extend/Shrink                                         */
+/******************************************************************/
+
+/**
+ * sys_extend_term(F, L, T):
+ * The predicate adds the arguments L to the
+ * term P and unifies the result with Q.
+ */
+% sys_extend_term(+Term, +List, -Term)
+:- public sys_extend_term/3.
+:- override sys_extend_term/3.
+sys_extend_term(F, _, _) :- user:var(F),
+   throw(error(instantiation_error, _)).
+sys_extend_term(F, L, T) :- F = R:O, !,
+   sys_extend_term(O, L, H),
+   sys_replace_site(T, F, R:H).
+sys_extend_term(F, L, T) :- F = R::O, !,
+   sys_extend_term(O, L, H),
+   sys_replace_site(T, F, R::H).
+sys_extend_term(F, L, T) :-
+   user:sys_extend_term(F, L, T).
+
+/**
+ * sys_shrink_term(T, N, F, L):
+ * The predicate removes N arguments from T
+ * and unifies the results with F and L.
+ */
+% sys_shrink_term(+Term, +Integer, -Term, -List)
+:- public sys_shrink_term/4.
+:- override sys_shrink_term/4.
+sys_shrink_term(F, _, _, _) :- user:var(F),
+   throw(error(instantiation_error, _)).
+sys_shrink_term(T, N, F, L) :- T = R:O, !,
+   sys_shrink_term(O, N, H, L),
+   sys_replace_site(F, T, R:H).
+sys_shrink_term(T, N, F, L) :- T = R::O, !,
+   sys_shrink_term(O, N, H, L),
+   sys_replace_site(F, T, R::H).
+sys_shrink_term(T, N, F, L) :-
+   user:sys_shrink_term(T, N, F, L).

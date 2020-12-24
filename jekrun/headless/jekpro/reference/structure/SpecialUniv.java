@@ -45,13 +45,15 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialUniv extends AbstractSpecial {
-    private final static int SPECIAL_SYS_LIST_TO_TERM = 0;
-    private final static int SPECIAL_SYS_TERM_TO_LIST = 1;
-    private final static int SPECIAL_ARG = 2;
-    private final static int SPECIAL_SET_ARG = 3;
-    private final static int SPECIAL_UNIFY_CHECKED = 4;
-    private final static int SPECIAL_NOT_UNIFY = 5;
-    private final static int SPECIAL_COPY_TERM = 6;
+    private final static int SPECIAL_ARG = 0;
+    private final static int SPECIAL_SET_ARG = 1;
+    private final static int SPECIAL_SYS_MUST_BE_ATOMIC = 2;
+    private final static int SPECIAL_SYS_TERM_TO_ARITY = 3;
+    private final static int SPECIAL_SYS_EXTEND_TERM = 4;
+    private final static int SPECIAL_SYS_SHRINK_TERM = 5;
+    private final static int SPECIAL_UNIFY_CHECKED = 6;
+    private final static int SPECIAL_NOT_UNIFY = 7;
+    private final static int SPECIAL_COPY_TERM = 8;
 
     /**
      * <p>Create a univ special.</p>
@@ -77,32 +79,9 @@ public final class SpecialUniv extends AbstractSpecial {
             throws EngineMessage, EngineException {
         try {
             switch (id) {
-                case SPECIAL_SYS_LIST_TO_TERM:
+                case SPECIAL_ARG:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    boolean multi = SpecialUniv.listToTerm(en);
-                    Display d = en.display;
-                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
-                    return true;
-                case SPECIAL_SYS_TERM_TO_LIST:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    en.skel = temp[0];
-                    en.display = ref;
-                    en.deref();
-                    en.skel = SpecialUniv.termToList(en.skel, en);
-                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
-                        return false;
-                    return true;
-                case SPECIAL_ARG:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
                     Number num = SpecialEval.derefAndCastInteger(temp[0], ref);
                     SpecialEval.checkNotLessThanZero(num);
                     int nth = SpecialEval.castIntValue(num);
@@ -141,7 +120,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (1 > nth || nth > sc.args.length)
                             return false;
                         nth--;
-                        d = en.display;
+                        Display d = en.display;
 
                         en.skel = temp[2];
                         en.display = ref;
@@ -149,7 +128,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         Object t2 = en.skel;
                         Display d2 = en.display;
 
-                        multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
+                        boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
                         if (!en.unifyTerm(sc, d, temp[3], ref))
@@ -165,6 +144,66 @@ public final class SpecialUniv extends AbstractSpecial {
                                 EngineMessage.OP_TYPE_CALLABLE,
                                 en.skel), en.display);
                     }
+                case SPECIAL_SYS_MUST_BE_ATOMIC:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    if (!(en.skel instanceof SkelCompound) && !(en.skel instanceof SkelVar)) {
+                        /* */
+                    } else {
+                        EngineMessage.checkInstantiated(en.skel);
+                        throw new EngineMessage(EngineMessage.typeError(
+                                EngineMessage.OP_TYPE_ATOMIC, en.skel), en.display);
+                    }
+                    return true;
+                case SPECIAL_SYS_TERM_TO_ARITY:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    if (en.skel instanceof SkelCompound) {
+                        SkelCompound sc = (SkelCompound) en.skel;
+                        num = Integer.valueOf(sc.args.length);
+                    } else {
+                        EngineMessage.checkInstantiated(en.skel);
+                        num = Integer.valueOf(0);
+                    }
+                    if (!en.unifyTerm(num, Display.DISPLAY_CONST, temp[1], ref))
+                        return false;
+                    return true;
+                case SPECIAL_SYS_EXTEND_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    boolean multi = SpecialUniv.listToTerm(temp[0], ref, temp[1], ref, en);
+                    Display d = en.display;
+                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                        return false;
+                    if (multi)
+                        d.remTab(en);
+                    return true;
+                case SPECIAL_SYS_SHRINK_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+
+                    num = SpecialEval.derefAndCastInteger(temp[1], ref);
+                    SpecialEval.checkNotLessThanZero(num);
+                    nth = SpecialEval.castIntValue(num);
+
+                    en.skel = temp[0];
+                    en.display = ref;
+                    en.deref();
+                    d = en.display;
+                    Object val = SpecialUniv.termToList(nth, en.skel, en);
+                    if (val == null)
+                        return false;
+                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                        return false;
+                    if (!en.unifyTerm(val, d, temp[3], ref))
+                        return false;
+                    return true;
                 case SPECIAL_UNIFY_CHECKED:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
@@ -185,7 +224,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 case SPECIAL_COPY_TERM:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    Object val = AbstractSkel.copySkel(temp[0], ref, en);
+                    val = AbstractSkel.copySkel(temp[0], ref, en);
                     d = AbstractSkel.createMarker(val);
                     multi = d.getAndReset();
                     if (!en.unifyTerm(val, d, temp[1], ref))
@@ -305,56 +344,28 @@ public final class SpecialUniv extends AbstractSpecial {
     /******************************************************************/
 
     /**
-     * <p>Convert a term to a list.</p>
-     * <p>The argument is passed via skel.</p>
-     * <p>The result is returned via skel.</p>
-     *
-     * @param en Engine.
-     * @return True if the argument was not a variable, otherwise false.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object termToList(Object t, Engine en)
-            throws EngineMessage {
-        Foyer foyer = en.store.foyer;
-        Object res = foyer.ATOM_NIL;
-        if (t instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) t;
-            for (int i = sc.args.length - 1; i >= 0; i--)
-                res = new SkelCompound(foyer.ATOM_CONS, sc.args[i], res);
-            return new SkelCompound(foyer.ATOM_CONS, sc.sym, res);
-        } else {
-            EngineMessage.checkInstantiated(t);
-            return new SkelCompound(foyer.ATOM_CONS, t, res);
-        }
-    }
-
-    /**
      * <p>Convert a list to a term.</p>
      * <p>The argument is passed via skel and display.</p>
      * <p>The result is returned via skel and display.</p>
      * <p>Used by =../2.</p>
      *
+     * @param t2 The term skeleton.
+     * @param d2 The term skeleton.
+     * @param t  The list skeleton.
+     * @param d  The list display.
      * @param en The interpreter.
      * @throws EngineMessage Shit happens.
      */
-    private static boolean listToTerm(Engine en)
+    private static boolean listToTerm(Object t2, Display d2,
+                                      Object t, Display d, Engine en)
             throws EngineMessage {
-        Object t = en.skel;
-        Display d = en.display;
-        if ((t instanceof SkelCompound) &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS) &&
-                ((SkelCompound) t).args.length == 2) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(t);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST, t), d);
-        }
-        SkelCompound sc = (SkelCompound) t;
-        Object t2 = sc.args[0];
-        Display d2 = d;
+        en.skel = t2;
+        en.display = d2;
+        en.deref();
+        t2 = en.skel;
+        d2 = en.display;
 
-        en.skel = sc.args[1];
+        en.skel = t;
         en.display = d;
         en.deref();
         t = en.skel;
@@ -362,46 +373,102 @@ public final class SpecialUniv extends AbstractSpecial {
 
         if (t instanceof SkelAtom &&
                 ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
-            BindUniv b;
-            while (t2 instanceof SkelVar &&
-                    (b = d2.bind[((SkelVar) t2).id]).display != null) {
-                t2 = b.skel;
-                d2 = b.display;
-            }
-            if (!(t2 instanceof SkelCompound) && !(t2 instanceof SkelVar)) {
-                /* */
-            } else {
-                EngineMessage.checkInstantiated(t2);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_ATOMIC, t2), d2);
-            }
+            EngineMessage.checkInstantiated(t2);
             en.skel = t2;
             en.display = d2;
             return false;
         } else {
-            SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(t2, d2);
-            int mullen = univCount(t, d, en);
-            en.skel = univAlloc(sa, t, d, mullen, en);
+            SkelAtom sa;
+            if (t2 instanceof SkelCompound) {
+                sa = ((SkelCompound) t2).sym;
+            } else if (t2 instanceof SkelAtom) {
+                sa = (SkelAtom) t2;
+            } else {
+                EngineMessage.checkInstantiated(t2);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_CALLABLE, t2), d2);
+            }
+            int mullen = univCount(t2, d2, t, d, en);
+            en.skel = univAlloc(sa, t2, d2, t, d, mullen, en);
             return (mullen < 0);
         }
+    }
+
+    /**
+     * <p>Convert a term to a closure and list.</p>
+     * <p>The closure is returned in the engine skeleton.</p>
+     *
+     * @param count The number of arguments.
+     * @param t     The term skeleton.
+     * @param en    Engine.
+     * @return The list or null.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object termToList(int count, Object t, Engine en)
+            throws EngineMessage {
+        Foyer foyer = en.store.foyer;
+        Object val;
+        if (t instanceof SkelCompound) {
+            Object[] args = ((SkelCompound) t).args;
+            if (count > args.length)
+                return null;
+            if (count == args.length) {
+                en.skel = ((SkelCompound) t).sym;
+            } else {
+                Object[] args2 = new Object[args.length - count];
+                System.arraycopy(args, 0, args2, 0, args2.length);
+                en.skel = new SkelCompound(((SkelCompound) t).sym, args2);
+            }
+            Object res = foyer.ATOM_NIL;
+            for (int i = 1; i <= count; i++)
+                res = new SkelCompound(foyer.ATOM_CONS, args[args.length - i], res);
+            val = res;
+        } else {
+            EngineMessage.checkInstantiated(t);
+            if (count > 0)
+                return null;
+            en.skel = t;
+            val = foyer.ATOM_NIL;
+        }
+        return val;
     }
 
     /**
      * <p>Count the needed variable place holders and the number of arguments.</p>
      * <p>The reused or new display is returned in the engine copy display.</p>
      *
-     * @param t  The term skeleton.
-     * @param d  The term display.
+     * @param t2 The term skeleton.
+     * @param d2 The term skeleton.
+     * @param t  The list skeleton.
+     * @param d  The list display.
      * @param en The engine.
      * @return True if new display is returned, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    private static int univCount(Object t, Display d, Engine en)
+    private static int univCount(Object t2, Display d2,
+                                 Object t, Display d, Engine en)
             throws EngineMessage {
         int length = 0;
         int countvar = 0;
         Display last = Display.DISPLAY_CONST;
         boolean multi = false;
+        if (t2 instanceof SkelCompound) {
+            Object[] args = ((SkelCompound) t2).args;
+            for (int i = 0; i < args.length; i++) {
+                en.skel = args[i];
+                en.display = d2;
+                en.deref();
+                if (SupervisorCopy.getVar(en.skel) != null) {
+                    countvar++;
+                    if (last == Display.DISPLAY_CONST) {
+                        last = en.display;
+                    } else if (last != en.display) {
+                        multi = true;
+                    }
+                }
+                length++;
+            }
+        }
         while (t instanceof SkelCompound &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS) &&
                 ((SkelCompound) t).args.length == 2) {
@@ -417,12 +484,12 @@ public final class SpecialUniv extends AbstractSpecial {
                     multi = true;
                 }
             }
+            length++;
             en.skel = sc.args[1];
             en.display = d;
             en.deref();
             t = en.skel;
             d = en.display;
-            length++;
         }
         if (t instanceof SkelAtom &&
                 ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
@@ -444,19 +511,23 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The reused or new display is returned in the engine display.</p>
      *
      * @param sa     The symbol.
-     * @param t      The term skeleton.
-     * @param d      The term display.
+     * @param t2     The term skeleton.
+     * @param d2     The term skeleton.
+     * @param t      The list skeleton.
+     * @param d      The list display.
      * @param mullen The multi flag and the length.
      * @param en     The engine.
      * @return The new compound.
      */
-    private static SkelCompound univAlloc(SkelAtom sa, Object t, Display d,
+    private static SkelCompound univAlloc(SkelAtom sa,
+                                          Object t2, Display d2,
+                                          Object t, Display d,
                                           int mullen, Engine en) {
-        Display d2 = en.display;
+        Display d3 = en.display;
         boolean multi = (mullen < 0);
         SkelVar[] vars;
         if (multi) {
-            vars = SkelVar.valueOfArray(d2.bind.length);
+            vars = SkelVar.valueOfArray(d3.bind.length);
         } else {
             vars = null;
         }
@@ -464,6 +535,23 @@ public final class SpecialUniv extends AbstractSpecial {
         Object[] args = new Object[length];
         int pos = 0;
         int countvar = 0;
+        if (t2 instanceof SkelCompound) {
+            Object[] args2 = ((SkelCompound) t2).args;
+            for (int i = 0; i < args2.length; i++) {
+                en.skel = args2[i];
+                en.display = d2;
+                en.deref();
+                if (multi && SupervisorCopy.getVar(en.skel) != null) {
+                    SkelVar sv = vars[countvar];
+                    countvar++;
+                    d3.bind[sv.id].bindUniv(en.skel, en.display, en);
+                    args[pos] = sv;
+                } else {
+                    args[pos] = en.skel;
+                }
+                pos++;
+            }
+        }
         while (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
             en.skel = sc.args[0];
@@ -472,7 +560,7 @@ public final class SpecialUniv extends AbstractSpecial {
             if (multi && SupervisorCopy.getVar(en.skel) != null) {
                 SkelVar sv = vars[countvar];
                 countvar++;
-                d2.bind[sv.id].bindUniv(en.skel, en.display, en);
+                d3.bind[sv.id].bindUniv(en.skel, en.display, en);
                 args[pos] = sv;
             } else {
                 args[pos] = en.skel;
@@ -484,7 +572,7 @@ public final class SpecialUniv extends AbstractSpecial {
             t = en.skel;
             d = en.display;
         }
-        en.display = d2;
+        en.display = d3;
         if (multi) {
             return new SkelCompound(sa, args, vars);
         } else {

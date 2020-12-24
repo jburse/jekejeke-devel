@@ -130,22 +130,27 @@ sys_expand_term_args([M|T], [A|L], [B|S]) :-
 % sys_expand_term_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_term_arg/3.
 sys_expand_term_arg(?, X, X) :- !.
-sys_expand_term_arg(1, X, Y) :- !, sys_expand_term_closure(X, Y, _).
 sys_expand_term_arg(0, X, Y) :- !, sys_expand_term(X, Y, _).
 sys_expand_term_arg(-1, X, Y) :- !, sys_expand_goal(X, Y, _).
-sys_expand_term_arg(-2, X, Y) :- !, sys_expand_goal_closure(X, Y, _).
+sys_expand_term_arg(N, X, Y) :- integer(N), N > 0, !,
+   sys_expand_term_closure(X, N, Y).
+sys_expand_term_arg(N, X, Y) :- integer(N), N < -1, !,
+   M is -N-1,
+   sys_expand_goal_closure(X, M, Y).
 sys_expand_term_arg(_, X, X).
 
-% sys_expand_term_closure(+Closure, -Closure, -Integer)
-sys_expand_term_closure(X, Y, R) :- callable(X), !,
-   sys_callable_apply(X, V, H),
+% sys_expand_term_closure(+Closure, +Integer, -Closure)
+:- private sys_expand_term_closure/3.
+sys_expand_term_closure(X, N, Y) :- callable(X), !,
+   length(A, N),
+   sys_extend_term(X, A, H),
    sys_expand_term(H, J, R),
    (  R == 0
-   -> sys_callable_apply(Y, V, J)
+   -> sys_shrink_term(J, N, Y, A)
    ;  sys_goal_globals(H^J, L),
-      sys_kernel_goal(L, J, K),
-      Y = V\K).
-sys_expand_term_closure(T, T, 0).
+      sys_make_locals(L, J, K),
+      sys_make_lambda(A, K, Y)).
+sys_expand_term_closure(D, _, D).
 
 /*******************************************************/
 /* Goal Expand                                         */
@@ -214,50 +219,51 @@ sys_expand_goal_args([M|T], [A|L], [B|S]) :-
 % sys_expand_goal_arg(+Mode, +Arg, -Arg)
 :- private sys_expand_goal_arg/3.
 sys_expand_goal_arg(?, X, X) :- !.
-sys_expand_goal_arg(1, X, Y) :- !, sys_expand_goal_closure(X, Y, _).
 sys_expand_goal_arg(0, X, Y) :- !, sys_expand_goal(X, Y, _).
 sys_expand_goal_arg(-1, X, Y) :- !, sys_expand_term(X, Y, _).
-sys_expand_goal_arg(-2, X, Y) :- !, sys_expand_term_closure(X, Y, _).
+sys_expand_goal_arg(N, X, Y) :- integer(N), N > 0, !,
+   sys_expand_goal_closure(X, N, Y).
+sys_expand_goal_arg(N, X, Y) :- integer(N), N < -1, !,
+   M is -N-1,
+   sys_expand_term_closure(X, M, Y).
 sys_expand_goal_arg(_, X, X).
 
-% sys_expand_goal_closure(+Closure, -Closure, -Integer)
-sys_expand_goal_closure(X, Y, R) :- callable(X), !,
-   sys_callable_apply(X, V, H),
+% sys_expand_goal_closure(+Closure, +Integer, -Closure)
+:- private sys_expand_goal_closure/3.
+sys_expand_goal_closure(X, N, Y) :- callable(X), !,
+   length(A, N),
+   sys_extend_term(X, A, H),
    sys_expand_goal(H, J, R),
    (  R == 0
-   -> sys_callable_apply(Y, V, J)
+   -> sys_shrink_term(J, N, Y, A)
    ;  sys_goal_globals(H^J, L),
-      sys_kernel_goal(L, J, K),
-      Y = V\K).
-sys_expand_goal_closure(G, G, 0).
+      sys_make_locals(L, J, K),
+      sys_make_lambda(A, K, Y)).
+sys_expand_goal_closure(C, _, C).
 
 /******************************************************************/
 /* Helper                                                         */
 /******************************************************************/
 
 /**
- * sys_kernel_goal(L, G, Q):
+ * sys_make_locals(L, G, Q):
  * The predicate succeeds in Q with the goal G quatified
  * by the variables L.
  */
-% sys_kernel_goal(+List, +Goal, -QuantGoal)
-:- private sys_kernel_goal/3.
-sys_kernel_goal([X|Y], Z, X^T) :-
-   sys_kernel_goal(Y, Z, T).
-sys_kernel_goal([], X, X).
+% sys_make_locals(+List, +Goal, -QuantGoal)
+:- private sys_make_locals/3.
+sys_make_locals([X|Y], Z, X^T) :-
+   sys_make_locals(Y, Z, T).
+sys_make_locals([], X, X).
 
 /**
- * sys_callable_apply(G, V, H):
- * The predicate succeeds in H with the callable G extended
- * by the argument V.
+ * sys_make_lambda(L, G, Q):
+ * The predicate succeeds in Q with the goal G lambdaified
+ * by the variables L.
  */
-:- private sys_callable_apply/3.
-sys_callable_apply(G, V, H) :- var(G), !,
-   H =.. [F|R],
-   last(R, V, S),
-   G =.. [F|S].
-sys_callable_apply(G, V, H) :-
-   G =.. [F|S],
-   last(R, V, S),
-   H =.. [F|R].
+% sys_make_lambda(+List, +Goal, -QuantGoal)
+:- private sys_make_lambda/3.
+sys_make_lambda([X|Y], Z, X\T) :-
+   sys_make_lambda(Y, Z, T).
+sys_make_lambda([], X, X).
 

@@ -28,12 +28,19 @@
  * a goal nor a clause. The (::)/1 wrapper indicates that the argument
  * is also an object message.
  *
+ * Example:
+ * ?- [user].
+ * goal_expansion(writeln(X), (write(X), nl)).
+ * ^D
+ * ?- call(writeln, 'Hello World!').
+ * Hello World!
+ *
  * It should be noted that Jekejeke Prolog executes meta-predicates even
  * when meta-predicate directives are not present. The meta-predicate
  * directives are needed for pretty printing and term expansion. Closures
- * are not supported during term expansion. Term expansion for clauses
- * can be switched on-off by the sys_clause_expand flag, and it is
- * on by default.
+ * are expended by uncurrying, expanding and currying again. Term and
+ * goal expansion can be switched on-off by the sys_clause_expand
+ * flag, and it is on by default.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

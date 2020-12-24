@@ -292,7 +292,7 @@ user:goal_expansion(phrase(U, I, O), (V, Q)) :- U = (\+ A),
  * by the current input and output succeeds.
  */
 user:goal_expansion(phrase(P, I, O), Q) :-
-   sys_extend_args(P, I, O, Q).
+   sys_extend_term(P, [I, O], Q).
 
 /**********************************************************/
 /* Term Rewriting                                         */
@@ -324,4 +324,4 @@ user:term_expansion((P --> B),
 user:term_expansion(phrase(P, _, _), _) :-
    var(P), throw(error(instantiation_error, _)).
 user:term_expansion(phrase(P, I, O), Q) :-
-   sys_extend_args(P, I, O, Q).
+   sys_extend_term(P, [I, O], Q).

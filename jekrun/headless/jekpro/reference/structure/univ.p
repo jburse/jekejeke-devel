@@ -57,27 +57,6 @@
 :- op(700, xfx, \=).
 
 /**
- * X = .. Y: [ISO 8.5.3]
- * If X is atomic then the predicate succeeds when Y unifies with
- * [X]. If X is the compound F(A1, .., An) then the predicate succeeds
- * when Y unifies with [F, A1, …, An]. If Y is [C] and C is atomic
- * then the predicate succeeds when X unifies with C. If Y is [F, A1, …, An]
- * and F is an atom then the predicate succeeds when X unifies with F(A1, .., An).
- */
-% +-Term =.. -+List
-:- public =.. /2.
-T =.. L :- var(T), !,
-   sys_list_to_term(L, T).
-T =.. L :-
-   sys_term_to_list(T, L).
-
-:- private sys_list_to_term/2.
-:- special(sys_list_to_term/2, 'SpecialUniv', 0).
-
-:- private sys_term_to_list/2.
-:- special(sys_term_to_list/2, 'SpecialUniv', 1).
-
-/**
  * functor(X, N, A): [ISO 8.5.1]
  * If X is atomic then the predicate succeeds when N unifies with X
  * and A unifies with 0. If X is the compound f(A1, .., An) then the
@@ -98,7 +77,7 @@ T =.. L :-
  */
 % arg(+Integer, +Term, -Term)
 :- public arg/3.
-:- special(arg/3, 'SpecialUniv', 2).
+:- special(arg/3, 'SpecialUniv', 0).
 
 /**
  * set_arg(K, X, Y, Z):
@@ -108,7 +87,50 @@ T =.. L :-
  */
 % set_arg(+Integer, +Term, +Term, -Term)
 :- public set_arg/4.
-:- special(set_arg/4, 'SpecialUniv', 3).
+:- special(set_arg/4, 'SpecialUniv', 1).
+
+/**
+ * X = .. Y: [ISO 8.5.3]
+ * If X is atomic then the predicate succeeds when Y unifies with
+ * [X]. If X is the compound F(A1, .., An) then the predicate succeeds
+ * when Y unifies with [F, A1, …, An]. If Y is [C] and C is atomic
+ * then the predicate succeeds when X unifies with C. If Y is [F, A1, …, An]
+ * and F is an atom then the predicate succeeds when X unifies with F(A1, .., An).
+ */
+% +-Term =.. -+List
+:- public =.. /2.
+T =.. [F|L] :- var(T), !,
+   sys_must_be_atomic(F),
+   sys_extend_term(F, L, T).
+T =.. [F|L] :- !,
+   sys_term_to_arity(T, N),
+   sys_shrink_term(T, N, F, L).
+_ =.. X :-
+   throw(error(type_error(list, X), _)).
+
+:- private sys_must_be_atomic/1.
+:- special(sys_must_be_atomic/1, 'SpecialUniv', 2).
+
+:- private sys_term_to_arity/2.
+:- special(sys_term_to_arity/2, 'SpecialUniv', 3).
+
+/**
+ * sys_extend_term(F, L, T):
+ * The predicate adds the arguments L to the
+ * term P and unifies the result with Q.
+ */
+% sys_extend_term(+Term, +List, -Term)
+:- public sys_extend_term/3.
+:- special(sys_extend_term/3, 'SpecialUniv', 4).
+
+/**
+ * sys_shrink_term(T, N, F, L):
+ * The predicate removes N arguments from T
+ * and unifies the results with F and L.
+ */
+% sys_shrink_term(+Term, +Integer, -Term, -List)
+:- public sys_shrink_term/4.
+:- special(sys_shrink_term/4, 'SpecialUniv', 5).
 
 /**
  * X = Y: [ISO 8.2.1]
@@ -123,7 +145,7 @@ T =.. L :-
  */
 % unify_with_occurs_check(+Term, +Term)
 :- public unify_with_occurs_check/2.
-:- special(unify_with_occurs_check/2, 'SpecialUniv', 4).
+:- special(unify_with_occurs_check/2, 'SpecialUniv', 6).
 
 /**
  * X \= Y: [ISO 8.2.3]
@@ -131,7 +153,7 @@ T =.. L :-
  */
 % +Term \= +Term
 :- public \= /2.
-:- special(\= /2, 'SpecialUniv', 5).
+:- special(\= /2, 'SpecialUniv', 7).
 
 /**
  * copy_term(X, Y): [ISO 8.5.4]
@@ -139,4 +161,4 @@ T =.. L :-
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialUniv', 6).
+:- special(copy_term/2, 'SpecialUniv', 8).
