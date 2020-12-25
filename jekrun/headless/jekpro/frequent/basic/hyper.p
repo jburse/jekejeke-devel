@@ -43,6 +43,7 @@
  * Returns the float representation of the hyperbolic sinus of X.
  */
 :- public sinh/2.
+:- meta_predicate sinh(1, ?).
 :- foreign(sinh/2, 'Math', sinh(double)).
 
 /**
@@ -50,6 +51,7 @@
  * Returns the float representation of the hyperbolic cosine of X.
  */
 :- public cosh/2.
+:- meta_predicate cosh(1, ?).
 :- foreign(cosh/2, 'Math', cosh(double)).
 
 /**
@@ -57,6 +59,7 @@
  * Returns the float representation of the hyperbolic tangent of X.
  */
 :- public tanh/2.
+:- meta_predicate tanh(1, ?).
 :- foreign(tanh/2, 'Math', tanh(double)).
 
 /**
@@ -64,6 +67,7 @@
  * Returns the float representation of the arcus hyperbolic sinus of X.
  */
 :- public asinh/2.
+:- meta_predicate asinh(1, ?).
 :- foreign(asinh/2, 'ForeignHyper', asinh(double)).
 
 /**
@@ -71,6 +75,7 @@
  * Returns the float representation of the arcus hyperbolic cosine of X.
  */
 :- public acosh/2.
+:- meta_predicate acosh(1, ?).
 :- foreign(acosh/2, 'ForeignHyper', acosh(double)).
 
 /**
@@ -78,4 +83,5 @@
  * Returns the float representation of the arcus hyperbolic tangent of X.
  */
 :- public atanh/2.
+:- meta_predicate atanh(1, ?).
 :- foreign(atanh/2, 'ForeignHyper', atanh(double)).

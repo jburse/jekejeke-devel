@@ -388,7 +388,6 @@ sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 :- ensure_loaded(library(arithmetic/round)).
 :- ensure_loaded(library(arithmetic/bits)).
 :- ensure_loaded(library(arithmetic/compare)).
-:- ensure_loaded(library(arithmetic/trigo)).
 
 :- ensure_loaded(library(structure/type)).
 :- ensure_loaded(library(structure/vars)).
@@ -400,6 +399,8 @@ sys_declaration_indicator(override(D), I) :- sys_declaration_indicator(D, I).
 :- ensure_loaded(library(runtime/meta)).
 :- ensure_loaded(library(runtime/dynamic)).
 :- ensure_loaded(library(runtime/session)).
+
+:- ensure_loaded(library(arithmetic/trigo)).
 
 :- ensure_loaded(library(stream/stream)).
 :- ensure_loaded(library(stream/byte)).

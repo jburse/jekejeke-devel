@@ -10,6 +10,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.array.AbstractDelegate;
+import jekpro.tools.array.AbstractLense;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
@@ -748,6 +749,8 @@ public final class Predicate {
             checkPredicateFresh(def, src, pick, over, en);
             checkPredicateMetaInherited(def, src, pick, over, en);
             checkPredicateMetaIllegal(def, src, pick, over, en);
+
+            checkPredicateNumeric(pick, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
@@ -755,56 +758,6 @@ public final class Predicate {
                     EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
-    }
-
-    /**
-     * <p>Perform the override style check.</p>
-     *
-     * @param loc  The usage.
-     * @param src   The call-site.
-     * @param pick The predicate.
-     * @param over The overridden predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateOverride(Integer loc, AbstractSource src,
-                                               Predicate pick, Predicate over,
-                                               Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_OVRD) != 0)
-            return;
-        if (over == null || !CachePredicate.visiblePred(over, src))
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
-     * <p>Perform the fresh style check.</p>
-     *
-     * @param loc  The usage.
-     * @param src   The call-site.
-     * @param pick The predicate.
-     * @param over The overridden predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateFresh(Integer loc, AbstractSource src,
-                                            Predicate pick, Predicate over,
-                                            Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
-            return;
-        if (over != null && CachePredicate.visiblePred(over, src))
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_FRESH_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
     }
 
     /**
@@ -877,60 +830,6 @@ public final class Predicate {
     }
 
     /**
-     * <p>Perform the meta inherited style check.</p>
-     *
-     * @param loc  The usage.
-     * @param src   The call-site.
-     * @param pick The predicate.
-     * @param over The overridden predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateMetaInherited(Integer loc, AbstractSource src,
-                                                    Predicate pick, Predicate over,
-                                                    Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_META) != 0)
-            return;
-        if (over == null || !CachePredicate.visiblePred(over, src))
-            return;
-        if (over.meta_predicate == null)
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_META_INHERITED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
-     * <p>Perform the meta illegal style check.</p>
-     *
-     * @param loc  The usage.
-     * @param src   The call-site.
-     * @param pick The predicate.
-     * @param over The overridden predicate.
-     * @param en   The engine.
-     * @throws EngineMessage The warning.
-     */
-    private static void checkPredicateMetaIllegal(Integer loc, AbstractSource src,
-                                                    Predicate pick, Predicate over,
-                                                    Engine en)
-            throws EngineMessage {
-        if ((loc.intValue() & MASK_TRCK_META) == 0)
-            return;
-        if (over == null || !CachePredicate.visiblePred(over, src))
-            return;
-        if (over.meta_predicate != null)
-            return;
-        throw new EngineMessage(EngineMessage.syntaxError(
-                EngineMessage.OP_SYNTAX_META_ILLEGAL,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
-                        pick.getArity(), en)));
-    }
-
-    /**
      * <p>Perform the dynamic style check.</p>
      *
      * @param loc  The location.
@@ -997,6 +896,136 @@ public final class Predicate {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the override style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src  The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateOverride(Integer loc, AbstractSource src,
+                                               Predicate pick, Predicate over,
+                                               Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_OVRD) != 0)
+            return;
+        if (over == null || !CachePredicate.visiblePred(over, src))
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the fresh style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src  The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateFresh(Integer loc, AbstractSource src,
+                                            Predicate pick, Predicate over,
+                                            Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
+            return;
+        if (over != null && CachePredicate.visiblePred(over, src))
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_FRESH_PRED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the meta inherited style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src  The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateMetaInherited(Integer loc, AbstractSource src,
+                                                    Predicate pick, Predicate over,
+                                                    Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_META) != 0)
+            return;
+        if (over == null || !CachePredicate.visiblePred(over, src))
+            return;
+        if (over.meta_predicate == null)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_META_INHERITED,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the meta illegal style check.</p>
+     *
+     * @param loc  The usage.
+     * @param src  The call-site.
+     * @param pick The predicate.
+     * @param over The overridden predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateMetaIllegal(Integer loc, AbstractSource src,
+                                                  Predicate pick, Predicate over,
+                                                  Engine en)
+            throws EngineMessage {
+        if ((loc.intValue() & MASK_TRCK_META) == 0)
+            return;
+        if (over == null || !CachePredicate.visiblePred(over, src))
+            return;
+        if (over.meta_predicate != null)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_META_ILLEGAL,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the dynamic style check.</p>
+     *
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateNumeric(Predicate pick,
+                                              Engine en)
+            throws EngineMessage {
+        AbstractDelegate fun = pick.del;
+        if (!(fun instanceof AbstractLense))
+            return;
+        if (!((AbstractLense) fun).isNumeric())
+            return;
+        if (pick.meta_predicate != null)
+            return;
+        if (pick.getArity() == 1)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_NUMERIC_FOREIGN,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource().getStore().user,
                         pick.getArity(), en)));

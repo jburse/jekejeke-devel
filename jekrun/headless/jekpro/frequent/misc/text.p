@@ -154,12 +154,14 @@ char_digit(Char, Radix, Value) :-
  */
 % code_digit(+Integer, +Integer, -Integer)
 :- public code_digit/3.
+:- meta_predicate code_digit(1, 1, ?).
 code_digit(CodePoint, Radix, Value) :-
    sys_code_digit(CodePoint, Radix, W),
    W \== -1,
    Value = W.
 
 :- private sys_code_digit/3.
+:- meta_predicate sys_code_digit(1, 1, ?).
 :- foreign(sys_code_digit/3, 'Character', digit(int, int)).
 
 /******************************************************************/
@@ -172,6 +174,7 @@ code_digit(CodePoint, Radix, Value) :-
  */
 % code_lower(+Integer, -Integer)
 :- public code_lower/2.
+:- meta_predicate code_lower(1, ?).
 :- foreign(code_lower/2, 'Character', toLowerCase(int)).
 
 /**
@@ -180,6 +183,7 @@ code_digit(CodePoint, Radix, Value) :-
  */
 % code_upper(+Integer, -Integer)
 :- public code_upper/2.
+:- meta_predicate code_upper(1, ?).
 :- foreign(code_upper/2, 'Character', toUpperCase(int)).
 
 /**

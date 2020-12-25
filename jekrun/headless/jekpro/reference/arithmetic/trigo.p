@@ -57,6 +57,7 @@
  * argument must be given in radians.
  */
 :- public sin/2.
+:- meta_predicate sin(1, ?).
 :- foreign(sin/2, 'Math', sin(double)).
 
 /**
@@ -65,6 +66,7 @@
  * argument must be given in radians.
  */
 :- public cos/2.
+:- meta_predicate cos(1, ?).
 :- foreign(cos/2, 'Math', cos(double)).
 
 /**
@@ -73,6 +75,7 @@
  * argument must be given in radians.
  */
 :- public tan/2.
+:- meta_predicate tan(1, ?).
 :- foreign(tan/2, 'Math', tan(double)).
 
 /**
@@ -81,6 +84,7 @@
  * result is in radians.
  */
 :- public asin/2.
+:- meta_predicate asin(1, ?).
 :- foreign(asin/2, 'Math', asin(double)).
 
 /**
@@ -89,6 +93,7 @@
  * result is in radians.
  */
 :- public acos/2.
+:- meta_predicate acos(1, ?).
 :- foreign(acos/2, 'Math', acos(double)).
 
 /**
@@ -97,6 +102,7 @@
  * result is in radians.
  */
 :- public atan/2.
+:- meta_predicate atan(1, ?).
 :- foreign(atan/2, 'Math', atan(double)).
 
 /**
@@ -105,6 +111,7 @@
  * power of Y.
  */
 :- public ** /3.
+:- meta_predicate **(1, 1, ?).
 :- foreign(** /3, 'Math', pow(double, double)).
 
 /**
@@ -113,6 +120,7 @@
  * raised to the power of X.
  */
 :- public exp/2.
+:- meta_predicate exp(1, ?).
 :- foreign(exp/2, 'Math', exp(double)).
 
 /**
@@ -121,6 +129,7 @@
  * logarithm of X.
  */
 :- public log/2.
+:- meta_predicate log(1, ?).
 :- foreign(log/2, 'Math', log(double)).
 
 /**
@@ -128,6 +137,7 @@
  * Returns the float representation of the square root of X.
  */
 :- public sqrt/2.
+:- meta_predicate sqrt(1, ?).
 :- foreign(sqrt/2, 'Math', sqrt(double)).
 
 /**
@@ -152,12 +162,14 @@
  * result is in radians.
  */
 :- public atan2/3.
+:- meta_predicate atan2(1, 1, ?).
 atan2(X, Y, _) :- X =:= 0, Y =:= 0,
    throw(error(evaluation_error(undefined), _)).
 atan2(X, Y, Z) :-
    Z is sys_atan2(X, Y).
 
 :- private sys_atan2/3.
+:- meta_predicate sys_atan2(1, 1, ?).
 :- foreign(sys_atan2/3, 'Math', atan2(double, double)).
 
 /**

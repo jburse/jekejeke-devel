@@ -155,6 +155,7 @@ rat_iter32(V#W, M#N, P#Q, Y, X) :-
  * The predicate succeeds in M with the mantissa of F.
  */
 :- public sys_float_mantissa/2.
+:- meta_predicate sys_float_mantissa(1, ?).
 :- foreign(sys_float_mantissa/2, 'ForeignApprox', sysFloatMantissa('Number')).
 
 /**
@@ -162,6 +163,7 @@ rat_iter32(V#W, M#N, P#Q, Y, X) :-
  * The predicate succeeds in E with the exponent of F.
  */
 :- public sys_float_exponent/2.
+:- meta_predicate sys_float_exponent(1, ?).
 :- foreign(sys_float_exponent/2, 'ForeignApprox', sysFloatExponent('Number')).
 
 /**
@@ -169,6 +171,7 @@ rat_iter32(V#W, M#N, P#Q, Y, X) :-
  * The predicate succeeds in B with the radix of F.
  */
 :- public sys_float_radix/2.
+:- meta_predicate sys_float_radix(1, ?).
 :- foreign(sys_float_radix/2, 'ForeignApprox', sysFloatRadix('Number')).
 
 /**********************************************************/

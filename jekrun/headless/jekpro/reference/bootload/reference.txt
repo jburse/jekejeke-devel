@@ -271,6 +271,8 @@ sys_declaration_indicator/2	reflect/pred
 sys_declaration_indicator/2	runtime/dynamic
 sys_declaration_indicator/2	runtime/meta
 sys_error_message/1	runtime/session
+sys_extend_term/3	runtime/quali
+sys_extend_term/3	structure/univ
 sys_finit_capability/1	bootload/toolkit
 sys_indicator/1	reflect/pred
 sys_init_capability/1	bootload/toolkit
@@ -299,6 +301,8 @@ sys_replace_site/3	runtime/logic
 sys_short_base/1	bootload/load
 sys_show_base/1	bootload/load
 sys_show_provable_source/2	bootload/load
+sys_shrink_term/4	runtime/quali
+sys_shrink_term/4	structure/univ
 sys_syntax_property_chk/3	reflect/oper
 sys_syntax_property_idx/2	reflect/oper
 tan/2	arithmetic/trigo

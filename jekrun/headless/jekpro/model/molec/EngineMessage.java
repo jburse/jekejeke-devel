@@ -213,8 +213,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_SUPERFLOUS_END = "superflous_end";
     public static final String OP_SYNTAX_END_MISSING = "end_missing";
 
-    public static final String OP_SYNTAX_OVERRIDE_PRED = "override_pred";
-    public static final String OP_SYNTAX_FRESH_PRED = "fresh_pred";
     public static final String OP_SYNTAX_DISCONTIGUOUS_PRED = "discontiguous_pred";
     public static final String OP_SYNTAX_MULTIFILE_PRED = "multifile_pred";
     public static final String OP_SYNTAX_PUBLIC_PRED = "public_pred";
@@ -222,8 +220,11 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_DYNAMIC_PRED = "dynamic_pred";
     public static final String OP_SYNTAX_THREAD_LOCAL_PRED = "thread_local_pred";
     public static final String OP_SYNTAX_IMPLEMENTATION_PRED = "implementation_pred";
+    public static final String OP_SYNTAX_OVERRIDE_PRED = "override_pred";
+    public static final String OP_SYNTAX_FRESH_PRED = "fresh_pred";
     public static final String OP_SYNTAX_META_INHERITED = "meta_inherited";
     public static final String OP_SYNTAX_META_ILLEGAL = "meta_illegal";
+    public static final String OP_SYNTAX_NUMERIC_FOREIGN = "numeric_foreign";
 
     public static final String OP_SYNTAX_IMPLEMENTATION_OPER = "implementation_oper";
 
