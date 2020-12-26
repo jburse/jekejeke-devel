@@ -63,11 +63,15 @@ public abstract class AbstractLense extends AbstractDelegate {
                     new SkelAtom(Modifier.toString(getModifiers())));
             return false;
         }
+        Class ret = getReturnType();
+        encoderet = encodeRet(ret, en);
+        if (encoderet == -1)
+            return false;
 
         if (!Modifier.isStatic(getModifiers())) {
             subflags |= AbstractDelegate.MASK_DELE_VIRT;
-            Class ret = getDeclaringClass();
-            Integer encode = Types.typepred.get(ret);
+            ret = getDeclaringClass();
+            Integer encode = Types.type.get(ret);
             if (encode == null) {
                 encodeobj = Types.TYPE_REF;
             } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
@@ -80,11 +84,6 @@ public abstract class AbstractLense extends AbstractDelegate {
                 encodeobj = encode.intValue();
             }
         }
-
-        Class ret = getReturnType();
-        encoderet = encodeRet(ret, en);
-        if (encoderet == -1)
-            return false;
 
         Class[] paras = getParameterTypes();
         encodeparas = encodeParas(paras, en);
@@ -106,7 +105,7 @@ public abstract class AbstractLense extends AbstractDelegate {
      * @return The code or -1.
      */
     public static int encodeRet(Class clazz, Engine en) {
-        Integer encode = Types.typepred.get(clazz);
+        Integer encode = Types.type.get(clazz);
         if (encode == null) {
             return Types.TYPE_REF;
         } else if (encode.intValue() == Types.TYPE_INTERPRETER ||
@@ -132,7 +131,7 @@ public abstract class AbstractLense extends AbstractDelegate {
         int[] res = (paras.length != 0 ? new int[paras.length] : VOID_PARAS);
         for (int i = 0; i < paras.length; i++) {
             Class clazz = paras[i];
-            Integer encode = Types.typepred.get(clazz);
+            Integer encode = Types.type.get(clazz);
             if (encode == null) {
                 res[i] = Types.TYPE_REF;
             } else if (encode.intValue() == Types.TYPE_VOID) {
@@ -265,6 +264,42 @@ public abstract class AbstractLense extends AbstractDelegate {
             }
         }
         return k;
+    }
+
+    /***************************************************************/
+    /* Numeric Test                                                */
+    /***************************************************************/
+
+    /**
+     * <p>Check whether the receiver, parameters and return are numeric.</p>
+     *
+     * @return True if they are numeric, otherwise false.
+     */
+    public boolean isNumeric() {
+        if (!isNumeric(encoderet))
+            return false;
+
+        if (!Modifier.isStatic(getModifiers())) {
+            if (!isNumeric(encodeobj))
+                return false;
+        }
+
+        for (int i = 0; i < encodeparas.length; i++) {
+            if (!isNumeric(encodeparas[i]))
+                return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * <p>Check whether the type is mumeric.</p>
+     *
+     * @param type The type.
+     * @return True if the type is numeric, otherwise false.
+     */
+    private static boolean isNumeric(int type) {
+        return (Types.num.getEntry(Integer.valueOf(type)) != null);
     }
 
 }

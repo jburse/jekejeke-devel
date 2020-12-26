@@ -375,15 +375,15 @@ public class PrologWriter {
     public Object[] predicateToMeta(CachePredicate cp) {
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
             return null;
-        Object t = ((spez & SPEZ_META) != 0? cp.pick.meta_predicate : null);
+        Object t = ((spez & SPEZ_META) != 0 ? cp.pick.meta_predicate : null);
         return (t != null ? ((SkelCompound) t).args : null);
     }
 
     /**
      * <p>Retrieve the argument meta spezification.</p>
      *
-     * @param args     The argument meta spezifications.
-     * @param k        The index.
+     * @param args The argument meta spezifications.
+     * @param k    The index.
      * @return The argument meta spezification.
      */
     private static Object getArg(Object[] args, int k) {

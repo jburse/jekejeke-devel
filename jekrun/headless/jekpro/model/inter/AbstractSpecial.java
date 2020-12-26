@@ -133,4 +133,23 @@ public abstract class AbstractSpecial extends AbstractDelegate {
         return -1;
     }
 
+    /***************************************************************/
+    /* Numeric Test                                                */
+    /***************************************************************/
+
+    /**
+     * <p>Check whether implementation is numeric.</p>
+     *
+     * @return True if it is numeric, otherwise false.
+     */
+    public boolean isNumeric() {
+        Class clazz = getClass();
+        try {
+            clazz.getDeclaredMethod("moniEvaluate", Engine.class);
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+        return true;
+    }
+
 }

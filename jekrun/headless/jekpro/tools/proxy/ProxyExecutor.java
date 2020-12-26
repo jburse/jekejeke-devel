@@ -13,7 +13,6 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.foreign.AbstractMember;
-import jekpro.tools.foreign.MemberSpecialDet;
 import jekpro.tools.term.*;
 
 import java.lang.invoke.MethodHandle;

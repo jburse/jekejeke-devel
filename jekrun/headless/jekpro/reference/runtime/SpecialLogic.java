@@ -2,18 +2,15 @@ package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
 import jekpro.frequent.standard.SupervisorCall;
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.data.ListArray;
 
 /**
  * <p>Provides built-in predicates for the module logic.</p>
@@ -79,7 +76,7 @@ public final class SpecialLogic extends AbstractSpecial {
      * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineException Shit happens.
-     * @throws EngineMessage Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
     public final boolean moniFirst(Engine en)
             throws EngineException, EngineMessage {
@@ -87,7 +84,7 @@ public final class SpecialLogic extends AbstractSpecial {
             case SPECIAL_CALL_COLON:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                SkelAtom sym=((SkelCompound) en.skel).sym;
+                SkelAtom sym = ((SkelCompound) en.skel).sym;
 
                 Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                 SkelAtom mod = modToAtom(obj, temp[0], ref, en);
@@ -104,7 +101,7 @@ public final class SpecialLogic extends AbstractSpecial {
             case SPECIAL_CALL_COLONCOLON:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                sym=((SkelCompound) en.skel).sym;
+                sym = ((SkelCompound) en.skel).sym;
 
                 en.skel = temp[0];
                 en.display = ref;

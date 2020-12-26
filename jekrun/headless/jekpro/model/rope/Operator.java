@@ -1,8 +1,10 @@
 package jekpro.model.rope;
 
-import jekpro.frequent.system.ForeignThread;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CacheFunctor;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.tools.term.PositionKey;

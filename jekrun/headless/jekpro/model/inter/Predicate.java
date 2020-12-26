@@ -750,7 +750,8 @@ public final class Predicate {
             checkPredicateMetaInherited(def, src, pick, over, en);
             checkPredicateMetaIllegal(def, src, pick, over, en);
 
-            checkPredicateNumeric(pick, en);
+            checkPredicateNumericSpecial(pick, en);
+            checkPredicateNumericForeign(pick, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
@@ -1012,8 +1013,34 @@ public final class Predicate {
      * @param en   The engine.
      * @throws EngineMessage The warning.
      */
-    private static void checkPredicateNumeric(Predicate pick,
-                                              Engine en)
+    private static void checkPredicateNumericSpecial(Predicate pick,
+                                                     Engine en)
+            throws EngineMessage {
+        AbstractDelegate fun = pick.del;
+        if (!(fun instanceof AbstractSpecial))
+            return;
+        if (!((AbstractSpecial) fun).isNumeric())
+            return;
+        if (pick.meta_predicate != null)
+            return;
+        if (pick.getArity() == 1)
+            return;
+        throw new EngineMessage(EngineMessage.syntaxError(
+                EngineMessage.OP_SYNTAX_NUMERIC_SPECIAL,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getArity(), en)));
+    }
+
+    /**
+     * <p>Perform the dynamic style check.</p>
+     *
+     * @param pick The predicate.
+     * @param en   The engine.
+     * @throws EngineMessage The warning.
+     */
+    private static void checkPredicateNumericForeign(Predicate pick,
+                                                     Engine en)
             throws EngineMessage {
         AbstractDelegate fun = pick.del;
         if (!(fun instanceof AbstractLense))

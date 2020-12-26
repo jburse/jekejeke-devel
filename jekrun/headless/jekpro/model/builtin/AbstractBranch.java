@@ -249,7 +249,7 @@ public abstract class AbstractBranch extends AbstractBundle {
     public void addPredProps(MapHashLink<StoreKey, AbstractProperty<Predicate>> f) {
         if (f == null)
             throw new NullPointerException("properties missing");
-        predprops.add(f);
+        predprops.addFirst(f);
     }
 
     /**

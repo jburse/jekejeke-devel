@@ -97,7 +97,7 @@ public abstract class AbstractFactory {
             encoding = null;
         } catch (NoSuchMethodException e) {
             encoding = null;
-       }
+        }
     }
 
     /**

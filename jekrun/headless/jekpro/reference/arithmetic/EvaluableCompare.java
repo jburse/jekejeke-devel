@@ -9,7 +9,6 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.TermAtomic;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * <p>Provides the compare evaluables.</p>

@@ -248,9 +248,9 @@ public final class SpecialDynamic extends AbstractSpecial {
     /**
      * <p>Convert a slash module or receiver to an object.</p>
      *
-     * @param t    The slash skeleton.
-     * @param flags  The flags.
-     * @param en   The engine.
+     * @param t     The slash skeleton.
+     * @param flags The flags.
+     * @param en    The engine.
      * @return The module or class, or null.
      * @throws EngineMessage Shit happens.
      * @see EvaluableLogic#slashToClass
@@ -328,7 +328,7 @@ public final class SpecialDynamic extends AbstractSpecial {
     /**
      * <p>Convert a slash to a package.</p>
      *
-     * @param t   The slash skeleton.
+     * @param t     The slash skeleton.
      * @param flags The flags.
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
@@ -356,7 +356,7 @@ public final class SpecialDynamic extends AbstractSpecial {
             } else {
                 return null;
             }
-        } else if ((flags & CacheModule.MASK_MODULE_ARRC)!=0 && (t instanceof SkelCompound) &&
+        } else if ((flags & CacheModule.MASK_MODULE_ARRC) != 0 && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
@@ -371,7 +371,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.checkInstantiated(t);
                 Display d = AbstractSkel.createDisplay(t);
                 throw new EngineMessage(EngineMessage.domainError(
-                        ((flags & CacheModule.MASK_MODULE_ARRC)!=0 ? EngineMessage.OP_DOMAIN_ARRAY :
+                        ((flags & CacheModule.MASK_MODULE_ARRC) != 0 ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
             } else {
                 return null;

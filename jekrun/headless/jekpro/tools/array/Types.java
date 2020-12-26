@@ -11,6 +11,8 @@ import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
+import matula.util.data.MapHash;
+import matula.util.data.SetHash;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -19,7 +21,6 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
 
 /**
  * <p>Provides mapping between Java data types and the external
@@ -89,38 +90,57 @@ public final class Types {
     /* Predicate Types                                                */
     /******************************************************************/
 
-    public final static HashMap<Class, Integer> typepred = new HashMap<Class, Integer>();
+    public final static MapHash<Class, Integer> type = new MapHash<Class, Integer>();
+
+    public final static SetHash<Integer> num = new SetHash<Integer>();
 
     static {
-        Types.typepred.put(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
-        Types.typepred.put(String.class, Integer.valueOf(Types.TYPE_STRING));
-        Types.typepred.put(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
-        Types.typepred.put(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
-        Types.typepred.put(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
-        Types.typepred.put(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
-        Types.typepred.put(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
-        Types.typepred.put(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
-        Types.typepred.put(Character.class, Integer.valueOf(Types.TYPE_CHAR));
-        Types.typepred.put(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
-        Types.typepred.put(Short.class, Integer.valueOf(Types.TYPE_SHORT));
-        Types.typepred.put(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
-        Types.typepred.put(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
-        Types.typepred.put(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
-        Types.typepred.put(Long.class, Integer.valueOf(Types.TYPE_LONG));
-        Types.typepred.put(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
-        Types.typepred.put(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
-        Types.typepred.put(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
-        Types.typepred.put(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
-        Types.typepred.put(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
-        Types.typepred.put(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
-        Types.typepred.put(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
-        Types.typepred.put(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
-        Types.typepred.put(TermVar.class, Integer.valueOf(Types.TYPE_OBJECT));
-        Types.typepred.put(TermCompound.class, Integer.valueOf(Types.TYPE_OBJECT));
-        Types.typepred.put(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
-        Types.typepred.put(TermAtomic.class, Integer.valueOf(Types.TYPE_ATOMIC));
-        Types.typepred.put(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
-        Types.typepred.put(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
+        type.add(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));
+        type.add(String.class, Integer.valueOf(Types.TYPE_STRING));
+        type.add(CharSequence.class, Integer.valueOf(Types.TYPE_CHARSEQ));
+        type.add(Boolean.TYPE, Integer.valueOf(Types.TYPE_PRIMBOOL));
+        type.add(Boolean.class, Integer.valueOf(Types.TYPE_BOOL));
+        type.add(Byte.TYPE, Integer.valueOf(Types.TYPE_PRIMBYTE));
+        type.add(Byte.class, Integer.valueOf(Types.TYPE_BYTE));
+        type.add(Character.TYPE, Integer.valueOf(Types.TYPE_PRIMCHAR));
+        type.add(Character.class, Integer.valueOf(Types.TYPE_CHAR));
+        type.add(Short.TYPE, Integer.valueOf(Types.TYPE_PRIMSHORT));
+        type.add(Short.class, Integer.valueOf(Types.TYPE_SHORT));
+        type.add(Integer.TYPE, Integer.valueOf(Types.TYPE_PRIMINT));
+        type.add(Integer.class, Integer.valueOf(Types.TYPE_INTEGER));
+        type.add(Long.TYPE, Integer.valueOf(Types.TYPE_PRIMLONG));
+        type.add(Long.class, Integer.valueOf(Types.TYPE_LONG));
+        type.add(BigInteger.class, Integer.valueOf(Types.TYPE_BIG_INTEGER));
+        type.add(Float.TYPE, Integer.valueOf(Types.TYPE_PRIMFLOAT));
+        type.add(Float.class, Integer.valueOf(Types.TYPE_FLOAT));
+        type.add(Double.TYPE, Integer.valueOf(Types.TYPE_PRIMDOUBLE));
+        type.add(Double.class, Integer.valueOf(Types.TYPE_DOUBLE));
+        type.add(BigDecimal.class, Integer.valueOf(Types.TYPE_BIG_DECIMAL));
+        type.add(Number.class, Integer.valueOf(Types.TYPE_NUMBER));
+        type.add(Object.class, Integer.valueOf(Types.TYPE_OBJECT));
+        type.add(TermVar.class, Integer.valueOf(Types.TYPE_OBJECT));
+        type.add(TermCompound.class, Integer.valueOf(Types.TYPE_OBJECT));
+        type.add(AbstractTerm.class, Integer.valueOf(Types.TYPE_TERM));
+        type.add(TermAtomic.class, Integer.valueOf(Types.TYPE_ATOMIC));
+        type.add(Interpreter.class, Integer.valueOf(Types.TYPE_INTERPRETER));
+        type.add(CallOut.class, Integer.valueOf(Types.TYPE_CALLOUT));
+
+        num.add(Integer.valueOf(TYPE_PRIMBYTE));
+        num.add(Integer.valueOf(TYPE_BYTE));
+        num.add(Integer.valueOf(TYPE_PRIMSHORT));
+        num.add(Integer.valueOf(TYPE_SHORT));
+        num.add(Integer.valueOf(TYPE_PRIMINT));
+        num.add(Integer.valueOf(TYPE_INTEGER));
+        num.add(Integer.valueOf(TYPE_PRIMLONG));
+        num.add(Integer.valueOf(TYPE_LONG));
+        num.add(Integer.valueOf(TYPE_BIG_INTEGER));
+        num.add(Integer.valueOf(TYPE_PRIMFLOAT));
+        num.add(Integer.valueOf(TYPE_FLOAT));
+        num.add(Integer.valueOf(TYPE_PRIMDOUBLE));
+        num.add(Integer.valueOf(TYPE_DOUBLE));
+        num.add(Integer.valueOf(TYPE_BIG_DECIMAL));
+        num.add(Integer.valueOf(TYPE_NUMBER));
+        num.add(Integer.valueOf(TYPE_INTERPRETER));
     }
 
     /******************************************************************/

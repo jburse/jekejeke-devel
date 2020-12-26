@@ -16,6 +16,8 @@ import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialForeign;
+import jekpro.reference.runtime.EvaluableLogic;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
@@ -282,9 +284,19 @@ public final class AutoClass extends AbstractAuto {
                 Predicate over = makeOverride(sa, pick, en);
                 if (dels.length == 1) {
                     AbstractMember del = dels[0];
+                    if (del.isNumeric())
+                        makeMeta(pick, sa, en);
                     Predicate.definePredicate(pick, del, en);
                     Predicate.checkPredicateBody(pick, sa, en);
                 } else {
+                    for (int i = 0; i < dels.length; i++) {
+                        AbstractMember del = dels[i];
+                        if (del.isNumeric()) {
+                            makeMeta(pick, sa, en);
+                            break;
+                        }
+                    }
+                    Predicate.checkPredicateBody(pick, sa, en);
                     for (int i = 0; i < dels.length; i++) {
                         Object[] args = new Object[sk.getArity()];
                         for (int j = 0; j < args.length; j++)
@@ -316,6 +328,8 @@ public final class AutoClass extends AbstractAuto {
                         sa = new SkelAtom(sk.getFun() + OP_VARIANT + i, this);
                         virt = (del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0;
                         pick = makePrivate(sa, sk.getArity(), virt, en);
+                        if (del.isNumeric())
+                            makeMeta(pick, sa, en);
                         Predicate.definePredicate(pick, del, en);
                         Predicate.checkPredicateBody(pick, sa, en);
                     }
@@ -337,16 +351,21 @@ public final class AutoClass extends AbstractAuto {
      * @return The branching term.
      */
     private SkelCompound makeGoal(AbstractMember del, Predicate over,
-                                  Object[] args, int i) {
-        SkelCompound goal;
+                                  Object[] args, int i)
+            throws EngineMessage {
         if (!del.getDeclaringClass().equals(getAuto())) {
-            String fun = over.getFun();
-            goal = new SkelCompound(new SkelAtom(fun, this), args);
+            String mod = over.getSource().getFullName();
+            Object t = SpecialDynamic.moduleToSlashSkel(mod, this);
+
+            String fun = del.getFun();
+            Object s = new SkelCompound(new SkelAtom(fun, this), args);
+
+            SkelAtom sa2 = new SkelAtom(EvaluableLogic.OP_COLON, this);
+            return new SkelCompound(sa2, t, s);
         } else {
             String fun = del.getFun() + OP_VARIANT + i;
-            goal = new SkelCompound(new SkelAtom(fun, this), args);
+            return new SkelCompound(new SkelAtom(fun, this), args);
         }
-        return goal;
     }
 
     /**
@@ -396,6 +415,31 @@ public final class AutoClass extends AbstractAuto {
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
         return pick;
+    }
+
+    /**
+     * <p>Make meta declaration for predicate.</p>
+     *
+     * @param pick The predicate.
+     * @param sa   The name.
+     * @param en   The engine.
+     */
+    private static void makeMeta(Predicate pick, SkelAtom sa,
+                                 Engine en)
+            throws EngineException, EngineMessage {
+        if (pick.getArity() == 1)
+            return;
+        Object[] args = new Object[pick.getArity()];
+        for (int i = 0; i < pick.getArity(); i++) {
+            if (i != pick.getArity() - 1) {
+                args[i] = Integer.valueOf(1);
+            } else {
+                args[i] = new SkelAtom(Predicate.OP_QUESTION);
+            }
+        }
+        pick.meta_predicate = new SkelCompound(sa, args);
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        pick.addDef(src, Predicate.MASK_TRCK_META, en);
     }
 
     /*******************************************************************/

@@ -177,7 +177,7 @@ final class MemberSpecialNondet extends AbstractMember {
             if (res != AbstractSkel.VOID_OBJ &&
                     !en.unifyTerm(AbstractTerm.getSkel(res), d,
                             (help = ((SkelCompound) temp).args)[
-                            help.length - 1], ref)) {
+                                    help.length - 1], ref)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
 

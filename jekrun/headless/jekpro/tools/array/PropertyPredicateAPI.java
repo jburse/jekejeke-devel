@@ -112,7 +112,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
         switch (id) {
             case PROP_SYS_META_PREDICATE:
                 ListArray<Object> res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_PRED, en);
+                        Predicate.MASK_TRCK_META, en);
                 if (res == null)
                     return AbstractBranch.FALSE_PROPERTY;
                 return PropertyPredicate.snapshotToVals(
@@ -173,7 +173,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_PRED, en);
+                pick.addDef(src, Predicate.MASK_TRCK_META, en);
                 return true;
             case PROP_AUTOMATIC:
                 pick.setBit(Predicate.MASK_PRED_AUTO);
@@ -213,7 +213,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_PRED);
+                pick.removeDef(src, Predicate.MASK_TRCK_META);
                 return true;
             case PROP_AUTOMATIC:
                 pick.resetBit(Predicate.MASK_PRED_AUTO);

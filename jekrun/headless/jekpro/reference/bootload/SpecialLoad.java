@@ -10,7 +10,6 @@ import jekpro.model.rope.*;
 import jekpro.reference.reflect.*;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialDynamic;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
@@ -995,7 +994,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelSet(Object skel, Predicate pick,
-                                         AbstractSource source)
+                                          AbstractSource source)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_SET_PREDICATE_PROPERTY, source),
                 provableToColonSkel(pick,
@@ -1012,7 +1011,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelMeta(Object skel, Predicate pick,
-                                          AbstractSource source)
+                                           AbstractSource source)
             throws EngineMessage {
         SkelCompound sc = (SkelCompound) skel;
         Object[] args = new Object[sc.args.length];
@@ -1033,7 +1032,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelIndicator(Object skel, Predicate pick,
-                                               AbstractSource source)
+                                                AbstractSource source)
             throws EngineMessage {
         Object t = provableToColonSkel(pick, source);
         if (skel instanceof SkelAtom) {
@@ -1064,7 +1063,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object operDeclSkelSet(Object skel, Operator oper,
-                                         AbstractSource source)
+                                          AbstractSource source)
             throws EngineMessage {
         Object t = syntaxToColonSkel(oper, source);
         t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
@@ -1082,7 +1081,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object operDeclSkelOp(Object skel, Operator oper,
-                                        AbstractSource source)
+                                         AbstractSource source)
             throws EngineMessage {
         SkelCompound sc = (SkelCompound) skel;
         Object[] args = new Object[sc.args.length + 1];
@@ -1102,7 +1101,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object operDeclSkelIndicator(Object skel, Operator oper,
-                                               AbstractSource source)
+                                                AbstractSource source)
             throws EngineMessage {
         SkelAtom sa = (SkelAtom) skel;
         Object t = syntaxToColonSkel(oper, source);
@@ -1154,7 +1153,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object provableToColonSkel(Predicate pick, Object t,
-                                             AbstractSource source)
+                                              AbstractSource source)
             throws EngineMessage {
         String name = CacheFunctor.sepName(pick.getFun());
         if (t instanceof SkelCompound) {

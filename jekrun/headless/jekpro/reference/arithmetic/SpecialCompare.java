@@ -43,7 +43,7 @@ import java.math.BigInteger;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialCompare extends AbstractSpecial {
-    public final static BigInteger NEG_MIN_INTEGER = BigInteger.valueOf(-(long)Integer.MIN_VALUE);
+    public final static BigInteger NEG_MIN_INTEGER = BigInteger.valueOf(-(long) Integer.MIN_VALUE);
 
     private final static int SPECIAL_COMPARE_EQ = 0;
     private final static int SPECIAL_COMPARE_NQ = 1;
@@ -329,7 +329,7 @@ public final class SpecialCompare extends AbstractSpecial {
      * @param b The second operand.
      * @return The division result and the modulo.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog value.
+     * @throws EngineMessage       Not a Prolog value.
      */
     private static Number[] divMod(Number a, Number b)
             throws ArithmeticException, EngineMessage {
@@ -365,8 +365,8 @@ public final class SpecialCompare extends AbstractSpecial {
                             EngineMessage.OP_EVALUATION_ZERO_DIVISOR);
                 res = new Number[2];
                 float g1 = a.floatValue();
-                res[0] = EvaluableRound.toInteger((float)Math.floor(g1 / f));
-                res[1] = TermAtomic.makeFloat(mod(g1,f));
+                res[0] = EvaluableRound.toInteger((float) Math.floor(g1 / f));
+                res[1] = TermAtomic.makeFloat(mod(g1, f));
                 return res;
             case SpecialCompare.NUM_DOUBLE:
                 double d = b.doubleValue();
@@ -376,7 +376,7 @@ public final class SpecialCompare extends AbstractSpecial {
                 res = new Number[2];
                 double e1 = a.doubleValue();
                 res[0] = EvaluableRound.toInteger(Math.floor(e1 / d));
-                res[1] = TermAtomic.makeDouble(mod(e1,d));
+                res[1] = TermAtomic.makeDouble(mod(e1, d));
                 return res;
             case SpecialCompare.NUM_LONG:
             case SpecialCompare.NUM_BIG_DECIMAL:

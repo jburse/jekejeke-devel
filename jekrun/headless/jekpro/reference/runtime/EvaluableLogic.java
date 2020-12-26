@@ -419,10 +419,10 @@ public final class EvaluableLogic extends AbstractSpecial {
      *             | atom.
      * </pre>
      *
-     * @param t   The slash skeleton.
-     * @param d   The slash display.
+     * @param t     The slash skeleton.
+     * @param d     The slash display.
      * @param flags The flag.
-     * @param en  The engine.
+     * @param en    The engine.
      * @return The package, or null.
      * @throws EngineMessage Shit happens.
      */
@@ -456,7 +456,7 @@ public final class EvaluableLogic extends AbstractSpecial {
             } else {
                 return null;
             }
-        } else if ((flags & CacheModule.MASK_MODULE_ARRC)!=0 && (t instanceof SkelCompound) &&
+        } else if ((flags & CacheModule.MASK_MODULE_ARRC) != 0 && (t instanceof SkelCompound) &&
                 ((SkelCompound) t).args.length == 1 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_SET)) {
             SkelCompound temp = (SkelCompound) t;
@@ -470,7 +470,7 @@ public final class EvaluableLogic extends AbstractSpecial {
             if ((flags & CacheModule.MASK_MODULE_NERR) == 0) {
                 EngineMessage.checkInstantiated(t);
                 throw new EngineMessage(EngineMessage.domainError(
-                        ((flags & CacheModule.MASK_MODULE_ARRC)!=0 ? EngineMessage.OP_DOMAIN_ARRAY :
+                        ((flags & CacheModule.MASK_MODULE_ARRC) != 0 ? EngineMessage.OP_DOMAIN_ARRAY :
                                 EngineMessage.OP_DOMAIN_PACKAGE), t), d);
             } else {
                 return null;

@@ -2,7 +2,6 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -310,7 +309,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The Prolog number.
      * @return The absed Prolog number.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     public static Number abs(Number m)
             throws ArithmeticException, EngineMessage {
@@ -348,7 +347,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The Prolog number.
      * @return The signed Prolog number.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     public static Number sign(Number m)
             throws ArithmeticException, EngineMessage {
@@ -407,7 +406,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param n The second Prolog number.
      * @return The sum of the two numbers.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     public static Number add(Number m, Number n)
             throws ArithmeticException, EngineMessage {
@@ -441,7 +440,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param n The second Prolog number.
      * @return The first number subtracted by the second number.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number sub(Number m, Number n)
             throws ArithmeticException, EngineMessage {
@@ -475,7 +474,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param n The second Prolog number.
      * @return The product of the two numbers.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number mul(Number m, Number n)
             throws ArithmeticException, EngineMessage {
@@ -531,7 +530,7 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param x The exponent number.
      * @return The first integer raised to the power of the second integer.
      * @throws ArithmeticException Illegal value.
-     * @throws EngineMessage Not a Prolog number.
+     * @throws EngineMessage       Not a Prolog number.
      */
     private static Number intPow(Number m, int x)
             throws ArithmeticException, EngineMessage {

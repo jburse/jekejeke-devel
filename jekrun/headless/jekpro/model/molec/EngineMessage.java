@@ -224,6 +224,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_SYNTAX_FRESH_PRED = "fresh_pred";
     public static final String OP_SYNTAX_META_INHERITED = "meta_inherited";
     public static final String OP_SYNTAX_META_ILLEGAL = "meta_illegal";
+    public static final String OP_SYNTAX_NUMERIC_SPECIAL = "numeric_special";
     public static final String OP_SYNTAX_NUMERIC_FOREIGN = "numeric_foreign";
 
     public static final String OP_SYNTAX_IMPLEMENTATION_OPER = "implementation_oper";
