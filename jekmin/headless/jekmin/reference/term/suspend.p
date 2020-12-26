@@ -86,36 +86,37 @@ freeze(_, G) :- call(G).
  */
 :- public when/2.
 :- meta_predicate when(?, 0).
-when(C, G) :- sys_cond_simp(C, D), D \== true, !,
+when(C, G) :- sys_cond_simp(C, D, F), F \== true, !,
    sys_freeze_var(W, R),
    W = sys_data_when(N, D, G),
-   term_variables(D, M),
+   term_variables(F, M),
    sys_serno_hooks(M, sys_hook_when(R), N),
    depositz_ref(N).
 when(_, G) :- G.
 
 /**
- * sys_cond_simp(C, D):
- * The predicate succeeds with a simplified version D of the
- * condition C.
+ * sys_cond_simp(C, D, F):
+ * The predicate succeeds in D with a simplified version of C
+ * and in F with the front of it.
  */
-% sys_cond_simp(+Term, -Term)
-:- private sys_cond_simp/2.
-sys_cond_simp(V, _) :- var(V), throw(error(instantiation_error, _)).
-sys_cond_simp((C, D), R) :- !,
-   sys_cond_simp(C, A),
-   sys_cond_simp(D, B),
-   sys_cond_and(A, B, R).
-sys_cond_simp((C; D), R) :- !,
-   sys_cond_simp(C, A),
-   sys_cond_simp(D, B),
-   sys_cond_or(A, B, R).
-sys_cond_simp(nonvar(X), nonvar(X)) :- var(X), !.
-sys_cond_simp(nonvar(_), true) :- !.
-sys_cond_simp(ground(X), R) :- !,
-   term_variables(X, L),
-   sys_cond_ground(L, R).
-sys_cond_simp(T, _) :-
+% sys_cond_simp(+Term, -Term, -Term)
+:- private sys_cond_simp/3.
+sys_cond_simp(V, _, _) :- var(V), throw(error(instantiation_error, _)).
+sys_cond_simp((C, D), R, S) :- !,
+   sys_cond_simp(C, A, F),
+   sys_cond_simp(D, B, G),
+   sys_cond_and(A, B, R),
+   sys_cond_front(F, G, S).
+sys_cond_simp((C; D), R, S) :- !,
+   sys_cond_simp(C, A, F),
+   sys_cond_simp(D, B, G),
+   sys_cond_or(A, B, R),
+   sys_cond_or(F, G, S).
+sys_cond_simp(nonvar(X), nonvar(X), nonvar(X)) :- var(X), !.
+sys_cond_simp(nonvar(_), true, true) :- !.
+sys_cond_simp(ground(X), ground([Y|L]), nonvar(Y)) :- term_variables(X, [Y|L]), !.
+sys_cond_simp(ground(_), true, true) :- !.
+sys_cond_simp(T, _, _) :-
    throw(error(type_error(when_cond, T), _)).
 
 % sys_cond_and(+Term, +Term, -Term)
@@ -130,12 +131,10 @@ sys_cond_or(true, _, true) :- !.
 sys_cond_or(_, true, true) :- !.
 sys_cond_or(X, Y, (X; Y)).
 
-% sys_cond_ground(+List, -Term)
-:- private sys_cond_ground/2.
-sys_cond_ground([X, Y|Z], (ground(X), R)) :-
-   sys_cond_ground([Y|Z], R).
-sys_cond_ground([X], ground(X)).
-sys_cond_ground([], true).
+% sys_cond_front(+Term, +Term)
+:- private sys_cond_front/3.
+sys_cond_front(true, X, X) :- !.
+sys_cond_front(X, _, X).
 
 /********************************************************/
 /* Attribute Hooks                                      */
