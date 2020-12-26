@@ -70,8 +70,9 @@
  * The predicate succeeds in Q with the P negated.
  */
 % -(+Integer, -Integer)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(X, Y) :-
    user: -(X, Y).
 
@@ -80,8 +81,9 @@
  * The predicate succeeds in R with the sum of P and Q.
  */
 % +(+Integer, +Internal, -Internal)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(X, Y, Z) :- integer(Y), !,
    user: +(X, Y, Z).
 +(X, rational(A, B), R) :- !,
@@ -102,8 +104,9 @@
  * The predicate succeeds in R with P subtracted by Q.
  */
 % -(+Integer, +Internal, -Internal)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(X, Y, Z) :- integer(Y), !,
    user: -(X, Y, Z).
 -(X, rational(A, B), R) :- !,
@@ -124,8 +127,9 @@
  * The predicate succeeds in R with the product of P and Q.
  */
 % *(+Integer, +Internal, -Internal)
-:- override * /3.
 :- public * /3.
+:- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(X, Y, Z) :- integer(Y), !,
    user: *(X, Y, Z).
 *(X, rational(A, B), R) :- !,
@@ -146,8 +150,9 @@
  * The predicate succeeds in R with P divided by Q.
  */
 % /(+Integer, +Internal, -Internal)
-:- override / /3.
 :- public / /3.
+:- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(X, Y, Z) :- integer(Y), !,
    make_rational(X, Y, Z).
 /(X, rational(A, B), R) :- !,
@@ -166,8 +171,9 @@
  * The predicate succeeds in R with P raised by Q.
  */
 % ^(+Integer, +Integer, -Integer)
-:- override ^ /3.
 :- public ^ /3.
+:- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(X, Y, R) :- user:(Y < 0), !,
    user: -(Y, J),
    user: ^(X, J, H),
@@ -184,8 +190,9 @@
  * The predicate succeeds in Q with the square root of P.
  */
 % sqrt(+Integer, -Radical)
-:- override sqrt/2.
 :- public sqrt/2.
+:- override sqrt/2.
+:- meta_predicate sqrt(1, ?).
 sqrt(X, _) :- user:(X < 0),
    throw(error(evaluation_error(undefined), _)).
 sqrt(X, R) :-

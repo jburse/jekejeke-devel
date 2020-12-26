@@ -164,8 +164,9 @@ sys_max_vector([], R, R).
  * The predicate succeeds in Y with the sign changed vector X.
  */
 % -(+Vector, -Vector)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(X, Y) :-
    L is len(X), Y is {-(X[I]) | between(1, L, I)}.
 
@@ -175,8 +176,9 @@ sys_max_vector([], R, R).
  * the vector Y.
  */
 % +(+Vector, +Internal, -Vector)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(X, Y, Z) :- functor(Y, vector, _), L is len(X), L =:= len(Y),
    Z is {X[I]+Y[I] | between(1, L, I)}.
 
@@ -186,8 +188,9 @@ sys_max_vector([], R, R).
  * by the vector Y.
  */
 % -(+Vector, +Internal, -Vector)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(X, Y, Z) :- functor(Y, vector, _), L is len(X), L =:= len(Y),
    Z is {X[I]-Y[I] | between(1, L, I)}.
 

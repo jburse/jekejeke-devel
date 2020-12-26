@@ -528,14 +528,14 @@ simp:term_simplification((sys_plus(B) :- sys_keep(D, Q)),
    [(:- discontiguous I), (:- sys_notrace I)|(E :- H)]) :-
    sys_replace_site(G, D, sys_eq(M, sys_delta(B, []))),
    simplify_goal((Q, G), H),
-   sys_modext_args(D, M, E),
+   sys_extend_term(D, [M], E),
    functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:term_simplification((sys_plus(B) :- sys_drop(D, Q)),
    [(:- discontiguous I), (:- sys_notrace I)|(E :- H)]) :-
    sys_replace_site(G, D, sys_eq(M, sys_nabla(B, []))),
    simplify_goal((Q, G), H),
-   sys_modext_args(D, M, E),
+   sys_extend_term(D, [M], E),
    functor(E, F, A),
    sys_make_indicator(F, A, I).
 simp:term_simplification((sys_plus(B) :- sys_keep(D, Q), P),
@@ -544,7 +544,7 @@ simp:term_simplification((sys_plus(B) :- sys_keep(D, Q), P),
    sys_replace_site(G, D, sys_eq(M, sys_delta(B, R))),
    simplify_goal((Q, E), O),
    simplify_goal((O, G), N),
-   sys_modext_args(D, M, F),
+   sys_extend_term(D, [M], F),
    functor(F, H, A),
    sys_make_indicator(H, A, I).
 simp:term_simplification((sys_plus(B) :- sys_drop(D, Q), P),
@@ -553,6 +553,6 @@ simp:term_simplification((sys_plus(B) :- sys_drop(D, Q), P),
    sys_replace_site(G, D, sys_eq(M, sys_nabla(B, R))),
    simplify_goal((Q, E), O),
    simplify_goal((O, G), N),
-   sys_modext_args(D, M, F),
+   sys_extend_term(D, [M], F),
    functor(F, H, A),
    sys_make_indicator(H, A, I).

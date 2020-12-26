@@ -76,8 +76,9 @@
  * The predicate succeeds in Q with the P negated.
  */
 % -(+Fracton, -Fracton)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(fraction(A, B), fraction(C, B)) :-
    C is -A.
 
@@ -86,8 +87,9 @@
  * The predicate succeeds in R with the sum of P and Q.
  */
 % +(+Fracton, +Internal, -Internal)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(X, Y, R) :- integer(Y), !,
    fraction: +(X, fraction(Y, 1), R).
 +(X, rational(C, D), R) :- !,
@@ -108,8 +110,9 @@
  * The predicate succeeds in R with P subtracted by Q.
  */
 % -(+Fracton, +Internal, -Internal)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(X, Y, R) :- integer(Y), !,
    fraction: -(X, fraction(Y, 1), R).
 -(X, rational(C, D), R) :- !,
@@ -130,8 +133,9 @@
  * The predicate succeeds in R with the product of P and Q.
  */
 % *(+Fracton, +Internal, -Internal)
-:- override * /3.
 :- public * /3.
+:- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(X, Y, R) :- integer(Y), !,
    fraction: *(X, fraction(Y, 1), R).
 *(X, rational(C, D), R) :- !,
@@ -152,8 +156,9 @@
  * The predicate succeeds in R with P divided by Q.
  */
 % /(+Fracton, +Internal, -Internal)
-:- override / /3.
 :- public / /3.
+:- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(X, Y, R) :- integer(Y), !,
    fraction: /(X, fraction(Y, 1), R).
 /(X, rational(C, D), R) :- !,
@@ -174,8 +179,9 @@
  * The predicate succeeds in R with P raised by Q.
  */
 % ^(+Fracton, +Integer, -Internal)
-:- override ^ /3.
 :- public ^ /3.
+:- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(fraction(A, B), Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    new_fraction(B, A, H),

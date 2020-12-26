@@ -123,8 +123,9 @@ len(X, Y) :-
  * The predicate succeeds in Y with the sign changed matrix X.
  */
 % -(+Matrice, -Matrice)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(X, Y) :-
    L is len(X), Y is {-(X[I]) | between(1, L, I)}.
 
@@ -134,8 +135,9 @@ len(X, Y) :-
  * the matrix Y.
  */
 % +(+Matrice, +Internal, -Matrice)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(X, Y, Z) :- functor(Y, matrice, _), L is len(X), L =:= len(Y),
    Z is {X[I]+Y[I] | between(1, L, I)}.
 
@@ -145,8 +147,9 @@ len(X, Y) :-
  * by the matrix Y.
  */
 % -(+Matrice, +Internal, -Matrice)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(X, Y, Z) :- functor(Y, matrice, _), L is len(X), L =:= len(Y),
    Z is {X[I]-Y[I] | between(1, L, I)}.
 
@@ -156,8 +159,9 @@ len(X, Y) :-
  * by the matrix Y.
  */
 % *(+Matrice, +Internal, -Matrice)
-:- override * /3.
 :- public * /3.
+:- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(X, Y, Z) :- functor(Y, matrice, _), L is len(X[1]), L =:= len(Y),
    M is len(X), N is len(Y[1]),
    Z is {{sum({X[I, K]*Y[K, J] | between(1, L, K)})
@@ -170,8 +174,9 @@ len(X, Y) :-
  * by the matrix Y.
  */
 % /(+Matrice, +Internal, -Matrice)
-:- override / /3.
 :- public / /3.
+:- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(X, Y, Z) :- functor(Y, matrice, _),
    sys_matrice_inv(Y, H),
    Z is X*H.
@@ -201,8 +206,9 @@ sys_matrice_step(_, X, X).
  * The predicate succeeds in Z with the Y-the power of the matrix X.
  */
 % ^(+Matrice, +Integer, -Matrice)
-:- override ^ /3.
 :- public ^ /3.
+:- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(X, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    H is X^Z,

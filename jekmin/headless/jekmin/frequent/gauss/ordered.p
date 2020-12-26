@@ -75,8 +75,9 @@
  * The predicate succeeds when evaluating E and F by using
  * polymorphism gives the same result.
  */
-:- override =:= /2.
 :- public =:= /2.
+:- override =:= /2.
+:- meta_predicate =:=(1, 1).
 E =:= F :-
    X is E, Y is F,
    sys_poly_send(X, gen_eq, [Y]).
@@ -86,8 +87,9 @@ E =:= F :-
  * The predicate succeeds when evaluating E and F by using
  * polymorphism dont give the same result.
  */
-:- override =\= /2.
 :- public =\= /2.
+:- override =\= /2.
+:- meta_predicate =\=(1, 1).
 E =\= F :-
    X is E, Y is F,
    \+ sys_poly_send(X, gen_eq, [Y]).
@@ -97,8 +99,9 @@ E =\= F :-
  * The predicate succeeds when evaluating E by using polymorphism
  * is less than evaluating F by using polymorphism.
  */
-:- override < /2.
 :- public < /2.
+:- override < /2.
+:- meta_predicate <(1, 1).
 E < F :-
    X is E, Y is F,
    sys_poly_send(X, gen_ls, [Y]).
@@ -108,8 +111,9 @@ E < F :-
  * The predicate succeeds when evaluating E by using polymorphism
  * is less or equal than evaluating F by using polymorphism.
  */
-:- override =< /2.
 :- public =< /2.
+:- override =< /2.
+:- meta_predicate =<(1, 1).
 E =< F :-
    X is E, Y is F,
    \+ sys_poly_send(Y, gen_ls, [X]).
@@ -119,8 +123,9 @@ E =< F :-
  * The predicate succeeds when evaluating E by using polymorphism
  * is greater than evaluating F by using polymorphism.
  */
-:- override > /2.
 :- public > /2.
+:- override > /2.
+:- meta_predicate >(1, 1).
 E > F :-
    X is E, Y is F,
    sys_poly_send(Y, gen_ls, [X]).
@@ -130,8 +135,9 @@ E > F :-
  * The predicate succeeds when evaluating E by using polymorphism
  * is greater or equal than evaluating F by using polymorphism.
  */
-:- override >= /2.
 :- public >= /2.
+:- override >= /2.
+:- meta_predicate >=(1, 1).
 E >= F :-
    X is E, Y is F,
    \+ sys_poly_send(X, gen_ls, [Y]).
@@ -145,8 +151,9 @@ E >= F :-
  * The predicate succeeds in Z with the minimum of X and Y.
  */
 % element:min(+Element, +Internal,-Internal)
-:- override min/3.
 :- public min/3.
+:- override min/3.
+:- meta_predicate min(1, 1, ?).
 min(X, Y, Z) :- X < Y, !, Z = X.
 min(_, X, X).
 
@@ -155,8 +162,9 @@ min(_, X, X).
  * The predicate succeeds in Z with the maximum of X and Y.
  */
 % element:max(+Element, +Internal,-Internal)
-:- override max/3.
 :- public max/3.
+:- override max/3.
+:- meta_predicate max(1, 1, ?).
 max(X, Y, Z) :- X < Y, !, Z = Y.
 max(X, _, X).
 
@@ -165,8 +173,9 @@ max(X, _, X).
  * The predicate succeeds in Z with the absolute of X.
  */
 % abs(+Ordered, -Ordered)
-:- override abs/2.
 :- public abs/2.
+:- override abs/2.
+:- meta_predicate abs(1, ?).
 abs(X, Y) :- X < 0, !, Y is -X.
 abs(X, X).
 
@@ -175,20 +184,23 @@ abs(X, X).
  * The predicate succeeds in Z with the sign of X.
  */
 % sign(+Integer, -Integer)
-:- override integer:sign/2.
 :- public integer:sign/2.
+:- override integer:sign/2.
+:- meta_predicate integer:sign(1, ?).
 integer:sign(X, Y) :-
    user:sign(X, Y).
 
 % sign(+Rational, -Integer)
-:- override rational:sign/2.
 :- public rational:sign/2.
+:- override rational:sign/2.
+:- meta_predicate rational:sign(1, ?).
 rational:sign(rational(A, _), Y) :-
    user:sign(A, Y).
 
 % sign(+Radical, -Integer)
-:- override radical:sign/2.
 :- public radical:sign/2.
+:- override radical:sign/2.
+:- meta_predicate radical:sign(1, ?).
 radical:sign(radical(0, [_-S]), Y) :- !,
    Y = S.
 radical:sign(radical(A, B), Y) :-
@@ -418,19 +430,22 @@ radical:gen_ls(_, _) :-
  * The predicate succeeds in Q with the floor of P.
  */
 % floor(+Integer, -Integer)
-:- override integer:floor/2.
 :- public integer:floor/2.
+:- override integer:floor/2.
+:- meta_predicate integer:floor(1, ?).
 integer:floor(X, X).
 
 % floor(+Rational, -Integer)
-:- override rational:floor/2.
 :- public rational:floor/2.
+:- override rational:floor/2.
+:- meta_predicate rational:floor(1, ?).
 rational:floor(rational(A, B), X) :-
    user:div(A, B, X).
 
 % floor(+Radical, -Integer)
-:- override radical:floor/2.
 :- public radical:floor/2.
+:- override radical:floor/2.
+:- meta_predicate radical:floor(1, ?).
 radical:floor(radical(0, [A-S]), X) :- !,
    sys_radical_lower([A-S], X).
 radical:floor(radical(A, B), X) :-
@@ -470,21 +485,24 @@ sys_radical_search(N, _, N).
  * The predicate succeeds in Q with the ceiling of P.
  */
 % ceiling(+Integer, -Integer)
-:- override integer:ceiling/2.
 :- public integer:ceiling/2.
+:- override integer:ceiling/2.
+:- meta_predicate integer:ceiling(1, ?).
 integer:ceiling(X, X).
 
 % ceiling(+Rational, -Integer)
-:- override rational:ceiling/2.
 :- public rational:ceiling/2.
+:- override rational:ceiling/2.
+:- meta_predicate rational:ceiling(1, ?).
 rational:ceiling(rational(A, B), X) :-
    user: -(B, 1, H),
    user: +(A, H, J),
    user:div(J, B, X).
 
 % ceiling(+Radical, -Integer)
-:- override radical:ceiling/2.
 :- public radical:ceiling/2.
+:- override radical:ceiling/2.
+:- meta_predicate radical:ceiling(1, ?).
 radical:ceiling(X, Y) :-
    Y is -floor(-X).
 
@@ -497,19 +515,22 @@ radical:ceiling(X, Y) :-
  * The predicate succeeds in Q with the integer of P.
  */
 % integer(+Integer, -Integer)
-:- override integer:integer/2.
 :- public integer:integer/2.
+:- override integer:integer/2.
+:- meta_predicate integer:integer(1, ?).
 integer:integer(X, X).
 
 % integer(+Rational, -Integer)
-:- override rational:integer/2.
 :- public rational:integer/2.
+:- override rational:integer/2.
+:- meta_predicate rational:integer(1, ?).
 rational:integer(rational(A, B), X) :-
    user: //(A, B, X).
 
 % integer(+Radical, -Integer)
-:- override radical:integer/2.
 :- public radical:integer/2.
+:- override radical:integer/2.
+:- meta_predicate radical:integer(1, ?).
 radical:integer(X, Y) :- X >= 0, !,
    Y is floor(X).
 radical:integer(X, Y) :-
@@ -524,20 +545,23 @@ radical:integer(X, Y) :-
  * The predicate succeeds in Q with the float of P.
  */
 % float(+Integer, -Float)
-:- override integer:float/2.
 :- public integer:float/2.
+:- override integer:float/2.
+:- meta_predicate integer:float(1, ?).
 integer:float(X, Y) :-
    user:float(X, Y).
 
 % float(+Rational, -Float)
-:- override rational:float/2.
 :- public rational:float/2.
+:- override rational:float/2.
+:- meta_predicate rational:float(1, ?).
 rational:float(rational(A, B), X) :-
    user: /(A, B, X).
 
 % float(+Radical, -Float)
-:- override radical:float/2.
 :- public radical:float/2.
+:- override radical:float/2.
+:- meta_predicate radical:float(1, ?).
 radical:float(radical(A, B), Y) :-
    X is float(A),
    sys_sqrt_float(B, X, Y).

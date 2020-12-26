@@ -70,8 +70,9 @@
  * The predicate succeeds in Q with the P negated.
  */
 % -(+Rational, -Rational)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(rational(A, B), rational(C, B)) :-
    user: -(A, C).
 
@@ -80,8 +81,9 @@
  * The predicate succeeds in R with the sum of P and Q.
  */
 % +(+Rational, +Internal, -Internal)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(X, Y, R) :- integer(Y), !,
    rational: +(X, rational(Y, 1), R).
 +(rational(A, B), rational(C, D), R) :- !,
@@ -104,8 +106,9 @@
  * The predicate succeeds in R with P subtracted by Q.
  */
 % -(+Rational, +Internal, -Internal)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(X, Y, R) :- integer(Y), !,
    rational: -(X, rational(Y, 1), R).
 -(rational(A, B), rational(C, D), R) :- !,
@@ -128,8 +131,9 @@
  * The predicate succeeds in R with the product of P and Q.
  */
 % *(+Rational, +Internal, -Internal)
-:- override * /3.
 :- public * /3.
+:- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(X, Y, R) :- integer(Y), !,
    rational: *(X, rational(Y, 1), R).
 *(rational(A, B), rational(C, D), R) :- !,
@@ -150,8 +154,9 @@
  * The predicate succeeds in R with P divided by Q.
  */
 % /(+Rational, +Internal, -Internal)
-:- override / /3.
 :- public / /3.
+:- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(X, Y, R) :- integer(Y), !,
    rational: /(X, rational(Y, 1), R).
 /(rational(A, B), rational(C, D), R) :- !,
@@ -172,8 +177,9 @@
  * The predicate succeeds in R with P raised by Q.
  */
 % ^(+Rational, +Integer, -Internal)
-:- override ^ /3.
 :- public ^ /3.
+:- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(rational(A, B), Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    user: ^(A, Z, H),
@@ -194,8 +200,9 @@
  * The predicate succeeds in Q with the square root of P.
  */
 % sqrt(+Rational, -Radical)
-:- override sqrt/2.
 :- public sqrt/2.
+:- override sqrt/2.
+:- meta_predicate sqrt(1, ?).
 sqrt(rational(A, _), _) :- user:(A < 0),
    throw(error(evaluation_error(undefined), _)).
 sqrt(X, R) :-

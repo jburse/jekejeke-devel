@@ -70,8 +70,9 @@
  * The predicate succeeds in Q with the P negated.
  */
 % -(+Polynom, -Internal)
-:- override (-)/2.
 :- public (-)/2.
+:- override (-)/2.
+:- meta_predicate -(1, ?).
 -(polynom(A, B), R) :-
    sys_poly_neg(B, H),
    sys_make_poly(H, A, R).
@@ -81,8 +82,9 @@
  * The predicate succeeds in R with the sum of P and Q.
  */
 % +(+Polynom, +Internal, -Internal)
-:- override (+)/3.
 :- public (+)/3.
+:- override (+)/3.
+:- meta_predicate +(1, 1, ?).
 +(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: +(polynom(A, B), polynom(A, L), R).
@@ -109,8 +111,9 @@
  * The predicate succeeds in R with P subtracted by Q.
  */
 % -(+Polynom, +Internal, -Internal)
-:- override (-)/3.
 :- public (-)/3.
+:- override (-)/3.
+:- meta_predicate -(1, 1, ?).
 -(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: -(polynom(A, B), polynom(A, L), R).
@@ -137,8 +140,9 @@
  * The predicate succeeds in R with the product of P and Q.
  */
 % *(+Polynom, +Internal, -Internal)
-:- override * /3.
 :- public * /3.
+:- override * /3.
+:- meta_predicate *(1, 1, ?).
 *(polynom(A, B), Y, R) :- integer(Y), !,
    sys_make_coeff([], 0, Y, L),
    polynom: *(polynom(A, B), polynom(A, L), R).
@@ -165,8 +169,9 @@
  * The predicate succeeds in R with P divided by Q.
  */
 % /(+Polynom, +Internal, -Internal)
-:- override / /3.
 :- public / /3.
+:- override / /3.
+:- meta_predicate /(1, 1, ?).
 /(X, Y, R) :- integer(Y), !,
    R is X*(1/Y).
 /(X, rational(C, D), R) :- !,
@@ -185,8 +190,9 @@
  * The predicate succeeds in R with P raised by Q.
  */
 % ^(+Polynom, +Integer, -Internal)
-:- override ^ /3.
 :- public ^ /3.
+:- override ^ /3.
+:- meta_predicate ^(1, 1, ?).
 ^(P, Y, R) :- user:(Y < 0), !,
    user: -(Y, Z),
    R is (1/P)^Z.

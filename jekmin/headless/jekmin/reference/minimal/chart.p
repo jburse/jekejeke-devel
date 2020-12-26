@@ -134,7 +134,7 @@ user:goal_expansion(chart(P, I, O), chart(P, I, O)) :-
 user:goal_expansion(chart(P, I, O), R) :-
    chart_expansion(P, I, O, R).
 user:goal_expansion(chart(P, I, O), Q) :-
-   sys_modext_args(P, I, O, Q).
+   sys_extend_term(P, [I, O], Q).
 
 /**
  * chart_expansion(A, I, O, G)
@@ -216,7 +216,7 @@ user:goal_expansion(sys_chart(P, I, O), chart(P, I, O)) :-
 user:goal_expansion(sys_chart(P, I, O), R) :-
    sys_chart_expansion(P, I, O, R).
 user:goal_expansion(sys_chart(P, I, O), Q) :-
-   sys_modext_args(P, I, O, Q).
+   sys_extend_term(P, [I, O], Q).
 
 /**
  * sys_chart_expansion(A, I, O, G)
@@ -269,7 +269,7 @@ user:term_expansion((P ==: A), (chart_post(P, I, O) <= chart_posted(A, I, O))).
 chart_post(_, _, _) :- throw(error(existence_error(body, chart_post/3), _)).
 
 user:goal_expansion(chart_post(P, I, O), H) :-
-   sys_modext_args(P, I, O, Q),
+   sys_extend_term(P, [I, O], Q),
    sys_replace_site(H, Q, post(Q)).
 
 /**
@@ -287,5 +287,5 @@ user:goal_expansion(chart_posted((A; B), I, O), (chart_posted(A, I, O); chart_po
 user:goal_expansion(chart_posted(U, I, O), (posted(Q), sys_chart(B, H, O))) :- U = [A|B],
    sys_replace_site(Q, U, 'D'(A, I, H)).
 user:goal_expansion(chart_posted(P, I, O), posted(Q)) :-
-   sys_modext_args(P, I, O, Q).
+   sys_extend_term(P, [I, O], Q).
 
