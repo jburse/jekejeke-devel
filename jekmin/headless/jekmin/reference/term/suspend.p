@@ -1,20 +1,30 @@
 /**
- * This Jekejeke Minlog module provides the delay of goals
- * until certain variable conditions are satisfied. The predicate
+ * This Jekejeke Minlog module provides the delay of goals until
+ * certain variable conditions are satisfied [11]. The predicate
  * freeze/2 delays until the first argument is instantiated. The
- * predicate when/2 delays until the first argument succeeds.
+ * predicate when/2 delays until the first argument succeeds. The
+ * delayed goal is allowed to fail or to succeed multiple times.
  *
- * Example:
+ * Examples:
  * ?- freeze(X, (write(foo), nl)).
  * freeze(X, (write(foo), nl))
  * ?- freeze(X, (write(foo), nl)), X = a.
  * foo
  * X = a
  *
- * The delayed goal is allowed to fail or to succeed multiple times.
  * The when/2 predicate currently understands as conditions conjunction
- * (C1; C2), disjunction (C1; C2), variable instantiation nonvar(V)
- * and ground-ness ground(V).
+ * (C1; C2), disjunction (C1; C2), variable instantiation nonvar(V) and
+ * ground-ness ground(V). The when/2 predicate only blocks first variables.
+ * When at least one first variable is instantiated, it partially reevaluates
+ * the condition and blocks again on first variables.
+ *
+ * Examples:
+ * ?- when((nonvar(X),nonvar(Y)), (write(foo), nl)), X = a.
+ * X = a,
+ * when(nonvar(Y), (write(foo), nl))
+ * ?- when((nonvar(X),nonvar(Y)), (write(foo), nl)), Y = b.
+ * Y = b,
+ * when((nonvar(X), nonvar(b)), (write(foo), nl))
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
