@@ -161,7 +161,7 @@ public final class ForeignStore {
         ArrayEnumeration<Store> dc;
         if (co.getFirst()) {
             Foyer foyer = inter.getKnowledgebase().getFoyer();
-            dc = new ArrayEnumeration<Store>(foyer.snapshotStores());
+            dc = new ArrayEnumeration<>(foyer.snapshotStores());
             co.setData(dc);
         } else {
             dc = (ArrayEnumeration<Store>) co.getData();

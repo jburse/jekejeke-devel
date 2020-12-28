@@ -81,7 +81,7 @@ public final class ForeignBase {
                 Predicate[] preds = ((LocatorTrace) locator).allFirstPredicates(pos);
                 if (preds.length == 0)
                     return null;
-                dc = new ArrayEnumeration<Predicate>(preds);
+                dc = new ArrayEnumeration<>(preds);
                 co.setData(dc);
             } else {
                 dc = (ArrayEnumeration<Predicate>) co.getData();
@@ -126,7 +126,7 @@ public final class ForeignBase {
                 Predicate[] preds = ((LocatorTrace) locator).allPredicates(pos);
                 if (preds.length == 0)
                     return null;
-                dc = new ArrayEnumeration<Predicate>(preds);
+                dc = new ArrayEnumeration<>(preds);
                 co.setData(dc);
             } else {
                 dc = (ArrayEnumeration<Predicate>) co.getData();

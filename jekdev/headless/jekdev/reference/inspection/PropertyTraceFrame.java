@@ -46,7 +46,7 @@ import matula.util.data.MapHash;
  */
 public final class PropertyTraceFrame extends AbstractProperty<StackElement> {
     public final static MapHash<StoreKey, AbstractProperty<StackElement>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<StackElement>>();
+            = new MapHash<>();
 
     public final static String OP_SYS_PARENT_FRAME = "sys_parent_frame";
     public final static String OP_SYS_CALL_GOAL = "sys_call_goal";

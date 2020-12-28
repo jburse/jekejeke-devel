@@ -51,7 +51,7 @@ import matula.util.data.MapHash;
  */
 public final class PropertyTraceCallable extends AbstractProperty<Object> {
     public final static MapHash<StoreKey, AbstractProperty<Object>> DEFAULT =
-            new MapHash<StoreKey, AbstractProperty<Object>>();
+            new MapHash<>();
 
     public final static String OP_SYS_HINT = "sys_hint";
     public final static String OP_SYS_FILLERS = "sys_fillers";

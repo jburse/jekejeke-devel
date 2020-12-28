@@ -50,7 +50,7 @@ import java.io.Writer;
  */
 public final class PropertyTraceStream extends AbstractProperty<Object> {
     public static final MapHash<StoreKey, AbstractProperty<Object>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<Object>>();
+            = new MapHash<>();
 
     public final static String OP_SYS_PROTOCOL = "sys_protocol";
 

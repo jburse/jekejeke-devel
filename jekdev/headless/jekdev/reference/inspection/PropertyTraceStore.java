@@ -48,7 +48,7 @@ import matula.util.data.MapHash;
  */
 public final class PropertyTraceStore extends AbstractProperty<Store> {
     public final static MapHash<StoreKey, AbstractProperty<Store>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<Store>>();
+            = new MapHash<>();
 
     private final static String OP_SYS_BREAK = "sys_break";
     private final static String OP_SYS_NAME = "sys_name";

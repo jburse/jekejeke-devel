@@ -45,7 +45,7 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
     public final static MapHashLink<StoreKey, AbstractProperty<Predicate>> DEFAULT =
-            new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
+            new MapHashLink<>();
 
     private final static String OP_SYS_NOINSTRUMENT = "sys_noinstrument";
 

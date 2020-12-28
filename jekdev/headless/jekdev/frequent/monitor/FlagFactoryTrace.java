@@ -43,7 +43,7 @@ import matula.util.data.MapHash;
  */
 public final class FlagFactoryTrace extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
-            = new MapHash<String, AbstractFlag<Engine>>();
+            = new MapHash<>();
 
     public final static String OP_SYS_MONITOR_LOGGING = "sys_monitor_logging";
     public final static String OP_SYS_MONITOR_RUNNING = "sys_monitor_running";
