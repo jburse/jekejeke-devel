@@ -50,7 +50,7 @@ public final class PatternUnion extends AbstractPattern {
     private AbstractSpecimen found;
     private int flag;
     private AbstractSpecimen[] matchers = EMPTY_MATCHERS;
-    private final ListArray<Integer> exclude = new ListArray<Integer>();
+    private final ListArray<Integer> exclude = new ListArray<>();
 
     /**
      * <p>Retrieve the matchers.</p>
@@ -170,7 +170,7 @@ public final class PatternUnion extends AbstractPattern {
     static PatternUnion parseUnion(ScannerToken st, int expr,
                                    AbstractCompiler comp)
             throws ScannerError, IOException {
-        ListArray<AbstractSpecimen> vec = new ListArray<AbstractSpecimen>();
+        ListArray<AbstractSpecimen> vec = new ListArray<>();
         while (st.getHint() != 0 || (!"".equals(st.getData()) &&
                 !")".equals(st.getData()) &&
                 !"!".equals(st.getData()))) {

@@ -161,7 +161,7 @@ public class SetTree<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        SetEntry<E> h = new SetTreeEntry<E>();
+        SetEntry<E> h = new SetTreeEntry<>();
         h.value = key;
         return h;
     }

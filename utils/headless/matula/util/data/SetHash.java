@@ -116,7 +116,7 @@ public final class SetHash<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        SetEntry<E> h = new SetHashEntry<E>();
+        SetEntry<E> h = new SetHashEntry<>();
         h.value = key;
         return h;
     }

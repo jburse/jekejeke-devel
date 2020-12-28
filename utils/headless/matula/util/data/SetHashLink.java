@@ -149,7 +149,7 @@ public class SetHashLink<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        SetEntry<E> h = new SetHashLinkEntry<E>();
+        SetEntry<E> h = new SetHashLinkEntry<>();
         h.value = key;
         return h;
     }

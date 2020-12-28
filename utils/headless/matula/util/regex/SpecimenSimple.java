@@ -57,7 +57,7 @@ public final class SpecimenSimple extends AbstractSpecimen {
      * breaks. The explicit wildcards are * and ?.
      */
     public void prepareMatch() {
-        ListArray<Match> vec = new ListArray<Match>();
+        ListArray<Match> vec = new ListArray<>();
         int i = 0;
         matchbound = 0;
         for (; ; ) {

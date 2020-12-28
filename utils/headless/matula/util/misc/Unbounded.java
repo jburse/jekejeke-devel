@@ -38,7 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Unbounded<T> implements InterfacePipe<T> {
-    private final SetLink<T> list = new SetLink<T>();
+    private final SetLink<T> list = new SetLink<>();
     private final Lock lock = new ReentrantLock();
     private final Condition cond = lock.newCondition();
 

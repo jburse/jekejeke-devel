@@ -36,7 +36,7 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PropertiesWithImport extends Properties {
-    private ListArray<Properties> imports = new ListArray<Properties>();
+    private ListArray<Properties> imports = new ListArray<>();
 
     /**
      * <p>Add an import.</p>

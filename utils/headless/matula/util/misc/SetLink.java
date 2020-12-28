@@ -112,7 +112,7 @@ public final class SetLink<E> extends AbstractSet<E> {
      * @return The entry.
      */
     public SetEntry<E> newEntry(E key) {
-        SetEntry<E> h = new SetLinkEntry<E>();
+        SetEntry<E> h = new SetLinkEntry<>();
         h.value = key;
         return h;
     }

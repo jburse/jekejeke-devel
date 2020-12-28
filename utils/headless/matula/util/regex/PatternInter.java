@@ -50,9 +50,9 @@ public final class PatternInter extends AbstractPattern {
     public static int MAX_MATCH_INTER = 196;
 
     private PatternUnion[] unions = EMPTY_UNIONS;
-    private final ListArray<PatternUnion> pos = new ListArray<PatternUnion>();
-    private final ListArray<AbstractSpecimen> matcher = new ListArray<AbstractSpecimen>();
-    private final ListArray<PatternUnion> neg = new ListArray<PatternUnion>();
+    private final ListArray<PatternUnion> pos = new ListArray<>();
+    private final ListArray<AbstractSpecimen> matcher = new ListArray<>();
+    private final ListArray<PatternUnion> neg = new ListArray<>();
 
     /**
      * <p>Retrieve the unions.</p>
@@ -155,7 +155,7 @@ public final class PatternInter extends AbstractPattern {
     private static PatternInter parseInter(ScannerToken st, int expr,
                                            AbstractCompiler comp)
             throws ScannerError, IOException {
-        ListArray<PatternUnion> vec = new ListArray<PatternUnion>();
+        ListArray<PatternUnion> vec = new ListArray<>();
         while (st.getHint() != 0 || (!"".equals(st.getData()) &&
                 !")".equals(st.getData()) &&
                 !"!".equals(st.getData()))) {
@@ -201,7 +201,7 @@ public final class PatternInter extends AbstractPattern {
             return pu;
         } else {
             AbstractSpecimen pm = comp.parseSpecimen(st, expr);
-            ListArray<AbstractSpecimen> vec = new ListArray<AbstractSpecimen>();
+            ListArray<AbstractSpecimen> vec = new ListArray<>();
             vec.add(pm);
             PatternUnion pu = new PatternUnion();
             pu.setMatchers(vec);
