@@ -55,7 +55,7 @@ import java.io.OutputStreamWriter;
  */
 public class PropertyStreamAPI extends AbstractProperty<Object> {
     public static final MapHash<StoreKey, AbstractProperty<Object>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<Object>>();
+            = new MapHash<>();
 
     public final static String OP_ENCODING = "encoding";
     public final static String OP_MIME_TYPE = "mime_type";

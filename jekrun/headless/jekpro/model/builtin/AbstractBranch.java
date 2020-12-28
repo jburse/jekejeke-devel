@@ -77,9 +77,9 @@ public abstract class AbstractBranch extends AbstractBundle {
     private MapHash<StoreKey, AbstractProperty<InterfaceReference>> refprops;
     private MapHash<StoreKey, AbstractProperty<Object>> callprops;
     private final ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> predprops
-            = new ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>>();
+            = new ListArray<>();
     private final ListArray<MapHash<StoreKey, AbstractProperty<Object>>> streamprops
-            = new ListArray<MapHash<StoreKey, AbstractProperty<Object>>>();
+            = new ListArray<>();
 
     private String[] archiveroots;
 
@@ -342,7 +342,7 @@ public abstract class AbstractBranch extends AbstractBundle {
         String[] roots = getArchiveRoots();
         if (roots == null)
             return;
-        ListArray<String> res = new ListArray<String>();
+        ListArray<String> res = new ListArray<>();
         try {
             for (int i = 0; i < roots.length; i++)
                 rootToAbsolute(res, roots[i], en.store.foyer);

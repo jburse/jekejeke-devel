@@ -740,7 +740,7 @@ public final class EngineMessage extends Exception {
         String patstr = prop.getProperty("pattern." + fun + "." + arity);
         if (patstr == null)
             return null;
-        ArrayList<String> pat = new ArrayList<String>();
+        ArrayList<String> pat = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(patstr);
         while (st.hasMoreTokens()) {
             String argtype = st.nextToken();
@@ -830,7 +830,7 @@ public final class EngineMessage extends Exception {
                                               ArrayList<String> pat,
                                               Engine en)
             throws EngineException, EngineMessage {
-        ListArray<Object> paravec = new ListArray<Object>();
+        ListArray<Object> paravec = new ListArray<>();
         for (int i = 0; i < pat.size(); i++) {
             String argtype = pat.get(i);
             if (ARGTYPE_ID.equals(argtype))

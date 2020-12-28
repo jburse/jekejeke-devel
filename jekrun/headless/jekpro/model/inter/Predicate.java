@@ -89,7 +89,7 @@ public final class Predicate {
     private final String fun;
     private int flags;
     public AbstractDelegate del;
-    public final MapHashLink<AbstractSource, Integer> defs = new MapHashLink<AbstractSource, Integer>();
+    public final MapHashLink<AbstractSource, Integer> defs = new MapHashLink<>();
     public MapEntry<AbstractSource, Integer>[] cachedefs;
     public Object meta_predicate;
     public AbstractSource source;

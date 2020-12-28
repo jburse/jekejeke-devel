@@ -291,7 +291,7 @@ public final class ForeignThread {
      * @return The list of flags.
      */
     public static ListArray<String> listThreadFlags(Engine en) {
-        ListArray<String> res = new ListArray<String>();
+        ListArray<String> res = new ListArray<>();
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
             MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];

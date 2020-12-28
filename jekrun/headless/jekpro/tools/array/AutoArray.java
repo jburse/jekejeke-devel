@@ -82,7 +82,7 @@ public final class AutoArray extends AbstractAuto {
         reexportInterfaces(en);
         usemoduleArray(en);
 
-        meths = new MapHash<StoreKey, AbstractLense>();
+        meths = new MapHash<>();
         collectArrays(en);
 
         defineMeths(en, rec);

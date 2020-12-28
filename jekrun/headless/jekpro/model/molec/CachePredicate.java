@@ -715,7 +715,7 @@ public final class CachePredicate extends AbstractCache {
             CacheModule.notifyFixvers(src, ~AbstractSource.MASK_PCKG_LIBR);
         if ((f & AbstractSource.MASK_IMPT_VISI) != 0) {
             Object o = new Object();
-            ListArray<AbstractSource> visited = new ListArray<AbstractSource>();
+            ListArray<AbstractSource> visited = new ListArray<>();
             if ((f & AbstractSource.MASK_IMPT_REEX) != 0)
                 notifyInterface(src, o, visited);
             if ((f & AbstractSource.MASK_IMPT_INVM) != 0) {

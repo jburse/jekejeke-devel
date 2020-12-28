@@ -64,11 +64,11 @@ public class Store extends AbstractRecognizer {
     public Object proxy;
     public final Foyer foyer;
     public final Store parent;
-    private final MapHash<String, AbstractSource> source = new MapHash<String, AbstractSource>();
+    private final MapHash<String, AbstractSource> source = new MapHash<>();
     private MapEntry<String, AbstractSource>[] cachesource;
     public ClassLoader loader;
     private String[] cachepaths;
-    private final ListArray<AbstractSource> roots = new ListArray<AbstractSource>();
+    private final ListArray<AbstractSource> roots = new ListArray<>();
     private AbstractSource[] cacheroots;
     public AbstractSource user;
     public String base;

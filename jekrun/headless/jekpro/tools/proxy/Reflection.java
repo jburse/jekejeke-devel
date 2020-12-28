@@ -256,7 +256,7 @@ public final class Reflection extends AbstractReflection {
             throws EngineMessage {
         int i = name.indexOf('(');
         if (i != -1) {
-            ListArray<Object> list = new ListArray<Object>();
+            ListArray<Object> list = new ListArray<>();
 
             int k = name.indexOf(',', i + 1);
             while (k != -1) {

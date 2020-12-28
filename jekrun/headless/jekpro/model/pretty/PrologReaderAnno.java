@@ -287,7 +287,7 @@ public class PrologReaderAnno extends PrologReader {
         nextToken();
         String[] filler2 = getFiller();
         if (filler != null || filler2 != null) {
-            fils = new ListArray<String[]>();
+            fils = new ListArray<>();
             for (int i = 0; i < vec.size(); i++)
                 fils.add(null);
         }
@@ -304,7 +304,7 @@ public class PrologReaderAnno extends PrologReader {
                 nextToken();
                 filler2 = getFiller();
                 if ((filler != null || filler2 != null) && fils == null) {
-                    fils = new ListArray<String[]>();
+                    fils = new ListArray<>();
                     for (int i = 0; i < vec.size(); i++)
                         fils.add(null);
                 }
@@ -316,7 +316,7 @@ public class PrologReaderAnno extends PrologReader {
             }
             filler = getFiller();
             if (filler != null && fils == null) {
-                fils = new ListArray<String[]>();
+                fils = new ListArray<>();
                 for (int i = 0; i < vec.size(); i++)
                     fils.add(null);
             }
@@ -520,7 +520,7 @@ public class PrologReaderAnno extends PrologReader {
             if (st.getData().startsWith(st.getRemark().getLineComment())
                     || st.getData().startsWith(st.getRemark().getBlockCommentStart())) {
                 if (rtrn == null)
-                    rtrn = new ListArray<String>();
+                    rtrn = new ListArray<>();
                 rtrn.add(st.getData());
                 st.nextToken();
                 continue;
@@ -543,7 +543,7 @@ public class PrologReaderAnno extends PrologReader {
                 }
                 if (buf != null) {
                     if (rtrn == null)
-                        rtrn = new ListArray<String>();
+                        rtrn = new ListArray<>();
                     rtrn.add(buf.toString());
                 }
                 st.nextToken();
@@ -583,14 +583,14 @@ public class PrologReaderAnno extends PrologReader {
                 break;
             if (st.getData().startsWith(st.getRemark().getLineComment())) {
                 if (rtrn == null)
-                    rtrn = new ListArray<String>();
+                    rtrn = new ListArray<>();
                 rtrn.add(st.getData());
                 st.nextTerminalSuffix();
                 continue;
             }
             if (OP_EOLN.equals(st.getData())) {
                 if (rtrn == null)
-                    rtrn = new ListArray<String>();
+                    rtrn = new ListArray<>();
                 rtrn.add(OP_EOLN);
                 break;
             }

@@ -74,7 +74,7 @@ public class LoadForce {
     private final static int ACTION_BEGIN_MODULE = 1;
 
     private int flags;
-    private ListArray<AbstractSource> visited = new ListArray<AbstractSource>();
+    private ListArray<AbstractSource> visited = new ListArray<>();
     private long timing;
     private int consultcount;
     private int unloadcount;

@@ -90,9 +90,9 @@ public final class Types {
     /* Predicate Types                                                */
     /******************************************************************/
 
-    public final static MapHash<Class, Integer> type = new MapHash<Class, Integer>();
+    public final static MapHash<Class, Integer> type = new MapHash<>();
 
-    public final static SetHash<Integer> num = new SetHash<Integer>();
+    public final static SetHash<Integer> num = new SetHash<>();
 
     static {
         type.add(Void.TYPE, Integer.valueOf(Types.TYPE_VOID));

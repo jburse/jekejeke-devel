@@ -65,7 +65,7 @@ import java.io.IOException;
  */
 public final class PropertySource extends AbstractProperty<AbstractSource> {
     public final static MapHash<StoreKey, AbstractProperty<AbstractSource>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<AbstractSource>>();
+            = new MapHash<>();
 
     private final static String OP_SHORT_NAME = "short_name";
     private final static String OP_SYS_CAPABILITY = "sys_capability";
@@ -251,7 +251,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 MapEntry<String, Integer>[] fixes = src.snapshotFixes();
                 if (fixes.length == 0)
                     return AbstractBranch.FALSE_PROPERTY;
-                ListArray<Object> list = new ListArray<Object>();
+                ListArray<Object> list = new ListArray<>();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
                     Object val;
@@ -278,7 +278,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 fixes = src.snapshotFixes();
                 if (fixes.length == 0)
                     return AbstractBranch.FALSE_PROPERTY;
-                list = new ListArray<Object>();
+                list = new ListArray<>();
                 for (int i = 0; i < fixes.length; i++) {
                     MapEntry<String, Integer> fix = fixes[i];
                     Object val;
@@ -315,7 +315,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
                 if (deps.length == 0)
                     return AbstractBranch.FALSE_PROPERTY;
-                list = new ListArray<Object>();
+                list = new ListArray<>();
                 for (int i = 0; i < deps.length; i++) {
                     MapEntry<AbstractSource, Integer> dep = deps[i];
                     flags = dep.value.intValue();

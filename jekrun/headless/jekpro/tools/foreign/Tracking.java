@@ -50,7 +50,7 @@ public final class Tracking extends AbstractTracking {
 
     private String[] archiveuris;
     private final CacheBounded<String, Object> canoncache
-            = new CacheBounded<String, Object>();
+            = new CacheBounded<>();
 
     /**
      * <p>Retrieve the archive URIs</p>

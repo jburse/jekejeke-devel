@@ -110,7 +110,7 @@ public final class AutoClass extends AbstractAuto {
         AutoClass[] interfacesjava = reexportInterfaces(en);
         usemoduleScore(en);
 
-        meths = new MapHash<StoreKey, ListArray<AbstractMember>>();
+        meths = new MapHash<>();
         collectConstructors(en);
         collectMethods(en);
         collectFields(en);
@@ -219,7 +219,7 @@ public final class AutoClass extends AbstractAuto {
         StoreKey sk = new StoreKey(del.getFun(), del.getArity());
         ListArray<AbstractMember> dels = meths.get(sk);
         if (dels == null) {
-            dels = new ListArray<AbstractMember>();
+            dels = new ListArray<>();
             meths.add(sk, dels);
         }
         dels.add(del);

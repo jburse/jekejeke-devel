@@ -146,7 +146,7 @@ public final class SupervisorCopy {
     private SkelVar getVarValue(BindUniv key) {
         SkelVar v;
         if (vars == null) {
-            vars = new MapHash<BindUniv, SkelVar>();
+            vars = new MapHash<>();
             v = null;
         } else {
             v = vars.get(key);
@@ -219,7 +219,7 @@ public final class SupervisorCopy {
     private SkelVar getVarNew(BindUniv key) {
         SkelVar v;
         if (vars == null) {
-            vars = new MapHash<BindUniv, SkelVar>();
+            vars = new MapHash<>();
             v = null;
         } else {
             v = vars.get(key);
@@ -229,7 +229,7 @@ public final class SupervisorCopy {
             vars.add(key, v);
             if ((flags & MASK_COPY_SING) != 0) {
                 if (anon == null)
-                    anon = new MapHash<BindUniv, SkelVar>();
+                    anon = new MapHash<>();
                 anon.add(key, v);
             }
         } else {
@@ -289,7 +289,7 @@ public final class SupervisorCopy {
             if (en.skel instanceof SkelVar) {
                 BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
                 if (print == null)
-                    print = new MapHash<BindUniv, String>();
+                    print = new MapHash<>();
                 String name = SpecialUniv.derefAndCastString(mc2[0], d2);
                 addMapUniv(print, pair, name);
             }
@@ -336,7 +336,7 @@ public final class SupervisorCopy {
                 continue;
             BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
             if (print == null)
-                print = new MapHash<BindUniv, String>();
+                print = new MapHash<>();
             addMapUniv(print, pair, entry.key);
         }
         return print;
@@ -381,7 +381,7 @@ public final class SupervisorCopy {
             if (name == null)
                 continue;
             if (copy == null)
-                copy = new MapHashLink<String, SkelVar>();
+                copy = new MapHashLink<>();
             copy.add(name, entry.value);
         }
         return copy;

@@ -129,23 +129,23 @@ public abstract class AbstractSource {
     public Object fixvers;
     private AbstractBundle branch;
     private Store store;
-    private final MapHashLink<AbstractSource, Integer> imports = new MapHashLink<AbstractSource, Integer>();
-    private final MapHashLink<AbstractSource, Integer> importsinv = new MapHashLink<AbstractSource, Integer>();
+    private final MapHashLink<AbstractSource, Integer> imports = new MapHashLink<>();
+    private final MapHashLink<AbstractSource, Integer> importsinv = new MapHashLink<>();
     private MapEntry<AbstractSource, Integer>[] cacheimports;
     private MapEntry<AbstractSource, Integer>[] cacheimportsinv;
-    private final MapHashLink<String, Integer> fixes = new MapHashLink<String, Integer>();
+    private final MapHashLink<String, Integer> fixes = new MapHashLink<>();
     private MapEntry<String, Integer>[] cachefixes;
     public AbstractLocator locator;
-    public final MapHashLink<Predicate, Integer> predsinv = new MapHashLink<Predicate, Integer>();
+    public final MapHashLink<Predicate, Integer> predsinv = new MapHashLink<>();
     public MapEntry<Predicate, Integer>[] cachepredsinv;
-    public final SetHashLink<Operator> opsinv = new SetHashLink<Operator>();
+    public final SetHashLink<Operator> opsinv = new SetHashLink<>();
     public Operator[] cacheopsinv;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final MapHash<String, AssocArray<Integer, Predicate>> preds = new MapHash<String, AssocArray<Integer, Predicate>>();
+    private final MapHash<String, AssocArray<Integer, Predicate>> preds = new MapHash<>();
     private Predicate[] cachepreds;
-    private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<String, AssocArray<Integer, Operator>>();
+    private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<>();
     private Operator[] cacheops;
-    private final ListArray<Resource> resources = new ListArray<Resource>();
+    private final ListArray<Resource> resources = new ListArray<>();
     private Resource[] cacheresources;
     private String name;
     protected String fullname = Branch.OP_USER;
@@ -1101,7 +1101,7 @@ public abstract class AbstractSource {
                 pick.setBit(Predicate.MASK_PRED_VSPU);
             pick.setSource(this);
             if (map == null) {
-                map = new AssocArray<Integer, Predicate>();
+                map = new AssocArray<>();
                 preds.add(fun, map);
             }
             map.add(Integer.valueOf(arity), pick);
@@ -1234,7 +1234,7 @@ public abstract class AbstractSource {
                 oper.setBit(Operator.MASK_OPER_VSPU);
             oper.setSource(this);
             if (map == null) {
-                map = new AssocArray<Integer, Operator>();
+                map = new AssocArray<>();
                 ops.add(fun, map);
             }
             map.add(Integer.valueOf(type), oper);

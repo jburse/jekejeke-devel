@@ -228,7 +228,7 @@ public final class OperatorSearch {
                                              MapEntry<AbstractSource, Integer>[] deps2,
                                              boolean f)
             throws EngineMessage, InterruptedException {
-        ListArray<AbstractSource> visited = new ListArray<AbstractSource>();
+        ListArray<AbstractSource> visited = new ListArray<>();
         visited.add(base);
         if (f) {
             Operator oper = performReexported(n, type, base, deps2, visited);

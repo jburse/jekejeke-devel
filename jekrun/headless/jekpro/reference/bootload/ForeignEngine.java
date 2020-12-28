@@ -169,7 +169,7 @@ public final class ForeignEngine {
      * @return The list of flags.
      */
     public static ListArray<String> listPrologFlags(Engine en) {
-        ListArray<String> res = new ListArray<String>();
+        ListArray<String> res = new ListArray<>();
         AbstractFactory factory = en.store.foyer.getFactory();
         ListArray<MapHash<String, AbstractFlag<Engine>>> flags = factory.getPrologFlags();
         for (int i = 0; i < flags.size(); i++)
@@ -291,7 +291,7 @@ public final class ForeignEngine {
      * @return The list of flags.
      */
     public static ListArray<String> listSessionFlags(Store store) {
-        ListArray<String> res = new ListArray<String>();
+        ListArray<String> res = new ListArray<>();
         AbstractFactory factory = store.foyer.getFactory();
         ListArray<MapHash<String, AbstractFlag<Store>>> flags = factory.getSessionFlags();
         for (int i = 0; i < flags.size(); i++)

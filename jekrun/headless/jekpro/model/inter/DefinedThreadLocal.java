@@ -201,7 +201,7 @@ final class DefinedThreadLocal extends AbstractDefined {
     private LocalLockfree defineLocalLockfree(Engine en) {
         ListArray<LocalLockfree> privs = en.visor.privates;
         if (privs == null) {
-            privs = new ListArray<LocalLockfree>();
+            privs = new ListArray<>();
             en.visor.privates = privs;
         }
         while (seqid >= privs.size())

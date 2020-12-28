@@ -90,7 +90,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_SORT:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    AbstractSet<Object> set = new SetTree<Object>(en);
+                    AbstractSet<Object> set = new SetTree<>(en);
                     SpecialSort.sortSet(set, temp[0], ref, en);
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
@@ -108,11 +108,11 @@ public final class SpecialSort extends AbstractSpecial {
                     AbstractLexical el = AbstractLexical.decodeSortOpts(temp[2], ref, en);
                     if (el instanceof LexicalCollator &&
                             ((LexicalCollator) el).getCmpStr() == null) {
-                        set = new SetHashLink<Object>();
+                        set = new SetHashLink<>();
                         SpecialSort.sortSet(set, temp[0], ref, en);
                     } else {
                         el.setEngine(en);
-                        set = new SetTree<Object>(el);
+                        set = new SetTree<>(el);
                         SpecialSort.sortSet(set, temp[0], ref, en);
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
@@ -128,7 +128,7 @@ public final class SpecialSort extends AbstractSpecial {
                 case SPECIAL_KEYSORT:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    AbstractMap<Object, ListArray<Object>> map = new MapTree<Object, ListArray<Object>>(en);
+                    AbstractMap<Object, ListArray<Object>> map = new MapTree<>(en);
                     SpecialSort.sortMap(map, temp[0], ref, en);
                     en.skel = en.store.foyer.ATOM_NIL;
                     en.display = Display.DISPLAY_CONST;
@@ -146,11 +146,11 @@ public final class SpecialSort extends AbstractSpecial {
                     el = AbstractLexical.decodeSortOpts(temp[2], ref, en);
                     if (el instanceof LexicalCollator &&
                             ((LexicalCollator) el).getCmpStr() == null) {
-                        map = new MapHashLink<Object, ListArray<Object>>();
+                        map = new MapHashLink<>();
                         SpecialSort.sortMap(map, temp[0], ref, en);
                     } else {
                         el.setEngine(en);
-                        map = new MapTree<Object, ListArray<Object>>(el);
+                        map = new MapTree<>(el);
                         SpecialSort.sortMap(map, temp[0], ref, en);
                     }
                     en.skel = en.store.foyer.ATOM_NIL;
@@ -347,7 +347,7 @@ public final class SpecialSort extends AbstractSpecial {
             try {
                 MapEntry<Object, ListArray<Object>> entry = map.getEntry(elem);
                 if (entry == null) {
-                    found = new ListArray<Object>();
+                    found = new ListArray<>();
                     map.add(elem, found);
                 } else {
                     found = entry.value;

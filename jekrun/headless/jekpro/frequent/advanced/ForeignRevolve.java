@@ -52,7 +52,7 @@ public final class ForeignRevolve {
      * @return The revolve.
      */
     public static AbstractMap<Object, Object> sysRevolveNew() {
-        return new MapTree<Object, Object>(AbstractSkel.DEFAULT);
+        return new MapTree<>(AbstractSkel.DEFAULT);
     }
 
     /**
@@ -64,9 +64,9 @@ public final class ForeignRevolve {
     public static AbstractMap<Object, Object> sysRevolveNew(AbstractLexical el) {
         if (el instanceof LexicalCollator &&
                 ((LexicalCollator) el).getCmpStr() == null) {
-            return new MapHashLink<Object, Object>();
+            return new MapHashLink<>();
         } else {
-            return new MapTree<Object, Object>(el);
+            return new MapTree<>(el);
         }
     }
 

@@ -43,7 +43,7 @@ import matula.util.wire.AbstractLivestock;
  */
 public final class FlagThread extends AbstractFlag<Thread> {
     public final static MapHash<String, AbstractFlag<Thread>> DEFAULT
-            = new MapHash<String, AbstractFlag<Thread>>();
+            = new MapHash<>();
 
     public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
     public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";

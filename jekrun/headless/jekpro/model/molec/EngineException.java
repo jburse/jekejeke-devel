@@ -150,7 +150,7 @@ public final class EngineException extends Exception {
     public EngineException(EngineException e1, EngineException e2) {
         SupervisorCopy eb = new SupervisorCopy();
         /* unpack cause chain */
-        ListArray<Object> list = new ListArray<Object>();
+        ListArray<Object> list = new ListArray<>();
         Object m = e1.getTemplate();
         while (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 2 &&

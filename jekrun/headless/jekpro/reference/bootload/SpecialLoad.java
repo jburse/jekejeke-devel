@@ -357,7 +357,7 @@ public final class SpecialLoad extends AbstractSpecial {
                     if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
                         val = firstArg(val);
                     if (modifiers == null)
-                        modifiers = new ListArray<SkelAtom>();
+                        modifiers = new ListArray<>();
                     modifiers.add((SkelAtom) AbstractTerm.getSkel(val));
                 }
             } else {
@@ -662,7 +662,7 @@ public final class SpecialLoad extends AbstractSpecial {
             if (!val2.equals(val))
                 continue;
             if (res == null)
-                res = new ListArray<Object>();
+                res = new ListArray<>();
             if (sc.args.length == 1) {
                 res.add(sc.sym);
             } else {

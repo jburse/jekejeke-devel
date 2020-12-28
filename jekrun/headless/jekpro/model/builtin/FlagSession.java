@@ -48,7 +48,7 @@ import java.io.File;
  */
 public final class FlagSession extends AbstractFlag<Store> {
     public final static MapHash<String, AbstractFlag<Store>> DEFAULT
-            = new MapHash<String, AbstractFlag<Store>>();
+            = new MapHash<>();
 
     public final static String OP_USER_PREFS = "user_prefs";
     public final static String OP_BASE_URL = "base_url";

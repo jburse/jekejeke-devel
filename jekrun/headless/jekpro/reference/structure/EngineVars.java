@@ -100,7 +100,7 @@ public final class EngineVars {
     private void varsAdd(Object m, Display d) {
         Object key = AbstractTerm.createMolec(m, d);
         if (vars == null) {
-            vars = new SetHashLink<Object>();
+            vars = new SetHashLink<>();
             vars.add(key);
         } else {
             if (vars.getEntry(key) == null)
@@ -182,7 +182,7 @@ public final class EngineVars {
                 Object key = AbstractTerm.createMolec(v, d);
                 boolean f;
                 if (vars == null) {
-                    vars = new SetHashLink<Object>();
+                    vars = new SetHashLink<>();
                     f = false;
                 } else {
                     f = (vars.getEntry(key) != null);
@@ -190,7 +190,7 @@ public final class EngineVars {
                 if (!f) {
                     vars.add(key);
                     if (anon == null)
-                        anon = new SetHashLink<Object>();
+                        anon = new SetHashLink<>();
                     anon.add(key);
                 } else {
                     if (anon != null) {
@@ -278,7 +278,7 @@ public final class EngineVars {
      */
     private boolean visitAdd(BindUniv b) {
         if (visit == null) {
-            visit = new SetHashLink<BindUniv>();
+            visit = new SetHashLink<>();
             visit.add(b);
         } else {
             if (visit.getEntry(b) == null) {

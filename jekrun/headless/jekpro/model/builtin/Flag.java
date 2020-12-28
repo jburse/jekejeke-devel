@@ -51,7 +51,7 @@ import java.util.Random;
  */
 public final class Flag extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
-            = new MapHash<String, AbstractFlag<Engine>>();
+            = new MapHash<>();
 
     private final static String OP_DIALECT = "dialect";
     private final static String OP_SYS_STACK_FRAME = "sys_stack_frame";

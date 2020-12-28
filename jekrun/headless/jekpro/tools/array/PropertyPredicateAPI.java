@@ -54,8 +54,9 @@ import java.util.concurrent.locks.ReadWriteLock;
  */
 public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     public static final MapHashLink<StoreKey, AbstractProperty<Predicate>> DEFAULT
-            = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
+            = new MapHashLink<>();
 
+    public final static String OP_OVERRIDE = "override";
     private final static String OP_SYS_META_PREDICATE = "sys_meta_predicate";
     private final static String OP_AUTOMATIC = "automatic";
     private final static String OP_SYS_NOEXPAND = "sys_noexpand";
@@ -63,14 +64,17 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static String OP_SYS_TABLED = "sys_tabled";
     private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
 
-    private final static int PROP_SYS_META_PREDICATE = 0;
-    private final static int PROP_AUTOMATIC = 1;
-    private final static int PROP_SYS_NOEXPAND = 2;
+    private final static int PROP_OVERRIDE = 0;
+    private final static int PROP_SYS_META_PREDICATE = 1;
+    private final static int PROP_AUTOMATIC = 2;
+    private final static int PROP_SYS_NOEXPAND = 3;
     private final static int PROP_META_PREDICATE = 4;
-    private final static int PROP_SYS_TABLED = 6;
-    private final static int PROP_SYS_READWRITE_LOCK = 7;
+    private final static int PROP_SYS_TABLED = 5;
+    private final static int PROP_SYS_READWRITE_LOCK = 6;
 
     static {
+        DEFAULT.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicateAPI(PROP_OVERRIDE,
+                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF));
         DEFAULT.add(new StoreKey(OP_SYS_META_PREDICATE, 1), new PropertyPredicateAPI(PROP_SYS_META_PREDICATE));
         DEFAULT.add(new StoreKey(OP_AUTOMATIC, 0), new PropertyPredicateAPI(PROP_AUTOMATIC));
         DEFAULT.add(new StoreKey(OP_SYS_NOEXPAND, 0), new PropertyPredicateAPI(PROP_SYS_NOEXPAND,
@@ -110,8 +114,15 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
      */
     public Object[] getObjProps(Predicate pick, Engine en) {
         switch (id) {
-            case PROP_SYS_META_PREDICATE:
+            case PROP_OVERRIDE:
                 ListArray<Object> res = PropertyPredicate.filterDefs(pick,
+                        Predicate.MASK_TRCK_OVRD, en);
+                if (res == null)
+                    return AbstractBranch.FALSE_PROPERTY;
+                return PropertyPredicate.snapshotToVals(
+                        new SkelAtom(OP_OVERRIDE), res);
+            case PROP_SYS_META_PREDICATE:
+                res = PropertyPredicate.filterDefs(pick,
                         Predicate.MASK_TRCK_META, en);
                 if (res == null)
                     return AbstractBranch.FALSE_PROPERTY;
@@ -169,8 +180,14 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     public boolean setObjProp(Predicate pick, Object m, Display d, Engine en)
             throws EngineMessage {
         switch (id) {
+            case PROP_OVERRIDE:
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
+                if (src == null || !Clause.ancestorSource(src, en))
+                    return true;
+                pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
+                return true;
             case PROP_SYS_META_PREDICATE:
-                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_META, en);
@@ -209,8 +226,14 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     public boolean resetObjProp(Predicate pick, Object m, Display d, Engine en)
             throws EngineMessage {
         switch (id) {
+            case PROP_OVERRIDE:
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
+                if (src == null || !Clause.ancestorSource(src, en))
+                    return true;
+                pick.removeDef(src, Predicate.MASK_TRCK_OVRD);
+                return true;
             case PROP_SYS_META_PREDICATE:
-                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
+                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_META);
@@ -257,7 +280,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                         if ((pick.getBits() & Predicate.MASK_PRED_TABL) == 0)
                             continue;
                         if (res == null)
-                            res = new ListArray<Predicate>();
+                            res = new ListArray<>();
                         res.add(pick);
                     }
                 }

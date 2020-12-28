@@ -117,9 +117,9 @@ public final class ForeignPivot {
         if (help == null) {
             if (el instanceof LexicalCollator &&
                     ((LexicalCollator) el).getCmpStr() == null) {
-                help = new SetHashLink<Object>();
+                help = new SetHashLink<>();
             } else {
-                help = new SetTree<Object>(el);
+                help = new SetTree<>(el);
             }
             pivot.value = help;
         }

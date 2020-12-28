@@ -131,7 +131,7 @@ public final class LoadOpts extends LoadForce {
         LoadOpts backcond = en.visor.cond;
         StoreKey backlastsk = en.visor.lastsk;
         if (en.visor.cond == null) {
-            setVisited(new ListArray<AbstractSource>());
+            setVisited(new ListArray<>());
             en.visor.cond = this;
         }
         boolean rscs = (getFlags() & LoadForce.MASK_LOAD_RSCS) != 0;
@@ -309,7 +309,7 @@ public final class LoadOpts extends LoadForce {
         LoadOpts backcond = en.visor.cond;
         try {
             if (en.visor.cond == null) {
-                setVisited(new ListArray<AbstractSource>());
+                setVisited(new ListArray<>());
                 en.visor.cond = this;
             }
             AbstractSource source = scope.getStore().getSource(key);

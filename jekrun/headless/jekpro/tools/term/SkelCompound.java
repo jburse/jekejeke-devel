@@ -180,7 +180,7 @@ public final class SkelCompound extends AbstractSkel
             if (var != null && indexOf(var, mv) != -1)
                 return vec;
             if (vec == null) {
-                vec = new ListArray<SkelVar>();
+                vec = new ListArray<>();
                 vec.add(mv);
             } else {
                 if (vec.indexOf(mv) == -1)
@@ -193,7 +193,7 @@ public final class SkelCompound extends AbstractSkel
                 if (var != null && indexOf(var, mv) != -1)
                     continue;
                 if (vec == null) {
-                    vec = new ListArray<SkelVar>();
+                    vec = new ListArray<>();
                     vec.add(mv);
                 } else {
                     if (vec.indexOf(mv) == -1)

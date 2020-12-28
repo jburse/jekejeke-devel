@@ -128,7 +128,7 @@ public final class AirDrop {
                 if (capa != null) {
                     boolean dontask = "true".equals(prop.getProperty(AbstractBundle.PROP_SLIP_DONTASK));
                     if (slips == null)
-                        slips = new ListArray<AirDropEntry>();
+                        slips = new ListArray<>();
                     slips.add(new AirDropEntry(capa, dontask));
                 }
             }
@@ -139,7 +139,7 @@ public final class AirDrop {
             if (adr != null) {
                 String capa = CapabilitySWI.class.getName() + "(" + root + ")";
                 if (slips == null)
-                    slips = new ListArray<AirDropEntry>();
+                    slips = new ListArray<>();
                 slips.add(new AirDropEntry(capa, true));
             }
         }

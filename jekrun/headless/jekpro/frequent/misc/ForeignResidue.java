@@ -86,7 +86,7 @@ public final class ForeignResidue {
             if (var == null)
                 continue;
             if (list == null)
-                list = new ListArray<Object>();
+                list = new ListArray<>();
             list.add(var);
         }
         return list;

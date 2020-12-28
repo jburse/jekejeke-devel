@@ -51,7 +51,7 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyOperator extends AbstractProperty<Operator> {
     public final static MapHashLink<StoreKey, AbstractProperty<Operator>> DEFAULT
-            = new MapHashLink<StoreKey, AbstractProperty<Operator>>();
+            = new MapHashLink<>();
 
     private final static String OP_OP = "op";
     private final static String OP_SYS_PORTRAY = "sys_portray";
@@ -337,7 +337,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 if (!Clause.ancestorSource(oper.getSource(), en))
                     continue;
                 if (res == null)
-                    res = new ListArray<Operator>();
+                    res = new ListArray<>();
                 res.add(oper);
             }
             if (res == null)

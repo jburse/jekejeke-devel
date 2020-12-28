@@ -51,7 +51,7 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyCallable extends AbstractProperty<Object> {
     public final static MapHash<StoreKey, AbstractProperty<Object>> DEFAULT =
-            new MapHash<StoreKey, AbstractProperty<Object>>();
+            new MapHash<>();
 
     public final static String OP_SYS_CONTEXT = "sys_context";
     public final static String OP_SYS_VARIABLE_NAMES = "sys_variable_names";
@@ -91,9 +91,9 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                         Display.DISPLAY_CONST)};
             case PROP_SYS_VARIABLE_NAMES:
                 Display d = AbstractTerm.getDisplay(obj);
+                t = SpecialSession.hashToAssoc(d.vars, d, en);
                 return new Object[]{AbstractTerm.createMolec(
-                        new SkelCompound(new SkelAtom(OP_SYS_VARIABLE_NAMES),
-                                SpecialSession.hashToAssoc(d.vars, d, en)), d)};
+                        new SkelCompound(new SkelAtom(OP_SYS_VARIABLE_NAMES), t), d)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -124,8 +124,14 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 MapHash<BindUniv, String> print = derefAndCastAssoc(m, d, en);
                 t = AbstractTerm.getSkel(obj);
                 Display d2 = AbstractTerm.getDisplay(obj);
-                Display ref = Display.valueOf(d2.bind.length);
-                ref.vars = collectNames(t, d2, print);
+                MapHashLink<String, SkelVar> res = collectNames(t, d2, print);
+                Display ref;
+                if (res != null) {
+                    ref = new Display(d2.bind.length);
+                    ref.vars = res;
+                } else {
+                    ref = Display.valueOf(d2.bind.length);
+                }
                 if (d2.bind.length != 0)
                     ref.marker = true;
                 en.skel = t;
@@ -262,7 +268,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 if (name == null)
                     continue;
                 if (copy == null)
-                    copy = new MapHashLink<String, SkelVar>();
+                    copy = new MapHashLink<>();
                 copy.add(name, v);
             }
             v = temp[i];
@@ -271,7 +277,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
         if (name == null)
             return copy;
         if (copy == null)
-            copy = new MapHashLink<String, SkelVar>();
+            copy = new MapHashLink<>();
         copy.add(name, v);
         return copy;
     }

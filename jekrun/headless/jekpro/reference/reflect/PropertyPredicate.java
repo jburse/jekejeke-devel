@@ -52,11 +52,10 @@ import matula.util.data.MapHashLink;
  */
 public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public static final MapHashLink<StoreKey, AbstractProperty<Predicate>> DEFAULT
-            = new MapHashLink<StoreKey, AbstractProperty<Predicate>>();
+            = new MapHashLink<>();
 
     public final static String OP_VISIBLE = "visible";
 
-    public final static String OP_OVERRIDE = "override";
     private final static String OP_SYS_MULTIFILE = "sys_multifile";
     private final static String OP_DISCONTIGUOUS = "discontiguous";
     private final static String OP_SYS_STYLE_CHECK = "sys_style_check";
@@ -86,42 +85,38 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
 
     private final static int PROP_VISIBLE = 0;
 
-    private final static int PROP_OVERRIDE = 1;
-    private final static int PROP_SYS_MULTIFILE = 2;
-    private final static int PROP_DISCONTIGUOUS = 3;
-    private final static int PROP_SYS_STYLE_CHECK = 4;
-    private final static int PROP_SYS_PUBLIC = 5;
-    private final static int PROP_SYS_PRIVATE = 6;
-    private final static int PROP_SYS_DYNAMIC = 7;
-    private final static int PROP_SYS_THREAD_LOCAL = 8;
-    private final static int PROP_SYS_GROUP_LOCAL = 9;
+    private final static int PROP_SYS_MULTIFILE = 1;
+    private final static int PROP_DISCONTIGUOUS = 2;
+    private final static int PROP_SYS_STYLE_CHECK = 3;
+    private final static int PROP_SYS_PUBLIC = 4;
+    private final static int PROP_SYS_PRIVATE = 5;
+    private final static int PROP_SYS_DYNAMIC = 6;
+    private final static int PROP_SYS_THREAD_LOCAL = 7;
+    private final static int PROP_SYS_GROUP_LOCAL = 8;
 
-    private final static int PROP_MULTIFILE = 10;
-    private final static int PROP_VIRTUAL = 11;
-    private final static int PROP_NONSTRICT = 12;
+    private final static int PROP_MULTIFILE = 9;
+    private final static int PROP_VIRTUAL = 10;
+    private final static int PROP_NONSTRICT = 11;
 
-    private final static int PROP_SYS_NOTRACE = 13;
+    private final static int PROP_SYS_NOTRACE = 12;
 
-    private final static int PROP_BUILT_IN = 14;
-    private final static int PROP_STATIC = 15;
-    private final static int PROP_DYNAMIC = 16;
-    private final static int PROP_THREAD_LOCAL = 17;
-    private final static int PROP_GROUP_LOCAL = 18;
+    private final static int PROP_BUILT_IN = 13;
+    private final static int PROP_STATIC = 14;
+    private final static int PROP_DYNAMIC = 15;
+    private final static int PROP_THREAD_LOCAL = 16;
+    private final static int PROP_GROUP_LOCAL = 17;
 
-    private final static int PROP_FULL_NAME = 19;
-    private final static int PROP_SYS_USAGE = 20;
-    private final static int PROP_SYS_NOINDEX = 21;
-    private final static int PROP_SYS_NOSTACK = 22;
-    private final static int PROP_SYS_NOHEAD = 23;
+    private final static int PROP_FULL_NAME = 18;
+    private final static int PROP_SYS_USAGE = 19;
+    private final static int PROP_SYS_NOINDEX = 20;
+    private final static int PROP_SYS_NOSTACK = 21;
+    private final static int PROP_SYS_NOHEAD = 22;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SUPR |
                         AbstractProperty.MASK_PROP_PRJF | AbstractProperty.MASK_PROP_MODI));
 
-        DEFAULT.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicate(PROP_OVERRIDE,
-                AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
-                        AbstractProperty.MASK_PROP_MODI));
         DEFAULT.add(new StoreKey(OP_SYS_MULTIFILE, 1), new PropertyPredicate(PROP_SYS_MULTIFILE));
         DEFAULT.add(new StoreKey(OP_DISCONTIGUOUS, 1), new PropertyPredicate(PROP_DISCONTIGUOUS,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_SLCF |
@@ -203,15 +198,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_OVERRIDE:
-                ListArray<Object> res = PropertyPredicate.filterDefs(pick,
-                        Predicate.MASK_TRCK_OVRD, en);
-                if (res == null)
-                    return AbstractBranch.FALSE_PROPERTY;
-                return PropertyPredicate.snapshotToVals(
-                        new SkelAtom(OP_OVERRIDE), res);
             case PROP_SYS_MULTIFILE:
-                res = PropertyPredicate.filterDefs(pick,
+                ListArray<Object> res = PropertyPredicate.filterDefs(pick,
                         Predicate.MASK_TRCK_MULT, en);
                 if (res == null)
                     return AbstractBranch.FALSE_PROPERTY;
@@ -388,15 +376,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 pick.resetBit(Predicate.MASK_PRED_VISI);
                 pick.setBit(flags);
                 return true;
-
-            case PROP_OVERRIDE:
-                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
-                return true;
             case PROP_SYS_MULTIFILE:
-                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.addDef(src, Predicate.MASK_TRCK_MULT, en);
@@ -517,15 +498,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_VISIBLE:
                 pick.resetBit(Predicate.MASK_PRED_VISI);
                 return true;
-
-            case PROP_OVERRIDE:
-                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
-                if (src == null || !Clause.ancestorSource(src, en))
-                    return true;
-                pick.removeDef(src, Predicate.MASK_TRCK_OVRD);
-                return true;
             case PROP_SYS_MULTIFILE:
-                src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
+                AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
                 pick.removeDef(src, Predicate.MASK_TRCK_MULT);
@@ -652,7 +626,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 if (!Clause.ancestorSource(pick.getSource(), en))
                     continue;
                 if (res == null)
-                    res = new ListArray<Predicate>();
+                    res = new ListArray<>();
                 res.add(pick);
             }
             if (res == null)
@@ -690,7 +664,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             if (cond != 0 && (entry.value.intValue() & cond) == 0)
                 continue;
             if (res == null)
-                res = new ListArray<Object>();
+                res = new ListArray<>();
             res.add(src.getPathAtom());
         }
         return res;

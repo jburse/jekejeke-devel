@@ -589,7 +589,7 @@ public final class ForeignPath {
      */
     private static ListArray<Object> listFileExtensions(Interpreter inter) {
         Knowledgebase know = inter.getKnowledgebase();
-        ListArray<Object> res = new ListArray<Object>();
+        ListArray<Object> res = new ListArray<>();
         do {
             MapEntry<String, FileExtension>[] exts = know.getFileExtensions();
             for (int i = exts.length - 1; i >= 0; i--) {

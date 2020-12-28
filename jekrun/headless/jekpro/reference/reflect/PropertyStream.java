@@ -55,7 +55,7 @@ import java.io.*;
  */
 public final class PropertyStream extends AbstractProperty<Object> {
     public static final MapHash<StoreKey, AbstractProperty<Object>> DEFAULT
-            = new MapHash<StoreKey, AbstractProperty<Object>>();
+            = new MapHash<>();
 
     public final static String OP_TYPE = "type";
     public final static String OP_OUTPUT = "output";

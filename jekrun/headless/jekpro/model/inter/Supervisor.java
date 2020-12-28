@@ -67,7 +67,7 @@ public class Supervisor extends AbstractLivestock {
     public LoadOpts cond;
     public Object proxy;
     public Engine inuse;
-    public AbstractMap<BindUniv, Integer> varmap = new MapHash<BindUniv, Integer>();
+    public AbstractMap<BindUniv, Integer> varmap = new MapHash<>();
     private SupervisorCopy copy;
     protected SupervisorCall call;
     public Object printmap;
@@ -199,7 +199,7 @@ public class Supervisor extends AbstractLivestock {
         if (source == null)
             throw new NullPointerException("source missing");
         if (modstack == null)
-            modstack = new ListArray<AbstractSource>();
+            modstack = new ListArray<>();
         modstack.add(source);
     }
 

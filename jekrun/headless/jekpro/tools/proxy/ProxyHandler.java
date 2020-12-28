@@ -105,7 +105,7 @@ public final class ProxyHandler implements InvocationHandler {
      * @return The proxy class.
      */
     private Class createProxyClass() {
-        ListArray<Class> list = new ListArray<Class>();
+        ListArray<Class> list = new ListArray<>();
         MapEntry<AbstractSource, Integer>[] deps = src.snapshotDeps();
         for (int i = 0; i < deps.length; i++) {
             MapEntry<AbstractSource, Integer> entry = deps[i];
@@ -137,7 +137,7 @@ public final class ProxyHandler implements InvocationHandler {
      * @return The proxy executors.
      */
     public MapHash<Method, ProxyExecutor> createProxyExecs(Class clazz, Engine en) {
-        MapHash<Method, ProxyExecutor> map = new MapHash<Method, ProxyExecutor>();
+        MapHash<Method, ProxyExecutor> map = new MapHash<>();
         Class[] interfaces = clazz.getInterfaces();
 
         for (int i = 0; i < interfaces.length; i++) {

@@ -352,7 +352,7 @@ public class PrologReader {
             if (st.lookAhead() == OP_LPAREN.codePointAt(0)) {
                 skel = makePos((String) skel, getAtomPos());
                 nextToken();
-                ListArray<Object> vec = new ListArray<Object>();
+                ListArray<Object> vec = new ListArray<>();
                 skel = readArgs(vec, makeFunc((SkelAtom) skel));
                 if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
                     throw new ScannerError(ERROR_SYNTAX_PARENTHESIS_BALANCE,
@@ -522,7 +522,7 @@ public class PrologReader {
     protected Object readPostfix(SkelAtom help, Object skel)
             throws ScannerError, IOException, EngineException, EngineMessage {
         if (st.getHint() == 0 && OP_LPAREN.equals(st.getData())) {
-            ListArray<Object> vec = new ListArray<Object>();
+            ListArray<Object> vec = new ListArray<>();
             vec.add(skel);
             skel = readArgs(vec, help);
             if (st.getHint() != 0 || !OP_RPAREN.equals(st.getData()))
@@ -543,7 +543,7 @@ public class PrologReader {
             nextToken();
             return skel;
         } else if (st.getHint() == 0 && OP_LBRACKET.equals(st.getData())) {
-            ListArray<Object> vec = new ListArray<Object>();
+            ListArray<Object> vec = new ListArray<>();
             vec.add(skel);
             skel = readArgs(vec, help);
             if (st.getHint() != 0 || !OP_RBRACKET.equals(st.getData()))
@@ -905,7 +905,7 @@ public class PrologReader {
             return mv;
         }
         if (vars == null) {
-            vars = new MapHashLink<String, SkelVar>();
+            vars = new MapHashLink<>();
             mv = null;
         } else {
             mv = vars.get(key);
@@ -920,7 +920,7 @@ public class PrologReader {
             vars.add(key, mv);
             if ((flags & FLAG_SING) != 0) {
                 if (anon == null)
-                    anon = new MapHashLink<String, SkelVar>();
+                    anon = new MapHashLink<>();
                 anon.add(key, mv);
             }
         } else {

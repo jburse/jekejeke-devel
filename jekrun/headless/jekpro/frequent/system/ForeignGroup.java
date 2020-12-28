@@ -111,7 +111,7 @@ public final class ForeignGroup {
     public static Thread sysCurrentThread(CallOut co, ThreadGroup tg) {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<Thread>(snapshotThreadsOfGroup(tg));
+            dc = new ArrayEnumeration<>(snapshotThreadsOfGroup(tg));
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
@@ -151,7 +151,7 @@ public final class ForeignGroup {
     public static ThreadGroup sysCurrentGroup(CallOut co, ThreadGroup tg) {
         ArrayEnumeration<ThreadGroup> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<ThreadGroup>(snapshotGroupsOfGroup(tg));
+            dc = new ArrayEnumeration<>(snapshotGroupsOfGroup(tg));
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
@@ -194,7 +194,7 @@ public final class ForeignGroup {
     public static String sysCurrentGroupFlag(CallOut co) {
         ArrayEnumeration<String> dc;
         if (co.getFirst()) {
-            dc = new ArrayEnumeration<String>(OP_PROPS);
+            dc = new ArrayEnumeration<>(OP_PROPS);
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
@@ -245,7 +245,7 @@ public final class ForeignGroup {
         ArrayEnumeration<Thread> dc;
         if (co.getFirst()) {
             Foyer foyer = inter.getKnowledgebase().getFoyer();
-            dc = new ArrayEnumeration<Thread>(snapshotManagedThreads(foyer));
+            dc = new ArrayEnumeration<>(snapshotManagedThreads(foyer));
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
@@ -264,7 +264,7 @@ public final class ForeignGroup {
      * @return The managed threads.
      */
     private static Thread[] snapshotManagedThreads(Foyer foyer) {
-        ListArray<Thread> list = new ListArray<Thread>();
+        ListArray<Thread> list = new ListArray<>();
         MapEntry<Thread, AbstractLivestock>[] snapshot = Fence.DEFAULT.snapshotLivestocks();
         for (int i = snapshot.length - 1; i >= 0; i--) {
             AbstractLivestock al = snapshot[i].value;

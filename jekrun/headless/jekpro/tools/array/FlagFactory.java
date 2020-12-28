@@ -49,7 +49,7 @@ import java.io.Writer;
  */
 public final class FlagFactory extends AbstractFlag<Engine> {
     public final static MapHash<String, AbstractFlag<Engine>> DEFAULT
-            = new MapHash<String, AbstractFlag<Engine>>();
+            = new MapHash<>();
 
     private final static String OP_VALUE_TOWARD_ZERO = "toward_zero";
     private final static String OP_VALUE_HALF_EVEN = "half_even";

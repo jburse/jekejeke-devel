@@ -136,7 +136,7 @@ public final class ForeignLocale {
     private static Object[] prepareArguments(Interpreter inter, Object term)
             throws InterpreterMessage, InterpreterException {
         Engine en = inter.getEngine();
-        ListArray<Object> vec = new ListArray<Object>();
+        ListArray<Object> vec = new ListArray<>();
         while (term instanceof TermCompound &&
                 ((TermCompound) term).getArity() == 2 &&
                 ((TermCompound) term).getFunctor().equals(

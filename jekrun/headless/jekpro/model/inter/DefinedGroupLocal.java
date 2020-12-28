@@ -264,7 +264,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         synchronized (en.store) {
             ListArray<LocalBlocking> privs = en.store.privates;
             if (privs == null) {
-                privs = new ListArray<LocalBlocking>();
+                privs = new ListArray<>();
                 en.store.privates = privs;
             }
             while (seqid >= privs.size())

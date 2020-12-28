@@ -372,7 +372,7 @@ public final class SpecialVars extends AbstractSpecial {
         if (vars == null)
             return null;
 
-        MapHashLink<Object, String> copy = new MapHashLink<Object, String>();
+        MapHashLink<Object, String> copy = new MapHashLink<>();
         int k = 0;
         SetHash<String> range = null;
 
@@ -422,7 +422,7 @@ public final class SpecialVars extends AbstractSpecial {
         if (vars == null)
             return null;
 
-        MapHash<BindUniv, String> copy = new MapHash<BindUniv, String>();
+        MapHash<BindUniv, String> copy = new MapHash<>();
         int k = 0;
         SetHash<String> range = null;
 
@@ -483,7 +483,7 @@ public final class SpecialVars extends AbstractSpecial {
             if (en.skel instanceof SkelVar) {
                 Object pair = AbstractTerm.createMolec(en.skel, en.display);
                 if (set == null) {
-                    set = new SetHashLink<Object>();
+                    set = new SetHashLink<>();
                     set.add(pair);
                 } else {
                     if (set.getEntry(pair) == null)
@@ -519,7 +519,7 @@ public final class SpecialVars extends AbstractSpecial {
     private static SetHash<String> nameRange(MapHash<BindUniv, String> print) {
         if (print == null)
             return null;
-        SetHash<String> range = new SetHash<String>();
+        SetHash<String> range = new SetHash<>();
         for (MapEntry<BindUniv, String> entry = print.getFirstEntry();
              entry != null; entry = print.successor(entry))
             range.add(entry.value);

@@ -415,7 +415,7 @@ public final class WriteOpts {
      * @return The term.
      */
     public static Object annoToTerm(int anno) {
-        ListArray<String> list = new ListArray<String>();
+        ListArray<String> list = new ListArray<>();
         if ((anno & ANNO_HINT) != 0)
             list.add(OP_ANNO_HINT);
         if ((anno & ANNO_FILL) != 0)

@@ -102,7 +102,7 @@ public class Foyer extends Enforced {
     public final static int IO_TERM = 0;
     public final static int IO_ANNO = 1;
 
-    private final ListArray<Integer> hole = new ListArray<Integer>();
+    private final ListArray<Integer> hole = new ListArray<>();
     private int nextseqid;
     public Object goodfor;
     public Locale locale = Locale.getDefault();
@@ -112,7 +112,7 @@ public class Foyer extends Enforced {
     public Random random = new Random();
     private int flags;
 
-    private final ListArray<Store> regs = new ListArray<Store>();
+    private final ListArray<Store> regs = new ListArray<>();
     private Store[] cacheregs;
     private AbstractFactory factory;
 

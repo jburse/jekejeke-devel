@@ -209,7 +209,7 @@ public final class ForeignDirectory {
             Set<String> keys = System.getenv().keySet();
             String[] names = new String[keys.size()];
             keys.toArray(names);
-            dc = new ArrayEnumeration<String>(names);
+            dc = new ArrayEnumeration<>(names);
             if (!dc.hasMoreElements())
                 return null;
             co.setData(dc);
