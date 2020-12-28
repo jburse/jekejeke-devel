@@ -204,7 +204,7 @@ public class ListArray<E> extends AbstractList<E> {
      * @return The enumeration.
      */
     public Enumeration<E> elements() {
-        return new ArrayEnumeration<E>(table, size);
+        return new ArrayEnumeration<>(table, size);
     }
 
     /***************************************************************/

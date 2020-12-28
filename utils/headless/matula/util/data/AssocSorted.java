@@ -39,7 +39,7 @@ import java.util.Comparator;
  */
 public final class AssocSorted<K, V> extends AssocArray<K, V> {
     public static final AssocSorted<String, AssocSorted> FULL_SET
-            = new AssocSorted<String, AssocSorted>(Sort.STR_ASC);
+            = new AssocSorted<>(Sort.STR_ASC);
 
     private final Comparator<K> comparator;
 
@@ -97,7 +97,7 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
      * @return The result sorted assoc.
      */
     public AssocSorted<K, V> intersect(AssocSorted<K, V> b) {
-        AssocSorted<K, V> res = new AssocSorted<K, V>(comparator);
+        AssocSorted<K, V> res = new AssocSorted<>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {
@@ -143,7 +143,7 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
      * @return The result sorted list.
      */
     public AssocSorted<K, V> union(AssocSorted<K, V> b) {
-        AssocSorted<K, V> res = new AssocSorted<K, V>(comparator);
+        AssocSorted<K, V> res = new AssocSorted<>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {

@@ -43,7 +43,7 @@ public final class ForeignXml {
     public static final int MAX_ENTITY = 8; /* including & and ; */
     public static final String PREFIX_HTTP = "http:";
 
-    private static final MapHash<String, Integer> entity = new MapHash<String, Integer>();
+    private static final MapHash<String, Integer> entity = new MapHash<>();
     private static final String[] entityrev = new String[256];
 
     static {

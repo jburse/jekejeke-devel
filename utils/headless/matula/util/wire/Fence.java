@@ -37,7 +37,7 @@ import matula.util.data.MapHashLink;
 public final class Fence {
     public static Fence DEFAULT = new Fence();
 
-    private final MapHashLink<Thread, AbstractLivestock> active = new MapHashLink<Thread, AbstractLivestock>();
+    private final MapHashLink<Thread, AbstractLivestock> active = new MapHashLink<>();
     private MapEntry<Thread, AbstractLivestock>[] cacheactive;
 
     /**

@@ -149,7 +149,7 @@ public class MapHashLink<K, V> extends AbstractMap<K, V> {
      * @return The entry.
      */
     public MapEntry<K, V> newEntry(K key, V value) {
-        MapEntry<K, V> h = new MapHashLinkEntry<K, V>();
+        MapEntry<K, V> h = new MapHashLinkEntry<>();
         h.key = key;
         h.value = value;
         return h;

@@ -44,8 +44,7 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractRecognizer {
-    private final MapHashLink<String, FileExtension> ext = new MapHashLink<String,
-            FileExtension>();
+    private final MapHashLink<String, FileExtension> ext = new MapHashLink<>();
     private MapEntry<String, FileExtension>[] cacheext;
 
     /**

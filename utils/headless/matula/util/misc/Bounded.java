@@ -70,7 +70,7 @@ public final class Bounded<T> implements InterfacePipe<T> {
     public Bounded(int m) {
         if (!(m > 0))
             throw new IndexOutOfBoundsException("maxsize underflow");
-        list = new ListArray<T>(m);
+        list = new ListArray<>(m);
         max = m;
     }
 

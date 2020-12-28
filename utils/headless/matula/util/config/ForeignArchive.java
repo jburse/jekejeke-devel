@@ -71,7 +71,7 @@ public final class ForeignArchive {
                 name = f.getName();
             }
             if (list == null) {
-                list = new ListArray<String>();
+                list = new ListArray<>();
                 list.add(name);
             } else {
                 if (!list.contains(name))
@@ -115,7 +115,7 @@ public final class ForeignArchive {
                     name = name.substring(prefix.length());
                 }
                 if (list == null) {
-                    list = new ListArray<String>();
+                    list = new ListArray<>();
                     list.add(name);
                 } else {
                     if (!list.contains(name))

@@ -50,7 +50,7 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Alarm<T> {
-    private final ListArray<AlarmEntry<T>> planned = new ListArray<AlarmEntry<T>>();
+    private final ListArray<AlarmEntry<T>> planned = new ListArray<>();
 
     /**
      * <p>Schedule an item on this alarm queue.</p>
@@ -61,7 +61,7 @@ public final class Alarm<T> {
      */
     public AlarmEntry schedule(T r, long sleep) {
         long when = System.currentTimeMillis() + sleep;
-        AlarmEntry<T> entry = new AlarmEntry<T>(r, when);
+        AlarmEntry<T> entry = new AlarmEntry<>(r, when);
         synchronized (this) {
             int i = 0;
             for (; i < planned.size(); i++) {

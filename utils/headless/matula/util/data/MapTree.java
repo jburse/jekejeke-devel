@@ -169,7 +169,7 @@ public class MapTree<K, V> extends AbstractMap<K, V> {
      * @return The entry.
      */
     public MapEntry<K, V> newEntry(K key, V value) {
-        MapEntry<K, V> h = new MapTreeEntry<K, V>();
+        MapEntry<K, V> h = new MapTreeEntry<>();
         h.key = key;
         h.value = value;
         return h;

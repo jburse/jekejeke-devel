@@ -92,7 +92,7 @@ public final class ListSorted<E> extends ListArray<E> {
      * @return The result sorted list.
      */
     public ListSorted<E> intersect(ListSorted<E> b) {
-        ListSorted<E> res = new ListSorted<E>(comparator);
+        ListSorted<E> res = new ListSorted<>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {
@@ -117,7 +117,7 @@ public final class ListSorted<E> extends ListArray<E> {
      * @return The result sorted list.
      */
     public ListSorted<E> union(ListSorted<E> b) {
-        ListSorted<E> res = new ListSorted<E>(comparator);
+        ListSorted<E> res = new ListSorted<>(comparator);
         int i = 0;
         int j = 0;
         while (i < size && j < b.size) {

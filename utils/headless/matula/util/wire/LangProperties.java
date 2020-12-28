@@ -48,7 +48,7 @@ public final class LangProperties {
     public static final String PATTERN_DATETIME = "yyyy-MM-dd HH:mm:ss";
 
     private static final HashMap<String, Properties> cache =
-            new HashMap<String, Properties>();
+            new HashMap<>();
 
     /*****************************************************************/
     /* Legacy API                                                    */

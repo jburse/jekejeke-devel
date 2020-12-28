@@ -37,7 +37,7 @@ import matula.util.data.MapHash;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class MapHashWithImport<K, V> extends MapHash<K, V> {
-    private ListArray<AbstractMap<K, V>> imports = new ListArray<AbstractMap<K, V>>();
+    private ListArray<AbstractMap<K, V>> imports = new ListArray<>();
 
     /**
      * <p>Add an import.</p>

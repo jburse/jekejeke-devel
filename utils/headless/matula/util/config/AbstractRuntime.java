@@ -40,7 +40,7 @@ import java.lang.reflect.Array;
  */
 public abstract class AbstractRuntime {
     public final static String JAVA_ARRAY = "[]";
-    private final static MapHash<String, Class<?>> primitive = new MapHash<String, Class<?>>();
+    private final static MapHash<String, Class<?>> primitive = new MapHash<>();
 
     public final static String ASPECT_SWING = "swing";
     public final static String ASPECT_ANDROID = "android";

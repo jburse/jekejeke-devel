@@ -203,7 +203,7 @@ public final class MimeHeader {
                 throw new ScannerError(ERROR_VALUE_MISSING, -1);
             }
             if (kvs == null)
-                kvs = new AssocArray<String, String>();
+                kvs = new AssocArray<>();
             kvs.add(a, v);
         }
         if (st.ttype != StreamTokenizer.TT_EOF)
