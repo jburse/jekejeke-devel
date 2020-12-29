@@ -66,7 +66,7 @@ public abstract class AbstractMap<K, V>
      * <p>Find the key in the map.</p>
      *
      * @param key The key.
-     * @return The value.
+     * @return The valu or null.
      */
     public final V get(K key) {
         MapEntry<K, V> e = getEntry(key);
