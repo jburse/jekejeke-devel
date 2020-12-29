@@ -19,6 +19,7 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.AbstractBundle;
 import matula.util.data.*;
+import matula.util.misc.Table;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenOpts;
@@ -141,9 +142,10 @@ public abstract class AbstractSource {
     public final SetHashLink<Operator> opsinv = new SetHashLink<>();
     public Operator[] cacheopsinv;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
-    private final MapHash<String, AssocArray<Integer, Predicate>> preds = new MapHash<>();
+    private final Table<Predicate> ptab = new Table<>();
     private Predicate[] cachepreds;
     private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<>();
+    private final Table<Operator> otab = new Table<>();
     private Operator[] cacheops;
     private final ListArray<Resource> resources = new ListArray<>();
     private Resource[] cacheresources;
@@ -1047,10 +1049,7 @@ public abstract class AbstractSource {
      */
     public final Predicate getRoutine(int arity, String fun) {
         synchronized (this) {
-            AssocArray<Integer, Predicate> map = preds.get(fun);
-            if (map == null)
-                return null;
-            return map.get(Integer.valueOf(arity));
+            return ptab.get(fun, arity);
         }
     }
 
@@ -1087,12 +1086,9 @@ public abstract class AbstractSource {
                                   SkelAtom sa, Engine en) {
         Predicate pick;
         synchronized (this) {
-            AssocArray<Integer, Predicate> map = preds.get(fun);
-            if (map != null) {
-                pick = map.get(Integer.valueOf(arity));
-                if (pick != null)
-                    return pick;
-            }
+            pick = ptab.get(fun, arity);
+            if (pick != null)
+                return pick;
             pick = new Predicate(fun, arity);
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
@@ -1100,11 +1096,7 @@ public abstract class AbstractSource {
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPU);
             pick.setSource(this);
-            if (map == null) {
-                map = new AssocArray<>();
-                preds.add(fun, map);
-            }
-            map.add(Integer.valueOf(arity), pick);
+            ptab.add(fun, arity, pick);
             cachepreds = null;
         }
         return pick;
@@ -1119,21 +1111,10 @@ public abstract class AbstractSource {
     public final void removeRoutine(int arity, String fun) {
         Predicate pick;
         synchronized (this) {
-            MapEntry<String, AssocArray<Integer, Predicate>> entry = preds.getEntry(fun);
-            if (entry == null)
+            pick = ptab.get(fun, arity);
+            if (pick == null)
                 return;
-            AssocArray<Integer, Predicate> map = entry.value;
-            int k = map.indexOf(Integer.valueOf(arity));
-            if (!(k >= 0))
-                return;
-            pick = map.getValue(k);
-            map.removeEntry(k);
-            if (map.size == 0) {
-                preds.removeEntry(entry);
-                preds.resize();
-            } else {
-                map.resize();
-            }
+            ptab.remove(fun, arity);
             cachepreds = null;
         }
         pick.updateImport((pick.getBits() & Predicate.MASK_PRED_VSPR) != 0);
@@ -1152,18 +1133,8 @@ public abstract class AbstractSource {
             res = cachepreds;
             if (res != null)
                 return res;
-            int size = 0;
-            for (MapEntry<String, AssocArray<Integer, Predicate>> entry = preds.getFirstEntry();
-                 entry != null; entry = preds.successor(entry))
-                size += entry.value.size;
-            res = new Predicate[size];
-            size = 0;
-            for (MapEntry<String, AssocArray<Integer, Predicate>> entry = preds.getFirstEntry();
-                 entry != null; entry = preds.successor(entry)) {
-                AssocArray<Integer, Predicate> map = entry.value;
-                map.toArrayValues(res, size);
-                size += map.size;
-            }
+            res = new Predicate[ptab.deepSize()];
+            ptab.toDeepArrayValues(res);
             cachepreds = res;
         }
         return res;
@@ -1182,10 +1153,7 @@ public abstract class AbstractSource {
      */
     public Operator getOper(int type, String fun) {
         synchronized (this) {
-            AssocArray<Integer, Operator> map = ops.get(fun);
-            if (map == null)
-                return null;
-            return map.get(Integer.valueOf(type));
+            return otab.get(fun, type);
         }
     }
 
@@ -1220,12 +1188,9 @@ public abstract class AbstractSource {
                               SkelAtom sa, Engine en) {
         Operator oper;
         synchronized (this) {
-            AssocArray<Integer, Operator> map = ops.get(fun);
-            if (map != null) {
-                oper = map.get(Integer.valueOf(type));
-                if (oper != null)
-                    return oper;
-            }
+            oper = otab.get(fun, type);
+            if (oper != null)
+                return oper;
             oper = store.foyer.createOperator(type, fun);
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
@@ -1233,11 +1198,7 @@ public abstract class AbstractSource {
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPU);
             oper.setSource(this);
-            if (map == null) {
-                map = new AssocArray<>();
-                ops.add(fun, map);
-            }
-            map.add(Integer.valueOf(type), oper);
+            otab.add(fun, type, oper);
             cacheops = null;
         }
         return oper;
@@ -1250,21 +1211,12 @@ public abstract class AbstractSource {
      * @param fun  The name.
      */
     public void removeOper(int type, String fun) {
+        Operator oper;
         synchronized (this) {
-            MapEntry<String, AssocArray<Integer, Operator>> entry = ops.getEntry(fun);
-            if (entry == null)
+            oper = otab.get(fun, type);
+            if (oper == null)
                 return;
-            AssocArray<Integer, Operator> map = entry.value;
-            int k = map.indexOf(Integer.valueOf(type));
-            if (!(k >= 0))
-                return;
-            map.removeEntry(k);
-            if (map.size == 0) {
-                ops.removeEntry(entry);
-                ops.resize();
-            } else {
-                map.resize();
-            }
+            otab.remove(fun, type);
             cacheops = null;
         }
     }
@@ -1282,18 +1234,8 @@ public abstract class AbstractSource {
             res = cacheops;
             if (res != null)
                 return res;
-            int size = 0;
-            for (MapEntry<String, AssocArray<Integer, Operator>> entry = ops.getFirstEntry();
-                 entry != null; entry = ops.successor(entry))
-                size += entry.value.size;
-            res = new Operator[size];
-            size = 0;
-            for (MapEntry<String, AssocArray<Integer, Operator>> entry = ops.getFirstEntry();
-                 entry != null; entry = ops.successor(entry)) {
-                AssocArray<Integer, Operator> map = entry.value;
-                map.toArrayValues(res, size);
-                size += map.size;
-            }
+            res = new Operator[otab.deepSize()];
+            otab.toDeepArrayValues(res);
             cacheops = res;
         }
         return res;
