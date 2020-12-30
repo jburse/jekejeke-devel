@@ -3,6 +3,7 @@ package jekpro.reference.reflect;
 import derek.util.protect.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
@@ -221,8 +222,8 @@ public final class SpecialPred extends AbstractSpecial {
             Predicate pick = preds[i];
             if (!CachePredicate.visiblePred(pick, en.store.user))
                 continue;
-            Object val = indicatorToColonSkel(
-                    pick.getFun(), pick.getSource().getStore().user,
+            Object val = SpecialPred.indicatorToColonSkel(
+                    pick.getFun(), pick.getSource(),
                     pick.getArity(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
@@ -328,7 +329,7 @@ public final class SpecialPred extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
     /**
@@ -350,7 +351,7 @@ public final class SpecialPred extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
 
@@ -402,7 +403,7 @@ public final class SpecialPred extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                sk.storeKeyToSkel()));
     }
 
     /*************************************************************/
@@ -424,8 +425,8 @@ public final class SpecialPred extends AbstractSpecial {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                SpecialPred.indicatorToColonSkel(
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -465,8 +466,8 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         for (int i = preds.length - 1; i >= 0; i--) {
             Predicate pick = preds[i];
-            Object val = indicatorToColonSkel(
-                    pick.getFun(), pick.getSource().getStore().user,
+            Object val = SpecialPred.indicatorToColonSkel(
+                    pick.getFun(), pick.getSource(),
                     pick.getArity(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
@@ -613,26 +614,58 @@ public final class SpecialPred extends AbstractSpecial {
     /**
      * <p>Convert an indicator to a qualified indicator.</p>
      *
+     * @param funold The name.
+     * @param scope  The scope, non null.
+     * @param arity  The length.
+     * @param en     The engine.
+     * @return The colon indictor
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object indicatorToColonSkelOld(String funold,
+                                                 AbstractSource scope,
+                                                 int arity,
+                                                 Engine en)
+            throws EngineMessage {
+        Object s;
+        if (CacheFunctor.isQuali(funold)) {
+            String mod = CacheFunctor.sepModule(funold);
+            s = SpecialDynamic.moduleToSlashSkel(mod, scope);
+            SkelAtom sa2 = new SkelAtom(EvaluableLogic.OP_COLON, scope);
+
+            Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
+                    new SkelAtom(CacheFunctor.sepName(funold), scope),
+                    Integer.valueOf(arity));
+            s = new SkelCompound(sa2, s, t);
+        } else {
+            s = new SkelCompound(en.store.foyer.ATOM_SLASH,
+                    new SkelAtom(funold, scope),
+                    Integer.valueOf(arity));
+        }
+        return s;
+    }
+
+    /**
+     * <p>Convert an indicator to a qualified indicator.</p>
+     *
      * @param fun   The name.
-     * @param scope The scope, non null.
+     * @param base  The scope, non null.
      * @param arity The length.
      * @param en    The engine.
      * @return The colon indictor
      * @throws EngineMessage Shit happens.
      */
     public static Object indicatorToColonSkel(String fun,
-                                              AbstractSource scope,
+                                              AbstractSource base,
                                               int arity,
                                               Engine en)
             throws EngineMessage {
+        AbstractSource scope = base.getStore().user;
         Object s;
-        if (CacheFunctor.isQuali(fun)) {
-            String mod = CacheFunctor.sepModule(fun);
-            s = SpecialDynamic.moduleToSlashSkel(mod, scope);
+        if (!Branch.OP_USER.equals(base.getFullName())) {
+            s = SpecialDynamic.moduleToSlashSkel(base.getFullName(), scope);
             SkelAtom sa2 = new SkelAtom(EvaluableLogic.OP_COLON, scope);
-
             Object t = new SkelCompound(en.store.foyer.ATOM_SLASH,
-                    new SkelAtom(CacheFunctor.sepName(fun), scope),
+                    new SkelAtom(fun, scope),
                     Integer.valueOf(arity));
             s = new SkelCompound(sa2, s, t);
         } else {

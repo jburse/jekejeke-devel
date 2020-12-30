@@ -1125,7 +1125,7 @@ public final class SpecialLoad extends AbstractSpecial {
                                                    AbstractSource source)
             throws EngineMessage {
         SkelCompound t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                new SkelAtom(CacheFunctor.sepName(pick.getFun()), source),
+                new SkelAtom(CacheFunctor.sepName(pick.getFunold()), source),
                 Integer.valueOf(pick.getArity()));
         String orig = source.getFullName();
         String module = pick.getSource().getFullName();
@@ -1155,7 +1155,7 @@ public final class SpecialLoad extends AbstractSpecial {
     private static Object provableToColonSkel(Predicate pick, Object t,
                                               AbstractSource source)
             throws EngineMessage {
-        String name = CacheFunctor.sepName(pick.getFun());
+        String name = CacheFunctor.sepName(pick.getFunold());
         if (t instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t;
             t = new SkelCompound(new SkelAtom(name, source), sc.args, sc.var);

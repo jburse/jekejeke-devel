@@ -197,7 +197,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -217,7 +217,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -237,7 +237,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 

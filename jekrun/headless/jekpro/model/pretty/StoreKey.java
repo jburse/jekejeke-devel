@@ -40,7 +40,7 @@ import jekpro.tools.term.SkelCompound;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class StoreKey implements Comparable<StoreKey> {
+public class StoreKey implements Comparable<StoreKey> {
     private final String fun;
     private final int arity;
 
@@ -75,24 +75,26 @@ public final class StoreKey implements Comparable<StoreKey> {
     }
 
     /**
-     * Compares this object with an object for order.
-     *
-     * @param o The other object.
-     * @return < 0 if less than, 0 if equal, > 0 if greater than.
-     */
-    public int compareTo(StoreKey o) {
-        int res = fun.compareTo(o.fun);
-        if (res != 0) return res;
-        return arity - o.arity;
-    }
-
-    /**
      * <p>Compute hash code of this store key.</p>
      *
      * @return The hash code.
      */
     public int hashCode() {
         return fun.hashCode() * 31 + arity;
+    }
+
+    /**
+     * Compares this object with an object for order.
+     *
+     * @param o The other object.
+     * @return < 0 if less than, 0 if equal, > 0 if greater than.
+     */
+    public int compareTo(StoreKey o) {
+        if (o instanceof StoreKeyQuali)
+            return -1;
+        int res = fun.compareTo(o.fun);
+        if (res != 0) return res;
+        return arity - o.arity;
     }
 
     /**
@@ -173,15 +175,14 @@ public final class StoreKey implements Comparable<StoreKey> {
     }
 
     /**
-     * <p>Convert a fun and length pair to a compound.</p>
+     * <p>Convert this store key to a compound.</p>
      *
-     * @param sk The store key.
      * @return The compound.
      */
-    public static Object storeKeyToSkel(StoreKey sk) {
+    public Object storeKeyToSkel() {
         return new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                new SkelAtom(sk.getFun()),
-                Integer.valueOf(sk.getArity()));
+                new SkelAtom(getFun()),
+                Integer.valueOf(getArity()));
     }
 
 }

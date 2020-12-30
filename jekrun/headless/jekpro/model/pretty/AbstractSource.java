@@ -6,6 +6,7 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
+import jekpro.model.molec.CacheFunctor;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -145,7 +146,7 @@ public abstract class AbstractSource {
     private final Table<Predicate> ptab = new Table<>();
     private Predicate[] cachepreds;
     private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<>();
-    private final Table<Operator> otab = new Table<>();
+    private final Table<Operator> otabold = new Table<>();
     private Operator[] cacheops;
     private final ListArray<Resource> resources = new ListArray<>();
     private Resource[] cacheresources;
@@ -1090,6 +1091,11 @@ public abstract class AbstractSource {
             if (pick != null)
                 return pick;
             pick = new Predicate(fun, arity);
+            if (!Branch.OP_USER.equals(getFullName())) {
+                pick.setFunold(CacheFunctor.composeQuali(getFullName(), fun));
+            } else {
+                pick.setFunold(fun);
+            }
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPR);
@@ -1153,7 +1159,7 @@ public abstract class AbstractSource {
      */
     public Operator getOper(int type, String fun) {
         synchronized (this) {
-            return otab.get(fun, type);
+            return otabold.get(fun, type);
         }
     }
 
@@ -1188,7 +1194,7 @@ public abstract class AbstractSource {
                               SkelAtom sa, Engine en) {
         Operator oper;
         synchronized (this) {
-            oper = otab.get(fun, type);
+            oper = otabold.get(fun, type);
             if (oper != null)
                 return oper;
             oper = store.foyer.createOperator(type, fun);
@@ -1198,7 +1204,7 @@ public abstract class AbstractSource {
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPU);
             oper.setSource(this);
-            otab.add(fun, type, oper);
+            otabold.add(fun, type, oper);
             cacheops = null;
         }
         return oper;
@@ -1213,10 +1219,10 @@ public abstract class AbstractSource {
     public void removeOper(int type, String fun) {
         Operator oper;
         synchronized (this) {
-            oper = otab.get(fun, type);
+            oper = otabold.get(fun, type);
             if (oper == null)
                 return;
-            otab.remove(fun, type);
+            otabold.remove(fun, type);
             cacheops = null;
         }
     }
@@ -1234,8 +1240,8 @@ public abstract class AbstractSource {
             res = cacheops;
             if (res != null)
                 return res;
-            res = new Operator[otab.deepSize()];
-            otab.toDeepArrayValues(res);
+            res = new Operator[otabold.deepSize()];
+            otabold.toDeepArrayValues(res);
             cacheops = res;
         }
         return res;

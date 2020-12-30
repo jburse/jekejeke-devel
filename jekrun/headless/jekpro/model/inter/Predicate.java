@@ -87,6 +87,7 @@ public final class Predicate {
 
     private final int arity;
     private final String fun;
+    private String funold;
     private int flags;
     public AbstractDelegate del;
     public final MapHashLink<AbstractSource, Integer> defs = new MapHashLink<>();
@@ -128,8 +129,26 @@ public final class Predicate {
      *
      * @return The functor.
      */
-    public final String getFun() {
+    public String getFun() {
         return fun;
+    }
+
+    /**
+     * <p>Retrieve the old functor.</p>
+     *
+     * @return The old functor.
+     */
+    public final String getFunold() {
+        return funold;
+    }
+
+    /**
+     * <p>Set the old functor.</p>
+     *
+     * @param f The old functor.
+     */
+    public void setFunold(String f) {
+        funold = f;
     }
 
     /**
@@ -370,7 +389,7 @@ public final class Predicate {
                 EngineMessage.OP_PERMISSION_REDEFINE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
-                        getFun(), getSource().getStore().user,
+                        getFun(), getSource(),
                         getArity(), en)));
     }
 
@@ -582,7 +601,7 @@ public final class Predicate {
      * @param priv The private flag.
      */
     public void updateImport(boolean priv) {
-        if (!CacheFunctor.isQuali(getFun())) {
+        if (!CacheFunctor.isQuali(getFunold())) {
             Store store = getSource().getStore();
             store.foyer.notifyImportvers(store);
         } else {
@@ -613,7 +632,7 @@ public final class Predicate {
                     EngineMessage.OP_PERMISSION_COERCE,
                     EngineMessage.OP_PERMISSION_VIRTUAL,
                     SpecialPred.indicatorToColonSkel(
-                            pick.getFun(), pick.getSource().getStore().user,
+                            pick.getFun(), pick.getSource(),
                             pick.getArity(), en)));
         }
         /* create the builtin */
@@ -624,7 +643,7 @@ public final class Predicate {
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -675,7 +694,7 @@ public final class Predicate {
                                                     Engine en)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
-            en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
+            en.visor.lastsk = new StoreKey(pick.getFunold(), pick.getArity());
             pick.addDef(src, MASK_TRCK_HEAD, en);
             return;
         }
@@ -683,13 +702,13 @@ public final class Predicate {
             return;
         if (en.visor.lastsk != null &&
                 pick.getArity() == en.visor.lastsk.getArity() &&
-                pick.getFun() == en.visor.lastsk.getFun())
+                pick.getFunold() == en.visor.lastsk.getFun())
             return;
-        en.visor.lastsk = new StoreKey(pick.getFun(), pick.getArity());
+        en.visor.lastsk = new StoreKey(pick.getFunold(), pick.getArity());
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -780,7 +799,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_MULTIFILE_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -803,7 +822,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_PUBLIC_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -826,7 +845,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -850,7 +869,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DYNAMIC_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -874,7 +893,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -898,7 +917,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -923,7 +942,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -948,7 +967,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_FRESH_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -975,7 +994,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_INHERITED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -1002,7 +1021,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_ILLEGAL,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -1028,7 +1047,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_NUMERIC_SPECIAL,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -1054,7 +1073,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_NUMERIC_FOREIGN,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 
@@ -1113,7 +1132,7 @@ public final class Predicate {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_IMPLEMENTATION_PRED,
                 SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource().getStore().user,
+                        pick.getFun(), pick.getSource(),
                         pick.getArity(), en)));
     }
 

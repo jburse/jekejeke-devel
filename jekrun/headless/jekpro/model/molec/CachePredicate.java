@@ -113,8 +113,7 @@ public final class CachePredicate extends AbstractCache {
         try {
             s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
-                String s1 = CacheFunctor.composeQuali(s, n);
-                Predicate pick = base.getRoutine(arity, s1);
+                Predicate pick = base.getRoutine(arity, n);
                 if (pick != null)
                     return pick;
             } else if (f) {
@@ -166,10 +165,9 @@ public final class CachePredicate extends AbstractCache {
             String s = base.getFullName();
             if (!Branch.OP_USER.equals(s)) {
                 /* create name%pred */
-                s = CacheFunctor.composeQuali(s, n);
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineRoutine(arity, s, sa, en, copt) :
-                        base.getRoutine(arity, s));
+                        base.defineRoutine(arity, n, sa, en, copt) :
+                        base.getRoutine(arity, n));
             } else {
                 /* create pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
@@ -262,7 +260,7 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Lookup the imported predicates.</p>
      *
-     * @param fun     The predicate name.
+     * @param n       The predicate name.
      * @param arity   The predicate length.
      * @param src     The call-site, non null.
      * @param deps    The deps.
@@ -271,7 +269,7 @@ public final class CachePredicate extends AbstractCache {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performImported(String fun, int arity,
+    private static Predicate performImported(String n, int arity,
                                              AbstractSource src,
                                              MapEntry<AbstractSource, Integer>[] deps,
                                              ListArray<AbstractSource> visited)
@@ -292,8 +290,7 @@ public final class CachePredicate extends AbstractCache {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, fun);
-                    Predicate pick = base.getRoutine(arity, s);
+                    Predicate pick = base.getRoutine(arity, n);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -302,7 +299,7 @@ public final class CachePredicate extends AbstractCache {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Predicate pick = performReexported(fun, arity, base, deps2, visited);
+            Predicate pick = performReexported(n, arity, base, deps2, visited);
             if (pick != null)
                 return pick;
         }
@@ -312,7 +309,7 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Lookup the reexported predicates.</p>
      *
-     * @param fun     The predicate name.
+     * @param n       The predicate name.
      * @param arity   The predicate length.
      * @param src     The call-site, non null.
      * @param deps    The deps.
@@ -321,7 +318,7 @@ public final class CachePredicate extends AbstractCache {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performReexported(String fun, int arity,
+    private static Predicate performReexported(String n, int arity,
                                                AbstractSource src,
                                                MapEntry<AbstractSource, Integer>[] deps,
                                                ListArray<AbstractSource> visited)
@@ -341,8 +338,7 @@ public final class CachePredicate extends AbstractCache {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, fun);
-                    Predicate pick = base.getRoutine(arity, s);
+                    Predicate pick = base.getRoutine(arity, n);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -351,7 +347,7 @@ public final class CachePredicate extends AbstractCache {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Predicate pick = performReexported(fun, arity, base, deps2, visited);
+            Predicate pick = performReexported(n, arity, base, deps2, visited);
             if (pick != null)
                 return pick;
         }
@@ -361,7 +357,7 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Lookup the parented predicates.</p>
      *
-     * @param fun     The predicate name.
+     * @param n       The predicate name.
      * @param arity   The predicate length.
      * @param src     The call-site, non null.
      * @param deps    The deps.
@@ -370,7 +366,7 @@ public final class CachePredicate extends AbstractCache {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performParent(String fun, int arity,
+    private static Predicate performParent(String n, int arity,
                                            AbstractSource src,
                                            MapEntry<AbstractSource, Integer>[] deps,
                                            ListArray<AbstractSource> visited)
@@ -390,8 +386,7 @@ public final class CachePredicate extends AbstractCache {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, fun);
-                    Predicate pick = base.getRoutine(arity, s);
+                    Predicate pick = base.getRoutine(arity, n);
                     if (pick != null && CachePredicate.visiblePred(pick, src))
                         return pick;
                 }
@@ -400,10 +395,10 @@ public final class CachePredicate extends AbstractCache {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Predicate pick = performImported(fun, arity, base, deps2, visited);
+            Predicate pick = performImported(n, arity, base, deps2, visited);
             if (pick != null)
                 return pick;
-            pick = performParent(fun, arity, base, deps2, visited);
+            pick = performParent(n, arity, base, deps2, visited);
             if (pick != null)
                 return pick;
         }
@@ -625,7 +620,7 @@ public final class CachePredicate extends AbstractCache {
     }
 
     /**
-     * <p>Define a predicate.</p>
+     * <p>Define a user predicate.</p>
      *
      * @param arity The arity.
      * @param fun   The name.

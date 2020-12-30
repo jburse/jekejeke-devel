@@ -321,7 +321,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             case PROP_FULL_NAME:
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                                 new SkelAtom(OP_FULL_NAME),
-                                new SkelAtom(pick.getFun(), pick.getSource().getStore().user)),
+                                new SkelAtom(pick.getFunold(), pick.getSource().getStore().user)),
                         Display.DISPLAY_CONST)};
             case PROP_SYS_USAGE:
                 res = PropertyPredicate.filterDefs(pick, 0, en);
