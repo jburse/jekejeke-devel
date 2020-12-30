@@ -164,7 +164,7 @@ public final class SpecialRef extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey sk = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialRef.refToProperty(ptr, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -327,7 +327,7 @@ public final class SpecialRef extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -349,7 +349,7 @@ public final class SpecialRef extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -379,7 +379,7 @@ public final class SpecialRef extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
+                AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /*******************************************************************/

@@ -129,7 +129,7 @@ public final class SpecialPred extends AbstractSpecial {
                 pick = SpecialPred.indicatorToPredicate(temp[0], ref, en);
                 if (pick == null)
                     return false;
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -165,7 +165,7 @@ public final class SpecialPred extends AbstractSpecial {
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialPred.predicateToProperty(pick, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -329,7 +329,7 @@ public final class SpecialPred extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -351,7 +351,7 @@ public final class SpecialPred extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
 
@@ -403,7 +403,7 @@ public final class SpecialPred extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
+                AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /*************************************************************/

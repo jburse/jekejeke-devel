@@ -1,9 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.reference.runtime.EvaluableLogic;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-
 /**
  * <p>An object that is used to lookup qualified predicates in the store</p>
  * <p/>
@@ -36,16 +32,18 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class StoreKeyQuali extends StoreKey {
-    private String mod;
+    private final String mod;
 
     /**
      * <p>Create a store key from functor and length.</p>
      *
      * @param f The functor.
      * @param a The length.
+     * @param m The module.
      */
-    public StoreKeyQuali(String f, int a) {
+    public StoreKeyQuali(String f, int a, String m) {
         super(f, a);
+        mod = m;
     }
 
     /**
@@ -55,15 +53,6 @@ public final class StoreKeyQuali extends StoreKey {
      */
     public String getModule() {
         return mod;
-    }
-
-    /**
-     * <p>Set the module.</p>
-     *
-     * @param s The module source.
-     */
-    public void setModule(String s) {
-        mod = s;
     }
 
     /**
@@ -102,17 +91,6 @@ public final class StoreKeyQuali extends StoreKey {
         int res = super.compareTo(o);
         if (res != 0) return res;
         return mod.compareTo(((StoreKeyQuali) o).mod);
-    }
-
-    /**
-     * <p>Convert this qualified store key to a compound.</p>
-     *
-     * @return The compound.
-     */
-    public Object storeKeyToSkel() {
-        return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON),
-                new SkelAtom(mod),
-                super.storeKeyToSkel());
     }
 
 }

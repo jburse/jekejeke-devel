@@ -95,7 +95,7 @@ public final class SpecialCall extends AbstractSpecial {
             case SPECIAL_SYS_CALLABLE_PROPERTY_CHK:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 en.skel = temp[0];
                 en.display = ref;
                 en.deref();
@@ -233,7 +233,7 @@ public final class SpecialCall extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -256,7 +256,7 @@ public final class SpecialCall extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -287,7 +287,7 @@ public final class SpecialCall extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
+                AbstractProperty.storeKeyToSkel(sk)));
     }
 
 }

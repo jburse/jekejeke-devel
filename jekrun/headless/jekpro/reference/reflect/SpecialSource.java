@@ -129,7 +129,7 @@ public final class SpecialSource extends AbstractSpecial {
                 source = source.getStore().getSource(sa.fun);
                 if (source == null)
                     return false;
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialSource.sourceToProperty(source, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -297,7 +297,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -319,7 +319,7 @@ public final class SpecialSource extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -350,7 +350,7 @@ public final class SpecialSource extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
+                AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**********************************************************************/

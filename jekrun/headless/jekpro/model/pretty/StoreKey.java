@@ -1,14 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
-import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.array.Types;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-
 /**
  * <p>An object that is used to lookup predicates in the store</p>
  * <p/>
@@ -113,76 +104,6 @@ public class StoreKey implements Comparable<StoreKey> {
      */
     public final int getArity() {
         return arity;
-    }
-
-    /**
-     * <p>Convert property term to a store key. Will throw exception
-     * when the compound is not well formed.</p>
-     *
-     * @param t  The skel of the compound.
-     * @param d  The display of the compound.
-     * @param en The engine.
-     * @return The store key.
-     * @throws EngineMessage Shit happens.
-     */
-    public static StoreKey propToStoreKey(Object t, Display d, Engine en)
-            throws EngineMessage {
-        int arity = StoreKey.derefAndCastIndicator(t, d, en);
-        return new StoreKey(((SkelAtom) en.skel).fun, arity);
-    }
-
-    /**
-     * <p>Convert a property term to an indicator. Will throw exception
-     * when the compound is not well formed.</p>
-     * <p>The following syntax is used.</p>
-     * <pre>
-     *     property --> name "/" integer.
-     * </pre>
-     * <p>The term is passed in skel and display.</p>
-     * <p>The name is returned in skel.</p>
-     *
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     * @return The length.
-     * @throws EngineMessage The indicator is not wellformed.
-     */
-    public static int derefAndCastIndicator(Object t, Display d, Engine en)
-            throws EngineMessage {
-        try {
-            en.skel = t;
-            en.display = d;
-            en.deref();
-            t = en.skel;
-            d = en.display;
-            if (t instanceof SkelCompound &&
-                    ((SkelCompound) t).args.length == 2 &&
-                    ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
-                SkelCompound sc = (SkelCompound) t;
-                Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
-                SpecialEval.checkNotLessThanZero(num);
-                int arity = SpecialEval.castIntValue(num);
-                en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
-                return arity;
-            } else {
-                EngineMessage.checkInstantiated(t);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_PREDICATE_INDICATOR, t), d);
-            }
-        } catch (RuntimeException x) {
-            throw Types.mapThrowable(x);
-        }
-    }
-
-    /**
-     * <p>Convert this store key to a compound.</p>
-     *
-     * @return The compound.
-     */
-    public Object storeKeyToSkel() {
-        return new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                new SkelAtom(getFun()),
-                Integer.valueOf(getArity()));
     }
 
 }

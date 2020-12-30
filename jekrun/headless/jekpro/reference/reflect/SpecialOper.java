@@ -139,7 +139,7 @@ public final class SpecialOper extends AbstractSpecial {
                 oper = SpecialOper.operToOperator(temp[0], ref, en);
                 if (oper == null)
                     return false;
-                StoreKey prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -198,7 +198,7 @@ public final class SpecialOper extends AbstractSpecial {
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (oper == null)
                     return false;
-                prop = StoreKey.propToStoreKey(temp[1], ref, en);
+                prop = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialOper.operToProperty(oper, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -346,7 +346,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -368,7 +368,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
+                    AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /**
@@ -417,7 +417,7 @@ public final class SpecialOper extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
+                AbstractProperty.storeKeyToSkel(sk)));
     }
 
     /*************************************************************************/
