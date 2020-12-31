@@ -534,10 +534,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if ((flags & AbstractDefined.OPT_ACTI_WRIT) != 0) {
             switch (flags & OPT_CHCK_MASK) {
                 case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedWrite(fun, pick, en);
+                    AbstractDefined.checkDefinedWrite(fun, pick);
                     break;
                 case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableWrite(fun, pick, en);
+                    AbstractDefined.checkAssertableWrite(fun, pick);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal check");
@@ -545,10 +545,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
         } else {
             switch (flags & OPT_CHCK_MASK) {
                 case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedRead(fun, pick, en);
+                    AbstractDefined.checkDefinedRead(fun, pick);
                     break;
                 case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableRead(fun, pick, en);
+                    AbstractDefined.checkAssertableRead(fun, pick);
                     break;
                 default:
                     throw new IllegalArgumentException("illegal check");
@@ -666,20 +666,19 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param fun  The delegate.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void checkDefinedWrite(AbstractDelegate fun,
-                                         Predicate pick, Engine en)
+                                         Predicate pick)
             throws EngineMessage {
         if (fun instanceof AbstractDefined)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -687,20 +686,19 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param fun  The delegate.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void checkDefinedRead(AbstractDelegate fun,
-                                        Predicate pick, Engine en)
+                                        Predicate pick)
             throws EngineMessage {
         if (fun instanceof AbstractDefined)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -708,40 +706,38 @@ public abstract class AbstractDefined extends AbstractDelegate {
      *
      * @param fun  The delegate.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void checkAssertableRead(AbstractDelegate fun,
-                                           Predicate pick, Engine en)
+                                           Predicate pick)
             throws EngineMessage {
         if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_ACCESS,
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
      * <p>Assure that the predicate is assertable.</p>
      *
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void checkAssertableWrite(AbstractDelegate fun,
-                                            Predicate pick, Engine en)
+                                            Predicate pick)
             throws EngineMessage {
         if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_MODIFY,
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /***************************************************************/

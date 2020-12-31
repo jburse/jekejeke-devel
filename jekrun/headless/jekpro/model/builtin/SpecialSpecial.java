@@ -109,7 +109,7 @@ public final class SpecialSpecial extends AbstractSpecial {
                     AbstractDelegate del = (AbstractSpecial) value;
                     Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                             ref, en, CachePredicate.MASK_CACH_DEFI);
-                    Predicate.definePredicate(pick, del, en);
+                    Predicate.definePredicate(pick, del);
                     return true;
                 case SPECIAL_SYS_CHECK_STYLE_BODY:
                     temp = ((SkelCompound) en.skel).args;

@@ -13,6 +13,7 @@ import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.PropertyPredicateAPI;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
@@ -202,7 +203,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_CONTEXT)) {
-                    Object obj = Predicate.checkMetaSpezArg(
+                    Object obj = PropertyPredicateAPI.checkMetaSpez(
                             ((SkelCompound) en.skel).args[0], en.display, en);
                     spez = spezToMeta(obj);
                     offset = spezToOffset(obj);

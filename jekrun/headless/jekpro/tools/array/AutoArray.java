@@ -167,7 +167,7 @@ public final class AutoArray extends AbstractAuto {
                 Predicate over = makeOverride(sa, pick, en);
                 if (over != null)
                     throw new IllegalArgumentException("indicator clash");
-                Predicate.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del);
                 Predicate.checkPredicateBody(pick, sa, en);
             } catch (EngineException x) {
                 if (SpecialLoad.systemConsultBreak(x, en, rec))

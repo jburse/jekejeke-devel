@@ -1014,9 +1014,31 @@ public final class SpecialLoad extends AbstractSpecial {
                                            AbstractSource source)
             throws EngineMessage {
         SkelCompound sc = (SkelCompound) skel;
+        Object t = sc.args[sc.args.length - 1];
+        int k = 0;
+        while (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
+            t = ((SkelCompound) t).args[1];
+            k++;
+        }
+        if (k != 0) {
+            Object[] args = new Object[k];
+            t = sc.args[sc.args.length - 1];
+            k = 0;
+            while (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 2 &&
+                    ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
+                args[k] = ((SkelCompound) t).args[0];
+                t = ((SkelCompound) t).args[1];
+                k++;
+            }
+            t = new SkelCompound(new SkelAtom(pick.getFun(), source), args);
+        } else {
+            t = new SkelAtom(pick.getFun(), source);
+        }
         Object[] args = new Object[sc.args.length];
-        args[sc.args.length - 1] = provableToColonSkel(pick,
-                sc.args[sc.args.length - 1], source);
+        args[sc.args.length - 1] = provableToColonSkel(pick, t, source);
         if (sc.args.length > 1)
             System.arraycopy(sc.args, 0, args, 0, sc.args.length - 1);
         return new SkelCompound(sc.sym, args, sc.var);
@@ -1121,20 +1143,13 @@ public final class SpecialLoad extends AbstractSpecial {
      * @return The shortest predicate indicator.
      * @throws EngineMessage Shit happens.
      */
-    public static SkelCompound provableToColonSkel(Predicate pick,
-                                                   AbstractSource source)
+    public static Object provableToColonSkel(Predicate pick,
+                                             AbstractSource source)
             throws EngineMessage {
         SkelCompound t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
                 new SkelAtom(pick.getFun(), source),
                 Integer.valueOf(pick.getArity()));
-        String orig = source.getFullName();
-        String module = pick.getSource().getFullName();
-        if (!orig.equals(module)) {
-            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
-            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
-        } else {
-            return t;
-        }
+        return provableToColonSkel(pick, t, source);
     }
 
     /**
@@ -1155,13 +1170,6 @@ public final class SpecialLoad extends AbstractSpecial {
     private static Object provableToColonSkel(Predicate pick, Object t,
                                               AbstractSource source)
             throws EngineMessage {
-        String name = pick.getFun();
-        if (t instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) t;
-            t = new SkelCompound(new SkelAtom(name, source), sc.args, sc.var);
-        } else {
-            t = new SkelAtom(name, source);
-        }
         String orig = source.getFullName();
         String module = pick.getSource().getFullName();
         if (!orig.equals(module)) {

@@ -2,6 +2,7 @@ package jekpro.reference.reflect;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -11,6 +12,7 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.array.PropertyPredicateAPI;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -70,7 +72,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     private static final int PROP_SYS_NSPL = 7;
     private static final int PROP_SYS_NSPR = 8;
     private static final int PROP_SYS_NEWR = 9;
-    private static final int PROP_FULL_NAME = 10;
 
     static {
         DEFAULT.add(new StoreKey(PropertyPredicate.OP_VISIBLE, 1), new PropertyOperator(PROP_VISIBLE,
@@ -87,7 +88,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
         DEFAULT.add(new StoreKey(OP_SYS_NSPL, 0), new PropertyOperator(PROP_SYS_NSPL));
         DEFAULT.add(new StoreKey(OP_SYS_NSPR, 0), new PropertyOperator(PROP_SYS_NSPR));
         DEFAULT.add(new StoreKey(OP_SYS_NEWR, 0), new PropertyOperator(PROP_SYS_NEWR));
-        DEFAULT.add(new StoreKey(PropertyPredicate.OP_FULL_NAME, 1), new PropertyOperator(PROP_FULL_NAME));
     }
 
     /**
@@ -108,6 +108,8 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     public PropertyOperator(int i, int f) {
         super(i, f);
     }
+
+
 
     /**
      * <p>Retrieve all the operator properties.</p>
@@ -193,10 +195,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_FULL_NAME:
-                Object val = new SkelAtom(oper.getNameold());
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                        new SkelAtom(PropertyPredicate.OP_FULL_NAME), val), Display.DISPLAY_CONST)};
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -250,9 +248,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_SYS_NEWR:
                     oper.setBit(Operator.MASK_OPER_NEWR);
                     return true;
-                case PROP_FULL_NAME:
-                    /* can't modify */
-                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -303,9 +298,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                 case PROP_SYS_NEWR:
                     oper.resetBit(Operator.MASK_OPER_NEWR);
                     return true;
-                case PROP_FULL_NAME:
-                    /* can't modify */
-                    return false;
                 default:
                     throw new IllegalArgumentException("illegal prop");
             }
@@ -346,7 +338,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
             res.toArray(vals);
             return vals;
         } else {
-            if (id < PROP_VISIBLE || id > PROP_FULL_NAME)
+            if (id < PROP_VISIBLE || id > PROP_SYS_NEWR)
                 throw new IllegalArgumentException("illegal prop");
             return null;
         }

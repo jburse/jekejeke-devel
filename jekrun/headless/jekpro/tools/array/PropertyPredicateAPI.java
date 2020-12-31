@@ -8,10 +8,13 @@ import jekpro.model.inter.Predicate;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.PropertyPredicate;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -141,10 +144,10 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
             case PROP_META_PREDICATE:
-                Object t = pick.meta_predicate;
-                if (t != null) {
+                Object val = pick.meta_predicate;
+                if (val != null) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_META_PREDICATE), t), Display.DISPLAY_CONST)};
+                            new SkelAtom(OP_META_PREDICATE), val), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -155,10 +158,10 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
             case PROP_SYS_READWRITE_LOCK:
-                t = getPredicateLock(pick, en);
-                if (t != null) {
+                val = getPredicateLock(pick, en);
+                if (val != null) {
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_SYS_READWRITE_LOCK), t), Display.DISPLAY_CONST)};
+                            new SkelAtom(OP_SYS_READWRITE_LOCK), val), Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -184,13 +187,13 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_OVERRIDE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_OVRD, en);
+                pick.addDef(src, Predicate.MASK_TRCK_OVRD);
                 return true;
             case PROP_SYS_META_PREDICATE:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_META_PREDICATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_META, en);
+                pick.addDef(src, Predicate.MASK_TRCK_META);
                 return true;
             case PROP_AUTOMATIC:
                 pick.setBit(Predicate.MASK_PRED_AUTO);
@@ -199,8 +202,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 pick.setBit(Predicate.MASK_PRED_NOEX);
                 return true;
             case PROP_META_PREDICATE:
-                pick.meta_predicate = PropertyPredicateAPI.derefAndCastMeta(pick,
-                        m, d, OP_META_PREDICATE, en);
+                pick.meta_predicate = derefAndCastMeta(pick, m, d, en);
                 return true;
             case PROP_SYS_TABLED:
                 pick.setBit(Predicate.MASK_PRED_TABL);
@@ -302,20 +304,18 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     /* Deref Utility                                                */
     /****************************************************************/
 
-
     /**
      * <p>Deref and cast to predicate meta.</p>
      *
      * @param pick The predicate.
      * @param m    The term skeleton.
      * @param d    The term display.
-     * @param op   The meat name.
      * @param en   The engine.
      * @return The meta term.
      * @throws EngineMessage Shit happens.
      */
     private static Object derefAndCastMeta(Predicate pick, Object m, Display d,
-                                           String op, Engine en)
+                                           Engine en)
             throws EngineMessage {
         en.skel = m;
         en.display = d;
@@ -324,9 +324,8 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
         d = en.display;
         if (m instanceof SkelCompound &&
                 ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(op)) {
-            m = ((SkelCompound) m).args[0];
-            return Predicate.checkMetaSpez(pick, m, d, en);
+                ((SkelCompound) m).sym.fun.equals(OP_META_PREDICATE)) {
+            return checkMeta(pick, ((SkelCompound) m).args[0], d, en);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
@@ -347,6 +346,155 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             return ((AbstractDefined) del).getLock(en);
         } else {
             return null;
+        }
+    }
+
+    /**********************************************************/
+    /* Meta Check                                             */
+    /**********************************************************/
+
+    /**
+     * <p>Check a meta predicate declaration.</p>
+     * <p>The following syntax is used:</p>
+     * <pre>
+     *     meta_signature    --> predicate_name
+     *         [ "(" meta_specifier { "," meta_specifier } ")" ].
+     * </pre>
+     *
+     * @param pred The predicate.
+     * @param t    The declaration skeleton.
+     * @param d    The declaration display.
+     * @param en   The engine.
+     * @return The meta predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object checkMeta(Predicate pred,
+                                    Object t, Display d, Engine en)
+            throws EngineMessage {
+        ListArray<Object> res = new ListArray<>();
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        t = en.skel;
+        d = en.display;
+        while (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] sc = ((SkelCompound) t).args;
+            res.add(checkMetaSpez(sc[0], d, en));
+            en.skel = sc[1];
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+        }
+        if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(t);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST, t), d);
+        }
+        if (res.size() != pred.getArity())
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_PROPERTY_VALUE, t), d);
+
+        Object val = en.store.foyer.ATOM_NIL;
+        for (int i = res.size() - 1; i >= 0; i--)
+            val = new SkelCompound(en.store.foyer.ATOM_CONS, res.get(i), val);
+        return val;
+    }
+
+    /**
+     * <p>Check a meta argument spezifier.</p>
+     * <p>Returns a meta argument spezifier skeleton.</p>
+     * <p>The following syntax is used:</p>
+     * <pre>
+     *     meta_specifier    --> integer
+     *                         | "?"
+     *                         | "::(" meta_specifier2 ")"
+     * </pre>
+     *
+     * @param t  The spezifier skeleton.
+     * @param d  The spezifier display.
+     * @param en The engine.
+     * @return The meta argument spezifier.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object checkMetaSpez(Object t, Display d,
+                                       Engine en)
+            throws EngineMessage {
+        try {
+            en.skel = t;
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+            if (t instanceof Number) {
+                Number num = (Number) t;
+                SpecialEval.castIntValue(num);
+                return num;
+            } else if (t instanceof SkelAtom &&
+                    ((SkelAtom) t).fun.equals(Predicate.OP_QUESTION)) {
+                return t;
+            } else if (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 1 &&
+                    ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+                return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
+                        checkMetaSpezArg2(((SkelCompound) t).args[0],
+                                d, en));
+            } else {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_META_ARG,
+                        t), d);
+            }
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
+        }
+    }
+
+    /**
+     * <p>Check a meta argument spezifier.</p>
+     * <p>Returns a meta argument spezifier skeleton.</p>
+     * <p>The following syntax is used:</p>
+     * <pre>
+     *     meta_specifier2   --> integer
+     *                         | "::(" meta_specifier2 ")".
+     * </pre>
+     *
+     * @param t  The spezifier skeleton.
+     * @param d  The spezifier display.
+     * @param en The engine.
+     * @return The meta argument spezifier.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object checkMetaSpezArg2(Object t, Display d,
+                                            Engine en)
+            throws EngineMessage {
+        try {
+            en.skel = t;
+            en.display = d;
+            en.deref();
+            t = en.skel;
+            d = en.display;
+            if (t instanceof Number) {
+                Number num = (Number) t;
+                SpecialEval.castIntValue(num);
+                return num;
+            } else if (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 1 &&
+                    ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
+                return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
+                        checkMetaSpezArg2(((SkelCompound) t).args[0], d, en));
+            } else {
+                EngineMessage.checkInstantiated(t);
+                throw new EngineMessage(EngineMessage.domainError(
+                        EngineMessage.OP_DOMAIN_META_ARG, t), d);
+            }
+        } catch (RuntimeException x) {
+            throw Types.mapThrowable(x);
         }
     }
 

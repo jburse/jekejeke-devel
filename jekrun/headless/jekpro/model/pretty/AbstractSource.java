@@ -6,7 +6,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CacheFunctor;
 import jekpro.model.molec.CacheSubclass;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -1089,11 +1088,6 @@ public abstract class AbstractSource {
             if (pick != null)
                 return pick;
             pick = new Predicate(fun, arity);
-            if (!Branch.OP_USER.equals(getFullName())) {
-                pick.setFunold(CacheFunctor.composeQuali(getFullName(), fun));
-            } else {
-                pick.setFunold(fun);
-            }
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 pick.setBit(Predicate.MASK_PRED_VSPR);
@@ -1172,7 +1166,7 @@ public abstract class AbstractSource {
      * @throws EngineMessage Shit happens.
      */
     public Operator defineOper(int type, String fun,
-                                  SkelAtom sa, Engine en)
+                               SkelAtom sa, Engine en)
             throws EngineMessage {
         Operator oper = checkOper(type, fun, sa, en);
         oper.addDef(sa, en);
@@ -1189,18 +1183,13 @@ public abstract class AbstractSource {
      * @return The operator.
      */
     public Operator checkOper(int type, String fun,
-                                 SkelAtom sa, Engine en) {
+                              SkelAtom sa, Engine en) {
         Operator oper;
         synchronized (this) {
             oper = otab.get(fun, type);
             if (oper != null)
                 return oper;
             oper = store.foyer.createOperator(type, fun);
-            if (CacheFunctor.isQuali(fun)) {
-                oper.setNameold(CacheFunctor.composeQuali(getFullName(), fun));
-            } else {
-                oper.setNameold(fun);
-            }
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPR);

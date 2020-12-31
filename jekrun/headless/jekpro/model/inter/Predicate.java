@@ -2,7 +2,10 @@ package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialPred;
@@ -85,7 +88,6 @@ public final class Predicate {
 
     private final int arity;
     private final String fun;
-    private String funold;
     private int flags;
     public AbstractDelegate del;
     public final MapHashLink<AbstractSource, Integer> defs = new MapHashLink<>();
@@ -132,24 +134,6 @@ public final class Predicate {
     }
 
     /**
-     * <p>Retrieve the old functor.</p>
-     *
-     * @return The old functor.
-     */
-    public final String getFunold() {
-        return funold;
-    }
-
-    /**
-     * <p>Set the old functor.</p>
-     *
-     * @param f The old functor.
-     */
-    public void setFunold(String f) {
-        funold = f;
-    }
-
-    /**
      * <p>Retrieve the length.</p>
      *
      * @return The length.
@@ -173,137 +157,6 @@ public final class Predicate {
                     EngineMessage.OP_EXISTENCE_PROCEDURE, t), d);
     }
 
-    /**
-     * <p>Check a meta predicate declaration.</p>
-     * <p>The following syntax is used:</p>
-     * <pre>
-     *     meta_signature    --> predicate_name
-     *         [ "(" meta_specifier { "," meta_specifier } ")" ].
-     * </pre>
-     *
-     * @param pred The predicate.
-     * @param c    The declaration skeleton.
-     * @param ref  The declaration display.
-     * @param en   The engine.
-     * @return The meta predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object checkMetaSpez(Predicate pred,
-                                       Object c, Display ref,
-                                       Engine en)
-            throws EngineMessage {
-        en.skel = c;
-        en.display = ref;
-        en.deref();
-        c = en.skel;
-        ref = en.display;
-        EngineMessage.checkCallable(c, ref);
-        int arity = StackElement.callableToArity(c);
-        if (arity != pred.getArity())
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_PROPERTY_VALUE, c), ref);
-        if (arity != 0) {
-            SkelCompound sc = (SkelCompound) c;
-            Object[] args = new Object[arity];
-            for (int i = 0; i < arity; i++)
-                args[i] = checkMetaSpezArg(sc.args[i], ref, en);
-            return new SkelCompound(StackElement.callableToName(c), args);
-        } else {
-            return StackElement.callableToName(c);
-        }
-    }
-
-    /**
-     * <p>Check a meta argument spezifier.</p>
-     * <p>Returns a meta argument spezifier skeleton.</p>
-     * <p>The following syntax is used:</p>
-     * <pre>
-     *     meta_specifier    --> integer
-     *                         | "?"
-     *                         | "::(" meta_specifier2 ")"
-     * </pre>
-     *
-     * @param c   The spezifier skeleton.
-     * @param ref The spezifier display.
-     * @param en  The engine.
-     * @return The meta argument spezifier.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object checkMetaSpezArg(Object c, Display ref,
-                                          Engine en)
-            throws EngineMessage {
-        try {
-            en.skel = c;
-            en.display = ref;
-            en.deref();
-            c = en.skel;
-            ref = en.display;
-            if (c instanceof Number) {
-                Number num = (Number) c;
-                SpecialEval.castIntValue(num);
-                return num;
-            } else if (c instanceof SkelAtom &&
-                    ((SkelAtom) c).fun.equals(OP_QUESTION)) {
-                return c;
-            } else if (c instanceof SkelCompound &&
-                    ((SkelCompound) c).args.length == 1 &&
-                    ((SkelCompound) c).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
-                return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
-                        checkMetaSpezArg2(((SkelCompound) c).args[0],
-                                ref, en));
-            } else {
-                EngineMessage.checkInstantiated(c);
-                throw new EngineMessage(EngineMessage.domainError(
-                        EngineMessage.OP_DOMAIN_META_ARG,
-                        c), ref);
-            }
-        } catch (RuntimeException x) {
-            throw Types.mapThrowable(x);
-        }
-    }
-
-    /**
-     * <p>Check a meta argument spezifier.</p>
-     * <p>Returns a meta argument spezifier skeleton.</p>
-     * <p>The following syntax is used:</p>
-     * <pre>
-     *     meta_specifier2   --> integer
-     *                         | "::(" meta_specifier2 ")".
-     * </pre>
-     *
-     * @param c   The spezifier skeleton.
-     * @param ref The spezifier display.
-     * @param en  The engine.
-     * @return The meta argument spezifier.
-     * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Validation error.
-     */
-    private static Object checkMetaSpezArg2(Object c, Display ref,
-                                            Engine en)
-            throws EngineMessage, ClassCastException {
-        en.skel = c;
-        en.display = ref;
-        en.deref();
-        c = en.skel;
-        ref = en.display;
-        if (c instanceof Number) {
-            Number num = (Number) c;
-            SpecialEval.castIntValue(num);
-            return num;
-        } else if (c instanceof SkelCompound &&
-                ((SkelCompound) c).args.length == 1 &&
-                ((SkelCompound) c).sym.fun.equals(EvaluableLogic.OP_COLONCOLON)) {
-            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLONCOLON),
-                    checkMetaSpezArg2(((SkelCompound) c).args[0],
-                            ref, en));
-        } else {
-            EngineMessage.checkInstantiated(c);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_META_ARG,
-                    c), ref);
-        }
-    }
-
     /**************************************************************/
     /* Definiion Handling                                         */
     /**************************************************************/
@@ -313,13 +166,12 @@ public final class Predicate {
      * <p>Can veto that a non-multifile predicate is extended.</p>
      * *
      *
-     * @param s  The source definition.
-     * @param f  The definition flags.
-     * @param en The engine.
+     * @param s The source definition.
+     * @param f The definition flags.
      * @return The diff flags.
      * @throws EngineMessage Shit happens.
      */
-    public int addDef(AbstractSource s, int f, Engine en)
+    public int addDef(AbstractSource s, int f)
             throws EngineMessage {
         if (f == 0)
             throw new IllegalArgumentException("zero defs");
@@ -348,12 +200,12 @@ public final class Predicate {
             s.addPredInv(this, f);
             return back;
         }
+        AbstractSource src = getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_REDEFINE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        getFun(), getSource(),
-                        getArity())));
+                SpecialPred.indicatorToColonSkel(getFun(), getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -453,7 +305,7 @@ public final class Predicate {
             if ((getBits() & Predicate.MASK_PRED_VSPU) != 0)
                 flags |= MASK_TRCK_VSPU;
         }
-        int back = addDef(src, flags, en);
+        int back = addDef(src, flags);
         if (back == 0)
             return;
         if ((copt & CachePredicate.MASK_CACH_LOCA) != 0) {
@@ -580,34 +432,32 @@ public final class Predicate {
      *
      * @param pick The predicate.
      * @param del  The delegate.
-     * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
     public static void definePredicate(Predicate pick,
-                                       AbstractDelegate del,
-                                       Engine en)
+                                       AbstractDelegate del)
             throws EngineMessage {
         /* check virtual flag */
         boolean f1 = ((pick.getBits() & MASK_PRED_VIRT) != 0);
         boolean f2 = ((del.subflags & AbstractDelegate.MASK_DELE_VIRT) != 0);
         if (f1 != f2) {
+            AbstractSource src = pick.getSource();
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_COERCE,
                     EngineMessage.OP_PERMISSION_VIRTUAL,
-                    SpecialPred.indicatorToColonSkel(
-                            pick.getFun(), pick.getSource(),
-                            pick.getArity())));
+                    SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                            src.getFullName(), src.getStore().user)));
         }
         /* create the builtin */
         AbstractDelegate fun = AbstractDelegate.promoteBuiltin(pick, del);
         if (del.equals(fun))
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /***********************************************************/
@@ -658,7 +508,7 @@ public final class Predicate {
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
             en.visor.lastsk = makeKey(pick);
-            pick.addDef(src, MASK_TRCK_HEAD, en);
+            pick.addDef(src, MASK_TRCK_HEAD);
             return;
         }
         if ((loc.intValue() & MASK_TRCK_DISC) != 0)
@@ -670,11 +520,11 @@ public final class Predicate {
                 pick.getSource().getFullName().equals(lastsk.getModule()))
             return;
         en.visor.lastsk = makeKey(pick);
+        AbstractSource src1 = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src1.getFullName(), src1.getStore().user)));
     }
 
     /**
@@ -725,16 +575,16 @@ public final class Predicate {
         try {
             if ((def.intValue() & MASK_TRCK_BODY) != 0)
                 return;
-            pick.addDef(src, MASK_TRCK_BODY, en);
+            pick.addDef(src, MASK_TRCK_BODY);
 
-            checkPredicateMultifile(def, pick, en);
+            checkPredicateMultifile(def, pick);
             if (sa.scope != null &&
                     (sa.scope.getBits() & AbstractSource.MASK_SRC_VSPU) == 0)
-                checkPredicatePublic(def, pick, en);
-            checkPredicateMetaPredicate(def, pick, en);
-            checkPredicateDynamic(def, pick, en);
-            checkPredicateThreadLocal(def, pick, en);
-            checkPredicateGroupLocal(def, pick, en);
+                checkPredicatePublic(def, pick);
+            checkPredicateMetaPredicate(def, pick);
+            checkPredicateDynamic(def, pick);
+            checkPredicateThreadLocal(def, pick);
+            checkPredicateGroupLocal(def, pick);
 
             AbstractSource base = CachePredicate.performBase(sa, src, en);
             Predicate over;
@@ -744,13 +594,13 @@ public final class Predicate {
                 throw (EngineMessage) ForeignThread.sysThreadClear();
             }
 
-            checkPredicateOverride(def, src, pick, over, en);
-            checkPredicateFresh(def, src, pick, over, en);
-            checkPredicateMetaInherited(def, src, pick, over, en);
-            checkPredicateMetaIllegal(def, src, pick, over, en);
+            checkPredicateOverride(def, src, pick, over);
+            checkPredicateFresh(def, src, pick, over);
+            checkPredicateMetaInherited(def, src, pick, over);
+            checkPredicateMetaIllegal(def, src, pick, over);
 
-            checkPredicateNumericSpecial(pick, en);
-            checkPredicateNumericForeign(pick, en);
+            checkPredicateNumericSpecial(pick);
+            checkPredicateNumericForeign(pick);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
@@ -765,22 +615,20 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateMultifile(Integer loc,
-                                                Predicate pick,
-                                                Engine en)
+                                                Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_MULT) != 0)
             return;
         if ((pick.getBits() & Predicate.MASK_PRED_MULT) == 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_MULTIFILE_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -788,22 +636,20 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicatePublic(Integer loc,
-                                             Predicate pick,
-                                             Engine en)
+                                             Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_VSPU) != 0)
             return;
         if ((pick.getBits() & Predicate.MASK_PRED_VSPU) == 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_PUBLIC_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -811,22 +657,20 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateMetaPredicate(Integer loc,
-                                                    Predicate pick,
-                                                    Engine en)
+                                                    Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_META) != 0)
             return;
         if (pick.meta_predicate == null)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -834,23 +678,21 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateDynamic(Integer loc,
-                                              Predicate pick,
-                                              Engine en)
+                                              Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_DYNA) != 0)
             return;
         AbstractDelegate fun = pick.del;
         if (fun == null || (fun.subflags & AbstractDefined.MASK_DEFI_DYNA) == 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DYNAMIC_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -858,23 +700,21 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateThreadLocal(Integer loc,
-                                                  Predicate pick,
-                                                  Engine en)
+                                                  Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_TRLC) != 0)
             return;
         AbstractDelegate fun = pick.del;
         if (fun == null || (fun.subflags & AbstractDefined.MASK_DEFI_THLC) == 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -882,23 +722,21 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateGroupLocal(Integer loc,
-                                                 Predicate pick,
-                                                 Engine en)
+                                                 Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_GRLC) != 0)
             return;
         AbstractDelegate fun = pick.del;
         if (fun == null || (fun.subflags & AbstractDefined.MASK_DEFI_GRLC) == 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
@@ -908,22 +746,20 @@ public final class Predicate {
      * @param src  The call-site.
      * @param pick The predicate.
      * @param over The overridden predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateOverride(Integer loc, AbstractSource src,
-                                               Predicate pick, Predicate over,
-                                               Engine en)
+                                               Predicate pick, Predicate over)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_OVRD) != 0)
             return;
         if (over == null || !CachePredicate.visiblePred(over, src))
             return;
+        AbstractSource src1 = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src1.getFullName(), src1.getStore().user)));
     }
 
     /**
@@ -933,22 +769,20 @@ public final class Predicate {
      * @param src  The call-site.
      * @param pick The predicate.
      * @param over The overridden predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateFresh(Integer loc, AbstractSource src,
-                                            Predicate pick, Predicate over,
-                                            Engine en)
+                                            Predicate pick, Predicate over)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_OVRD) == 0)
             return;
         if (over != null && CachePredicate.visiblePred(over, src))
             return;
+        AbstractSource src1 = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_FRESH_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src1.getFullName(), src1.getStore().user)));
     }
 
     /**
@@ -958,12 +792,10 @@ public final class Predicate {
      * @param src  The call-site.
      * @param pick The predicate.
      * @param over The overridden predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateMetaInherited(Integer loc, AbstractSource src,
-                                                    Predicate pick, Predicate over,
-                                                    Engine en)
+                                                    Predicate pick, Predicate over)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_META) != 0)
             return;
@@ -971,11 +803,11 @@ public final class Predicate {
             return;
         if (over.meta_predicate == null)
             return;
+        AbstractSource src1 = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_INHERITED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src1.getFullName(), src1.getStore().user)));
     }
 
     /**
@@ -985,12 +817,10 @@ public final class Predicate {
      * @param src  The call-site.
      * @param pick The predicate.
      * @param over The overridden predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateMetaIllegal(Integer loc, AbstractSource src,
-                                                  Predicate pick, Predicate over,
-                                                  Engine en)
+                                                  Predicate pick, Predicate over)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_META) == 0)
             return;
@@ -998,22 +828,20 @@ public final class Predicate {
             return;
         if (over.meta_predicate != null)
             return;
+        AbstractSource src1 = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_META_ILLEGAL,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src1.getFullName(), src1.getStore().user)));
     }
 
     /**
      * <p>Perform the dynamic style check.</p>
      *
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
-    private static void checkPredicateNumericSpecial(Predicate pick,
-                                                     Engine en)
+    private static void checkPredicateNumericSpecial(Predicate pick)
             throws EngineMessage {
         AbstractDelegate fun = pick.del;
         if (!(fun instanceof AbstractSpecial))
@@ -1024,22 +852,20 @@ public final class Predicate {
             return;
         if (pick.getArity() == 1)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_NUMERIC_SPECIAL,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**
      * <p>Perform the dynamic style check.</p>
      *
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
-    private static void checkPredicateNumericForeign(Predicate pick,
-                                                     Engine en)
+    private static void checkPredicateNumericForeign(Predicate pick)
             throws EngineMessage {
         AbstractDelegate fun = pick.del;
         if (!(fun instanceof AbstractLense))
@@ -1050,11 +876,11 @@ public final class Predicate {
             return;
         if (pick.getArity() == 1)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_NUMERIC_FOREIGN,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /***********************************************************/
@@ -1081,7 +907,7 @@ public final class Predicate {
         if (def == null)
             return;
         try {
-            checkPredicateImplemented(def, pick, en);
+            checkPredicateImplemented(def, pick);
         } catch (EngineMessage x) {
             PositionKey pos = PositionKey.createPos(lr);
             EngineException y = new EngineException(x,
@@ -1097,23 +923,21 @@ public final class Predicate {
      *
      * @param loc  The location.
      * @param pick The predicate.
-     * @param en   The engine.
      * @throws EngineMessage The warning.
      */
     private static void checkPredicateImplemented(Integer loc,
-                                                  Predicate pick,
-                                                  Engine en)
+                                                  Predicate pick)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_BODY) != 0)
             return;
         AbstractDelegate fun = pick.del;
         if (fun != null && (fun.subflags & AbstractDefined.MASK_DEFI_ASSE) != 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_IMPLEMENTATION_PRED,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
 }

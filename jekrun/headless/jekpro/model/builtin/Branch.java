@@ -155,7 +155,7 @@ public abstract class Branch extends AbstractBranch {
         CachePredicate cp = CachePredicate.getPredicateDefined(sa,
                 arity, en, CachePredicate.MASK_CACH_CRTE);
         Predicate pick = cp.pick;
-        Predicate.definePredicate(pick, del, en);
+        Predicate.definePredicate(pick, del);
         Predicate.checkPredicateBody(pick, sa, en);
     }
 

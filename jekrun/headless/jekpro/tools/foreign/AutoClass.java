@@ -286,7 +286,7 @@ public final class AutoClass extends AbstractAuto {
                     AbstractMember del = dels[0];
                     if (del.isNumeric())
                         makeMeta(pick, sa, en);
-                    Predicate.definePredicate(pick, del, en);
+                    Predicate.definePredicate(pick, del);
                     Predicate.checkPredicateBody(pick, sa, en);
                 } else {
                     for (int i = 0; i < dels.length; i++) {
@@ -330,7 +330,7 @@ public final class AutoClass extends AbstractAuto {
                         pick = makePrivate(sa, sk.getArity(), virt, en);
                         if (del.isNumeric())
                             makeMeta(pick, sa, en);
-                        Predicate.definePredicate(pick, del, en);
+                        Predicate.definePredicate(pick, del);
                         Predicate.checkPredicateBody(pick, sa, en);
                     }
                 }
@@ -410,7 +410,7 @@ public final class AutoClass extends AbstractAuto {
                 arity, en, CachePredicate.MASK_CACH_CRTE);
         Predicate pick = cp.pick;
         pick.setBit(Predicate.MASK_PRED_VSPR);
-        pick.addDef(src, Predicate.MASK_TRCK_VSPR, en);
+        pick.addDef(src, Predicate.MASK_TRCK_VSPR);
         pick.setBit(Predicate.MASK_PRED_AUTO);
         if (virt)
             pick.setBit(Predicate.MASK_PRED_VIRT);
@@ -429,17 +429,19 @@ public final class AutoClass extends AbstractAuto {
             throws EngineException, EngineMessage {
         if (pick.getArity() == 1)
             return;
-        Object[] args = new Object[pick.getArity()];
-        for (int i = 0; i < pick.getArity(); i++) {
+        Object res = en.store.foyer.ATOM_NIL;
+        for (int i = pick.getArity() - 1; i >= 0; i--) {
+            Object val;
             if (i != pick.getArity() - 1) {
-                args[i] = Integer.valueOf(1);
+                val = Integer.valueOf(1);
             } else {
-                args[i] = new SkelAtom(Predicate.OP_QUESTION);
+                val = new SkelAtom(Predicate.OP_QUESTION);
             }
+            res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
-        pick.meta_predicate = new SkelCompound(sa, args);
+        pick.meta_predicate = res;
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-        pick.addDef(src, Predicate.MASK_TRCK_META, en);
+        pick.addDef(src, Predicate.MASK_TRCK_META);
     }
 
     /*******************************************************************/

@@ -66,7 +66,6 @@ public class Operator {
     public final static int MASK_OPER_VISI = MASK_OPER_VSPR | MASK_OPER_VSPU;
 
     private final String name;
-    private String nameold;
     private final int type;
     private int flags;
     private int level;
@@ -93,24 +92,6 @@ public class Operator {
      */
     public int getType() {
         return type;
-    }
-
-    /**
-     * <p>Set the opertor key.</p>
-     *
-     * @param k The key,
-     */
-    public void setNameold(String k) {
-        nameold = k;
-    }
-
-    /**
-     * <p>Retrieve the operator key.</p>
-     *
-     * @return The operator key.
-     */
-    public String getNameold() {
-        return nameold;
     }
 
     /**

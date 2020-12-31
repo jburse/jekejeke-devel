@@ -77,7 +77,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_THREAD_LOCAL = "thread_local";
     private final static String OP_GROUP_LOCAL = "group_local";
 
-    public final static String OP_FULL_NAME = "full_name";
     public final static String OP_SYS_USAGE = "sys_usage";
     private final static String OP_SYS_NOINDEX = "sys_noindex";
     private final static String OP_SYS_NOSTACK = "sys_nostack";
@@ -106,11 +105,10 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static int PROP_THREAD_LOCAL = 16;
     private final static int PROP_GROUP_LOCAL = 17;
 
-    private final static int PROP_FULL_NAME = 18;
-    private final static int PROP_SYS_USAGE = 19;
-    private final static int PROP_SYS_NOINDEX = 20;
-    private final static int PROP_SYS_NOSTACK = 21;
-    private final static int PROP_SYS_NOHEAD = 22;
+    private final static int PROP_SYS_USAGE = 18;
+    private final static int PROP_SYS_NOINDEX = 19;
+    private final static int PROP_SYS_NOSTACK = 20;
+    private final static int PROP_SYS_NOHEAD = 21;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -150,7 +148,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_GROUP_LOCAL, 0), new PropertyPredicate(PROP_GROUP_LOCAL,
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DELE));
 
-        DEFAULT.add(new StoreKey(OP_FULL_NAME, 1), new PropertyPredicate(PROP_FULL_NAME));
         DEFAULT.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
         DEFAULT.add(new StoreKey(OP_SYS_NOINDEX, 0), new PropertyPredicate(PROP_SYS_NOINDEX));
         DEFAULT.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
@@ -318,11 +315,6 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
 
-            case PROP_FULL_NAME:
-                return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                                new SkelAtom(OP_FULL_NAME),
-                                new SkelAtom(pick.getFunold(), pick.getSource().getStore().user)),
-                        Display.DISPLAY_CONST)};
             case PROP_SYS_USAGE:
                 res = PropertyPredicate.filterDefs(pick, 0, en);
                 if (res == null)
@@ -380,50 +372,50 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractSource src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_MULTIFILE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_MULT, en);
+                pick.addDef(src, Predicate.MASK_TRCK_MULT);
                 return true;
             case PROP_DISCONTIGUOUS:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_DISCONTIGUOUS, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_DISC, en);
+                pick.addDef(src, Predicate.MASK_TRCK_DISC);
                 return true;
             case PROP_SYS_STYLE_CHECK:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_STYLE_CHECK, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_BODY, en);
+                pick.addDef(src, Predicate.MASK_TRCK_BODY);
                 return true;
             case PROP_SYS_PUBLIC:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PUBLIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_VSPU, en);
+                pick.addDef(src, Predicate.MASK_TRCK_VSPU);
                 return true;
             case PROP_SYS_PRIVATE:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_PRIVATE, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_VSPR, en);
+                pick.addDef(src, Predicate.MASK_TRCK_VSPR);
                 return true;
 
             case PROP_SYS_DYNAMIC:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_DYNAMIC, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_DYNA, en);
+                pick.addDef(src, Predicate.MASK_TRCK_DYNA);
                 return true;
             case PROP_SYS_THREAD_LOCAL:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_THREAD_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_TRLC, en);
+                pick.addDef(src, Predicate.MASK_TRCK_TRLC);
                 return true;
             case PROP_SYS_GROUP_LOCAL:
                 src = PropertyPredicate.derefAndCastDef(m, d, OP_SYS_GROUP_LOCAL, en);
                 if (src == null || !Clause.ancestorSource(src, en))
                     return true;
-                pick.addDef(src, Predicate.MASK_TRCK_GRLC, en);
+                pick.addDef(src, Predicate.MASK_TRCK_GRLC);
                 return true;
 
             case PROP_MULTIFILE:
@@ -441,40 +433,26 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 return true;
 
             case PROP_BUILT_IN:
-                /* can't modify */
-                return false;
             case PROP_STATIC:
-                /* can't modify */
-                return false;
             case PROP_DYNAMIC:
-                /* can't modify */
-                return false;
             case PROP_THREAD_LOCAL:
-                /* can't modify */
-                return false;
             case PROP_GROUP_LOCAL:
-                /* can't modify */
-                return false;
-
-            case PROP_FULL_NAME:
-                /* can't modify */
-                return false;
             case PROP_SYS_USAGE:
                 /* can't modify */
                 return false;
             case PROP_SYS_NOINDEX:
                 AbstractDelegate fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NIDX;
                 return true;
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NHED;
                 return true;
             default:
@@ -563,40 +541,26 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 return true;
 
             case PROP_BUILT_IN:
-                /* can't modify */
-                return false;
             case PROP_STATIC:
-                /* can't modify */
-                return false;
             case PROP_DYNAMIC:
-                /* can't modify */
-                return false;
             case PROP_THREAD_LOCAL:
-                /* can't modify */
-                return false;
             case PROP_GROUP_LOCAL:
-                /* can't modify */
-                return false;
-
-            case PROP_FULL_NAME:
-                /* can't modify */
-                return false;
             case PROP_SYS_USAGE:
                 /* can't modify */
                 return false;
             case PROP_SYS_NOINDEX:
                 AbstractDelegate fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NIDX;
                 return true;
             case PROP_SYS_NOSTACK:
                 fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NSTK;
                 return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NHED;
                 return true;
             default:

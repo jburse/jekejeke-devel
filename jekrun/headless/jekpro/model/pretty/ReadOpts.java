@@ -116,8 +116,8 @@ public final class ReadOpts {
         while (t instanceof SkelCompound &&
                 ((SkelCompound) t).args.length == 2 &&
                 ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
-            Object[] mc = ((SkelCompound) t).args;
-            en.skel = mc[0];
+            Object[] sc = ((SkelCompound) t).args;
+            en.skel = sc[0];
             en.deref();
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -204,7 +204,7 @@ public final class ReadOpts {
                         EngineMessage.OP_DOMAIN_READ_OPTION,
                         en.skel), en.display);
             }
-            en.skel = mc[1];
+            en.skel = sc[1];
             en.display = d;
             en.deref();
             t = en.skel;

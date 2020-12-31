@@ -627,15 +627,15 @@ public final class SpecialOper extends AbstractSpecial {
     /**
      * <p>Convert a type and fun to a colon.</p>
      *
-     * @param fun   The name.
-     * @param mod The full name.
-     * @param type  The type.
-     * @param en    The engine.
+     * @param fun  The name.
+     * @param mod  The full name.
+     * @param type The type.
+     * @param en   The engine.
      * @return The compound.
      * @throws EngineMessage Shit happens.
      */
     public static Object operToColonSkel(String fun, String mod,
-                                            int type, Engine en)
+                                         int type, Engine en)
             throws EngineMessage {
         Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), mod, en);
         return new SkelCompound(typeToOp(type), s);

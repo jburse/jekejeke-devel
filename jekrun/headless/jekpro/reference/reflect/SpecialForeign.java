@@ -108,7 +108,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 /* create the builtin */
                 Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del);
                 return true;
             case SPECIAL_SYS_FOREIGN_CONSTRUCTOR:
                 temp = ((SkelCompound) en.skel).args;
@@ -132,7 +132,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 /* create the builtin */
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del);
                 return true;
             case SPECIAL_SYS_FOREIGN_GETTER:
                 temp = ((SkelCompound) en.skel).args;
@@ -152,7 +152,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 /* create the builtin */
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del);
                 return true;
             case SPECIAL_SYS_FOREIGN_SETTER:
                 temp = ((SkelCompound) en.skel).args;
@@ -172,7 +172,7 @@ public final class SpecialForeign extends AbstractSpecial {
                 /* create the builtin */
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_DEFI);
-                Predicate.definePredicate(pick, del, en);
+                Predicate.definePredicate(pick, del);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

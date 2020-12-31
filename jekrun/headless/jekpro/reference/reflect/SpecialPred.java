@@ -222,9 +222,9 @@ public final class SpecialPred extends AbstractSpecial {
             Predicate pick = preds[i];
             if (!CachePredicate.visiblePred(pick, en.store.user))
                 continue;
-            Object val = SpecialPred.indicatorToColonSkel(
-                    pick.getFun(), pick.getSource(),
-                    pick.getArity());
+            AbstractSource src = pick.getSource();
+            Object val = indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                    src.getFullName(), src.getStore().user);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
@@ -422,12 +422,12 @@ public final class SpecialPred extends AbstractSpecial {
         AbstractDelegate fun = AbstractDefined.promoteStatic(pick, en.store);
         if ((fun.subflags & AbstractDefined.MASK_DEFI_STAT) != 0)
             return;
+        AbstractSource src = pick.getSource();
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_COERCE,
                 EngineMessage.OP_PERMISSION_PROCEDURE,
-                SpecialPred.indicatorToColonSkel(
-                        pick.getFun(), pick.getSource(),
-                        pick.getArity())));
+                indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                        src.getFullName(), src.getStore().user)));
     }
 
     /**********************************************************/
@@ -466,9 +466,9 @@ public final class SpecialPred extends AbstractSpecial {
             throws EngineMessage {
         for (int i = preds.length - 1; i >= 0; i--) {
             Predicate pick = preds[i];
-            Object val = SpecialPred.indicatorToColonSkel(
-                    pick.getFun(), pick.getSource(),
-                    pick.getArity());
+            AbstractSource src = pick.getSource();
+            Object val = indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                    src.getFullName(), src.getStore().user);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
@@ -489,7 +489,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineException Validation Error.
      */
     public static Predicate indicatorToPredicate(Object t, Display d,
-                                                    Engine en)
+                                                 Engine en)
             throws EngineMessage, EngineException {
         Integer arity = colonToIndicator(t, d, en);
         SkelAtom sa = (SkelAtom) en.skel;
@@ -512,7 +512,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Validation Error.
      */
     public static Predicate indicatorToPredicateDefined(Object t, Display d,
-                                                           Engine en, int copt)
+                                                        Engine en, int copt)
             throws EngineMessage, EngineException {
         Integer arity = colonToIndicator(t, d, en);
         SkelAtom sa = (SkelAtom) en.skel;
@@ -589,7 +589,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     public static Object indicatorToColonSkel(SkelAtom sa, int arity,
-                                                 Engine en)
+                                              Engine en)
             throws EngineMessage {
         Object s;
         if (sa instanceof SkelAtomQuali) {
@@ -615,26 +615,26 @@ public final class SpecialPred extends AbstractSpecial {
      * <p>Convert an indicator to a qualified indicator.</p>
      *
      * @param fun   The name.
-     * @param src  The call-site, non null.
+     * @param src   The call-site, non null.
      * @param arity The length.
      * @return The colon indictor
      * @throws EngineMessage Shit happens.
      */
     public static Object indicatorToColonSkel(String fun,
-                                              AbstractSource src,
-                                              int arity)
+                                              int arity,
+                                              String mod,
+                                              AbstractSource scope)
             throws EngineMessage {
-        AbstractSource scope = src.getStore().user;
         Object s;
-        if (!Branch.OP_USER.equals(src.getFullName())) {
-            s = SpecialDynamic.moduleToSlashSkel(src.getFullName(), scope);
+        if (!Branch.OP_USER.equals(mod)) {
+            s = SpecialDynamic.moduleToSlashSkel(mod, scope);
             SkelAtom sa2 = new SkelAtom(EvaluableLogic.OP_COLON, scope);
-            Object t = new SkelCompound(src.getStore().foyer.ATOM_SLASH,
+            Object t = new SkelCompound(scope.getStore().foyer.ATOM_SLASH,
                     new SkelAtom(fun, scope),
                     Integer.valueOf(arity));
             s = new SkelCompound(sa2, s, t);
         } else {
-            s = new SkelCompound(src.getStore().foyer.ATOM_SLASH,
+            s = new SkelCompound(scope.getStore().foyer.ATOM_SLASH,
                     new SkelAtom(fun, scope),
                     Integer.valueOf(arity));
         }

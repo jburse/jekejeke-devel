@@ -372,11 +372,10 @@ public class PrologWriter {
      * @param cp The cache predicate.
      * @return The meta declaration or null.
      */
-    public Object[] predicateToMeta(CachePredicate cp) {
+    public Object predicateToMeta(CachePredicate cp) {
         if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0)
             return null;
-        Object t = ((spez & SPEZ_META) != 0 ? cp.pick.meta_predicate : null);
-        return (t != null ? ((SkelCompound) t).args : null);
+        return ((spez & SPEZ_META) != 0 ? cp.pick.meta_predicate : null);
     }
 
     /**
@@ -386,8 +385,26 @@ public class PrologWriter {
      * @param k    The index.
      * @return The argument meta spezification.
      */
-    private static Object getArg(Object[] args, int k) {
-        return (args != null ? args[k] : null);
+    private static Object getArg(Object args, int k) {
+        if (args == null)
+            return null;
+        while (k > 0) {
+            if (args instanceof SkelCompound &&
+                    ((SkelCompound) args).args.length == 2 &&
+                    ((SkelCompound) args).sym.fun.equals(Foyer.OP_CONS)) {
+                args = ((SkelCompound) args).args[1];
+            } else {
+                return null;
+            }
+            k--;
+        }
+        if (args instanceof SkelCompound &&
+                ((SkelCompound) args).args.length == 2 &&
+                ((SkelCompound) args).sym.fun.equals(Foyer.OP_CONS)) {
+            return ((SkelCompound) args).args[0];
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -799,7 +816,7 @@ public class PrologWriter {
                             Object mod, SkelAtom nsa, Operator oper)
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
@@ -828,15 +845,15 @@ public class PrologWriter {
         shift = backshift;
         if (Foyer.OP_UNIT.equals(oper.getPortrayOrName())) {
             appendLink(PrologReader.OP_LPAREN, cp);
-            writeArgs(sc, ref, 1, cp, decl, mod, nsa);
+            writeArgs(sc, ref, 1, decl, mod, nsa);
             append(PrologReader.OP_RPAREN);
         } else if (Foyer.OP_SET.equals(oper.getPortrayOrName())) {
             appendLink(PrologReader.OP_LBRACE, cp);
-            writeSet(sc, ref, 1, cp, decl, mod, nsa);
+            writeSet(sc, ref, 1, decl, mod, nsa);
             append(PrologReader.OP_RBRACE);
         } else {
             appendLink(PrologReader.OP_LBRACKET, cp);
-            writeArgs(sc, ref, 1, cp, decl, mod, nsa);
+            writeArgs(sc, ref, 1, decl, mod, nsa);
             append(PrologReader.OP_RBRACKET);
         }
         if (needsParen(oper, level))
@@ -860,7 +877,7 @@ public class PrologWriter {
                              Object mod, SkelAtom nsa, Operator oper)
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
@@ -928,7 +945,7 @@ public class PrologWriter {
                               Object mod, SkelAtom nsa, Operator oper)
             throws IOException, EngineException, EngineMessage {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
@@ -980,7 +997,7 @@ public class PrologWriter {
                             Object mod, SkelAtom nsa, Operator oper)
             throws EngineException, EngineMessage, IOException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
@@ -1241,19 +1258,18 @@ public class PrologWriter {
      * <p>Can be overridden by sub classes.</p>
      *
      * @param sc   The set skeleton.
-     * @param j    The start index.
-     * @param cp   The cached predicate.
-     * @param decl The predicate declaration.
      * @param ref  The set display.
+     * @param j    The start index.
+     * @param decl The predicate declaration.
      * @param mod  The module.
      * @param nsa  The call-site.
      * @throws IOException     IO error.
      * @throws EngineMessage   Auto load problem.
      * @throws EngineException Auto load problem.
      */
-    protected void writeSet(SkelCompound sc, Display ref,
-                            int j, CachePredicate cp, Object[] decl,
-                            Object mod, SkelAtom nsa)
+    private void writeSet(SkelCompound sc, Display ref,
+                          int j, Object decl,
+                          Object mod, SkelAtom nsa)
             throws IOException, EngineException, EngineMessage {
         int backspez = spez;
         int backoffset = offset;
@@ -1286,7 +1302,7 @@ public class PrologWriter {
                            Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         int backspez = spez;
         int backoffset = offset;
         int backshift = shift;
@@ -1352,7 +1368,6 @@ public class PrologWriter {
      * @param sc   The compound skeleton.
      * @param ref  The compound display.
      * @param j    The start index.
-     * @param cp   The cached predicate.
      * @param decl The predicate declaration.
      * @param mod  The module.
      * @param nsa  The call-site.
@@ -1361,7 +1376,7 @@ public class PrologWriter {
      * @throws EngineException Auto load problem.
      */
     private void writeArgs(SkelCompound sc, Display ref,
-                           int j, CachePredicate cp, Object[] decl,
+                           int j, Object decl,
                            Object mod, SkelAtom nsa)
             throws IOException, EngineMessage, EngineException {
         if (sc.args.length == j)
@@ -1484,9 +1499,9 @@ public class PrologWriter {
         if (engine != null && (flags & PrologWriter.FLAG_IGNO) == 0) {
             if (sc.args.length == 1 && sc.sym.fun.equals(Foyer.OP_SET)) {
                 CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-                Object[] decl = predicateToMeta(cp);
+                Object decl = predicateToMeta(cp);
                 appendLink(PrologReader.OP_LBRACE, cp);
-                writeSet(sc, ref, 0, cp, decl, mod, nsa);
+                writeSet(sc, ref, 0, decl, mod, nsa);
                 append(PrologReader.OP_RBRACE);
                 return;
             }
@@ -1563,12 +1578,12 @@ public class PrologWriter {
         if (level > Operator.LEVEL_MIDDLE)
             indent += SPACES;
         CachePredicate cp = offsetToPredicate(sc, mod, nsa);
-        Object[] decl = predicateToMeta(cp);
+        Object decl = predicateToMeta(cp);
         String t = atomQuoted(sc.sym.fun, 0);
         safeSpace(t);
         appendLink(t, cp);
         append(PrologReader.OP_LPAREN);
-        writeArgs(sc, ref, 0, cp, decl, mod, nsa);
+        writeArgs(sc, ref, 0, decl, mod, nsa);
         append(PrologReader.OP_RPAREN);
         if (level > Operator.LEVEL_MIDDLE)
             indent -= SPACES;
