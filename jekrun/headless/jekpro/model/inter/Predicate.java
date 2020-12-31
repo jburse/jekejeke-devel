@@ -1,11 +1,9 @@
 package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
+import jekpro.model.builtin.Branch;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractLocator;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
-import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.*;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.EvaluableLogic;
@@ -306,41 +304,6 @@ public final class Predicate {
         }
     }
 
-    /**
-     * <p>Check a meta argument spezifier.</p>
-     * <p>Returns a meta argument spezifier skeleton.</p>
-     * <p>The following syntax is used:</p>
-     * <pre>
-     *     meta_specifier3   --> integer.
-     * </pre>
-     *
-     * @param c   The spezifier skeleton.
-     * @param ref The spezifier display.
-     * @param en  The engine.
-     * @return The meta argument spezifier.
-     * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Validation error.
-     */
-    private static Object checkMetaSpezArg3(Object c, Display ref,
-                                            Engine en)
-            throws EngineMessage, ClassCastException {
-        en.skel = c;
-        en.display = ref;
-        en.deref();
-        c = en.skel;
-        ref = en.display;
-        if (c instanceof Number) {
-            Number num = (Number) c;
-            SpecialEval.castIntValue(num);
-            return num;
-        } else {
-            EngineMessage.checkInstantiated(c);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_META_ARG,
-                    c), ref);
-        }
-    }
-
     /**************************************************************/
     /* Definiion Handling                                         */
     /**************************************************************/
@@ -390,7 +353,7 @@ public final class Predicate {
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         getFun(), getSource(),
-                        getArity(), en)));
+                        getArity())));
     }
 
     /**
@@ -601,14 +564,14 @@ public final class Predicate {
      * @param priv The private flag.
      */
     public void updateImport(boolean priv) {
-        if (!CacheFunctor.isQuali(getFunold())) {
-            Store store = getSource().getStore();
-            store.foyer.notifyImportvers(store);
-        } else {
+        if (!Branch.OP_USER.equals(getSource().getFullName())) {
             AbstractSource source = getSource();
             int f = AbstractSource.MASK_IMPT_MODL;
             f |= (!priv ? AbstractSource.MASK_IMPT_REEX : 0);
             CachePredicate.notifyImportvers(source, f);
+        } else {
+            Store store = getSource().getStore();
+            store.foyer.notifyImportvers(store);
         }
     }
 
@@ -633,7 +596,7 @@ public final class Predicate {
                     EngineMessage.OP_PERMISSION_VIRTUAL,
                     SpecialPred.indicatorToColonSkel(
                             pick.getFun(), pick.getSource(),
-                            pick.getArity(), en)));
+                            pick.getArity())));
         }
         /* create the builtin */
         AbstractDelegate fun = AbstractDelegate.promoteBuiltin(pick, del);
@@ -644,7 +607,7 @@ public final class Predicate {
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /***********************************************************/
@@ -694,22 +657,39 @@ public final class Predicate {
                                                     Engine en)
             throws EngineMessage {
         if ((loc.intValue() & MASK_TRCK_HEAD) == 0) {
-            en.visor.lastsk = new StoreKey(pick.getFunold(), pick.getArity());
+            en.visor.lastsk = makeKey(pick);
             pick.addDef(src, MASK_TRCK_HEAD, en);
             return;
         }
         if ((loc.intValue() & MASK_TRCK_DISC) != 0)
             return;
-        if (en.visor.lastsk != null &&
-                pick.getArity() == en.visor.lastsk.getArity() &&
-                pick.getFunold() == en.visor.lastsk.getFun())
+        StoreKey lastsk = en.visor.lastsk;
+        if (lastsk != null &&
+                pick.getArity() == lastsk.getArity() &&
+                pick.getFun().equals(lastsk.getFun()) &&
+                pick.getSource().getFullName().equals(lastsk.getModule()))
             return;
-        en.visor.lastsk = new StoreKey(pick.getFunold(), pick.getArity());
+        en.visor.lastsk = makeKey(pick);
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_DISCONTIGUOUS_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
+    }
+
+    /**
+     * <p>Create a possibly qualified store key.</p>
+     *
+     * @param pick The predicate,
+     * @return The possibly qualified store key.
+     */
+    private static StoreKey makeKey(Predicate pick) {
+        String mod = pick.getSource().getFullName();
+        if (!Branch.OP_USER.equals(mod)) {
+            return new StoreKeyQuali(pick.getFun(), pick.getArity(), mod);
+        } else {
+            return new StoreKey(pick.getFun(), pick.getArity());
+        }
     }
 
     /***********************************************************/
@@ -800,7 +780,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_MULTIFILE_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -823,7 +803,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_PUBLIC_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -846,7 +826,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_META_PREDICATE_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -870,7 +850,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_DYNAMIC_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -894,7 +874,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -918,7 +898,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_THREAD_LOCAL_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -943,7 +923,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_OVERRIDE_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -968,7 +948,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_FRESH_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -995,7 +975,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_META_INHERITED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -1022,7 +1002,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_META_ILLEGAL,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -1048,7 +1028,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_NUMERIC_SPECIAL,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -1074,7 +1054,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_NUMERIC_FOREIGN,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /***********************************************************/
@@ -1133,7 +1113,7 @@ public final class Predicate {
                 EngineMessage.OP_SYNTAX_IMPLEMENTATION_PRED,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
 }

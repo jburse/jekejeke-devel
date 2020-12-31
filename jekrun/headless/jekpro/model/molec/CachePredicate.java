@@ -87,32 +87,24 @@ public final class CachePredicate extends AbstractCache {
     /**
      * <p>Resolve a name with import.</p>
      *
-     * @param sa    The predicate name.
+     * @param n     The predicate name.
      * @param arity The predicate length.
      * @param base  The lookup base.
+     * @param f     The qualiied flag.
      * @return The resolved name.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Predicate performLookup(SkelAtom sa, int arity,
-                                           AbstractSource base)
+    private static Predicate performLookup(String n, int arity,
+                                           AbstractSource base, boolean f)
             throws EngineMessage, InterruptedException {
-        String n;
-        boolean f = (sa instanceof SkelAtomQuali);
-        if (!f) {
-            n = sa.fun;
-        } else {
-            n = CacheFunctor.sepName(sa.fun);
-        }
         MapEntry<AbstractSource, Integer>[] deps2;
-        String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            s = base.getFullName();
-            if (!Branch.OP_USER.equals(s)) {
+            if (!Branch.OP_USER.equals(base.getFullName())) {
                 Predicate pick = base.getRoutine(arity, n);
                 if (pick != null)
                     return pick;
@@ -128,7 +120,7 @@ public final class CachePredicate extends AbstractCache {
         Predicate pick = performDependent(n, arity, base, deps2, f);
         if (pick != null)
             return pick;
-        if (!Branch.OP_USER.equals(s) || !f)
+        if (!Branch.OP_USER.equals(base.getFullName()) || !f)
             return getRoutineUser(arity, n, base.getStore());
         return null;
     }
@@ -151,28 +143,21 @@ public final class CachePredicate extends AbstractCache {
                                                   AbstractSource base,
                                                   Engine en, int copt)
             throws InterruptedException, EngineMessage {
-        String n;
-        if (!(sa instanceof SkelAtomQuali)) {
-            n = sa.fun;
-        } else {
-            n = CacheFunctor.sepName(sa.fun);
-        }
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            String s = base.getFullName();
-            if (!Branch.OP_USER.equals(s)) {
+            if (!Branch.OP_USER.equals(base.getFullName())) {
                 /* create name%pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineRoutine(arity, n, sa, en, copt) :
-                        base.getRoutine(arity, n));
+                        base.defineRoutine(arity, sa.fun, sa, en, copt) :
+                        base.getRoutine(arity, sa.fun));
             } else {
                 /* create pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        defineRoutineUser(arity, n, sa, src.getStore(), en, copt) :
-                        getRoutineUser(arity, n, src.getStore()));
+                        defineRoutineUser(arity, sa.fun, sa, src.getStore(), en, copt) :
+                        getRoutineUser(arity, sa.fun, src.getStore()));
             }
         } finally {
             base.getRead().unlock();
@@ -192,13 +177,8 @@ public final class CachePredicate extends AbstractCache {
     public static Predicate performOverrides(SkelAtom sa, int arity,
                                              AbstractSource base)
             throws EngineMessage, InterruptedException {
-        String n;
+        String n = sa.fun;
         boolean f = (sa instanceof SkelAtomQuali);
-        if (!f) {
-            n = sa.fun;
-        } else {
-            n = CacheFunctor.sepName(sa.fun);
-        }
         MapEntry<AbstractSource, Integer>[] deps2;
         String s;
         /* wait for complete source */
@@ -431,7 +411,7 @@ public final class CachePredicate extends AbstractCache {
                     AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                     AbstractSource base = performBase(sa, src, en);
                     Object basevers = base.importvers;
-                    Predicate pick = performLookup(sa, arity, base);
+                    Predicate pick = performLookup(sa.fun, arity, base, sa instanceof SkelAtomQuali);
                     /* cache if found */
                     CachePredicate cp;
                     if (pick != null) {
@@ -463,7 +443,7 @@ public final class CachePredicate extends AbstractCache {
                             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                             AbstractSource base = performBase(sa, src, en);
                             Object basevers = base.importvers;
-                            pick = performLookup(sa, arity, base);
+                            pick = performLookup(sa.fun, arity, base, sa instanceof SkelAtomQuali);
                             /* update if found, otherwise remove */
                             if (pick != null) {
                                 int flags = 0;

@@ -1,7 +1,6 @@
-package matula.util.misc;
+package jekpro.model.pretty;
 
 import matula.util.data.AssocArray;
-import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
@@ -35,7 +34,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SetTable extends MapHash<String, ListArray<Integer>> {
+public final class MapTable<T> extends MapHash<String, AssocArray<Integer, T>> {
 
     /**
      * <p>Find string integer in table.</p>
@@ -44,11 +43,11 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      * @param i The integer.
      * @return The value or null.
      */
-    public boolean contains(String s, int i) {
-        ListArray<Integer> list = get(s);
-        if (list == null)
-            return false;
-        return list.contains(Integer.valueOf(i));
+    public T get(String s, int i) {
+        AssocArray<Integer, T> map = get(s);
+        if (map == null)
+            return null;
+        return map.get(Integer.valueOf(i));
     }
 
     /**
@@ -56,14 +55,15 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      *
      * @param s   The string.
      * @param i   The integer.
+     * @param val The value.
      */
-    public void add(String s, int i) {
-        ListArray<Integer> list = get(s);
-        if (list == null) {
-            list = new ListArray<>();
-            add(s, list);
+    public void add(String s, int i, T val) {
+        AssocArray<Integer, T> map = get(s);
+        if (map == null) {
+            map = new AssocArray<>();
+            add(s, map);
         }
-        list.add(Integer.valueOf(i));
+        map.add(Integer.valueOf(i), val);
     }
 
     /**
@@ -73,11 +73,11 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      * @param i The integer.
      */
     public void remove(String s, int i) {
-        ListArray<Integer> list = get(s);
-        if (list == null)
+        AssocArray<Integer, T> map = get(s);
+        if (map == null)
             return;
-        list.remove(Integer.valueOf(i));
-        if (list.size() == 0)
+        map.remove(Integer.valueOf(i));
+        if (map.size() == 0)
             remove(s);
     }
 
@@ -88,26 +88,24 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      */
     public int deepSize() {
         int deepsize = 0;
-        for (MapEntry<String, ListArray<Integer>> entry = getFirstEntry();
+        for (MapEntry<String, AssocArray<Integer, T>> entry = getFirstEntry();
              entry != null; entry = successor(entry))
             deepsize += entry.value.size();
         return deepsize;
     }
 
     /**
-     * <p>Copy the elements deeply.</p>
+     * <p>Copy the values deeply.</p>
      *
-     * @param target The elements array.
-      */
-    public void toDeepArray(Key[] target) {
+     * @param target The value array.
+     */
+    public void toDeepArrayValues(T[] target) {
         int pos = 0;
-        for (MapEntry<String, ListArray<Integer>> entry = getFirstEntry();
+        for (MapEntry<String, AssocArray<Integer, T>> entry = getFirstEntry();
              entry != null; entry = successor(entry)) {
-            ListArray<Integer> list = entry.value;
-            for (int i = 0; i < list.size; i++) {
-                target[pos] = new Key(entry.key, list.get(i).intValue());
-                pos++;
-            }
+            AssocArray<Integer, T> map = entry.value;
+            map.toArrayValues(target, pos);
+            pos += map.size();
         }
     }
 

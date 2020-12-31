@@ -338,9 +338,9 @@ public class PrologWriter {
                     mod = SpecialProxy.classOrProxyName(mod, engine);
                     if (mod == null)
                         return null;
-                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    sa = CacheFunctor.getModFunc(sa, (SkelAtom) mod, nsa, engine);
                 } else if (mod instanceof SkelAtom) {
-                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    sa = CacheFunctor.getModFunc(sa, (SkelAtom) mod, nsa, engine);
                 } else {
                     return null;
                 }
@@ -353,10 +353,10 @@ public class PrologWriter {
                     mod = SpecialProxy.classOrProxyName(mod, engine);
                     if (mod == null)
                         return null;
-                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    sa = CacheFunctor.getModFunc(sa, (SkelAtom) mod, nsa, engine);
                     k++;
                 } else if (mod instanceof SkelAtom) {
-                    sa = CacheFunctor.getFunctor(sa, (SkelAtom) mod, nsa, engine);
+                    sa = CacheFunctor.getModFunc(sa, (SkelAtom) mod, nsa, engine);
                     k++;
                 } else {
                     return null;
@@ -604,7 +604,7 @@ public class PrologWriter {
         }
         if (engine != null && (flags & FLAG_IGNO) == 0 &&
                 (spez & SPEZ_OPER) != 0) {
-            Operator oper = OperatorSearch.getOper(sa.scope, sa.fun,
+            Operator oper = OperatorSearch.getOperQuick(sa.scope, sa.fun,
                     Operator.TYPE_PREFIX, engine);
             if (oper != null && oper.getLevel() != 0) {
                 if ((spez & SPEZ_FUNC) != 0)
@@ -1503,7 +1503,7 @@ public class PrologWriter {
                 return;
             }
             if (isIndex(sc)) {
-                Operator oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                Operator oper = OperatorSearch.getOperQuick(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_POSTFIX, engine);
                 if (oper != null && oper.getLevel() != 0 &&
                         (Foyer.OP_UNIT.equals(oper.getPortrayOrName()) ||
@@ -1520,7 +1520,7 @@ public class PrologWriter {
                 }
             }
             if (isUnary(sc)) {
-                Operator oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                Operator oper = OperatorSearch.getOperQuick(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_PREFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
                     if (oper.getLevel() <= Operator.LEVEL_MIDDLE &&
@@ -1532,7 +1532,7 @@ public class PrologWriter {
                         indent -= SPACES;
                     return;
                 }
-                oper = OperatorSearch.getOper(sc.sym.scope, sc.sym.fun,
+                oper = OperatorSearch.getOperQuick(sc.sym.scope, sc.sym.fun,
                         Operator.TYPE_POSTFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
                     if (oper.getLevel() <= Operator.LEVEL_MIDDLE &&
@@ -1546,7 +1546,7 @@ public class PrologWriter {
                 }
             }
             if (isBinary(sc)) {
-                Operator oper = OperatorSearch.getOper(sc.sym.scope,
+                Operator oper = OperatorSearch.getOperQuick(sc.sym.scope,
                         sc.sym.fun, Operator.TYPE_INFIX, engine);
                 if (oper != null && oper.getLevel() != 0) {
                     if (oper.getLevel() <= Operator.LEVEL_MIDDLE &&

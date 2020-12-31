@@ -1,12 +1,12 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.StoreKeyQuali;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.ForeignCollector;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.Types;
@@ -208,7 +208,13 @@ public abstract class AbstractProperty<T> {
     public static StoreKey propToStoreKey(Object t, Display d, Engine en)
             throws EngineMessage {
         int arity = AbstractProperty.derefAndCastIndicator(t, d, en);
-        return new StoreKey(((SkelAtom) en.skel).fun, arity);
+        SkelAtom sa = (SkelAtom) en.skel;
+        if (sa instanceof SkelAtomQuali) {
+            SkelAtom mod = ((SkelAtomQuali) sa).getModule();
+            return new StoreKeyQuali(sa.fun, arity, mod.fun);
+        } else {
+            return new StoreKey(sa.fun, arity);
+        }
     }
 
     /**
@@ -217,17 +223,19 @@ public abstract class AbstractProperty<T> {
      * <p>The following syntax is used.</p>
      * <pre>
      *     property --> name "/" integer.
+     *                  name ":" property.
      * </pre>
      * <p>The term is passed in skel and display.</p>
      * <p>The name is returned in skel.</p>
      *
-     * @param t  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
+     * @param t     The term skeleton.
+     * @param d     The term display.
+     * @param en    The engine.
      * @return The length.
      * @throws EngineMessage The indicator is not wellformed.
      */
-    public static int derefAndCastIndicator(Object t, Display d, Engine en)
+    public static int derefAndCastIndicator(Object t, Display d,
+                                            Engine en)
             throws EngineMessage {
         try {
             en.skel = t;
@@ -237,13 +245,20 @@ public abstract class AbstractProperty<T> {
             d = en.display;
             if (t instanceof SkelCompound &&
                     ((SkelCompound) t).args.length == 2 &&
+                    ((SkelCompound) t).sym.fun.equals(EvaluableLogic.OP_COLON)) {
+                SkelCompound sc = (SkelCompound) t;
+                SkelAtom mod = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
+                int arity = derefAndCastIndicator(sc.args[1], d, en);
+                en.skel = CacheFunctor.lookupFunctor((SkelAtom) en.skel, mod, sc.sym, en);
+                return arity;
+            } else if (t instanceof SkelCompound &&
+                    ((SkelCompound) t).args.length == 2 &&
                     ((SkelCompound) t).sym.fun.equals(Foyer.OP_SLASH)) {
                 SkelCompound sc = (SkelCompound) t;
+                en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
                 Number num = SpecialEval.derefAndCastInteger(sc.args[1], d);
                 SpecialEval.checkNotLessThanZero(num);
-                int arity = SpecialEval.castIntValue(num);
-                en.skel = SpecialUniv.derefAndCastStringWrapped(sc.args[0], d);
-                return arity;
+                return SpecialEval.castIntValue(num);
             } else {
                 EngineMessage.checkInstantiated(t);
                 throw new EngineMessage(EngineMessage.typeError(
@@ -252,17 +267,6 @@ public abstract class AbstractProperty<T> {
         } catch (RuntimeException x) {
             throw Types.mapThrowable(x);
         }
-    }
-
-    /**
-     * <p>Convert this store key to a compound.</p>
-     *
-     * @return The compound.
-     */
-    public static Object storeKeyToSkel(StoreKey sk) {
-        return new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                new SkelAtom(sk.getFun()),
-                Integer.valueOf(sk.getArity()));
     }
 
 }

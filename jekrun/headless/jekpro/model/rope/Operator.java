@@ -1,7 +1,6 @@
 package jekpro.model.rope;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CacheFunctor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -66,13 +65,13 @@ public class Operator {
     public final static int MASK_OPER_MODE = MASK_OPER_LEFT | MASK_OPER_RGHT;
     public final static int MASK_OPER_VISI = MASK_OPER_VSPR | MASK_OPER_VSPU;
 
-    private final String key;
+    private final String name;
+    private String nameold;
     private final int type;
     private int flags;
     private int level;
     private AbstractSource scope;
     private AbstractSource source;
-    private final String name;
     private String portray;
     private String alias;
 
@@ -83,12 +82,7 @@ public class Operator {
      * @param k The key.
      */
     public Operator(int t, String k) {
-        key = k;
-        if (CacheFunctor.isQuali(key)) {
-            name = CacheFunctor.sepName(key);
-        } else {
-            name = key;
-        }
+        name = k;
         type = t;
     }
 
@@ -102,12 +96,30 @@ public class Operator {
     }
 
     /**
+     * <p>Set the opertor key.</p>
+     *
+     * @param k The key,
+     */
+    public void setNameold(String k) {
+        nameold = k;
+    }
+
+    /**
      * <p>Retrieve the operator key.</p>
      *
      * @return The operator key.
      */
-    public String getKey() {
-        return key;
+    public String getNameold() {
+        return nameold;
+    }
+
+    /**
+     * <p>Retrieve the name.</p>
+     *
+     * @return The name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -285,8 +297,8 @@ public class Operator {
         throw new EngineMessage(EngineMessage.permissionError(
                 EngineMessage.OP_PERMISSION_REDEFINE,
                 EngineMessage.OP_PERMISSION_OPERATOR,
-                SpecialOper.operToColonSkel(getKey(),
-                        getSource().getStore().user, getType(), en)));
+                SpecialOper.operToColonSkel(getName(),
+                        getSource().getFullName(), getType(), en)));
     }
 
     /**
@@ -312,7 +324,7 @@ public class Operator {
      */
     public void clearOper(AbstractSource s) {
         removeDef(s);
-        getSource().removeOper(getType(), getKey());
+        getSource().removeOper(getType(), getName());
     }
 
     /**************************************************************/
@@ -429,8 +441,8 @@ public class Operator {
             return;
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_IMPLEMENTATION_OPER,
-                SpecialOper.operToColonSkel(oper.getKey(),
-                        oper.getSource().getStore().user, oper.getType(), en)));
+                SpecialOper.operToColonSkel(oper.getName(),
+                        oper.getSource().getFullName(), oper.getType(), en)));
     }
 
 }

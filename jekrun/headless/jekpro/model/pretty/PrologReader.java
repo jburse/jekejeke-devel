@@ -371,7 +371,7 @@ public class PrologReader {
                     skel = makePos((String) skel, pos);
                     current = 0;
                 } else {
-                    Operator oper = (engine != null ? OperatorSearch.getOper(source,
+                    Operator oper = (engine != null ? OperatorSearch.getOperQuick(source,
                             (String) skel, Operator.TYPE_PREFIX, engine) : null);
                     if (oper != null && oper.getLevel() != 0) {
                         if (level < oper.getLevel())
@@ -420,7 +420,7 @@ public class PrologReader {
                             st.getTokenOffset());
                 }
             }
-            Operator oper = (engine != null ? OperatorSearch.getOper(source,
+            Operator oper = (engine != null ? OperatorSearch.getOperQuick(source,
                     fun, Operator.TYPE_INFIX, engine) : null);
             if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                 if (oper.getLevel() - oper.getLeft() < current)
@@ -431,7 +431,7 @@ public class PrologReader {
                 current = oper.getLevel();
                 continue;
             }
-            oper = (engine != null ? OperatorSearch.getOper(source,
+            oper = (engine != null ? OperatorSearch.getOperQuick(source,
                     fun, Operator.TYPE_POSTFIX, engine) : null);
             if (oper != null && oper.getLevel() != 0 && level >= oper.getLevel()) {
                 if (oper.getLevel() - oper.getLeft() < current)

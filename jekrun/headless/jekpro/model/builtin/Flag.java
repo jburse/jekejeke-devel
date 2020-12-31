@@ -153,7 +153,7 @@ public final class Flag extends AbstractFlag<Engine> {
                 return en.visor.printmap;
             case FLAG_SYS_LAST_PRED:
                 StoreKey sk = en.visor.lastsk;
-                return (sk != null ? AbstractProperty.storeKeyToSkel(sk) : AbstractFlag.OP_NULL);
+                return (sk != null ? sk.storeKeyToSkel() : AbstractFlag.OP_NULL);
             case FLAG_SYS_ACT_STATUS:
                 return new SkelAtom(en.store.foyer.getError());
             case FLAG_SINGLE_QUOTES:

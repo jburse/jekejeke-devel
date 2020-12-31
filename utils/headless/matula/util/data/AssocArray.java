@@ -84,7 +84,7 @@ public class AssocArray<K, V>
      */
     public void remove(K key) {
         int i = indexOf(key);
-        if (i < 0)
+        if (i >= 0)
             remove(i);
     }
 

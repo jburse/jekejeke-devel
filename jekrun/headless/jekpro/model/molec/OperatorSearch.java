@@ -51,57 +51,27 @@ public final class OperatorSearch {
     /*********************************************************************/
 
     /**
-     * <p>Find the base of a predicate name.</p>
-     *
-     * @param fun The predicate name.
-     * @param src The call-site.
-     * @param en  The engine.
-     * @return The base.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public static AbstractSource performBase(String fun,
-                                             AbstractSource src, Engine en)
-            throws EngineException, EngineMessage {
-        if (CacheFunctor.isQuali(fun)) {
-            fun = CacheFunctor.sepModule(fun);
-            return CacheSubclass.lookupKey(fun, src, en);
-        } else {
-            return src;
-        }
-    }
-
-    /**
      * <p>Retrieve an operator with module lookup.</p>
      *
-     * @param key  The operator name.
+     * @param n    operator name.
      * @param type The operator type.
      * @param base The lookup base, or-null.
+     * @param f    The qualified flag.
      * @return The operator or null.
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Operator performLookup(String key, int type,
-                                          AbstractSource base)
+    private static Operator performLookup(String n, int type,
+                                          AbstractSource base, boolean f)
             throws InterruptedException, EngineMessage {
-        String n;
-        boolean f = CacheFunctor.isQuali(key);
-        if (!f) {
-            n = key;
-        } else {
-            n = CacheFunctor.sepName(key);
-        }
         MapEntry<AbstractSource, Integer>[] deps2;
-        String s;
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            s = base.getFullName();
-            if (!Branch.OP_USER.equals(s)) {
-                String s1 = CacheFunctor.composeQuali(s, n);
-                Operator oper = base.getOper(type, s1);
+            if (!Branch.OP_USER.equals(base.getFullName())) {
+                Operator oper = base.getOper(type, n);
                 if (oper != null)
                     return oper;
             } else if (f) {
@@ -116,7 +86,7 @@ public final class OperatorSearch {
         Operator oper = performDependent(n, type, base, deps2, f);
         if (oper != null)
             return oper;
-        if (!Branch.OP_USER.equals(s) || !f)
+        if (!Branch.OP_USER.equals(base.getFullName()) || !f)
             return getOperUser(type, n, base.getStore());
         return null;
     }
@@ -138,73 +108,25 @@ public final class OperatorSearch {
                                                  AbstractSource base,
                                                  Engine en, int copt)
             throws InterruptedException, EngineMessage {
-        String n;
-        if (!CacheFunctor.isQuali(sa.fun)) {
-            n = sa.fun;
-        } else {
-            n = CacheFunctor.sepName(sa.fun);
-        }
         /* wait for complete source */
         if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
             throw new EngineMessage(EngineMessage.limitError(
                     EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
         try {
-            String s = base.getFullName();
-            if (!Branch.OP_USER.equals(s)) {
-                /* create name%oper §*/
-                s = CacheFunctor.composeQuali(s, n);
+            if (!Branch.OP_USER.equals(base.getFullName())) {
+                /* create name%oper */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineOper(type, s, sa, en) :
-                        base.getOper(type, s));
+                        base.defineOper(type, sa.fun, sa, en) :
+                        base.getOper(type, sa.fun));
             } else {
                 /* create oper */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        defineOperUser(type, n, sa, src.getStore(), en) :
-                        getOperUser(type, n, src.getStore()));
+                        defineOperUser(type, sa.fun, sa, src.getStore(), en) :
+                        getOperUser(type, sa.fun, src.getStore()));
             }
         } finally {
             base.getRead().unlock();
         }
-    }
-
-    /**
-     * <p>Determine the operator that this operator overrides.</p>
-     *
-     * @param type The operator type.
-     * @param key  The operator name.
-     * @param base The lookup base, non-null.
-     * @return The operator that is overridden, or null.
-     * @throws EngineMessage        Shit happens.
-     * @throws InterruptedException Shit happens.
-     */
-    public static Operator performOverrides(int type, String key,
-                                            AbstractSource base)
-            throws EngineMessage, InterruptedException {
-        String n;
-        boolean f = CacheFunctor.isQuali(key);
-        if (!f) {
-            n = key;
-        } else {
-            n = CacheFunctor.sepName(key);
-        }
-        MapEntry<AbstractSource, Integer>[] deps2;
-        String s;
-        /* wait for complete source */
-        if (!base.getRead().tryLock(base.getStore().foyer.timeout, TimeUnit.MILLISECONDS))
-            throw new EngineMessage(EngineMessage.limitError(
-                    EngineMessage.OP_LIMIT_DEADLOCK_TIMEOUT));
-        try {
-            s = base.getFullName();
-            deps2 = base.snapshotDeps();
-        } finally {
-            base.getRead().unlock();
-        }
-        Operator oper = performDependent(n, type, base, deps2, f);
-        if (oper != null)
-            return oper;
-        if (!Branch.OP_USER.equals(s))
-            return getOperUser(type, n, base.getStore());
-        return null;
     }
 
     /*****************************************************/
@@ -248,7 +170,7 @@ public final class OperatorSearch {
     /**
      * <p>Lookup the imported operator.</p>
      *
-     * @param key  The operator name.
+     * @param n    The operator name.
      * @param type The operator type.
      * @param src  The call-site, non null.
      * @param deps The deps.
@@ -256,7 +178,7 @@ public final class OperatorSearch {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Operator performImported(String key, int type,
+    private static Operator performImported(String n, int type,
                                             AbstractSource src,
                                             MapEntry<AbstractSource, Integer>[] deps,
                                             ListArray<AbstractSource> visited)
@@ -276,8 +198,7 @@ public final class OperatorSearch {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, key);
-                    Operator oper = base.getOper(type, s);
+                    Operator oper = base.getOper(type, n);
                     if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
@@ -286,7 +207,7 @@ public final class OperatorSearch {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Operator oper = performReexported(key, type, base, deps2, visited);
+            Operator oper = performReexported(n, type, base, deps2, visited);
             if (oper != null)
                 return oper;
         }
@@ -296,7 +217,7 @@ public final class OperatorSearch {
     /**
      * <p>Lookup the reexported operator.</p>
      *
-     * @param fun     The name.
+     * @param n       The name.
      * @param type    The type.
      * @param src     The call-site, non null.
      * @param deps    The deps.
@@ -305,7 +226,7 @@ public final class OperatorSearch {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Operator performReexported(String fun, int type,
+    private static Operator performReexported(String n, int type,
                                               AbstractSource src,
                                               MapEntry<AbstractSource, Integer>[] deps,
                                               ListArray<AbstractSource> visited)
@@ -325,8 +246,7 @@ public final class OperatorSearch {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, fun);
-                    Operator oper = base.getOper(type, s);
+                    Operator oper = base.getOper(type, n);
                     if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
@@ -335,7 +255,7 @@ public final class OperatorSearch {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Operator oper = performReexported(fun, type, base, deps2, visited);
+            Operator oper = performReexported(n, type, base, deps2, visited);
             if (oper != null)
                 return oper;
         }
@@ -345,7 +265,7 @@ public final class OperatorSearch {
     /**
      * <p>Lookup the parent operator.</p>
      *
-     * @param key  The operator name.
+     * @param n    The operator name.
      * @param type The operator type.
      * @param src  The call-site, non null.
      * @param deps The deps.
@@ -353,7 +273,7 @@ public final class OperatorSearch {
      * @throws EngineMessage        Shit happens.
      * @throws InterruptedException Shit happens.
      */
-    private static Operator performParent(String key, int type,
+    private static Operator performParent(String n, int type,
                                           AbstractSource src,
                                           MapEntry<AbstractSource, Integer>[] deps,
                                           ListArray<AbstractSource> visited)
@@ -373,8 +293,7 @@ public final class OperatorSearch {
             try {
                 String s = base.getFullName();
                 if (!Branch.OP_USER.equals(s)) {
-                    s = CacheFunctor.composeQuali(s, key);
-                    Operator oper = base.getOper(type, s);
+                    Operator oper = base.getOper(type, n);
                     if (oper != null && OperatorSearch.visibleOper(oper, src))
                         return oper;
                 }
@@ -383,10 +302,10 @@ public final class OperatorSearch {
                 base.getRead().unlock();
             }
             visited.add(base);
-            Operator oper = performImported(key, type, base, deps2, visited);
+            Operator oper = performImported(n, type, base, deps2, visited);
             if (oper != null)
                 return oper;
-            oper = performParent(key, type, base, deps2, visited);
+            oper = performParent(n, type, base, deps2, visited);
             if (oper != null)
                 return oper;
         }
@@ -406,17 +325,42 @@ public final class OperatorSearch {
      * @param type  The type.
      * @param en    The engine.
      * @return The operator or null.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Operator getOperQuick(AbstractSource scope, String fun,
+                                        int type,
+                                        Engine en)
+            throws EngineMessage {
+        try {
+            AbstractSource src = (scope != null ? scope : en.store.user);
+            Operator oper = performLookup(fun, type, src, false);
+            if (oper != null && OperatorSearch.visibleOper(oper, src))
+                return oper;
+            return null;
+        } catch (InterruptedException x) {
+            throw (EngineMessage) ForeignThread.sysThreadClear();
+        }
+    }
+
+    /**
+     * <p>Retrieve an operator with module lookup.</p>
+     * <p>Respect source visibility.</p>
+     *
+     * @param sa   The atom skeleton.
+     * @param type The type.
+     * @param en   The engine.
+     * @return The operator or null.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static Operator getOper(AbstractSource scope, String fun,
+    public static Operator getOper(SkelAtom sa,
                                    int type,
                                    Engine en)
             throws EngineMessage, EngineException {
         try {
-            AbstractSource src = (scope != null ? scope : en.store.user);
-            AbstractSource base = performBase(fun, src, en);
-            Operator oper = performLookup(fun, type, base);
+            AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+            AbstractSource base = CachePredicate.performBase(sa, src, en);
+            Operator oper = performLookup(sa.fun, type, base, sa instanceof SkelAtomQuali);
             if (oper != null && OperatorSearch.visibleOper(oper, src))
                 return oper;
             return null;
@@ -439,7 +383,7 @@ public final class OperatorSearch {
             throws EngineMessage, EngineException {
         try {
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
-            AbstractSource base = performBase(sa.fun, src, en);
+            AbstractSource base = CachePredicate.performBase(sa, src, en);
             Operator oper = performLookupDefined(sa, type, src,
                     base, en, copt);
             if ((copt & CachePredicate.MASK_CACH_CRTE) != 0 &&

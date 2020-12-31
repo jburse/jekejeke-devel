@@ -51,15 +51,14 @@ public final class CacheFunctor extends AbstractCache {
      * @param en  The engine.
      * @return The qualified functor name.
      */
-    private static SkelAtom lookupFunctor(SkelAtom sa, SkelAtom mod,
-                                          SkelAtom nsa, Engine en) {
-        if (isQuali(sa.fun))
+    public static SkelAtom lookupFunctor(SkelAtom sa, SkelAtom mod,
+                                         SkelAtom nsa, Engine en) {
+        if (sa instanceof SkelAtomQuali)
             return sa;
-        String s1 = composeQuali(mod.fun, sa.fun);
 
         /* create with call-site */
         int m = (nsa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa = en.store.foyer.createAtom(s1, nsa.scope, m | MASK_ATOM_QALI);
+        sa = en.store.foyer.createAtom(sa.fun, nsa.scope, m | MASK_ATOM_QALI);
         sa.setPosition(nsa.getPosition());
         ((SkelAtomQuali) sa).setModule(mod);
         return sa;
@@ -78,7 +77,7 @@ public final class CacheFunctor extends AbstractCache {
      * @param en  The store.
      * @return The qualified functor.
      */
-    public static SkelAtom getFunctor(SkelAtom sa, SkelAtom mod,
+    public static SkelAtom getModFunc(SkelAtom sa, SkelAtom mod,
                                       SkelAtom nsa, Engine en) {
         AbstractCache back = null;
         AbstractCache temp = sa.cache;

@@ -1,6 +1,7 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -198,7 +199,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -218,7 +219,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -238,7 +239,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 EngineMessage.OP_PERMISSION_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /*************************************************************/
@@ -478,11 +479,11 @@ public final class SpecialDynamic extends AbstractSpecial {
             t = colonToCallableSkel(temp.args[1], en);
             if (t instanceof SkelCompound) {
                 SkelCompound sc2 = (SkelCompound) t;
-                t = new SkelCompound(CacheFunctor.getFunctor(sc2.sym,
+                t = new SkelCompound(CacheFunctor.getModFunc(sc2.sym,
                         (SkelAtom) mod, temp.sym, en), sc2.args, sc2.var);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa = (SkelAtom) t;
-                t = CacheFunctor.getFunctor(sa, (SkelAtom) mod, temp.sym, en);
+                t = CacheFunctor.getModFunc(sa, (SkelAtom) mod, temp.sym, en);
             } else {
                 EngineMessage.checkInstantiated(t);
                 Display d = AbstractSkel.createDisplay(t);
@@ -519,12 +520,12 @@ public final class SpecialDynamic extends AbstractSpecial {
                 Object[] newargs = new Object[sc2.args.length + 1];
                 newargs[0] = recv;
                 System.arraycopy(sc2.args, 0, newargs, 1, sc2.args.length);
-                t = new SkelCompound(CacheFunctor.getFunctor(sc2.sym,
+                t = new SkelCompound(CacheFunctor.getModFunc(sc2.sym,
                         (SkelAtom) mod, temp.sym, en), newargs);
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa = (SkelAtom) t;
                 Object recv = temp.args[0];
-                t = new SkelCompound(CacheFunctor.getFunctor(sa, (SkelAtom) mod,
+                t = new SkelCompound(CacheFunctor.getModFunc(sa, (SkelAtom) mod,
                         temp.sym, en), recv);
             } else {
                 EngineMessage.checkInstantiated(t);
@@ -559,7 +560,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                         CacheModule.MASK_MODULE_NERR, en);
                 if (recv != null)
                     recv = objToAtom(recv, t, en);
-                SkelAtom sa3 = new SkelAtom(CacheFunctor.sepName(sa.fun));
+                SkelAtom sa3 = new SkelAtom(sa.fun, sa.scope);
                 SkelAtom mod = ((SkelAtomQuali) sa).getModule();
                 if (recv == null || !mod.fun.equals(((SkelAtom) recv).fun) ||
                         mod.scope != ((SkelAtom) recv).scope) {
@@ -594,7 +595,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 SkelAtom mod = ((SkelAtomQuali) sa).getModule();
                 AbstractSource src = (mod.scope != null ? mod.scope : en.store.user);
                 t = moduleToSlashSkel(mod.fun, src);
-                Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
+                Object s = new SkelAtom(sa.fun, sa.scope);
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
                 SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
@@ -609,26 +610,26 @@ public final class SpecialDynamic extends AbstractSpecial {
      * <p>Convert a callable to a colon.</p>
      *
      * @param t     The callable.
-     * @param scope The scope, non null.
+     * @param mod  The full name.
      * @param en    The engine.
      * @return The colon callable.
      * @throws EngineMessage Shit happens.
      */
     public static Object callableToColonSkel(Object t,
-                                             AbstractSource scope,
+                                             String mod,
                                              Engine en)
             throws EngineMessage {
+        AbstractSource scope = en.store.user;
         if (t instanceof SkelCompound) {
             SkelCompound temp = (SkelCompound) t;
             SkelAtom sa = temp.sym;
-            if (CacheFunctor.isQuali(sa.fun)) {
+            if (!Branch.OP_USER.equals(mod)) {
                 t = temp.args[0];
                 Object recv = slashToClassSkel(t, CacheModule.MASK_MODULE_CMPD |
                         CacheModule.MASK_MODULE_NERR, en);
                 if (recv != null)
                     recv = objToAtom(recv, t, en);
-                SkelAtom sa3 = new SkelAtom(CacheFunctor.sepName(sa.fun));
-                String mod = CacheFunctor.sepModule(sa.fun);
+                SkelAtom sa3 = new SkelAtom(sa.fun);
                 if (recv == null || !mod.equals(((SkelAtom) recv).fun) ||
                         scope != ((SkelAtom) recv).scope) {
                     t = moduleToSlashSkel(mod, scope);
@@ -657,10 +658,9 @@ public final class SpecialDynamic extends AbstractSpecial {
             }
         } else if (t instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) t;
-            if (CacheFunctor.isQuali(sa.fun)) {
-                String mod = CacheFunctor.sepModule(sa.fun);
+            if (!Branch.OP_USER.equals(mod)) {
                 t = moduleToSlashSkel(mod, scope);
-                Object s = new SkelAtom(CacheFunctor.sepName(sa.fun));
+                Object s = new SkelAtom(sa.fun);
 
                 int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
                 SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);

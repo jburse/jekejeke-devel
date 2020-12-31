@@ -679,7 +679,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -700,7 +700,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -721,7 +721,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 EngineMessage.OP_PERMISSION_PRIVATE_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /**
@@ -741,7 +741,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 EngineMessage.OP_PERMISSION_STATIC_PROCEDURE,
                 SpecialPred.indicatorToColonSkel(
                         pick.getFun(), pick.getSource(),
-                        pick.getArity(), en)));
+                        pick.getArity())));
     }
 
     /***************************************************************/

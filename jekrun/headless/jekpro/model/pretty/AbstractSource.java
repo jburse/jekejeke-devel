@@ -20,7 +20,6 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.AbstractBundle;
 import matula.util.data.*;
-import matula.util.misc.MapTable;
 import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
 import matula.util.system.OpenOpts;
@@ -145,8 +144,7 @@ public abstract class AbstractSource {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     private final MapTable<Predicate> ptab = new MapTable<>();
     private Predicate[] cachepreds;
-    private final MapHash<String, AssocArray<Integer, Operator>> ops = new MapHash<>();
-    private final MapTable<Operator> otabold = new MapTable<>();
+    private final MapTable<Operator> otab = new MapTable<>();
     private Operator[] cacheops;
     private final ListArray<Resource> resources = new ListArray<>();
     private Resource[] cacheresources;
@@ -885,7 +883,7 @@ public abstract class AbstractSource {
      *
      * @param f The fullname.
      */
-    public void setFullName(String f) {
+    public final void setFullName(String f) {
         fullname = f;
     }
 
@@ -894,7 +892,7 @@ public abstract class AbstractSource {
      *
      * @return The full name.
      */
-    public String getFullName() {
+    public final String getFullName() {
         return fullname;
     }
 
@@ -1159,7 +1157,7 @@ public abstract class AbstractSource {
      */
     public Operator getOper(int type, String fun) {
         synchronized (this) {
-            return otabold.get(fun, type);
+            return otab.get(fun, type);
         }
     }
 
@@ -1174,7 +1172,7 @@ public abstract class AbstractSource {
      * @throws EngineMessage Shit happens.
      */
     public Operator defineOper(int type, String fun,
-                               SkelAtom sa, Engine en)
+                                  SkelAtom sa, Engine en)
             throws EngineMessage {
         Operator oper = checkOper(type, fun, sa, en);
         oper.addDef(sa, en);
@@ -1191,20 +1189,25 @@ public abstract class AbstractSource {
      * @return The operator.
      */
     public Operator checkOper(int type, String fun,
-                              SkelAtom sa, Engine en) {
+                                 SkelAtom sa, Engine en) {
         Operator oper;
         synchronized (this) {
-            oper = otabold.get(fun, type);
+            oper = otab.get(fun, type);
             if (oper != null)
                 return oper;
             oper = store.foyer.createOperator(type, fun);
+            if (CacheFunctor.isQuali(fun)) {
+                oper.setNameold(CacheFunctor.composeQuali(getFullName(), fun));
+            } else {
+                oper.setNameold(fun);
+            }
             AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPR) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPR);
             if ((src.getBits() & AbstractSource.MASK_SRC_VSPU) != 0)
                 oper.setBit(Operator.MASK_OPER_VSPU);
             oper.setSource(this);
-            otabold.add(fun, type, oper);
+            otab.add(fun, type, oper);
             cacheops = null;
         }
         return oper;
@@ -1219,10 +1222,10 @@ public abstract class AbstractSource {
     public void removeOper(int type, String fun) {
         Operator oper;
         synchronized (this) {
-            oper = otabold.get(fun, type);
+            oper = otab.get(fun, type);
             if (oper == null)
                 return;
-            otabold.remove(fun, type);
+            otab.remove(fun, type);
             cacheops = null;
         }
     }
@@ -1240,8 +1243,8 @@ public abstract class AbstractSource {
             res = cacheops;
             if (res != null)
                 return res;
-            res = new Operator[otabold.deepSize()];
-            otabold.toDeepArrayValues(res);
+            res = new Operator[otab.deepSize()];
+            otab.toDeepArrayValues(res);
             cacheops = res;
         }
         return res;

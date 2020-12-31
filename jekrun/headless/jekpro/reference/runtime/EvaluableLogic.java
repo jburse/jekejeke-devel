@@ -132,11 +132,11 @@ public final class EvaluableLogic extends AbstractSpecial {
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
-            en.skel = new SkelCompound(CacheFunctor.getFunctor(sc2.sym, mod,
+            en.skel = new SkelCompound(CacheFunctor.getModFunc(sc2.sym, mod,
                     sa2, en), sc2.args, sc2.var);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
-            en.skel = CacheFunctor.getFunctor(sa, mod, sa2, en);
+            en.skel = CacheFunctor.getModFunc(sa, mod, sa2, en);
         } else {
             EngineMessage.checkInstantiated(en.skel);
             throw new EngineMessage(EngineMessage.typeError(
@@ -164,14 +164,14 @@ public final class EvaluableLogic extends AbstractSpecial {
         if (comp && en.skel instanceof SkelCompound) {
             SkelCompound sc2 = (SkelCompound) en.skel;
             Display d3 = en.display;
-            SkelAtom sa = CacheFunctor.getFunctor(sc2.sym, mod, sa2, en);
+            SkelAtom sa = CacheFunctor.getModFunc(sc2.sym, mod, sa2, en);
             boolean multi = prependCount(recv, d2,
                     sc2.args, d3, en);
             en.skel = prependAlloc(sa, recv, d2,
                     sc2.args, d3, multi, en);
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
-            sa = CacheFunctor.getFunctor(sa, mod, sa2, en);
+            sa = CacheFunctor.getModFunc(sa, mod, sa2, en);
             en.skel = new SkelCompound(sa, recv);
             en.display = d2;
         } else {

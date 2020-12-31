@@ -1,5 +1,9 @@
 package jekpro.model.pretty;
 
+import jekpro.model.builtin.Branch;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+
 /**
  * <p>An object that is used to lookup predicates in the store</p>
  * <p/>
@@ -104,6 +108,26 @@ public class StoreKey implements Comparable<StoreKey> {
      */
     public final int getArity() {
         return arity;
+    }
+
+    /**
+     * <p>Retrieve the module.</p>
+     *
+     * @return The module source.
+     */
+    public String getModule() {
+        return Branch.OP_USER;
+    }
+
+    /**
+     * <p>Convert this store key to a compound.</p>
+     *
+     * @return The compound.
+     */
+    public Object storeKeyToSkel() {
+        return new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
+                new SkelAtom(getFun()),
+                Integer.valueOf(getArity()));
     }
 
 }

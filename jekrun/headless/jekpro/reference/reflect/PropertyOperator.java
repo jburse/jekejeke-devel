@@ -194,7 +194,7 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
             case PROP_FULL_NAME:
-                Object val = new SkelAtom(oper.getKey());
+                Object val = new SkelAtom(oper.getNameold());
                 return new Object[]{AbstractTerm.createMolec(new SkelCompound(
                         new SkelAtom(PropertyPredicate.OP_FULL_NAME), val), Display.DISPLAY_CONST)};
             default:

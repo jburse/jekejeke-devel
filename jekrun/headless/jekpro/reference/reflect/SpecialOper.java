@@ -255,8 +255,8 @@ public final class SpecialOper extends AbstractSpecial {
             Operator oper = opers[i];
             if (!OperatorSearch.visibleOper(oper, en.store.user))
                 continue;
-            Object val = SpecialOper.operToColonSkel(oper.getKey(),
-                    oper.getSource().getStore().user, oper.getType(), en);
+            Object val = SpecialOper.operToColonSkel(oper.getName(),
+                    oper.getSource().getFullName(), oper.getType(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
@@ -346,7 +346,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    AbstractProperty.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
     /**
@@ -368,7 +368,7 @@ public final class SpecialOper extends AbstractSpecial {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    AbstractProperty.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
     /**
@@ -417,7 +417,7 @@ public final class SpecialOper extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                AbstractProperty.storeKeyToSkel(sk)));
+                sk.storeKeyToSkel()));
     }
 
     /*************************************************************************/
@@ -628,16 +628,16 @@ public final class SpecialOper extends AbstractSpecial {
      * <p>Convert a type and fun to a colon.</p>
      *
      * @param fun   The name.
-     * @param scope The scope, non null.
+     * @param mod The full name.
      * @param type  The type.
      * @param en    The engine.
      * @return The compound.
      * @throws EngineMessage Shit happens.
      */
-    public static Object operToColonSkel(String fun, AbstractSource scope,
-                                         int type, Engine en)
+    public static Object operToColonSkel(String fun, String mod,
+                                            int type, Engine en)
             throws EngineMessage {
-        Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), scope, en);
+        Object s = SpecialDynamic.callableToColonSkel(new SkelAtom(fun), mod, en);
         return new SkelCompound(typeToOp(type), s);
     }
 
@@ -713,8 +713,8 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage {
         for (int i = opers.length - 1; i >= 0; i--) {
             Operator oper = opers[i];
-            Object val = operToColonSkel(oper.getKey(),
-                    oper.getSource().getStore().user, oper.getType(), en);
+            Object val = operToColonSkel(oper.getName(),
+                    oper.getSource().getFullName(), oper.getType(), en);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, val, res);
         }
         return res;
@@ -738,7 +738,7 @@ public final class SpecialOper extends AbstractSpecial {
             throws EngineMessage, EngineException {
         int type = colonToOper(t, d, en);
         SkelAtom sa = (SkelAtom) en.skel;
-        Operator oper = OperatorSearch.getOper(sa.scope, sa.fun, type, en);
+        Operator oper = OperatorSearch.getOper(sa, type, en);
         en.skel = sa;
         return oper;
     }

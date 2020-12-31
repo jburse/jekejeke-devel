@@ -1,5 +1,9 @@
 package jekpro.model.pretty;
 
+import jekpro.reference.runtime.EvaluableLogic;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+
 /**
  * <p>An object that is used to lookup qualified predicates in the store</p>
  * <p/>
@@ -91,6 +95,17 @@ public final class StoreKeyQuali extends StoreKey {
         int res = super.compareTo(o);
         if (res != 0) return res;
         return mod.compareTo(((StoreKeyQuali) o).mod);
+    }
+
+    /**
+     * <p>Convert this qualified store key to a compound.</p>
+     *
+     * @return The compound.
+     */
+    public Object storeKeyToSkel() {
+        return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON),
+                new SkelAtom(getModule()),
+                super.storeKeyToSkel());
     }
 
 }
