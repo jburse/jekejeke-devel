@@ -150,10 +150,12 @@ public final class SpecialMode extends AbstractSpecial {
                         }
 
                         CachePredicate cp = StackElement.callableToPredicate(en.skel, en);
-                        if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0 &&
-                                (visortrace.containsThreadSpyPoint(cp.pick.getArity(), cp.pick.getFun()) ||
-                                        storetrace.containsSpyPoint(cp.pick.getArity(), cp.pick.getFun()))) {
-                            break;
+                        if (cp != null && (cp.flags & CachePredicate.MASK_PRED_VISI) != 0) {
+                            Predicate pick = cp.pick;
+                            if (visortrace.containsThreadSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName()) ||
+                                    storetrace.containsSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName())) {
+                                break;
+                            }
                         }
                         return true;
                     default:

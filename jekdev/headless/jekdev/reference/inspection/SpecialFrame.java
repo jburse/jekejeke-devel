@@ -102,7 +102,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 ref = en.display;
                 frame = derefAndCastStackElement(temp[0], ref);
                 checkNotNull(frame);
-                StoreKey sk = StoreKey.propToStoreKey(temp[1], ref, en);
+                StoreKey sk = AbstractProperty.propToStoreKey(temp[1], ref, en);
                 SpecialFrame.frameToProperty(frame, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
@@ -204,7 +204,7 @@ public final class SpecialFrame extends AbstractSpecial {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                sk.storeKeyToSkel()));
     }
 
     /*******************************************************************/

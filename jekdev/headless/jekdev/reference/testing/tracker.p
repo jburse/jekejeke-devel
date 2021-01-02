@@ -17,11 +17,11 @@
  *
  *      :- public cover_predicate/4.
  *      :- dynamic cover_predicate/4.
- *      % cover_predicate(Fun, Arity, Source, OkNok)
+ *      % cover_predicate(Source, Fun, Arity, OkNok)
  *
  *      :- public cover/5.
  *      :- dynamic cover/5.
- *      % cover(Fun, Arity, Source, Line, OkNok)
+ *      % cover(Source, Line, Fun, Arity, OkNok)
  *
  * The debugger hook slows down the execution of test cases by a
  * factor of 3-4. The collection is done in two phases. First the
@@ -72,7 +72,6 @@
 :- use_module(library(inspection/provable)).
 :- use_module(library(standard/arith)).
 :- use_module(library(inspection/base)).
-:- use_module(library(inspection/notation)).
 :- use_module(library(system/file)).
 :- use_module(library(advanced/signal)).
 :- use_module(runner).
@@ -248,7 +247,7 @@ sys_update_source(Source, L) :-
 /* Predicate Update                                             */
 /****************************************************************/
 
-% cover_predicate(Fun, Arity, File, OkNok)
+% cover_predicate(File, Fun, Arity, OkNok)
 :- public cover_predicate/4.
 :- dynamic cover_predicate/4.
 
@@ -261,17 +260,17 @@ sys_remove_predicate.
 % sys_update_predicate(+Atom, +Integer, +Atom, +OkNok)
 :- private sys_update_predicate/4.
 sys_update_predicate(Fun, Arity, File, L) :-
-   retract(cover_predicate(Fun, Arity, File, R)), !,
+   retract(cover_predicate(File, Fun, Arity, R)), !,
    sys_add_oknok(L, R, S),
-   assertz(cover_predicate(Fun, Arity, File, S)).
+   assertz(cover_predicate(File, Fun, Arity, S)).
 sys_update_predicate(Fun, Arity, File, L) :-
-   assertz(cover_predicate(Fun, Arity, File, L)).
+   assertz(cover_predicate(File, Fun, Arity, L)).
 
 /****************************************************************/
 /* Clause Update                                                */
 /****************************************************************/
 
-% cover(Fun, Arity, File, Line, OkNok)
+% cover(File, Line, Fun, Arity, OkNok)
 :- public cover/5.
 :- dynamic cover/5.
 
@@ -284,11 +283,11 @@ sys_remove_cover.
 % sys_update_cover(+Atom, +Integer, +Atom, +Integer, +OkNok)
 :- private sys_update_cover/5.
 sys_update_cover(Fun, Arity, File, Line, L) :-
-   retract(cover(Fun, Arity, File, Line, R)), !,
+   retract(cover(File, Line, Fun, Arity, R)), !,
    sys_add_oknok(L, R, S),
-   assertz(cover(Fun, Arity, File, Line, S)).
+   assertz(cover(File, Line, Fun, Arity, S)).
 sys_update_cover(Fun, Arity, File, Line, L) :-
-   assertz(cover(Fun, Arity, File, Line, L)).
+   assertz(cover(File, Line, Fun, Arity, L)).
 
 /****************************************************************/
 /* Analyze Text                                                 */
@@ -308,7 +307,7 @@ sys_find_indicator(SrcPin, OrigSrcPin, A, B, Fun, Arity) :-
    C is B-1,
    between(A, C, L),
    sys_location(SrcPin, OrigSrcPin, L, Indicator),
-   sys_indicator_colon(Fun/Arity, Indicator).
+   sys_make_indicator(Fun, Arity, Indicator).
 
 % sys_analyze_text(+File)
 :- private sys_analyze_text/1.

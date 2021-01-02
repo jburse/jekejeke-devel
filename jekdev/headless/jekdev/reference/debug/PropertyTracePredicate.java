@@ -112,7 +112,7 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
         switch (id) {
             case PROP_SYS_NOINSTRUMENT:
                 AbstractDelegate fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NIST;
                 return true;
             default:
@@ -135,7 +135,7 @@ public final class PropertyTracePredicate extends AbstractProperty<Predicate> {
         switch (id) {
             case PROP_SYS_NOINSTRUMENT:
                 AbstractDelegate fun = pick.del;
-                AbstractDefined.checkDefinedWrite(fun, pick, en);
+                AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NIST;
                 return true;
             default:

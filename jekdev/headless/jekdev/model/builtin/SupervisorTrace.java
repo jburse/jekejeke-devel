@@ -119,42 +119,45 @@ public final class SupervisorTrace extends Supervisor {
     /**
      * <p>Check presence of a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod The module.
      * @return True if the spy point is present, otherwise false.
      */
-    public boolean containsThreadSpyPoint(int arity, String fun) {
+    public boolean containsThreadSpyPoint(String fun, int arity, String mod) {
         if (tstab == null)
             return false;
-        return tstab.contains(fun, arity);
+        return tstab.contains(fun, arity, mod);
     }
 
     /**
      * <p>Add a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod The module.
      */
-    public void addThreadSpyPoint(int arity, String fun) {
+    public void addThreadSpyPoint(String fun, int arity, String mod) {
         if (tstab == null)
             tstab = new SetTable();
-        if (tstab.contains(fun, arity))
+        if (tstab.contains(fun, arity, mod))
             return;
-        tstab.add(fun, arity);
+        tstab.add(fun, arity, mod);
     }
 
     /**
      * <p>Remove a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
      * @param fun   The name.
      */
-    public void removeThreadSpyPoint(int arity, String fun) {
+    public void removeThreadSpyPoint(String fun, int arity, String mod) {
         if (tstab == null)
             return;
-        if (!tstab.contains(fun, arity))
+        if (!tstab.contains(fun, arity, mod))
             return;
-        tstab.remove(fun, arity);
+        tstab.remove(fun, arity, mod);
     }
 
     /**

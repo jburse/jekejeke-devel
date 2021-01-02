@@ -98,51 +98,54 @@ public class StoreTrace extends Store {
     /**
      * <p>Check presence of a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod The module.
      * @return True if the spy point is present, otherwise false.
      */
-    public boolean containsSpyPoint(int arity, String fun) {
+    public boolean containsSpyPoint(String fun, int arity, String mod) {
         if (stab == null)
             return false;
         synchronized (this) {
             if (stab == null)
                 return false;
-            return stab.contains(fun, arity);
+            return stab.contains(fun, arity, mod);
         }
     }
 
     /**
      * <p>Add a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod The module
      */
-    public void addSpyPoint(int arity, String fun) {
+    public void addSpyPoint(String fun, int arity, String mod) {
         synchronized (this) {
             if (stab == null)
                 stab = new SetTable();
-            if (stab.contains(fun, arity))
+            if (stab.contains(fun, arity, mod))
                 return;
-            stab.add(fun, arity);
+            stab.add(fun, arity, mod);
         }
     }
 
     /**
      * <p>Remove a spy point.</p>
      *
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod The module.
      */
-    public void removeSpyPoint(int arity, String fun) {
+    public void removeSpyPoint(String fun, int arity, String mod) {
         if (stab == null)
             return;
         synchronized (this) {
             if (stab == null)
                 return;
-            if (!stab.contains(fun, arity))
+            if (!stab.contains(fun, arity, mod))
                 return;
-            stab.remove(fun, arity);
+            stab.remove(fun, arity, mod);
         }
     }
 

@@ -39,7 +39,6 @@
 :- use_module(library(system/locale)).
 :- use_module(library(system/file)).
 :- use_module(library(stream/xml)).
-:- use_module(library(inspection/notation)).
 :- use_module(library(inspection/base)).
 :- use_module(runner).
 :- use_module(tracker).

@@ -35,7 +35,7 @@
  */
 
 :- package(library(jekdev/frequent/misc)).
-:- use_package(foreign(matula/text/misc)).
+:- use_package(foreign(jekdev/frequent/misc)).
 :- use_package(foreign(java/net)).
 
 :- module(filter, []).

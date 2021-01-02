@@ -86,7 +86,7 @@ public final class SpecialAttach extends AbstractSpecial {
                 Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 SpecialProvable.checkExistentProvable(pick, temp[0], ref);
-                ((SupervisorTrace) en.visor).addThreadSpyPoint(pick.getArity(), pick.getFun());
+                ((SupervisorTrace) en.visor).addThreadSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName());
                 return true;
             case SPECIAL_SYS_TSPYING:
                 temp = ((SkelCompound) en.skel).args;
@@ -100,7 +100,7 @@ public final class SpecialAttach extends AbstractSpecial {
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 SpecialProvable.checkExistentProvable(pick, temp[0], ref);
-                ((SupervisorTrace) en.visor).removeThreadSpyPoint(pick.getArity(), pick.getFun());
+                ((SupervisorTrace) en.visor).removeThreadSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName());
                 return true;
             case SPECIAL_SYS_TBREAK:
                 temp = ((SkelCompound) en.skel).args;
@@ -147,11 +147,11 @@ public final class SpecialAttach extends AbstractSpecial {
     private static Object currentThreadSpyPoints(Engine en)
             throws EngineMessage {
         Object res = en.store.foyer.ATOM_NIL;
-        ListArray<StoreKey> spypoints = ((SupervisorTrace) en.visor).snapshotThreadSpyPoints();
-        for (int i = 0; i < spypoints.size; i++) {
-            StoreKey sk = spypoints.get(i);
-            Object decl = SpecialPred.indicatorToColonSkel(sk.getFun(), en.store.user,
-                    sk.getArity(), en);
+        StoreKey[] spypoints = ((SupervisorTrace) en.visor).snapshotThreadSpyPoints();
+        for (int i = 0; i < spypoints.length; i++) {
+            StoreKey sk = spypoints[i];
+            Object decl = SpecialPred.indicatorToColonSkel(
+                    sk.getFun(), sk.getArity(), sk.getModule(), en.store.user);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, decl, res);
         }
         return res;

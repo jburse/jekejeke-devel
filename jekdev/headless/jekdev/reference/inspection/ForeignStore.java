@@ -94,7 +94,7 @@ public final class ForeignStore {
             throws InterpreterException, InterpreterMessage {
         Engine en = inter.getEngine();
         try {
-            StoreKey sk = StoreKey.propToStoreKey(AbstractTerm.getSkel(key),
+            StoreKey sk = AbstractProperty.propToStoreKey(AbstractTerm.getSkel(key),
                     AbstractTerm.getDisplay(key), en);
             storeToProperty(know.getStore(), sk, en);
             return AbstractTerm.createTerm(en.skel, en.display);
@@ -275,7 +275,7 @@ public final class ForeignStore {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
     /**
@@ -299,7 +299,7 @@ public final class ForeignStore {
             throw new EngineMessage(EngineMessage.permissionError(
                     EngineMessage.OP_PERMISSION_MODIFY,
                     EngineMessage.OP_PERMISSION_PROPERTY,
-                    StoreKey.storeKeyToSkel(sk)));
+                    sk.storeKeyToSkel()));
     }
 
 
@@ -331,7 +331,7 @@ public final class ForeignStore {
         }
         throw new EngineMessage(EngineMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                StoreKey.storeKeyToSkel(sk)));
+                sk.storeKeyToSkel()));
     }
 
 }

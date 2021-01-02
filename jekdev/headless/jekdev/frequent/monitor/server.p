@@ -71,7 +71,6 @@ start_monitor(A) :-
  * is initialized for object O.
  */
 % initialized(+Object, +Socket)
-:- override initialized/2.
 :- public initialized/2.
 initialized(_, Server) :-
    server_port(Server, Port),
@@ -85,7 +84,6 @@ initialized(_, Server) :-
  * is destroyed for object O.
  */
 % destroyed(+Object, +Socket)
-:- override destroyed/2.
 :- public destroyed/2.
 destroyed(_, _) :-
    set_prolog_flag(sys_monitor_running, '').
@@ -96,7 +94,6 @@ destroyed(_, _) :-
  * O, with path P, with request R and the socket S.
  */
 % dispatch(+Object, +Spec, +Request, +Socket)
-:- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/images/closed.gif', Request, Session) :- !,
    dispatch_binary(resource(monitor/images/closed), Request, Session).
@@ -127,7 +124,6 @@ dispatch(Object, Spec, Request, Session) :-
  * O, with path P, with request R and the socket S.
  */
 % upgrade(+Object, +Spec, +Request, +Socket)
-:- override upgrade/4.
 :- public upgrade/4.
 upgrade(_, Path, Request, Session) :-
    sub_atom(Path, 0, Pos, '/talkback/'), !,

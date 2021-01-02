@@ -90,9 +90,9 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(),
-                    pick.getSource().getStore().user,
-                    pick.getArity(), engine);
+            AbstractSource src = pick.getSource();
+            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                    src.getFullName(), src.getStore().user);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
@@ -135,9 +135,9 @@ public final class ForeignBase {
                 return null;
             Predicate pick = dc.nextElement();
             co.setRetry(dc.hasMoreElements());
-            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(),
-                    pick.getSource().getStore().user,
-                    pick.getArity(), engine);
+            AbstractSource src = pick.getSource();
+            Object t = SpecialPred.indicatorToColonSkel(pick.getFun(), pick.getArity(),
+                    src.getFullName(), src.getStore().user);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);

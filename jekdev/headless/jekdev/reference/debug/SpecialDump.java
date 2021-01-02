@@ -1,6 +1,7 @@
 package jekdev.reference.debug;
 
 import jekdev.reference.inspection.SpecialProvable;
+import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
@@ -82,7 +83,7 @@ public final class SpecialDump extends AbstractSpecial {
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 SpecialProvable.checkExistentProvable(pick, temp[0], ref);
                 AbstractDelegate fun = pick.del;
-                AbstractDefined.checkDefinedRead(fun, pick, en);
+                AbstractDefined.checkDefinedRead(fun, pick);
                 Object obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
@@ -105,6 +106,11 @@ public final class SpecialDump extends AbstractSpecial {
             throws EngineMessage {
         try {
             wr.write("-------- ");
+            String str=defined.getSource().getFullName();
+            if (!Branch.OP_USER.equals(str)) {
+                wr.write(str);
+                wr.write(":");
+            }
             wr.write(defined.getFun());
             wr.write("/");
             wr.write(Integer.toString(defined.getArity()));

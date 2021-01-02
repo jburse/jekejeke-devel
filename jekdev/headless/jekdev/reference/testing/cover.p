@@ -197,9 +197,10 @@ html_list_package(_, _).
 % html_list_member(+Atom, +Atom)
 :- private html_list_member/2.
 html_list_member(R, S) :-
-   call_nth(cover_predicate(F, A, S, P), Z),
+   call_nth(cover_predicate(S, F, A, P), Z),
    html_zebra_row(Z),
-   sys_provable_hash(F/A, S, K),
+   sys_make_indicator(F, A, I),
+   sys_provable_hash(I, S, K),
    term_atom(K, FAStr),
    make_uri(R, '', FAStr, RFAUri),
    uri_encode(RFAUri, RFAUriEnc),
@@ -239,8 +240,9 @@ html_list_source(S, N, Z) :-
    get_property(P, 'cover.source.h1', V1),
    write('''>'), html_escape(V1), write(' '),
    html_escape(N), write('</h1>'), nl,
-   cover_predicate(F, A, S, U),
-   sys_provable_hash(F/A, S, K),
+   cover_predicate(S, F, A, U),
+   sys_make_indicator(F, A, I),
+   sys_provable_hash(I, S, K),
    term_atom(K, FAStr),
    uri_encode(FAStr, FAStrEnc),
    write('<a name="'), html_escape(FAStrEnc), write('"></a>'),
@@ -271,7 +273,7 @@ html_list_source(_, _, _).
 html_list_predicate(F, A, S, Z) :-
    cover_source_view(S, D, M, _),
    atom_split(R, '', [Z, D, /, M, '.html']),
-   call_nth(cover(F, A, S, N, P), I),
+   call_nth(cover(S, N, F, A, P), I),
    html_zebra_row(I),
    write('  <td>'),
    atom_number(NStr, N),
@@ -293,10 +295,12 @@ html_list_predicate(_, _, _, _).
 :- private html_functor_indicator/3.
 html_functor_indicator(F, A, C) :-
    A < 0, !, B is -A-1,
-   sys_provable_hash(F/B, C, K),
+   sys_make_indicator(F, B, I),
+   sys_provable_hash(I, C, K),
    term_atom(K, FBStr),
    html_escape(FBStr).
 html_functor_indicator(F, A, C) :-
-   sys_provable_hash(F/A, C, K),
+   sys_make_indicator(F, A, I),
+   sys_provable_hash(I, C, K),
    term_atom(K, FAStr),
    html_escape(FAStr).

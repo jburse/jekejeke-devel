@@ -55,7 +55,6 @@
  * O, with path P, with parameter list A and the session S.
  */
 % dispatch(+Object, +Spec, +Request, +Session)
-:- override dispatch/4.
 :- public dispatch/4.
 dispatch(_, '/frame.jsp', Request, Session) :- !,
    dispatch_frame(Request, Session).
@@ -72,7 +71,6 @@ dispatch(Object, '/thread.jsp', Request, Session) :- !,
  * O, with path P, with request R and the session S.
  */
 % upgrade(+Object, +Spec, +Request, +Session)
-:- override upgrade/4.
 :- public upgrade/4.
 upgrade(_, '/call', Request, Session) :- !,
    upgrade_call(Request, Session).

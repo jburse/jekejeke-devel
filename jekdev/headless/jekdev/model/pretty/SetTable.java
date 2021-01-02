@@ -1,6 +1,8 @@
 package jekdev.model.pretty;
 
+import jekpro.model.builtin.Branch;
 import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.StoreKeyQuali;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -35,50 +37,66 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class SetTable extends MapHash<String, ListArray<Integer>> {
+public final class SetTable extends MapHash<String, MapHash<String, ListArray<Integer>>> {
 
     /**
      * <p>Find string integer in table.</p>
      *
-     * @param s The string.
-     * @param i The integer.
+     * @param fun The functor.
+     * @param arity The arity.
+     * @param mod The module.
      * @return The value or null.
      */
-    public boolean contains(String s, int i) {
-        ListArray<Integer> list = get(s);
+    public boolean contains(String fun, int arity, String mod) {
+        MapHash<String, ListArray<Integer>> map = get(mod);
+        if (map == null)
+            return false;
+        ListArray<Integer> list = map.get(fun);
         if (list == null)
             return false;
-        return list.contains(Integer.valueOf(i));
+        return list.contains(Integer.valueOf(arity));
     }
 
     /**
      * <p>Add string integer value to the table.</p>
      *
-     * @param s The string.
-     * @param i The integer.
+     * @param fun The functor.
+     * @param arity The arity.
+     * @param mod The module.
      */
-    public void add(String s, int i) {
-        ListArray<Integer> list = get(s);
+    public void add(String fun, int arity, String mod) {
+        MapHash<String, ListArray<Integer>> map = get(mod);
+        if (map==null) {
+            map = new MapHash<>();
+            add(mod, map);
+        }
+        ListArray<Integer> list = map.get(fun);
         if (list == null) {
             list = new ListArray<>();
-            add(s, list);
+            map.add(fun, list);
         }
-        list.add(Integer.valueOf(i));
+        list.add(Integer.valueOf(arity));
     }
 
     /**
      * <p>Remove string integer from table.</p>
      *
-     * @param s The string.
-     * @param i The integer.
+     * @param fun The functor.
+     * @param arity The arity.
+     * @param mod The module.
      */
-    public void remove(String s, int i) {
-        ListArray<Integer> list = get(s);
+    public void remove(String fun, int arity, String mod) {
+        MapHash<String, ListArray<Integer>> map = get(mod);
+        if (map==null)
+            return;
+        ListArray<Integer> list = map.get(fun);
         if (list == null)
             return;
-        list.remove(Integer.valueOf(i));
+        list.remove(Integer.valueOf(arity));
         if (list.size() == 0)
-            remove(s);
+            map.remove(fun);
+        if (map.size()==0)
+            remove(mod);
     }
 
     /**
@@ -88,9 +106,13 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      */
     public int deepSize() {
         int deepsize = 0;
-        for (MapEntry<String, ListArray<Integer>> entry = getFirstEntry();
-             entry != null; entry = successor(entry))
-            deepsize += entry.value.size();
+        for (MapEntry<String, MapHash<String, ListArray<Integer>>> base = getFirstEntry();
+             base != null; base = successor(base)) {
+            MapHash<String, ListArray<Integer>> map = base.value;
+            for (MapEntry<String, ListArray<Integer>> entry = map.getFirstEntry();
+                 entry != null; entry = map.successor(entry))
+                deepsize += entry.value.size();
+        }
         return deepsize;
     }
 
@@ -101,12 +123,23 @@ public final class SetTable extends MapHash<String, ListArray<Integer>> {
      */
     public void toDeepArray(StoreKey[] target) {
         int pos = 0;
-        for (MapEntry<String, ListArray<Integer>> entry = getFirstEntry();
-             entry != null; entry = successor(entry)) {
-            ListArray<Integer> list = entry.value;
-            for (int i = 0; i < list.size; i++) {
-                target[pos] = new StoreKey(entry.key, list.get(i).intValue());
-                pos++;
+        for (MapEntry<String, MapHash<String, ListArray<Integer>>> base = getFirstEntry();
+             base != null; base = successor(base)) {
+            String mod = base.key;
+            MapHash<String, ListArray<Integer>> map = base.value;
+            for (MapEntry<String, ListArray<Integer>> entry = map.getFirstEntry();
+                 entry != null; entry = map.successor(entry)) {
+                ListArray<Integer> list = entry.value;
+                for (int i = 0; i < list.size; i++) {
+                    StoreKey key;
+                    if (!Branch.OP_USER.equals(mod)) {
+                        key = new StoreKeyQuali(entry.key, list.get(i).intValue(), mod);
+                    } else {
+                        key = new StoreKey(entry.key, list.get(i).intValue());
+                    }
+                    target[pos] = key;
+                    pos++;
+                }
             }
         }
     }

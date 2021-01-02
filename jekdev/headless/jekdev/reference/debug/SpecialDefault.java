@@ -18,7 +18,6 @@ import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.ListArray;
 
 /**
  * <p>Provides a special predicate for default debugger.</p>
@@ -114,7 +113,7 @@ public final class SpecialDefault extends AbstractSpecial {
                     Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                             ref, en, CachePredicate.MASK_CACH_UCHK);
                     SpecialProvable.checkExistentProvable(pick, temp[0], ref);
-                    ((StoreTrace) en.store).addSpyPoint(pick.getArity(), pick.getFun());
+                    ((StoreTrace) en.store).addSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName());
                     return true;
                 case SPECIAL_NOSPY:
                     temp = ((SkelCompound) en.skel).args;
@@ -122,7 +121,7 @@ public final class SpecialDefault extends AbstractSpecial {
                     pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                             ref, en, CachePredicate.MASK_CACH_UCHK);
                     SpecialProvable.checkExistentProvable(pick, temp[0], ref);
-                    ((StoreTrace) en.store).removeSpyPoint(pick.getArity(), pick.getFun());
+                    ((StoreTrace) en.store).removeSpyPoint(pick.getFun(), pick.getArity(), pick.getSource().getFullName());
                     return true;
                 case SPECIAL_SYS_SPYING:
                     temp = ((SkelCompound) en.skel).args;
@@ -166,11 +165,11 @@ public final class SpecialDefault extends AbstractSpecial {
     private static Object currentSpyPoints(Engine en)
             throws EngineMessage {
         Object res = en.store.foyer.ATOM_NIL;
-        ListArray<StoreKey> spypoints = ((StoreTrace) en.store).snapshotSpyPoints();
-        for (int i = 0; i < spypoints.size; i++) {
-            StoreKey sk = spypoints.get(i);
-            Object decl = SpecialPred.indicatorToColonSkel(sk.getFun(), en.store.user,
-                    sk.getArity(), en);
+        StoreKey[] spypoints = ((StoreTrace) en.store).snapshotSpyPoints();
+        for (int i = 0; i < spypoints.length; i++) {
+            StoreKey sk = spypoints[i];
+            Object decl = SpecialPred.indicatorToColonSkel(
+                    sk.getFun(), sk.getArity(), sk.getModule(), en.store.user);
             res = new SkelCompound(en.store.foyer.ATOM_CONS, decl, res);
         }
         return res;
