@@ -107,7 +107,7 @@
 % +Goal ; +Goal
 :- public ;/2.
 :- sys_notrace ;/2.
-:- set_predicate_property(;/2, meta_predicate(;(0, 0))).
+:- set_predicate_property(;/2, meta_predicate([0, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(;/2, sys_meta_predicate(C)).
 _; _ :- throw(error(existence_error(body, ;/2), _)).
@@ -120,7 +120,7 @@ _; _ :- throw(error(existence_error(body, ;/2), _)).
 % +Goal -> +Goal
 :- public -> /2.
 :- sys_notrace -> /2.
-:- set_predicate_property(-> /2, meta_predicate(->(0, 0))).
+:- set_predicate_property(-> /2, meta_predicate([0, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(-> /2, sys_meta_predicate(C)).
 _ -> _ :- throw(error(existence_error(body, -> /2), _)).
@@ -133,7 +133,7 @@ _ -> _ :- throw(error(existence_error(body, -> /2), _)).
 % +Goal *-> +Goal
 :- public *-> /2.
 :- sys_notrace *-> /2.
-:- set_predicate_property(*-> /2, meta_predicate(*->(0, 0))).
+:- set_predicate_property(*-> /2, meta_predicate([0, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(*-> /2, sys_meta_predicate(C)).
 _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
@@ -153,7 +153,7 @@ repeat :- repeat.
  * such that B fails. Otherwise the predicate fails.
  */
 :- public forall/2.
-:- set_predicate_property(forall/2, meta_predicate(forall(0, 0))).
+:- set_predicate_property(forall/2, meta_predicate([0, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(forall/2, sys_meta_predicate(C)).
 forall(A, B) :- \+ (A, \+ B).
@@ -167,7 +167,7 @@ forall(A, B) :- \+ (A, \+ B).
  */
 % findall(+Template, +Goal, -List)
 :- public findall/3.
-:- set_predicate_property(findall/3, meta_predicate(findall(?, 0, ?))).
+:- set_predicate_property(findall/3, meta_predicate([?, 0, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(findall/3, sys_meta_predicate(C)).
 findall(X, G, L) :-
@@ -177,7 +177,7 @@ findall(X, G, L) :-
 
 % findall(+Template, +Goal, -List, +List)
 :- public findall/4.
-:- set_predicate_property(findall/4, meta_predicate(findall(?, 0, ?, ?))).
+:- set_predicate_property(findall/4, meta_predicate([?, 0, ?, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(findall/4, sys_meta_predicate(C)).
 findall(X, G, L, E) :-
@@ -198,7 +198,7 @@ findall(X, G, L, E) :-
 % +Slash : +Callable:
 :- public : /2.
 :- virtual : /2.
-:- set_predicate_property(: /2, meta_predicate(:(?, 0))).
+:- set_predicate_property(: /2, meta_predicate([?, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(: /2, sys_meta_predicate(C)).
 :- special(: /2, 'SpecialLogic', 2).
@@ -212,7 +212,7 @@ findall(X, G, L, E) :-
 % +Slash :: +Callable:
 :- public :: /2.
 :- virtual :: /2.
-:- set_predicate_property(:: /2, meta_predicate(::(?, ::(0)))).
+:- set_predicate_property(:: /2, meta_predicate([?, ::(0)])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
 :- special(:: /2, 'SpecialLogic', 3).
@@ -226,7 +226,7 @@ findall(X, G, L, E) :-
 % +Slash : +Callable:
 :- public : /3.
 :- virtual : /3.
-:- set_predicate_property(: /3, meta_predicate(:(?, 1, ?))).
+:- set_predicate_property(: /3, meta_predicate([?, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(: /3, sys_meta_predicate(C)).
 :- special(: /3, 'EvaluableLogic', 0).
@@ -240,7 +240,7 @@ findall(X, G, L, E) :-
 % +Slash :: +Callable:
 :- public :: /3.
 :- virtual :: /3.
-:- set_predicate_property(:: /3, meta_predicate(::(?, ::(1), ?))).
+:- set_predicate_property(:: /3, meta_predicate([?, ::(1), ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(:: /3, sys_meta_predicate(C)).
 :- special(:: /3, 'EvaluableLogic', 1).

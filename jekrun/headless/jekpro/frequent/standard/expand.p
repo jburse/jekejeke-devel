@@ -110,8 +110,7 @@ sys_expand_term(T, T, 0).
 sys_expand_term_callable(T, I, T) :-
    predicate_property(I, sys_noexpand), !.
 sys_expand_term_callable(T, I, H) :-
-   predicate_property(I, meta_predicate(P)), !,
-   P =.. [_|M],
+   predicate_property(I, meta_predicate(M)), !,
    T =.. [K|L],
    sys_expand_term_args(M, L, S),
    H =.. [K|S].
@@ -199,8 +198,7 @@ sys_expand_goal(G, G, 0).
 sys_expand_goal_callable(G, I, G) :-
    predicate_property(I, sys_noexpand), !.
 sys_expand_goal_callable(G, I, H) :-
-   predicate_property(I, meta_predicate(P)), !,
-   P =.. [_|M],
+   predicate_property(I, meta_predicate(M)), !,
    G =.. [K|L],
    sys_expand_goal_args(M, L, S),
    H =.. [K|S].

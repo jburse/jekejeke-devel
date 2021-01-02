@@ -51,9 +51,10 @@ public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_SYS_TERM_TO_ARITY = 3;
     private final static int SPECIAL_SYS_EXTEND_TERM = 4;
     private final static int SPECIAL_SYS_SHRINK_TERM = 5;
-    private final static int SPECIAL_UNIFY_CHECKED = 6;
+    private final static int SPECIAL_UNIFY_WITH_OCCURS_CHECK = 6;
     private final static int SPECIAL_NOT_UNIFY = 7;
-    private final static int SPECIAL_COPY_TERM = 8;
+    private final static int SPECIAL_SUBSUMES_TERM = 8;
+    private final static int SPECIAL_COPY_TERM = 9;
 
     /**
      * <p>Create a univ special.</p>
@@ -204,10 +205,10 @@ public final class SpecialUniv extends AbstractSpecial {
                     if (!en.unifyTerm(val, d, temp[3], ref))
                         return false;
                     return true;
-                case SPECIAL_UNIFY_CHECKED:
+                case SPECIAL_UNIFY_WITH_OCCURS_CHECK:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
+                    if (!SpecialUniv.unifyWithOccursCheck(temp[0], ref, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_NOT_UNIFY:
@@ -220,6 +221,12 @@ public final class SpecialUniv extends AbstractSpecial {
                     en.releaseBind(mark);
                     if (en.fault != null)
                         throw en.fault;
+                    return true;
+                case SPECIAL_SUBSUMES_TERM:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    if (!SpecialUniv.subsumesTerm(temp[0], ref, temp[1], ref, en))
+                        return false;
                     return true;
                 case SPECIAL_COPY_TERM:
                     temp = ((SkelCompound) en.skel).args;
@@ -581,12 +588,14 @@ public final class SpecialUniv extends AbstractSpecial {
     }
 
     /*****************************************************************/
-    /* Checked Unification                                           */
+    /* Unify With Occurs Check                                       */
     /*****************************************************************/
 
     /**
-     * Unify two terms. As a side effect bindings are established.
-     * Bindings are only created when the occurs check fails.
+     * <p>>Unify two terms. As a side effect bindings are established.</p
+     * <p>Bindings are only created when the occurs check fails.<p>
+     * <p>The verify hooks of attribute variables are called.</p>
+     * <p>Tail recursive implementation.</p>
      *
      * @param alfa The first term.
      * @param d1   The display of the first term.
@@ -595,9 +604,9 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en   The engine.
      * @return True if the two terms unify, otherwise false.
      */
-    private static boolean unifyTermChecked(Object alfa, Display d1,
-                                            Object beta, Display d2,
-                                            Engine en)
+    private static boolean unifyWithOccursCheck(Object alfa, Display d1,
+                                                Object beta, Display d2,
+                                                Engine en)
             throws EngineException {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
@@ -655,7 +664,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 return false;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                if (!unifyTermChecked(t1[i], d1, t2[i], d2, en))
+                if (!unifyWithOccursCheck(t1[i], d1, t2[i], d2, en))
                     return false;
             }
             alfa = t1[i];
@@ -706,6 +715,108 @@ public final class SpecialUniv extends AbstractSpecial {
             } else {
                 return (v == t && d == d2);
             }
+        }
+    }
+
+    /*****************************************************************/
+    /* Subsumes Term                                                 */
+    /*****************************************************************/
+
+    /**
+     * <p>>Subsumes term check. There is no bindings side effect.</p
+     * <p>The verify hooks of attribute variables are ignored.</p>
+     *
+     * @param alfa The first term.
+     * @param d1   The display of the first term.
+     * @param beta The second term.
+     * @param d2   The display of the second term.
+     * @param en   The engine.
+     * @return True if the two terms unify, otherwise false.
+     */
+    private static boolean subsumesTerm(Object alfa, Display d1,
+                                        Object beta, Display d2,
+                                        Engine en) {
+        AbstractUndo mark = en.bind;
+        boolean res = subsumesTerm(alfa, d1, beta, d2, beta, d2, en);
+        en.fault = null;
+        en.releaseBind(mark);
+        if (en.fault != null)
+            throw new RuntimeException("shouldn't happen");
+        return res;
+    }
+
+    /**
+     * <p>>Subsumes term check. There is no bindings side effect.</p
+     * <p>The verify hooks of attribute variables are ignored.</p>
+     * <p>http://www.picat-lang.org/bprolog/publib/metutl.html</p>
+     *
+     * @param alfa  The first term.
+     * @param d1    The display of the first term.
+     * @param beta  The second term.
+     * @param d2    The display of the second term.
+     * @param gamma The second term.
+     * @param d3    The display of the third term.
+     * @param en    The engine.
+     * @return True if the two terms unify, otherwise false.
+     */
+    private static boolean subsumesTerm(Object alfa, Display d1,
+                                        Object beta, Display d2,
+                                        Object gamma, Display d3,
+                                        Engine en) {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                for (;;) {
+                    if (beta instanceof SkelVar) {
+                        BindUniv b2;
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
+                            beta = b2.skel;
+                            d2 = b2.display;
+                            continue;
+                        }
+                        if (alfa == beta && d1 == d2)
+                            return true;
+                    }
+                    if (hasVar(gamma, d3, alfa, d1))
+                        return false;
+                    b1.bindUniv(beta, d2, en);
+                    return true;
+                }
+            }
+            for (; ; ) {
+                if (beta instanceof SkelVar) {
+                    BindUniv b;
+                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = b.skel;
+                        d2 = b.display;
+                        continue;
+                    }
+                    return false;
+                }
+                break;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++) {
+                if (!subsumesTerm(t1[i], d1, t2[i], d2, gamma, d3, en))
+                    return false;
+            }
+            alfa = t1[i];
+            beta = t2[i];
         }
     }
 

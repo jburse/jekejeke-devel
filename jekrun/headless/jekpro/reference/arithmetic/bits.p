@@ -78,7 +78,7 @@
  */
 % \(+Integer, -Integer)
 :- public (\)/2.
-:- set_predicate_property((\)/2, meta_predicate(\(1, ?))).
+:- set_predicate_property((\)/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property((\)/2, sys_meta_predicate(C)).
 :- special((\)/2, 'EvaluableBits', 0).
@@ -89,7 +89,7 @@
  */
 % /\(+Integer, +Integer, -Integer)
 :- public /\ /3.
-:- set_predicate_property(/\ /3, meta_predicate(/\(1, 1, ?))).
+:- set_predicate_property(/\ /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(/\ /3, sys_meta_predicate(C)).
 :- special(/\ /3, 'EvaluableBits', 1).
@@ -100,7 +100,7 @@
  */
 % \/(+Integer, +Integer, -Integer)
 :- public \/ /3.
-:- set_predicate_property(\/ /3, meta_predicate(\/(1, 1, ?))).
+:- set_predicate_property(\/ /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(\/ /3, sys_meta_predicate(C)).
 :- special(\/ /3, 'EvaluableBits', 2).
@@ -112,7 +112,7 @@
  */
 % xor(+Integer, +Integer, -Integer)
 :- public xor/3.
-:- set_predicate_property(xor/3, meta_predicate(xor(1, 1, ?))).
+:- set_predicate_property(xor/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(xor/3, sys_meta_predicate(C)).
 :- special(xor/3, 'EvaluableBits', 3).
@@ -124,7 +124,7 @@
  */
 % <<(+Integer, +Integer, -Integer)
 :- public << /3.
-:- set_predicate_property(<< /3, meta_predicate(<<(1, 1, ?))).
+:- set_predicate_property(<< /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(<< /3, sys_meta_predicate(C)).
 :- special(<< /3, 'EvaluableBits', 4).
@@ -136,7 +136,7 @@
  */
 % >>(+Integer, +Integer, -Integer)
 :- public >> /3.
-:- set_predicate_property(>> /3, meta_predicate(>>(1, 1, ?))).
+:- set_predicate_property(>> /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(>> /3, sys_meta_predicate(C)).
 :- special(>> /3, 'EvaluableBits', 5).
@@ -148,7 +148,7 @@
  */
 % gcd(+Integer, +Integer, -Integer)
 :- public gcd/3.
-:- set_predicate_property(gcd/3, meta_predicate(gcd(1, 1, ?))).
+:- set_predicate_property(gcd/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(gcd/3, sys_meta_predicate(C)).
 :- special(gcd/3, 'EvaluableBits', 6).
@@ -160,7 +160,7 @@
  */
 % lcm(+Integer, +Integer, -Integer)
 :- public lcm/3.
-:- set_predicate_property(lcm/3, meta_predicate(lcm(1, 1, ?))).
+:- set_predicate_property(lcm/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(lcm/3, sys_meta_predicate(C)).
 lcm(_, 0, R) :- !, =(R, 0).
@@ -172,7 +172,7 @@ lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
  * If X is an integer then the function returns the most significant bit.
  */
 :- public msb/2.
-:- set_predicate_property(msb/2, meta_predicate(msb(1, ?))).
+:- set_predicate_property(msb/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(msb/2, sys_meta_predicate(C)).
 :- special(msb/2, 'EvaluableBits', 7).
@@ -182,7 +182,7 @@ lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
  * If X is an integer then the function returns the least significant bit.
  */
 :- public lsb/2.
-:- set_predicate_property(lsb/2, meta_predicate(lsb(1, ?))).
+:- set_predicate_property(lsb/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(lsb/2, sys_meta_predicate(C)).
 :- special(lsb/2, 'EvaluableBits', 8).
@@ -192,7 +192,7 @@ lcm(X, Y, R) :- R is X//gcd(X, Y)*Y.
  * If X is an integer then the function returns the number of bits.
  */
 :- public popcount/2.
-:- set_predicate_property(popcount/2, meta_predicate(popcount(1, ?))).
+:- set_predicate_property(popcount/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(popcount/2, sys_meta_predicate(C)).
 :- special(popcount/2, 'EvaluableBits', 9).

@@ -81,7 +81,7 @@
  */
 % +Expr =:= +Expr
 :- public =:= /2.
-:- set_predicate_property(=:= /2, meta_predicate(=:=(1, 1))).
+:- set_predicate_property(=:= /2, meta_predicate([1, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(=:= /2, sys_meta_predicate(C)).
 :- special(=:= /2, 'SpecialCompare', 0).
@@ -92,7 +92,7 @@
  */
 % +Expr =\= +Expr
 :- public =\= /2.
-:- set_predicate_property(=\= /2, meta_predicate(=\=(1, 1))).
+:- set_predicate_property(=\= /2, meta_predicate([1, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(=\= /2, sys_meta_predicate(C)).
 :- special(=\= /2, 'SpecialCompare', 1).
@@ -103,7 +103,7 @@
  */
 % +Expr < +Expr
 :- public < /2.
-:- set_predicate_property(< /2, meta_predicate(<(1, 1))).
+:- set_predicate_property(< /2, meta_predicate([1, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(< /2, sys_meta_predicate(C)).
 :- special(< /2, 'SpecialCompare', 2).
@@ -114,7 +114,7 @@
  */
 % +Expr =< +Expr
 :- public =< /2.
-:- set_predicate_property(=< /2, meta_predicate(=<(1, 1))).
+:- set_predicate_property(=< /2, meta_predicate([1, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(=< /2, sys_meta_predicate(C)).
 :- special(=< /2, 'SpecialCompare', 3).
@@ -132,7 +132,7 @@
  */
 % +Expr >= +Expr
 :- public >= /2.
-:- set_predicate_property(>= /2, meta_predicate(>=(1, 1))).
+:- set_predicate_property(>= /2, meta_predicate([1, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(>= /2, sys_meta_predicate(C)).
 :- special(>= /2, 'SpecialCompare', 5).
@@ -145,7 +145,7 @@
 % min: float x float -> float
 % min: decimal x decimal -> decimal
 :- public min/3.
-:- set_predicate_property(min/3, meta_predicate(min(1, 1, ?))).
+:- set_predicate_property(min/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(min/3, sys_meta_predicate(C)).
 :- special(min/3, 'EvaluableCompare', 0).
@@ -158,7 +158,7 @@
 % max: float x float -> float
 % max: decimal x decimal -> decimal
 :- public max/3.
-:- set_predicate_property(max/3, meta_predicate(max(1, 1, ?))).
+:- set_predicate_property(max/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(max/3, sys_meta_predicate(C)).
 :- special(max/3, 'EvaluableCompare', 1).

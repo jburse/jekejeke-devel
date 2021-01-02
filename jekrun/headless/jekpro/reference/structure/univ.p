@@ -156,9 +156,17 @@ _ =.. X :-
 :- special(\= /2, 'SpecialUniv', 7).
 
 /**
+ * subsumes_term(X, Y): [ISO 8.2.4]
+ * The predicate succeeds if X subsumes Y.
+ */
+:- public subsumes_term/2.
+:- special(subsumes_term/2, 'SpecialUniv', 8).
+
+/**
  * copy_term(X, Y): [ISO 8.5.4]
  * The predicate creates a copy of X and succeeds when the copy unifies with Y.
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialUniv', 8).
+:- special(copy_term/2, 'SpecialUniv', 9).
+

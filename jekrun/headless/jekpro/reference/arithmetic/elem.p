@@ -135,7 +135,7 @@
 % - : float -> float
 % - : decimal -> decimal
 :- public (-)/2.
-:- set_predicate_property((-)/2, meta_predicate(-(1, ?))).
+:- set_predicate_property((-)/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property((-)/2, sys_meta_predicate(C)).
 :- special((-)/2, 'EvaluableElem', 0).
@@ -149,7 +149,7 @@
 % + : float -> float
 % + : decimal -> decimal
 :- public (+)/2.
-:- set_predicate_property((+)/2, meta_predicate(+(1, ?))).
+:- set_predicate_property((+)/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property((+)/2, sys_meta_predicate(C)).
 :- special((+)/2, 'EvaluableElem', 1).
@@ -163,7 +163,7 @@
 % abs : float -> float
 % abs : decimal -> decimal
 :- public abs/2.
-:- set_predicate_property(abs/2, meta_predicate(abs(1, ?))).
+:- set_predicate_property(abs/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(abs/2, sys_meta_predicate(C)).
 :- special(abs/2, 'EvaluableElem', 2).
@@ -177,7 +177,7 @@
 % sign : float -> float
 % sign : decimal -> decimal
 :- public sign/2.
-:- set_predicate_property(sign/2, meta_predicate(sign(1, ?))).
+:- set_predicate_property(sign/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(sign/2, sys_meta_predicate(C)).
 :- special(sign/2, 'EvaluableElem', 3).
@@ -188,7 +188,7 @@
  */
 % float : number -> float
 :- public float/2.
-:- set_predicate_property(float/2, meta_predicate(float(1, ?))).
+:- set_predicate_property(float/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(float/2, sys_meta_predicate(C)).
 :- special(float/2, 'EvaluableElem', 4).
@@ -199,7 +199,7 @@
  */
 % decimal : number -> decimal
 :- public decimal/2.
-:- set_predicate_property(decimal/2, meta_predicate(decimal(1, ?))).
+:- set_predicate_property(decimal/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(decimal/2, sys_meta_predicate(C)).
 :- special(decimal/2, 'EvaluableElem', 5).
@@ -210,7 +210,7 @@
  */
 % float32 : number -> float32
 :- public float32/2.
-:- set_predicate_property(float32/2, meta_predicate(float32(1, ?))).
+:- set_predicate_property(float32/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(float32/2, sys_meta_predicate(C)).
 :- special(float32/2, 'EvaluableElem', 6).
@@ -224,7 +224,7 @@
 % + : float x float -> float
 % + : decimal x decimal -> decimal
 :- public (+)/3.
-:- set_predicate_property((+)/3, meta_predicate(+(1, 1, ?))).
+:- set_predicate_property((+)/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property((+)/3, sys_meta_predicate(C)).
 :- special((+)/3, 'EvaluableElem', 7).
@@ -238,7 +238,7 @@
 % - : float x float -> float
 % - : decimal x decimal -> decimal
 :- public (-)/3.
-:- set_predicate_property((-)/3, meta_predicate(-(1, 1, ?))).
+:- set_predicate_property((-)/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property((-)/3, sys_meta_predicate(C)).
 :- special((-)/3, 'EvaluableElem', 8).
@@ -252,7 +252,7 @@
 % * : float x float -> float
 % * : decimal x decimal -> decimal
 :- public * /3.
-:- set_predicate_property(* /3, meta_predicate(*(1, 1, ?))).
+:- set_predicate_property(* /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(* /3, sys_meta_predicate(C)).
 :- special(* /3, 'EvaluableElem', 9).
@@ -263,7 +263,7 @@
  */
 % * : number x number -> float
 :- public / /3.
-:- set_predicate_property(/ /3, meta_predicate(/(1, 1, ?))).
+:- set_predicate_property(/ /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(/ /3, sys_meta_predicate(C)).
 :- special(/ /3, 'EvaluableElem', 10).
@@ -274,7 +274,7 @@
  */
 % ^ : integer x integer -> integer
 :- public ^ /3.
-:- set_predicate_property(^ /3, meta_predicate(^(1, 1, ?))).
+:- set_predicate_property(^ /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(^ /3, sys_meta_predicate(C)).
 :- special(^ /3, 'EvaluableElem', 11).

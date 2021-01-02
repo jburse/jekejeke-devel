@@ -104,7 +104,7 @@ functor(T, F, A) :-
 
 % >(+Expr, +Expr)
 :- special(> /2, 'SpecialMember', 6).
-:- set_predicate_property(> /2, meta_predicate(>(1, 1))).
+:- set_predicate_property(> /2, meta_predicate([1, 1])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(> /2, sys_meta_predicate(C)).
 :- set_predicate_property(> /2, visible(public)).

@@ -107,10 +107,8 @@ sys_meta_predicate(P) :-
    sys_make_indicator(F, A, I),
    callable_property(F, sys_context(C)),
    sys_neutral_predicate(I),
-   predicate_property(I, full_name(N)),
    P =.. [_|L],
-   R =.. [N|L],
-   set_predicate_property(I, meta_predicate(R)),
+   set_predicate_property(I, meta_predicate(L)),
    set_predicate_property(I, sys_meta_predicate(C)),
    sys_check_style_head(I).
 

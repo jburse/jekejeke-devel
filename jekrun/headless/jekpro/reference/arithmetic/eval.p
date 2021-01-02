@@ -81,7 +81,7 @@
  */
 % -Number is +Expr
 :- public is/2.
-:- set_predicate_property(is/2, meta_predicate(is(?, 1))).
+:- set_predicate_property(is/2, meta_predicate([?, 1])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(is/2, sys_meta_predicate(C)).
 :- special(is/2, 'SpecialEval', 0).

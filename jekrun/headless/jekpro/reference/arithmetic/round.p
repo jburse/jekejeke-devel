@@ -97,7 +97,7 @@
  */
 % integer(+Number, -Integer)
 :- public integer/2.
-:- set_predicate_property(integer/2, meta_predicate(integer(1, ?))).
+:- set_predicate_property(integer/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(integer/2, sys_meta_predicate(C)).
 :- special(integer/2, 'EvaluableRound', 0).
@@ -111,7 +111,7 @@
 % truncate(+Float, -Float)
 % truncate(+Decimal, -Decimal)
 :- public truncate/2.
-:- set_predicate_property(truncate/2, meta_predicate(truncate(1, ?))).
+:- set_predicate_property(truncate/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(truncate/2, sys_meta_predicate(C)).
 :- special(truncate/2, 'EvaluableRound', 1).
@@ -126,7 +126,7 @@
 % floor(+Float, -Float)
 % floor(+Decimal, -Decimal)
 :- public floor/2.
-:- set_predicate_property(floor/2, meta_predicate(floor(1, ?))).
+:- set_predicate_property(floor/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(floor/2, sys_meta_predicate(C)).
 :- special(floor/2, 'EvaluableRound', 2).
@@ -141,7 +141,7 @@
 % ceiling(+Float, -Float)
 % ceiling(+Decimal, -Decimal)
 :- public ceiling/2.
-:- set_predicate_property(ceiling/2, meta_predicate(ceiling(1, ?))).
+:- set_predicate_property(ceiling/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(ceiling/2, sys_meta_predicate(C)).
 :- special(ceiling/2, 'EvaluableRound', 3).
@@ -157,7 +157,7 @@
 % round(+Float, -Float)
 % round(+Decimal, -Decimal)
 :- public round/2.
-:- set_predicate_property(round/2, meta_predicate(round(1, ?))).
+:- set_predicate_property(round/2, meta_predicate([1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(round/2, sys_meta_predicate(C)).
 :- special(round/2, 'EvaluableRound', 4).
@@ -169,7 +169,7 @@
  */
 % //(+Number, +Number, -Integer)
 :- public // /3.
-:- set_predicate_property(// /3, meta_predicate(//(1, 1, ?))).
+:- set_predicate_property(// /3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(// /3, sys_meta_predicate(C)).
 :- special(// /3, 'EvaluableRound', 5).
@@ -184,7 +184,7 @@
 % rem(+Float, +Float, -Float)
 % rem(+Decimal, +Decimal, -Decimal)
 :- public rem/3.
-:- set_predicate_property(rem/3, meta_predicate(rem(1, 1, ?))).
+:- set_predicate_property(rem/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(rem/3, sys_meta_predicate(C)).
 :- special(rem/3, 'EvaluableRound', 6).
@@ -196,7 +196,7 @@
  */
 % div(+Number, +Number, -Integer)
 :- public div/3.
-:- set_predicate_property(div/3, meta_predicate(div(1, 1, ?))).
+:- set_predicate_property(div/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(div/3, sys_meta_predicate(C)).
 :- special(div/3, 'EvaluableRound', 7).
@@ -211,7 +211,7 @@
 % mod(+Float, +Float, -Float)
 % mod(+Decimal, +Decimal, -Decimal)
 :- public mod/3.
-:- set_predicate_property(mod/3, meta_predicate(mod(1, 1, ?))).
+:- set_predicate_property(mod/3, meta_predicate([1, 1, ?])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(mod/3, sys_meta_predicate(C)).
 :- special(mod/3, 'EvaluableRound', 8).
