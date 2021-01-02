@@ -250,6 +250,7 @@ sqrt/2	arithmetic/trigo
 (static)/1	reflect/pred
 sub_atom/4	structure/atom
 sub_atom/5	structure/atom
+subsumes_term/2	structure/univ
 sys_activate_capability/2	bootload/toolkit
 sys_add_file_extension/2	bootload/path
 sys_add_path/1	bootload/path
