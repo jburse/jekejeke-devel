@@ -199,8 +199,8 @@ public abstract class AbstractSkel {
      * <p>Compare two skeletons lexically.</p>
      * <p>Teil recursive solution.</p>
      *
-     * @param alfa The skeleton of the first term.
-     * @param beta The skeleton of the second term.
+     * @param alfa The first skeleton.
+     * @param beta The second skeleton.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
      * @see Engine#compareTerm

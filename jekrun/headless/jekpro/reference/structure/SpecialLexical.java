@@ -194,10 +194,10 @@ public final class SpecialLexical extends AbstractSpecial {
      * <p>Check two terms for lexical equivalence.</p>
      * <p>Teil recursive solution.</p>
      *
-     * @param alfa The first term.
-     * @param d1   The display of the first term.
-     * @param beta The second term.
-     * @param d2   The display of the second term.
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
      * @return True if they are lexically equal, otherwise false.
      */
     public static boolean equalTerm(Object alfa, Display d1,

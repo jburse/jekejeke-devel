@@ -597,10 +597,10 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The verify hooks of attribute variables are called.</p>
      * <p>Tail recursive implementation.</p>
      *
-     * @param alfa The first term.
-     * @param d1   The display of the first term.
-     * @param beta The second term.
-     * @param d2   The display of the second term.
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
      * @param en   The engine.
      * @return True if the two terms unify, otherwise false.
      */
@@ -726,10 +726,10 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>>Subsumes term check. There is no bindings side effect.</p
      * <p>The verify hooks of attribute variables are ignored.</p>
      *
-     * @param alfa The first term.
-     * @param d1   The display of the first term.
-     * @param beta The second term.
-     * @param d2   The display of the second term.
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
      * @param en   The engine.
      * @return True if the two terms unify, otherwise false.
      */
@@ -750,12 +750,12 @@ public final class SpecialUniv extends AbstractSpecial {
      * <p>The verify hooks of attribute variables are ignored.</p>
      * <p>http://www.picat-lang.org/bprolog/publib/metutl.html</p>
      *
-     * @param alfa  The first term.
-     * @param d1    The display of the first term.
-     * @param beta  The second term.
-     * @param d2    The display of the second term.
-     * @param gamma The second term.
-     * @param d3    The display of the third term.
+     * @param alfa  The first skeleton.
+     * @param d1    The first display.
+     * @param beta  The second skeleton.
+     * @param d2    The second display.
+     * @param gamma The third skeleton.
+     * @param d3    The third display.
      * @param en    The engine.
      * @return True if the two terms unify, otherwise false.
      */

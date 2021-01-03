@@ -90,10 +90,10 @@ public final class LexicalCollator extends AbstractLexical {
      * <p>As a side effect will dynamically allocate display serial numbers.</p>
      * <p>Teil recursive solution.</p>
      *
-     * @param alfa The skeleton of the first term.
-     * @param d1   The display of the first term.
-     * @param beta The skeleton of the second term.
-     * @param d2   The display of the second term.
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
      */
@@ -161,8 +161,8 @@ public final class LexicalCollator extends AbstractLexical {
      * <p>Compare two skeletons lexically with the string comparator.</p>
      * <p>Teil recursive solution.</p>
      *
-     * @param alfa The skeleton of the first term.
-     * @param beta The skeleton of the second term.
+     * @param alfa The first skeleton.
+     * @param beta The second skeleton.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
      */

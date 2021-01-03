@@ -6,6 +6,14 @@
  * both directions. Namely they can be called with the modes (+, -),
  * (-, +) and (+, +), whereby + indicates an instantiated argument.
  *
+ * Examples:
+ * ?- functor(1+2, F, A).
+ * F = +,
+ * A = 2
+ *
+ * ?- functor(X, +, 2).
+ * X = _A+_B
+ *
  * For performance reasons the interpreter performs unification without
  * occurs check. This can result in cyclic structures which are not
  * logically sound in the usual Herbrand model interpretation. The cyclic
@@ -13,6 +21,20 @@
  * during term output. For programs that need a logically sound unification
  * a special predicate is provided which does only instantiate variables
  * when the check fails.
+ *
+ * Examples:
+ * ?- X = f(X).
+ * X = <cyclic term>
+ *
+ * ?- unify_with_occurs_check(X, f(X)).
+ * No
+ *
+ * Most of the predicates in this module are ISO core standard predicates.
+ * Among the non-ISO core standard predicate is the predicate set_arg/4
+ * which performs a non-destructive argument replacement. Further, the
+ * predicates sys_extend_term/3 and sys_shrink_term/4 can be used to add
+ * respectively remove arguments. These predicates can be bootstrapped from
+ * (=..)/2 but have special implementations for better speed.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -57,14 +79,11 @@
 :- op(700, xfx, \=).
 
 /**
- * functor(X, N, A): [ISO 8.5.1]
- * If X is atomic then the predicate succeeds when N unifies with X
- * and A unifies with 0. If X is the compound f(A1, .., An) then the
- * predicate succeeds when N unifies with f and A unifies with n. If N
- * is atomic and A is 0 then the predicate succeeds when Y unifies
- * with N. If N is an atom, A is an integer n≥1 and A1, …, An are
- * fresh arguments then the predicate succeeds when Y unifies
- * with N(A1, .., An).
+ * functor(X, F, A): [ISO 8.5.1]
+ * If X is a non-variable f or f(X1,..,Xn) then the predicate succeeds
+ * in F with f and in A with n. Otherwise the predicate succeeds in X
+ * with f or f(X1,..,Xn) where X1,..,Xn are fresh variables and
+ * f from F and n from N.
  */
 % functor(+-Term, -+Atom, -+Integer)
 % already defined in member
@@ -91,11 +110,9 @@
 
 /**
  * X = .. Y: [ISO 8.5.3]
- * If X is atomic then the predicate succeeds when Y unifies with
- * [X]. If X is the compound F(A1, .., An) then the predicate succeeds
- * when Y unifies with [F, A1, …, An]. If Y is [C] and C is atomic
- * then the predicate succeeds when X unifies with C. If Y is [F, A1, …, An]
- * and F is an atom then the predicate succeeds when X unifies with F(A1, .., An).
+ * If X is a non-variable f or f(X1,..,Xn) then the predicate succeeds in Y with
+ * [f,X1,..,Xn]. Otherwise the predicates succeeds in X with f or f(X1,..,Xn)
+ * where [f,X1,..,Xn] from Y.
  */
 % +-Term =.. -+List
 :- public =.. /2.
@@ -117,7 +134,7 @@ _ =.. X :-
 /**
  * sys_extend_term(F, L, T):
  * The predicate adds the arguments L to the
- * term P and unifies the result with Q.
+ * term F and unifies the result with T.
  */
 % sys_extend_term(+Term, +List, -Term)
 :- public sys_extend_term/3.
