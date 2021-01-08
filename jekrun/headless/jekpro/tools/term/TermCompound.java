@@ -4,6 +4,7 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayMarkable;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -306,10 +307,8 @@ public final class TermCompound extends AbstractTerm {
                 }
             }
         }
-        if (multi) {
-            last = new Display(countvar);
-            last.marker = true;
-        }
+        if (multi)
+            last = new DisplayMarkable(countvar);
         en.skel = Boolean.valueOf(multi);
         return last;
     }

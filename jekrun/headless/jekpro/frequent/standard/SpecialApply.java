@@ -2,10 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.Directive;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.term.SkelAtom;
@@ -197,10 +194,8 @@ public final class SpecialApply extends AbstractSpecial {
                 multi = true;
             }
         }
-        if (multi) {
-            last = new Display(countvar);
-            last.marker = true;
-        }
+        if (multi)
+            last = new DisplayMarkable(countvar);
         en.display = last;
         return multi;
     }
@@ -310,10 +305,8 @@ public final class SpecialApply extends AbstractSpecial {
                 }
             }
         }
-        if (multi) {
-            last = new Display(countvar);
-            last.marker = true;
-        }
+        if (multi)
+            last = new DisplayMarkable(countvar);
         en.display = last;
         return multi;
     }

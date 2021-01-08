@@ -137,18 +137,6 @@ final class DefinedGroupLocal extends AbstractDefined {
     }
 
     /**
-     * <p>Retrieve the length of the clause list.</p>
-     *
-     * @param en The engine.
-     * @return The length of the clause list.
-     */
-    public int lengthClauses(Engine en) {
-        LocalBlocking ep = defineLocalBlocking(en);
-        InterfaceRope set = ep.cr.set;
-        return (set != null ? set.size() : 0);
-    }
-
-    /**
      * <p>Add the clause to the predicate.</p>
      *
      * @param clause The clause.

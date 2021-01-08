@@ -342,10 +342,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>Unify the term of the clause with the given term.</p>
      *
-     * @param t1   The term skeleton arguments.
+     * @param t1   The term skeleton.
      * @param ref  The term display.
-     * @param t2   The clause term skeleton arguments.
-     * @param ref2 The clause term display.
+     * @param t2   The clause skeleton.
+     * @param ref2 The clause display.
      * @param arr  The unify instructions.
      * @param en   The engine.
      * @return True if the unification was successful, otherwise false.
@@ -358,23 +358,29 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int n = arr[i];
-            if (n == Optimization.UNIFY_TERM) {
-                if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
-                    return false;
-            } else if (n == Optimization.UNIFY_VAR) {
-                Object alfa = t1[i];
-                Display d1 = ref;
-                BindUniv bc;
-                while (alfa instanceof SkelVar &&
-                        (bc = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = bc.skel;
-                    d1 = bc.display;
-                }
-                bc = ref2.bind[((SkelVar) t2[i]).id];
-                bc.bindUniv(alfa, d1, en);
-            } else if (n != Optimization.UNIFY_SKIP) {
-                if (!en.unifyTerm(t1[n], ref, t1[i], ref))
-                    return false;
+            switch (n) {
+                case Optimization.UNIFY_SKIP:
+                    break;
+                case Optimization.UNIFY_VAR:
+                    Object alfa = t1[i];
+                    Display d1 = ref;
+                    BindUniv bc;
+                    while (alfa instanceof SkelVar &&
+                            (bc = d1.bind[((SkelVar) alfa).id]).display != null) {
+                        alfa = bc.skel;
+                        d1 = bc.display;
+                    }
+                    bc = ref2.bind[((SkelVar) t2[i]).id];
+                    bc.bindUniv(alfa, d1, en);
+                    break;
+                case Optimization.UNIFY_TERM:
+                    if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
+                        return false;
+                    break;
+                default:
+                    if (!en.unifyTerm(t1[n], ref, t1[i], ref))
+                        return false;
+                    break;
             }
         }
         return true;
@@ -403,14 +409,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
      */
     abstract Clause[] definedClauses(Object m, Display d, Engine en)
             throws EngineMessage;
-
-    /**
-     * <p>Retrieve the length of the clause list.</p>
-     *
-     * @param en The engine.
-     * @return The length of the clause list.
-     */
-    public abstract int lengthClauses(Engine en);
 
     /**
      * <p>Add the clause to the predicate.</p>
@@ -640,9 +638,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>Unify the term args.</p>
      *
-     * @param t1   The term skeleton arguments.
+     * @param t1   The term skeleton.
      * @param ref  The term display.
-     * @param t2   The clause term skeleton arguments.
+     * @param t2   The clause skeleton.
      * @param ref2 The clause display.
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.

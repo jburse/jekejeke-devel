@@ -235,7 +235,7 @@ public final class ForeignTerm {
         }
         if (val == null)
             return null;
-        Display ref = AbstractSkel.createDisplay(val);
+        Display ref = AbstractSkel.createMarker(val, false);
         try {
             if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
                 if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
@@ -245,8 +245,7 @@ public final class ForeignTerm {
         } catch (EngineException x) {
             throw new InterpreterException(x);
         }
-        if (SupervisorCopy.displaySize(val) != 0)
-            ref.marker = true;
+        ref.setMarker(true);
         if ((flags & PrologReader.FLAG_WRAP) != 0) {
             return AbstractTerm.createTermWrapped(val, ref);
         } else {

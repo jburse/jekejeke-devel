@@ -35,12 +35,11 @@ import matula.util.data.MapHashLink;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Display {
+public class Display {
     public final static Display DISPLAY_CONST = new Display(0);
 
     public BindUniv[] bind;
     public MapHashLink<String, SkelVar> vars;
-    public boolean marker;
 
     /**
      * <p>Create a new display.</p>
@@ -100,17 +99,21 @@ public final class Display {
     }
 
     /**
-     * <p>Retrieve and clear the multi flag.</p>
+     * <p>Set the marker flag.</p>
      *
-     * @return The multi flag.
+     * @param m The marker flag.
+     */
+    public void setMarker(boolean m) {
+        /* */
+    }
+
+    /**
+     * <p>Retrieve and clear the marker flag.</p>
+     *
+     * @return The marker flag.
      */
     public boolean getAndReset() {
-        if (marker) {
-            marker = false;
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     /**

@@ -221,10 +221,8 @@ public final class EvaluableLogic extends AbstractSpecial {
                 }
             }
         }
-        if (multi) {
-            last = new Display(countvar);
-            last.marker = true;
-        }
+        if (multi)
+            last = new DisplayMarkable(countvar);
         en.display = last;
         return multi;
     }

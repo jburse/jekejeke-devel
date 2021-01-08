@@ -114,18 +114,6 @@ final class DefinedThreadLocal extends AbstractDefined {
     }
 
     /**
-     * <p>Retrieve the length of the clause list.</p>
-     *
-     * @param en The engine.
-     * @return The length of the clause list.
-     */
-    public int lengthClauses(Engine en) {
-        LocalLockfree ep = defineLocalLockfree(en);
-        InterfaceRope set = ep.cr.set;
-        return (set != null ? set.size() : 0);
-    }
-
-    /**
      * <p>Add the clause to the predicate.</p>
      *
      * @param clause The clause.

@@ -6,10 +6,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.CallFrame;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
@@ -182,7 +179,7 @@ public abstract class AbstractDelegate {
 
         AbstractDelegate.invokeOther(en);
 
-        ref.marker = true;
+        ref.setMarker(true);
         en.display = ref;
         en.skel = temp;
     }
@@ -242,7 +239,7 @@ public abstract class AbstractDelegate {
             if (SupervisorCopy.getVar(temp) != null)
                 countvar++;
         }
-        return new Display(countvar + 1);
+        return new DisplayMarkable(countvar + 1, false);
     }
 
     /**

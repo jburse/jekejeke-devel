@@ -123,15 +123,15 @@ public class Engine extends StackElement implements Comparator<Object> {
                 }
             }
             for (; ; ) {
-                // combined check and deref
                 if (beta instanceof SkelVar) {
-                    BindUniv b;
-                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
-                        beta = b.skel;
-                        d2 = b.display;
+                    // combined check and deref
+                    BindUniv bc;
+                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = bc.skel;
+                        d2 = bc.display;
                         continue;
                     }
-                    return b.bindAttr(alfa, d1, this);
+                    return bc.bindAttr(alfa, d1, this);
                 }
                 break;
             }

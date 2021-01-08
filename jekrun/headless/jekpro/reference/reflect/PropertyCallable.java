@@ -6,6 +6,7 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayMarkable;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
@@ -125,15 +126,8 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 t = AbstractTerm.getSkel(obj);
                 Display d2 = AbstractTerm.getDisplay(obj);
                 MapHashLink<String, SkelVar> res = collectNames(t, d2, print);
-                Display ref;
-                if (res != null) {
-                    ref = new Display(d2.bind.length);
-                    ref.vars = res;
-                } else {
-                    ref = Display.valueOf(d2.bind.length);
-                }
-                if (d2.bind.length != 0)
-                    ref.marker = true;
+                Display ref = DisplayMarkable.valueOf(d2.bind.length);
+                ref.vars = res;
                 en.skel = t;
                 en.display = ref;
                 return true;
@@ -163,9 +157,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
             case PROP_SYS_VARIABLE_NAMES:
                 t = AbstractTerm.getSkel(obj);
                 Display d2 = AbstractTerm.getDisplay(obj);
-                Display ref = Display.valueOf(d2.bind.length);
-                if (d2.bind.length != 0)
-                    ref.marker = true;
+                Display ref = DisplayMarkable.valueOf(d2.bind.length);
                 en.skel = t;
                 en.display = ref;
                 return true;

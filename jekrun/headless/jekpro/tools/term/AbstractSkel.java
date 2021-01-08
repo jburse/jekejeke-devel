@@ -4,6 +4,7 @@ import jekpro.frequent.standard.SpecialSort;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayMarkable;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
@@ -119,14 +120,23 @@ public abstract class AbstractSkel {
      * <p>Create a new display.</p>
      *
      * @param val The skeleton.
-     * @return The display.
+     * @return The markable display.
      */
     public static Display createMarker(Object val) {
         int size = SupervisorCopy.displaySize(val);
-        Display ref = Display.valueOf(size);
-        if (size != 0)
-            ref.marker = true;
-        return ref;
+        return DisplayMarkable.valueOf(size);
+    }
+
+    /**
+     * <p>Create a new display.</p>
+     *
+     * @param val The skeleton.
+     * @param m The markable flag.
+     * @return The markable display.
+     */
+    public static Display createMarker(Object val, boolean m) {
+        int size = SupervisorCopy.displaySize(val);
+        return DisplayMarkable.valueOf(size);
     }
 
     /********************************************************************/

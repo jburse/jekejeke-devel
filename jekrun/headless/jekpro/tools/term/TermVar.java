@@ -3,6 +3,7 @@ package jekpro.tools.term;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
+import jekpro.model.molec.DisplayMarkable;
 import jekpro.tools.call.Interpreter;
 
 /**
@@ -71,8 +72,7 @@ public final class TermVar extends AbstractTerm {
      */
     public TermVar() {
         skel = SkelVar.valueOf(0);
-        display = new Display(1);
-        display.marker = true;
+        display = new DisplayMarkable(1);
     }
 
     /************************************************************/
