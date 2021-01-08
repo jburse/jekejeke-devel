@@ -1,10 +1,10 @@
 package jekpro.reference.structure;
 
+import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.WriteOpts;
 import jekpro.reference.runtime.SpecialCollector;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractTerm;
@@ -148,11 +148,11 @@ public abstract class AbstractLexical implements Comparator<Object> {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(AbstractLexical.OP_IGNORE_CASE)) {
-                ignore = WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display);
+                ignore = Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(AbstractLexical.OP_REVERSE)) {
-                if (WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     bits |= MASK_FLAG_RVRS;
                 } else {
                     bits &= ~MASK_FLAG_RVRS;
@@ -160,7 +160,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(AbstractLexical.OP_EAGER)) {
-                if (WriteOpts.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                     bits |= MASK_FLAG_EAGR;
                 } else {
                     bits &= ~MASK_FLAG_EAGR;

@@ -78,19 +78,19 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_CUR_OUTPUT = 2;
     private static final int FLAG_SYS_CUR_ERROR = 3;
     private static final int FLAG_SYS_ATTACHED_TO = 4;
-    private static final int FLAG_SYS_GOOD_FOR = 6;
-    private static final int FLAG_SYS_CPU_COUNT = 7;
-    private static final int FLAG_SYS_RUNTIME_VERSION = 8;
-    private static final int FLAG_VERBOSE = 9;
-    private static final int FLAG_SYS_TOOL_INPUT = 10;
-    private static final int FLAG_SYS_TOOL_OUTPUT = 11;
-    private static final int FLAG_SYS_TOOL_ERROR = 12;
-    private static final int FLAG_SYS_BELONGS_TO = 13;
-    private static final int FLAG_BOUNDED = 14;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 15;
-    private static final int FLAG_CHAR_CONVERSION = 16;
-    private static final int FLAG_MAX_ARITY = 17;
-    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 18;
+    private static final int FLAG_SYS_GOOD_FOR = 5;
+    private static final int FLAG_SYS_CPU_COUNT = 6;
+    private static final int FLAG_SYS_RUNTIME_VERSION = 7;
+    private static final int FLAG_VERBOSE = 8;
+    private static final int FLAG_SYS_TOOL_INPUT = 9;
+    private static final int FLAG_SYS_TOOL_OUTPUT = 10;
+    private static final int FLAG_SYS_TOOL_ERROR = 11;
+    private static final int FLAG_SYS_BELONGS_TO = 12;
+    private static final int FLAG_BOUNDED = 13;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 14;
+    private static final int FLAG_CHAR_CONVERSION = 15;
+    private static final int FLAG_MAX_ARITY = 16;
+    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 17;
 
     /**
      * <p>Create a flag.</p>

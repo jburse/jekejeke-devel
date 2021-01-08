@@ -87,10 +87,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 d2.setSize(clause.sizerule);
             }
-            if (clause.intargs == null ||
-                    AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.head).args, d2,
-                            clause.intargs, en))
+            int[] arr = clause.intargs;
+            if (arr == null)
+                break;
+            if (AbstractDefined.unifyArgs(((SkelCompound) t).args, d,
+                    ((SkelCompound) clause.head).args, d2,
+                    arr, en))
                 break;
 
             /* end of cursor */

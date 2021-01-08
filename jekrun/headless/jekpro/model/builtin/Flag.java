@@ -1,13 +1,11 @@
 package jekpro.model.builtin;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.ReadOpts;
-import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.*;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.Types;
@@ -71,6 +69,7 @@ public final class Flag extends AbstractFlag<Engine> {
     private final static String OP_SYS_RANDOM = "sys_random";
     private final static String OP_SYS_TIMEOUT = "sys_timeout";
     public final static String OP_STYLE_CHECK = "style_check";
+    public final static String OP_OCCURS_CHECK = "occurs_check";
 
     private static final int FLAG_DIALECT = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
@@ -90,6 +89,7 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_RANDOM = 15;
     private static final int FLAG_SYS_TIMEOUT = 16;
     private static final int FLAG_STYLE_CHECK = 17;
+    private static final int FLAG_OCCURS_CHECK = 18;
 
     static {
         DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
@@ -110,6 +110,7 @@ public final class Flag extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_RANDOM, new Flag(FLAG_SYS_RANDOM));
         DEFAULT.add(OP_SYS_TIMEOUT, new Flag(FLAG_SYS_TIMEOUT));
         DEFAULT.add(OP_STYLE_CHECK, new Flag(FLAG_STYLE_CHECK));
+        DEFAULT.add(OP_OCCURS_CHECK, new Flag(FLAG_OCCURS_CHECK));
     }
 
     /**
@@ -172,6 +173,9 @@ public final class Flag extends AbstractFlag<Engine> {
                         AbstractSource.MASK_SRC_NSTY) == 0);
             case FLAG_DIALECT:
                 return en.store.foyer.ATOM_JEKEJEKE;
+            case FLAG_OCCURS_CHECK:
+                return Flag.booleToAtom((en.visor.flags &
+                        Supervisor.MASK_VISOR_OCCHK) != 0);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -283,12 +287,54 @@ public final class Flag extends AbstractFlag<Engine> {
                 case FLAG_DIALECT:
                     /* can't modify */
                     return false;
+                case FLAG_OCCURS_CHECK:
+                    if (atomToBool(m, d)) {
+                        en.visor.setBit(Supervisor.MASK_VISOR_OCCHK);
+                    } else {
+                        en.visor.resetBit(Supervisor.MASK_VISOR_OCCHK);
+                    }
+                    return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");
             }
         } catch (RuntimeException x) {
             throw Types.mapThrowable(x);
         }
+    }
+
+    /**********************************************************/
+    /* Helper                                                 */
+    /**********************************************************/
+
+    /**
+     * <p>Convert an atom to a boolean.</p>
+     *
+     * @param m The boolean skel.
+     * @param d The boolean display.
+     * @return The boolean value.
+     * @throws EngineMessage Shit happens.
+     */
+    public static boolean atomToBool(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(OP_FALSE)) {
+            return false;
+        } else if (fun.equals(Foyer.OP_TRUE)) {
+            return true;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
+        }
+    }
+
+    /**
+     * <p>Convert a boolean to an atom.</p>
+     *
+     * @param s The boolean value.
+     * @return The boolean skel.
+     */
+    public static SkelAtom booleToAtom(boolean s) {
+        return new SkelAtom(s ? Foyer.OP_TRUE : AbstractFlag.OP_FALSE);
     }
 
 }

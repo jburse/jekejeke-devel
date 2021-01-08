@@ -74,7 +74,11 @@ public class SkelCompound extends AbstractSkel
      * @return The linear flag.
      */
     public boolean getLinear() {
-        return false;
+        if (var == null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

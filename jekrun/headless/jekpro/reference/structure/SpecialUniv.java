@@ -208,7 +208,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 case SPECIAL_UNIFY_WITH_OCCURS_CHECK:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!SpecialUniv.unifyWithOccursCheck(temp[0], ref, temp[1], ref, en))
+                    if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_NOT_UNIFY:
@@ -608,9 +608,9 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en   The engine.
      * @return True if the two terms unify, otherwise false.
      */
-    private static boolean unifyWithOccursCheck(Object alfa, Display d1,
-                                                Object beta, Display d2,
-                                                Engine en)
+    public static boolean unifyTermChecked(Object alfa, Display d1,
+                                           Object beta, Display d2,
+                                           Engine en)
             throws EngineException {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
@@ -644,15 +644,15 @@ public final class SpecialUniv extends AbstractSpecial {
             for (; ; ) {
                 // combined check and deref
                 if (beta instanceof SkelVar) {
-                    BindUniv b;
-                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
-                        beta = b.skel;
-                        d2 = b.display;
+                    BindUniv bc;
+                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = bc.skel;
+                        d2 = bc.display;
                         continue;
                     }
                     if (hasVar(alfa, d1, beta, d2))
                         return false;
-                    return b.bindAttr(alfa, d1, en);
+                    return bc.bindAttr(alfa, d1, en);
                 }
                 break;
             }
@@ -668,7 +668,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 return false;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                if (!unifyWithOccursCheck(t1[i], d1, t2[i], d2, en))
+                if (!unifyTermChecked(t1[i], d1, t2[i], d2, en))
                     return false;
             }
             alfa = t1[i];
@@ -688,7 +688,7 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param d2 The display of the variable.
      * @return True when the variable occurs in the term, false otherwise.
      */
-    private static boolean hasVar(Object m, Display d, Object t, Display d2) {
+    public static boolean hasVar(Object m, Display d, Object t, Display d2) {
         for (; ; ) {
             Object var = SupervisorCopy.getVar(m);
             if (var == null)

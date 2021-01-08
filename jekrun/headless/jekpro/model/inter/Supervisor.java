@@ -54,6 +54,7 @@ import matula.util.wire.LivestockEventMemory;
  */
 public class Supervisor extends AbstractLivestock {
     public final static int MASK_VISOR_NOCNT = 0x00000002;
+    public final static int MASK_VISOR_OCCHK = 0x00000004;
 
     public ListArray<BindUniv> cont;
     public Object curinput;
@@ -275,7 +276,6 @@ public class Supervisor extends AbstractLivestock {
         return false;
     }
 
-
     /**
      * <p>Set the engine debug mode.</p>
      *
@@ -284,6 +284,24 @@ public class Supervisor extends AbstractLivestock {
     public void setThreadPrompt(int m) {
         synchronized (this) {
             flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
+        }
+    }
+
+    /**
+     * <p>Set some bit.</p>
+     */
+    public void setBit(int m) {
+        synchronized (this) {
+            flags |= m;
+        }
+    }
+
+    /**
+     * <p>Reset some bit.</p>
+     */
+    public void resetBit(int m) {
+        synchronized (this) {
+            flags &= ~m;
         }
     }
 

@@ -9,6 +9,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -299,10 +300,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 d2.setSize(clause.sizerule);
             }
-            if (clause.intargs == null ||
-                    AbstractDefined.unifyDefined(((SkelCompound) t).args, d,
-                            ((SkelCompound) clause.head).args, d2,
-                            clause.intargs, en))
+            int[] arr = clause.intargs;
+            if (arr == null)
+                break;
+            if (AbstractDefined.unifyArgs(((SkelCompound) t).args, d,
+                    ((SkelCompound) clause.head).args, d2,
+                    arr, en))
                 break;
 
             /* end of cursor */
@@ -351,10 +354,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyDefined(Object[] t1, Display ref,
-                                Object[] t2, Display ref2,
-                                int[] arr,
-                                Engine en)
+    static boolean unifyArgs(Object[] t1, Display ref,
+                             Object[] t2, Display ref2,
+                             int[] arr,
+                             Engine en)
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int k = arr[i];
@@ -362,7 +365,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 case Optimization.UNIFY_SKIP:
                     break;
                 case Optimization.UNIFY_TERM:
-                    if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
+                    if (!unify(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
                 case Optimization.UNIFY_LINEAR:
@@ -370,12 +373,97 @@ public abstract class AbstractDefined extends AbstractDelegate {
                         return false;
                     break;
                 default:
-                    if (!en.unifyTerm(t1[k], ref, t1[i], ref))
+                    if (!unify(t1[k], ref, t1[i], ref, en))
                         return false;
                     break;
             }
         }
         return true;
+    }
+
+    /**
+     * <p>>Unify two terms. As a side effect bindings are established.</p
+     * <p>Occurs check is performed depending on occurs check flag.</p>
+     * <p>Bindings are only created when the occurs check fails.<p>
+     * <p>The verify hooks of attribute variables are called.</p>
+     * <p>Tail recursive implementation.</p>
+     *
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
+     * @param en   The engine.
+     * @return True if the two terms unify, otherwise false.
+     */
+    public static boolean unify(Object alfa, Display d1,
+                                Object beta, Display d2,
+                                Engine en)
+            throws EngineException {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                for (; ; ) {
+                    if (beta instanceof SkelVar) {
+                        // combined check and deref
+                        BindUniv b2;
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
+                            beta = b2.skel;
+                            d2 = b2.display;
+                            continue;
+                        }
+                        if (alfa == beta && d1 == d2)
+                            return true;
+                        if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                                SpecialUniv.hasVar(alfa, d1, beta, d2))
+                            return false;
+                        return b2.bindAttr(alfa, d1, en);
+                    }
+                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                            SpecialUniv.hasVar(beta, d2, alfa, d1))
+                        return false;
+                    return b1.bindAttr(beta, d2, en);
+                }
+            }
+            for (; ; ) {
+                // combined check and deref
+                if (beta instanceof SkelVar) {
+                    BindUniv b;
+                    if ((b = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = b.skel;
+                        d2 = b.display;
+                        continue;
+                    }
+                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                            SpecialUniv.hasVar(alfa, d1, beta, d2))
+                        return false;
+                    return b.bindAttr(alfa, d1, en);
+                }
+                break;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++) {
+                if (!unify(t1[i], d1, t2[i], d2, en))
+                    return false;
+            }
+            alfa = t1[i];
+            beta = t2[i];
+        }
     }
 
     /*************************************************************/

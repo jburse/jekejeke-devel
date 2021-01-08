@@ -3,6 +3,7 @@ package jekpro.tools.array;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.AbstractProperty;
+import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -158,16 +159,14 @@ public class PropertyStreamAPI extends AbstractProperty<Object> {
                 }
             case PROP_BOM:
                 if (obj instanceof ConnectionReader) {
-                    String val = ((ConnectionReader) obj).getBom() ? Foyer.OP_TRUE : AbstractFlag.OP_FALSE;
+                    SkelAtom val = Flag.booleToAtom(((ConnectionReader) obj).getBom());
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                                    new SkelAtom(OP_BOM),
-                                    new SkelAtom(val)),
+                                    new SkelAtom(OP_BOM), val),
                             Display.DISPLAY_CONST)};
                 } else if (obj instanceof ConnectionWriter) {
-                    String val = ((ConnectionWriter) obj).getBom() ? Foyer.OP_TRUE : AbstractFlag.OP_FALSE;
+                    SkelAtom val = Flag.booleToAtom(((ConnectionWriter) obj).getBom());
                     return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                                    new SkelAtom(OP_BOM),
-                                    new SkelAtom(val)),
+                                    new SkelAtom(OP_BOM), val),
                             Display.DISPLAY_CONST)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;

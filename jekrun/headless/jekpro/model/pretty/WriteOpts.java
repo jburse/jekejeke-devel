@@ -135,7 +135,7 @@ public final class WriteOpts {
                 if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_FLAG_QUOTED)) {
-                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                         flags |= PrologWriter.FLAG_QUOT;
                     } else {
                         flags &= ~PrologWriter.FLAG_QUOT;
@@ -143,7 +143,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_NUMBERVARS)) {
-                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                         flags |= PrologWriter.FLAG_NUMV;
                     } else {
                         flags &= ~PrologWriter.FLAG_NUMV;
@@ -151,7 +151,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_OPS)) {
-                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                         flags |= PrologWriter.FLAG_IGNO;
                     } else {
                         flags &= ~PrologWriter.FLAG_IGNO;
@@ -159,7 +159,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(OP_IGNORE_MOD)) {
-                    if (atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
+                    if (Flag.atomToBool(((SkelCompound) en.skel).args[0], en.display)) {
                         flags |= PrologWriter.FLAG_IGNM;
                     } else {
                         flags &= ~PrologWriter.FLAG_IGNM;
@@ -297,32 +297,6 @@ public final class WriteOpts {
         pw.setOffset(offset);
         pw.setShift(shift);
         pw.setPrintMap(printmap);
-    }
-
-    /**
-     * <p>Convert an atom to a bool.</p>
-     * <p>The following values are accepted:</p>
-     * <ul>
-     * <li><b>true:</b> true.</li>
-     * <li><b>false:</b> false.</li>
-     * </ul>
-     *
-     * @param m The bool skel.
-     * @param d The bool display.
-     * @return The bool value.
-     * @throws EngineMessage Shit happens.
-     */
-    public static boolean atomToBool(Object m, Display d)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(AbstractFlag.OP_FALSE)) {
-            return false;
-        } else if (fun.equals(Foyer.OP_TRUE)) {
-            return true;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
     }
 
     /**

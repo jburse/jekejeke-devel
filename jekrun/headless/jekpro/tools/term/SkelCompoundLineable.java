@@ -34,7 +34,7 @@ import matula.util.data.ListArray;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SkelCompoundLineable extends SkelCompound {
+public final class SkelCompoundLineable extends SkelCompound {
     private boolean linear = true;
 
     /**

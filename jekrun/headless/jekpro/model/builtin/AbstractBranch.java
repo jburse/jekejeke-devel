@@ -394,7 +394,7 @@ public abstract class AbstractBranch extends AbstractBundle {
     public Object getProperty(String prop, Foyer foyer) {
         if (OP_NEEDS_ACT.equals(prop)) {
             boolean val = (getFlags() & AbstractBundle.MASK_BNDL_NACT) != 0;
-            return new SkelAtom(val ? Foyer.OP_TRUE : AbstractFlag.OP_FALSE);
+            return Flag.booleToAtom(val);
         } else if (OP_ACT_STATUS.equals(prop)) {
             AbstractTracking tracking = foyer.getTracking(this);
             String val = (tracking != null ? tracking.getError() : EngineMessage.OP_LICENSE_TRACKING_LOST);
@@ -410,7 +410,7 @@ public abstract class AbstractBranch extends AbstractBundle {
             return new SkelAtom(path);
         } else if (OP_SYS_NOTRACE.equals(prop)) {
             boolean val = (getFlags() & AbstractBranch.MASK_BRAN_NOTR) != 0;
-            return new SkelAtom(val ? Foyer.OP_TRUE : AbstractFlag.OP_FALSE);
+            return Flag.booleToAtom(val);
         } else if (OP_LANGUAGE_CODE.equals(prop)) {
             String lang = getLang();
             return new SkelAtom(lang != null ? lang : "");
