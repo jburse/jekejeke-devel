@@ -357,28 +357,20 @@ public abstract class AbstractDefined extends AbstractDelegate {
                                 Engine en)
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
-            int n = arr[i];
-            switch (n) {
+            int k = arr[i];
+            switch (k) {
                 case Optimization.UNIFY_SKIP:
-                    break;
-                case Optimization.UNIFY_VAR:
-                    Object alfa = t1[i];
-                    Display d1 = ref;
-                    BindUniv bc;
-                    while (alfa instanceof SkelVar &&
-                            (bc = d1.bind[((SkelVar) alfa).id]).display != null) {
-                        alfa = bc.skel;
-                        d1 = bc.display;
-                    }
-                    bc = ref2.bind[((SkelVar) t2[i]).id];
-                    bc.bindUniv(alfa, d1, en);
                     break;
                 case Optimization.UNIFY_TERM:
                     if (!en.unifyTerm(t1[i], ref, t2[i], ref2))
                         return false;
                     break;
+                case Optimization.UNIFY_LINEAR:
+                    if (!en.unifyLinear(t1[i], ref, t2[i], ref2))
+                        return false;
+                    break;
                 default:
-                    if (!en.unifyTerm(t1[n], ref, t1[i], ref))
+                    if (!en.unifyTerm(t1[k], ref, t1[i], ref))
                         return false;
                     break;
             }

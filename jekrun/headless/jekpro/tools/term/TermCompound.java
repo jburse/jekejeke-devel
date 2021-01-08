@@ -330,8 +330,8 @@ public final class TermCompound extends AbstractTerm {
             d3 = display;
             vars = SkelVar.valueOfArray(d3.bind.length);
         } else {
-            vars = null;
             d3 = null;
+            vars = null;
         }
         int countvar = 0;
         for (int i = 0; i < args.length; i++) {
@@ -351,7 +351,9 @@ public final class TermCompound extends AbstractTerm {
             }
         }
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc2 = new SkelCompound(args, sa);
+            sc2.var = (vars.length > 1 ? vars : vars[0]);
+            return sc2;
         } else {
             return new SkelCompound(sa, args);
         }

@@ -40,27 +40,27 @@ public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
     public static final int UNIFY_TERM = -1;
-    public static final int UNIFY_VAR = -2;
+    public static final int UNIFY_LINEAR = -2;
     public static final int UNIFY_SKIP = -3;
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
 
-    final static int[][] unifyTermInt = new int[8][];
+    final static int[][] cacheUnifyLinear = new int[8][];
 
     int flags;
-    int maxarg = -1;
+    int minarg = -1;
     final SkelVar sort;
 
     /**
-     * <p>Initialize the immutable unify term int cache.</p>
+     * <p>Initialize the immutable cache.</p>
      */
     static {
         for (int i = 0; i < 8; i++) {
             int[] array = new int[i];
             for (int j = 0; j < i; j++)
-                array[j] = UNIFY_TERM;
-            Optimization.unifyTermInt[i] = array;
+                array[j] = UNIFY_LINEAR;
+            cacheUnifyLinear[i] = array;
         }
     }
 
@@ -79,12 +79,12 @@ public final class Optimization {
      * @param n The length.
      * @return The immutable zero int array.
      */
-    private static int[] unifyTermInt(int n) {
+    private static int[] valueOf(int n) {
         if (n < 8)
-            return unifyTermInt[n];
+            return cacheUnifyLinear[n];
         int[] array = new int[n];
         for (int j = 0; j < n; j++)
-            array[j] = UNIFY_TERM;
+            array[j] = UNIFY_LINEAR;
         return array;
     }
 
@@ -123,7 +123,7 @@ public final class Optimization {
     }
 
     /**
-     * <p>Set the structure and min at of the variables in the given term.</p>
+     * <p>Set the structure and minarg of the variables in the given term.</p>
      *
      * @param m      The term skel, can be null.
      * @param clause The clause option flags.
@@ -134,26 +134,26 @@ public final class Optimization {
         if (!(m instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) m;
-        for (int i = 0; i < mc.args.length; i++) {
+        for (int i = mc.args.length - 1; i >= 0; i--) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
-                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) == 0) {
-                    ov.maxarg = i;
-                } else {
+                ov.minarg = i;
+                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) != 0)
                     ov.flags |= MASK_VAR_HSTR;
-                }
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
                     Optimization ov = helper[((SkelVar) var).id];
+                    ov.minarg = i;
                     ov.flags |= MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
                         Optimization ov = helper[temp[j].id];
+                        ov.minarg = i;
                         ov.flags |= MASK_VAR_HSTR;
                     }
                 }
@@ -188,30 +188,30 @@ public final class Optimization {
      * <p>Sort and displace the variables in the given rule.</p>
      * <p>Sort criteria is the min term.</p>
      *
-     * @param vars The helper, length > 1.
+     * @param helper The helper, length > 1.
      * @return The number of non-extra variables.
      */
-    static int sortExtra(Optimization[] vars) {
-        int j = vars.length;
+    static int sortExtra(Optimization[] helper) {
+        int j = helper.length;
         int k = 0;
-        while (k < j && vars[j - 1].extraVar())
+        while (k < j && helper[j - 1].extraVar())
             j--;
         while (k + 1 < j) {
-            if (!vars[k].extraVar()) {
+            if (!helper[k].extraVar()) {
                 k++;
             } else {
                 j--;
-                Optimization help = vars[k];
-                vars[k] = vars[j];
-                vars[j] = help;
-                while (k < j && vars[j - 1].extraVar())
+                Optimization help = helper[k];
+                helper[k] = helper[j];
+                helper[j] = help;
+                while (k < j && helper[j - 1].extraVar())
                     j--;
             }
         }
-        if (k < j && !vars[k].extraVar())
+        if (k < j && !helper[k].extraVar())
             k++;
-        for (int i = 0; i < vars.length; i++) {
-            Optimization var = vars[i];
+        for (int i = 0; i < helper.length; i++) {
+            Optimization var = helper[i];
             var.sort.id = i;
         }
         return k;
@@ -220,24 +220,24 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param m    The term skel, can be null.
-     * @param vars The helper.
+     * @param m      The term skel, can be null.
+     * @param helper The helper.
      * @return The unify arguments.
      */
-    static int[] unifyArgs(Object m, Optimization[] vars) {
+    static int[] unifyArgs(Object m, Optimization[] helper) {
         if (!(m instanceof SkelCompound))
             return null;
         SkelCompound mc = (SkelCompound) m;
-        if (vars.length == 0)
-            return unifyTermInt(mc.args.length);
+        if (helper.length == 0)
+            return valueOf(mc.args.length);
         int i = mc.args.length - 1;
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar))
                 break;
-            Optimization ov = vars[((SkelVar) a).id];
+            Optimization ov = helper[((SkelVar) a).id];
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.maxarg != i) {
+                if (ov.minarg != i) {
                     break;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
                     break;
@@ -254,23 +254,57 @@ public final class Optimization {
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                intargs[i] = UNIFY_TERM;
+                if (!SupervisorCopy.getLinear(a)) {
+                    intargs[i] = UNIFY_TERM;
+                } else if (!firstOccurence(a, i, helper)) {
+                    intargs[i] = UNIFY_TERM;
+                } else {
+                    intargs[i] = UNIFY_LINEAR;
+                }
                 continue;
             }
-            Optimization ov = vars[((SkelVar) a).id];
+            Optimization ov = helper[((SkelVar) a).id];
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.maxarg != i) {
-                    intargs[i] = ov.maxarg;
+                if (ov.minarg != i) {
+                    intargs[i] = ov.minarg;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                    intargs[i] = UNIFY_VAR;
+                    intargs[i] = UNIFY_LINEAR;
                 } else {
                     intargs[i] = UNIFY_SKIP;
                 }
-            } else {
+            } else if (ov.minarg != i) {
                 intargs[i] = UNIFY_TERM;
+            } else {
+                intargs[i] = UNIFY_LINEAR;
             }
         }
         return intargs;
+    }
+
+    /**
+     * <p>Check whether variables ahve first occurence.</p>
+     *
+     * @param a The skeleton.
+     * @param k The index.
+     * @return True if all variables have first occurence, otherwise false.
+     */
+    private static boolean firstOccurence(Object a, int k, Optimization[] helper) {
+        Object var = SupervisorCopy.getVar(a);
+        if (var == null)
+            return true;
+        if (var instanceof SkelVar) {
+            Optimization ov = helper[((SkelVar) var).id];
+            if (ov.minarg != k)
+                return false;
+        } else {
+            SkelVar[] temp = (SkelVar[]) var;
+            for (int i = 0; i < temp.length; i++) {
+                Optimization ov = helper[temp[i].id];
+                if (ov.minarg != k)
+                    return false;
+            }
+        }
+        return true;
     }
 
 }

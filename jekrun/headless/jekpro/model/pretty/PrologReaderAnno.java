@@ -129,8 +129,11 @@ public class PrologReaderAnno extends PrologReader {
             fillers[0] = filler;
             fillers[sc.args.length] = filler2;
             SkelAtom help = makeFillers(sc.sym, fillers);
-            if (sc.sym != help)
-                arg = new SkelCompound(help, sc.args, sc.var);
+            if (sc.sym != help) {
+                SkelCompound sc2 = new SkelCompound(sc.args, help);
+                sc2.var = sc.var;
+                arg = sc2;
+            }
         }
         return arg;
     }
@@ -188,8 +191,11 @@ public class PrologReaderAnno extends PrologReader {
             fillers[0] = filler;
             fillers[sc.args.length] = filler2;
             SkelAtom help = makeFillers(sc.sym, fillers);
-            if (sc.sym != help)
-                arg = new SkelCompound(help, sc.args, sc.var);
+            if (sc.sym != help) {
+                SkelCompound sc2 = new SkelCompound(sc.args, help);
+                sc2.var = sc.var;
+                arg = sc2;
+            }
         }
         return arg;
     }
@@ -222,7 +228,7 @@ public class PrologReaderAnno extends PrologReader {
                     filler = concatFiller(filler, filler2);
                     help = makeFillers(help, new String[][]{null, filler, null});
                 }
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 args = new Object[2];
                 args[0] = read(Operator.LEVEL_MIDDLE);
                 args[1] = back;
@@ -235,12 +241,12 @@ public class PrologReaderAnno extends PrologReader {
                     filler = concatFiller(filler, filler2);
                     help = makeFillers(help, new String[][]{null, filler, null});
                 }
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 t = read(Operator.LEVEL_MIDDLE);
                 break;
             } else {
                 SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 t = makePos(Foyer.OP_NIL, getAtomPos());
                 break;
             }
@@ -248,7 +254,7 @@ public class PrologReaderAnno extends PrologReader {
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         } while (back != null);

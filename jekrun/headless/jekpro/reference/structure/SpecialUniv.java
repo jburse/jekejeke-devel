@@ -340,7 +340,9 @@ public final class SpecialUniv extends AbstractSpecial {
         }
         en.display = d4;
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc2 = new SkelCompound(args, sa);
+            sc2.var = (vars.length > 1 ? vars : vars[0]);
+            return sc2;
         } else {
             return new SkelCompound(sa, args);
         }
@@ -581,7 +583,9 @@ public final class SpecialUniv extends AbstractSpecial {
         }
         en.display = d3;
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc2 = new SkelCompound(args, sa);
+            sc2.var = (vars.length > 1 ? vars : vars[0]);
+            return sc2;
         } else {
             return new SkelCompound(sa, args);
         }
@@ -771,7 +775,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     d1 = b1.display;
                     continue;
                 }
-                for (;;) {
+                for (; ; ) {
                     if (beta instanceof SkelVar) {
                         BindUniv b2;
                         if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {

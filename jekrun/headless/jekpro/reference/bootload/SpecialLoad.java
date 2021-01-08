@@ -1041,7 +1041,9 @@ public final class SpecialLoad extends AbstractSpecial {
         args[sc.args.length - 1] = provableToColonSkel(pick, t, source);
         if (sc.args.length > 1)
             System.arraycopy(sc.args, 0, args, 0, sc.args.length - 1);
-        return new SkelCompound(sc.sym, args, sc.var);
+        SkelCompound sc2 = new SkelCompoundLineable(args, sc.sym);
+        sc2.var = sc.var;
+        return sc2;
     }
 
     /**
@@ -1110,7 +1112,9 @@ public final class SpecialLoad extends AbstractSpecial {
         if (sc.args.length > 0)
             System.arraycopy(sc.args, 0, args, 0, sc.args.length);
         args[sc.args.length] = syntaxToColonSkel(oper, source);
-        return new SkelCompound(sc.sym, args, sc.var);
+        SkelCompound sc2 = new SkelCompound(args, sc.sym);
+        sc2.var = sc.var;
+        return sc2;
     }
 
     /**

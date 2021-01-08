@@ -345,7 +345,7 @@ public class SupervisorCall {
                     Object[] args = new Object[2];
                     args[0] = left;
                     args[1] = back;
-                    back = new SkelCompound(en.store.foyer.ATOM_SYS_ALTER, args, null);
+                    back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
                     t = sc.args[1];
                     while (t instanceof SkelVar &&
                             (bc = d.bind[((SkelVar) t).id]).display != null) {
@@ -369,7 +369,7 @@ public class SupervisorCall {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         }

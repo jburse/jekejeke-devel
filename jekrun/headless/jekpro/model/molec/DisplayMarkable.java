@@ -32,7 +32,7 @@ package jekpro.model.molec;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class DisplayMarkable extends Display {
-    public boolean marker;
+    private boolean marker;
 
     /**
      * <p>Create a new display.</p>
@@ -48,7 +48,7 @@ public class DisplayMarkable extends Display {
      * <p>Create a new display.</p>
      *
      * @param size The requested size.
-     * @param m The markable flag.
+     * @param m    The markable flag.
      */
     public DisplayMarkable(int size, boolean m) {
         super(size);
@@ -93,7 +93,7 @@ public class DisplayMarkable extends Display {
      * <p>Create a new display markable.</p>
      *
      * @param size The size.
-     * @param m The markable flag.
+     * @param m    The markable flag.
      * @return The display markable.
      */
     public static Display valueOf(int size, boolean m) {

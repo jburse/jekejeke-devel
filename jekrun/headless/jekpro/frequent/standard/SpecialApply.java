@@ -248,7 +248,9 @@ public final class SpecialApply extends AbstractSpecial {
         }
         en.display = d3;
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc = new SkelCompound(args, sa);
+            sc.var = (vars.length > 1 ? vars : vars[0]);
+            return sc;
         } else {
             return new SkelCompound(sa, args);
         }
@@ -377,7 +379,9 @@ public final class SpecialApply extends AbstractSpecial {
         }
         en.display = d3;
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc = new SkelCompound(args, sa);
+            sc.var = (vars.length > 1 ? vars : vars[0]);
+            return sc;
         } else {
             return new SkelCompound(sa, args);
         }

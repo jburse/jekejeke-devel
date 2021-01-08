@@ -2,7 +2,6 @@ package jekpro.reference.reflect;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -12,7 +11,6 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.array.PropertyPredicateAPI;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -108,7 +106,6 @@ public final class PropertyOperator extends AbstractProperty<Operator> {
     public PropertyOperator(int i, int f) {
         super(i, f);
     }
-
 
 
     /**

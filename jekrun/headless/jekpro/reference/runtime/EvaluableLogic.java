@@ -4,9 +4,11 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.tools.term.*;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 
 /**
  * <p>Provides built-in predicates for qualified evaluation.</p>
@@ -131,9 +133,11 @@ public final class EvaluableLogic extends AbstractSpecial {
                                       boolean comp, Engine en)
             throws EngineMessage {
         if (comp && en.skel instanceof SkelCompound) {
-            SkelCompound sc2 = (SkelCompound) en.skel;
-            en.skel = new SkelCompound(CacheFunctor.getModFunc(sc2.sym, mod,
-                    sa2, en), sc2.args, sc2.var);
+            SkelCompound sc = (SkelCompound) en.skel;
+            sa2 = CacheFunctor.getModFunc(sc.sym, mod, sa2, en);
+            SkelCompound sc2 = new SkelCompound(sc.args, sa2);
+            sc2.var = sc.var;
+            en.skel = sc2;
         } else if (en.skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) en.skel;
             en.skel = CacheFunctor.getModFunc(sa, mod, sa2, en);
@@ -277,7 +281,9 @@ public final class EvaluableLogic extends AbstractSpecial {
             d2.remTab(en);
         en.display = d4;
         if (multi) {
-            return new SkelCompound(sa, args, vars);
+            SkelCompound sc2 = new SkelCompound(args, sa);
+            sc2.var = (vars.length > 1 ? vars : vars[0]);
+            return sc2;
         } else {
             return new SkelCompound(sa, args);
         }

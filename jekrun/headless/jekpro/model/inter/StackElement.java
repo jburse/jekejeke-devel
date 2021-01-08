@@ -148,7 +148,9 @@ public class StackElement {
     public static Object callableFromName(Object t2, SkelAtom sa) {
         if (t2 instanceof SkelCompound) {
             SkelCompound sc = (SkelCompound) t2;
-            return new SkelCompound(sa, sc.args, sc.var);
+            SkelCompound sc2 = new SkelCompound(sc.args, sa);
+            sc2.var = sc.var;
+            return sc2;
         } else if (t2 instanceof SkelAtom) {
             return sa;
         } else {

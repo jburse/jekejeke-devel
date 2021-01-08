@@ -274,7 +274,9 @@ public abstract class AbstractDelegate {
             }
         }
         args[n] = vars[countvar];
-        return new SkelCompound(sa, args, vars);
+        SkelCompound sc2 = new SkelCompound(args, sa);
+        sc2.var = (vars.length > 1 ? vars : vars[0]);
+        return sc2;
     }
 
     /**

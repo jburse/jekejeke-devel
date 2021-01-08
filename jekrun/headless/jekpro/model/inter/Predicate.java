@@ -7,15 +7,11 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.*;
-import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.array.AbstractLense;
-import jekpro.tools.array.Types;
 import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 

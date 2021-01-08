@@ -478,9 +478,12 @@ public final class SpecialDynamic extends AbstractSpecial {
             }
             t = colonToCallableSkel(temp.args[1], en);
             if (t instanceof SkelCompound) {
-                SkelCompound sc2 = (SkelCompound) t;
-                t = new SkelCompound(CacheFunctor.getModFunc(sc2.sym,
-                        (SkelAtom) mod, temp.sym, en), sc2.args, sc2.var);
+                SkelCompound sc = (SkelCompound) t;
+                SkelAtom sa = CacheFunctor.getModFunc(sc.sym,
+                        (SkelAtom) mod, temp.sym, en);
+                SkelCompound sc2 = new SkelCompound(sc.args, sa);
+                sc2.var = sc.var;
+                t = sc2;
             } else if (t instanceof SkelAtom) {
                 SkelAtom sa = (SkelAtom) t;
                 t = CacheFunctor.getModFunc(sa, (SkelAtom) mod, temp.sym, en);
@@ -566,7 +569,8 @@ public final class SpecialDynamic extends AbstractSpecial {
                         mod.scope != ((SkelAtom) recv).scope) {
                     AbstractSource src = (mod.scope != null ? mod.scope : en.store.user);
                     t = moduleToSlashSkel(mod.fun, src);
-                    Object s = new SkelCompound(sa3, temp.args, temp.var);
+                    SkelCompound s = new SkelCompound(temp.args, sa3);
+                    s.var = temp.var;
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
                     SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);
@@ -609,9 +613,9 @@ public final class SpecialDynamic extends AbstractSpecial {
     /**
      * <p>Convert a callable to a colon.</p>
      *
-     * @param t     The callable.
-     * @param mod  The full name.
-     * @param en    The engine.
+     * @param t   The callable.
+     * @param mod The full name.
+     * @param en  The engine.
      * @return The colon callable.
      * @throws EngineMessage Shit happens.
      */
@@ -633,7 +637,8 @@ public final class SpecialDynamic extends AbstractSpecial {
                 if (recv == null || !mod.equals(((SkelAtom) recv).fun) ||
                         scope != ((SkelAtom) recv).scope) {
                     t = moduleToSlashSkel(mod, scope);
-                    Object s = new SkelCompound(sa3, temp.args, temp.var);
+                    SkelCompound s = new SkelCompound(temp.args, sa3);
+                    s.var = temp.var;
 
                     int m = (sa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
                     SkelAtom sa2 = en.store.foyer.createAtom(EvaluableLogic.OP_COLON, sa.scope, m);

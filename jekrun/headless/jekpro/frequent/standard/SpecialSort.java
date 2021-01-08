@@ -191,7 +191,7 @@ public final class SpecialSort extends AbstractSpecial {
                     ref = en.display;
                     val = SpecialEval.derefAndCastNumber(temp[1], ref);
                     Number beta = SpecialEval.derefAndCastNumber(temp[2], ref);
-                    int res2 = SpecialCompare.computeCmp(val, beta) ;
+                    int res2 = SpecialCompare.computeCmp(val, beta);
                     if (!en.unifyTerm(SpecialLexical.compAtom(res2, en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;

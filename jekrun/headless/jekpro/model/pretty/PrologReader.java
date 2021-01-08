@@ -696,19 +696,19 @@ public class PrologReader {
             if (st.getHint() == 0 && OP_COMMA.equals(st.getData())) {
                 SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
                 nextToken();
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 args = new Object[2];
                 args[0] = read(Operator.LEVEL_MIDDLE);
                 args[1] = back;
             } else if (st.getHint() == 0 && OP_BAR.equals(st.getData())) {
                 SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
                 nextToken();
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 t = read(Operator.LEVEL_MIDDLE);
                 break;
             } else {
                 SkelAtom help = makePos(Foyer.OP_CONS, getAtomPos());
-                back = new SkelCompound(help, args, null);
+                back = new SkelCompound(args, help);
                 t = makePos(Foyer.OP_NIL, getAtomPos());
                 break;
             }
@@ -716,7 +716,7 @@ public class PrologReader {
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         } while (back != null);

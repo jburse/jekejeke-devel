@@ -177,7 +177,7 @@ public class Directive extends Intermediate {
                     Object[] args = new Object[2];
                     args[0] = t;
                     args[1] = back;
-                    back = new SkelCompound(en.store.foyer.ATOM_COMMA, args, null);
+                    back = new SkelCompound(args, en.store.foyer.ATOM_COMMA);
                 }
                 t = left;
             } while (temp != last);
@@ -187,7 +187,7 @@ public class Directive extends Intermediate {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         }
@@ -209,7 +209,7 @@ public class Directive extends Intermediate {
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
-            back = new SkelCompound(en.store.foyer.ATOM_SEMICOLON, args, null);
+            back = new SkelCompound(args, en.store.foyer.ATOM_SEMICOLON);
             term = sc.args[1];
         }
         Object t;
@@ -222,7 +222,7 @@ public class Directive extends Intermediate {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         }

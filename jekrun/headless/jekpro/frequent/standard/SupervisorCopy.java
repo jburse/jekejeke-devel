@@ -8,6 +8,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -68,6 +69,20 @@ public final class SupervisorCopy {
     }
 
     /**
+     * <p>Retrieve the linear flag.</p>
+     *
+     * @param t The term.
+     * @return The linear flag.
+     */
+    public static boolean getLinear(Object t) {
+        if (t instanceof SkelCompound) {
+            return ((SkelCompound) t).getLinear();
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * <p>Determine the display size.</p>
      * <p>Beware, works only for the root copy and not for sub terms.</p>
      *
@@ -118,7 +133,7 @@ public final class SupervisorCopy {
                     for (int i = 0; i < sc.args.length - 1; i++)
                         args[i] = copyTerm(sc.args[i], d);
                     args[sc.args.length - 1] = back;
-                    back = new SkelCompound(sc.sym, args, null);
+                    back = new SkelCompound(args, sc.sym);
                     t = sc.args[sc.args.length - 1];
                 } else {
                     break;
@@ -130,7 +145,7 @@ public final class SupervisorCopy {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         }
@@ -191,7 +206,7 @@ public final class SupervisorCopy {
                     for (int i = 0; i < sc.args.length - 1; i++)
                         args[i] = copyTermNew(sc.args[i], d);
                     args[sc.args.length - 1] = back;
-                    back = new SkelCompound(sc.sym, args, null);
+                    back = new SkelCompoundLineable(args, sc.sym);
                     t = sc.args[sc.args.length - 1];
                 } else {
                     break;
@@ -203,7 +218,7 @@ public final class SupervisorCopy {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.var = SkelCompound.makeExtra(back.args);
+            back.makeExtra();
             t = back;
             back = jack;
         }

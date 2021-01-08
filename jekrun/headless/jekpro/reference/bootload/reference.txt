@@ -235,8 +235,6 @@ retract/1	runtime/dynamic
 retractall/1	runtime/dynamic
 round/2	arithmetic/ratio
 round/2	arithmetic/round
-safe_term_variables/2	structure/vars
-safe_term_variables/3	structure/vars
 set_arg/4	structure/univ
 set_callable_property/3	reflect/call
 set_prolog_flag/2	bootload/engine

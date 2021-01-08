@@ -131,7 +131,7 @@ public abstract class AbstractSkel {
      * <p>Create a new display.</p>
      *
      * @param val The skeleton.
-     * @param m The markable flag.
+     * @param m   The markable flag.
      * @return The markable display.
      */
     public static Display createMarker(Object val, boolean m) {

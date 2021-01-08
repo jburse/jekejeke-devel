@@ -85,6 +85,7 @@ public class Engine extends StackElement implements Comparator<Object> {
 
     /**
      * <p>Unify two terms. As a side effect bindings are established.</p>
+     * <p>Trigger attribute variables on both sides.</p>
      * <p>Tail recursion implementation.</p>
      *
      * @param alfa The first skeleton.
@@ -148,6 +149,61 @@ public class Engine extends StackElement implements Comparator<Object> {
             int i = 0;
             for (; i < t1.length - 1; i++)
                 if (!unifyTerm(t1[i], d1, t2[i], d2))
+                    return false;
+            alfa = t1[i];
+            beta = t2[i];
+        }
+    }
+
+    /**
+     * <p>Unify two terms. As a side effect bindings are established.</p>
+     * <p>Trigger attribute variables only on one side.</p>
+     * <p>Tail recursion implementation.</p>
+     *
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The clause skeleton.
+     * @param d2   The clause display.
+     * @return True if the two terms unify, otherwise false.
+     * @throws EngineException Shit happens.
+     */
+    public final boolean unifyLinear(Object alfa, Display d1,
+                                     Object beta, Display d2)
+            throws EngineException {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                if (beta instanceof SkelVar) {
+                    BindUniv b2 = d2.bind[((SkelVar) beta).id];
+                    b2.bindUniv(alfa, d1, this);
+                    return true;
+                }
+                return b1.bindAttr(beta, d2, this);
+            }
+            if (beta instanceof SkelVar) {
+                BindUniv bc = d2.bind[((SkelVar) beta).id];
+                bc.bindUniv(alfa, d1, this);
+                return true;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++)
+                if (!unifyLinear(t1[i], d1, t2[i], d2))
                     return false;
             alfa = t1[i];
             beta = t2[i];

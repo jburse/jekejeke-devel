@@ -117,7 +117,9 @@ public final class SpecialMember extends AbstractSpecial {
                         SkelVar[] vars = SkelVar.valueOfArray(arity);
                         Object[] args = new Object[arity];
                         System.arraycopy(vars, 0, args, 0, arity);
-                        en.skel = new SkelCompound(sa, args, (arity > 1 ? vars : vars[0]));
+                        SkelCompound sc2 = new SkelCompound(args, sa);
+                        sc2.var = (vars.length > 1 ? vars : vars[0]);
+                        en.skel = sc2;
                         d = new Display(arity);
                         multi = true;
                     } else {

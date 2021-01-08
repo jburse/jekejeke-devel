@@ -78,16 +78,16 @@ public final class SpecialCollector extends AbstractSpecial {
         Object v2 = SupervisorCopy.getVar(t2);
         Object v = SupervisorCopy.getVar(t);
         if (v2 == null) {
-            Object[] args = new Object[2];
-            args[0] = t2;
-            args[1] = t;
-            en.skel = new SkelCompound(sc.sym, args, v);
+            Object[] args = new Object[]{t2, t};
+            SkelCompound sc2 = new SkelCompound(args, sc.sym);
+            sc2.var = v;
+            en.skel = sc2;
             en.display = d;
         } else if (v == null) {
-            Object[] args = new Object[2];
-            args[0] = t2;
-            args[1] = t;
-            en.skel = new SkelCompound(sc.sym, args, v2);
+            Object[] args = new Object[]{t2, t};
+            SkelCompound sc2 = new SkelCompound(args, sc.sym);
+            sc2.var = v2;
+            en.skel = sc2;
             en.display = d2;
         } else {
             Display d3 = new DisplayMarkable(2);
