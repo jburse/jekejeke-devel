@@ -21,10 +21,8 @@
  *
  * The predicate ground/1 succeeds if the term has no un-instantiated variables.
  * The predicate nonground/2 can be used to pick the first un-instantiated
- * variable of a term without listing all un-instantiated variables.
- * The predicate acyclic_term/1 check whether the given term is non-cyclic.
- * The predicate safe_term_variables/2 lists the un-instantiated variables
- * even for a cyclic term.
+ * variable of a term without listing all un-instantiated variables. The
+ * predicate acyclic_term/1 check whether the given term is non-cyclic.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -128,19 +126,3 @@ term_variables(X, L) :-
 % acyclic_term(+Term)
 :- public acyclic_term/1.
 :- special(acyclic_term/1, 'SpecialVars', 5).
-
-/**
- * safe_term_variables(X, L):
- * safe_term_variables(X, L, R):
- * The predicate succeeds when L unifies with the variables of X,
- * even when X is a cyclic term. The ternary variant produces a
- * difference list.
- */
-% safe_term_variables(+Term, -List)
-:- public safe_term_variables/2.
-safe_term_variables(X, L) :-
-   safe_term_variables(X, L, []).
-
-% safe_term_variables(+Term, -List, +List)
-:- public safe_term_variables/3.
-:- special(safe_term_variables/3, 'SpecialVars', 6).

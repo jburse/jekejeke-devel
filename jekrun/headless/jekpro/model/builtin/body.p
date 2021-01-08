@@ -74,7 +74,7 @@
 % :- +Goal
 (:- _) :- throw(error(existence_error(body, (:-)/1), _)).
 :- set_predicate_property((:-)/1, visible(public)).
-:- set_predicate_property((:-)/1, meta_predicate((:- -1))).
+:- set_predicate_property((:-)/1, meta_predicate([-1])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((:-)/1, sys_meta_predicate(C)).
 
@@ -86,7 +86,7 @@
 % +Term :- +Goal
 (_ :- _) :- throw(error(existence_error(body, (:-)/2), _)).
 :- set_predicate_property((:-)/2, visible(public)).
-:- set_predicate_property((:-)/2, meta_predicate((0 :- -1))).
+:- set_predicate_property((:-)/2, meta_predicate([0, -1])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((:-)/2, sys_meta_predicate(C)).
 
@@ -101,7 +101,7 @@
 _, _ :- throw(error(existence_error(body, ','/2), _)).
 :- set_predicate_property(','/2, sys_notrace).
 :- set_predicate_property(','/2, visible(public)).
-:- set_predicate_property(','/2, meta_predicate((0, 0))).
+:- set_predicate_property(','/2, meta_predicate([0, 0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(','/2, sys_meta_predicate(C)).
 
@@ -113,7 +113,7 @@ _, _ :- throw(error(existence_error(body, ','/2), _)).
 % call(+Goal)
 :- special(call/1, 'SpecialBody', 0).
 :- set_predicate_property(call/1, visible(public)).
-:- set_predicate_property(call/1, meta_predicate(call(0))).
+:- set_predicate_property(call/1, meta_predicate([0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(call/1, sys_meta_predicate(C)).
 

@@ -9,7 +9,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.runtime.ForeignCollector;
+import jekpro.reference.runtime.SpecialCollector;
 import jekpro.reference.structure.AbstractLexical;
 import jekpro.reference.structure.LexicalCollator;
 import jekpro.reference.structure.SpecialLexical;
@@ -282,7 +282,7 @@ public final class SpecialSort extends AbstractSpecial {
                 Object elem = entry.value;
                 Object val = AbstractTerm.getSkel(elem);
                 Display ref = AbstractTerm.getDisplay(elem);
-                ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
             }
         } else {
@@ -293,7 +293,7 @@ public final class SpecialSort extends AbstractSpecial {
                 Object elem = entry.value;
                 Object val = AbstractTerm.getSkel(elem);
                 Display ref = AbstractTerm.getDisplay(elem);
-                ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                         val, ref, t4, d2, en);
             }
         }
@@ -407,11 +407,11 @@ public final class SpecialSort extends AbstractSpecial {
                     Object elem = list.get(i);
                     Object val = AbstractTerm.getSkel(elem);
                     Display ref = AbstractTerm.getDisplay(elem);
-                    ForeignCollector.pairValue(en.store.foyer.CELL_SUB,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_SUB,
                             val2, ref2, val, ref, en);
                     val = en.skel;
                     ref = en.display;
-                    ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                             val, ref, t4, d2, en);
                 }
             }
@@ -428,11 +428,11 @@ public final class SpecialSort extends AbstractSpecial {
                     Object elem = list.get(i);
                     Object val = AbstractTerm.getSkel(elem);
                     Display ref = AbstractTerm.getDisplay(elem);
-                    ForeignCollector.pairValue(en.store.foyer.CELL_SUB,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_SUB,
                             val2, ref2, val, ref, en);
                     val = en.skel;
                     ref = en.display;
-                    ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                             val, ref, t4, d2, en);
                 }
             }

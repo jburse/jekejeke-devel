@@ -1,26 +1,16 @@
 package jekpro.frequent.advanced;
 
 import jekpro.frequent.standard.SpecialSort;
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
-import jekpro.model.pretty.PrologWriter;
-import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.bootload.SpecialLoad;
-import jekpro.reference.runtime.ForeignCollector;
 import jekpro.reference.structure.EngineVars;
 import jekpro.tools.array.Types;
-import jekpro.tools.term.AbstractTerm;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.*;
 
 /**
  * <p>Provides built-in predicates for variable ops.</p>

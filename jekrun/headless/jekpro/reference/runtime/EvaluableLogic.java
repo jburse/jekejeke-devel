@@ -283,25 +283,6 @@ public final class EvaluableLogic extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Create a new atom for a given site.</p>
-     *
-     * @param fun The name of the atom.
-     * @param en  The engine.
-     * @param sa2 The call-site, or null.
-     * @return The new atom.
-     */
-    public static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
-        AbstractSource scope = (sa2 != null ? sa2.scope : null);
-        PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
-
-        int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa2 = en.store.foyer.createAtom(fun, scope, m);
-        sa2.setPosition(pos);
-
-        return sa2;
-    }
-
     /************************************************************/
     /* Callable Slash                                           */
     /************************************************************/

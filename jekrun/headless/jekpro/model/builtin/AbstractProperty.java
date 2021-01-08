@@ -7,7 +7,7 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.pretty.StoreKeyQuali;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.runtime.EvaluableLogic;
-import jekpro.reference.runtime.ForeignCollector;
+import jekpro.reference.runtime.SpecialCollector;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
@@ -186,7 +186,7 @@ public abstract class AbstractProperty<T> {
             Object elem = molecs[i];
             Object val = AbstractTerm.getSkel(elem);
             Display ref = AbstractTerm.getDisplay(elem);
-            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+            SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                     val, ref, t4, d2, en);
         }
     }

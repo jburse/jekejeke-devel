@@ -201,7 +201,7 @@ findall(X, G, L, E) :-
 :- set_predicate_property(: /2, meta_predicate([?, 0])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(: /2, sys_meta_predicate(C)).
-:- special(: /2, 'SpecialLogic', 2).
+:- special(: /2, 'SpecialLogic', 0).
 :- set_predicate_property(: /2, sys_notrace).
 
 /**
@@ -215,7 +215,7 @@ findall(X, G, L, E) :-
 :- set_predicate_property(:: /2, meta_predicate([?, ::(0)])).
 :- callable_property(here, sys_context(C)),
    set_predicate_property(:: /2, sys_meta_predicate(C)).
-:- special(:: /2, 'SpecialLogic', 3).
+:- special(:: /2, 'SpecialLogic', 1).
 :- set_predicate_property(:: /2, sys_notrace).
 
 /**
@@ -257,4 +257,4 @@ findall(X, G, L, E) :-
  */
 % sys_replace_site(-Term, +Term, +Term)
 :- public sys_replace_site/3.
-:- special(sys_replace_site/3, 'SpecialLogic', 4).
+:- special(sys_replace_site/3, 'SpecialLogic', 2).

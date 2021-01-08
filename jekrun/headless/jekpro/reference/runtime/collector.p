@@ -41,7 +41,7 @@
  */
 % sys_pivot_new(-Pivot)
 :- public sys_pivot_new/1.
-:- foreign_constructor(sys_pivot_new/1, 'SetEntry', new).
+:- special(sys_pivot_new/1, 'SpecialCollector', 0).
 
 /*****************************************************************/
 /* List                                                          */
@@ -53,16 +53,15 @@
  */
 % sys_pivot_add(+Pivot, +Term)
 :- public sys_pivot_add/2.
-:- foreign(sys_pivot_add/2, 'ForeignCollector',
-      sysPivotAdd('Interpreter', 'SetEntry', 'Object')).
+:- special(sys_pivot_add/2, 'SpecialCollector', 1).
 
 /**
  * sys_pivot_collect(P, E, L):
  * The predicate succceeds in L with the elements of P ending in E.
  */
+% sys_pivot_collect(+Pivot, +List, -List)
 :- public sys_pivot_collect/3.
-:- foreign(sys_pivot_collect/3, 'ForeignCollector',
-      sysPivotCollect('Interpreter', 'SetEntry', 'Object')).
+:- special(sys_pivot_collect/3, 'SpecialCollector', 2).
 
 /*****************************************************************/
 /* Tree                                                          */
@@ -75,16 +74,15 @@
  */
 % sys_pivot_put(+Pivot, +Term)
 :- public sys_pivot_put/2.
-:- foreign(sys_pivot_put/2, 'ForeignCollector',
-      sysPivotPut('Interpreter', 'SetEntry', 'Object')).
+:- special(sys_pivot_put/2, 'SpecialCollector', 3).
 
 /**
  * sys_pivot_gather(P, E, L):
  * The predicate succceeds in L with the elements of P ending in E.
  */
+% sys_pivot_gather(+Pivot, +List, -List)
 :- public sys_pivot_gather/3.
-:- foreign(sys_pivot_gather/3, 'ForeignCollector',
-      sysPivotGather('Interpreter', 'SetEntry', 'Object')).
+:- special(sys_pivot_gather/3, 'SpecialCollector', 4).
 
 
 

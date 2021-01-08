@@ -5,7 +5,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.WriteOpts;
-import jekpro.reference.runtime.ForeignCollector;
+import jekpro.reference.runtime.SpecialCollector;
 import jekpro.tools.proxy.RuntimeWrap;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -262,7 +262,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
                 Display d = en.display;
                 Object m = new SkelCompound(new SkelAtom(OP_TYPE),
                         new SkelAtom(OP_TYPE_HASH));
-                ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                         m, Display.DISPLAY_CONST, t, d, en);
             } else if (cmpstr instanceof IgnoreCase) {
                 if (((IgnoreCase) cmpstr).getStrength() != Collator.TERTIARY) {
@@ -270,7 +270,7 @@ public abstract class AbstractLexical implements Comparator<Object> {
                     Display d = en.display;
                     Object m = new SkelCompound(new SkelAtom(OP_IGNORE_CASE),
                             new SkelAtom(Foyer.OP_TRUE));
-                    ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                             m, Display.DISPLAY_CONST, t, d, en);
                 }
             } else {
@@ -279,20 +279,20 @@ public abstract class AbstractLexical implements Comparator<Object> {
                     Display d = en.display;
                     Object m = new SkelCompound(new SkelAtom(OP_IGNORE_CASE),
                             new SkelAtom(Foyer.OP_TRUE));
-                    ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                    SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                             m, Display.DISPLAY_CONST, t, d, en);
                 }
                 Object t = en.skel;
                 Display d = en.display;
                 Object m = new SkelCompound(new SkelAtom(OP_LOCALE),
                         new SkelAtom(((LexicalCollator) el).getLocStr()));
-                ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                         m, Display.DISPLAY_CONST, t, d, en);
                 t = en.skel;
                 d = en.display;
                 m = new SkelCompound(new SkelAtom(OP_TYPE),
                         new SkelAtom(OP_TYPE_COLLATOR));
-                ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+                SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                         m, Display.DISPLAY_CONST, t, d, en);
             }
         } else {
@@ -301,13 +301,13 @@ public abstract class AbstractLexical implements Comparator<Object> {
             Object obj = ((LexicalCallback) el).getComparator();
             Object m = new SkelCompound(new SkelAtom(OP_COMPARATOR),
                     AbstractTerm.getSkel(obj));
-            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+            SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                     m, AbstractTerm.getDisplay(obj), t, d, en);
             t = en.skel;
             d = en.display;
             m = new SkelCompound(new SkelAtom(OP_TYPE),
                     new SkelAtom(OP_TYPE_CALLBACK));
-            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+            SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                     m, Display.DISPLAY_CONST, t, d, en);
         }
     }

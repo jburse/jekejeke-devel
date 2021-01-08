@@ -102,6 +102,12 @@
 :- set_oper_property(prefix(virtual), sys_tabr).
 :- set_oper_property(prefix(virtual), visible(public)).
 
+:- sys_neutral_oper(prefix(nonstrict)).
+:- set_oper_property(prefix(nonstrict), op(1150, fy)).
+:- set_oper_property(prefix(nonstrict), sys_newr).
+:- set_oper_property(prefix(nonstrict), sys_tabr).
+:- set_oper_property(prefix(nonstrict), visible(public)).
+
 /**
  * special(I, C, K):
  * Succeeds with registering the predicate indicator I as a special
@@ -111,15 +117,20 @@
 % special(+IndicatorColon, +Class, +Index)
 special(I, C, K) :-
    sys_special(I, C, K),
-   sys_check_style_predicate(I).
+   sys_check_style_body(I).
 
-% already defined in special.p
+% already defined in Branch
 % :- special(sys_special/3, 'SpecialSpecial', 0).
 % :- set_predicate_property(sys_special/3, visible(public)).
 
-% already defined in special.p
-% :- special(sys_check_style_predicate/1, 'SpecialSpecial', 1).
-% :- set_predicate_property(sys_check_style_predicate/1, visible(public)).
+/**
+ * sys_check_style_body(I):
+ * The predicate performs a body style check on the predicate indicator I.
+ */
+% sys_check_style_body(+Indicator)
+% already defined in Branch
+% :- special(sys_check_style_body/1, 'SpecialSpecial', 1).
+% :- set_predicate_property(sys_check_style_body/1, visible(public)).
 
 :- special(set_predicate_property/2, 'SpecialSpecial', 2).
 :- set_predicate_property(set_predicate_property/2, visible(public)).
@@ -131,6 +142,14 @@ special(I, C, K) :-
 
 :- reset_predicate_property(sys_special/3, visible(public)).
 :- set_predicate_property(sys_special/3, visible(private)).
+
+/**
+ * sys_check_style_head(I):
+ * The predicate performs a body style check on the predicate indicator I.
+ */
+% sys_check_style_body(+Indicator)
+:- special(sys_check_style_head/1, 'SpecialSpecial', 4).
+:- set_predicate_property(sys_check_style_head/1, visible(public)).
 
 /**
  * virtual P, ..:
@@ -149,8 +168,30 @@ sys_virtual(D) :- sys_declaration_indicator(D, I), !,
    call(D).
 sys_virtual(I) :-
    sys_neutral_predicate(I),
-   set_predicate_property(I, virtual).
+   set_predicate_property(I, virtual),
+   sys_check_style_head(I).
 :- set_predicate_property(sys_virtual/1, visible(private)).
+
+/**
+ * nonstrict P, ..:
+ * The predicate sets the predicate P to nonstrict.
+ */
+% nonstrict +Indicators
+nonstrict [P|Q] :- !, sys_nonstrict(P), nonstrict(Q).
+nonstrict P, Q :- !, sys_nonstrict(P), nonstrict(Q).
+nonstrict [] :- !.
+nonstrict P :- sys_nonstrict(P).
+:- set_predicate_property((nonstrict)/1, visible(public)).
+
+sys_nonstrict(X) :- var(X), throw(error(instantiation_error, _)).
+sys_nonstrict(D) :- sys_declaration_indicator(D, I), !,
+   sys_nonstrict(I),
+   call(D).
+sys_nonstrict(I) :-
+   sys_neutral_predicate(I),
+   set_predicate_property(I, nonstrict),
+   sys_check_style_head(I).
+:- set_predicate_property(sys_nonstrict/1, visible(private)).
 
 /**
  * sys_neutral_predicate(I):
@@ -179,3 +220,4 @@ sys_declaration_indicator(special(I, _, _), I).
 sys_declaration_indicator(set_predicate_property(I, _), I).
 sys_declaration_indicator(reset_predicate_property(I, _), I).
 sys_declaration_indicator(virtual(D), I) :- sys_declaration_indicator(D, I).
+sys_declaration_indicator(nonstrict(D), I) :- sys_declaration_indicator(D, I).

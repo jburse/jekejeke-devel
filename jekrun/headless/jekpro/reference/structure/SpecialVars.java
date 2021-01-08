@@ -13,7 +13,7 @@ import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
-import jekpro.reference.runtime.ForeignCollector;
+import jekpro.reference.runtime.SpecialCollector;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
@@ -61,7 +61,6 @@ public final class SpecialVars extends AbstractSpecial {
     private final static int SPECIAL_SYS_NUMBER_VARIABLES = 3;
     private final static int SPECIAL_NONGROUND = 4;
     private final static int SPECIAL_ACYCLIC_TERM = 5;
-    private final static int SPECIAL_SAFE_TERM_VARIABLES = 6;
 
     /**
      * <p>Create a vars special.</p>
@@ -155,22 +154,6 @@ public final class SpecialVars extends AbstractSpecial {
                     ev = new EngineVars();
                     if (!ev.isAcyclic(temp[0], ref))
                         return false;
-                    return true;
-                case SPECIAL_SAFE_TERM_VARIABLES:
-                    temp = ((SkelCompound) en.skel).args;
-                    ref = en.display;
-                    ev = new EngineVars();
-                    ev.safeVars(temp[0], ref);
-                    en.skel = temp[2];
-                    en.display = ref;
-                    en.deref();
-                    SpecialSort.createSet(ev.vars, en, false);
-                    d = en.display;
-                    multi = d.getAndReset();
-                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
-                        return false;
-                    if (multi)
-                        d.remTab(en);
                     return true;
                 default:
                     throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -323,12 +306,12 @@ public final class SpecialVars extends AbstractSpecial {
             Display ref2 = AbstractTerm.getDisplay(elem2);
             Object t4 = en.skel;
             Display d2 = en.display;
-            ForeignCollector.pairValue(en.store.foyer.CELL_EQUAL,
+            SpecialCollector.pairValue(en.store.foyer.CELL_EQUAL,
                     new SkelAtom(entry.value), Display.DISPLAY_CONST,
                     val2, ref2, en);
             val2 = en.skel;
             ref2 = en.display;
-            ForeignCollector.pairValue(en.store.foyer.CELL_CONS,
+            SpecialCollector.pairValue(en.store.foyer.CELL_CONS,
                     val2, ref2, t4, d2, en);
         }
     }

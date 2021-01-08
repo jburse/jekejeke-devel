@@ -112,7 +112,7 @@
 % once(+Goal)
 once(X) :- X, !.
 :- set_predicate_property(once/1, visible(public)).
-:- set_predicate_property(once/1, meta_predicate(once(0))).
+:- set_predicate_property(once/1, meta_predicate([0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(once/1, sys_meta_predicate(C)).
 
@@ -125,7 +125,7 @@ once(X) :- X, !.
 \+ X :- X, !, fail.
 \+ _.
 :- set_predicate_property((\+)/1, visible(public)).
-:- set_predicate_property((\+)/1, meta_predicate(\+ 0)).
+:- set_predicate_property((\+)/1, meta_predicate([0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
@@ -197,7 +197,7 @@ sys_fill_stack(_).
 catch(A, E, B) :-
    sys_trap(A, E, sys_ball_handler(E, B)).
 :- set_predicate_property(catch/3, visible(public)).
-:- set_predicate_property(catch/3, meta_predicate(catch(0, ?, 0))).
+:- set_predicate_property(catch/3, meta_predicate([0, ?, 0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(catch/3, sys_meta_predicate(C)).
 
@@ -209,7 +209,7 @@ sys_ball_handler(E, _) :- sys_error_type(E, limit_error(_)), !,
 sys_ball_handler(_, B) :-
    B.
 :- set_predicate_property(sys_ball_handler/2, visible(private)).
-:- set_predicate_property(sys_ball_handler/2, meta_predicate(sys_ball_handler(?, 0))).
+:- set_predicate_property(sys_ball_handler/2, meta_predicate([?, 0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_ball_handler/2, sys_meta_predicate(C)).
 
@@ -223,7 +223,7 @@ sys_ball_handler(_, B) :-
 % sys_trap(+Goal, +Pattern, +Goal)
 :- special(sys_trap/3, 'SpecialControl', 5).
 :- set_predicate_property(sys_trap/3, visible(public)).
-:- set_predicate_property(sys_trap/3, meta_predicate(sys_trap(0, ?, 0))).
+:- set_predicate_property(sys_trap/3, meta_predicate([0, ?, 0])).
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property(sys_trap/3, sys_meta_predicate(C)).
 

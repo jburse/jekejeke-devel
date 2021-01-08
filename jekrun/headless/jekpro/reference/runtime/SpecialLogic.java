@@ -7,8 +7,10 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Directive;
 import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
@@ -44,9 +46,9 @@ import jekpro.tools.term.SkelCompound;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLogic extends AbstractSpecial {
-    private final static int SPECIAL_CALL_COLON = 2;
-    private final static int SPECIAL_CALL_COLONCOLON = 3;
-    private final static int SPECIAL_SYS_REPLACE_SITE = 4;
+    private final static int SPECIAL_CALL_COLON = 0;
+    private final static int SPECIAL_CALL_COLONCOLON = 1;
+    private final static int SPECIAL_SYS_REPLACE_SITE = 2;
 
     /**
      * <p>Create a logic special.</p>
@@ -140,7 +142,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 SkelAtom sa2 = StackElement.callableToName(en.skel);
 
                 SkelAtom sa = StackElement.callableToName(obj);
-                sa = EvaluableLogic.makeAtom(sa.fun, en, sa2);
+                sa = makeAtom(sa.fun, en, sa2);
                 obj = StackElement.callableFromName(obj, sa);
                 if (!en.unifyTerm(obj, d, temp[0], ref))
                     return false;
@@ -209,6 +211,25 @@ public final class SpecialLogic extends AbstractSpecial {
         return (SkelAtom) mod;
     }
 
+
+    /**
+     * <p>Create a new atom for a given site.</p>
+     *
+     * @param fun The name of the atom.
+     * @param en  The engine.
+     * @param sa2 The call-site, or null.
+     * @return The new atom.
+     */
+    private static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
+        AbstractSource scope = (sa2 != null ? sa2.scope : null);
+        PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
+
+        int m = (pos != null ? SkelAtom.MASK_ATOM_POSI : 0);
+        sa2 = en.store.foyer.createAtom(fun, scope, m);
+        sa2.setPosition(pos);
+
+        return sa2;
+    }
 
     /************************************************************/
     /* Callable Colon                                           */

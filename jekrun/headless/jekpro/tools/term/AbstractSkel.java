@@ -136,7 +136,7 @@ public abstract class AbstractSkel {
      */
     public static Display createMarker(Object val, boolean m) {
         int size = SupervisorCopy.displaySize(val);
-        return DisplayMarkable.valueOf(size);
+        return DisplayMarkable.valueOf(size, m);
     }
 
     /********************************************************************/
