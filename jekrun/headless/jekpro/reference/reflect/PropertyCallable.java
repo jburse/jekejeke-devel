@@ -9,13 +9,16 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.DisplayMarkable;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.runtime.SpecialSession;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
@@ -220,7 +223,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 ((SkelCompound) m).args.length == 1 &&
                 ((SkelCompound) m).sym.fun.equals(OP_SYS_VARIABLE_NAMES)) {
             SkelCompound sc = (SkelCompound) m;
-            return SupervisorCopy.assocToMapUniv(sc.args[0], d, en);
+            return assocToMapUniv(sc.args[0], d, en);
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
@@ -272,6 +275,89 @@ public final class PropertyCallable extends AbstractProperty<Object> {
             copy = new MapHashLink<>();
         copy.add(name, v);
         return copy;
+    }
+
+    /************************************************************/
+    /* Assoc Property                                           */
+    /************************************************************/
+
+    /**
+     * <p>Create variable map from variable names.</p>
+     * <p>Non variable associations are skipped.</p>
+     *
+     * @param t  The variable names skel.
+     * @param d  The variable names display.
+     * @param en The engine.
+     * @return The print map.
+     * @throws EngineMessage Shit happens.
+     */
+    public static MapHash<BindUniv, String> assocToMapUniv(Object t, Display d,
+                                                           Engine en)
+            throws EngineMessage {
+        MapHash<BindUniv, String> print = null;
+        en.skel = t;
+        en.display = d;
+        en.deref();
+        while (en.skel instanceof SkelCompound &&
+                ((SkelCompound) en.skel).args.length == 2 &&
+                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
+            Object[] mc = ((SkelCompound) en.skel).args;
+            d = en.display;
+            en.skel = mc[0];
+            en.deref();
+            if (en.skel instanceof SkelCompound &&
+                    ((SkelCompound) en.skel).args.length == 2 &&
+                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
+                /* */
+            } else {
+                EngineMessage.checkInstantiated(en.skel);
+                throw new EngineMessage(EngineMessage.typeError(
+                        EngineMessage.OP_TYPE_ASSOC,
+                        en.skel), en.display);
+            }
+            Object[] mc2 = ((SkelCompound) en.skel).args;
+            Display d2 = en.display;
+            en.skel = mc2[1];
+            en.deref();
+            if (en.skel instanceof SkelVar) {
+                BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
+                if (print == null)
+                    print = new MapHash<>();
+                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
+                addMapUniv(print, pair, name);
+            }
+            en.skel = mc[1];
+            en.display = d;
+            en.deref();
+        }
+        if (en.skel instanceof SkelAtom &&
+                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
+            /* */
+        } else {
+            EngineMessage.checkInstantiated(en.skel);
+            throw new EngineMessage(EngineMessage.typeError(
+                    EngineMessage.OP_TYPE_LIST,
+                    en.skel), en.display);
+        }
+        return print;
+    }
+
+    /**
+     * <p>Add to the map hash.</p>
+     *
+     * @param print The print map.
+     * @param key   The variable.
+     * @param name  The variable name.
+     */
+    public static void addMapUniv(MapHash<BindUniv, String> print,
+                                  BindUniv key,
+                                  String name) {
+        MapEntry<BindUniv, String> entry = print.getEntry(key);
+        if (entry == null) {
+            print.add(key, name);
+        } else {
+            entry.value = name;
+        }
     }
 
 }

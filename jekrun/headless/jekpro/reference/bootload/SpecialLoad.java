@@ -854,7 +854,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Display ref = AbstractSkel.createDisplay(t);
             EngineVars ev = new EngineVars();
             ev.singsOf(t, ref);
-            MapHash<BindUniv, String> print = SupervisorCopy.hashToMapUniv(vars, ref, en);
+            MapHash<BindUniv, String> print = hashToMapUniv(vars, ref, en);
             print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
@@ -909,7 +909,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 throw en.fault;
             EngineVars ev = new EngineVars();
             ev.singsOf(res, d2);
-            MapHash<BindUniv, String> print = SupervisorCopy.hashToMapUniv(vars, d2, en);
+            MapHash<BindUniv, String> print = hashToMapUniv(vars, d2, en);
             print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print, flags);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
@@ -1207,6 +1207,43 @@ public final class SpecialLoad extends AbstractSpecial {
             t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
         }
         return t;
+    }
+
+    /********************************************************************/
+    /* Print Map                                                        */
+    /********************************************************************/
+
+    /**
+     * <p>Create a print map from variable names.</p>
+     * <p>Will not convert variables that have not yet been allocated.</p>
+     * <p>Will not convert variables that have already been deallocated.</p>
+     *
+     * @param vars The var hash.
+     * @param d    The term display.
+     * @param en   The engine.
+     * @return The print map.
+     */
+    public static MapHash<BindUniv, String> hashToMapUniv(MapHashLink<String, SkelVar> vars,
+                                                          Display d, Engine en) {
+        if (vars == null)
+            return null;
+        MapHash<BindUniv, String> print = null;
+        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
+             entry != null; entry = vars.successor(entry)) {
+            SkelVar sv = entry.value;
+            if (sv.id >= d.bind.length || d.bind[sv.id] == null)
+                continue;
+            en.skel = sv;
+            en.display = d;
+            en.deref();
+            if (!(en.skel instanceof SkelVar))
+                continue;
+            BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
+            if (print == null)
+                print = new MapHash<>();
+            PropertyCallable.addMapUniv(print, pair, entry.key);
+        }
+        return print;
     }
 
 }

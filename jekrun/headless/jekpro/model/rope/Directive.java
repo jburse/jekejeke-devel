@@ -142,24 +142,14 @@ public class Directive extends Intermediate {
 
     /**
      * <p>Convert the intermediate form into a term.</p>
-     *
-     * @param en The store.
-     * @return The vector.
-     */
-    public Object interToBody(Engine en) {
-        return Directive.interToBody(this, last, en);
-    }
-
-    /**
-     * <p>Convert the intermediate form into a term.</p>
      * <p>Will skip begin and commit nodes.</p>
      *
      * @param last The conversion end.
      * @param en   The store.
-     * @return The vector.
+     * @return The skeleton.
      */
-    private static Object interToBody(Intermediate temp, Intermediate last,
-                                      Engine en) {
+    public static Object interToBodySkel(Intermediate temp, Intermediate last,
+                                          Engine en) {
         SkelCompound back = null;
         Object t = null;
         if (last != null) {
@@ -167,9 +157,10 @@ public class Directive extends Intermediate {
                 temp = temp.next;
                 Object left = ((Goal) temp).term;
                 if (isAlter(left) || isGuard(left)) {
-                    left = alterToDisjSkel(left, en);
+                    left = Directive.alterToDisjSkel(left, en);
                 } else if (isSequen(left)) {
-                    left = sequenToConjSkel(left, en);
+                    SkelCompound sc = (SkelCompound) left;
+                    left = Directive.interToBranchSkel((Directive) sc.args[0], en);
                 } else if (controlType(left) != TYPE_CTRL_NONE) {
                     continue;
                 }
@@ -187,7 +178,7 @@ public class Directive extends Intermediate {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         }
@@ -205,7 +196,7 @@ public class Directive extends Intermediate {
         SkelCompound back = null;
         while (isAlter(term)) {
             SkelCompound sc = (SkelCompound) term;
-            Object left = ((Directive) sc.args[0]).interToBranch(en);
+            Object left = Directive.interToBranchSkel((Directive) sc.args[0], en);
             Object[] args = new Object[2];
             args[0] = left;
             args[1] = back;
@@ -215,14 +206,14 @@ public class Directive extends Intermediate {
         Object t;
         if (isGuard(term)) {
             SkelCompound sc = (SkelCompound) term;
-            t = ((Directive) sc.args[0]).interToBranch(en);
+            t = Directive.interToBranchSkel((Directive) sc.args[0], en);
         } else {
-            t = ((Directive) term).interToBody(en);
+            t = Directive.interToBodySkel(((Directive) term), ((Directive) term).last, en);
         }
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         }
@@ -230,38 +221,25 @@ public class Directive extends Intermediate {
     }
 
     /**
-     * <p>Convert a sequent to a conjunction.</p>
-     *
-     * @param term The sequent skeleton.
-     * @param en   The engine.
-     * @return The conjunction skeleton.
-     */
-    private static Object sequenToConjSkel(Object term, Engine en) {
-        SkelCompound sc = (SkelCompound) term;
-        Object t = ((Directive) sc.args[0]).interToBranch(en);
-        return t;
-    }
-
-    /**
      * <p>Convert the intermediate form into a term.</p>
      *
      * @param en The store.
-     * @return The vector.
+     * @return The skeleton.
      */
-    private Object interToBranch(Engine en) {
+    private static Object interToBranchSkel(Directive dire, Engine en) {
         int type = TYPE_CTRL_NONE;
-        if (last != null && (type = controlType(((Goal) next).term)) == TYPE_CTRL_BEGN) {
-            Intermediate split = findSplit(this, last);
-            Object left = interToBody(this, split, en);
-            Object right = interToBody(split, last, en);
+        if (dire.last != null && (type = controlType(((Goal) dire.next).term)) == TYPE_CTRL_BEGN) {
+            Intermediate split = findSplit(dire, dire.last);
+            Object left = Directive.interToBodySkel(dire, split, en);
+            Object right = Directive.interToBodySkel(split, dire.last, en);
             return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
-        } else if (last != null && type == TYPE_CTRL_SBGN) {
-            Intermediate split = findSoftSplit(this, last);
-            Object left = interToBody(this, split, en);
-            Object right = interToBody(split, last, en);
+        } else if (dire.last != null && type == TYPE_CTRL_SBGN) {
+            Intermediate split = findSoftSplit(dire, dire.last);
+            Object left = Directive.interToBodySkel(dire, split, en);
+            Object right = Directive.interToBodySkel(split, dire.last, en);
             return new SkelCompound(en.store.foyer.ATOM_SOFT_CONDITION, left, right);
         } else {
-            return interToBody(en);
+            return Directive.interToBodySkel(dire, dire.last, en);
         }
     }
 

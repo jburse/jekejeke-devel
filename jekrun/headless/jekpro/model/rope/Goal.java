@@ -223,7 +223,7 @@ public class Goal extends Intermediate {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         }

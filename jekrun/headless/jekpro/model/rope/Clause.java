@@ -74,29 +74,6 @@ public class Clause extends Directive implements InterfaceReference {
         }
     }
 
-    /***********************************************************/
-    /* Convert To Intermediate                                 */
-    /***********************************************************/
-
-    /**
-     * <p>Analyze a clause.</p>
-     *
-     * @param rule The rule.
-     * @param body The body.
-     */
-    public void analyzeClause(Object rule, Object body) {
-        Optimization[] vars = Optimization.createHelper(rule);
-
-        if (vars.length != 0) {
-            Optimization.setHead(head, this, vars);
-            if (body != null)
-                Optimization.setBody(body, vars);
-            sizerule = Optimization.sortExtra(vars);
-        }
-
-        intargs = Optimization.unifyArgs(head, vars);
-    }
-
     /**********************************************************/
     /* InterfaceReference Protocol                            */
     /**********************************************************/

@@ -2,6 +2,7 @@ package jekpro.model.inter;
 
 import jekpro.model.molec.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
 import jekpro.reference.runtime.SpecialLogic;
@@ -124,7 +125,7 @@ class ChoiceInspect extends AbstractChoice {
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, newdisp, en)) {
-                Object end = clause.interToBody(en);
+                Object end = Directive.interToBodySkel(clause, clause.last, en);
                 if (en.unifyTerm(end, newdisp, temp[1], d)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
                         if (en.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], d))

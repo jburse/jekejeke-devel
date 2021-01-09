@@ -43,8 +43,8 @@ public class SkelCompound extends AbstractSkel
     /**
      * <p>Create a skel compound with given vars.</p>
      *
-     * @param f The functor.
      * @param a The arguments.
+     * @param f The functor.
      */
     public SkelCompound(Object[] a, SkelAtom f) {
         if (f == null)
@@ -65,7 +65,7 @@ public class SkelCompound extends AbstractSkel
      */
     public SkelCompound(SkelAtom f, Object... a) {
         this(a, f);
-        makeExtra();
+        var = SkelCompound.makeExtra(a);
     }
 
     /**
@@ -74,11 +74,7 @@ public class SkelCompound extends AbstractSkel
      * @return The linear flag.
      */
     public boolean getLinear() {
-        if (var == null) {
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
 
     /**
@@ -88,17 +84,16 @@ public class SkelCompound extends AbstractSkel
      * @return The clash flag.
      */
     public byte getSubTerm(int k) {
-        if (var == null) {
-            return SkelCompoundLineable.SUBTERM_LINEAR;
-        } else {
-            return SkelCompoundLineable.SUBTERM_CLASH;
-        }
+        return SkelCompoundLineable.SUBTERM_LINEAR;
     }
 
     /**
-     * <p>Populate the variable string.</p>>
+     * <p>Compute the variable string.</p>
+     *
+     * @param args The arguments.
+     * @return The variable string.
      */
-    public void makeExtra() {
+    public static Object makeExtra(Object[] args) {
         Object res = null;
         ListArray<SkelVar> vec = null;
         for (int i = 0; i < args.length; i++) {
@@ -107,13 +102,28 @@ public class SkelCompound extends AbstractSkel
                 continue;
             if (res == null) {
                 res = newvar;
+            } else if (newvar instanceof SkelVar) {
+                SkelVar mv = (SkelVar) newvar;
+                if (canAdd(vec, res, mv)) {
+                    if (vec == null)
+                        vec = new ListArray<>();
+                    vec.add(mv);
+                }
             } else {
-                vec = addExtra(newvar, vec, res);
+                SkelVar[] temp = (SkelVar[]) newvar;
+                for (int j = 0; j < temp.length; j++) {
+                    SkelVar mv = temp[j];
+                    if (canAdd(vec, res, mv)) {
+                        if (vec == null)
+                            vec = new ListArray<>();
+                        vec.add(mv);
+                    }
+                }
             }
         }
         if (vec != null)
             res = concatExtra(vec, res);
-        var = res;
+        return res;
     }
 
     /**
@@ -153,42 +163,20 @@ public class SkelCompound extends AbstractSkel
     /******************************************************************/
 
     /**
-     * <p>Add new variables from a spine in a list,
-     * not already appearing in another spine.</p>
+     * <p>Check whetehr we can add a variable.</p>
      *
-     * @param newvar The spine, non null.
-     * @param vec    The list or null.
-     * @param res    The spine, or null.
-     * @return The new list or null.
+     * @param vec The list, or null.
+     * @param res The spine, or null.
+     * @param mv  The variable.
+     * @return True if we can add the variable, otherwise false.
      */
-    private static ListArray<SkelVar> addExtra(Object newvar,
-                                               ListArray<SkelVar> vec,
-                                               Object res) {
-        if (newvar instanceof SkelVar) {
-            SkelVar mv = (SkelVar) newvar;
-            if (res != null && contains(res, mv))
-                return vec;
-            if (vec == null) {
-                vec = new ListArray<>();
-                vec.add(mv);
-            } else if (vec.indexOf(mv) == -1) {
-                vec.add(mv);
-            }
-        } else {
-            SkelVar[] temp = (SkelVar[]) newvar;
-            for (int i = 0; i < temp.length; i++) {
-                SkelVar mv = temp[i];
-                if (res != null && contains(res, mv))
-                    continue;
-                if (vec == null) {
-                    vec = new ListArray<>();
-                    vec.add(mv);
-                } else if (vec.indexOf(mv) == -1) {
-                    vec.add(mv);
-                }
-            }
-        }
-        return vec;
+    static boolean canAdd(ListArray<SkelVar> vec,
+                          Object res, SkelVar mv) {
+        if (res != null && contains(res, mv))
+            return false;
+        if (vec != null && vec.contains(mv))
+            return false;
+        return true;
     }
 
     /**

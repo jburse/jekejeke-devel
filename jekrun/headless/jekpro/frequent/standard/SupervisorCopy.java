@@ -1,12 +1,7 @@
 package jekpro.frequent.standard;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
@@ -131,11 +126,11 @@ public final class SupervisorCopy {
                 if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     int i = 0;
-                    for (; i < sc.args.length - 1; i++)
+                    for (; i < args.length - 1; i++)
                         args[i] = copyTerm(sc.args[i], d);
+                    t = sc.args[i];
                     args[i] = back;
                     back = new SkelCompound(args, sc.sym);
-                    t = sc.args[i];
                 } else {
                     break;
                 }
@@ -146,7 +141,7 @@ public final class SupervisorCopy {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         }
@@ -174,9 +169,9 @@ public final class SupervisorCopy {
         return v;
     }
 
-    /*******************************************************/
-    /* Rest Copy                                           */
-    /*******************************************************/
+    /***********************************************************/
+    /* Copy Term New                                           */
+    /***********************************************************/
 
     /**
      * <p>Copy the given term.</p>
@@ -205,11 +200,11 @@ public final class SupervisorCopy {
                 if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
                     int i = 0;
-                    for (; i < sc.args.length - 1; i++)
+                    for (; i < args.length - 1; i++)
                         args[i] = copyTermNew(sc.args[i], d);
-                    args[i] = back;
-                    back = new SkelCompoundLineable(args, sc.sym);
                     t = sc.args[i];
+                    args[i] = back;
+                    back = new SkelCompound(args, sc.sym);
                 } else {
                     break;
                 }
@@ -220,7 +215,7 @@ public final class SupervisorCopy {
         while (back != null) {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         }
@@ -262,120 +257,8 @@ public final class SupervisorCopy {
     }
 
     /***********************************************************/
-    /* Second Pass                                             */
+    /* Copy Vars Univ                                          */
     /***********************************************************/
-
-    /**
-     * <p>Create variable map from variable names.</p>
-     * <p>Non variable associations are skipped.</p>
-     *
-     * @param t  The variable names skel.
-     * @param d  The variable names display.
-     * @param en The engine.
-     * @return The print map.
-     * @throws EngineMessage Shit happens.
-     */
-    public static MapHash<BindUniv, String> assocToMapUniv(Object t, Display d,
-                                                           Engine en)
-            throws EngineMessage {
-        MapHash<BindUniv, String> print = null;
-        en.skel = t;
-        en.display = d;
-        en.deref();
-        while (en.skel instanceof SkelCompound &&
-                ((SkelCompound) en.skel).args.length == 2 &&
-                ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_CONS)) {
-            Object[] mc = ((SkelCompound) en.skel).args;
-            d = en.display;
-            en.skel = mc[0];
-            en.deref();
-            if (en.skel instanceof SkelCompound &&
-                    ((SkelCompound) en.skel).args.length == 2 &&
-                    ((SkelCompound) en.skel).sym.fun.equals(Foyer.OP_EQUAL)) {
-                /* */
-            } else {
-                EngineMessage.checkInstantiated(en.skel);
-                throw new EngineMessage(EngineMessage.typeError(
-                        EngineMessage.OP_TYPE_ASSOC,
-                        en.skel), en.display);
-            }
-            Object[] mc2 = ((SkelCompound) en.skel).args;
-            Display d2 = en.display;
-            en.skel = mc2[1];
-            en.deref();
-            if (en.skel instanceof SkelVar) {
-                BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
-                if (print == null)
-                    print = new MapHash<>();
-                String name = SpecialUniv.derefAndCastString(mc2[0], d2);
-                addMapUniv(print, pair, name);
-            }
-            en.skel = mc[1];
-            en.display = d;
-            en.deref();
-        }
-        if (en.skel instanceof SkelAtom &&
-                ((SkelAtom) en.skel).fun.equals(Foyer.OP_NIL)) {
-            /* */
-        } else {
-            EngineMessage.checkInstantiated(en.skel);
-            throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_LIST,
-                    en.skel), en.display);
-        }
-        return print;
-    }
-
-    /**
-     * <p>Create a print map from variable names.</p>
-     * <p>Will not convert variables that have not yet been allocated.</p>
-     * <p>Will not convert variables that have already been deallocated.</p>
-     *
-     * @param vars The var hash.
-     * @param d    The term display.
-     * @param en   The engine.
-     * @return The print map.
-     */
-    public static MapHash<BindUniv, String> hashToMapUniv(MapHashLink<String, SkelVar> vars,
-                                                          Display d, Engine en) {
-        if (vars == null)
-            return null;
-        MapHash<BindUniv, String> print = null;
-        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
-            SkelVar sv = entry.value;
-            if (sv.id >= d.bind.length || d.bind[sv.id] == null)
-                continue;
-            en.skel = sv;
-            en.display = d;
-            en.deref();
-            if (!(en.skel instanceof SkelVar))
-                continue;
-            BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
-            if (print == null)
-                print = new MapHash<>();
-            addMapUniv(print, pair, entry.key);
-        }
-        return print;
-    }
-
-    /**
-     * <p>Add to the map hash.</p>
-     *
-     * @param print The print map.
-     * @param key   The variable.
-     * @param name  The variable name.
-     */
-    private static void addMapUniv(MapHash<BindUniv, String> print,
-                                   BindUniv key,
-                                   String name) {
-        MapEntry<BindUniv, String> entry = print.getEntry(key);
-        if (entry == null) {
-            print.add(key, name);
-        } else {
-            entry.value = name;
-        }
-    }
 
     /**
      * <p>Make a copy of the given variable names.</p>
@@ -402,6 +285,48 @@ public final class SupervisorCopy {
             copy.add(name, entry.value);
         }
         return copy;
+    }
+
+    /***********************************************************/
+    /* Adorn Term Skel                                         */
+    /***********************************************************/
+
+    /**
+     * <p>Compute the subterm flags.</p>
+     *
+     * @param t The skeleton.
+     * @return The skeleton with subterm flags.
+     */
+    public static Object adornTermSkel(Object t) {
+        SkelCompound back = null;
+        for (; ; ) {
+            if (t instanceof SkelVar) {
+                break;
+            } else if (t instanceof SkelCompound) {
+                SkelCompound sc = (SkelCompound) t;
+                if (sc.var != null) {
+                    Object[] args = sc.args;
+                    int i = 0;
+                    for (; i < sc.args.length - 1; i++)
+                        args[i] = adornTermSkel(args[i]);
+                    t = args[i];
+                    args[i] = back;
+                    back = sc;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back = SkelCompoundLineable.adornComponentSkel(back);
+            t = back;
+            back = jack;
+        }
+        return t;
     }
 
 }

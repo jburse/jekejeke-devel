@@ -5,6 +5,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelCompoundLineable;
 import matula.util.data.ListArray;
 import matula.util.regex.CodeType;
 import matula.util.regex.ScannerError;
@@ -254,7 +255,7 @@ public class PrologReaderAnno extends PrologReader {
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         } while (back != null);

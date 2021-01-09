@@ -17,6 +17,7 @@ import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.PreClause;
+import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -437,7 +438,7 @@ public final class SpecialRef extends AbstractSpecial {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                vars = SupervisorCopy.assocToMapUniv(((SkelCompound) en.skel).args[0], d, en);
+                vars = PropertyCallable.assocToMapUniv(((SkelCompound) en.skel).args[0], d, en);
             } else {
                 EngineMessage.checkInstantiated(en.skel);
                 throw new EngineMessage(EngineMessage.domainError(

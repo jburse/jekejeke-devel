@@ -13,6 +13,7 @@ import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.runtime.SpecialCollector;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.AbstractTerm;
@@ -333,7 +334,7 @@ public final class SpecialVars extends AbstractSpecial {
                                         Engine en)
             throws EngineMessage {
         SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
-        MapHash<BindUniv, String> print = SupervisorCopy.assocToMapUniv(temp[1], ref, en);
+        MapHash<BindUniv, String> print = PropertyCallable.assocToMapUniv(temp[1], ref, en);
         SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
         MapHashLink<Object, String> map = SpecialVars.numberVars(vars, anon, print, 0);
         SpecialVars.mapToAssoc(map, en);

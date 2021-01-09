@@ -7,10 +7,7 @@ import jekpro.model.molec.OperatorSearch;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.structure.ForeignAtom;
-import jekpro.tools.term.PositionKey;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -88,7 +85,7 @@ public class PrologReader {
 
     public int flags;
     int lev = Operator.LEVEL_HIGH;
-    private Engine engine;
+    protected Engine engine;
     protected AbstractSource source;
     public final ScannerToken st = new ScannerToken();
     private MapHashLink<String, SkelVar> vars; /* input order */
@@ -716,7 +713,7 @@ public class PrologReader {
         do {
             SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
             back.args[back.args.length - 1] = t;
-            back.makeExtra();
+            back.var = SkelCompound.makeExtra(back.args);
             t = back;
             back = jack;
         } while (back != null);

@@ -39,16 +39,20 @@ public final class SkelCompoundLineable extends SkelCompound {
     public static final byte SUBTERM_TERM = 1; /* MAYBE */
     public static final byte SUBTERM_CLASH = 2; /* NO */
 
-    private byte[] subterm;
+    public final byte[] subterm;
 
     /**
      * <p>Create a skel compound with given vars.</p>
      *
-     * @param f The functor.
      * @param a The arguments.
+     * @param f The functor.
+     * @param s The subterm flags;
      */
-    public SkelCompoundLineable(Object[] a, SkelAtom f) {
+    public SkelCompoundLineable(Object[] a, SkelAtom f, byte[] s) {
         super(a, f);
+        if (s == null)
+            throw new NullPointerException("Subterm missing");
+        subterm = s;
     }
 
     /**
@@ -57,11 +61,7 @@ public final class SkelCompoundLineable extends SkelCompound {
      * @return The linear flag.
      */
     public boolean getLinear() {
-        if (subterm == null) {
-            return true;
-        } else {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -71,17 +71,17 @@ public final class SkelCompoundLineable extends SkelCompound {
      * @return The clash flag.
      */
     public byte getSubTerm(int k) {
-        if (subterm == null) {
-            return SUBTERM_LINEAR;
-        } else {
-            return subterm[k];
-        }
+        return subterm[k];
     }
 
     /**
-     * <p>Populate the variable string.</p>>
+     * <p>Compute the subterm flags.</p>
+     *
+     * @param args The arguments.
+     * @return The subterm flags.
      */
-    public void makeExtra() {
+    public static byte[] makeSubterm(Object[] args) {
+        byte[] subterm = null;
         Object res = null;
         ListArray<SkelVar> vec = null;
         for (int i = 0; i < args.length; i++) {
@@ -95,70 +95,49 @@ public final class SkelCompoundLineable extends SkelCompound {
             }
             if (res == null) {
                 res = newvar;
-            } else {
-                vec = addExtra(newvar, vec, res, i);
-            }
-        }
-        if (vec != null)
-            res = concatExtra(vec, res);
-        var = res;
-    }
-
-    /**
-     * <p>Add new variables from a spine in a list,
-     * not already appearing in another spine.</p>
-     *
-     * @param newvar The spine, non null.
-     * @param vec    The list or null.
-     * @param res    The spine, or null.
-     * @param k      The argument index.
-     * @return The new list or null.
-     */
-    private ListArray<SkelVar> addExtra(Object newvar,
-                                        ListArray<SkelVar> vec,
-                                        Object res,
-                                        int k) {
-        if (newvar instanceof SkelVar) {
-            SkelVar mv = (SkelVar) newvar;
-            if (res != null && contains(res, mv)) {
-                if (subterm == null)
-                    subterm = new byte[args.length];
-                subterm[k] = SUBTERM_CLASH;
-                return vec;
-            }
-            if (vec == null) {
-                vec = new ListArray<>();
-                vec.add(mv);
-            } else if (vec.indexOf(mv) == -1) {
-                vec.add(mv);
-            } else {
-                if (subterm == null)
-                    subterm = new byte[args.length];
-                subterm[k] = SUBTERM_CLASH;
-            }
-        } else {
-            SkelVar[] temp = (SkelVar[]) newvar;
-            for (int i = 0; i < temp.length; i++) {
-                SkelVar mv = temp[i];
-                if (res != null && contains(res, mv)) {
-                    if (subterm == null)
-                        subterm = new byte[args.length];
-                    subterm[k] = SUBTERM_CLASH;
-                    continue;
-                }
-                if (vec == null) {
-                    vec = new ListArray<>();
-                    vec.add(mv);
-                } else if (vec.indexOf(mv) == -1) {
+            } else if (newvar instanceof SkelVar) {
+                SkelVar mv = (SkelVar) newvar;
+                if (canAdd(vec, res, mv)) {
+                    if (vec == null)
+                        vec = new ListArray<>();
                     vec.add(mv);
                 } else {
                     if (subterm == null)
                         subterm = new byte[args.length];
-                    subterm[k] = SUBTERM_CLASH;
+                    subterm[i] = SUBTERM_CLASH;
+                }
+            } else {
+                SkelVar[] temp = (SkelVar[]) newvar;
+                for (int j = 0; j < temp.length; j++) {
+                    SkelVar mv = temp[j];
+                    if (canAdd(vec, res, mv)) {
+                        if (vec == null)
+                            vec = new ListArray<>();
+                        vec.add(mv);
+                    } else {
+                        if (subterm == null)
+                            subterm = new byte[args.length];
+                        subterm[i] = SUBTERM_CLASH;
+                    }
                 }
             }
         }
-        return vec;
+        return subterm;
+    }
+
+    /**
+     * <p>Adorn a component with subterm flags.</p>
+     *
+     * @param sc The component.
+     * @return The possibly adorned component.
+     */
+    public static SkelCompound adornComponentSkel(SkelCompound sc) {
+        byte[] subterm = makeSubterm(sc.args);
+        if (subterm == null)
+            return sc;
+        SkelCompoundLineable sc2 = new SkelCompoundLineable(sc.args, sc.sym, subterm);
+        sc2.var = sc.var;
+        return sc2;
     }
 
     /**

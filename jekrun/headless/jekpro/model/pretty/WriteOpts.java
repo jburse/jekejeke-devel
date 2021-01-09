@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
@@ -10,6 +9,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.structure.SpecialUniv;
@@ -211,7 +211,7 @@ public final class WriteOpts {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(ReadOpts.OP_VARIABLE_NAMES)) {
-                    printmap = SupervisorCopy.assocToMapUniv(((SkelCompound) en.skel).args[0], en.display, en);
+                    printmap = PropertyCallable.assocToMapUniv(((SkelCompound) en.skel).args[0], en.display, en);
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_DOUBLE_QUOTES)) {
