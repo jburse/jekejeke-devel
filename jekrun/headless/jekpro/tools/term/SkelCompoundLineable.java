@@ -35,7 +35,11 @@ import matula.util.data.ListArray;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SkelCompoundLineable extends SkelCompound {
-    private boolean linear = true;
+    public static final byte SUBTERM_LINEAR = 0; /* YES */
+    public static final byte SUBTERM_TERM = 1; /* MAYBE */
+    public static final byte SUBTERM_CLASH = 2; /* NO */
+
+    private byte[] subterm;
 
     /**
      * <p>Create a skel compound with given vars.</p>
@@ -48,23 +52,30 @@ public final class SkelCompoundLineable extends SkelCompound {
     }
 
     /**
-     * <p>Create a skel compound and init vars.</p>
-     *
-     * @param f The functor.
-     * @param a The arguments.
-     */
-    public SkelCompoundLineable(SkelAtom f, Object... a) {
-        this(a, f);
-        makeExtra();
-    }
-
-    /**
      * <p>Retrieve the linear flag.</p>
      *
      * @return The linear flag.
      */
     public boolean getLinear() {
-        return linear;
+        if (subterm == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Retrieve a clash flag.</p>
+     *
+     * @param k The index.
+     * @return The clash flag.
+     */
+    public byte getSubTerm(int k) {
+        if (subterm == null) {
+            return SUBTERM_LINEAR;
+        } else {
+            return subterm[k];
+        }
     }
 
     /**
@@ -77,12 +88,15 @@ public final class SkelCompoundLineable extends SkelCompound {
             Object newvar = SupervisorCopy.getVar(args[i]);
             if (newvar == null)
                 continue;
-            if (!SupervisorCopy.getLinear(args[i]))
-                linear = false;
+            if (!SupervisorCopy.getLinear(args[i])) {
+                if (subterm == null)
+                    subterm = new byte[args.length];
+                subterm[i] = SUBTERM_TERM;
+            }
             if (res == null) {
                 res = newvar;
             } else {
-                vec = addExtra(newvar, vec, res);
+                vec = addExtra(newvar, vec, res, i);
             }
         }
         if (vec != null)
@@ -96,15 +110,20 @@ public final class SkelCompoundLineable extends SkelCompound {
      *
      * @param newvar The spine, non null.
      * @param vec    The list or null.
+     * @param res    The spine, or null.
+     * @param k      The argument index.
      * @return The new list or null.
      */
-    protected ListArray<SkelVar> addExtra(Object newvar,
-                                          ListArray<SkelVar> vec,
-                                          Object res) {
+    private ListArray<SkelVar> addExtra(Object newvar,
+                                        ListArray<SkelVar> vec,
+                                        Object res,
+                                        int k) {
         if (newvar instanceof SkelVar) {
             SkelVar mv = (SkelVar) newvar;
             if (res != null && contains(res, mv)) {
-                linear = false;
+                if (subterm == null)
+                    subterm = new byte[args.length];
+                subterm[k] = SUBTERM_CLASH;
                 return vec;
             }
             if (vec == null) {
@@ -113,14 +132,18 @@ public final class SkelCompoundLineable extends SkelCompound {
             } else if (vec.indexOf(mv) == -1) {
                 vec.add(mv);
             } else {
-                linear = false;
+                if (subterm == null)
+                    subterm = new byte[args.length];
+                subterm[k] = SUBTERM_CLASH;
             }
         } else {
             SkelVar[] temp = (SkelVar[]) newvar;
             for (int i = 0; i < temp.length; i++) {
                 SkelVar mv = temp[i];
                 if (res != null && contains(res, mv)) {
-                    linear = false;
+                    if (subterm == null)
+                        subterm = new byte[args.length];
+                    subterm[k] = SUBTERM_CLASH;
                     continue;
                 }
                 if (vec == null) {
@@ -129,7 +152,9 @@ public final class SkelCompoundLineable extends SkelCompound {
                 } else if (vec.indexOf(mv) == -1) {
                     vec.add(mv);
                 } else {
-                    linear = false;
+                    if (subterm == null)
+                        subterm = new byte[args.length];
+                    subterm[k] = SUBTERM_CLASH;
                 }
             }
         }

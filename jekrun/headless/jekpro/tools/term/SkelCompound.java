@@ -82,6 +82,20 @@ public class SkelCompound extends AbstractSkel
     }
 
     /**
+     * <p>Retrieve a clash flag.</p>
+     *
+     * @param k The index.
+     * @return The clash flag.
+     */
+    public byte getSubTerm(int k) {
+        if (var == null) {
+            return SkelCompoundLineable.SUBTERM_LINEAR;
+        } else {
+            return SkelCompoundLineable.SUBTERM_CLASH;
+        }
+    }
+
+    /**
      * <p>Populate the variable string.</p>>
      */
     public void makeExtra() {
@@ -144,11 +158,12 @@ public class SkelCompound extends AbstractSkel
      *
      * @param newvar The spine, non null.
      * @param vec    The list or null.
+     * @param res    The spine, or null.
      * @return The new list or null.
      */
-    protected ListArray<SkelVar> addExtra(Object newvar,
-                                          ListArray<SkelVar> vec,
-                                          Object res) {
+    private static ListArray<SkelVar> addExtra(Object newvar,
+                                               ListArray<SkelVar> vec,
+                                               Object res) {
         if (newvar instanceof SkelVar) {
             SkelVar mv = (SkelVar) newvar;
             if (res != null && contains(res, mv))

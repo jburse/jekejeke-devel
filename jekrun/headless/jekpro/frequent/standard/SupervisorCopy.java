@@ -130,11 +130,12 @@ public final class SupervisorCopy {
                 SkelCompound sc = (SkelCompound) t;
                 if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
-                    for (int i = 0; i < sc.args.length - 1; i++)
+                    int i = 0;
+                    for (; i < sc.args.length - 1; i++)
                         args[i] = copyTerm(sc.args[i], d);
-                    args[sc.args.length - 1] = back;
+                    args[i] = back;
                     back = new SkelCompound(args, sc.sym);
-                    t = sc.args[sc.args.length - 1];
+                    t = sc.args[i];
                 } else {
                     break;
                 }
@@ -203,11 +204,12 @@ public final class SupervisorCopy {
                 SkelCompound sc = (SkelCompound) t;
                 if (sc.var != null) {
                     Object[] args = new Object[sc.args.length];
-                    for (int i = 0; i < sc.args.length - 1; i++)
+                    int i = 0;
+                    for (; i < sc.args.length - 1; i++)
                         args[i] = copyTermNew(sc.args[i], d);
-                    args[sc.args.length - 1] = back;
+                    args[i] = back;
                     back = new SkelCompoundLineable(args, sc.sym);
-                    t = sc.args[sc.args.length - 1];
+                    t = sc.args[i];
                 } else {
                     break;
                 }

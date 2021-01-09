@@ -3,6 +3,7 @@ package jekpro.model.rope;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 
 /**
@@ -39,9 +40,10 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
-    public static final int UNIFY_TERM = -1;
-    public static final int UNIFY_LINEAR = -2;
-    public static final int UNIFY_SKIP = -3;
+    public static final int UNIFY_CLASH = -1;
+    public static final int UNIFY_TERM = -2;
+    public static final int UNIFY_LINEAR = -3;
+    public static final int UNIFY_SKIP = -4;
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
@@ -254,12 +256,18 @@ public final class Optimization {
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                if (!SupervisorCopy.getLinear(a)) {
-                    intargs[i] = UNIFY_TERM;
-                } else if (!firstOccurence(a, i, helper)) {
-                    intargs[i] = UNIFY_TERM;
-                } else {
-                    intargs[i] = UNIFY_LINEAR;
+                switch (mc.getSubTerm(i)) {
+                    case SkelCompoundLineable.SUBTERM_LINEAR:
+                        intargs[i] = UNIFY_LINEAR;
+                        break;
+                    case SkelCompoundLineable.SUBTERM_TERM:
+                        intargs[i] = UNIFY_TERM;
+                        break;
+                    case SkelCompoundLineable.SUBTERM_CLASH:
+                        intargs[i] = UNIFY_CLASH;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal subterm");
                 }
                 continue;
             }
@@ -273,38 +281,12 @@ public final class Optimization {
                     intargs[i] = UNIFY_SKIP;
                 }
             } else if (ov.minarg != i) {
-                intargs[i] = UNIFY_TERM;
+                intargs[i] = UNIFY_CLASH;
             } else {
                 intargs[i] = UNIFY_LINEAR;
             }
         }
         return intargs;
-    }
-
-    /**
-     * <p>Check whether variables ahve first occurence.</p>
-     *
-     * @param a The skeleton.
-     * @param k The index.
-     * @return True if all variables have first occurence, otherwise false.
-     */
-    private static boolean firstOccurence(Object a, int k, Optimization[] helper) {
-        Object var = SupervisorCopy.getVar(a);
-        if (var == null)
-            return true;
-        if (var instanceof SkelVar) {
-            Optimization ov = helper[((SkelVar) var).id];
-            if (ov.minarg != k)
-                return false;
-        } else {
-            SkelVar[] temp = (SkelVar[]) var;
-            for (int i = 0; i < temp.length; i++) {
-                Optimization ov = helper[temp[i].id];
-                if (ov.minarg != k)
-                    return false;
-            }
-        }
-        return true;
     }
 
 }
