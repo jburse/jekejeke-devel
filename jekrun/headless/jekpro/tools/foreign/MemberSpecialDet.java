@@ -1,6 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -209,9 +210,8 @@ public final class MemberSpecialDet extends AbstractMember {
         Object[] help;
         boolean ext = d.getAndReset();
         if (res != AbstractSkel.VOID_OBJ &&
-                !en.unifyTerm(AbstractTerm.getSkel(res), d,
-                        (help = ((SkelCompound) temp).args)[
-                                help.length - 1], ref))
+                !BindUniv.unifyClash(AbstractTerm.getSkel(res), d,
+                        (help = ((SkelCompound) temp).args)[help.length - 1], ref, en))
             return false;
         if (ext)
             d.remTab(en);

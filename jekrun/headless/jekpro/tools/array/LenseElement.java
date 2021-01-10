@@ -1,6 +1,7 @@
 package jekpro.tools.array;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -166,7 +167,7 @@ final class LenseElement extends AbstractLense {
             Display d = AbstractTerm.getDisplay(res);
             boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !en.unifyTerm(AbstractTerm.getSkel(res), d, temp[2], ref))
+                    !BindUniv.unifyClash(AbstractTerm.getSkel(res), d, temp[2], ref, en))
                 return false;
             if (ext)
                 d.remTab(en);

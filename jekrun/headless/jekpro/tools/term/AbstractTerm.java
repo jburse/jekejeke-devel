@@ -2,10 +2,7 @@ package jekpro.tools.term;
 
 import jekpro.frequent.standard.SpecialSort;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.call.Interpreter;
@@ -326,8 +323,9 @@ public abstract class AbstractTerm {
         Thread backthread = en.visor.setFence(Thread.currentThread());
         boolean res;
         try {
-            res = en.unifyTerm(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
-                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
+            res = BindUniv.unifyClash(AbstractTerm.getSkel(fst),
+                    AbstractTerm.getDisplay(fst), AbstractTerm.getSkel(snd),
+                    AbstractTerm.getDisplay(snd), en);
         } catch (EngineException x) {
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);

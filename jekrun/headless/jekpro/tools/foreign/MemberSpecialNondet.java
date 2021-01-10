@@ -1,10 +1,7 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;
@@ -175,9 +172,8 @@ final class MemberSpecialNondet extends AbstractMember {
             Object[] help;
             boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !en.unifyTerm(AbstractTerm.getSkel(res), d,
-                            (help = ((SkelCompound) temp).args)[
-                                    help.length - 1], ref)) {
+                    !BindUniv.unifyClash(AbstractTerm.getSkel(res), d,
+                            (help = ((SkelCompound) temp).args)[help.length - 1], ref, en)) {
                 if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
                     return false;
 
