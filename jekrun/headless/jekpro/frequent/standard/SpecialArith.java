@@ -2,10 +2,7 @@ package jekpro.frequent.standard;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.arithmetic.SpecialEval;
@@ -77,7 +74,7 @@ public final class SpecialArith extends AbstractSpecial {
                 AbstractUndo mark = en.bind;
                 int res = SpecialCompare.computeCmp(num1, num2);
                 while (res <= 0) {
-                    if (en.unifyTerm(num1, Display.DISPLAY_CONST, temp[2], ref)) {
+                    if (BindUniv.unifyClash(num1, Display.DISPLAY_CONST, temp[2], ref, en)) {
                         if (res != 0) {
                             /* create choice point */
                             en.choices = new ChoiceArith(en.choices, num1,
@@ -103,7 +100,7 @@ public final class SpecialArith extends AbstractSpecial {
                 num1 = SpecialEval.derefAndCastNumber(temp[0], ref);
                 mark = en.bind;
                 while (true) {
-                    if (en.unifyTerm(num1, Display.DISPLAY_CONST, temp[1], ref)) {
+                    if (BindUniv.unifyClash(num1, Display.DISPLAY_CONST, temp[1], ref, en)) {
                         /* create choice point */
                         en.choices = new ChoiceArith(en.choices, num1,
                                 en.contskel, en.contdisplay, mark, id);

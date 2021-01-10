@@ -102,7 +102,7 @@ public class ChoiceDefined extends AbstractChoice {
             int[] arr = clause.intargs;
             if (arr == null)
                 break;
-            if (AbstractDefined.unifyArgs(((SkelCompound) t).args, d,
+            if (AbstractDefined.unifyExecute(((SkelCompound) t).args, d,
                     ((SkelCompound) clause.head).args, d2,
                     arr, en))
                 break;

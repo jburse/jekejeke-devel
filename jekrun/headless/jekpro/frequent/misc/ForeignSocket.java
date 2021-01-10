@@ -92,7 +92,7 @@ public final class ForeignSocket {
      */
     public static Socket sysServerAccept(ServerSocket server)
             throws IOException {
-        Thread thread=Thread.currentThread();
+        Thread thread = Thread.currentThread();
         AbstractLivestock live = AbstractLivestock.currentLivestock(thread);
         if (live != null)
             live.closer = server;
@@ -174,7 +174,7 @@ public final class ForeignSocket {
             throws IOException {
         byte[] buf = new byte[MAX_DATA];
         DatagramPacket packet = new DatagramPacket(buf, 0, buf.length);
-        Thread thread=Thread.currentThread();
+        Thread thread = Thread.currentThread();
         AbstractLivestock live = AbstractLivestock.currentLivestock(thread);
         if (live != null)
             live.closer = socket;
@@ -211,7 +211,7 @@ public final class ForeignSocket {
             throw new IllegalArgumentException("data too long");
         InetAddress address = InetAddress.getByName(host);
         DatagramPacket packet = new DatagramPacket(buf, 0, buf.length, address, port);
-        Thread thread=Thread.currentThread();
+        Thread thread = Thread.currentThread();
         AbstractLivestock live = AbstractLivestock.currentLivestock(thread);
         if (live != null)
             live.closer = socket;

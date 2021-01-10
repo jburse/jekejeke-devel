@@ -123,12 +123,13 @@ class ChoiceInspect extends AbstractChoice {
             clause = list[at++];
             newdisp.setSize(clause.size);
             if (!(clause.head instanceof SkelCompound) ||
-                    AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, newdisp, en)) {
+                    AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
+                            ((SkelCompound) clause.head).args, newdisp,
+                            clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (en.unifyTerm(end, newdisp, temp[1], d)) {
+                if (BindUniv.unifyClash(end, newdisp, temp[1], d, en)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], d))
+                        if (BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[2], d, en))
                             break;
                     } else {
                         break;

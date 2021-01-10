@@ -98,7 +98,7 @@ public final class ForeignPipe {
      * current thread waits maximum timeout time util the
      * pip is filled. There is no assurance of fairness.</p>
      *
-     * @param q The pipe.
+     * @param q     The pipe.
      * @param sleep The timeout in milliseconds.
      * @return The dequed term or null.
      */

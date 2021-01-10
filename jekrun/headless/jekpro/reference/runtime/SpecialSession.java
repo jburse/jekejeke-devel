@@ -3,6 +3,7 @@ package jekpro.reference.runtime;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -85,7 +86,7 @@ public final class SpecialSession extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                if (!en.unifyTerm(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref))
+                if (!BindUniv.unifyClash(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
             default:

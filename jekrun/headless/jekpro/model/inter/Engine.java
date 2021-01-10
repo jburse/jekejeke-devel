@@ -83,90 +83,6 @@ public class Engine extends StackElement implements Comparator<Object> {
         }
     }
 
-    /**
-     * <p>Unify two terms. As a side effect bindings are established.</p>
-     * <p>Trigger attribute variables on both sides.</p>
-     * <p>Tail recursion implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The second skeleton.
-     * @param d2   The second display.
-     * @return True if the two terms unify, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    public final boolean unifyTerm(Object alfa, Display d1,
-                                   Object beta, Display d2)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                for (; ; ) {
-                    if (beta instanceof SkelVar) {
-                        // combined check and deref
-                        BindUniv b2;
-                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
-                            beta = b2.skel;
-                            d2 = b2.display;
-                            continue;
-                        }
-                        if (alfa == beta && d1 == d2)
-                            return true;
-                        return b2.bindAttr(alfa, d1, this);
-                    }
-                    return b1.bindAttr(beta, d2, this);
-                }
-            }
-            for (; ; ) {
-                if (beta instanceof SkelVar) {
-                    // combined check and deref
-                    BindUniv bc;
-                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
-                        beta = bc.skel;
-                        d2 = bc.display;
-                        continue;
-                    }
-                    return bc.bindAttr(alfa, d1, this);
-                }
-                break;
-            }
-            if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            int i = 0;
-            for (; i < t1.length - 1; i++)
-                if (!unifyTerm(t1[i], d1, t2[i], d2))
-                    return false;
-            alfa = t1[i];
-            beta = t2[i];
-        }
-    }
-
-    /**
-     * <p>Release the variable binding list to the given marker.</p>
-     * <p>The current exception is passed via the engine skel.</p>
-     * <p>The new current exception is returned via the engine skel.</p>
-     *
-     * @param mark The marker.
-     */
-    public final void releaseBind(AbstractUndo mark) {
-        while (bind != mark)
-            bind.unbind(this);
-    }
-
     /*****************************************************************/
     /* Trampolin Interpreter                                         */
     /*****************************************************************/
@@ -202,6 +118,18 @@ public class Engine extends StackElement implements Comparator<Object> {
             }
         }
         return found;
+    }
+
+    /**
+     * <p>Release the variable binding list to the given marker.</p>
+     * <p>The current exception is passed via the engine skel.</p>
+     * <p>The new current exception is returned via the engine skel.</p>
+     *
+     * @param mark The marker.
+     */
+    public final void releaseBind(AbstractUndo mark) {
+        while (bind != mark)
+            bind.unbind(this);
     }
 
     /**
@@ -317,76 +245,8 @@ public class Engine extends StackElement implements Comparator<Object> {
     }
 
     /*****************************************************************/
-    /* Lexical Comparison                                            */
+    /* Lexical Comparator                                            */
     /*****************************************************************/
-
-    /**
-     * <p>Compare two terms lexically.</p>
-     * <p>As a side effect will dynamically allocate display serial numbers.</p>
-     * <p>Teil recursive solution.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The second skeleton.
-     * @param d2   The second display.
-     * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
-     * @throws ArithmeticException Incomparable reference.
-     */
-    public int compareTerm(Object alfa, Display d1,
-                           Object beta, Display d2)
-            throws ArithmeticException {
-        for (; ; ) {
-            BindUniv b1;
-            while (alfa instanceof SkelVar &&
-                    (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                alfa = b1.skel;
-                d1 = b1.display;
-            }
-            while (beta instanceof SkelVar &&
-                    (b1 = d2.bind[((SkelVar) beta).id]).display != null) {
-                beta = b1.skel;
-                d2 = b1.display;
-            }
-            int i = SpecialLexical.cmpType(alfa);
-            int k = i - SpecialLexical.cmpType(beta);
-            if (k != 0) return k;
-            switch (i) {
-                case SpecialLexical.CMP_TYPE_VAR:
-                    i = d1.bind[((SkelVar) alfa).id].getValue(this);
-                    k = d2.bind[((SkelVar) beta).id].getValue(this);
-                    return i - k;
-                case SpecialLexical.CMP_TYPE_DECIMAL:
-                    return SpecialLexical.compareDecimalLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_FLOAT:
-                    return SpecialLexical.compareFloatLexical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_INTEGER:
-                    return SpecialCompare.compareIntegerArithmetical(alfa, beta);
-                case SpecialLexical.CMP_TYPE_REF:
-                    if (alfa instanceof Comparable)
-                        return ((Comparable) alfa).compareTo(beta);
-                    throw new ArithmeticException(EngineMessage.OP_EVALUATION_ORDERED);
-                case SpecialLexical.CMP_TYPE_ATOM:
-                    return ((SkelAtom) alfa).compareTo(((SkelAtom) beta));
-                case SpecialLexical.CMP_TYPE_COMPOUND:
-                    Object[] t1 = ((SkelCompound) alfa).args;
-                    Object[] t2 = ((SkelCompound) beta).args;
-                    k = t1.length - t2.length;
-                    if (k != 0) return k;
-                    k = ((SkelCompound) alfa).sym.compareTo(((SkelCompound) beta).sym);
-                    if (k != 0) return k;
-                    i = 0;
-                    for (; i < t1.length - 1; i++) {
-                        k = compareTerm(t1[i], d1, t2[i], d2);
-                        if (k != 0) return k;
-                    }
-                    alfa = t1[i];
-                    beta = t2[i];
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown type");
-            }
-        }
-    }
 
     /**
      * <p>Compare two objects.</p>
@@ -398,8 +258,8 @@ public class Engine extends StackElement implements Comparator<Object> {
      */
     public final int compare(Object o1, Object o2)
             throws ArithmeticException {
-        return compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
-                AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2));
+        return SpecialLexical.compareTerm(AbstractTerm.getSkel(o1), AbstractTerm.getDisplay(o1),
+                AbstractTerm.getSkel(o2), AbstractTerm.getDisplay(o2), this);
     }
 
     /***********************************************************/

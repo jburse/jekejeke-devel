@@ -101,7 +101,7 @@ public final class SpecialRef extends AbstractSpecial {
                 Display ref = en.display;
                 Clause clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
-                if (!en.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref))
+                if (!BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
             case SPECIAL_ASSUMABLE_REF:
@@ -109,7 +109,7 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_THLC |
                         AbstractDefined.OPT_CHCK_ASSE, en);
-                if (!en.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref))
+                if (!BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
             case SPECIAL_RECORDA_REF:
@@ -140,7 +140,7 @@ public final class SpecialRef extends AbstractSpecial {
                 ptr.clauseRef(en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[1], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -156,7 +156,7 @@ public final class SpecialRef extends AbstractSpecial {
                 SpecialRef.refToProperties(ptr, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[1], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -169,7 +169,7 @@ public final class SpecialRef extends AbstractSpecial {
                 SpecialRef.refToProperty(ptr, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -199,7 +199,7 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
                         AbstractDefined.OPT_CHCK_DEFN, en);
-                if (!en.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref))
+                if (!BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
             default:

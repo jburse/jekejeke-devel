@@ -3,10 +3,7 @@ package jekpro.reference.runtime;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.DisplayMarkable;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
@@ -121,7 +118,7 @@ public final class SpecialCollector extends AbstractSpecial {
             case SPECIAL_SYS_PIVOT_NEW:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!en.unifyTerm(new SetEntry(), Display.DISPLAY_CONST, temp[0], ref))
+                if (!BindUniv.unifyClash(new SetEntry(), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_PIVOT_ADD:
@@ -140,7 +137,7 @@ public final class SpecialCollector extends AbstractSpecial {
                 sysPivotCollect(pivot, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -162,7 +159,7 @@ public final class SpecialCollector extends AbstractSpecial {
                 sysPivotGather(pivot, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);

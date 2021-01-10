@@ -95,7 +95,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (nth < 1)
                             return false;
-                        if (!en.unifyTerm(cmp[nth - 1], en.display, temp[2], ref))
+                        if (!BindUniv.unifyClash(cmp[nth - 1], en.display, temp[2], ref, en))
                             return false;
                         return true;
                     } else if (en.skel instanceof SkelAtom) {
@@ -132,7 +132,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
-                        if (!en.unifyTerm(sc, d, temp[3], ref))
+                        if (!BindUniv.unifyClash(sc, d, temp[3], ref, en))
                             return false;
                         if (multi)
                             d.remTab(en);
@@ -172,7 +172,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         EngineMessage.checkInstantiated(en.skel);
                         num = Integer.valueOf(0);
                     }
-                    if (!en.unifyTerm(num, Display.DISPLAY_CONST, temp[1], ref))
+                    if (!BindUniv.unifyClash(num, Display.DISPLAY_CONST, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_SYS_EXTEND_TERM:
@@ -180,7 +180,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     ref = en.display;
                     boolean multi = SpecialUniv.listToTerm(temp[0], ref, temp[1], ref, en);
                     Display d = en.display;
-                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                    if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -200,9 +200,9 @@ public final class SpecialUniv extends AbstractSpecial {
                     Object val = SpecialUniv.termToList(nth, en.skel, en);
                     if (val == null)
                         return false;
-                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                    if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                         return false;
-                    if (!en.unifyTerm(val, d, temp[3], ref))
+                    if (!BindUniv.unifyClash(val, d, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_UNIFY_WITH_OCCURS_CHECK:
@@ -215,7 +215,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     AbstractUndo mark = en.bind;
-                    if (en.unifyTerm(temp[1], ref, temp[0], ref))
+                    if (BindUniv.unifyClash(temp[1], ref, temp[0], ref, en))
                         return false;
                     en.fault = null;
                     en.releaseBind(mark);
@@ -234,7 +234,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     val = AbstractSkel.copySkel(temp[0], ref, en);
                     d = AbstractSkel.createMarker(val);
                     multi = d.getAndReset();
-                    if (!en.unifyTerm(val, d, temp[1], ref))
+                    if (!BindUniv.unifyClash(val, d, temp[1], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -632,11 +632,11 @@ public final class SpecialUniv extends AbstractSpecial {
                         }
                         if (alfa == beta && d1 == d2)
                             return true;
-                        if (hasVar(alfa, d1, beta, d2))
+                        if (BindUniv.hasVar(alfa, d1, beta, d2))
                             return false;
                         return b2.bindAttr(alfa, d1, en);
                     }
-                    if (hasVar(beta, d2, alfa, d1))
+                    if (BindUniv.hasVar(beta, d2, alfa, d1))
                         return false;
                     return b1.bindAttr(beta, d2, en);
                 }
@@ -650,7 +650,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         d2 = bc.display;
                         continue;
                     }
-                    if (hasVar(alfa, d1, beta, d2))
+                    if (BindUniv.hasVar(alfa, d1, beta, d2))
                         return false;
                     return bc.bindAttr(alfa, d1, en);
                 }
@@ -673,52 +673,6 @@ public final class SpecialUniv extends AbstractSpecial {
             }
             alfa = t1[i];
             beta = t2[i];
-        }
-    }
-
-    /**
-     * <p>Check whether a variable occurs in a term.</p>
-     * <p>Check is done from skeleton and display.</p>
-     * <p>Uses the vars speed up structure of skel compouned.</p>
-     * <p>Tail recursive implementation.</p>
-     *
-     * @param m  The term.
-     * @param d  The display of the term.
-     * @param t  The variable.
-     * @param d2 The display of the variable.
-     * @return True when the variable occurs in the term, false otherwise.
-     */
-    public static boolean hasVar(Object m, Display d, Object t, Display d2) {
-        for (; ; ) {
-            Object var = SupervisorCopy.getVar(m);
-            if (var == null)
-                return false;
-            SkelVar v;
-            if (var instanceof SkelVar) {
-                v = (SkelVar) var;
-            } else {
-                SkelVar[] temp = (SkelVar[]) var;
-                int i = 0;
-                for (; i < temp.length - 1; i++) {
-                    v = temp[i];
-                    BindUniv b = d.bind[v.id];
-                    if (b.display != null) {
-                        if (hasVar(b.skel, b.display, t, d2))
-                            return true;
-                    } else {
-                        if (v == t && d == d2)
-                            return true;
-                    }
-                }
-                v = temp[i];
-            }
-            BindUniv b = d.bind[v.id];
-            if (b.display != null) {
-                m = b.skel;
-                d = b.display;
-            } else {
-                return (v == t && d == d2);
-            }
         }
     }
 
@@ -786,7 +740,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         if (alfa == beta && d1 == d2)
                             return true;
                     }
-                    if (hasVar(gamma, d3, alfa, d1))
+                    if (BindUniv.hasVar(gamma, d3, alfa, d1))
                         return false;
                     b1.bindUniv(beta, d2, en);
                     return true;

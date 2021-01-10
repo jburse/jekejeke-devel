@@ -2,16 +2,12 @@ package jekpro.frequent.misc;
 
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.AbstractUndo;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.UndoSerno;
-import jekpro.tools.call.CallOut;
 import jekpro.tools.call.Interpreter;
-import jekpro.tools.term.*;
-import matula.util.data.AbstractMap;
-import matula.util.data.ListArray;
-import matula.util.data.MapEntry;
-
-import java.util.Enumeration;
+import jekpro.tools.term.AbstractTerm;
+import jekpro.tools.term.Knowledgebase;
+import jekpro.tools.term.TermCompound;
+import jekpro.tools.term.TermVar;
 
 /**
  * <p>Provides the methods for the module misc/residue.</p>
@@ -45,52 +41,6 @@ import java.util.Enumeration;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class ForeignResidue {
-
-    /**
-     * <p>Enumerate the residue attributed variables.</p>
-     *
-     * @param co The call out.
-     * @return The attributed variables.
-     */
-    public static Object sysResidueAttr(CallOut co, Interpreter inter) {
-        Enumeration<Object> dc;
-        if (co.getFirst()) {
-            Engine en = inter.getEngine();
-            ListArray<Object> list = ForeignResidue.listResidueAttrs(en);
-            if (list == null)
-                return null;
-            dc = list.elements();
-            if (!dc.hasMoreElements())
-                return null;
-            co.setData(dc);
-        } else {
-            dc = (Enumeration<Object>) co.getData();
-        }
-        Object res = dc.nextElement();
-        co.setRetry(dc.hasMoreElements());
-        return res;
-    }
-
-    /**
-     * <p>List the residue attributed variables.</p>
-     *
-     * @param en The engine.
-     * @return The list or null.
-     */
-    private static ListArray<Object> listResidueAttrs(Engine en) {
-        AbstractMap<BindUniv, Integer> map = en.visor.varmap;
-        ListArray<Object> list = null;
-        for (MapEntry<BindUniv, Integer> entry = map.getFirstEntry();
-             entry != null; entry = map.successor(entry)) {
-            TermVar var = entry.key.getAttr();
-            if (var == null)
-                continue;
-            if (list == null)
-                list = new ListArray<>();
-            list.add(var);
-        }
-        return list;
-    }
 
     /**********************************************************/
     /* Attributed Variables Enumeration                       */

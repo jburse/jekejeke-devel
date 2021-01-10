@@ -9,7 +9,6 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -304,7 +303,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             int[] arr = clause.intargs;
             if (arr == null)
                 break;
-            if (AbstractDefined.unifyArgs(((SkelCompound) t).args, d,
+            if (AbstractDefined.unifyExecute(((SkelCompound) t).args, d,
                     ((SkelCompound) clause.head).args, d2,
                     arr, en))
                 break;
@@ -355,10 +354,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyArgs(Object[] t1, Display ref,
-                             Object[] t2, Display ref2,
-                             int[] arr,
-                             Engine en)
+    static boolean unifyExecute(Object[] t1, Display ref,
+                                Object[] t2, Display ref2,
+                                int[] arr,
+                                Engine en)
             throws EngineException {
         for (int i = 0; i < arr.length; i++) {
             int k = arr[i];
@@ -366,7 +365,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 case Optimization.UNIFY_SKIP:
                     break;
                 case Optimization.UNIFY_LINEAR:
-                    if (!unifyLinear(t1[i], ref, t2[i], ref2, en))
+                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
                 case Optimization.UNIFY_TERM:
@@ -374,72 +373,16 @@ public abstract class AbstractDefined extends AbstractDelegate {
                         return false;
                     break;
                 case Optimization.UNIFY_CLASH:
-                    if (!unifyClash(t1[i], ref, t2[i], ref2, en))
+                    if (!BindUniv.unifyClash(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
                 default:
-                    if (!unifyClash(t1[k], ref, t1[i], ref, en))
+                    if (!BindUniv.unifyClash(t1[k], ref, t1[i], ref, en))
                         return false;
                     break;
             }
         }
         return true;
-    }
-
-    /**
-     * <p>Unify two terms. As a side effect bindings are established.</p>
-     * <p>Trigger attribute variables only on one side.</p>
-     * <p>Tail recursion implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The clause skeleton.
-     * @param d2   The clause display.
-     * @param en   The engine.
-     * @return True if the two terms unify, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    private static boolean unifyLinear(Object alfa, Display d1,
-                                       Object beta, Display d2, Engine en)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                if (beta instanceof SkelVar) {
-                    BindUniv b2 = d2.bind[((SkelVar) beta).id];
-                    b2.bindUniv(alfa, d1, en);
-                    return true;
-                }
-                return b1.bindAttr(beta, d2, en);
-            }
-            if (beta instanceof SkelVar) {
-                BindUniv bc = d2.bind[((SkelVar) beta).id];
-                bc.bindUniv(alfa, d1, en);
-                return true;
-            }
-            if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            int i = 0;
-            for (; i < t1.length - 1; i++)
-                if (!unifyLinear(t1[i], d1, t2[i], d2, en))
-                    return false;
-            alfa = t1[i];
-            beta = t2[i];
-        }
     }
 
     /**
@@ -473,25 +416,25 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 if (beta instanceof SkelVar) {
                     BindUniv b2;
                     if ((b2 = d2.bind[((SkelVar) beta).id]).display != null)
-                        return unifyClash(alfa, d1, b2.skel, b2.display, en);
+                        return BindUniv.unifyClash(alfa, d1, b2.skel, b2.display, en);
                     if (alfa == beta && d1 == d2)
                         return true;
                     if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            SpecialUniv.hasVar(alfa, d1, beta, d2))
+                            BindUniv.hasVar(alfa, d1, beta, d2))
                         return false;
                     return b2.bindAttr(alfa, d1, en);
                 }
                 if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                        SpecialUniv.hasVar(beta, d2, alfa, d1))
+                        BindUniv.hasVar(beta, d2, alfa, d1))
                     return false;
                 return b1.bindAttr(beta, d2, en);
             }
             if (beta instanceof SkelVar) {
                 BindUniv bc;
                 if ((bc = d2.bind[((SkelVar) beta).id]).display != null)
-                    return unifyClash(alfa, d1, bc.skel, bc.display, en);
+                    return BindUniv.unifyClash(alfa, d1, bc.skel, bc.display, en);
                 if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                        SpecialUniv.hasVar(alfa, d1, beta, d2))
+                        BindUniv.hasVar(alfa, d1, beta, d2))
                     return false;
                 return bc.bindAttr(alfa, d1, en);
             }
@@ -507,9 +450,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 return false;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                switch (((SkelCompound)beta).getSubTerm(i)) {
+                switch (((SkelCompound) beta).getSubTerm(i)) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
-                        if (!unifyLinear(t1[i], d1, t2[i], d2, en))
+                        if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
                             return false;
                         break;
                     case SkelCompoundLineable.SUBTERM_TERM:
@@ -517,110 +460,25 @@ public abstract class AbstractDefined extends AbstractDelegate {
                             return false;
                         break;
                     case SkelCompoundLineable.SUBTERM_CLASH:
-                        if (!unifyClash(t1[i], d1, t2[i], d2, en))
+                        if (!BindUniv.unifyClash(t1[i], d1, t2[i], d2, en))
                             return false;
                         break;
                     default:
                         throw new IllegalArgumentException("illegal subterm");
                 }
             }
-            switch (((SkelCompound)beta).getSubTerm(i)) {
+            switch (((SkelCompound) beta).getSubTerm(i)) {
                 case SkelCompoundLineable.SUBTERM_LINEAR:
-                    return unifyLinear(t1[i], d1, t2[i], d2, en);
+                    return BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en);
                 case SkelCompoundLineable.SUBTERM_TERM:
                     alfa = t1[i];
                     beta = t2[i];
                     break;
                 case SkelCompoundLineable.SUBTERM_CLASH:
-                    return unifyClash(t1[i], d1, t2[i], d2, en);
+                    return BindUniv.unifyClash(t1[i], d1, t2[i], d2, en);
                 default:
                     throw new IllegalArgumentException("illegal subterm");
             }
-        }
-    }
-
-    /**
-     * <p>>Unify two terms. As a side effect bindings are established.</p
-     * <p>Occurs check is performed depending on occurs check flag.</p>
-     * <p>Bindings are only created when the occurs check fails.<p>
-     * <p>The verify hooks of attribute variables are called.</p>
-     * <p>Tail recursive implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The second skeleton.
-     * @param d2   The second display.
-     * @param en   The engine.
-     * @return True if the two terms unify, otherwise false.
-     */
-    private static boolean unifyClash(Object alfa, Display d1,
-                                      Object beta, Display d2,
-                                      Engine en)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                for (; ; ) {
-                    if (beta instanceof SkelVar) {
-                        // combined check and deref
-                        BindUniv b2;
-                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
-                            beta = b2.skel;
-                            d2 = b2.display;
-                            continue;
-                        }
-                        if (alfa == beta && d1 == d2)
-                            return true;
-                        if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                                SpecialUniv.hasVar(alfa, d1, beta, d2))
-                            return false;
-                        return b2.bindAttr(alfa, d1, en);
-                    }
-                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            SpecialUniv.hasVar(beta, d2, alfa, d1))
-                        return false;
-                    return b1.bindAttr(beta, d2, en);
-                }
-            }
-            for (; ; ) {
-                // combined check and deref
-                if (beta instanceof SkelVar) {
-                    BindUniv bc;
-                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
-                        beta = bc.skel;
-                        d2 = bc.display;
-                        continue;
-                    }
-                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            SpecialUniv.hasVar(alfa, d1, beta, d2))
-                        return false;
-                    return bc.bindAttr(alfa, d1, en);
-                }
-                break;
-            }
-            if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            int i = 0;
-            for (; i < t1.length - 1; i++) {
-                if (!unifyClash(t1[i], d1, t2[i], d2, en))
-                    return false;
-            }
-            alfa = t1[i];
-            beta = t2[i];
         }
     }
 
@@ -832,12 +690,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 ref1.setSize(clause.size);
             }
             if (!(clause.head instanceof SkelCompound) ||
-                    AbstractDefined.unifyArgs(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, ref1, en)) {
+                    AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
+                            ((SkelCompound) clause.head).args, ref1,
+                            clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (en.unifyTerm(end, ref1, temp[1], ref)) {
+                if (BindUniv.unifyClash(end, ref1, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (en.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref))
+                        if (BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[2], ref, en))
                             break;
                     } else {
                         break;
@@ -874,22 +733,39 @@ public abstract class AbstractDefined extends AbstractDelegate {
     }
 
     /**
-     * <p>Unify the term args.</p>
+     * <p>Unify the clause head arguments.</p>
      *
      * @param t1   The term skeleton.
-     * @param ref  The term display.
+     * @param d1   The term display.
      * @param t2   The clause skeleton.
-     * @param ref2 The clause display.
+     * @param d2   The clause display.
+     * @param head The clause head.
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyArgs(Object[] t1, Display ref,
-                             Object[] t2, Display ref2,
-                             Engine en)
+    static boolean unifySearch(Object[] t1, Display d1,
+                               Object[] t2, Display d2,
+                               Object head,
+                               Engine en)
             throws EngineException {
-        for (int i = 0; i < t2.length; i++)
-            if (!en.unifyTerm(t2[i], ref2, t1[i], ref))
-                return false;
+        for (int i = 0; i < t2.length; i++) {
+            switch (((SkelCompound) head).getSubTerm(i)) {
+                case SkelCompoundLineable.SUBTERM_LINEAR:
+                    if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
+                        return false;
+                    break;
+                case SkelCompoundLineable.SUBTERM_TERM:
+                    if (!unifyTerm(t1[i], d1, t2[i], d2, en))
+                        return false;
+                    break;
+                case SkelCompoundLineable.SUBTERM_CLASH:
+                    if (!BindUniv.unifyClash(t1[i], d1, t2[i], d2, en))
+                        return false;
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal subterm");
+            }
+        }
         return true;
     }
 

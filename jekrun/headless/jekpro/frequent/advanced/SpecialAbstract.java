@@ -77,7 +77,7 @@ public final class SpecialAbstract extends AbstractSpecial {
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
                     SpecialAbstract.goalKernel(temp[0], ref, en);
-                    if (!en.unifyTerm(en.skel, en.display, temp[1], ref))
+                    if (!BindUniv.unifyClash(en.skel, en.display, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_SYS_GOAL_GLOBALS:
@@ -90,7 +90,7 @@ public final class SpecialAbstract extends AbstractSpecial {
                     SpecialSort.createSet(ev.vars, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    if (!en.unifyTerm(en.skel, d, temp[1], ref))
+                    if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);

@@ -2,6 +2,8 @@ package jekpro.model.molec;
 
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.Supervisor;
+import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
 import matula.util.data.AbstractMap;
@@ -179,6 +181,197 @@ public class BindUniv extends AbstractUndo {
         if (val == null)
             val = UndoSerno.bindSerno(this, en);
         return val.intValue();
+    }
+
+    /****************************************************************/
+    /* Unification Routines                                         */
+    /****************************************************************/
+
+    /**
+     * <p>Unify two terms. As a side effect bindings are established.</p>
+     * <p>Trigger attribute variables only on one side.</p>
+     * <p>Tail recursion implementation.</p>
+     *
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The clause skeleton.
+     * @param d2   The clause display.
+     * @param en   The engine.
+     * @return True if the two terms unify, otherwise false.
+     * @throws EngineException Shit happens.
+     */
+    public static boolean unifyLinear(Object alfa, Display d1,
+                                      Object beta, Display d2, Engine en)
+            throws EngineException {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                if (beta instanceof SkelVar) {
+                    BindUniv b2 = d2.bind[((SkelVar) beta).id];
+                    b2.bindUniv(alfa, d1, en);
+                    return true;
+                }
+                return b1.bindAttr(beta, d2, en);
+            }
+            if (beta instanceof SkelVar) {
+                BindUniv bc = d2.bind[((SkelVar) beta).id];
+                bc.bindUniv(alfa, d1, en);
+                return true;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++)
+                if (!unifyLinear(t1[i], d1, t2[i], d2, en))
+                    return false;
+            alfa = t1[i];
+            beta = t2[i];
+        }
+    }
+
+    /**
+     * <p>>Unify two terms. As a side effect bindings are established.</p
+     * <p>Occurs check is performed depending on occurs check flag.</p>
+     * <p>Bindings are only created when the occurs check fails.<p>
+     * <p>The verify hooks of attribute variables are called.</p>
+     * <p>Tail recursive implementation.</p>
+     *
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
+     * @param en   The engine.
+     * @return True if the two terms unify, otherwise false.
+     */
+    public static boolean unifyClash(Object alfa, Display d1,
+                                     Object beta, Display d2,
+                                     Engine en)
+            throws EngineException {
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                for (; ; ) {
+                    if (beta instanceof SkelVar) {
+                        // combined check and deref
+                        BindUniv b2;
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
+                            beta = b2.skel;
+                            d2 = b2.display;
+                            continue;
+                        }
+                        if (alfa == beta && d1 == d2)
+                            return true;
+                        if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                                hasVar(alfa, d1, beta, d2))
+                            return false;
+                        return b2.bindAttr(alfa, d1, en);
+                    }
+                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                            hasVar(beta, d2, alfa, d1))
+                        return false;
+                    return b1.bindAttr(beta, d2, en);
+                }
+            }
+            for (; ; ) {
+                // combined check and deref
+                if (beta instanceof SkelVar) {
+                    BindUniv bc;
+                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = bc.skel;
+                        d2 = bc.display;
+                        continue;
+                    }
+                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
+                            hasVar(alfa, d1, beta, d2))
+                        return false;
+                    return bc.bindAttr(alfa, d1, en);
+                }
+                break;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++) {
+                if (!unifyClash(t1[i], d1, t2[i], d2, en))
+                    return false;
+            }
+            alfa = t1[i];
+            beta = t2[i];
+        }
+    }
+
+    /**
+     * <p>Check whether a variable occurs in a term.</p>
+     * <p>Check is done from skeleton and display.</p>
+     * <p>Uses the vars speed up structure of skel compouned.</p>
+     * <p>Tail recursive implementation.</p>
+     *
+     * @param m  The term.
+     * @param d  The display of the term.
+     * @param t  The variable.
+     * @param d2 The display of the variable.
+     * @return True when the variable occurs in the term, false otherwise.
+     */
+    public static boolean hasVar(Object m, Display d, Object t, Display d2) {
+        for (; ; ) {
+            Object var = SupervisorCopy.getVar(m);
+            if (var == null)
+                return false;
+            SkelVar v;
+            if (var instanceof SkelVar) {
+                v = (SkelVar) var;
+            } else {
+                SkelVar[] temp = (SkelVar[]) var;
+                int i = 0;
+                for (; i < temp.length - 1; i++) {
+                    v = temp[i];
+                    BindUniv b = d.bind[v.id];
+                    if (b.display != null) {
+                        if (hasVar(b.skel, b.display, t, d2))
+                            return true;
+                    } else {
+                        if (v == t && d == d2)
+                            return true;
+                    }
+                }
+                v = temp[i];
+            }
+            BindUniv b = d.bind[v.id];
+            if (b.display != null) {
+                m = b.skel;
+                d = b.display;
+            } else {
+                return (v == t && d == d2);
+            }
+        }
     }
 
 }

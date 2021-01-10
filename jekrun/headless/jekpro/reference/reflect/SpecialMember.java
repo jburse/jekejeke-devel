@@ -82,7 +82,7 @@ public final class SpecialMember extends AbstractSpecial {
                 case SPECIAL_UNIFY:
                     Object[] temp = ((SkelCompound) en.skel).args;
                     Display ref = en.display;
-                    if (!en.unifyTerm(temp[1], ref, temp[0], ref))
+                    if (!BindUniv.unifyClash(temp[1], ref, temp[0], ref, en))
                         return false;
                     return true;
                 case SPECIAL_VAR:
@@ -136,7 +136,7 @@ public final class SpecialMember extends AbstractSpecial {
                         d = Display.DISPLAY_CONST;
                         multi = false;
                     }
-                    if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                    if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -157,9 +157,9 @@ public final class SpecialMember extends AbstractSpecial {
                         obj = en.skel;
                         num = Integer.valueOf(0);
                     }
-                    if (!en.unifyTerm(obj, en.display, temp[1], ref))
+                    if (!BindUniv.unifyClash(obj, en.display, temp[1], ref, en))
                         return false;
-                    if (!en.unifyTerm(num, Display.DISPLAY_CONST, temp[2], ref))
+                    if (!BindUniv.unifyClash(num, Display.DISPLAY_CONST, temp[2], ref, en))
                         return false;
                     return true;
                 case SPECIAL_COMPARE_GR:

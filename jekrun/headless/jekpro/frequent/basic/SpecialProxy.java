@@ -2,10 +2,7 @@ package jekpro.frequent.basic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.CacheSubclass;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.EvaluableLogic;
@@ -89,7 +86,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                     SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en), en);
-                    if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
+                    if (!BindUniv.unifyClash(obj, Display.DISPLAY_CONST, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
@@ -110,7 +107,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     if (obj == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
-                    if (!en.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref))
+                    if (!BindUniv.unifyClash(obj, Display.DISPLAY_CONST, temp[1], ref, en))
                         return false;
                     return true;
                 default:
