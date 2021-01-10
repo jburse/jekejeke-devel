@@ -2,7 +2,6 @@ package jekmin.frequent.decimal;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 
 /**

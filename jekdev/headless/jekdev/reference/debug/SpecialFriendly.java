@@ -55,9 +55,10 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static int SPECIAL_SYS_FRIENDLY = 0;
     private final static int SPECIAL_SYS_INSTRUMENTED = 1;
 
+    private final static String CODE_UNIFY_CLASH = " unify_clash";
     private final static String CODE_UNIFY_TERM = " unify_term";
+    private final static String CODE_UNIFY_LINEAR = " unify_linear";
     private final static String CODE_UNIFY_COMB = " unify_comb";
-    private final static String CODE_UNIFY_VAR = " unify_var";
 
     private final static String CODE_CALL_GOAL = " call_goal";
     private final static String CODE_LAST_GOAL = " last_goal";
@@ -207,33 +208,37 @@ public final class SpecialFriendly extends AbstractSpecial {
             if (clause.intargs != null) {
                 for (int l = 0; l < clause.intargs.length; l++) {
                     int n = clause.intargs[l];
-                    if (n == Optimization.UNIFY_TERM) {
-                        fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_TERM);
-                        wr.write(" _");
-                        wr.write(Integer.toString(l));
-                        wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
-                        wr.write('\n');
-                        wr.flush();
-                    } else if (n == Optimization.UNIFY_VAR) {
-                        fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_VAR);
-                        wr.write(" _");
-                        wr.write(Integer.toString(l));
-                        wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
-                        wr.write('\n');
-                        wr.flush();
-                    } else if (n != Optimization.UNIFY_SKIP) {
-                        fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_COMB);
-                        wr.write(" _");
-                        wr.write(Integer.toString(n));
-                        wr.write(", _");
-                        wr.write(Integer.toString(l));
-                        wr.write('\n');
-                        wr.flush();
+                    switch (n) {
+                        case Optimization.UNIFY_SKIP:
+                            break;
+                        case Optimization.UNIFY_LINEAR:
+                        case Optimization.UNIFY_TERM:
+                        case Optimization.UNIFY_CLASH:
+                            fp.friendlyCount();
+                            if (n == Optimization.UNIFY_CLASH) {
+                                wr.write(SpecialFriendly.CODE_UNIFY_CLASH);
+                            } else if (n == Optimization.UNIFY_TERM) {
+                                wr.write(SpecialFriendly.CODE_UNIFY_TERM);
+                            } else {
+                                wr.write(SpecialFriendly.CODE_UNIFY_LINEAR);
+                            }
+                            wr.write(" _");
+                            wr.write(Integer.toString(l));
+                            wr.write(", ");
+                            fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
+                            wr.write('\n');
+                            wr.flush();
+                            break;
+                        default:
+                            fp.friendlyCount();
+                            wr.write(SpecialFriendly.CODE_UNIFY_COMB);
+                            wr.write(" _");
+                            wr.write(Integer.toString(n));
+                            wr.write(", _");
+                            wr.write(Integer.toString(l));
+                            wr.write('\n');
+                            wr.flush();
+                            break;
                     }
                 }
             }

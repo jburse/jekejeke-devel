@@ -3,10 +3,7 @@ package jekdev.reference.inspection;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.reflect.SpecialPred;
@@ -77,7 +74,7 @@ public final class SpecialProvable extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_PROVABLE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!en.unifyTerm(SpecialProvable.currentProvables(en), Display.DISPLAY_CONST, temp[0], ref))
+                if (!BindUniv.unifyClash(SpecialProvable.currentProvables(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_PROVABLE_CHK:
@@ -98,7 +95,7 @@ public final class SpecialProvable extends AbstractSpecial {
                 SpecialPred.predicateToProperties(pick, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[1], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);

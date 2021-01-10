@@ -106,7 +106,7 @@ public final class SpecialDump extends AbstractSpecial {
             throws EngineMessage {
         try {
             wr.write("-------- ");
-            String str=defined.getSource().getFullName();
+            String str = defined.getSource().getFullName();
             if (!Branch.OP_USER.equals(str)) {
                 wr.write(str);
                 wr.write(":");

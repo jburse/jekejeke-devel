@@ -7,6 +7,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -92,7 +93,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperties(frame, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[1], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -106,7 +107,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperty(frame, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!en.unifyTerm(en.skel, d, temp[2], ref))
+                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);

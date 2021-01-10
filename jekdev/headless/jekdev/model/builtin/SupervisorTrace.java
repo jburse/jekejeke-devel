@@ -150,7 +150,7 @@ public final class SupervisorTrace extends Supervisor {
      *
      * @param fun   The functor.
      * @param arity The arity.
-     * @param fun   The name.
+     * @param mod   The module.
      */
     public void removeThreadSpyPoint(String fun, int arity, String mod) {
         if (tstab == null)
