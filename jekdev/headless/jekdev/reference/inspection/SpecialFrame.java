@@ -93,7 +93,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperties(frame, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -107,7 +107,7 @@ public final class SpecialFrame extends AbstractSpecial {
                 SpecialFrame.frameToProperty(frame, sk, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -229,11 +229,11 @@ public final class SpecialFrame extends AbstractSpecial {
     }
 
     /**
-     * <p>Cast a frame or null.</p>
+     * <p>Cast a stack element or null.</p>
      *
      * @param m The term skel.
      * @param d The term display.
-     * @return The frame.
+     * @return The stack element.
      * @throws EngineMessage Shit happens.
      */
     public static StackElement derefAndCastStackElement(Object m, Display d)

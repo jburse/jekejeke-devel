@@ -88,7 +88,7 @@ public final class SpecialAttach extends AbstractSpecial {
             case SPECIAL_SYS_TSPYING:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyClash(currentThreadSpyPoints(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(currentThreadSpyPoints(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_TNOSPY:
@@ -122,7 +122,7 @@ public final class SpecialAttach extends AbstractSpecial {
             case SPECIAL_SYS_TBREAKING:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyClash(currentThreadBreakPoints(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(currentThreadBreakPoints(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             default:

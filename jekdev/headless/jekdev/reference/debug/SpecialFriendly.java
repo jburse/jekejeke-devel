@@ -1,10 +1,7 @@
 package jekdev.reference.debug;
 
 import jekpro.model.inter.*;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
@@ -14,6 +11,8 @@ import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import matula.util.data.AssocSorted;
+import matula.util.regex.IgnoreCase;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -52,11 +51,14 @@ import java.io.Writer;
 public final class SpecialFriendly extends AbstractSpecial {
     final static int MASK_FRIEND_DEBUG = 0x00000001;
 
-    private final static int SPECIAL_SYS_FRIENDLY = 0;
-    private final static int SPECIAL_SYS_INSTRUMENTED = 1;
+    private final static int SPECIAL_SYS_VM_LIST = 0;
+    private final static int SPECIAL_SYS_VM_HOOKED = 1;
+    private final static int SPECIAL_SYS_VM_COLLECT = 2;
+    private final static int SPECIAL_SYS_MAP_NEW = 3;
+    private final static int SPECIAL_SYS_MAP_SHOW = 4;
 
-    private final static String CODE_UNIFY_CLASH = " unify_clash";
     private final static String CODE_UNIFY_TERM = " unify_term";
+    private final static String CODE_UNIFY_MIXED = " unify_mixed";
     private final static String CODE_UNIFY_LINEAR = " unify_linear";
     private final static String CODE_UNIFY_COMB = " unify_comb";
 
@@ -69,6 +71,8 @@ public final class SpecialFriendly extends AbstractSpecial {
 
     private final static String CODE_THEN_FLOW = " then_flow";
     private final static String CODE_SOFT_THEN_FLOW = " soft_then_flow";
+
+    private final static String OP_DOMAIN_MAP = "map";
 
     /**
      * <p>Create a index dump special.</p>
@@ -93,7 +97,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_FRIENDLY:
+            case SPECIAL_SYS_VM_LIST:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
@@ -116,12 +120,11 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
-                pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setWriter(wr);
-                SpecialFriendly.intermediatePredicate(pw, pick, source, 0, en);
+                SpecialFriendly.friendlyPredicate(pw, pick, source, 0, en);
                 SpecialLoad.newLineFlush(wr);
                 return true;
-            case SPECIAL_SYS_INSTRUMENTED:
+            case SPECIAL_SYS_VM_HOOKED:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
@@ -143,15 +146,71 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setSource(en.visor.peekStack());
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
-                pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setWriter(wr);
-                SpecialFriendly.intermediatePredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
+                SpecialFriendly.friendlyPredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
                 SpecialLoad.newLineFlush(wr);
+                return true;
+            case SPECIAL_SYS_VM_COLLECT:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (pick.getDef(source) == null)
+                    return false;
+
+                AssocSorted<String, Integer> map = derefAndCastMap(temp[2], ref);
+                SpecialFriendly.reportPredicate(pick, source, map, en);
+                return true;
+            case SPECIAL_SYS_MAP_NEW:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                map = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
+                if (!BindUniv.unifyTerm(map, Display.DISPLAY_CONST, temp[0], ref, en))
+                    return false;
+                return true;
+            case SPECIAL_SYS_MAP_SHOW:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                map = derefAndCastMap(temp[0], ref);
+                obj = en.visor.curoutput;
+                LoadOpts.checkTextWrite(obj);
+                wr = (Writer) obj;
+                SpecialFriendly.mapShow(wr, map);
                 return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
     }
+
+    /**
+     * <p>Show a statistics map.</p>
+     *
+     * @param wr  The writer.
+     * @param map The statistics map.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void mapShow(Writer wr, AssocSorted<String, Integer> map)
+            throws EngineMessage {
+        try {
+            FriendlyReport fp = new FriendlyReport();
+            fp.map = map;
+            fp.mapShow(wr);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /****************************************************************/
+    /* List & Hooked                                                */
+    /****************************************************************/
 
     /**
      * <p>Disassemble the given predicate.</p>
@@ -164,32 +223,37 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void intermediatePredicate(PrologWriter pw, Predicate pick,
-                                              AbstractSource source, int flags,
-                                              Engine en)
+    private static void friendlyPredicate(PrologWriter pw, Predicate pick,
+                                          AbstractSource source, int flags,
+                                          Engine en)
             throws EngineMessage, EngineException {
-        if (!(pick.del instanceof AbstractDefined))
-            return;
-        FriendlyPrinter fp = new FriendlyPrinter();
-        fp.flags = flags;
-        fp.pw = pw;
-        /* flesh out clauses */
-        Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
-        for (int i = 0; i < list.length; i++) {
-            Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
-            if (source != sa.scope)
-                continue;
-            Object t = PreClause.interToClause(clause, en);
-            pw.setSource(source);
-            pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-            pw.setOffset(-1);
-            Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
-                    SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
-            pw.setSource(en.visor.peekStack());
-            pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-            pw.setOffset(0);
-            friendlyClause(clause, ref, fp);
+        try {
+            if (!(pick.del instanceof AbstractDefined))
+                return;
+            FriendlyPrinter fp = new FriendlyPrinter();
+            fp.flags = flags;
+            fp.pw = pw;
+            /* flesh out clauses */
+            Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
+            for (int i = 0; i < list.length; i++) {
+                Clause clause = list[i];
+                SkelAtom sa = StackElement.callableToName(clause.head);
+                if (source != sa.scope)
+                    continue;
+                Object t = PreClause.interToClause(clause, en);
+                pw.setSource(source);
+                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
+                pw.setSpez(PrologWriter.SPEZ_META);
+                pw.setOffset(-1);
+                Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
+                        SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
+                pw.setSource(en.visor.peekStack());
+                pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
+                pw.setSpez(0);
+                friendlyClause(clause, ref, fp);
+            }
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
     }
 
@@ -198,62 +262,62 @@ public final class SpecialFriendly extends AbstractSpecial {
      *
      * @param clause The clause.
      * @param ref    The display.
-     * @throws EngineMessage IO error.
+     * @param fp     The firendly printer.
+     * @throws IOException     IO error.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
      */
-    private static void friendlyClause(Clause clause, Display ref, FriendlyPrinter fp)
-            throws EngineMessage, EngineException {
-        try {
-            fp.count = 0;
-            Writer wr = fp.pw.getWriter();
-            if (clause.intargs != null) {
-                for (int l = 0; l < clause.intargs.length; l++) {
-                    int n = clause.intargs[l];
-                    switch (n) {
-                        case Optimization.UNIFY_SKIP:
-                            break;
-                        case Optimization.UNIFY_LINEAR:
-                        case Optimization.UNIFY_TERM:
-                        case Optimization.UNIFY_CLASH:
-                            fp.friendlyCount();
-                            if (n == Optimization.UNIFY_CLASH) {
-                                wr.write(SpecialFriendly.CODE_UNIFY_CLASH);
-                            } else if (n == Optimization.UNIFY_TERM) {
-                                wr.write(SpecialFriendly.CODE_UNIFY_TERM);
-                            } else {
-                                wr.write(SpecialFriendly.CODE_UNIFY_LINEAR);
-                            }
-                            wr.write(" _");
-                            wr.write(Integer.toString(l));
-                            wr.write(", ");
-                            fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
-                            wr.write('\n');
-                            wr.flush();
-                            break;
-                        default:
-                            fp.friendlyCount();
-                            wr.write(SpecialFriendly.CODE_UNIFY_COMB);
-                            wr.write(" _");
-                            wr.write(Integer.toString(n));
-                            wr.write(", _");
-                            wr.write(Integer.toString(l));
-                            wr.write('\n');
-                            wr.flush();
-                            break;
-                    }
+    private static void friendlyClause(Clause clause, Display ref,
+                                       FriendlyPrinter fp)
+            throws IOException, EngineMessage, EngineException {
+        fp.count = 0;
+        Writer wr = fp.pw.getWriter();
+        if (clause.intargs != null) {
+            for (int l = 0; l < clause.intargs.length; l++) {
+                int n = clause.intargs[l];
+                switch (n) {
+                    case Optimization.UNIFY_SKIP:
+                        break;
+                    case Optimization.UNIFY_LINEAR:
+                    case Optimization.UNIFY_MIXED:
+                    case Optimization.UNIFY_TERM:
+                        fp.friendlyCount();
+                        if (n == Optimization.UNIFY_TERM) {
+                            wr.write(SpecialFriendly.CODE_UNIFY_TERM);
+                        } else if (n == Optimization.UNIFY_MIXED) {
+                            wr.write(SpecialFriendly.CODE_UNIFY_MIXED);
+                        } else {
+                            wr.write(SpecialFriendly.CODE_UNIFY_LINEAR);
+                        }
+                        wr.write(" _");
+                        wr.write(Integer.toString(l));
+                        wr.write(", ");
+                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
+                        wr.write('\n');
+                        wr.flush();
+                        break;
+                    default:
+                        fp.friendlyCount();
+                        wr.write(SpecialFriendly.CODE_UNIFY_COMB);
+                        wr.write(" _");
+                        wr.write(Integer.toString(n));
+                        wr.write(", _");
+                        wr.write(Integer.toString(l));
+                        wr.write('\n');
+                        wr.flush();
+                        break;
                 }
             }
-            friendlyBody(clause, ref, fp);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
         }
+        friendlyBody(clause, ref, fp);
     }
 
     /**
-     * <p>Write out a goal list.</p>
+     * <p>Disassemble a goal list.</p>
      *
      * @param dire The directive.
      * @param ref  The display.
-     * @param fp   The firendly printer.
+     * @param fp   The friendly printer.
      * @throws IOException     IO error.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
@@ -329,11 +393,12 @@ public final class SpecialFriendly extends AbstractSpecial {
     }
 
     /**
-     * <p>Write out a goal list.</p>
+     * <p>Disassemble a try/retry goal list.</p>
      *
-     * @param help The branch.
-     * @param ref  The display.
-     * @param fp   The firendly printer.
+     * @param help  The branch.
+     * @param ref   The display.
+     * @param fp    The firendly printer.
+     * @param first The first flag.
      * @throws IOException     IO error.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
@@ -355,6 +420,166 @@ public final class SpecialFriendly extends AbstractSpecial {
         fp.level++;
         friendlyBody(help, ref, fp);
         fp.level--;
+    }
+
+    /****************************************************************/
+    /* Report                                                       */
+    /****************************************************************/
+
+    /**
+     * <p>Report the given predicate.</p>
+     *
+     * @param pick   The predicate.
+     * @param source The source.
+     * @param map    The statistics map.
+     * @param en     The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void reportPredicate(Predicate pick,
+                                        AbstractSource source,
+                                        AssocSorted<String, Integer> map,
+                                        Engine en)
+            throws EngineMessage {
+        if (!(pick.del instanceof AbstractDefined))
+            return;
+        FriendlyReport fp = new FriendlyReport();
+        fp.map = map;
+        /* flesh out clauses */
+        Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
+        for (int i = 0; i < list.length; i++) {
+            Clause clause = list[i];
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (source != sa.scope)
+                continue;
+            reportClause(clause, fp);
+        }
+    }
+
+    /**
+     * <p>Report a clause.</p>
+     *
+     * @param clause The clause.
+     */
+    private static void reportClause(Clause clause, FriendlyReport fp) {
+        if (clause.intargs != null) {
+            for (int l = 0; l < clause.intargs.length; l++) {
+                int n = clause.intargs[l];
+                switch (n) {
+                    case Optimization.UNIFY_SKIP:
+                        break;
+                    case Optimization.UNIFY_LINEAR:
+                    case Optimization.UNIFY_MIXED:
+                    case Optimization.UNIFY_TERM:
+                        if (n == Optimization.UNIFY_TERM) {
+                            fp.increment(SpecialFriendly.CODE_UNIFY_TERM);
+                        } else if (n == Optimization.UNIFY_MIXED) {
+                            fp.increment(SpecialFriendly.CODE_UNIFY_MIXED);
+                        } else {
+                            fp.increment(SpecialFriendly.CODE_UNIFY_LINEAR);
+                        }
+                        break;
+                    default:
+                        fp.increment(SpecialFriendly.CODE_UNIFY_COMB);
+                        break;
+                }
+            }
+        }
+        reportBody(clause, fp);
+    }
+
+    /**
+     * <p>Report a goal list.</p>
+     *
+     * @param dire The directive.
+     * @param fp   The report printer.
+     */
+    private static void reportBody(Directive dire,
+                                   FriendlyReport fp) {
+        Intermediate temp = dire;
+        if (dire.last != null) {
+            do {
+                temp = temp.next;
+                Object branch = ((Goal) temp).term;
+                int type;
+                if (Directive.isAlter(branch) || Directive.isGuard(branch)) {
+                    while (Directive.isAlter(branch)) {
+                        SkelCompound sc = (SkelCompound) branch;
+                        Directive help = (Directive) sc.args[0];
+                        reportBranch(help, fp, branch == ((Goal) temp).term);
+                        branch = sc.args[1];
+                    }
+                    if (Directive.isGuard(branch)) {
+                        SkelCompound sc = (SkelCompound) branch;
+                        Directive help = (Directive) sc.args[0];
+                        reportBranch(help, fp, branch == ((Goal) temp).term);
+                    } else {
+                        fp.increment(SpecialFriendly.CODE_TRUST_FLOW);
+                        reportBody((Directive) branch, fp);
+                    }
+                } else if (Directive.isSequen(branch)) {
+                    SkelCompound sc = (SkelCompound) branch;
+                    Directive help = (Directive) sc.args[0];
+                    reportBody(help, fp);
+                } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
+                        || type == Directive.TYPE_CTRL_SBGN) {
+                    /* */
+                } else if (type == Directive.TYPE_CTRL_CMMT
+                        || type == Directive.TYPE_CTRL_SCMT) {
+                    if (type == Directive.TYPE_CTRL_CMMT) {
+                        fp.increment(SpecialFriendly.CODE_THEN_FLOW);
+                    } else {
+                        fp.increment(SpecialFriendly.CODE_SOFT_THEN_FLOW);
+                    }
+                } else {
+                    if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
+                        fp.increment(SpecialFriendly.CODE_CALL_GOAL);
+                    } else {
+                        fp.increment(SpecialFriendly.CODE_LAST_GOAL);
+                    }
+                }
+            } while (temp != dire.last);
+        }
+    }
+
+    /**
+     * <p>Report a try/retry goal list.</p>
+     *
+     * @param help  The branch.
+     * @param fp    The firendly printer.
+     * @param first The first flag.
+     */
+    private static void reportBranch(Directive help,
+                                     FriendlyReport fp,
+                                     boolean first) {
+        if (first) {
+            fp.increment(SpecialFriendly.CODE_TRY_FLOW);
+        } else {
+            fp.increment(SpecialFriendly.CODE_RETRY_FLOW);
+        }
+        reportBody(help, fp);
+    }
+
+    /**************************************************************/
+    /* Helper                                                     */
+    /**************************************************************/
+
+    /**
+     * <p>Cast a map.</p>
+     *
+     * @param m The term skel.
+     * @param d The term display.
+     * @return The map.
+     * @throws EngineMessage Shit happens.
+     */
+    public static AssocSorted derefAndCastMap(Object m, Display d)
+            throws EngineMessage {
+        m = SpecialUniv.derefAndCastRef(m, d);
+        if (m instanceof AssocSorted) {
+            return (AssocSorted) m;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    OP_DOMAIN_MAP, m), d);
+        }
     }
 
 }

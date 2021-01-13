@@ -140,5 +140,6 @@ sys_dump_item_chk(I) :-
 % sys_dump_item_idx(-Indicator)
 :- private sys_dump_item_idx/1.
 sys_dump_item_idx(I) :-
-   setof(I, U^(sys_listing_user(U), provable_property(I, sys_usage(U))), B),
+   setof(I, U^(sys_listing_user(U),
+      provable_property(I, sys_usage(U))), B),
    sys_member(I, B).

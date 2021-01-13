@@ -95,7 +95,7 @@ final class FriendlyPrinter {
     /**
      * <p>Write a line number.</p>
      *
-     * @throws IOException Shit happens.
+     * @throws IOException IO Error.
      */
     void friendlyCount()
             throws IOException {

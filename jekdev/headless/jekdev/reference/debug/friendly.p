@@ -2,7 +2,7 @@
  * Predicates are brought into intermediate form before execution. The
  * intermediate form determines how the head of a clause is unified and
  * how the goals of the body of a clause are invoked. The intermediate
- * form can be listed by the directives friendly/[0,1] and instrumented/[0,1].
+ * form can be listed by the directives vm_list/[0,1] and vm_hooked/[0,1].
  * The intermediate form consists of instructions of the following form:
  *
  * instruction        --> integer [ level ] name [ operand { "," operand } ]
@@ -13,18 +13,18 @@
  * An operand that is an argument of the currently invoked goal is denoted
  * by an underscore ('_') followed by an integer, indicating the argument
  * index starting from zero (0). Other operands are simply Prolog terms
- * from within the Prolog clause. The predicate instrumented/[0,1] will
+ * from within the Prolog clause. The predicate vm_hooked/[0,1] will
  * also list the debugger instrumentation of the clause:
  *
  * Here is a simple example of a clause and its intermediate forms:
  *
- * ?- friendly(hello/1).
+ * ?- vm_list(hello/1).
  * hello(X) :-
  *    format('Hello %s\n', [X]).
  * 0  unify_var _0, X
  * 1  last_goal format('Hello %s\n', [X])
  *
- * ?- instrumented(hello/1).
+ * ?- vm_hooked(hello/1).
  * hello(X) :-
  *    format('Hello %s\n', [X]).
  * 0  unify_var _0, X
@@ -86,89 +86,195 @@
  * user predicates. For a list of the intermediate instructions see
  * the full API documentation.
  */
-% friendly
-:- public friendly/0.
-friendly :-
-   friendly(_).
-:- set_predicate_property(friendly/0, sys_notrace).
+% vm_list
+:- public vm_list/0.
+vm_list :-
+   vm_list(_).
+:- set_predicate_property(vm_list/0, sys_notrace).
 
 /**
- * friendly(P):
+ * vm_list(P):
  * The predicate lists the intermediate form of the clauses of the
  * user predicate P. For a list of the intermediate instructions see
  * the full API documentation.
  */
-% friendly(+Indicator)
-:- public friendly/1.
-friendly(I) :- ground(I), !,
-   friendly2(I).
-friendly(I) :-
+% vm_list(+Indicator)
+:- public vm_list/1.
+vm_list(I) :- ground(I), !,
+   vm_list2(I).
+vm_list(I) :-
    bagof(I, (sys_listing_user(U),
       sys_intermediate_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_friendly(I, U),
+   sys_vm_list(I, U),
    fail.
-friendly(_).
-:- set_predicate_property(friendly/1, sys_notrace).
+vm_list(_).
+:- set_predicate_property(vm_list/1, sys_notrace).
 
-% friendly2(+Indicator)
-:- private friendly2/1.
-friendly2(I) :-
+% vm_list2(+Indicator)
+:- private vm_list2/1.
+vm_list2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
    sys_short_base(U),
-   sys_friendly(I, U),
+   sys_vm_list(I, U),
    fail.
-friendly2(_).
+vm_list2(_).
 
-:- private sys_friendly/2.
-:- special(sys_friendly/2, 'SpecialFriendly', 0).
-
-/**
- * instrumented:
- * Works like the predicate friendly/0 except that the debugger
- * instrumented variant of the clause is shown.
- */
-% instrumented
-:- public instrumented/0.
-instrumented :-
-   instrumented(_).
-:- set_predicate_property(instrumented/0, sys_notrace).
+:- private sys_vm_list/2.
+:- special(sys_vm_list/2, 'SpecialFriendly', 0).
 
 /**
- * instrumented(P):
- * Works like the predicate friendly/1 except that the debugger
- * instrumented variant of the clause is shown.
+ * vm_hooked:
+ * Works like the predicate vm_list/0 except that the debugger
+ * instrumented variants of the clauses are shown.
  */
-% instrumented(+Indicator)
-:- public instrumented/1.
-instrumented(I) :- ground(I), !,
-   instrumented2(I).
-instrumented(I) :-
+% vm_hooked
+:- public vm_hooked/0.
+vm_hooked :-
+   vm_hooked(_).
+:- set_predicate_property(vm_hooked/0, sys_notrace).
+
+/**
+ * vm_hooked(P):
+ * Works like the predicate vm_list/1 except that the debugger
+ * instrumented variants of the clauses are shown.
+ */
+% vm_hooked(+Indicator)
+:- public vm_hooked/1.
+vm_hooked(I) :- ground(I), !,
+   vm_hooked2(I).
+vm_hooked(I) :-
    bagof(I, (sys_listing_user(U),
       sys_intermediate_item_idx(U, I)), B),
    sys_show_base(U),
    sys_member(I, B),
-   sys_instrumented(I, U),
+   sys_vm_hooked(I, U),
    fail.
-instrumented(_).
-:- set_predicate_property(instrumented/1, sys_notrace).
+vm_hooked(_).
+:- set_predicate_property(vm_hooked/1, sys_notrace).
 
-% instrumented2(+Indicator)
-:- private instrumented2/1.
-instrumented2(I) :-
+% vm_hooked2(+Indicator)
+:- private vm_hooked2/1.
+vm_hooked2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
    sys_short_base(U),
-   sys_instrumented(I, U),
+   sys_vm_hooked(I, U),
    fail.
-instrumented2(_).
+vm_hooked2(_).
 
-:- private sys_instrumented/2.
-:- special(sys_instrumented/2, 'SpecialFriendly', 1).
+:- private sys_vm_hooked/2.
+:- special(sys_vm_hooked/2, 'SpecialFriendly', 1).
+
+/**
+ * vm_report:
+ * Works like the predicate vm_list/0 except that a statistics
+ * about the intermediate codes is reported.
+ */
+% vm_report
+:- public vm_report/0.
+vm_report :-
+   vm_report(_).
+:- set_predicate_property(vm_report/0, sys_notrace).
+
+/**
+ * vm_report(P):
+ * Works like the predicate vm_list/1 except that a statistics
+ * about the intermediate codes is reported.
+ */
+% vm_report(+Indicator)
+:- public vm_report/1.
+vm_report(I) :- ground(I), !,
+   vm_report2(I).
+vm_report(I) :-
+   bagof(I, (sys_listing_user(U),
+      sys_intermediate_item_idx(U, I)), B),
+   sys_show_base(U),
+   sys_member(I, B),
+   sys_map_new(M),
+   sys_vm_collect(I, U, M),
+   write(I), write(:), nl,
+   sys_map_show(M), nl,
+   fail.
+vm_report(_).
+:- set_predicate_property(vm_report/1, sys_notrace).
+
+% vm_report2(+Indicator)
+:- private vm_report2/1.
+vm_report2(I) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_listing_has_clause(I, U),
+   sys_short_base(U),
+   sys_map_new(M),
+   sys_vm_collect(I, U, M),
+   write(I), write(:), nl,
+   sys_map_show(M), nl,
+   fail.
+vm_report2(_).
+
+/**
+ * vm_summary:
+ * Works like the predicate vm_list/0 except that a statistics
+ * about the intermediate codes is reported.
+ */
+% vm_summary
+:- public vm_summary/0.
+vm_summary :-
+   vm_summary(_).
+:- set_predicate_property(vm_summary/0, sys_notrace).
+
+/**
+ * vm_summary(P):
+ * Works like the predicate vm_list/1 except that a statistics
+ * about the intermediate codes is reported.
+ */
+% vm_summary(+Indicator)
+:- public vm_summary/1.
+vm_summary(I) :-
+   sys_map_new(M),
+   vm_summary(I, M),
+   sys_map_show(M), nl.
+:- set_predicate_property(vm_summary/1, sys_notrace).
+
+% vm_summary(+Indicator, +Map)
+:- private vm_summary/2.
+vm_summary(I, M) :- ground(I), !,
+   vm_summary2(I, M).
+vm_summary(I, M) :-
+   bagof(I, (sys_listing_user(U),
+      sys_intermediate_item_idx(U, I)), B),
+   sys_member(I, B),
+   sys_vm_collect(I, U, M),
+   fail.
+vm_summary(_, _).
+
+% vm_summary2(+Indicator, , +Map)
+:- private vm_summary2/2.
+vm_summary2(I, M) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_listing_has_clause(I, U),
+   sys_vm_collect(I, U, M),
+   fail.
+vm_summary2(_, _).
+
+:- private sys_vm_collect/3.
+:- special(sys_vm_collect/3, 'SpecialFriendly', 2).
+
+:- private sys_map_new/1.
+:- special(sys_map_new/1, 'SpecialFriendly', 3).
+
+:- private sys_map_show/1.
+:- special(sys_map_show/1, 'SpecialFriendly', 4).
+
+/**************************************************************/
+/* Helpers                                                    */
+/**************************************************************/
 
 /**
  * sys_intermediate_item_chk(I, U):
