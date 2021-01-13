@@ -6,6 +6,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.*;
+import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
@@ -49,18 +50,15 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialFriendly extends AbstractSpecial {
-    final static int MASK_FRIEND_DEBUG = 0x00000001;
-
-    private final static int SPECIAL_SYS_VM_LIST = 0;
-    private final static int SPECIAL_SYS_VM_HOOKED = 1;
-    private final static int SPECIAL_SYS_VM_COLLECT = 2;
-    private final static int SPECIAL_SYS_MAP_NEW = 3;
-    private final static int SPECIAL_SYS_MAP_SHOW = 4;
+    private final static int SPECIAL_SYS_VM_DISASSEMBLE = 0;
+    private final static int SPECIAL_SYS_VM_COLLECT = 1;
+    private final static int SPECIAL_SYS_MAP_NEW = 2;
+    private final static int SPECIAL_SYS_MAP_SHOW = 3;
 
     private final static String CODE_UNIFY_TERM = " unify_term";
     private final static String CODE_UNIFY_MIXED = " unify_mixed";
     private final static String CODE_UNIFY_LINEAR = " unify_linear";
-    private final static String CODE_UNIFY_COMB = " unify_comb";
+    private final static String CODE_UNIFY_COMBO = " unify_combo";
 
     private final static String CODE_CALL_GOAL = " call_goal";
     private final static String CODE_LAST_GOAL = " last_goal";
@@ -97,7 +95,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_VM_LIST:
+            case SPECIAL_SYS_VM_DISASSEMBLE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
@@ -113,6 +111,10 @@ public final class SpecialFriendly extends AbstractSpecial {
                 if (pick.getDef(source) == null)
                     return false;
 
+                Number beta = SpecialEval.derefAndCastInteger(temp[2], ref);
+                SpecialEval.checkNotLessThanZero(beta);
+                int flags = SpecialEval.castIntValue(beta);
+
                 Object obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
@@ -121,33 +123,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setEngineRaw(en);
                 pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
                 pw.setWriter(wr);
-                SpecialFriendly.friendlyPredicate(pw, pick, source, 0, en);
-                SpecialLoad.newLineFlush(wr);
-                return true;
-            case SPECIAL_SYS_VM_HOOKED:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-                obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                wr = (Writer) obj;
-                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                pw.setEngineRaw(en);
-                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
-                pw.setWriter(wr);
-                SpecialFriendly.friendlyPredicate(pw, pick, source, MASK_FRIEND_DEBUG, en);
+                SpecialFriendly.disassemblePredicate(pw, pick, source, flags, en);
                 SpecialLoad.newLineFlush(wr);
                 return true;
             case SPECIAL_SYS_VM_COLLECT:
@@ -167,7 +143,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     return false;
 
                 AssocSorted<String, Integer> map = derefAndCastMap(temp[2], ref);
-                SpecialFriendly.reportPredicate(pick, source, map, en);
+                SpecialFriendly.collectPredicate(pick, source, map, en);
                 return true;
             case SPECIAL_SYS_MAP_NEW:
                 temp = ((SkelCompound) en.skel).args;
@@ -190,24 +166,6 @@ public final class SpecialFriendly extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Show a statistics map.</p>
-     *
-     * @param wr  The writer.
-     * @param map The statistics map.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void mapShow(Writer wr, AssocSorted<String, Integer> map)
-            throws EngineMessage {
-        try {
-            FriendlyReport fp = new FriendlyReport();
-            fp.map = map;
-            fp.mapShow(wr);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
     /****************************************************************/
     /* List & Hooked                                                */
     /****************************************************************/
@@ -223,7 +181,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void friendlyPredicate(PrologWriter pw, Predicate pick,
+    private static void disassemblePredicate(PrologWriter pw, Predicate pick,
                                           AbstractSource source, int flags,
                                           Engine en)
             throws EngineMessage, EngineException {
@@ -250,7 +208,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pw.setSource(en.visor.peekStack());
                 pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(0);
-                friendlyClause(clause, ref, fp);
+                disassembleClause(clause, ref, fp);
             }
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -267,7 +225,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static void friendlyClause(Clause clause, Display ref,
+    private static void disassembleClause(Clause clause, Display ref,
                                        FriendlyPrinter fp)
             throws IOException, EngineMessage, EngineException {
         fp.count = 0;
@@ -298,7 +256,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         break;
                     default:
                         fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_COMB);
+                        wr.write(SpecialFriendly.CODE_UNIFY_COMBO);
                         wr.write(" _");
                         wr.write(Integer.toString(n));
                         wr.write(", _");
@@ -309,7 +267,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 }
             }
         }
-        friendlyBody(clause, ref, fp);
+        disassembleBody(clause, ref, fp);
     }
 
     /**
@@ -317,12 +275,12 @@ public final class SpecialFriendly extends AbstractSpecial {
      *
      * @param dire The directive.
      * @param ref  The display.
-     * @param fp   The friendly printer.
+     * @param fp   The disassemble printer.
      * @throws IOException     IO error.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static void friendlyBody(Directive dire,
+    private static void disassembleBody(Directive dire,
                                      Display ref,
                                      FriendlyPrinter fp)
             throws IOException, EngineException, EngineMessage {
@@ -340,13 +298,13 @@ public final class SpecialFriendly extends AbstractSpecial {
                     while (Directive.isAlter(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        friendlyBranch(help, ref, fp, branch == ((Goal) temp).term);
+                        disassembleBranch(help, ref, fp, branch == ((Goal) temp).term);
                         branch = sc.args[1];
                     }
                     if (Directive.isGuard(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        friendlyBranch(help, ref, fp, branch == ((Goal) temp).term);
+                        disassembleBranch(help, ref, fp, branch == ((Goal) temp).term);
                     } else {
                         Writer wr = fp.pw.getWriter();
                         fp.friendlyCount();
@@ -354,13 +312,13 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write('\n');
                         wr.flush();
                         fp.level++;
-                        friendlyBody((Directive) branch, ref, fp);
+                        disassembleBody((Directive) branch, ref, fp);
                         fp.level--;
                     }
                 } else if (Directive.isSequen(branch)) {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
-                    friendlyBody(help, ref, fp);
+                    disassembleBody(help, ref, fp);
                 } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
                         || type == Directive.TYPE_CTRL_SBGN) {
                     /* */
@@ -403,7 +361,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static void friendlyBranch(Directive help,
+    private static void disassembleBranch(Directive help,
                                        Display ref,
                                        FriendlyPrinter fp,
                                        boolean first)
@@ -418,12 +376,12 @@ public final class SpecialFriendly extends AbstractSpecial {
         wr.write('\n');
         wr.flush();
         fp.level++;
-        friendlyBody(help, ref, fp);
+        disassembleBody(help, ref, fp);
         fp.level--;
     }
 
     /****************************************************************/
-    /* Report                                                       */
+    /* Summary & Report                                             */
     /****************************************************************/
 
     /**
@@ -435,7 +393,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param en     The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void reportPredicate(Predicate pick,
+    private static void collectPredicate(Predicate pick,
                                         AbstractSource source,
                                         AssocSorted<String, Integer> map,
                                         Engine en)
@@ -451,7 +409,7 @@ public final class SpecialFriendly extends AbstractSpecial {
             SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
-            reportClause(clause, fp);
+            collectClause(clause, fp);
         }
     }
 
@@ -460,7 +418,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      *
      * @param clause The clause.
      */
-    private static void reportClause(Clause clause, FriendlyReport fp) {
+    private static void collectClause(Clause clause, FriendlyReport fp) {
         if (clause.intargs != null) {
             for (int l = 0; l < clause.intargs.length; l++) {
                 int n = clause.intargs[l];
@@ -479,21 +437,21 @@ public final class SpecialFriendly extends AbstractSpecial {
                         }
                         break;
                     default:
-                        fp.increment(SpecialFriendly.CODE_UNIFY_COMB);
+                        fp.increment(SpecialFriendly.CODE_UNIFY_COMBO);
                         break;
                 }
             }
         }
-        reportBody(clause, fp);
+        collectBody(clause, fp);
     }
 
     /**
      * <p>Report a goal list.</p>
      *
      * @param dire The directive.
-     * @param fp   The report printer.
+     * @param fp   The collect printer.
      */
-    private static void reportBody(Directive dire,
+    private static void collectBody(Directive dire,
                                    FriendlyReport fp) {
         Intermediate temp = dire;
         if (dire.last != null) {
@@ -505,21 +463,21 @@ public final class SpecialFriendly extends AbstractSpecial {
                     while (Directive.isAlter(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        reportBranch(help, fp, branch == ((Goal) temp).term);
+                        collectBranch(help, fp, branch == ((Goal) temp).term);
                         branch = sc.args[1];
                     }
                     if (Directive.isGuard(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        reportBranch(help, fp, branch == ((Goal) temp).term);
+                        collectBranch(help, fp, branch == ((Goal) temp).term);
                     } else {
                         fp.increment(SpecialFriendly.CODE_TRUST_FLOW);
-                        reportBody((Directive) branch, fp);
+                        collectBody((Directive) branch, fp);
                     }
                 } else if (Directive.isSequen(branch)) {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
-                    reportBody(help, fp);
+                    collectBody(help, fp);
                 } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
                         || type == Directive.TYPE_CTRL_SBGN) {
                     /* */
@@ -548,7 +506,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param fp    The firendly printer.
      * @param first The first flag.
      */
-    private static void reportBranch(Directive help,
+    private static void collectBranch(Directive help,
                                      FriendlyReport fp,
                                      boolean first) {
         if (first) {
@@ -556,7 +514,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         } else {
             fp.increment(SpecialFriendly.CODE_RETRY_FLOW);
         }
-        reportBody(help, fp);
+        collectBody(help, fp);
     }
 
     /**************************************************************/
@@ -581,5 +539,23 @@ public final class SpecialFriendly extends AbstractSpecial {
                     OP_DOMAIN_MAP, m), d);
         }
     }
-
+    
+    /**
+     * <p>Show a statistics map.</p>
+     *
+     * @param wr  The writer.
+     * @param map The statistics map.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void mapShow(Writer wr, AssocSorted<String, Integer> map)
+            throws EngineMessage {
+        try {
+            FriendlyReport fp = new FriendlyReport();
+            fp.map = map;
+            fp.mapShow(wr);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+    
 }

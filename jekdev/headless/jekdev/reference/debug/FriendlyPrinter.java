@@ -42,6 +42,8 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class FriendlyPrinter {
+    private final static int DISASSEMBLE_MASK_INSTRUMEMTED = 0x00000001;
+
     int flags;
     int count;
     PrologWriter pw;
@@ -54,10 +56,10 @@ final class FriendlyPrinter {
      * @return The first literal.
      */
     Intermediate nextDirective(Directive dire) {
-        if ((flags & SpecialFriendly.MASK_FRIEND_DEBUG) != 0 &&
+        if ((flags & DISASSEMBLE_MASK_INSTRUMEMTED) != 0 &&
                 dire instanceof DirectiveTrace)
             return ((DirectiveTrace) dire).nexttrace;
-        if ((flags & SpecialFriendly.MASK_FRIEND_DEBUG) != 0 &&
+        if ((flags & DISASSEMBLE_MASK_INSTRUMEMTED) != 0 &&
                 dire instanceof ClauseTrace)
             return ((ClauseTrace) dire).nexttrace;
         return dire.next;
@@ -70,10 +72,10 @@ final class FriendlyPrinter {
      * @return The first literal.
      */
     Intermediate lastDirective(Directive dire) {
-        if ((flags & SpecialFriendly.MASK_FRIEND_DEBUG) != 0 &&
+        if ((flags & DISASSEMBLE_MASK_INSTRUMEMTED) != 0 &&
                 dire instanceof DirectiveTrace)
             return ((DirectiveTrace) dire).lasttrace;
-        if ((flags & SpecialFriendly.MASK_FRIEND_DEBUG) != 0 &&
+        if ((flags & DISASSEMBLE_MASK_INSTRUMEMTED) != 0 &&
                 dire instanceof ClauseTrace)
             return ((ClauseTrace) dire).lasttrace;
         return dire.last;
@@ -86,7 +88,7 @@ final class FriendlyPrinter {
      * @return The next literal.
      */
     Intermediate nextGoal(Intermediate goal) {
-        if ((flags & SpecialFriendly.MASK_FRIEND_DEBUG) != 0 &&
+        if ((flags & DISASSEMBLE_MASK_INSTRUMEMTED) != 0 &&
                 goal instanceof GoalTrace)
             return ((GoalTrace) goal).nexttrace;
         return goal.next;
