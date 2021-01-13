@@ -85,7 +85,7 @@ public class SpecialArith extends AbstractSpecial {
                     Display ref = en.display;
                     Number alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     MathContext mc = SpecialArith.derefAndCastContext(temp[1], ref);
-                    if (!BindUniv.unifyClash(mpDecimal(alfa, mc), Display.DISPLAY_CONST, temp[2], ref, en))
+                    if (!BindUniv.unifyTerm(mpDecimal(alfa, mc), Display.DISPLAY_CONST, temp[2], ref, en))
                         return false;
                     return true;
                 case SPECIAL_MP_ADD:
@@ -94,7 +94,7 @@ public class SpecialArith extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     Number beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
-                    if (!BindUniv.unifyClash(mpAdd(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(mpAdd(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_MP_SUB:
@@ -103,7 +103,7 @@ public class SpecialArith extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
-                    if (!BindUniv.unifyClash(mpSub(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(mpSub(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_MP_MUL:
@@ -112,7 +112,7 @@ public class SpecialArith extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
-                    if (!BindUniv.unifyClash(mpMul(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(mpMul(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_MP_SLASH:
@@ -121,7 +121,7 @@ public class SpecialArith extends AbstractSpecial {
                     alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
-                    if (!BindUniv.unifyClash(mpSlash(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(mpSlash(alfa, beta, mc), Display.DISPLAY_CONST, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_MP_INT_POW:
@@ -131,7 +131,7 @@ public class SpecialArith extends AbstractSpecial {
                     beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                     mc = SpecialArith.derefAndCastContext(temp[2], ref);
                     int x = SpecialEval.castIntValue(beta);
-                    if (!BindUniv.unifyClash(mpIntPow(alfa, x, mc), Display.DISPLAY_CONST, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(mpIntPow(alfa, x, mc), Display.DISPLAY_CONST, temp[3], ref, en))
                         return false;
                     return true;
                 default:
