@@ -264,17 +264,17 @@ public final class ReadOpts {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLES)) {
-                if (!BindUniv.unifyClash(termToList(t2, en.store), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(termToList(t2, en.store), d2, ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
-                if (!BindUniv.unifyClash(SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
-                if (!BindUniv.unifyClash(SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -307,7 +307,7 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
-                if (!BindUniv.unifyClash(Integer.valueOf(rd.getClauseStart()), Display.DISPLAY_CONST, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(Integer.valueOf(rd.getClauseStart()), Display.DISPLAY_CONST, ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else {
                 throw new RuntimeException("internal error");

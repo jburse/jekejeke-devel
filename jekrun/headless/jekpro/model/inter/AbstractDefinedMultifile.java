@@ -187,9 +187,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                             ((SkelCompound) clause.head).args, ref1,
                             clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyClash(end, ref1, temp[1], ref, en)) {
+                if (BindUniv.unifyTerm(end, ref1, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (BindUniv.unifyClash(clause, Display.DISPLAY_CONST, temp[2], ref, en))
+                        if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
                             break;
                     } else {
                         break;

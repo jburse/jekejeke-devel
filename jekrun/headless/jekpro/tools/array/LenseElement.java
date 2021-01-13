@@ -167,7 +167,7 @@ final class LenseElement extends AbstractLense {
             Display d = AbstractTerm.getDisplay(res);
             boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !BindUniv.unifyClash(AbstractTerm.getSkel(res), d, temp[2], ref, en))
+                    !BindUniv.unifyTerm(AbstractTerm.getSkel(res), d, temp[2], ref, en))
                 return false;
             if (ext)
                 d.remTab(en);

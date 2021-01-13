@@ -86,7 +86,7 @@ public final class SpecialSession extends AbstractSpecial {
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
-                if (!BindUniv.unifyClash(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
+                if (!BindUniv.unifyTerm(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
             default:

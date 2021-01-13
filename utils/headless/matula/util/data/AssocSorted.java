@@ -1,5 +1,6 @@
 package matula.util.data;
 
+import matula.util.regex.IgnoreCase;
 import qa.norm.anon.bean.Sort;
 
 import java.util.Comparator;
@@ -39,7 +40,7 @@ import java.util.Comparator;
  */
 public final class AssocSorted<K, V> extends AssocArray<K, V> {
     public static final AssocSorted<String, AssocSorted> FULL_SET
-            = new AssocSorted<>(Sort.STR_ASC);
+            = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
 
     private final Comparator<K> comparator;
 

@@ -125,7 +125,7 @@ final class LenseDimension extends AbstractLense {
             SpecialEval.checkNotLessThanZero(num);
             int size = SpecialEval.castIntValue(num);
             Object val = newInstance(size);
-            if (!BindUniv.unifyClash(val, Display.DISPLAY_CONST, temp[1], ref, en))
+            if (!BindUniv.unifyTerm(val, Display.DISPLAY_CONST, temp[1], ref, en))
                 return false;
             return true;
         } catch (RuntimeException x) {

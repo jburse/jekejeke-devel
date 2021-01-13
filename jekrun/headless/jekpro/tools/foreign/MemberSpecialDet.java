@@ -210,7 +210,7 @@ public final class MemberSpecialDet extends AbstractMember {
         Object[] help;
         boolean ext = d.getAndReset();
         if (res != AbstractSkel.VOID_OBJ &&
-                !BindUniv.unifyClash(AbstractTerm.getSkel(res), d,
+                !BindUniv.unifyTerm(AbstractTerm.getSkel(res), d,
                         (help = ((SkelCompound) temp).args)[help.length - 1], ref, en))
             return false;
         if (ext)

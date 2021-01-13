@@ -94,7 +94,7 @@ public final class SpecialSource extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SOURCE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!BindUniv.unifyClash(SpecialSource.currentSources(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(SpecialSource.currentSources(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_SOURCE_CHK:
@@ -117,7 +117,7 @@ public final class SpecialSource extends AbstractSpecial {
                 SpecialSource.sourceToProperties(source, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[1], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -134,7 +134,7 @@ public final class SpecialSource extends AbstractSpecial {
                 SpecialSource.sourceToProperty(source, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -170,13 +170,13 @@ public final class SpecialSource extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_RESOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyClash(SpecialSource.currentResources(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(SpecialSource.currentResources(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_MODULE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyClash(SpecialSource.currentModules(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(SpecialSource.currentModules(en), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_MODULE_CHK:

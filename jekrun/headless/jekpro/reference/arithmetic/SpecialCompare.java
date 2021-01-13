@@ -183,9 +183,9 @@ public final class SpecialCompare extends AbstractSpecial {
                 alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                 beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                 Number[] res = divMod(alfa, beta);
-                if (!BindUniv.unifyClash(res[0], Display.DISPLAY_CONST, temp[2], ref, en))
+                if (!BindUniv.unifyTerm(res[0], Display.DISPLAY_CONST, temp[2], ref, en))
                     return false;
-                if (!BindUniv.unifyClash(res[1], Display.DISPLAY_CONST, temp[3], ref, en))
+                if (!BindUniv.unifyTerm(res[1], Display.DISPLAY_CONST, temp[3], ref, en))
                     return false;
                 return true;
             default:

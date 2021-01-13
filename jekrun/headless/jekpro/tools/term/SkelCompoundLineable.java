@@ -36,8 +36,8 @@ import matula.util.data.ListArray;
  */
 public final class SkelCompoundLineable extends SkelCompound {
     public static final byte SUBTERM_LINEAR = 0; /* YES */
-    public static final byte SUBTERM_TERM = 1; /* MAYBE */
-    public static final byte SUBTERM_CLASH = 2; /* NO */
+    public static final byte SUBTERM_MIXED = 1; /* MAYBE */
+    public static final byte SUBTERM_TERM = 2; /* NO */
 
     public final byte[] subterm;
 
@@ -91,7 +91,7 @@ public final class SkelCompoundLineable extends SkelCompound {
             if (!SupervisorCopy.getLinear(args[i])) {
                 if (subterm == null)
                     subterm = new byte[args.length];
-                subterm[i] = SUBTERM_TERM;
+                subterm[i] = SUBTERM_MIXED;
             }
             if (res == null) {
                 res = newvar;
@@ -104,7 +104,7 @@ public final class SkelCompoundLineable extends SkelCompound {
                 } else {
                     if (subterm == null)
                         subterm = new byte[args.length];
-                    subterm[i] = SUBTERM_CLASH;
+                    subterm[i] = SUBTERM_TERM;
                 }
             } else {
                 SkelVar[] temp = (SkelVar[]) newvar;
@@ -117,7 +117,7 @@ public final class SkelCompoundLineable extends SkelCompound {
                     } else {
                         if (subterm == null)
                             subterm = new byte[args.length];
-                        subterm[i] = SUBTERM_CLASH;
+                        subterm[i] = SUBTERM_TERM;
                     }
                 }
             }

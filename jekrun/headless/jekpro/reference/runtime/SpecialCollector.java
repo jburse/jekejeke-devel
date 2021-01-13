@@ -118,7 +118,7 @@ public final class SpecialCollector extends AbstractSpecial {
             case SPECIAL_SYS_PIVOT_NEW:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!BindUniv.unifyClash(new SetEntry(), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!BindUniv.unifyTerm(new SetEntry(), Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
             case SPECIAL_SYS_PIVOT_ADD:
@@ -137,7 +137,7 @@ public final class SpecialCollector extends AbstractSpecial {
                 sysPivotCollect(pivot, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -159,7 +159,7 @@ public final class SpecialCollector extends AbstractSpecial {
                 sysPivotGather(pivot, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                     return false;
                 if (multi)
                     d.remTab(en);

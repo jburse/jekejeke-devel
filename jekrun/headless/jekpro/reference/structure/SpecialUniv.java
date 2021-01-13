@@ -95,7 +95,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (nth < 1)
                             return false;
-                        if (!BindUniv.unifyClash(cmp[nth - 1], en.display, temp[2], ref, en))
+                        if (!BindUniv.unifyTerm(cmp[nth - 1], en.display, temp[2], ref, en))
                             return false;
                         return true;
                     } else if (en.skel instanceof SkelAtom) {
@@ -132,7 +132,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
-                        if (!BindUniv.unifyClash(sc, d, temp[3], ref, en))
+                        if (!BindUniv.unifyTerm(sc, d, temp[3], ref, en))
                             return false;
                         if (multi)
                             d.remTab(en);
@@ -172,7 +172,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         EngineMessage.checkInstantiated(en.skel);
                         num = Integer.valueOf(0);
                     }
-                    if (!BindUniv.unifyClash(num, Display.DISPLAY_CONST, temp[1], ref, en))
+                    if (!BindUniv.unifyTerm(num, Display.DISPLAY_CONST, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_SYS_EXTEND_TERM:
@@ -180,7 +180,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     ref = en.display;
                     boolean multi = SpecialUniv.listToTerm(temp[0], ref, temp[1], ref, en);
                     Display d = en.display;
-                    if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                    if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -200,9 +200,9 @@ public final class SpecialUniv extends AbstractSpecial {
                     Object val = SpecialUniv.termToList(nth, en.skel, en);
                     if (val == null)
                         return false;
-                    if (!BindUniv.unifyClash(en.skel, d, temp[2], ref, en))
+                    if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
                         return false;
-                    if (!BindUniv.unifyClash(val, d, temp[3], ref, en))
+                    if (!BindUniv.unifyTerm(val, d, temp[3], ref, en))
                         return false;
                     return true;
                 case SPECIAL_UNIFY_WITH_OCCURS_CHECK:
@@ -215,7 +215,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     AbstractUndo mark = en.bind;
-                    if (BindUniv.unifyClash(temp[1], ref, temp[0], ref, en))
+                    if (BindUniv.unifyTerm(temp[1], ref, temp[0], ref, en))
                         return false;
                     en.fault = null;
                     en.releaseBind(mark);
@@ -234,7 +234,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     val = AbstractSkel.copySkel(temp[0], ref, en);
                     d = AbstractSkel.createMarker(val);
                     multi = d.getAndReset();
-                    if (!BindUniv.unifyClash(val, d, temp[1], ref, en))
+                    if (!BindUniv.unifyTerm(val, d, temp[1], ref, en))
                         return false;
                     if (multi)
                         d.remTab(en);

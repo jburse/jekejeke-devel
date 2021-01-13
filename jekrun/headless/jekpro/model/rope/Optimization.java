@@ -1,7 +1,6 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.standard.SupervisorCopy;
-import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
@@ -40,8 +39,8 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
-    public static final int UNIFY_CLASH = -1;
-    public static final int UNIFY_TERM = -2;
+    public static final int UNIFY_TERM = -1;
+    public static final int UNIFY_MIXED = -2;
     public static final int UNIFY_LINEAR = -3;
     public static final int UNIFY_SKIP = -4;
 
@@ -49,6 +48,7 @@ public final class Optimization {
     final static int MASK_VAR_BODY = 0x00000002;
 
     final static int[][] cacheUnifyLinear = new int[8][];
+    final static int[][] cacheUnifyTerm = new int[8][];
 
     int flags;
     int minarg = -1;
@@ -64,6 +64,12 @@ public final class Optimization {
                 array[j] = UNIFY_LINEAR;
             cacheUnifyLinear[i] = array;
         }
+        for (int i = 0; i < 8; i++) {
+            int[] array = new int[i];
+            for (int j = 0; j < i; j++)
+                array[j] = UNIFY_TERM;
+            cacheUnifyTerm[i] = array;
+        }
     }
 
     /**
@@ -76,17 +82,32 @@ public final class Optimization {
     }
 
     /**
-     * <p>Retrieve a immutable zero int array.</p>
+     * <p>Retrieve a linear unify array.</p>
      *
      * @param n The length.
-     * @return The immutable zero int array.
+     * @return The linear unify array.
      */
-    private static int[] valueOf(int n) {
+    private static int[] valueOfLinear(int n) {
         if (n < 8)
             return cacheUnifyLinear[n];
         int[] array = new int[n];
         for (int j = 0; j < n; j++)
             array[j] = UNIFY_LINEAR;
+        return array;
+    }
+
+    /**
+     * <p>Retrieve a term unify array.</p>
+     *
+     * @param n The length.
+     * @return The term unify array.
+     */
+    private static int[] valueOfTerm(int n) {
+        if (n < 8)
+            return cacheUnifyTerm[n];
+        int[] array = new int[n];
+        for (int j = 0; j < n; j++)
+            array[j] = UNIFY_TERM;
         return array;
     }
 
@@ -128,10 +149,9 @@ public final class Optimization {
      * <p>Set the structure and minarg of the variables in the given term.</p>
      *
      * @param m      The term skel, can be null.
-     * @param clause The clause option flags.
      * @param helper The helper.
      */
-    static void setHead(Object m, Clause clause,
+    static void setHead(Object m,
                         Optimization[] helper) {
         if (!(m instanceof SkelCompound))
             return;
@@ -141,21 +161,17 @@ public final class Optimization {
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
                 ov.minarg = i;
-                if ((clause.flags & AbstractDefined.MASK_DEFI_NHED) != 0)
-                    ov.flags |= MASK_VAR_HSTR;
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
                     Optimization ov = helper[((SkelVar) var).id];
-                    ov.minarg = i;
                     ov.flags |= MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
                         Optimization ov = helper[temp[j].id];
-                        ov.minarg = i;
                         ov.flags |= MASK_VAR_HSTR;
                     }
                 }
@@ -222,16 +238,16 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param m      The term skel, can be null.
+     * @param clause The clause.
      * @param helper The helper.
      * @return The unify arguments.
      */
-    static int[] unifyArgs(Object m, Optimization[] helper) {
-        if (!(m instanceof SkelCompound))
+    static int[] unifyArgsLinear(Clause clause, Optimization[] helper) {
+        if (!(clause.head instanceof SkelCompound))
             return null;
-        SkelCompound mc = (SkelCompound) m;
+        SkelCompound mc = (SkelCompound) clause.head;
         if (helper.length == 0)
-            return valueOf(mc.args.length);
+            return valueOfLinear(mc.args.length);
         int i = mc.args.length - 1;
         for (; i >= 0; i--) {
             Object a = mc.args[i];
@@ -260,11 +276,11 @@ public final class Optimization {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
                         intargs[i] = UNIFY_LINEAR;
                         break;
+                    case SkelCompoundLineable.SUBTERM_MIXED:
+                        intargs[i] = UNIFY_MIXED;
+                        break;
                     case SkelCompoundLineable.SUBTERM_TERM:
                         intargs[i] = UNIFY_TERM;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_CLASH:
-                        intargs[i] = UNIFY_CLASH;
                         break;
                     default:
                         throw new IllegalArgumentException("illegal subterm");
@@ -280,10 +296,73 @@ public final class Optimization {
                 } else {
                     intargs[i] = UNIFY_SKIP;
                 }
-            } else if (ov.minarg != i) {
-                intargs[i] = UNIFY_CLASH;
             } else {
-                intargs[i] = UNIFY_LINEAR;
+                switch (mc.getSubTerm(i)) {
+                    case SkelCompoundLineable.SUBTERM_LINEAR:
+                        intargs[i] = UNIFY_LINEAR;
+                        break;
+                    case SkelCompoundLineable.SUBTERM_TERM:
+                        intargs[i] = UNIFY_TERM;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal subterm");
+                }
+            }
+        }
+        return intargs;
+    }
+
+    /**
+     * <p>Collect the unify arguments.</p>
+     *
+     * @param clause The clause.
+     * @param helper The helper.
+     * @return The unify arguments.
+     */
+    static int[] unifyArgsTerm(Clause clause, Optimization[] helper) {
+        if (!(clause.head instanceof SkelCompound))
+            return null;
+        SkelCompound mc = (SkelCompound) clause.head;
+        if (helper.length == 0)
+            return valueOfTerm(mc.args.length);
+        int i = mc.args.length - 1;
+        for (; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (!(a instanceof SkelVar))
+                break;
+            Optimization ov = helper[((SkelVar) a).id];
+            if ((ov.flags & MASK_VAR_HSTR) == 0) {
+                if (ov.minarg != i) {
+                    break;
+                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
+                    break;
+                } else {
+                    /* */
+                }
+            } else {
+                break;
+            }
+        }
+        if (!(i >= 0))
+            return null;
+        int[] intargs = new int[i + 1];
+        for (; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (!(a instanceof SkelVar)) {
+                intargs[i] = UNIFY_TERM;
+                continue;
+            }
+            Optimization ov = helper[((SkelVar) a).id];
+            if ((ov.flags & MASK_VAR_HSTR) == 0) {
+                if (ov.minarg != i) {
+                    intargs[i] = ov.minarg;
+                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
+                    intargs[i] = UNIFY_TERM;
+                } else {
+                    intargs[i] = UNIFY_SKIP;
+                }
+            } else {
+                intargs[i] = UNIFY_TERM;
             }
         }
         return intargs;

@@ -323,7 +323,7 @@ public abstract class AbstractTerm {
         Thread backthread = en.visor.setFence(Thread.currentThread());
         boolean res;
         try {
-            res = BindUniv.unifyClash(AbstractTerm.getSkel(fst),
+            res = BindUniv.unifyTerm(AbstractTerm.getSkel(fst),
                     AbstractTerm.getDisplay(fst), AbstractTerm.getSkel(snd),
                     AbstractTerm.getDisplay(snd), en);
         } catch (EngineException x) {
