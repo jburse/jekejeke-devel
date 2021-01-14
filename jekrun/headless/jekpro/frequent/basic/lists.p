@@ -231,6 +231,29 @@ nth1(N, L, E, R) :- var(N), !, L = [X|Y], nth02(Y, X, E, 1, N, R).
 nth1(N, L, E, R) :- integer(N), !, N >= 1, H is N-1, nth03(H, L, E, R).
 nth1(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 
+/*******************************************************************/
+/* Set Operations                                               */
+/*******************************************************************/
+
+/**
+ * subtract(S, T, R):
+ * The predicate succeeds when R unifies with the subtract of S by T.
+ */
+% subtract(+List, +List, -List)
+:- public subtract/3.
+subtract(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+subtract([X|Y], Z, T) :-
+   member(X, Z), !,
+   subtract(Y, Z, T).
+subtract([X|Y], Z, R) :- !,
+   R = [X|T],
+   subtract(Y, Z, T).
+subtract([], _, R) :- !,
+   R = [].
+subtract(X, _, _) :-
+   throw(error(type_error(list, X), _)).
+
 /**
  * intersection(S, T, R):
  * The predicate succeeds when R unifies with the intersection of S and T.
@@ -268,3 +291,60 @@ union([], R, T) :- !,
    T = R.
 union(X, _, _) :-
    throw(error(type_error(list, X), _)).
+
+/**
+ * symdiff(S, T, R):
+ * The predicate succeeds when R unifies with the symmetric subtract of S and T.
+ */
+% symdiff(+List, +List, -List)
+:- public symdiff/3.
+symdiff(X, Y, Z) :-
+   subtract(X, Y, H),
+   subtract(Y, X, J),
+   append(H, J, Z).
+
+/*******************************************************************/
+/* Set Tests                                                       */
+/*******************************************************************/
+
+/**
+ * subset(S, T):
+ * The predicate succeeds when S is a subset of T.
+ */
+% subset(+List, +List)
+:- public subset/2.
+subset(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+subset([X|Y], Z) :-
+   member(X, Z), !,
+   subset(Y, Z).
+subset([_|_], _) :- !, fail.
+subset([], _) :- !.
+subset(X, _) :-
+   throw(error(type_error(list, X), _)).
+
+/**
+ * disjoint(S, T):
+ * The predicate succeeds when S is disjoint to T.
+ */
+% disjoint(+List, +List)
+:- public disjoint/2.
+disjoint(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+disjoint([X|_], Z) :-
+   member(X, Z), !, fail.
+disjoint([_|Y], Z) :- !,
+   disjoint(Y, Z).
+disjoint([], _) :- !.
+disjoint(X, _) :-
+   throw(error(type_error(list, X), _)).
+
+/**
+ * equal(S, T):
+ * The predicate succeeds when S is equal to T.
+ */
+% equal(+List, +List)
+:- public equal/2.
+equal(X, Y) :-
+   subset(X, Y),
+   subset(Y, X).

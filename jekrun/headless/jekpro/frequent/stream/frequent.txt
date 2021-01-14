@@ -171,10 +171,10 @@ expand_term/2	standard/expand
 fail/2	standard/dcg
 flush_output/0	stream/byte
 flush_output/1	stream/byte
-foldl/4	basic/lists
-foldl/5	basic/lists
-foldl/6	basic/lists
-foldl/7	basic/lists
+foldl/4	advanced/abstract
+foldl/5	advanced/abstract
+foldl/6	advanced/abstract
+foldl/7	advanced/abstract
 follow_path/3	system/file
 follow_uri/3	system/uri
 foreach/2	advanced/bags
@@ -224,6 +224,7 @@ hex_block/2	stream/xml
 host_lookup/2	system/domain
 html_escape/1	stream/xml
 html_escape/2	stream/xml
+intersection/3	basic/lists
 is_relative_path/1	system/file
 is_relative_uri/1	system/uri
 keysort/2	standard/sort
@@ -247,10 +248,10 @@ make_path/3	system/file
 make_query/4	system/uri
 make_spec/4	system/uri
 make_uri/4	system/uri
-maplist/2	basic/lists
-maplist/3	basic/lists
-maplist/4	basic/lists
-maplist/5	basic/lists
+maplist/2	advanced/abstract
+maplist/3	advanced/abstract
+maplist/4	advanced/abstract
+maplist/5	advanced/abstract
 member/2	basic/lists
 message_make/3	system/locale
 message_make/4	system/locale
@@ -449,6 +450,7 @@ thread_sleep/1	system/thread
 thread_start/1	system/thread
 threads/0	system/group
 time_out/2	misc/time
+union/3	basic/lists
 unslotted_new/1	misc/lock
 upcase_atom/2	misc/text
 uri_encode/2	system/uri

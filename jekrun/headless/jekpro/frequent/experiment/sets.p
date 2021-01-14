@@ -102,7 +102,7 @@ eq_add(X, Y, [Y|X]).
 
 /**
  * eq_subtract(S, T, R):
- * The predicate succeeds when R unifies with the eq_subtract of S by T.
+ * The predicate succeeds when R unifies with the subtract of S by T.
  */
 % eq_subtract(+Set, +Set, -Set)
 :- public eq_subtract/3.
@@ -169,7 +169,7 @@ eq_symdiff(X, Y, Z) :-
    append(H, J, Z).
 
 /*******************************************************************/
-/* Test Operations                                                 */
+/* Set Tests                                                       */
 /*******************************************************************/
 
 /**
@@ -180,9 +180,10 @@ eq_symdiff(X, Y, Z) :-
 :- public eq_subset/2.
 eq_subset(X, _) :- var(X),
    throw(error(instantiation_error, _)).
-eq_subset([X|Y], Z) :- !,
-   eq_contains(Z, X),
+eq_subset([X|Y], Z) :-
+   eq_contains(Z, X), !,
    eq_subset(Y, Z).
+eq_subset([_|_], _) :- !, fail.
 eq_subset([], _) :- !.
 eq_subset(X, _) :-
    throw(error(type_error(list, X), _)).
