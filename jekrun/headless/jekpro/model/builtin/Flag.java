@@ -53,7 +53,7 @@ public final class Flag extends AbstractFlag<Engine> {
 
     private final static String OP_DIALECT = "dialect";
     private final static String OP_SYS_STACK_FRAME = "sys_stack_frame";
-    private final static String OP_SYS_HEAD_VARIABLE = "sys_head_variable";
+    private final static String OP_SYS_HEAD_STRUCTURE = "sys_head_structure";
     private final static String OP_SYS_CLAUSE_EXPAND = "sys_clause_expand";
     private final static String OP_SYS_CLAUSE_INDEX = "sys_clause_index";
     public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
@@ -73,7 +73,7 @@ public final class Flag extends AbstractFlag<Engine> {
 
     private static final int FLAG_DIALECT = 0;
     private static final int FLAG_SYS_STACK_FRAME = 1;
-    private static final int FLAG_SYS_HEAD_VARIABLE = 2;
+    private static final int FLAG_SYS_HEAD_STRUCTURE = 2;
     private static final int FLAG_SYS_CLAUSE_EXPAND = 3;
     private static final int FLAG_SYS_CLAUSE_INDEX = 4;
     private static final int FLAG_DOUBLE_QUOTES = 5;
@@ -94,7 +94,7 @@ public final class Flag extends AbstractFlag<Engine> {
     static {
         DEFAULT.add(OP_DIALECT, new Flag(FLAG_DIALECT));
         DEFAULT.add(OP_SYS_STACK_FRAME, new Flag(FLAG_SYS_STACK_FRAME));
-        DEFAULT.add(OP_SYS_HEAD_VARIABLE, new Flag(FLAG_SYS_HEAD_VARIABLE));
+        DEFAULT.add(OP_SYS_HEAD_STRUCTURE, new Flag(FLAG_SYS_HEAD_STRUCTURE));
         DEFAULT.add(OP_SYS_CLAUSE_EXPAND, new Flag(FLAG_SYS_CLAUSE_EXPAND));
         DEFAULT.add(OP_SYS_CLAUSE_INDEX, new Flag(FLAG_SYS_CLAUSE_INDEX));
         DEFAULT.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
@@ -133,7 +133,7 @@ public final class Flag extends AbstractFlag<Engine> {
             case FLAG_SYS_STACK_FRAME:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_NSTK) == 0);
-            case FLAG_SYS_HEAD_VARIABLE:
+            case FLAG_SYS_HEAD_STRUCTURE:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_NHED) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
@@ -201,7 +201,7 @@ public final class Flag extends AbstractFlag<Engine> {
                         en.store.foyer.setBit(Foyer.MASK_FOYER_NSTK);
                     }
                     return true;
-                case FLAG_SYS_HEAD_VARIABLE:
+                case FLAG_SYS_HEAD_STRUCTURE:
                     if (AbstractFlag.atomToSwitch(m, d)) {
                         en.store.foyer.resetBit(Foyer.MASK_FOYER_NHED);
                     } else {

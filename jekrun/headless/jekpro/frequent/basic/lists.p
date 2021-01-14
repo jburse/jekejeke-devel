@@ -6,16 +6,32 @@
  * are implemented such that they leave as few as possible choice
  * points.
  *
- * Example:
+ * Examples:
  * ?- last([1,2,3], X).
  * X = 3
  *
+ * ?- last([1,2,3], X, Y).
+ * X = 3,
+ * Y = [1,2]
+ *
  * The predicates append/3, reverse/2, member/2, select/3, last/2
- * and last/3 work directly with lists. The predicates length/2,
- * nth0/3, nth0/4, nth1/3 and nth1/4 take also a length respective
- * index into account. The predicates maplist/n and foldl/n have
- * a closure argument to apply a predicate repeatedly to a number
- * of arguments.
+ * and last/3 work directly with lists. The predicates length/2, nth0/3,
+ * nth0/4, nth1/3 and nth1/4 take also a length respective index into
+ * account. The predicates intersection/3 and union/3 provide further
+ * list operations. Since the later predicates are member/2 based,
+ * they require ground lists.
+ *
+ * Examples:
+ * ?- intersection([2,3],[1,2],X).
+ * X = [2]
+ *
+ * ?- union([2,3],[1,2],X).
+ * X = [3, 1, 2]
+ *
+ * The ground list based implementations might differ from other
+ * implementations since they do not simply fail or loop if the leading
+ * argument is not a ground list. Instead, they throw either an instantiation
+ * error or type error to provide more safety.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -216,69 +232,39 @@ nth1(N, L, E, R) :- integer(N), !, N >= 1, H is N-1, nth03(H, L, E, R).
 nth1(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 
 /**
- * maplist(C, L1, ..., Ln):
- * The predicate succeeds in applying the closure C to the
- * elements of L1, ..., Ln. The predicate is currently
- * defined for 1 ≤ n ≤ 4.
+ * intersection(S, T, R):
+ * The predicate succeeds when R unifies with the intersection of S and T.
  */
-:- public maplist/2.
-:- meta_predicate maplist(1, ?).
-maplist(_, []).
-maplist(C, [X|L]) :-
-   call(C, X),
-   maplist(C, L).
-
-:- public maplist/3.
-:- meta_predicate maplist(2, ?, ?).
-maplist(_, [], []).
-maplist(C, [X|L], [Y|R]) :-
-   call(C, X, Y),
-   maplist(C, L, R).
-
-:- public maplist/4.
-:- meta_predicate maplist(3, ?, ?, ?).
-maplist(_, [], [], []).
-maplist(C, [X|L], [Y|R], [Z|S]) :-
-   call(C, X, Y, Z),
-   maplist(C, L, R, S).
-
-:- public maplist/5.
-:- meta_predicate maplist(4, ?, ?, ?, ?).
-maplist(_, [], [], [], []).
-maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
-   call(C, X, Y, Z, U),
-   maplist(C, L, R, S, T).
+% intersection(+List, +List, -List)
+:- public intersection/3.
+intersection(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+intersection([X|L], R, T) :-
+   member(X, R), !,
+   T = [X|S],
+   intersection(L, R, S).
+intersection([_|L], R, S) :- !,
+   intersection(L, R, S).
+intersection([], _, T) :- !,
+   T = [].
+intersection(X, _, _) :-
+   throw(error(type_error(list, X), _)).
 
 /**
- * foldl(C, L1, ..., Ln, I, O):
- * The predicate succeeds in applying the closure C to the
- * elements of L1, ..., Ln and accumulating the result among
- * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
+ * union(S, T, R):
+ * The predicate succeeds when R unifies with the union of S and T.
  */
-:- public foldl/4.
-:- meta_predicate foldl(3, ?, ?, ?).
-foldl(_, [], P, P).
-foldl(C, [X|L], P, Q) :-
-   call(C, X, P, H),
-   foldl(C, L, H, Q).
-
-:- public foldl/5.
-:- meta_predicate foldl(4, ?, ?, ?, ?).
-foldl(_, [], [], P, P).
-foldl(C, [X|L], [Y|R], P, Q) :-
-   call(C, X, Y, P, H),
-   foldl(C, L, R, H, Q).
-
-:- public foldl/6.
-:- meta_predicate foldl(5, ?, ?, ?, ?, ?).
-foldl(_, [], [], [], P, P).
-foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
-   call(C, X, Y, Z, P, H),
-   foldl(C, L, R, S, H, Q).
-
-:- public foldl/7.
-:- meta_predicate foldl(6, ?, ?, ?, ?, ?, ?).
-foldl(_, [], [], [], [], P, P).
-foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
-   call(C, X, Y, Z, U, P, H),
-   foldl(C, L, R, S, T, H, Q).
+% union(+List, +List, -List)
+:- public union/3.
+union(X, _, _) :- var(X),
+   throw(error(instantiation_error, _)).
+union([X|L], R, S) :-
+   member(X, R), !,
+   union(L, R, S).
+union([X|L], R, T) :- !,
+   T = [X|S],
+   union(L, R, S).
+union([], R, T) :- !,
+   T = R.
+union(X, _, _) :-
+   throw(error(type_error(list, X), _)).

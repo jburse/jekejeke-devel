@@ -66,9 +66,9 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_IMPORT_FILE = 2;
     private final static int SPECIAL_SYS_SHOW_PROVABLE_SOURCE = 3;
     private final static int SPECIAL_SYS_SHOW_SYNTAX_SOURCE = 4;
-    private final static int SPECIAL_SYS_SHOW_BASE = 5;
+    private final static int SPECIAL_SYS_SHOW_IMPORT = 5;
     private final static int SPECIAL_SYS_HAS_CLAUSE = 6;
-    private final static int SPECIAL_SYS_SHORT_BASE = 7;
+    private final static int SPECIAL_SYS_SHOW_BASE = 7;
     private final static int SPECIAL_SYS_REGISTER_FILE = 8;
 
     public static final int MASK_SHOW_NANO = 0x00000001;
@@ -187,7 +187,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.listSyntax(pw, oper, source, en);
                 newLineFlush(wr);
                 return true;
-            case SPECIAL_SYS_SHOW_BASE:
+            case SPECIAL_SYS_SHOW_IMPORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
 
@@ -208,8 +208,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 pw.setWriter(wr);
-                SpecialLoad.listBase(pw, source, en);
-                newLineFlush(wr);
+                SpecialLoad.listImport(pw, source, en);
                 return true;
             case SPECIAL_SYS_HAS_CLAUSE:
                 temp = ((SkelCompound) en.skel).args;
@@ -231,7 +230,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (!hasClause(pick, source, en))
                     return false;
                 return true;
-            case SPECIAL_SYS_SHORT_BASE:
+            case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
 
@@ -246,7 +245,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 wr = (Writer) obj;
 
                 AbstractSource.showShortName(wr, source);
-                newLineFlush(wr);
                 return true;
             case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
@@ -502,12 +500,10 @@ public final class SpecialLoad extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void listBase(PrologWriter pw,
-                                 AbstractSource src, Engine en)
+    private static void listImport(PrologWriter pw,
+                                   AbstractSource src, Engine en)
             throws EngineMessage, EngineException {
         /* show source comment */
-        AbstractSource.showShortName(pw.getWriter(), src);
-
         if (src != null &&
                 (src.getBits() & AbstractSource.MASK_SRC_VISI) == 0 &&
                 Branch.OP_USER.equals(src.getFullName())) {

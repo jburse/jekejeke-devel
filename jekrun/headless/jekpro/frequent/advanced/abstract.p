@@ -36,7 +36,13 @@
  * K = X\Y^Y\ =(X),
  * R = Y                       % Now everything is fine.
  *
- * Further there are predicates sys_goal_kernel/2 and sys_goal_globals/2 to
+ * This module also provides a couple of common higher order list
+ * processing predicates. These predicates take a closure and apply it to
+ * a number of list arguments. Among the predicates, we find the predicates
+ * maplist/[2-5] applying a closure in tandem to lists. The predicates
+ * foldl/[4-7] additionally allow an accumulator.
+ *
+ * Finally, there are predicates sys_goal_kernel/2 and sys_goal_globals/2 to
  * deal with existential quantifiers. The existential quantifier is
  * represented by the (^)/2 operator. In a goal X1^..^Xn^K we call K the
  * kernel of the quantified goal and the variables of K subtracted by the
@@ -170,6 +176,78 @@
    sys_goal_globals(X^A, L),
    copy_term(rec(X, B, L), rec(Y, Q, L)),
    call(Q, Z, T, U, V, W, R).
+
+/****************************************************************/
+/* Higher Order List Processing                                 */
+/****************************************************************/
+
+/**
+ * maplist(C, L1, ..., Ln):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L1, ..., Ln. The predicate is currently
+ * defined for 1 ≤ n ≤ 4.
+ */
+:- public maplist/2.
+:- meta_predicate maplist(1, ?).
+maplist(_, []).
+maplist(C, [X|L]) :-
+   call(C, X),
+   maplist(C, L).
+
+:- public maplist/3.
+:- meta_predicate maplist(2, ?, ?).
+maplist(_, [], []).
+maplist(C, [X|L], [Y|R]) :-
+   call(C, X, Y),
+   maplist(C, L, R).
+
+:- public maplist/4.
+:- meta_predicate maplist(3, ?, ?, ?).
+maplist(_, [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S]) :-
+   call(C, X, Y, Z),
+   maplist(C, L, R, S).
+
+:- public maplist/5.
+:- meta_predicate maplist(4, ?, ?, ?, ?).
+maplist(_, [], [], [], []).
+maplist(C, [X|L], [Y|R], [Z|S], [U|T]) :-
+   call(C, X, Y, Z, U),
+   maplist(C, L, R, S, T).
+
+/**
+ * foldl(C, L1, ..., Ln, I, O):
+ * The predicate succeeds in applying the closure C to the
+ * elements of L1, ..., Ln and accumulating the result among
+ * I and O. The predicate is currently defined for 1 ≤ n ≤ 4.
+ */
+:- public foldl/4.
+:- meta_predicate foldl(3, ?, ?, ?).
+foldl(_, [], P, P).
+foldl(C, [X|L], P, Q) :-
+   call(C, X, P, H),
+   foldl(C, L, H, Q).
+
+:- public foldl/5.
+:- meta_predicate foldl(4, ?, ?, ?, ?).
+foldl(_, [], [], P, P).
+foldl(C, [X|L], [Y|R], P, Q) :-
+   call(C, X, Y, P, H),
+   foldl(C, L, R, H, Q).
+
+:- public foldl/6.
+:- meta_predicate foldl(5, ?, ?, ?, ?, ?).
+foldl(_, [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], P, Q) :-
+   call(C, X, Y, Z, P, H),
+   foldl(C, L, R, S, H, Q).
+
+:- public foldl/7.
+:- meta_predicate foldl(6, ?, ?, ?, ?, ?, ?).
+foldl(_, [], [], [], [], P, P).
+foldl(C, [X|L], [Y|R], [Z|S], [U|T], P, Q) :-
+   call(C, X, Y, Z, U, P, H),
+   foldl(C, L, R, S, T, H, Q).
 
 /****************************************************************/
 /* Helpers                                                      */

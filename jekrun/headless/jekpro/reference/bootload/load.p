@@ -322,6 +322,7 @@ listing(I) :-
    bagof(I, (sys_listing_user(U),
       sys_listing_item_idx(U, I)), B),
    sys_show_base(U),
+   sys_show_import(U), nl,
    sys_member(I, B),
    sys_listing_show(I, U),
    fail.
@@ -334,7 +335,7 @@ sys_listing2(I) :-
    sys_listing_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_listing_has_clause(I, U),
-   sys_short_base(U),
+   sys_show_base(U), nl,
    sys_listing_show(I, U),
    fail.
 sys_listing2(_).
@@ -429,14 +430,14 @@ sys_oper_indicator(postfix(_)).
 :- special(sys_show_syntax_source/2, 'SpecialLoad', 4).
 :- set_predicate_property(sys_show_syntax_source/2, visible(private)).
 
-:- special(sys_show_base/1, 'SpecialLoad', 5).
-:- set_predicate_property(sys_show_base/1, visible(public)).
+:- special(sys_show_import/1, 'SpecialLoad', 5).
+:- set_predicate_property(sys_show_import/1, visible(public)).
 
 :- special(sys_has_clause/2, 'SpecialLoad', 6).
 :- set_predicate_property(sys_has_clause/2, visible(private)).
 
-:- special(sys_short_base/1, 'SpecialLoad', 7).
-:- set_predicate_property(sys_short_base/1, visible(public)).
+:- special(sys_show_base/1, 'SpecialLoad', 7).
+:- set_predicate_property(sys_show_base/1, visible(public)).
 
 /****************************************************************/
 /* Resource Handling                                            */

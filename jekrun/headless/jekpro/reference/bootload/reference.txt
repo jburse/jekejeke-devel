@@ -297,8 +297,8 @@ sys_reg_license_text/2	bootload/toolkit
 sys_reged_license_text/2	bootload/toolkit
 sys_remove_file_extension/1	bootload/path
 sys_replace_site/3	runtime/logic
-sys_short_base/1	bootload/load
 sys_show_base/1	bootload/load
+sys_show_import/1	bootload/load
 sys_show_provable_source/2	bootload/load
 sys_shrink_term/4	runtime/quali
 sys_shrink_term/4	structure/univ
