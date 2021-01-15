@@ -139,6 +139,7 @@ date_atom/3	system/zone
 date_atom/4	system/zone
 delete_file/1	system/file
 directory_file/2	system/file
+disjoint/2	basic/lists
 distinct/1	advanced/sequence
 downcase_atom/2	misc/text
 endpoint_address/2	misc/socket
@@ -159,6 +160,7 @@ eq_subset/2	experiment/sets
 eq_subtract/3	experiment/sets
 eq_symdiff/3	experiment/sets
 eq_union/3	experiment/sets
+equal/2	basic/lists
 erase_ref/1	experiment/ref
 error_make/2	stream/console
 error_make/3	stream/console
@@ -391,7 +393,10 @@ sort/2	standard/sort
 sort/3	standard/sort
 spawn/3	experiment/broker
 stream_property/2	stream/stream
+subset/2	basic/lists
+subtract/3	basic/lists
 succ/2	standard/arith
+symdiff/3	basic/lists
 sys_apropos_table/1	basic/utility
 sys_assignable_from/2	basic/proxy
 sys_atom_or_type_of/2	basic/score

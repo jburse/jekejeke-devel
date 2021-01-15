@@ -1,6 +1,7 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.Flag;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -72,6 +73,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static String OP_CHAR_CONVERSION = "char_conversion";
     public final static String OP_MAX_ARITY = "max_arity";
     public final static String OP_FLOAT_ROUNDING_FUNCTION = "float_rounding_function";
+    private final static String OP_MAX_CODE = "max_code";
 
     private static final int FLAG_SYS_MASK = 0;
     private static final int FLAG_SYS_CUR_INPUT = 1;
@@ -91,6 +93,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_CHAR_CONVERSION = 15;
     private static final int FLAG_MAX_ARITY = 16;
     private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 17;
+    private static final int FLAG_MAX_CODE = 18;
 
     /**
      * <p>Create a flag.</p>
@@ -120,6 +123,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         DEFAULT.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
         DEFAULT.add(OP_MAX_ARITY, new FlagFactory(FLAG_MAX_ARITY));
         DEFAULT.add(OP_FLOAT_ROUNDING_FUNCTION, new FlagFactory(FLAG_FLOAT_ROUNDING_FUNCTION));
+        DEFAULT.add(OP_MAX_CODE, new FlagFactory(FLAG_MAX_CODE));
     }
 
     /**
@@ -195,6 +199,8 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                 return Integer.valueOf(Integer.MAX_VALUE);
             case FLAG_FLOAT_ROUNDING_FUNCTION:
                 return new SkelAtom(OP_VALUE_HALF_EVEN);
+            case FLAG_MAX_CODE:
+                return Integer.valueOf(Character.MAX_CODE_POINT);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -278,6 +284,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_CHAR_CONVERSION:
             case FLAG_MAX_ARITY:
             case FLAG_FLOAT_ROUNDING_FUNCTION:
+            case FLAG_MAX_CODE:
                 /* can't modify */
                 return false;
             default:

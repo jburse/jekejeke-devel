@@ -58,7 +58,7 @@ public final class Flag extends AbstractFlag<Engine> {
     private final static String OP_SYS_CLAUSE_INDEX = "sys_clause_index";
     public final static String OP_DOUBLE_QUOTES = "double_quotes"; /* ISO */
     public final static String OP_BACK_QUOTES = "back_quotes";
-    private final static String OP_MAX_CODE = "max_code";
+    public final static String OP_SYS_EXTRA_VARIABLE = "sys_extra_variable";
     private final static String OP_SYS_BREAK_LEVEL = "sys_break_level";
     private final static String OP_SYS_PRINT_MAP = "sys_print_map";
     private final static String OP_SYS_LAST_PRED = "sys_last_pred";
@@ -78,7 +78,7 @@ public final class Flag extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_CLAUSE_INDEX = 4;
     private static final int FLAG_DOUBLE_QUOTES = 5;
     private static final int FLAG_BACK_QUOTES = 6;
-    private static final int FLAG_MAX_CODE = 7;
+    private static final int FLAG_SYS_EXTRA_VARIABLE = 7;
     private static final int FLAG_SYS_BREAK_LEVEL = 8;
     private static final int FLAG_SYS_PRINT_MAP = 9;
     private static final int FLAG_SYS_LAST_PRED = 10;
@@ -99,7 +99,7 @@ public final class Flag extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_CLAUSE_INDEX, new Flag(FLAG_SYS_CLAUSE_INDEX));
         DEFAULT.add(OP_DOUBLE_QUOTES, new Flag(FLAG_DOUBLE_QUOTES));
         DEFAULT.add(OP_BACK_QUOTES, new Flag(FLAG_BACK_QUOTES));
-        DEFAULT.add(OP_MAX_CODE, new Flag(FLAG_MAX_CODE));
+        DEFAULT.add(OP_SYS_EXTRA_VARIABLE, new Flag(FLAG_SYS_EXTRA_VARIABLE));
         DEFAULT.add(OP_SYS_BREAK_LEVEL, new Flag(FLAG_SYS_BREAK_LEVEL));
         DEFAULT.add(OP_SYS_PRINT_MAP, new Flag(FLAG_SYS_PRINT_MAP));
         DEFAULT.add(OP_SYS_LAST_PRED, new Flag(FLAG_SYS_LAST_PRED));
@@ -135,7 +135,7 @@ public final class Flag extends AbstractFlag<Engine> {
                         Foyer.MASK_FOYER_NSTK) == 0);
             case FLAG_SYS_HEAD_STRUCTURE:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
-                        Foyer.MASK_FOYER_NHED) == 0);
+                        Foyer.MASK_FOYER_NHST) == 0);
             case FLAG_SYS_CLAUSE_EXPAND:
                 return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
                         Foyer.MASK_FOYER_CEXP) != 0);
@@ -146,8 +146,9 @@ public final class Flag extends AbstractFlag<Engine> {
                 return ReadOpts.utilToAtom(en.visor.peekStack().utildouble);
             case FLAG_BACK_QUOTES:
                 return ReadOpts.utilToAtom(en.visor.peekStack().utilback);
-            case FLAG_MAX_CODE:
-                return Integer.valueOf(Character.MAX_CODE_POINT);
+            case FLAG_SYS_EXTRA_VARIABLE:
+                return AbstractFlag.switchToAtom((en.store.foyer.getBits() &
+                        Foyer.MASK_FOYER_NEXV) == 0);
             case FLAG_SYS_BREAK_LEVEL:
                 return Integer.valueOf(en.visor.breaklevel);
             case FLAG_SYS_PRINT_MAP:
@@ -203,9 +204,9 @@ public final class Flag extends AbstractFlag<Engine> {
                     return true;
                 case FLAG_SYS_HEAD_STRUCTURE:
                     if (AbstractFlag.atomToSwitch(m, d)) {
-                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NHED);
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NHST);
                     } else {
-                        en.store.foyer.setBit(Foyer.MASK_FOYER_NHED);
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NHST);
                     }
                     return true;
                 case FLAG_SYS_CLAUSE_EXPAND:
@@ -228,9 +229,13 @@ public final class Flag extends AbstractFlag<Engine> {
                 case FLAG_BACK_QUOTES:
                     en.visor.peekStack().utilback = (byte) ReadOpts.atomToUtil(m, d);
                     return true;
-                case FLAG_MAX_CODE:
-                    /* can't modify */
-                    return false;
+                case FLAG_SYS_EXTRA_VARIABLE:
+                    if (AbstractFlag.atomToSwitch(m, d)) {
+                        en.store.foyer.resetBit(Foyer.MASK_FOYER_NEXV);
+                    } else {
+                        en.store.foyer.setBit(Foyer.MASK_FOYER_NEXV);
+                    }
+                    return true;
                 case FLAG_SYS_BREAK_LEVEL:
                     Number num = SpecialEval.derefAndCastInteger(m, d);
                     en.visor.breaklevel = SpecialEval.castIntValue(num);

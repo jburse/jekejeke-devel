@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
@@ -148,19 +149,24 @@ public final class Optimization {
     /**
      * <p>Set the structure and minarg of the variables in the given term.</p>
      *
-     * @param m      The term skel, can be null.
+     * @param molec      The head skeleton.
+     * @param flags The clause flags.
      * @param helper The helper.
      */
-    static void setHead(Object m,
+    static void setHead(Object molec, int flags,
                         Optimization[] helper) {
-        if (!(m instanceof SkelCompound))
+        if (!(molec instanceof SkelCompound))
             return;
-        SkelCompound mc = (SkelCompound) m;
+        SkelCompound mc = (SkelCompound) molec;
         for (int i = mc.args.length - 1; i >= 0; i--) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
-                ov.minarg = i;
+                if ((flags & AbstractDefined.MASK_DEFI_NEXV)==0) {
+                    ov.minarg = i;
+                } else {
+                    ov.flags |= MASK_VAR_HSTR;
+                }
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
@@ -238,14 +244,14 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param clause The clause.
+     * @param molec The head skeleton.
      * @param helper The helper.
      * @return The unify arguments.
      */
-    static int[] unifyArgsLinear(Clause clause, Optimization[] helper) {
-        if (!(clause.head instanceof SkelCompound))
+    static int[] unifyArgsLinear(Object molec, Optimization[] helper) {
+        if (!(molec instanceof SkelCompound))
             return null;
-        SkelCompound mc = (SkelCompound) clause.head;
+        SkelCompound mc = (SkelCompound) molec;
         if (helper.length == 0)
             return valueOfLinear(mc.args.length);
         int i = mc.args.length - 1;
@@ -315,14 +321,14 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param clause The clause.
+     * @param molec The head skeleton.
      * @param helper The helper.
      * @return The unify arguments.
      */
-    static int[] unifyArgsTerm(Clause clause, Optimization[] helper) {
-        if (!(clause.head instanceof SkelCompound))
+    static int[] unifyArgsTerm(Object molec, Optimization[] helper) {
+        if (!(molec instanceof SkelCompound))
             return null;
-        SkelCompound mc = (SkelCompound) clause.head;
+        SkelCompound mc = (SkelCompound) molec;
         if (helper.length == 0)
             return valueOfTerm(mc.args.length);
         int i = mc.args.length - 1;

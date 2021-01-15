@@ -80,6 +80,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     public final static String OP_SYS_USAGE = "sys_usage";
     private final static String OP_SYS_NOINDEX = "sys_noindex";
     private final static String OP_SYS_NOSTACK = "sys_nostack";
+    private final static String OP_SYS_NOEXTRA = "sys_noextra";
     private final static String OP_SYS_NOHEAD = "sys_nohead";
 
     private final static int PROP_VISIBLE = 0;
@@ -108,7 +109,8 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static int PROP_SYS_USAGE = 18;
     private final static int PROP_SYS_NOINDEX = 19;
     private final static int PROP_SYS_NOSTACK = 20;
-    private final static int PROP_SYS_NOHEAD = 21;
+    private final static int PROP_SYS_NOEXTRA = 21;
+    private final static int PROP_SYS_NOHEAD = 22;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -151,6 +153,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_SYS_USAGE, 1), new PropertyPredicate(PROP_SYS_USAGE));
         DEFAULT.add(new StoreKey(OP_SYS_NOINDEX, 0), new PropertyPredicate(PROP_SYS_NOINDEX));
         DEFAULT.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
+        DEFAULT.add(new StoreKey(OP_SYS_NOEXTRA, 0), new PropertyPredicate(PROP_SYS_NOEXTRA));
         DEFAULT.add(new StoreKey(OP_SYS_NOHEAD, 0), new PropertyPredicate(PROP_SYS_NOHEAD));
     }
 
@@ -337,10 +340,18 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_NOEXTRA:
+                fun = pick.del;
+                if ((fun instanceof AbstractDefined) &&
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NEXV) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NOEXTRA)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
                 if ((fun instanceof AbstractDefined) &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NHED) != 0) {
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NHST) != 0) {
                     return new Object[]{new SkelAtom(OP_SYS_NOHEAD)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
@@ -450,10 +461,15 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NSTK;
                 return true;
+            case PROP_SYS_NOEXTRA:
+                fun = pick.del;
+                AbstractDefined.checkDefinedWrite(fun, pick);
+                fun.subflags |= AbstractDefined.MASK_DEFI_NEXV;
+                return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NHED;
+                fun.subflags |= AbstractDefined.MASK_DEFI_NHST;
                 return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
@@ -558,10 +574,15 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NSTK;
                 return true;
+            case PROP_SYS_NOEXTRA:
+                fun = pick.del;
+                AbstractDefined.checkDefinedWrite(fun, pick);
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NEXV;
+                return true;
             case PROP_SYS_NOHEAD:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NHED;
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NHST;
                 return true;
             default:
                 throw new IllegalArgumentException("illegal prop");

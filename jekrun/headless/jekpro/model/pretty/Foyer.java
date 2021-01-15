@@ -89,11 +89,12 @@ public class Foyer extends Enforced {
 
     public final static String OP_COMPARE = "compare";
 
-    public final static int MASK_FOYER_CEXP = 0x00000020;
+    public final static int MASK_FOYER_CEXP = 0x00000010;
+    public final static int MASK_FOYER_NHST = 0x00000020;
+    public final static int MASK_FOYER_NEXV = 0x00000040;
 
     public final static int MASK_FOYER_NIDX = 0x00000100;
     public final static int MASK_FOYER_NSTK = 0x00000200;
-    public final static int MASK_FOYER_NHED = 0x00000400;
     public final static int MASK_FOYER_NIST = 0x00000800;
 
     public final static int MASK_FOYER_SMRY = 0x00001000;

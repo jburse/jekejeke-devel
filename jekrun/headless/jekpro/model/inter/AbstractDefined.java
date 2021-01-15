@@ -75,7 +75,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_NSTK = 0x00000800;
 
     public final static int MASK_DEFI_NIDX = 0x00001000;
-    public final static int MASK_DEFI_NHED = 0x00004000;
+    public final static int MASK_DEFI_NHST = 0x00002000;
+    public final static int MASK_DEFI_NEXV = 0x00004000;
     public final static int MASK_DEFI_NIST = 0x00008000;
 
     public final static int MASK_DEFI_CALL = AbstractDefined.MASK_DEFI_STOP |
@@ -123,8 +124,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
             subflags |= AbstractDefined.MASK_DEFI_NIDX;
         if ((flags & Foyer.MASK_FOYER_NSTK) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NSTK;
-        if ((flags & Foyer.MASK_FOYER_NHED) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NHED;
+        if ((flags & Foyer.MASK_FOYER_NHST) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NHST;
+        if ((flags & Foyer.MASK_FOYER_NEXV) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NEXV;
         if ((flags & Foyer.MASK_FOYER_NIST) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NIST;
     }
