@@ -1,13 +1,17 @@
 package jekpro.model.pretty;
 
 import jekpro.model.inter.Engine;
+import jekpro.model.inter.StackElement;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.molec.OperatorSearch;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.EvaluableElem;
 import jekpro.reference.structure.ForeignAtom;
-import jekpro.tools.term.*;
+import jekpro.tools.term.PositionKey;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -1177,15 +1181,19 @@ public class PrologReader {
     /**
      * <p>Perform the singletons style check.</p>
      *
-     * @param lr   The reader.
+     * @param term The head skeleton.
      * @param anon The anonymous variables.
      * @param en   The engine.
      * @throws EngineMessage Shit happens.
      */
-    public static void checkSingleton(Reader lr,
+    public static void checkSingleton(Object term,
                                       MapHashLink<String, SkelVar> anon,
                                       Engine en)
             throws EngineMessage, EngineException {
+        SkelAtom sa = StackElement.callableToName(term);
+        AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
+        if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) != 0)
+            return;
         try {
             MapEntry<String, SkelVar> entry =
                     (anon != null ? anon.getFirstEntry() : null);
@@ -1195,7 +1203,7 @@ public class PrologReader {
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
             }
         } catch (EngineMessage x) {
-            PositionKey pos = PositionKey.createPos(lr);
+            PositionKey pos = sa.getPosition();
             EngineException y = new EngineException(x,
                     EngineException.fetchLoc(EngineException.fetchStack(en),
                             pos, en), EngineException.OP_WARNING

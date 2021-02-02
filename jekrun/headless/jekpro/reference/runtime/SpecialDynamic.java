@@ -114,8 +114,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                 return true;
             case SPECIAL_ASSERTZ:
                 AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
-                        AbstractDefined.OPT_CHCK_ASSE |
-                        AbstractDefined.OPT_ACTI_BOTT, en);
+                        AbstractDefined.OPT_CHCK_ASSE | AbstractDefined.OPT_ACTI_BOTT, en);
                 return true;
             case SPECIAL_ABOLISH_PREDICATE:
                 temp = ((SkelCompound) en.skel).args;

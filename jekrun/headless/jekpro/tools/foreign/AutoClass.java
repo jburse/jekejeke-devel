@@ -318,7 +318,7 @@ public final class AutoClass extends AbstractAuto {
                             }
                         }
                         Object molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
-                        Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, molec, en);
+                        Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, head, molec, en);
                         clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
                     }
                     for (int i = 0; i < dels.length; i++) {

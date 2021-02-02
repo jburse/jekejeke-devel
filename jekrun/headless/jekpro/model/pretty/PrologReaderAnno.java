@@ -5,7 +5,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelCompoundLineable;
 import matula.util.data.ListArray;
 import matula.util.regex.CodeType;
 import matula.util.regex.ScannerError;

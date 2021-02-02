@@ -5,6 +5,7 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
@@ -478,21 +479,33 @@ public abstract class AbstractDefined extends AbstractDelegate {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
         SupervisorCopy ec = en.visor.getCopy();
-        ec.vars = null;
-        ec.flags = 0;
-        Object molec = ec.copyTermNew(temp[0], ref);
-        MapHashLink<String, SkelVar> vars;
-        if ((flags & OPT_ARGS_ASOP) != 0) {
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
+            ec.vars = null;
+            ec.anon = null;
+            ec.flags = SupervisorCopy.MASK_COPY_SING;
+            Object molec = ec.copyTermNew(temp[0], ref);
             MapHash<BindUniv, String> print =
                     SpecialRef.decodeAssertOptions(temp[1], ref, en);
-            vars = SupervisorCopy.copyVarsUniv(ec.vars, print);
+            MapHashLink<String, SkelVar> vars =
+                    SupervisorCopy.copyVarsUniv(ec.vars, print);
+            MapHashLink<String, SkelVar> anon =
+                    SupervisorCopy.copyVarsUniv(ec.anon, print);
+            ec.vars = null;
+            ec.anon = null;
+            Object term = PreClause.clauseToHead(molec, en);
+            PrologReader.checkSingleton(term, anon, en);
+            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            clause.vars = vars;
+            clause.assertRef(flags, en);
         } else {
-            vars = null;
+            ec.vars = null;
+            ec.flags = 0;
+            Object molec = ec.copyTermNew(temp[0], ref);
+            ec.vars = null;
+            Object term = PreClause.clauseToHead(molec, en);
+            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            clause.assertRef(flags, en);
         }
-        ec.vars = null;
-        Clause clause = PreClause.determineCompiled(flags, molec, en);
-        clause.vars = vars;
-        clause.assertRef(flags, en);
     }
 
     /**

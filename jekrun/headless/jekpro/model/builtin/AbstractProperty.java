@@ -228,9 +228,9 @@ public abstract class AbstractProperty<T> {
      * <p>The term is passed in skel and display.</p>
      * <p>The name is returned in skel.</p>
      *
-     * @param t     The term skeleton.
-     * @param d     The term display.
-     * @param en    The engine.
+     * @param t  The term skeleton.
+     * @param d  The term display.
+     * @param en The engine.
      * @return The length.
      * @throws EngineMessage The indicator is not wellformed.
      */

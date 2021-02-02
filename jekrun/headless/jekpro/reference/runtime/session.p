@@ -215,7 +215,7 @@ sys_answer_show(N, R, Response) :-
    (  L == ; -> set_thread_flag(Thread, sys_tprompt, off)
    ;  L == '' -> set_thread_flag(Thread, sys_tprompt, answer_cut)
    ;  L == ? -> sys_answer_help
-   ;  term_atom(G, L, [terminator(period)]), once(sys_ignore(G))),
+   ;  term_atom(G, L, [terminator(period)]), must(sys_ignore(G))),
    current_thread_flag(Thread, sys_tprompt, Response), Response \== on.
 
 % sys_answer_help
@@ -225,18 +225,30 @@ sys_answer_help :-
    get_property(P, 'query.help', V),
    write(V), nl.
 
+/**
+ * must(A):
+ * The predicate succeeds once if A succeeds. Otherwise,
+ * the predicate throws an error.
+ */
+% must(Goal)
+:- public must/1.
+:- meta_predicate must(0).
+must(X) :- X, !.
+must(_) :-
+   throw(error(syntax_error(directive_failed), _)).
+
 /****************************************************************/
 /* Error Display                                                */
 /****************************************************************/
 
 % sys_error_cause(+Term)
-:- private sys_error_cause/1.
+:- public sys_error_cause/1.
 sys_error_cause(cause(_, R)) :- !,
    sys_error_stack(R).
 sys_error_cause(_).
 
 % sys_error_stack(+Term)
-:- private sys_error_stack/1.
+:- public sys_error_stack/1.
 sys_error_stack(E) :-
    current_error(T),
    print_stack_trace(T, E).

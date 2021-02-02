@@ -92,16 +92,12 @@ public abstract class AbstractSource {
     public final static int MASK_SRC_VSPR = 0x00000004;
     public final static int MASK_SRC_VSPU = 0x00000008;
 
-    public final static int MASK_SRC_MKDT = 0x00000010;
-    public final static int MASK_SRC_FILL = 0x00000020;
-    public final static int MASK_SRC_HINT = 0x00000040;
-    public final static int MASK_SRC_SCND = 0x00000080;
+    public final static int MASK_SRC_SCND = 0x00000010;
 
     public final static int MASK_SRC_NSTY = 0x00000100;
 
     /* combined source flags */
     public final static int MASK_SRC_VISI = MASK_SRC_VSPR | MASK_SRC_VSPU;
-    public final static int MASK_SRC_ANNO = MASK_SRC_MKDT | MASK_SRC_FILL | MASK_SRC_HINT;
 
     /* import relationship flags */
     public final static int MASK_IMPT_AUTO = 0x00000001;
@@ -330,8 +326,6 @@ public abstract class AbstractSource {
 
         if (locator != null)
             locator.clearPositions();
-        resetBit(AbstractSource.MASK_SRC_MKDT);
-        resetBit(AbstractSource.MASK_SRC_FILL);
         utildouble = ReadOpts.UTIL_CODES;
         utilback = ReadOpts.UTIL_ERROR;
         utilsingle = ReadOpts.UTIL_ATOM;
@@ -352,28 +346,14 @@ public abstract class AbstractSource {
      */
     public void loadModule(Reader lr, Engine en, boolean rec)
             throws EngineMessage, EngineException {
-        PrologReader rd = null;
+        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
+        rd.setEngineRaw(en);
         for (; ; ) {
             try {
-                AbstractSource src = en.visor.peekStack();
                 Object val;
                 int flags = PrologReader.FLAG_SING;
-                if ((src.getBits() & AbstractSource.MASK_SRC_FILL) != 0)
-                    flags |= PrologWriter.FLAG_FILL;
-                if ((src.getBits() & AbstractSource.MASK_SRC_MKDT) != 0)
-                    flags |= PrologWriter.FLAG_MKDT;
                 if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
                     flags |= PrologReader.FLAG_NEWV;
-                if (rd == null ||
-                        (rd.getFlags() & PrologWriter.FLAG_FILL) !=
-                                (flags & PrologWriter.FLAG_FILL)) {
-                    if ((flags & PrologWriter.FLAG_FILL) == 0) {
-                        rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                    } else {
-                        rd = en.store.foyer.createReader(Foyer.IO_ANNO);
-                    }
-                    rd.setEngineRaw(en);
-                }
                 rd.setFlags(flags);
                 rd.setSource(en.visor.peekStack());
                 try {
@@ -410,10 +390,10 @@ public abstract class AbstractSource {
                         pre.molec = sc.args[0];
                         FileText.executeDirective(lr, pre, en);
                     } else {
-                        if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) == 0)
-                            PrologReader.checkSingleton(lr, pre.anon, en);
+                        Object term = PreClause.clauseToHead(pre.molec, en);
+                        PrologReader.checkSingleton(term, pre.anon, en);
                         Clause clause = PreClause.determineCompiled(
-                                AbstractDefined.OPT_PERF_CNLT, pre.molec, en);
+                                AbstractDefined.OPT_PERF_CNLT, term, pre.molec, en);
                         clause.vars = pre.vars;
                         clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
                     }

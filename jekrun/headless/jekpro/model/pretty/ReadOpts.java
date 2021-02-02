@@ -246,7 +246,7 @@ public final class ReadOpts {
      * @return True if the options could be unified.
      * @throws EngineException Auto load problem.
      */
-    public static boolean decodeReadOptions(Object t, Display d,
+    public static boolean decodeReadResults(Object t, Display d,
                                             Object t2, Display d2,
                                             Engine en,
                                             PrologReader rd)
@@ -264,17 +264,20 @@ public final class ReadOpts {
             if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLES)) {
-                if (!BindUniv.unifyTerm(termToList(t2, en.store), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(termToList(t2, en.store), d2,
+                        ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
-                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2,
+                        ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
-                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display, en))
+                if (!BindUniv.unifyTerm(SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2,
+                        ((SkelCompound) en.skel).args[0], en.display, en))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&

@@ -13,6 +13,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
@@ -72,6 +73,7 @@ public final class SpecialRef extends AbstractSpecial {
     private final static int SPECIAL_SET_REF_PROPERTY = 9;
     private final static int SPECIAL_RESET_REF_PROPERTY = 10;
     private final static int SPECIAL_COMPILABLE_REF = 11;
+    private final static int SPECIAL_COMPILABLE_REF_OPT = 12;
 
     /**
      * <p>Create a special internal.</p>
@@ -147,8 +149,7 @@ public final class SpecialRef extends AbstractSpecial {
                 return true;
             case SPECIAL_CLAUSE_REF:
                 return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
-                        AbstractDefined.OPT_ACTI_WRIT |
-                        AbstractDefined.OPT_RSLT_CREF, en);
+                        AbstractDefined.OPT_ACTI_WRIT | AbstractDefined.OPT_RSLT_CREF, en);
             case SPECIAL_SYS_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -202,6 +203,15 @@ public final class SpecialRef extends AbstractSpecial {
                 if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
+            case SPECIAL_COMPILABLE_REF_OPT:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
+                        AbstractDefined.OPT_CHCK_DEFN | AbstractDefined.OPT_ARGS_ASOP |
+                        AbstractDefined.OPT_STYL_DECL, en);
+                if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
+                    return false;
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -227,27 +237,40 @@ public final class SpecialRef extends AbstractSpecial {
      * @return The new clause..
      * @throws EngineMessage Validation Error.
      */
-    private static Clause compileClause(int flags, Engine en)
+    public static Clause compileClause(int flags, Engine en)
             throws EngineMessage, EngineException {
         Object[] temp = ((SkelCompound) en.skel).args;
         Display ref = en.display;
         SupervisorCopy ec = en.visor.getCopy();
-        ec.vars = null;
-        ec.flags = 0;
-        Object molec = ec.copyTermNew(temp[0], ref);
-        MapHashLink<String, SkelVar> vars;
         if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
+            ec.vars = null;
+            ec.anon = null;
+            ec.flags = SupervisorCopy.MASK_COPY_SING;
+            Object molec = ec.copyTermNew(temp[0], ref);
             MapHash<BindUniv, String> print =
                     SpecialRef.decodeAssertOptions(temp[2], ref, en);
-            vars = SupervisorCopy.copyVarsUniv(ec.vars, print);
+            MapHashLink<String, SkelVar> vars =
+                    SupervisorCopy.copyVarsUniv(ec.vars, print);
+            MapHashLink<String, SkelVar> anon =
+                    SupervisorCopy.copyVarsUniv(ec.anon, print);
+            ec.vars = null;
+            ec.anon = null;
+            Object term = PreClause.clauseToHead(molec, en);
+            PrologReader.checkSingleton(term, anon, en);
+            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            clause.vars = vars;
+            return clause;
         } else {
-            vars = null;
+            ec.vars = null;
+            ec.flags = 0;
+            Object molec = ec.copyTermNew(temp[0], ref);
+            ec.vars = null;
+            Object term = PreClause.clauseToHead(molec, en);
+            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            return clause;
         }
-        ec.vars = null;
-        Clause clause = PreClause.determineCompiled(flags, molec, en);
-        clause.vars = vars;
-        return clause;
     }
+
 
     /***************************************************************/
     /* High-Level Clause Access/Modification                       */

@@ -1,6 +1,5 @@
 package jekpro.frequent.stream;
 
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -238,7 +237,7 @@ public final class ForeignTerm {
         Display ref = AbstractSkel.createMarker(val, false);
         try {
             if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
-                if (!ReadOpts.decodeReadOptions(AbstractTerm.getSkel(opt),
+                if (!ReadOpts.decodeReadResults(AbstractTerm.getSkel(opt),
                         AbstractTerm.getDisplay(opt), val, ref, en, rd))
                     return null;
             }

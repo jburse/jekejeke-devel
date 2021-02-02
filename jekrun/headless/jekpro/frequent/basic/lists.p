@@ -15,11 +15,11 @@
  * Y = [1,2]
  *
  * The predicates append/3, reverse/2, member/2, select/3, last/2
- * and last/3 work directly with lists. The predicates length/2, nth0/3,
- * nth0/4, nth1/3 and nth1/4 take also a length respective index into
- * account. The predicates intersection/3 and union/3 provide further
- * list operations. Since the later predicates are member/2 based,
- * they require ground lists.
+ * and last/3 work directly with lists. The predicates length/2,
+ * nth0/3, nth0/4, nth1/3 and nth1/4 take also a length respective
+ * index into account. The predicates subtract/3, intersection/3,
+ * union/3 and symdiff/3 provide further list operations. To work
+ * correctly they require ground lists.
  *
  * Examples:
  * ?- intersection([2,3],[1,2],X).
@@ -28,10 +28,12 @@
  * ?- union([2,3],[1,2],X).
  * X = [3, 1, 2]
  *
- * The ground list based implementations might differ from other
- * implementations since they do not simply fail or loop if the leading
- * argument is not a ground list. Instead, they throw either an instantiation
- * error or type error to provide more safety.
+ * Further ground list based predicates are subset/2, disjoint/2 and
+ * equal/2. The implementations for the ground list based predicates
+ * might differ from other implementations since they do not simply
+ * fail or loop if the leading argument is not a ground list. Instead,
+ * they throw either an instantiation error or type error to
+ * provide more safety.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

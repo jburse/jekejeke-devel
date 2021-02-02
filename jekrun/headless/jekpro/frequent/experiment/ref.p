@@ -169,9 +169,16 @@ ref_property(I, R) :-
 
 /**
  * compilable_ref(C, R):
+ * compilable_ref(C, R, O):
  * The predicate compiles the term C into a new clause reference R.
  * An undefined head predicate will be turned into a static predicate.
+ * The ternary predicate allows assert options O. For a list of options
+ * see the API documentation.
  */
 :- public compilable_ref/2.
 :- meta_predicate compilable_ref(-1, ?).
 :- special(compilable_ref/2, 'SpecialRef', 11).
+
+:- public compilable_ref/3.
+:- meta_predicate compilable_ref(-1, ?, ?).
+:- special(compilable_ref/3, 'SpecialRef', 12).

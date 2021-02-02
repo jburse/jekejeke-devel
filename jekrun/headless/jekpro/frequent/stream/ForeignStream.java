@@ -88,9 +88,9 @@ public final class ForeignStream {
     /**
      * <p>Open the stream from the given socket, mode and options.</p>
      *
-     * @param sock  The socket.
-     * @param mode  The mode.
-     * @param opt   The options.
+     * @param sock The socket.
+     * @param mode The mode.
+     * @param opt  The options.
      * @return The created stream, or null if not modified.
      * @throws IOException        IO error.
      * @throws ClassCastException Validation error.

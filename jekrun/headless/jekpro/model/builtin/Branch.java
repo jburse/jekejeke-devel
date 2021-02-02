@@ -32,7 +32,7 @@ public abstract class Branch extends AbstractBranch {
      * <p>Create the branch.</p>
      */
     public Branch() {
-        setRelease("JEKPR414RUN7");
+        setRelease("JEKPR515RUN0");
         Properties resources = LangProperties.getLang(Branch.class, "description", Locale.getDefault());
         setLang(resources.getProperty(AbstractBundle.PROP_PRODUCT_LANG));
         setFlags(AbstractBranch.MASK_BRAN_NOTR);

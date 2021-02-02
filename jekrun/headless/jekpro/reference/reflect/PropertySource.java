@@ -13,7 +13,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractFile;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.pretty.WriteOpts;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
 import jekpro.reference.bootload.ForeignPath;
@@ -83,8 +82,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     private final static String OP_USE_PACKAGE = "use_package";
     public final static String OP_SYS_SOURCE_NAME = "sys_source_name";
     public final static String OP_SYS_LINK = "sys_link";
-
-    private final static String OP_SYS_SOURCE_ANNOTATION = "sys_source_annotation";
     private final static String OP_SYS_MODULE = "sys_module";
 
     private static final int PROP_SHORT_NAME = 0;
@@ -103,9 +100,7 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
     private static final int PROP_USE_PACKAGE = 12;
     private static final int PROP_SYS_SOURCE_NAME = 13;
     private static final int PROP_SYS_LINK = 14;
-
-    private static final int PROP_SYS_SOURCE_ANNOTATION = 15;
-    private static final int PROP_SYS_MODULE = 16;
+    private static final int PROP_SYS_MODULE = 15;
 
     static {
         DEFAULT.add(new StoreKey(OP_SHORT_NAME, 1), new PropertySource(PROP_SHORT_NAME));
@@ -129,7 +124,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_DEFL));
         DEFAULT.add(new StoreKey(OP_SYS_LINK, 2), new PropertySource(PROP_SYS_LINK, AbstractProperty.MASK_PROP_SHOW));
 
-        DEFAULT.add(new StoreKey(OP_SYS_SOURCE_ANNOTATION, 1), new PropertySource(PROP_SYS_SOURCE_ANNOTATION));
         DEFAULT.add(new StoreKey(OP_SYS_MODULE, 1), new PropertySource(PROP_SYS_MODULE));
     }
 
@@ -357,22 +351,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
                 vals = new Object[list.size()];
                 list.toArray(vals);
                 return vals;
-            case PROP_SYS_SOURCE_ANNOTATION:
-                flags = src.getBits();
-                int anno = 0;
-                if ((flags & AbstractSource.MASK_SRC_MKDT) != 0)
-                    anno |= WriteOpts.ANNO_MKDT;
-                if ((flags & AbstractSource.MASK_SRC_FILL) != 0)
-                    anno |= WriteOpts.ANNO_FILL;
-                if ((flags & AbstractSource.MASK_SRC_HINT) != 0)
-                    anno |= WriteOpts.ANNO_HINT;
-                if (anno != 0) {
-                    return new Object[]{AbstractTerm.createMolec(new SkelCompound(
-                            new SkelAtom(OP_SYS_SOURCE_ANNOTATION),
-                            WriteOpts.annoToTerm(anno)), Display.DISPLAY_CONST)};
-                } else {
-                    return AbstractBranch.FALSE_PROPERTY;
-                }
             case PROP_SYS_MODULE:
                 s = src.getFullName();
                 if (Branch.OP_USER.equals(s))
@@ -453,12 +431,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
             case PROP_SYS_LINK:
                 /* can't modify */
                 return false;
-
-            case PROP_SYS_SOURCE_ANNOTATION:
-                flags = PropertySource.derefAndCastAnno(m, d, en);
-                src.resetBit(AbstractSource.MASK_SRC_ANNO);
-                src.setBit(flags);
-                return true;
             case PROP_SYS_MODULE:
                 /* can't modify */
                 return false;
@@ -531,10 +503,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
             case PROP_SYS_LINK:
                 /* can't modify */
                 return false;
-
-            case PROP_SYS_SOURCE_ANNOTATION:
-                src.resetBit(AbstractSource.MASK_SRC_ANNO);
-                return true;
             case PROP_SYS_MODULE:
                 /* can't modify */
                 return false;
@@ -699,43 +667,6 @@ public final class PropertySource extends AbstractProperty<AbstractSource> {
             String fun = AbstractFile.slashToOsString(m, d, true, en);
             fun = fun.replace(CacheModule.OP_CHAR_OS, CacheSubclass.OP_CHAR_SYN);
             return fun;
-        } else {
-            EngineMessage.checkInstantiated(m);
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_FLAG_VALUE, m), d);
-        }
-    }
-
-    /**
-     * <p>Deref and cast to annotation options.</p>
-     *
-     * @param m  The term skeleton.
-     * @param d  The term display.
-     * @param en The engine.
-     * @return The annotation options.
-     * @throws EngineMessage      Shit happens.
-     * @throws ClassCastException Shit happens.
-     */
-    private static int derefAndCastAnno(Object m, Display d, Engine en)
-            throws EngineMessage, ClassCastException {
-        en.skel = m;
-        en.display = d;
-        en.deref();
-        m = en.skel;
-        d = en.display;
-        if (m instanceof SkelCompound &&
-                ((SkelCompound) m).args.length == 1 &&
-                ((SkelCompound) m).sym.fun.equals(OP_SYS_SOURCE_ANNOTATION)) {
-            m = ((SkelCompound) m).args[0];
-            int anno = WriteOpts.termToAnno(m, d, en);
-            int flags = 0;
-            if ((anno & WriteOpts.ANNO_MKDT) != 0)
-                flags |= AbstractSource.MASK_SRC_MKDT;
-            if ((anno & WriteOpts.ANNO_FILL) != 0)
-                flags |= AbstractSource.MASK_SRC_FILL;
-            if ((anno & WriteOpts.ANNO_HINT) != 0)
-                flags |= AbstractSource.MASK_SRC_HINT;
-            return flags;
         } else {
             EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.domainError(
