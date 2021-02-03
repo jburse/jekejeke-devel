@@ -17,7 +17,6 @@ import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.PreClause;
 import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -63,17 +62,16 @@ import matula.util.data.MapHashLink;
 public final class SpecialRef extends AbstractSpecial {
     private final static int SPECIAL_ASSERTABLE_REF = 0;
     private final static int SPECIAL_ASSUMABLE_REF = 1;
-    private final static int SPECIAL_RECORDA_REF = 2;
-    private final static int SPECIAL_RECORDZ_REF = 3;
-    private final static int SPECIAL_ERASE_REF = 4;
-    private final static int SPECIAL_COMPILED_REF = 5;
-    private final static int SPECIAL_CLAUSE_REF = 6;
-    private final static int SPECIAL_SYS_REF_PROPERTY = 7;
-    private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 8;
-    private final static int SPECIAL_SET_REF_PROPERTY = 9;
-    private final static int SPECIAL_RESET_REF_PROPERTY = 10;
-    private final static int SPECIAL_COMPILABLE_REF = 11;
-    private final static int SPECIAL_COMPILABLE_REF_OPT = 12;
+    private final static int SPECIAL_COMPILABLE_REF = 2;
+    private final static int SPECIAL_RECORDA_REF = 3;
+    private final static int SPECIAL_RECORDZ_REF = 4;
+    private final static int SPECIAL_ERASE_REF = 5;
+    private final static int SPECIAL_COMPILED_REF = 6;
+    private final static int SPECIAL_CLAUSE_REF = 7;
+    private final static int SPECIAL_SYS_REF_PROPERTY = 8;
+    private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 9;
+    private final static int SPECIAL_SET_REF_PROPERTY = 10;
+    private final static int SPECIAL_RESET_REF_PROPERTY = 11;
 
     /**
      * <p>Create a special internal.</p>
@@ -111,6 +109,14 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_THLC |
                         AbstractDefined.OPT_CHCK_ASSE, en);
+                if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
+                    return false;
+                return true;
+            case SPECIAL_COMPILABLE_REF:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
+                        AbstractDefined.OPT_CHCK_DEFN, en);
                 if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
@@ -195,23 +201,6 @@ public final class SpecialRef extends AbstractSpecial {
                 EngineMessage.checkCallable(en.skel, en.display);
                 SpecialRef.resetRefProp(ptr, en.skel, en.display, en);
                 return true;
-            case SPECIAL_COMPILABLE_REF:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
-                        AbstractDefined.OPT_CHCK_DEFN, en);
-                if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
-                    return false;
-                return true;
-            case SPECIAL_COMPILABLE_REF_OPT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
-                        AbstractDefined.OPT_CHCK_DEFN | AbstractDefined.OPT_ARGS_ASOP |
-                        AbstractDefined.OPT_STYL_DECL, en);
-                if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
-                    return false;
-                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -255,9 +244,9 @@ public final class SpecialRef extends AbstractSpecial {
                     SupervisorCopy.copyVarsUniv(ec.anon, print);
             ec.vars = null;
             ec.anon = null;
-            Object term = PreClause.clauseToHead(molec, en);
+            Object term = Clause.clauseToHead(molec, en);
             PrologReader.checkSingleton(term, anon, en);
-            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
             clause.vars = vars;
             return clause;
         } else {
@@ -265,8 +254,8 @@ public final class SpecialRef extends AbstractSpecial {
             ec.flags = 0;
             Object molec = ec.copyTermNew(temp[0], ref);
             ec.vars = null;
-            Object term = PreClause.clauseToHead(molec, en);
-            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            Object term = Clause.clauseToHead(molec, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
             return clause;
         }
     }

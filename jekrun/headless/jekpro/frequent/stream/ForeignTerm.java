@@ -204,7 +204,7 @@ public final class ForeignTerm {
                 ro.setReadOpts(rd);
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                rd.setSource(en.visor.peekStack());
+                rd.setDefaults(en.visor.peekStack());
                 if ((flags & PrologReader.FLAG_TEOF) != 0)
                     rd.flags |= PrologReader.FLAG_TEOF;
             }

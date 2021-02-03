@@ -1,6 +1,8 @@
 package jekpro.reference.runtime;
 
+import jekpro.frequent.experiment.SpecialRef;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -8,6 +10,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.PrologWriter;
+import jekpro.model.rope.Clause;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -48,6 +51,7 @@ import matula.util.data.MapHashLink;
  */
 public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_SYS_QUOTED_VAR = 0;
+    private final static int SPECIAL_ASSERTZ_OPT = 1;
 
     public final static int MASK_MODE_PRMT = 0x0000F000;
 
@@ -88,6 +92,10 @@ public final class SpecialSession extends AbstractSpecial {
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 if (!BindUniv.unifyTerm(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
+                return true;
+            case SPECIAL_ASSERTZ_OPT:
+                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
+                        AbstractDefined.OPT_ACTI_BOTT | AbstractDefined.OPT_ARGS_ASOP, en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);

@@ -346,69 +346,10 @@ public abstract class AbstractSource {
      */
     public void loadModule(Reader lr, Engine en, boolean rec)
             throws EngineMessage, EngineException {
-        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
-        rd.setEngineRaw(en);
-        for (; ; ) {
-            try {
-                Object val;
-                int flags = PrologReader.FLAG_SING;
-                if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0)
-                    flags |= PrologReader.FLAG_NEWV;
-                rd.setFlags(flags);
-                rd.setSource(en.visor.peekStack());
-                try {
-                    try {
-                        rd.getScanner().setReader(lr);
-                        val = rd.parseHeadStatement();
-                    } catch (ScannerError y) {
-                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
-                        rd.parseTailError(y);
-                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
-                        PositionKey pos = PositionKey.createPos(lr);
-                        throw new EngineException(x,
-                                EngineException.fetchPos(EngineException.fetchLoc(
-                                        EngineException.fetchStack(en),
-                                        pos, en), line, en)
-                        );
-                    }
-                } catch (IOException y) {
-                    throw EngineMessage.mapIOProblem(y);
-                }
-                if (val instanceof SkelAtom &&
-                        ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
-                    break;
-                ListArray<PreClause> res = FileText.expandTermAndWrap(rd, val, en);
-                if (res == null)
-                    continue;
-                for (int i = res.size() - 1; i >= 0; i--) { /* trick for yfx */
-                    PreClause pre = res.get(i);
-                    val = pre.molec;
-                    if (val instanceof SkelCompound &&
-                            ((SkelCompound) val).args.length == 1 &&
-                            ((SkelCompound) val).sym.fun.equals(PreClause.OP_TURNSTILE)) {
-                        SkelCompound sc = (SkelCompound) val;
-                        pre.molec = sc.args[0];
-                        FileText.executeDirective(lr, pre, en);
-                    } else {
-                        Object term = PreClause.clauseToHead(pre.molec, en);
-                        PrologReader.checkSingleton(term, pre.anon, en);
-                        Clause clause = PreClause.determineCompiled(
-                                AbstractDefined.OPT_PERF_CNLT, term, pre.molec, en);
-                        clause.vars = pre.vars;
-                        clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
-                    }
-                }
-            } catch (EngineMessage x) {
-                PositionKey pos = PositionKey.createPos(lr);
-                EngineException y = new EngineException(x,
-                        EngineException.fetchLoc(
-                                EngineException.fetchStack(en), pos, en));
-                if (SpecialLoad.systemConsultBreak(y, en, rec))
-                    break;
-            } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, en, rec))
-                    break;
-            }
+        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) != 0) {
+            FileText.loadStreamProlog(lr, en, rec);
+        } else {
+            FileText.loadStreamJava(lr, en, rec);
         }
     }
 

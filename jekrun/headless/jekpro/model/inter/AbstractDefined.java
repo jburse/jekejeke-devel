@@ -112,8 +112,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
     /* combined operation flags */
     public final static int OPT_PERF_CNLT = AbstractDefined.OPT_PROM_STAT |
-            AbstractDefined.OPT_CHCK_DEFN | AbstractDefined.OPT_STYL_DECL |
-            AbstractDefined.OPT_ACTI_BOTT;
+            AbstractDefined.OPT_CHCK_DEFN | AbstractDefined.OPT_STYL_DECL;
 
     /**
      * <p>Create a delegate defined.</p>
@@ -492,9 +491,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     SupervisorCopy.copyVarsUniv(ec.anon, print);
             ec.vars = null;
             ec.anon = null;
-            Object term = PreClause.clauseToHead(molec, en);
+            Object term = Clause.clauseToHead(molec, en);
             PrologReader.checkSingleton(term, anon, en);
-            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
             clause.vars = vars;
             clause.assertRef(flags, en);
         } else {
@@ -502,8 +501,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             ec.flags = 0;
             Object molec = ec.copyTermNew(temp[0], ref);
             ec.vars = null;
-            Object term = PreClause.clauseToHead(molec, en);
-            Clause clause = PreClause.determineCompiled(flags, term, molec, en);
+            Object term = Clause.clauseToHead(molec, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
             clause.assertRef(flags, en);
         }
     }

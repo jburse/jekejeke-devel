@@ -13,7 +13,6 @@ import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadForce;
 import jekpro.model.rope.LoadOpts;
-import jekpro.model.rope.PreClause;
 import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialForeign;
 import jekpro.reference.runtime.EvaluableLogic;
@@ -317,9 +316,9 @@ public final class AutoClass extends AbstractAuto {
                                         this), test, goal);
                             }
                         }
-                        Object molec = new SkelCompound(new SkelAtom(PreClause.OP_TURNSTILE), head, goal);
-                        Clause clause = PreClause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, head, molec, en);
-                        clause.assertRef(AbstractDefined.OPT_PERF_CNLT, en);
+                        Object molec = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), head, goal);
+                        Clause clause = Clause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, head, molec, en);
+                        clause.assertRef(AbstractDefined.OPT_ACTI_BOTT, en);
                     }
                     for (int i = 0; i < dels.length; i++) {
                         AbstractMember del = dels[i];
@@ -334,12 +333,12 @@ public final class AutoClass extends AbstractAuto {
                         Predicate.checkPredicateBody(pick, sa, en);
                     }
                 }
-            } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, en, rec))
-                    break;
             } catch (EngineMessage x) {
                 EngineException y = new EngineException(x, EngineException.fetchStack(en));
                 if (SpecialLoad.systemConsultBreak(y, en, rec))
+                    break;
+            } catch (EngineException x) {
+                if (SpecialLoad.systemConsultBreak(x, en, rec))
                     break;
             }
         }

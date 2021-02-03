@@ -122,11 +122,8 @@ public class PrologReader {
      *
      * @param s The source.
      */
-    public void setSource(AbstractSource s) {
+    void setSource(AbstractSource s) {
         source = s;
-        utildouble = s.utildouble;
-        utilback = s.utilback;
-        utilsingle = s.utilsingle;
     }
 
     /**
@@ -267,6 +264,18 @@ public class PrologReader {
     /*******************************************************************/
     /* Read Method                                                     */
     /*******************************************************************/
+
+    /**
+     * <p>Set the defaults for a source.</p>
+     *
+     * @param s The source.
+     */
+    public void setDefaults(AbstractSource s) {
+        setSource(s);
+        setUtilDouble(s.utildouble);
+        setUtilBack(s.utilback);
+        setUtilSingle(s.utilsingle);
+    }
 
     /**
      * <p>Read a term.</p>
