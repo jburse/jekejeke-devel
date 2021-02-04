@@ -3,6 +3,7 @@ package jekpro.model.inter;
 import jekpro.frequent.standard.SupervisorCall;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignThread;
+import jekpro.model.builtin.FlagThread;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -10,7 +11,6 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.InterfaceRope;
 import jekpro.model.rope.LoadOpts;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import matula.util.data.AbstractMap;
@@ -283,7 +283,7 @@ public class Supervisor extends AbstractLivestock {
      */
     public void setThreadPrompt(int m) {
         synchronized (this) {
-            flags = (flags & ~SpecialSession.MASK_MODE_PRMT) | m;
+            flags = (flags & ~FlagThread.MASK_MODE_PRMT) | m;
         }
     }
 

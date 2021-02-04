@@ -4,7 +4,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import matula.util.data.MapHash;
@@ -42,18 +41,28 @@ import matula.util.wire.AbstractLivestock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class FlagThread extends AbstractFlag<Thread> {
-    public final static MapHash<String, AbstractFlag<Thread>> DEFAULT
-            = new MapHash<>();
+    public final static int MASK_MODE_PRMT = 0x0000F000;
+
+    public final static int MASK_PRMT_PROF = 0x00000000;
+    public final static int MASK_PRMT_PCUT = 0x00001000;
+    public final static int MASK_PRMT_PDBG = 0x00002000;
+    public final static int MASK_PRMT_PRON = 0x00003000;
 
     public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
     public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";
     public final static String OP_FLAG_SYS_THREAD_GROUP = "sys_thread_group";
     public final static String OP_FLAG_SYS_TPROMPT = "sys_tprompt";
 
+    public final static String OP_ANSWER_CUT = "answer_cut";
+    public final static String OP_ASK_DEBUG = "ask_debug";
+
     private static final int FLAG_SYS_THREAD_NAME = 0;
     private static final int FLAG_SYS_THREAD_STATE = 1;
     private static final int FLAG_SYS_THREAD_GROUP = 2;
     private static final int FLAG_SYS_TPROMPT = 3;
+
+    public final static MapHash<String, AbstractFlag<Thread>> DEFAULT
+            = new MapHash<>();
 
     static {
         DEFAULT.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
@@ -90,7 +99,7 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(obj);
                 if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
-                return SpecialSession.promptToAtom(s.flags & SpecialSession.MASK_MODE_PRMT);
+                return promptToAtom(s.flags & MASK_MODE_PRMT);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -124,10 +133,59 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 Supervisor s = (Supervisor) AbstractLivestock.currentLivestock(obj);
                 if (s == null) return true;
 
-                s.setThreadPrompt(SpecialSession.atomToPrompt(m, d));
+                s.setThreadPrompt(atomToPrompt(m, d));
                 return true;
             default:
                 throw new IllegalArgumentException("illegal flag");
+        }
+    }
+
+    /*******************************************************************/
+    /* Prompt Conversion                                               */
+    /*******************************************************************/
+
+    /**
+     * <p>Convert a prompt mode to an atom.</p>
+     *
+     * @param m The prompt mode.
+     * @return The atom.
+     */
+    public static Object promptToAtom(int m) {
+        switch (m) {
+            case MASK_PRMT_PROF:
+                return new SkelAtom(OP_OFF);
+            case MASK_PRMT_PCUT:
+                return new SkelAtom(OP_ANSWER_CUT);
+            case MASK_PRMT_PDBG:
+                return new SkelAtom(OP_ASK_DEBUG);
+            case MASK_PRMT_PRON:
+                return new SkelAtom(OP_ON);
+            default:
+                throw new IllegalArgumentException("illegal mode");
+        }
+    }
+
+    /**
+     * <p>Convert an atom to a prompt mode.</p>
+     *
+     * @param t The atom skeleton.
+     * @param d The atom display.
+     * @return The prompt mode.
+     */
+    public static int atomToPrompt(Object t, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(t, d);
+        if (fun.equals(OP_OFF)) {
+            return MASK_PRMT_PROF;
+        } else if (fun.equals(OP_ANSWER_CUT)) {
+            return MASK_PRMT_PCUT;
+        } else if (fun.equals(OP_ASK_DEBUG)) {
+            return MASK_PRMT_PDBG;
+        } else if (fun.equals(OP_ON)) {
+            return MASK_PRMT_PRON;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    "prompt_mode", t), d);
         }
     }
 

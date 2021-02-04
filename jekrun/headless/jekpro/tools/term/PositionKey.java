@@ -65,7 +65,7 @@ public final class PositionKey implements Comparable<PositionKey> {
      * @param lr The reader.
      * @return The position key.
      */
-    public static PositionKey createPos(Reader lr) {
+    public static PositionKey createPos(Object lr) {
         String orig = OpenOpts.getPath(lr);
         if (orig != null) {
             return new PositionKey(orig, OpenOpts.getLineNumber(lr));

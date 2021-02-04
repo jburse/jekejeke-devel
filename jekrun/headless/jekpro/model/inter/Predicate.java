@@ -481,9 +481,7 @@ public final class Predicate {
             checkPredicateDiscontiguous(def, src, pick, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            sa.getPosition(), en),
-                    EngineException.OP_WARNING);
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
     }
@@ -563,9 +561,7 @@ public final class Predicate {
             checkPredicateDiscontiguous(def, src, pick, en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            sa.getPosition(), en),
-                    EngineException.OP_WARNING);
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
         try {
@@ -599,9 +595,7 @@ public final class Predicate {
             checkPredicateNumericForeign(pick);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            sa.getPosition(), en),
-                    EngineException.OP_WARNING);
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
     }
@@ -906,9 +900,8 @@ public final class Predicate {
             checkPredicateImplemented(def, pick);
         } catch (EngineMessage x) {
             PositionKey pos = PositionKey.createPos(lr);
-            EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            pos, en),
+            EngineException y = new EngineException(x, EngineException.fetchLoc(
+                    EngineException.fetchStack(en), pos, en),
                     EngineException.OP_WARNING);
             y.printStackTrace(en);
         }

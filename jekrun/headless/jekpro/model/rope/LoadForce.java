@@ -335,8 +335,7 @@ public class LoadForce {
             checkModuleStackEmpty(en);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
-                    EngineException.fetchStack(en),
-                    EngineException.OP_WARNING);
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
     }

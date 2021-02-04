@@ -334,7 +334,8 @@ public final class AutoClass extends AbstractAuto {
                     }
                 }
             } catch (EngineMessage x) {
-                EngineException y = new EngineException(x, EngineException.fetchStack(en));
+                EngineException y = new EngineException(x,
+                        EngineException.fetchStack(en));
                 if (SpecialLoad.systemConsultBreak(y, en, rec))
                     break;
             } catch (EngineException x) {

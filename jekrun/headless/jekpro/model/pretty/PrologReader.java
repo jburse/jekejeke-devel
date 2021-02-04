@@ -1200,6 +1200,8 @@ public class PrologReader {
                                       Engine en)
             throws EngineMessage, EngineException {
         SkelAtom sa = StackElement.callableToName(term);
+        if (sa == null)
+            return;
         AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
         if ((src.getBits() & AbstractSource.MASK_SRC_NSTY) != 0)
             return;
@@ -1212,11 +1214,8 @@ public class PrologReader {
                         EngineMessage.OP_SYNTAX_SINGLETON_VAR, val));
             }
         } catch (EngineMessage x) {
-            PositionKey pos = sa.getPosition();
             EngineException y = new EngineException(x,
-                    EngineException.fetchLoc(EngineException.fetchStack(en),
-                            pos, en), EngineException.OP_WARNING
-            );
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
     }

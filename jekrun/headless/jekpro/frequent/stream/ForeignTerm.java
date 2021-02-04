@@ -218,11 +218,8 @@ public final class ForeignTerm {
                     rd.parseTailError(y);
                     EngineMessage x = new EngineMessage(
                             EngineMessage.syntaxError(y.getMessage()));
-                    PositionKey pos = PositionKey.createPos(lr);
-                    throw new EngineException(x,
-                            EngineException.fetchPos(EngineException.fetchLoc(
-                                    EngineException.fetchStack(en),
-                                    pos, en), line, en));
+                    throw new EngineException(x, EngineException.fetchPos(
+                            EngineException.fetchStack(en), line, en));
                 }
             } catch (IOException y) {
                 throw EngineMessage.mapIOException(y);

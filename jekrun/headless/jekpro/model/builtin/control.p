@@ -129,6 +129,20 @@ once(X) :- X, !.
 :- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
    set_predicate_property((\+)/1, sys_meta_predicate(C)).
 
+/**
+ * must(A):
+ * The predicate succeeds once if A succeeds. Otherwise,
+ * the predicate throws an error.
+ */
+% must(Goal)
+must(X) :- X, !.
+must(_) :-
+   throw(error(syntax_error(directive_failed), _)).
+:- set_predicate_property(must/1, visible(public)).
+:- set_predicate_property(must/1, meta_predicate([0])).
+:- sys_callable_property_chk(here, sys_context/1, [sys_context(C)]),
+   set_predicate_property(must/1, sys_meta_predicate(C)).
+
 /******************************************************************/
 /* Throw                                                          */
 /******************************************************************/

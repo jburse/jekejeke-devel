@@ -195,7 +195,8 @@ final class ChoiceSpecial extends AbstractChoice {
         } catch (EngineMessage y) {
             InterpreterException ie = co.getException();
             en.fault = (ie != null ? (EngineException) ie.getException() : null);
-            EngineException x = new EngineException(y, EngineException.fetchStack(en));
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
             if (en.fault != null) {
                 en.fault = new EngineException(en.fault, x);
             } else {

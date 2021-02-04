@@ -3,6 +3,7 @@ package jekpro.model.molec;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.LoadOpts;
@@ -57,7 +58,6 @@ public final class EngineException extends Exception {
     public final static String OP_WARNING = "warning";
     public final static String OP_PRED = "pred";
     public final static String OP_PRED_MORE = "pred_more";
-    public final static String OP_PRED_ERROR = "pred_error";
     public final static String OP_PRED_FILE_LINE = "pred_file_line";
 
     private final static String OP_CAUSE = "cause";
@@ -175,9 +175,9 @@ public final class EngineException extends Exception {
      * <p>Create the back trace from the current call chain.</p>
      * <p>The following frame terms are used:</p>
      * <pre>
-     *      frame       :== "pred_file_line(" indicator "," atom "," integer ")" |
+     *      frame       :== "file_line(" atom "," integer ")" |
+     *                      "pred_file_line(" indicator "," atom "," integer ")" |
      *                      "pred(" indicator ")" |
-     *                      "pred_error" |
      *                      "pred_more(" integer ")".
      *      indicator   :== [ path ":" ] name "/" integer.
      * </pre>
@@ -193,10 +193,22 @@ public final class EngineException extends Exception {
             /* iterator and fetch pred_file_line, pred and pred_error */
             while (stack != null && k < en.store.getMaxStack()) {
                 StackElement.callGoal(stack.contskel, stack.contdisplay, en);
+                int arity = StackElement.callableToArity(en.skel);
                 SkelAtom sa = StackElement.callableToName(en.skel);
                 Object val;
-                if (sa != null) {
-                    int arity = StackElement.callableToArity(en.skel);
+                if (arity == 1 &&
+                        (sa.fun.equals(AbstractSource.OP_SYS_LOAD_STREAM) ||
+                                sa.fun.equals(AbstractSource.OP_SYS_BOOT_STREAM))) {
+                    val = ((SkelCompound) en.skel).args[0];
+                    PositionKey pos = PositionKey.createPos(val);
+                    if (pos != null) {
+                        val = new SkelCompound(new SkelAtom(OP_FILE_LINE),
+                                new SkelAtom(pos.getOrigin()),
+                                Integer.valueOf(pos.getLineNo()));
+                    } else {
+                        val = null;
+                    }
+                } else if (sa != null) {
                     val = SpecialPred.indicatorToColonSkel(sa, arity, en);
                     PositionKey pos = sa.getPosition();
                     if (pos != null) {
@@ -207,9 +219,10 @@ public final class EngineException extends Exception {
                         val = new SkelCompound(new SkelAtom(OP_PRED), val);
                     }
                 } else {
-                    val = new SkelAtom(OP_PRED_ERROR);
+                    val = null;
                 }
-                back = new SkelCompound(en.store.foyer.ATOM_CONS, val, back);
+                if (val != null)
+                    back = new SkelCompound(en.store.foyer.ATOM_CONS, val, back);
                 k++;
                 stack = StackElement.skipNoTrace(stack.contdisplay, en);
             }

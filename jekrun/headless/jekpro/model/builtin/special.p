@@ -147,7 +147,7 @@ special(I, C, K) :-
  * sys_check_style_head(I):
  * The predicate performs a body style check on the predicate indicator I.
  */
-% sys_check_style_body(+Indicator)
+% sys_check_style_head(+Indicator)
 :- special(sys_check_style_head/1, 'SpecialSpecial', 4).
 :- set_predicate_property(sys_check_style_head/1, visible(public)).
 

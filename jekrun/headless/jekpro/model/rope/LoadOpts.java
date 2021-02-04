@@ -279,7 +279,8 @@ public final class LoadOpts extends LoadForce {
             try {
                 opts.makeLoad(source, dep.key.getPath(), en);
             } catch (EngineMessage x) {
-                EngineException y = new EngineException(x, EngineException.fetchStack(en));
+                EngineException y = new EngineException(x,
+                        EngineException.fetchStack(en));
                 if (SpecialLoad.systemConsultBreak(y, en, rec))
                     break;
             } catch (EngineException x) {

@@ -72,12 +72,22 @@
 :- special(assumable_ref/2, 'SpecialRef', 1).
 
 /**
+ * compilable_ref(C, R):
+ * The predicate compiles the term C into a new clause reference R.
+ * An undefined head predicate will be turned into a static predicate.
+ */
+% compilable_ref(+Term, -Reference)
+:- public compilable_ref/2.
+:- meta_predicate compilable_ref(-1, ?).
+:- special(compilable_ref/2, 'SpecialRef', 2).
+
+/**
  * recorda_ref(R):
  * The predicate inserts the clause referenced by R at the top. The
  * predicate fails when the clause has already been recorded.
  */
 :- public recorda_ref/1.
-:- special(recorda_ref/1, 'SpecialRef', 2).
+:- special(recorda_ref/1, 'SpecialRef', 3).
 
 /**
  * recordz_ref(R):
@@ -85,7 +95,7 @@
  * predicate fails when the clause has already been recorded.
  */
 :- public recordz_ref/1.
-:- special(recordz_ref/1, 'SpecialRef', 3).
+:- special(recordz_ref/1, 'SpecialRef', 4).
 
 /**
  * erase_ref(R):
@@ -93,7 +103,7 @@
  * fails when the clause has already been erased.
  */
 :- public erase_ref/1.
-:- special(erase_ref/1, 'SpecialRef', 4).
+:- special(erase_ref/1, 'SpecialRef', 5).
 
 /**
  * compiled_ref(R, C):
@@ -102,7 +112,7 @@
  */
 :- public compiled_ref/2.
 :- meta_predicate compiled_ref(?, -1).
-:- special(compiled_ref/2, 'SpecialRef', 5).
+:- special(compiled_ref/2, 'SpecialRef', 6).
 
 /**
  * clause_ref(H, B, R):
@@ -113,7 +123,7 @@
 % clause_ref(-Callable, -Goal, -Ref)
 :- public clause_ref/3.
 :- meta_predicate clause_ref(-1, 0, ?).
-:- special(clause_ref/3, 'SpecialRef', 6).
+:- special(clause_ref/3, 'SpecialRef', 7).
 
 /**
  * clause_ref(C, R):
@@ -146,10 +156,10 @@ ref_property(I, R) :-
    sys_member(R, P).
 
 :- private sys_ref_property/2.
-:- special(sys_ref_property/2, 'SpecialRef', 7).
+:- special(sys_ref_property/2, 'SpecialRef', 8).
 
 :- private sys_ref_property_chk/3.
-:- special(sys_ref_property_chk/3, 'SpecialRef', 8).
+:- special(sys_ref_property_chk/3, 'SpecialRef', 9).
 
 /**
  * set_ref_property(R, P):
@@ -157,7 +167,7 @@ ref_property(I, R) :-
  */
 % set_ref_property(+Reference, +Property)
 :- public set_ref_property/2.
-:- special(set_ref_property/2, 'SpecialRef', 9).
+:- special(set_ref_property/2, 'SpecialRef', 10).
 
 /**
  * reset_ref_property(R, P):
@@ -165,20 +175,5 @@ ref_property(I, R) :-
  */
 % reset_ref_property(+Reference, +Property)
 :- public reset_ref_property/2.
-:- special(reset_ref_property/2, 'SpecialRef', 10).
+:- special(reset_ref_property/2, 'SpecialRef', 11).
 
-/**
- * compilable_ref(C, R):
- * compilable_ref(C, R, O):
- * The predicate compiles the term C into a new clause reference R.
- * An undefined head predicate will be turned into a static predicate.
- * The ternary predicate allows assert options O. For a list of options
- * see the API documentation.
- */
-:- public compilable_ref/2.
-:- meta_predicate compilable_ref(-1, ?).
-:- special(compilable_ref/2, 'SpecialRef', 11).
-
-:- public compilable_ref/3.
-:- meta_predicate compilable_ref(-1, ?, ?).
-:- special(compilable_ref/3, 'SpecialRef', 12).

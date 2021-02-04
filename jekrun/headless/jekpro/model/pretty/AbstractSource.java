@@ -1,27 +1,23 @@
 package jekpro.model.pretty;
 
 import derek.util.protect.LicenseError;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CacheSubclass;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.rope.*;
-import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
-import jekpro.tools.term.PositionKey;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.AbstractBundle;
 import matula.util.data.*;
-import matula.util.regex.ScannerError;
 import matula.util.system.ForeignUri;
-import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -85,6 +81,9 @@ public abstract class AbstractSource {
     public final static String OP_PRIVATE = "private";
 
     public final static String OP_END_OF_FILE = "end_of_file";
+
+    public static final String OP_SYS_LOAD_STREAM = "sys_load_stream";
+    public static final String OP_SYS_BOOT_STREAM = "sys_boot_stream";
 
     /* source flags */
     public final static int MASK_SRC_NOTR = 0x00000001;
@@ -292,9 +291,12 @@ public abstract class AbstractSource {
 
     /**
      * <p>Compute default package, name and parent.</p>
+     *
+     * @throws EngineMessage Shit happens.
      */
-    public abstract void initSource()
-            throws EngineMessage;
+    public void initSource() throws EngineMessage {
+        /* do nothing */
+    }
 
     /**
      * <p>Clear the module before a reconsult or purge.</p>
@@ -346,11 +348,51 @@ public abstract class AbstractSource {
      */
     public void loadModule(Reader lr, Engine en, boolean rec)
             throws EngineMessage, EngineException {
+        Object body;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) != 0) {
-            FileText.loadStreamProlog(lr, en, rec);
+            body = new SkelCompound(new SkelAtom(AbstractSource.OP_SYS_LOAD_STREAM), lr);
         } else {
-            FileText.loadStreamJava(lr, en, rec);
+            body = new SkelCompound(new SkelAtom(AbstractSource.OP_SYS_BOOT_STREAM), lr);
         }
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL, en);
+        int size = SupervisorCopy.displaySize(body);
+        dire.bodyToInterSkel(body, en, true);
+        AbstractUndo mark = en.bind;
+        int snap = en.number;
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
+        Display d2 = new Display(size);
+        try {
+            CallFrame ref = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
+            en.contdisplay = ref;
+            if (!en.runLoop(snap, true))
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            throw en.fault;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.fault = null;
+        en.cutChoices(snap);
+        en.releaseBind(mark);
+        if (en.fault != null)
+            throw en.fault;
     }
 
     /**
@@ -400,8 +442,7 @@ public abstract class AbstractSource {
             checkModuleNonEmpty(src);
         } catch (EngineMessage x) {
             EngineException y = new EngineException(x,
-                    EngineException.fetchStack(en),
-                    EngineException.OP_WARNING);
+                    EngineException.fetchStack(en), EngineException.OP_WARNING);
             y.printStackTrace(en);
         }
     }
