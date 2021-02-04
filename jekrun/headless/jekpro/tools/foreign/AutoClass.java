@@ -95,15 +95,14 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Consult a foreign module.</p>
      *
+     * @param lr  The buffered reader.
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public void loadModule(Reader lr,
-                           Engine en, boolean rec)
+    public void loadModule(Reader lr, Engine en)
             throws EngineMessage, EngineException {
-        super.loadModule(lr, en, rec);
+        super.loadModule(lr, en);
 
         AutoClass superjava = reexportSuperclass(en);
         AutoClass[] interfacesjava = reexportInterfaces(en);
@@ -119,7 +118,7 @@ public final class AutoClass extends AbstractAuto {
         for (int i = 0; i < interfacesjava.length; i++)
             inheritMeths(interfacesjava[i]);
 
-        defineMeths(en, rec);
+        defineMeths(en);
     }
 
     /**
@@ -260,11 +259,10 @@ public final class AutoClass extends AbstractAuto {
      * <p>Define the predicates.</p>
      *
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Engine en, boolean rec)
+    private void defineMeths(Engine en)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, ListArray<AbstractMember>> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
@@ -336,11 +334,9 @@ public final class AutoClass extends AbstractAuto {
             } catch (EngineMessage x) {
                 EngineException y = new EngineException(x,
                         EngineException.fetchStack(en));
-                if (SpecialLoad.systemConsultBreak(y, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(y, en);
             } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(x, en);
             }
         }
     }

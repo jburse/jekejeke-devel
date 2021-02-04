@@ -68,15 +68,14 @@ public final class AutoArray extends AbstractAuto {
     /**
      * <p>Consult a foreign module.</p>
      *
+     * @param lr  The buffered reader.
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    public void loadModule(Reader lr,
-                           Engine en, boolean rec)
+    public void loadModule(Reader lr, Engine en)
             throws EngineMessage, EngineException {
-        super.loadModule(lr, en, rec);
+        super.loadModule(lr, en);
 
         reexportSuperclass(en);
         reexportInterfaces(en);
@@ -85,7 +84,7 @@ public final class AutoArray extends AbstractAuto {
         meths = new MapHash<>();
         collectArrays(en);
 
-        defineMeths(en, rec);
+        defineMeths(en);
     }
 
     /**
@@ -150,11 +149,10 @@ public final class AutoArray extends AbstractAuto {
      * <p>Define the predicates.</p>
      *
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
-    private void defineMeths(Engine en, boolean rec)
+    private void defineMeths(Engine en)
             throws EngineException, EngineMessage {
         for (MapEntry<StoreKey, AbstractLense> entry = meths.getLastEntry();
              entry != null; entry = meths.predecessor(entry)) {
@@ -171,11 +169,9 @@ public final class AutoArray extends AbstractAuto {
                 Predicate.checkPredicateBody(pick, sa, en);
             } catch (EngineMessage x) {
                 EngineException y = new EngineException(x, EngineException.fetchStack(en));
-                if (SpecialLoad.systemConsultBreak(y, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(y, en);
             } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(x, en);
             }
         }
     }

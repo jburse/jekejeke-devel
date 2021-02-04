@@ -342,11 +342,10 @@ public abstract class AbstractSource {
      *
      * @param lr  The buffered reader.
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public void loadModule(Reader lr, Engine en, boolean rec)
+    public void loadModule(Reader lr, Engine en)
             throws EngineMessage, EngineException {
         Object body;
         if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) != 0) {

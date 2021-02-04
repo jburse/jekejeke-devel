@@ -628,13 +628,13 @@ public final class SpecialLoad extends AbstractSpecial {
         Reader reader;
         if (!Branch.OP_USER.equals(source.getPath())) {
             reader = source.openReader(false, opts);
-            scope.loadModule(reader, en, true);
+            scope.loadModule(reader, en);
             scope.closeReader(reader);
         } else {
             Object obj = en.visor.curinput;
             PrologReader.checkTextRead(obj);
             reader = (Reader) obj;
-            scope.loadModule(reader, en, true);
+            scope.loadModule(reader, en);
         }
     }
 
@@ -760,54 +760,40 @@ public final class SpecialLoad extends AbstractSpecial {
      * <p>Handle system exceptions in a consult loop.</p>
      * <p>Will do the following:</p>
      * <ul>
-     * <li><b>system_error(user_abort):</b> Print chain rest, do not break.</li>
-     * <li><b>system_error(user_exit):</b> Print chain rest, do break.</li>
-     * <li><b>system_error(memory_threshold):</b> Print exception, do not break.</li>
-     * <li><b>system_error(_):</b> Re throw exception.</li>
-     * <li><b>_:</b> Print exception, do not break.</li>
+     * <li><b>system_error(user_abort):</b> Print chain rest.</li>
+     * <li><b>system_error(_):</b> Re-throw exception.</li>
+     * <li><b>limit_error(_):</b> Re-throw exception.</li>
+     * <li><b>_:</b> Print exception.</li>
      * </ul>
      *
      * @param ex  The exception.
      * @param en  The engine.
-     * @param rec The recursion flag.
-     * @return True if break, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public static boolean systemConsultBreak(EngineException ex,
-                                             Engine en, boolean rec)
+    public static void systemConsultBreak(EngineException ex,
+                                          Engine en)
             throws EngineMessage, EngineException {
         EngineMessage m;
-        Object t;
-        boolean res;
-        if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null &&
-                (t = m.messageType(EngineMessage.OP_SYSTEM_ERROR)) != null) {
-            if (t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_USER_ABORT)) {
-                EngineException rest = ex.causeChainRest();
-                if (rest != null)
-                    rest.printStackTrace(en);
-                res = false;
-            } else if (!rec && t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_USER_EXIT)) {
-                EngineException rest = ex.causeChainRest();
-                if (rest != null)
-                    rest.printStackTrace(en);
-                res = true;
-            } else if (!rec && t instanceof SkelAtom &&
-                    ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_READ_PROBLEM)) {
-                EngineException rest = ex.causeChainRest();
-                if (rest != null)
-                    rest.printStackTrace(en);
-                res = true;
-            } else {
+        if ((m = ex.exceptionType(EngineException.OP_ERROR)) != null) {
+            Object t;
+            if ((t = m.messageType(EngineMessage.OP_SYSTEM_ERROR)) != null) {
+                if (t instanceof SkelAtom &&
+                        ((SkelAtom) t).fun.equals(EngineMessage.OP_SYSTEM_USER_ABORT)) {
+                    EngineException rest = ex.causeChainRest();
+                    if (rest != null)
+                        rest.printStackTrace(en);
+                } else {
+                    throw ex;
+                }
+            } else if (m.messageType(EngineMessage.OP_LIMIT_ERROR) != null) {
                 throw ex;
+            } else {
+                ex.printStackTrace(en);
             }
         } else {
             ex.printStackTrace(en);
-            res = false;
         }
-        return res;
     }
 
     /**

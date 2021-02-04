@@ -313,6 +313,7 @@ public abstract class Toolkit {
      * @param inter The interpreter.
      * @param cps   The class paths.
      * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterException Shit happens.
      */
     public static void initPaths(Interpreter inter, ListArray<String> cps)
             throws InterpreterMessage, InterpreterException {
@@ -326,8 +327,7 @@ public abstract class Toolkit {
             } catch (InterpreterMessage y) {
                 InterpreterException x = new InterpreterException(y,
                         InterpreterException.fetchStack(inter));
-                if (InterpreterException.systemConsultBreak(x, inter, false))
-                    break;
+                InterpreterException.systemConsultBreak(x, inter);
             }
         }
     }
@@ -353,11 +353,9 @@ public abstract class Toolkit {
             } catch (InterpreterMessage y) {
                 InterpreterException x = new InterpreterException(y,
                         InterpreterException.fetchStack(inter));
-                if (InterpreterException.systemConsultBreak(x, inter, false))
-                    break;
+                InterpreterException.systemConsultBreak(x, inter);
             } catch (InterpreterException x) {
-                if (InterpreterException.systemConsultBreak(x, inter, false))
-                    break;
+                InterpreterException.systemConsultBreak(x, inter);
             }
         }
     }

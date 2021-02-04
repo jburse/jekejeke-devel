@@ -1,22 +1,27 @@
 package jekpro.reference.runtime;
 
-import jekpro.frequent.experiment.SpecialRef;
-import jekpro.model.builtin.AbstractFlag;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.PrologWriter;
+import jekpro.model.molec.*;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
+import jekpro.model.rope.Intermediate;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * <p>Provides built-in predicates for sessions.</p>
@@ -51,17 +56,8 @@ import matula.util.data.MapHashLink;
  */
 public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_SYS_QUOTED_VAR = 0;
-    private final static int SPECIAL_ASSERTZ_OPT = 1;
-
-    public final static int MASK_MODE_PRMT = 0x0000F000;
-
-    public final static int MASK_PRMT_PROF = 0x00000000;
-    public final static int MASK_PRMT_PCUT = 0x00001000;
-    public final static int MASK_PRMT_PDBG = 0x00002000;
-    public final static int MASK_PRMT_PRON = 0x00003000;
-
-    public final static String OP_ANSWER_CUT = "answer_cut";
-    public final static String OP_ASK_DEBUG = "ask_debug";
+    private final static int SPECIAL_SYS_ASSERTZ = 1;
+    public final static int SPECIAL_SYS_BOOT_STREAM = 2;
 
     /**
      * <p>Create a session special.</p>
@@ -93,9 +89,16 @@ public final class SpecialSession extends AbstractSpecial {
                 if (!BindUniv.unifyTerm(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;
-            case SPECIAL_ASSERTZ_OPT:
+            case SPECIAL_SYS_ASSERTZ:
                 AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
                         AbstractDefined.OPT_ACTI_BOTT | AbstractDefined.OPT_ARGS_ASOP, en);
+                return true;
+            case SPECIAL_SYS_BOOT_STREAM:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Object obj = SpecialUniv.derefAndCastRef(temp[0], ref);
+                PrologReader.checkTextRead(obj);
+                bootStream((Reader) obj, en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -118,6 +121,127 @@ public final class SpecialSession extends AbstractSpecial {
         pw.setSource(en.visor.peekStack());
         pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
         return new SkelAtom(pw.variableQuoted(fun));
+    }
+
+    /**
+     * <p>Consult a stream natively.</p>
+     * <p>Term expansion is not provided.</p>
+     *
+     * @param lr  The buffered reader.
+     * @param en  The interpreter.
+     * @param rec The recursion flag.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static void bootStream(Reader lr, Engine en)
+            throws EngineException, EngineMessage {
+        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
+        rd.setEngineRaw(en);
+        for (; ; ) {
+            try {
+                Object val;
+                rd.setFlags(PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
+                rd.setDefaults(en.visor.peekStack());
+                try {
+                    try {
+                        rd.getScanner().setReader(lr);
+                        val = rd.parseHeadStatement();
+                    } catch (ScannerError y) {
+                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
+                        rd.parseTailError(y);
+                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
+                        throw new EngineException(x, EngineException.fetchPos(
+                                EngineException.fetchStack(en), line, en)
+                        );
+                    }
+                } catch (IOException y) {
+                    throw EngineMessage.mapIOProblem(y);
+                }
+                if (val instanceof SkelAtom &&
+                        ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
+                    break;
+                if (val instanceof SkelCompound &&
+                        ((SkelCompound) val).args.length == 1 &&
+                        ((SkelCompound) val).sym.fun.equals(Clause.OP_TURNSTILE)) {
+                    SkelCompound sc = (SkelCompound) val;
+                    val = sc.args[0];
+                    SpecialSession.executeDirective(rd, val, en);
+                } else {
+                    Object term = Clause.clauseToHead(val, en);
+                    PrologReader.checkSingleton(term, rd.getAnon(), en);
+                    Clause clause = Clause.determineCompiled(
+                            AbstractDefined.OPT_PERF_CNLT, term, val, en);
+                    clause.vars = rd.getVars();
+                    clause.assertRef(AbstractDefined.OPT_ACTI_BOTT, en);
+                }
+            } catch (EngineMessage x) {
+                EngineException y = new EngineException(x,
+                        EngineException.fetchStack(en));
+                SpecialLoad.systemConsultBreak(y, en);
+            } catch (EngineException x) {
+                SpecialLoad.systemConsultBreak(x, en);
+            }
+        }
+    }
+
+    /**
+     * <p>Execute a directive.</p>
+     *
+     * @param rd The Prolog reader.
+     * @param molec The goal.
+     * @param en  The engine.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    private static void executeDirective(PrologReader rd,
+                                         Object molec, Engine en)
+            throws EngineException, EngineMessage {
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL, en);
+        int size = SupervisorCopy.displaySize(molec);
+        dire.bodyToInterSkel(molec, en, true);
+        AbstractUndo mark = en.bind;
+        int snap = en.number;
+        Object backref = en.visor.printmap;
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
+        Display d2 = new Display(size);
+        d2.vars = rd.getVars();
+        try {
+            Object val = SpecialSession.hashToAssoc(rd.getVars(), d2, en);
+            en.visor.printmap = AbstractTerm.createMolec(val, d2);
+            CallFrame ref = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
+            en.contdisplay = ref;
+            if (!en.runLoop(snap, true))
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            en.visor.printmap = backref;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            en.visor.printmap = backref;
+            throw en.fault;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.fault = null;
+        en.cutChoices(snap);
+        en.releaseBind(mark);
+        en.visor.printmap = backref;
+        if (en.fault != null)
+            throw en.fault;
     }
 
     /**
@@ -145,55 +269,6 @@ public final class SpecialSession extends AbstractSpecial {
             end = new SkelCompound(en.store.foyer.ATOM_CONS, val, end);
         }
         return end;
-    }
-
-    /*******************************************************************/
-    /* Prompt Conversion                                               */
-    /*******************************************************************/
-
-    /**
-     * <p>Convert a prompt mode to an atom.</p>
-     *
-     * @param m The prompt mode.
-     * @return The atom.
-     */
-    public static Object promptToAtom(int m) {
-        switch (m) {
-            case SpecialSession.MASK_PRMT_PROF:
-                return new SkelAtom(AbstractFlag.OP_OFF);
-            case SpecialSession.MASK_PRMT_PCUT:
-                return new SkelAtom(OP_ANSWER_CUT);
-            case SpecialSession.MASK_PRMT_PDBG:
-                return new SkelAtom(OP_ASK_DEBUG);
-            case SpecialSession.MASK_PRMT_PRON:
-                return new SkelAtom(AbstractFlag.OP_ON);
-            default:
-                throw new IllegalArgumentException("illegal mode");
-        }
-    }
-
-    /**
-     * <p>Convert an atom to a prompt mode.</p>
-     *
-     * @param t The atom skeleton.
-     * @param d The atom display.
-     * @return The prompt mode.
-     */
-    public static int atomToPrompt(Object t, Display d)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(t, d);
-        if (fun.equals(AbstractFlag.OP_OFF)) {
-            return SpecialSession.MASK_PRMT_PROF;
-        } else if (fun.equals(OP_ANSWER_CUT)) {
-            return SpecialSession.MASK_PRMT_PCUT;
-        } else if (fun.equals(OP_ASK_DEBUG)) {
-            return SpecialSession.MASK_PRMT_PDBG;
-        } else if (fun.equals(AbstractFlag.OP_ON)) {
-            return SpecialSession.MASK_PRMT_PRON;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    "prompt_mode", t), d);
-        }
     }
 
 }

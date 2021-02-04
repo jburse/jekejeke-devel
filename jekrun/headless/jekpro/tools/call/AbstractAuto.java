@@ -155,12 +155,12 @@ public abstract class AbstractAuto extends AbstractSource {
     /**
      * <p>Consult a verbatim module.</p>
      *
+     * @param lr  The buffered reader.
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public void loadModule(Reader lr, Engine en, boolean rec)
+    public void loadModule(Reader lr, Engine en)
             throws EngineMessage, EngineException {
         Class<?> clazz = LookupBinary.keyToClass(getPath(), en.store);
         if (clazz == null)

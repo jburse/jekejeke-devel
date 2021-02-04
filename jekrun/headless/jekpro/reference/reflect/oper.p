@@ -162,7 +162,9 @@ sys_oper5(I, _) :-
  * indicator I, defines a corresponding neutral syntax operator.
  */
 % sys_neutral_oper(+Indicator)
-% natively bootstrapped by SpecialModel
+% already defined in Branch
+% :- special(sys_neutral_oper/1, 'SpecialOper', 0).
+% :- set_predicate_property(sys_neutral_oper/1, visible(public)).
 
 /**
  * current_op(L, M, O): [ISO 8.14.4]

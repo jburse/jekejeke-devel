@@ -145,12 +145,12 @@ public final class LoadOpts extends LoadForce {
                 boolean cond = ((en.visor.cond.getFlags() & LoadOpts.MASK_LOAD_COND) != 0);
                 Reader reader = source.openReader(cond, this);
                 if (reader != null) {
-                    performEnsureLoaded(reader, source, en, backcond != null);
+                    performEnsureLoaded(reader, source, en);
                     if ((en.visor.cond.getFlags() & LoadOpts.MASK_LOAD_MASK) != 0)
                         source.setBit(AbstractSource.MASK_SRC_PREL);
                     source.closeReader(reader);
                 } else {
-                    performReplay(source, en, backcond != null);
+                    performReplay(source, en);
                 }
             }
             if (backcond == null) {
@@ -180,13 +180,12 @@ public final class LoadOpts extends LoadForce {
      * @param reader The reader.
      * @param source The source.
      * @param en     The engine.
-     * @param rec    The recursion flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private void performEnsureLoaded(Reader reader,
                                      AbstractSource source,
-                                     Engine en, boolean rec)
+                                     Engine en)
             throws EngineMessage, EngineException {
         try {
             /* wait for complete source */
@@ -206,7 +205,7 @@ public final class LoadOpts extends LoadForce {
             InterfaceInit init = getInit();
             if (init != null)
                 init.init(source, en);
-            source.loadModule(reader, en, rec);
+            source.loadModule(reader, en);
             source.checkModule(reader, en);
             LoadForce.checkModuleEnd(en);
             source.setBit(AbstractSource.MASK_SRC_SCND);
@@ -233,12 +232,11 @@ public final class LoadOpts extends LoadForce {
      *
      * @param source The source.
      * @param en     The engine.
-     * @param rec    The recursion flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
     private void performReplay(AbstractSource source,
-                               Engine en, boolean rec)
+                               Engine en)
             throws EngineException, EngineMessage {
         MapEntry<AbstractSource, Integer>[] deps;
         try {
@@ -281,11 +279,9 @@ public final class LoadOpts extends LoadForce {
             } catch (EngineMessage x) {
                 EngineException y = new EngineException(x,
                         EngineException.fetchStack(en));
-                if (SpecialLoad.systemConsultBreak(y, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(y, en);
             } catch (EngineException x) {
-                if (SpecialLoad.systemConsultBreak(x, en, rec))
-                    break;
+                SpecialLoad.systemConsultBreak(x, en);
             }
         }
     }

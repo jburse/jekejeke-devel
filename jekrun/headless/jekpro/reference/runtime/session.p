@@ -122,6 +122,10 @@ break :-
       sys_toplevel,
       set_prolog_flag(sys_break_level, X)).
 
+/****************************************************************/
+/* Top Level                                                    */
+/****************************************************************/
+
 % sys_toplevel
 :- private sys_toplevel/0.
 sys_toplevel :-
@@ -225,30 +229,18 @@ sys_answer_help :-
    get_property(P, 'query.help', V),
    write(V), nl.
 
-/**
- * must(A):
- * The predicate succeeds once if A succeeds. Otherwise,
- * the predicate throws an error.
- */
-% must(Goal)
-:- public must/1.
-:- meta_predicate must(0).
-must(X) :- X, !.
-must(_) :-
-   throw(error(syntax_error(directive_failed), _)).
-
 /****************************************************************/
 /* Error Display                                                */
 /****************************************************************/
 
 % sys_error_cause(+Term)
-:- public sys_error_cause/1.
+:- private sys_error_cause/1.
 sys_error_cause(cause(_, R)) :- !,
    sys_error_stack(R).
 sys_error_cause(_).
 
 % sys_error_stack(+Term)
-:- public sys_error_stack/1.
+:- private sys_error_stack/1.
 sys_error_stack(E) :-
    current_error(T),
    print_stack_trace(T, E).
@@ -325,6 +317,65 @@ sys_show_term(_, _) :-
    get_property(P, 'query.cyclic', V),
    write(V).
 
+/****************************************************************/
+/* Load Stream                                                  */
+/****************************************************************/
+
+/**
+ * sys_load_stream(S):
+ * The predicate loads the stream S. Read terms are expanded.
+ */
+% sys_load_stream(+Stream)
+:- public sys_load_stream/1.
+sys_load_stream(S) :-
+   repeat,
+   sys_trap(sys_next_term(S), E,
+      (  sys_error_type(E, system_error(user_abort)) -> sys_error_cause(E), fail
+      ;  sys_error_type(E, system_error(_)) -> sys_raise(E)
+      ;  sys_error_type(E, limit_error(_)) -> sys_raise(E)
+      ;  sys_error_stack(E), fail)), !.
+
+/**
+ * sys_next_term(S):
+ * The predicate reads the next term from the stream S and handles it.
+ */
+% sys_next_term(+Stream)
+:- private sys_next_term/1.
+sys_next_term(S) :-
+   read_term(S, T, [variable_names(N)]),
+   (  T \== end_of_file
+   -> expand_term(T, R),
+      sys_handle_term(R, N), fail
+   ;  true).
+
+/**
+ * sys_handle_term(X, N):
+ * The predicate handles a read term X and the variable names N.
+ */
+% sys_handle_term(+Term, +Assoc)
+:- private sys_handle_term/2.
+sys_handle_term(X, _) :- var(X), !,
+   throw(error(instantiation_error, _)).
+sys_handle_term([X|Y], N) :- !,
+   sys_handle_term(X, N),
+   sys_handle_term(Y, N).
+sys_handle_term([], _) :- !.
+sys_handle_term((:- Q), L) :- !,
+   copy_term(Q-L, H-J),
+   set_callable_property(P, sys_variable_names(J), H),
+   callable_property(P, sys_variable_names(N)),
+   current_prolog_flag(sys_print_map, M),
+   setup_call_cleanup(
+      set_prolog_flag(sys_print_map, N),
+      must(P),
+      set_prolog_flag(sys_print_map, M)).
+sys_handle_term(P, N) :-
+   sys_assertz(P, [variable_names(N)]).
+
+/****************************************************************/
+/* Specials                                                     */
+/****************************************************************/
+
 /**
  * sys_quoted_var(V, Q):
  * The predicate succeeds in Q with a possibly quoted variable name V.
@@ -332,3 +383,24 @@ sys_show_term(_, _) :-
 % sys_quoted_var(+Atom, -Atom)
 :- public sys_quoted_var/2.
 :- special(sys_quoted_var/2, 'SpecialSession', 0).
+
+/**
+ * sys_assertz(C, O):
+ * The predicate inserts the clause C and the assert options O at the
+ * bottom. An undefined head predicate will be turned into a static
+ * predicate. For a list of options see the API documentation.
+ */
+% sys_assertz(+Term, +List)
+:- public sys_assertz/2.
+:- meta_predicate sys_assertz(-1, ?).
+:- special(sys_assertz/2, 'SpecialSession', 1).
+
+/**
+ * sys_boot_stream(S):
+ * The predicate boots the stream S. Read terms are not expanded.
+ */
+% sys_boot_stream(+Stream)
+% already defined in Branch
+% :- public sys_boot_stream/1.
+% :- special(sys_boot_stream/1, 'SpecialSession', 2).
+
