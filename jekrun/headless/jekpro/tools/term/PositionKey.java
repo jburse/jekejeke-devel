@@ -2,7 +2,6 @@ package jekpro.tools.term;
 
 import matula.util.system.OpenOpts;
 
-import java.io.Reader;
 import java.util.Comparator;
 
 /**

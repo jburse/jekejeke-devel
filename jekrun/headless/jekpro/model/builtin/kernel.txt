@@ -35,6 +35,7 @@ call/1	builtin/body
 catch/3	builtin/control
 fail/0	builtin/control
 false/0	builtin/control
+must/1	builtin/control
 (nonstrict)/1	builtin/special
 once/1	builtin/control
 otherwise/0	builtin/control
@@ -46,6 +47,7 @@ set_source_property/2	builtin/special
 special/3	builtin/special
 sys_alter/2	builtin/body
 sys_begin/0	builtin/body
+sys_boot_stream/1	builtin/special
 sys_callable_property_chk/3	builtin/special
 sys_check_style_body/1	builtin/special
 sys_check_style_head/1	builtin/special

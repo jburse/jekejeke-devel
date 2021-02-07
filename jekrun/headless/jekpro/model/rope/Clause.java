@@ -13,10 +13,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.term.AbstractSkel;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
+import jekpro.tools.term.*;
 import matula.util.data.MapHashLink;
 
 /**
@@ -94,7 +91,7 @@ public class Clause extends Directive implements InterfaceReference {
      * <p>Check style and assert the clause.</p>
      *
      * @param hopt  The flags.
-     * @param term The head skeleton.
+     * @param term  The head skeleton.
      * @param molec The clause skeleton.
      * @param en    The engine.
      * @throws EngineMessage   Shit happens.
@@ -112,21 +109,21 @@ public class Clause extends Directive implements InterfaceReference {
         AbstractDefined fun = determineDefined(term, hopt, en);
         Clause clause = Clause.createClause(fun.subflags, en);
         clause.size = SupervisorCopy.displaySize(molec);
-        clause.head = SupervisorCopy.adornTermSkel(term);
+        Optimization[] helper = Optimization.createHelper(molec);
+        clause.head = SkelCompoundLineable.adornTermSkel(term, helper);
         clause.del = fun;
 
         /* process body */
         term = Clause.clauseToBody(molec, en);
-        Optimization[] vars = Optimization.createHelper(molec);
-        if (vars.length != 0) {
-            Optimization.setHead(clause.head, clause.flags, vars);
-            Optimization.setBody(term, vars);
-            clause.sizerule = Optimization.sortExtra(vars);
+        if (helper.length != 0) {
+            Optimization.setHead(clause.head, clause.flags, helper);
+            Optimization.setBody(term, helper);
+            clause.sizerule = Optimization.sortExtra(helper);
         }
         if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0) {
-            clause.intargs = Optimization.unifyArgsLinear(clause.head, vars);
+            clause.intargs = Optimization.unifyArgsLinear(clause.head, helper);
         } else {
-            clause.intargs = Optimization.unifyArgsTerm(clause.head, vars);
+            clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
         }
         clause.bodyToInterSkel(term, en, true);
 

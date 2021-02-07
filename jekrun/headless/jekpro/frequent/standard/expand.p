@@ -57,6 +57,8 @@
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 
+:- use_package(foreign(jekpro/frequent/standard)).
+
 :- module(user, []).
 :- use_module(library(experiment/simp)).
 :- use_module(library(runtime/quali)).
@@ -265,3 +267,27 @@ sys_make_lambda([X|Y], Z, X\T) :-
    sys_make_lambda(Y, Z, T).
 sys_make_lambda([], X, X).
 
+/****************************************************************/
+/* Specials                                                     */
+/****************************************************************/
+
+/**
+ * sys_compilez(C):
+ * The predicate inserts the clause C at the bottom. An undefined head
+ * predicate will be turned into a static predicate.
+ */
+% sys_compilez(+Term)
+:- public sys_compilez/1.
+:- meta_predicate sys_compilez(-1).
+:- special(sys_compilez/1, 'SpecialExpand', 0).
+
+/**
+ * sys_compilez(C, O):
+ * The predicate inserts the clause C and the assert options O at the
+ * bottom. An undefined head predicate will be turned into a static
+ * predicate. For a list of options see the API documentation.
+ */
+% sys_compilez(+Term, +List)
+:- public sys_compilez/2.
+:- meta_predicate sys_compilez(-1, ?).
+:- special(sys_compilez/2, 'SpecialExpand', 1).

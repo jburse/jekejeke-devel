@@ -666,22 +666,30 @@ public abstract class AbstractDefined extends AbstractDelegate {
                                Object head,
                                Engine en)
             throws EngineException {
-        for (int i = 0; i < t2.length; i++) {
-            switch (((SkelCompound) head).getSubTerm(i)) {
-                case SkelCompoundLineable.SUBTERM_LINEAR:
-                    if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
-                        return false;
-                    break;
-                case SkelCompoundLineable.SUBTERM_MIXED:
-                    if (!BindUniv.unifyMixed(t1[i], d1, t2[i], d2, en))
-                        return false;
-                    break;
-                case SkelCompoundLineable.SUBTERM_TERM:
-                    if (!BindUniv.unifyTerm(t1[i], d1, t2[i], d2, en))
-                        return false;
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal subterm");
+        if (!(head instanceof SkelCompoundLineable)) {
+            for (int i = 0; i < t2.length; i++) {
+                if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
+                    return false;
+            }
+        } else {
+            byte[] subterm = ((SkelCompoundLineable)head).subterm;
+            for (int i = 0; i < t2.length; i++) {
+                switch (subterm[i]) {
+                    case SkelCompoundLineable.SUBTERM_LINEAR:
+                        if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
+                            return false;
+                        break;
+                    case SkelCompoundLineable.SUBTERM_MIXED:
+                        if (!BindUniv.unifyMixed(t1[i], d1, t2[i], d2, en))
+                            return false;
+                        break;
+                    case SkelCompoundLineable.SUBTERM_TERM:
+                        if (!BindUniv.unifyTerm(t1[i], d1, t2[i], d2, en))
+                            return false;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("illegal subterm");
+                }
             }
         }
         return true;

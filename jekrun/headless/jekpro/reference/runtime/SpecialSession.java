@@ -56,8 +56,7 @@ import java.io.Reader;
  */
 public final class SpecialSession extends AbstractSpecial {
     private final static int SPECIAL_SYS_QUOTED_VAR = 0;
-    private final static int SPECIAL_SYS_ASSERTZ = 1;
-    public final static int SPECIAL_SYS_BOOT_STREAM = 2;
+    public final static int SPECIAL_SYS_BOOT_STREAM = 1;
 
     /**
      * <p>Create a session special.</p>
@@ -88,10 +87,6 @@ public final class SpecialSession extends AbstractSpecial {
                 String fun = SpecialUniv.derefAndCastString(temp[0], ref);
                 if (!BindUniv.unifyTerm(sysQuoteVar(fun, en), Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
-                return true;
-            case SPECIAL_SYS_ASSERTZ:
-                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
-                        AbstractDefined.OPT_ACTI_BOTT | AbstractDefined.OPT_ARGS_ASOP, en);
                 return true;
             case SPECIAL_SYS_BOOT_STREAM:
                 temp = ((SkelCompound) en.skel).args;
@@ -129,7 +124,6 @@ public final class SpecialSession extends AbstractSpecial {
      *
      * @param lr  The buffered reader.
      * @param en  The interpreter.
-     * @param rec The recursion flag.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */

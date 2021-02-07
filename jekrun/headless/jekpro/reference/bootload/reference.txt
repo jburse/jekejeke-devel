@@ -253,6 +253,7 @@ sys_activate_capability/2	bootload/toolkit
 sys_add_file_extension/2	bootload/path
 sys_add_path/1	bootload/path
 sys_add_resource/1	bootload/module
+sys_assertz/2	runtime/session
 sys_auto_load/1	bootload/module
 sys_calc_install_id/2	bootload/toolkit
 sys_capability_property/2	bootload/toolkit
@@ -280,6 +281,7 @@ sys_listing_has_clause/2	bootload/load
 sys_listing_user/1	bootload/load
 sys_listing_user_chk/1	bootload/load
 sys_load_resource/1	bootload/module
+sys_load_stream/1	runtime/session
 sys_make_indicator/3	reflect/pred
 sys_make_oper/3	reflect/oper
 (sys_notrace)/1	bootload/load

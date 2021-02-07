@@ -46,6 +46,7 @@ public class BindUniv extends AbstractUndo {
     public Object skel;
     public Display display;
     public int refs;
+
     /**
      * <p>Restore state as desired and remove bind from the engine.</p>
      * <p>The current exception is passed via the engine skel.</p>
@@ -271,34 +272,12 @@ public class BindUniv extends AbstractUndo {
                     d1 = b1.display;
                     continue;
                 }
-                if (beta instanceof SkelVar) {
-                    BindUniv b2;
-                    if ((b2 = d2.bind[((SkelVar) beta).id]).display != null)
-                        return unifyTerm(alfa, d1, b2.skel, b2.display, en);
-                    if (alfa == beta && d1 == d2)
-                        return true;
-                    if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            hasVar(alfa, d1, beta, d2))
-                        return false;
-                    return b2.bindAttr(alfa, d1, en);
-                }
                 if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
                         hasVar(beta, d2, alfa, d1))
                     return false;
                 return b1.bindAttr(beta, d2, en);
             }
-            if (beta instanceof SkelVar) {
-                BindUniv bc;
-                if ((bc = d2.bind[((SkelVar) beta).id]).display != null)
-                    return unifyTerm(alfa, d1, bc.skel, bc.display, en);
-                if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                        hasVar(alfa, d1, beta, d2))
-                    return false;
-                return bc.bindAttr(alfa, d1, en);
-            }
             if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
                 return false;
             Object[] t1 = ((SkelCompound) alfa).args;
             Object[] t2 = ((SkelCompound) beta).args;
@@ -306,9 +285,10 @@ public class BindUniv extends AbstractUndo {
                 return false;
             if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
                 return false;
+            byte[] subterm = ((SkelCompoundLineable)beta).subterm;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                switch (((SkelCompound) beta).getSubTerm(i)) {
+                switch (subterm[i]) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
                         if (!unifyLinear(t1[i], d1, t2[i], d2, en))
                             return false;
@@ -325,7 +305,7 @@ public class BindUniv extends AbstractUndo {
                         throw new IllegalArgumentException("illegal subterm");
                 }
             }
-            switch (((SkelCompound) beta).getSubTerm(i)) {
+            switch (subterm[i]) {
                 case SkelCompoundLineable.SUBTERM_LINEAR:
                     return unifyLinear(t1[i], d1, t2[i], d2, en);
                 case SkelCompoundLineable.SUBTERM_MIXED:
@@ -355,8 +335,8 @@ public class BindUniv extends AbstractUndo {
      * @return True if the two terms unify, otherwise false.
      */
     public static boolean unifyTerm(Object alfa, Display d1,
-                                     Object beta, Display d2,
-                                     Engine en)
+                                    Object beta, Display d2,
+                                    Engine en)
             throws EngineException {
         for (; ; ) {
             if (alfa instanceof SkelVar) {

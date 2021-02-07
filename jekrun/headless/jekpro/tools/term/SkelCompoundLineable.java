@@ -1,7 +1,6 @@
 package jekpro.tools.term;
 
-import jekpro.frequent.standard.SupervisorCopy;
-import matula.util.data.ListArray;
+import jekpro.model.rope.Optimization;
 
 /**
  * <p>This class provides lineable compound skeletons.</p>
@@ -56,108 +55,102 @@ public final class SkelCompoundLineable extends SkelCompound {
     }
 
     /**
-     * <p>Retrieve the linear flag.</p>
-     *
-     * @return The linear flag.
-     */
-    public boolean getLinear() {
-        return false;
-    }
-
-    /**
-     * <p>Retrieve a clash flag.</p>
-     *
-     * @param k The index.
-     * @return The clash flag.
-     */
-    public byte getSubTerm(int k) {
-        return subterm[k];
-    }
-
-    /**
      * <p>Compute the subterm flags.</p>
      *
-     * @param args The arguments.
-     * @return The subterm flags.
+     * @param t The skeleton.
+     * @param helper The helper, can be null.
+     * @return The skeleton with subterm flags.
      */
-    public static byte[] makeSubterm(Object[] args) {
-        byte[] subterm = null;
-        Object res = null;
-        ListArray<SkelVar> vec = null;
-        for (int i = 0; i < args.length; i++) {
-            Object newvar = SupervisorCopy.getVar(args[i]);
-            if (newvar == null)
-                continue;
-            if (!SupervisorCopy.getLinear(args[i])) {
-                if (subterm == null)
-                    subterm = new byte[args.length];
-                subterm[i] = SUBTERM_MIXED;
-            }
-            if (res == null) {
-                res = newvar;
-            } else if (newvar instanceof SkelVar) {
-                SkelVar mv = (SkelVar) newvar;
-                if (canAdd(vec, res, mv)) {
-                    if (vec == null)
-                        vec = new ListArray<>();
-                    vec.add(mv);
+    public static Object adornTermSkel(Object t, Optimization[] helper) {
+        SkelCompound back = null;
+        for (; ; ) {
+            if (t instanceof SkelVar) {
+                break;
+            } else if (t instanceof SkelCompound) {
+                SkelCompound sc = (SkelCompound) t;
+                if (sc.var != null) {
+                    Object[] args = sc.args;
+                    int i = 0;
+                    for (; i < args.length - 1; i++) {
+                        args[i] = adornTermSkel(args[i], helper);
+                        sc = adornComponentSkel(sc, i, helper);
+                    }
+                    t = args[i];
+                    args[i] = back;
+                    back = sc;
                 } else {
-                    if (subterm == null)
-                        subterm = new byte[args.length];
-                    subterm[i] = SUBTERM_TERM;
+                    break;
                 }
             } else {
-                SkelVar[] temp = (SkelVar[]) newvar;
-                for (int j = 0; j < temp.length; j++) {
-                    SkelVar mv = temp[j];
-                    if (canAdd(vec, res, mv)) {
-                        if (vec == null)
-                            vec = new ListArray<>();
-                        vec.add(mv);
-                    } else {
-                        if (subterm == null)
-                            subterm = new byte[args.length];
-                        subterm[i] = SUBTERM_TERM;
-                    }
-                }
+                break;
             }
         }
-        return subterm;
+        while (back != null) {
+            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
+            back.args[back.args.length - 1] = t;
+            back = adornComponentSkel(back, back.args.length - 1, helper);
+            t = back;
+            back = jack;
+        }
+        return t;
     }
 
     /**
-     * <p>Adorn a component with subterm flags.</p>
+     * <p>Adorn an argument of a compoound.</p>
      *
-     * @param sc The component.
+     * @param sc     The compound.
+     * @param k      The argument index.
+     * @param helper The helper, can be null.
      * @return The possibly adorned component.
      */
-    public static SkelCompound adornComponentSkel(SkelCompound sc) {
-        byte[] subterm = makeSubterm(sc.args);
-        if (subterm == null)
-            return sc;
-        SkelCompoundLineable sc2 = new SkelCompoundLineable(sc.args, sc.sym, subterm);
-        sc2.var = sc.var;
-        return sc2;
+    private static SkelCompound adornComponentSkel(SkelCompound sc, int k,
+                                                  Optimization[] helper) {
+        byte res = getSubterm(sc.args[k], helper);
+        if (res != SUBTERM_LINEAR) {
+            byte[] subterm;
+            if (sc instanceof SkelCompoundLineable) {
+                subterm = ((SkelCompoundLineable) sc).subterm;
+            } else {
+                subterm = new byte[sc.args.length];
+                SkelCompoundLineable sc2 = new SkelCompoundLineable(sc.args, sc.sym, subterm);
+                sc2.var = sc.var;
+                sc = sc2;
+            }
+            subterm[k] = res;
+        }
+        return sc;
     }
 
     /**
-     * <p>Some testing.</p>
+     * <p>Retrieve the linear flag.</p>
      *
-     * @param args Not used.
+     * @param t      The term.
+     * @param helper The helper, can be null.
+     * @return The linear flag.
      */
-    /*
-    public static void main(String[] args) {
-        SkelVar var = new SkelVar(0);
-        SkelVar var2 = new SkelVar(1);
-        SkelCompound sc = new SkelCompoundLineable(new SkelAtom("fun"), var, var);
-        System.out.println("sc=" + sc + ", linear=" + sc.getLinear());
-        sc = new SkelCompoundLineable(new SkelAtom("fun"), var, var2);
-        System.out.println("sc=" + sc + ", linear=" + sc.getLinear());
-        sc = new SkelCompoundLineable(new SkelAtom("foo"), new SkelCompoundLineable(new SkelAtom("bar"), var, var));
-        System.out.println("sc=" + sc + ", linear=" + sc.getLinear());
-        sc = new SkelCompoundLineable(new SkelAtom("foo"), new SkelCompoundLineable(new SkelAtom("bar"), var, var2));
-        System.out.println("sc=" + sc + ", linear=" + sc.getLinear());
+    private static byte getSubterm(Object t, Optimization[] helper) {
+        if (t instanceof SkelVar) {
+            Optimization ov = helper[((SkelVar) t).id];
+            if ((ov.flags & Optimization.MASK_VAR_USED) != 0) {
+                return SUBTERM_TERM;
+            } else {
+                ov.flags |= Optimization.MASK_VAR_USED;
+                return SUBTERM_LINEAR;
+            }
+        } else if (t instanceof SkelCompound) {
+            if (t instanceof SkelCompoundLineable) {
+                byte[] subterm = ((SkelCompoundLineable) t).subterm;
+                for (int i = 0; i < subterm.length; i++) {
+                    if (subterm[i] != SUBTERM_TERM)
+                        return SUBTERM_MIXED;
+                }
+                return SUBTERM_TERM;
+            } else {
+                return SUBTERM_LINEAR;
+            }
+        } else {
+            return SUBTERM_LINEAR;
+        }
     }
-    */
 
 }

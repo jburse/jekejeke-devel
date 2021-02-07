@@ -370,7 +370,7 @@ sys_handle_term((:- Q), L) :- !,
       must(P),
       set_prolog_flag(sys_print_map, M)).
 sys_handle_term(P, N) :-
-   sys_assertz(P, [variable_names(N)]).
+   sys_compilez(P, [variable_names(N)]).
 
 /****************************************************************/
 /* Specials                                                     */
@@ -383,17 +383,6 @@ sys_handle_term(P, N) :-
 % sys_quoted_var(+Atom, -Atom)
 :- public sys_quoted_var/2.
 :- special(sys_quoted_var/2, 'SpecialSession', 0).
-
-/**
- * sys_assertz(C, O):
- * The predicate inserts the clause C and the assert options O at the
- * bottom. An undefined head predicate will be turned into a static
- * predicate. For a list of options see the API documentation.
- */
-% sys_assertz(+Term, +List)
-:- public sys_assertz/2.
-:- meta_predicate sys_assertz(-1, ?).
-:- special(sys_assertz/2, 'SpecialSession', 1).
 
 /**
  * sys_boot_stream(S):

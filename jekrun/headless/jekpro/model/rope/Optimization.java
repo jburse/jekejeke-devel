@@ -47,11 +47,12 @@ public final class Optimization {
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
+    public final static int MASK_VAR_USED = 0x00000004;
 
     final static int[][] cacheUnifyLinear = new int[8][];
     final static int[][] cacheUnifyTerm = new int[8][];
 
-    int flags;
+    public int flags;
     int minarg = -1;
     final SkelVar sort;
 
@@ -149,8 +150,8 @@ public final class Optimization {
     /**
      * <p>Set the structure and minarg of the variables in the given term.</p>
      *
-     * @param molec      The head skeleton.
-     * @param flags The clause flags.
+     * @param molec  The head skeleton.
+     * @param flags  The clause flags.
      * @param helper The helper.
      */
     static void setHead(Object molec, int flags,
@@ -162,7 +163,7 @@ public final class Optimization {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
                 Optimization ov = helper[((SkelVar) a).id];
-                if ((flags & AbstractDefined.MASK_DEFI_NEXV)==0) {
+                if ((flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
                     ov.minarg = i;
                 } else {
                     ov.flags |= MASK_VAR_HSTR;
@@ -190,7 +191,7 @@ public final class Optimization {
      * <p>Set also the min body if we are not in term position.</p>
      *
      * @param m      The term or term, can be null.
-     * @param helper The helper.
+     * @param helper The helper, can be null.
      */
     static void setBody(Object m, Optimization[] helper) {
         Object var = SupervisorCopy.getVar(m);
@@ -244,7 +245,7 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param molec The head skeleton.
+     * @param molec  The head skeleton.
      * @param helper The helper.
      * @return The unify arguments.
      */
@@ -278,7 +279,7 @@ public final class Optimization {
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                switch (mc.getSubTerm(i)) {
+                switch (getSubTerm(mc, i)) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
                         intargs[i] = UNIFY_LINEAR;
                         break;
@@ -303,7 +304,7 @@ public final class Optimization {
                     intargs[i] = UNIFY_SKIP;
                 }
             } else {
-                switch (mc.getSubTerm(i)) {
+                switch (getSubTerm(mc, i)) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
                         intargs[i] = UNIFY_LINEAR;
                         break;
@@ -319,9 +320,24 @@ public final class Optimization {
     }
 
     /**
+     * <p>Retrieve a clash flag.</p>
+     *
+     * @param mc The compound skeleton.
+     * @param k  The index.
+     * @return The clash flag.
+     */
+    private static byte getSubTerm(SkelCompound mc, int k) {
+        if (!(mc instanceof SkelCompoundLineable)) {
+            return SkelCompoundLineable.SUBTERM_LINEAR;
+        } else {
+            return ((SkelCompoundLineable) mc).subterm[k];
+        }
+    }
+
+    /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param molec The head skeleton.
+     * @param molec  The head skeleton.
      * @param helper The helper.
      * @return The unify arguments.
      */

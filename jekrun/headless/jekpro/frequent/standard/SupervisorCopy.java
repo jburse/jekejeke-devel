@@ -64,20 +64,6 @@ public final class SupervisorCopy {
     }
 
     /**
-     * <p>Retrieve the linear flag.</p>
-     *
-     * @param t The term.
-     * @return The linear flag.
-     */
-    public static boolean getLinear(Object t) {
-        if (t instanceof SkelCompound) {
-            return ((SkelCompound) t).getLinear();
-        } else {
-            return true;
-        }
-    }
-
-    /**
      * <p>Determine the display size.</p>
      * <p>Beware, works only for the root copy and not for sub terms.</p>
      *
@@ -285,48 +271,6 @@ public final class SupervisorCopy {
             copy.add(name, entry.value);
         }
         return copy;
-    }
-
-    /***********************************************************/
-    /* Adorn Term Skel                                         */
-    /***********************************************************/
-
-    /**
-     * <p>Compute the subterm flags.</p>
-     *
-     * @param t The skeleton.
-     * @return The skeleton with subterm flags.
-     */
-    public static Object adornTermSkel(Object t) {
-        SkelCompound back = null;
-        for (; ; ) {
-            if (t instanceof SkelVar) {
-                break;
-            } else if (t instanceof SkelCompound) {
-                SkelCompound sc = (SkelCompound) t;
-                if (sc.var != null) {
-                    Object[] args = sc.args;
-                    int i = 0;
-                    for (; i < sc.args.length - 1; i++)
-                        args[i] = adornTermSkel(args[i]);
-                    t = args[i];
-                    args[i] = back;
-                    back = sc;
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-        while (back != null) {
-            SkelCompound jack = (SkelCompound) back.args[back.args.length - 1];
-            back.args[back.args.length - 1] = t;
-            back = SkelCompoundLineable.adornComponentSkel(back);
-            t = back;
-            back = jack;
-        }
-        return t;
     }
 
 }

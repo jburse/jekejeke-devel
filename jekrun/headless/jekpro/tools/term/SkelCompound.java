@@ -69,25 +69,6 @@ public class SkelCompound extends AbstractSkel
     }
 
     /**
-     * <p>Retrieve the linear flag.</p>
-     *
-     * @return The linear flag.
-     */
-    public boolean getLinear() {
-        return true;
-    }
-
-    /**
-     * <p>Retrieve a clash flag.</p>
-     *
-     * @param k The index.
-     * @return The clash flag.
-     */
-    public byte getSubTerm(int k) {
-        return SkelCompoundLineable.SUBTERM_LINEAR;
-    }
-
-    /**
      * <p>Compute the variable string.</p>
      *
      * @param args The arguments.

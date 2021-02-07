@@ -147,24 +147,29 @@ sys_table_def(M, C) :-
 sys_table_declare(F, N, C) :-
    sys_variant_shared(C), !,
    sys_make_indicator(F, N, I),
-   static(I),
-   set_predicate_property(I, sys_tabled),
    sys_table_cache(F, N, M),
    sys_make_indicator(M, 2, J),
    sys_table_props(I, J),
    (sys_variant_dynamic(C) -> dynamic(J); group_local(J)),
+   set_predicate_property(J, automatic),
    sys_table_lock(F, N, L),
    sys_make_indicator(L, 2, K),
    sys_table_props(I, K),
-   (sys_variant_dynamic(C) -> dynamic(K); group_local(K)).
-sys_table_declare(F, N, _) :-
-   sys_make_indicator(F, N, I),
+   (sys_variant_dynamic(C) -> dynamic(K); group_local(K)),
+   set_predicate_property(K, automatic),
    static(I),
    set_predicate_property(I, sys_tabled),
+   set_predicate_property(I, automatic).
+sys_table_declare(F, N, _) :-
+   sys_make_indicator(F, N, I),
    sys_table_cache(F, N, M),
    sys_make_indicator(M, 2, J),
    sys_table_props(I, J),
-   thread_local(J).
+   thread_local(J),
+   set_predicate_property(J, automatic),
+   static(I),
+   set_predicate_property(I, sys_tabled),
+   set_predicate_property(I, automatic).
 
 /**
  * sys_table_mode(F, N):
@@ -255,10 +260,9 @@ sys_table_wrapper(F, T, L, A, S, C) :-
    SubHead =.. [G, P, W|T],
    sys_make_indicator(F, N, I),
    (  predicate_property(I, multifile)
-   -> compilable_ref((SubHead :- !, Call), U)
-   ;  compilable_ref((SubHead :- Call), U)),
+   -> sys_compilez((SubHead :- !, Call))
+   ;  sys_compilez((SubHead :- Call))),
    sys_table_more(F, N),
-   recordz_ref(U),
    Descr =.. [''|L],
    Key =.. [''|T],
    sys_table_cache(F, N, M),
@@ -272,9 +276,8 @@ sys_table_wrapper(F, T, L, A, S, C) :-
          with_lock(E, SubHead))),
    Head =.. [F|T],
    (  predicate_property(I, multifile)
-   -> compilable_ref((Head :- !, Body), K)
-   ;  compilable_ref((Head :- Body), K)),
-   recordz_ref(K).
+   -> sys_compilez((Head :- !, Body))
+   ;  sys_compilez((Head :- Body))).
 sys_table_wrapper(F, T, L, A, S, C) :-
    length(T, N),
    sys_table_call(F, T, L, A, S, C, Call, P, W),
@@ -287,9 +290,8 @@ sys_table_wrapper(F, T, L, A, S, C) :-
       Call),
    Head =.. [F|T],
    (  predicate_property(I, multifile)
-   -> compilable_ref((Head :- !, Body), K)
-   ;  compilable_ref((Head :- Body), K)),
-   recordz_ref(K).
+   -> sys_compilez((Head :- !, Body))
+   ;  sys_compilez((Head :- Body))).
 
 /**
  * sys_variant_shared(C):

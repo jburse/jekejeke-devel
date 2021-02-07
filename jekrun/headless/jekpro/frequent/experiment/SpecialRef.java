@@ -62,16 +62,15 @@ import matula.util.data.MapHashLink;
 public final class SpecialRef extends AbstractSpecial {
     private final static int SPECIAL_ASSERTABLE_REF = 0;
     private final static int SPECIAL_ASSUMABLE_REF = 1;
-    private final static int SPECIAL_COMPILABLE_REF = 2;
-    private final static int SPECIAL_RECORDA_REF = 3;
-    private final static int SPECIAL_RECORDZ_REF = 4;
-    private final static int SPECIAL_ERASE_REF = 5;
-    private final static int SPECIAL_COMPILED_REF = 6;
-    private final static int SPECIAL_CLAUSE_REF = 7;
-    private final static int SPECIAL_SYS_REF_PROPERTY = 8;
-    private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 9;
-    private final static int SPECIAL_SET_REF_PROPERTY = 10;
-    private final static int SPECIAL_RESET_REF_PROPERTY = 11;
+    private final static int SPECIAL_RECORDA_REF = 2;
+    private final static int SPECIAL_RECORDZ_REF = 3;
+    private final static int SPECIAL_ERASE_REF = 4;
+    private final static int SPECIAL_COMPILED_REF = 5;
+    private final static int SPECIAL_CLAUSE_REF = 6;
+    private final static int SPECIAL_SYS_REF_PROPERTY = 7;
+    private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 8;
+    private final static int SPECIAL_SET_REF_PROPERTY = 9;
+    private final static int SPECIAL_RESET_REF_PROPERTY = 10;
 
     /**
      * <p>Create a special internal.</p>
@@ -109,14 +108,6 @@ public final class SpecialRef extends AbstractSpecial {
                 ref = en.display;
                 clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_THLC |
                         AbstractDefined.OPT_CHCK_ASSE, en);
-                if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
-                    return false;
-                return true;
-            case SPECIAL_COMPILABLE_REF:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                clause = SpecialRef.compileClause(AbstractDefined.OPT_PROM_STAT |
-                        AbstractDefined.OPT_CHCK_DEFN, en);
                 if (!BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[1], ref, en))
                     return false;
                 return true;

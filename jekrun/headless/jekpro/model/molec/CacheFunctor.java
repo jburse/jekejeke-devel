@@ -3,8 +3,6 @@ package jekpro.model.molec;
 import jekpro.model.inter.Engine;
 import jekpro.tools.term.SkelAtom;
 
-import static jekpro.tools.term.SkelAtom.MASK_ATOM_QALI;
-
 /**
  * <p>The polymorphic cache for qualified functor names.</p>
  * <p/>
@@ -58,7 +56,7 @@ public final class CacheFunctor extends AbstractCache {
 
         /* create with call-site */
         int m = (nsa.getPosition() != null ? SkelAtom.MASK_ATOM_POSI : 0);
-        sa = en.store.foyer.createAtom(sa.fun, nsa.scope, m | MASK_ATOM_QALI);
+        sa = en.store.foyer.createAtom(sa.fun, nsa.scope, m | SkelAtom.MASK_ATOM_QALI);
         sa.setPosition(nsa.getPosition());
         ((SkelAtomQuali) sa).setModule(mod);
         return sa;
