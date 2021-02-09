@@ -18,7 +18,6 @@ import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
-import java.io.Writer;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
@@ -151,7 +150,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (fun != null)
                 return fun;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlockingMulti(store.foyer.getBits());
+                del = new DefinedBlocking(store.foyer.getBits());
             } else {
                 del = new DefinedLockfree(store.foyer.getBits());
             }
@@ -185,11 +184,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             fun = pick.del;
             if (fun != null)
                 return fun;
-            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlockingMulti(store.foyer.getBits());
-            } else {
-                del = new DefinedBlocking(store.foyer.getBits());
-            }
+            del = new DefinedBlocking(store.foyer.getBits());
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
@@ -367,16 +362,16 @@ public abstract class AbstractDefined extends AbstractDelegate {
             switch (k) {
                 case Optimization.UNIFY_SKIP:
                     break;
-                case Optimization.UNIFY_LINEAR:
-                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
+                case Optimization.UNIFY_TERM:
+                    if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
                 case Optimization.UNIFY_MIXED:
                     if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
-                case Optimization.UNIFY_TERM:
-                    if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
+                case Optimization.UNIFY_LINEAR:
+                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
                 default:
@@ -435,23 +430,20 @@ public abstract class AbstractDefined extends AbstractDelegate {
             throws EngineMessage;
 
     /**
-     * <p>Inspect the index of a predicate.</p>
-     *
-     * @param wr The write.
-     * @param en The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public abstract void inspectClauses(Writer wr, Engine en)
-            throws EngineMessage, EngineException;
-
-    /**
      * <p>Retrieve the read write lock.</p>
      *
      * @param en The engine.
      * @return The read write lock.
      */
     public abstract ReadWriteLock getLock(Engine en);
+
+    /**
+     * <p>Retrieve the clause and index bouquet.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public abstract Bouquet getBouquet(Engine en);
 
     /***********************************************************/
     /* Dynamic Database                                        */
@@ -672,7 +664,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     return false;
             }
         } else {
-            byte[] subterm = ((SkelCompoundLineable)head).subterm;
+            byte[] subterm = ((SkelCompoundLineable) head).subterm;
             for (int i = 0; i < t2.length; i++) {
                 switch (subterm[i]) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:
@@ -848,7 +840,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
             default:
                 throw new IllegalArgumentException("illegal type");
         }
-
     }
 
 }

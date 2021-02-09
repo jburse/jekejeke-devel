@@ -40,10 +40,10 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
-    public static final int UNIFY_TERM = -1;
-    public static final int UNIFY_MIXED = -2;
-    public static final int UNIFY_LINEAR = -3;
     public static final int UNIFY_SKIP = -4;
+    public static final int UNIFY_TERM = -SkelCompoundLineable.SUBTERM_TERM - 1;
+    public static final int UNIFY_MIXED = -SkelCompoundLineable.SUBTERM_MIXED - 1;
+    public static final int UNIFY_LINEAR = -SkelCompoundLineable.SUBTERM_LINEAR - 1;
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
@@ -279,19 +279,7 @@ public final class Optimization {
         for (; i >= 0; i--) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                switch (getSubTerm(mc, i)) {
-                    case SkelCompoundLineable.SUBTERM_LINEAR:
-                        intargs[i] = UNIFY_LINEAR;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_MIXED:
-                        intargs[i] = UNIFY_MIXED;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_TERM:
-                        intargs[i] = UNIFY_TERM;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal subterm");
-                }
+                intargs[i] = -getSubTerm(mc, i) - 1;
                 continue;
             }
             Optimization ov = helper[((SkelVar) a).id];
@@ -304,16 +292,7 @@ public final class Optimization {
                     intargs[i] = UNIFY_SKIP;
                 }
             } else {
-                switch (getSubTerm(mc, i)) {
-                    case SkelCompoundLineable.SUBTERM_LINEAR:
-                        intargs[i] = UNIFY_LINEAR;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_TERM:
-                        intargs[i] = UNIFY_TERM;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal subterm");
-                }
+                intargs[i] = -getSubTerm(mc, i) - 1;
             }
         }
         return intargs;

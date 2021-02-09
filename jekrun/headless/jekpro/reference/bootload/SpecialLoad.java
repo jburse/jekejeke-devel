@@ -148,8 +148,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 Writer wr = (Writer) obj;
                 PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                pw.setEngineRaw(en);
+                pw.setDefaults(en.visor.peekStack());
+                pw.setEngine(en);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
@@ -178,8 +178,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 LoadOpts.checkTextWrite(obj);
                 wr = (Writer) obj;
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                pw.setEngineRaw(en);
+                pw.setDefaults(en.visor.peekStack());
+                pw.setEngine(en);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
@@ -202,8 +202,8 @@ public final class SpecialLoad extends AbstractSpecial {
                 wr = (Writer) obj;
 
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                pw.setEngineRaw(en);
+                pw.setDefaults(en.visor.peekStack());
+                pw.setEngine(en);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
@@ -309,9 +309,9 @@ public final class SpecialLoad extends AbstractSpecial {
                 SpecialLoad.flushWriter(pw.getWriter());
             }
             Object t = Clause.interToClause(clause, en);
-            pw.setSource(src);
+            pw.setDefaults(src);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
-            pw.setSource(en.visor.peekStack());
+            pw.setDefaults(en.visor.peekStack());
         }
     }
 

@@ -2,16 +2,13 @@ package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.InterfaceRope;
+import matula.util.data.AbstractList;
 import matula.util.data.ListArray;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
@@ -126,7 +123,7 @@ final class DefinedGroupLocal extends AbstractDefined {
         }
         try {
             Bouquet temp = ep.cr;
-            InterfaceRope set = temp.set;
+            AbstractList<Clause> set = temp.set;
             if (set != null && set.size() != 1 &&
                     (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
                 temp = Bouquet.definedClauses(temp, m, d, en);
@@ -196,35 +193,6 @@ final class DefinedGroupLocal extends AbstractDefined {
     }
 
     /**
-     * <p>Inspect the index of a predicate.</p>
-     *
-     * @param wr The write.
-     * @param en The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public void inspectClauses(Writer wr, Engine en)
-            throws EngineMessage, EngineException {
-        LocalBlocking ep = defineLocalBlocking(en);
-        try {
-            ep.lock.readLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            try {
-                InterfaceRope set = ep.cr.set;
-                int len = (set != null ? set.getLengthScope(en) : 0);
-                ep.cr.inspectPaths(wr, 0, 0, len, en);
-            } catch (IOException x) {
-                throw EngineMessage.mapIOException(x);
-            }
-        } finally {
-            ep.lock.readLock().unlock();
-        }
-    }
-
-    /**
      * <p>Retrieve the read write lock.</p>
      *
      * @param en The engine.
@@ -233,6 +201,17 @@ final class DefinedGroupLocal extends AbstractDefined {
     public ReadWriteLock getLock(Engine en) {
         LocalBlocking ep = defineLocalBlocking(en);
         return ep.lock;
+    }
+
+    /**
+     * <p>Retrieve the clause and index bouquet.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public Bouquet getBouquet(Engine en) {
+        LocalBlocking ep = defineLocalBlocking(en);
+        return ep.cr;
     }
 
     /***********************************************************/

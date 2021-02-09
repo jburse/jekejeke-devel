@@ -114,7 +114,7 @@ public class PrologWriter {
      *
      * @param en The engine.
      */
-    public void setEngineRaw(Engine en) {
+    public void setEngine(Engine en) {
         engine = en;
     }
 
@@ -294,16 +294,25 @@ public class PrologWriter {
      *
      * @param s The source.
      */
-    public void setSource(AbstractSource s) {
+    public void setSourceRaw(AbstractSource s) {
         source = s;
-        utildouble = s.utildouble;
-        utilback = s.utilback;
-        utilsingle = s.utilsingle;
     }
 
     /***************************************************************/
     /* Meta-Predicate Declaration Access                           */
     /***************************************************************/
+
+    /**
+     * <p>Set the source.</p>
+     *
+     * @param s The source.
+     */
+    public void setDefaults(AbstractSource s) {
+        source = s;
+        utildouble = s.utildouble;
+        utilback = s.utilback;
+        utilsingle = s.utilsingle;
+    }
 
     /**
      * <p>Retrieve a predicate based on the current meta spezifyer.</p>
@@ -1708,8 +1717,8 @@ public class PrologWriter {
         PrologWriter pw;
         if (en != null) {
             pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-            pw.setSource(en.visor.peekStack());
-            pw.setEngineRaw(en);
+            pw.setDefaults(en.visor.peekStack());
+            pw.setEngine(en);
         } else {
             pw = new PrologWriter();
         }

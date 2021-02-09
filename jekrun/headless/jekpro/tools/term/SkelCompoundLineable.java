@@ -38,28 +38,24 @@ public final class SkelCompoundLineable extends SkelCompound {
     public static final byte SUBTERM_MIXED = 1; /* MAYBE */
     public static final byte SUBTERM_TERM = 2; /* NO */
 
-    public final byte[] subterm;
+    public byte[] subterm;
 
     /**
      * <p>Create a skel compound with given vars.</p>
      *
      * @param a The arguments.
      * @param f The functor.
-     * @param s The subterm flags;
      */
-    public SkelCompoundLineable(Object[] a, SkelAtom f, byte[] s) {
+    public SkelCompoundLineable(Object[] a, SkelAtom f) {
         super(a, f);
-        if (s == null)
-            throw new NullPointerException("Subterm missing");
-        subterm = s;
     }
 
     /**
-     * <p>Compute the subterm flags.</p>
+     * <p>Compute the adornment of a compoound.</p>
      *
      * @param t The skeleton.
      * @param helper The helper, can be null.
-     * @return The skeleton with subterm flags.
+     * @return The old compound or possibly a new compound.
      */
     public static Object adornTermSkel(Object t, Optimization[] helper) {
         SkelCompound back = null;
@@ -96,12 +92,12 @@ public final class SkelCompoundLineable extends SkelCompound {
     }
 
     /**
-     * <p>Adorn an argument of a compoound.</p>
+     * <p>Compute the adornment of an argument of a compoound.</p>
      *
      * @param sc     The compound.
      * @param k      The argument index.
      * @param helper The helper, can be null.
-     * @return The possibly adorned component.
+     * @return The old compound or possibly a new compound.
      */
     private static SkelCompound adornComponentSkel(SkelCompound sc, int k,
                                                   Optimization[] helper) {
@@ -112,8 +108,9 @@ public final class SkelCompoundLineable extends SkelCompound {
                 subterm = ((SkelCompoundLineable) sc).subterm;
             } else {
                 subterm = new byte[sc.args.length];
-                SkelCompoundLineable sc2 = new SkelCompoundLineable(sc.args, sc.sym, subterm);
+                SkelCompoundLineable sc2 = new SkelCompoundLineable(sc.args, sc.sym);
                 sc2.var = sc.var;
+                sc2.subterm = subterm;
                 sc = sc2;
             }
             subterm[k] = res;
@@ -122,11 +119,12 @@ public final class SkelCompoundLineable extends SkelCompound {
     }
 
     /**
-     * <p>Retrieve the linear flag.</p>
+     * <p>Compute the adornment of a term.</p>
+     * <p>Has side effects on the helper and/or the term.</p>
      *
      * @param t      The term.
      * @param helper The helper, can be null.
-     * @return The linear flag.
+     * @return The adornment.
      */
     private static byte getSubterm(Object t, Optimization[] helper) {
         if (t instanceof SkelVar) {
@@ -144,6 +142,7 @@ public final class SkelCompoundLineable extends SkelCompound {
                     if (subterm[i] != SUBTERM_TERM)
                         return SUBTERM_MIXED;
                 }
+                ((SkelCompoundLineable) t).subterm = null;
                 return SUBTERM_TERM;
             } else {
                 return SUBTERM_LINEAR;

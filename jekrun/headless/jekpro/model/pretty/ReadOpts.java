@@ -92,12 +92,14 @@ public final class ReadOpts {
      * <p>Create some read options.</p>
      *
      * @param s The source.
+     * @param f The flags.
      */
-    public ReadOpts(AbstractSource s) {
+    private ReadOpts(AbstractSource s, int f) {
         source = s;
         utildouble = s.utildouble;
         utilback = s.utilback;
         utilsingle = s.utilsingle;
+        flags = f;
     }
 
     /**
@@ -105,10 +107,13 @@ public final class ReadOpts {
      *
      * @param t The parameters skeleton.
      * @param d The parameters display.
+     * @param flags The default flags.
      * @throws EngineMessage Shit happens.
      */
-    public void decodeReadParameter(Object t, Display d, Engine en)
+    public static ReadOpts decodeReadParameter(Object t, Display d,
+                                               int flags, Engine en)
             throws EngineMessage {
+        ReadOpts res = null;
         en.skel = t;
         en.display = d;
         en.deref();
@@ -131,20 +136,27 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
-                /* do nothing */
-                flags |= PrologReader.FLAG_SING;
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.flags |= PrologReader.FLAG_SING;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_DOUBLE_QUOTES)) {
-                utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_BACK_QUOTES)) {
-                utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_SINGLE_QUOTES)) {
-                utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(WriteOpts.OP_PRIORITY)) {
@@ -152,39 +164,45 @@ public final class ReadOpts {
                 SpecialEval.checkNotLessThanZero(num);
                 int k = SpecialEval.castIntValue(num);
                 SpecialOper.checkOperatorLevel(k);
-                lev = k;
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.lev = k;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
                 int anno = WriteOpts.termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
                 if ((anno & WriteOpts.ANNO_MKDT) != 0) {
-                    flags |= PrologWriter.FLAG_MKDT;
+                    res.flags |= PrologWriter.FLAG_MKDT;
                 } else {
-                    flags &= ~PrologWriter.FLAG_MKDT;
+                    res.flags &= ~PrologWriter.FLAG_MKDT;
                 }
                 if ((anno & WriteOpts.ANNO_FILL) != 0) {
-                    flags |= PrologWriter.FLAG_FILL;
+                    res.flags |= PrologWriter.FLAG_FILL;
                 } else {
-                    flags &= ~PrologWriter.FLAG_FILL;
+                    res.flags &= ~PrologWriter.FLAG_FILL;
                 }
                 if ((anno & WriteOpts.ANNO_HINT) != 0) {
-                    flags |= PrologWriter.FLAG_HINT;
+                    res.flags |= PrologWriter.FLAG_HINT;
                 } else {
-                    flags &= ~PrologWriter.FLAG_HINT;
+                    res.flags &= ~PrologWriter.FLAG_HINT;
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_TERMINATOR)) {
                 int terminator = atomToTerminator(((SkelCompound) en.skel).args[0], en.display);
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
                 if ((terminator & TERMINATOR_EOF) != 0) {
-                    flags |= PrologReader.FLAG_TEOF;
+                    res.flags |= PrologReader.FLAG_TEOF;
                 } else {
-                    flags &= ~PrologReader.FLAG_TEOF;
+                    res.flags &= ~PrologReader.FLAG_TEOF;
                 }
                 if ((terminator & TERMINATOR_NONE) != 0) {
-                    flags |= PrologReader.FLAG_TNON;
+                    res.flags |= PrologReader.FLAG_TNON;
                 } else {
-                    flags &= ~PrologReader.FLAG_TNON;
+                    res.flags &= ~PrologReader.FLAG_TNON;
                 }
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
@@ -194,7 +212,9 @@ public final class ReadOpts {
                 AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                 src = src.getStore().getSource(sa.fun);
                 AbstractSource.checkExistentSource(src, sa);
-                source = src;
+                if (res==null)
+                    res = new ReadOpts(en.visor.peekStack(), flags);
+                res.source = src;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_LINE_NO)) {
@@ -219,6 +239,7 @@ public final class ReadOpts {
             throw new EngineMessage(EngineMessage.typeError(
                     EngineMessage.OP_TYPE_LIST, t), d);
         }
+        return res;
     }
 
     /**
@@ -227,11 +248,11 @@ public final class ReadOpts {
      * @param pr The Prolog reader.
      */
     public void setReadOpts(PrologReader pr) {
-        pr.setFlags(flags);
         pr.setSource(source);
         pr.setUtilDouble(utildouble);
         pr.setUtilBack(utilback);
         pr.setUtilSingle(utilsingle);
+        pr.setFlags(flags);
         pr.setLevel(lev);
     }
 

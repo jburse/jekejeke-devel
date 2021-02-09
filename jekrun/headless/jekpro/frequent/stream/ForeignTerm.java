@@ -11,7 +11,6 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import jekpro.tools.term.PositionKey;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
@@ -122,13 +121,13 @@ public final class ForeignTerm {
                 wo.setWriteOpts(pw);
             } else {
                 pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
+                pw.setDefaults(en.visor.peekStack());
                 if ((flags & PrologWriter.FLAG_QUOT) != 0)
                     pw.flags |= PrologWriter.FLAG_QUOT;
                 if ((flags & PrologWriter.FLAG_NUMV) != 0)
                     pw.flags |= PrologWriter.FLAG_NUMV;
             }
-            pw.setEngineRaw(en);
+            pw.setEngine(en);
             pw.setWriter(wr);
             pw.unparseStatement(AbstractTerm.getSkel(t), AbstractTerm.getDisplay(t));
         } catch (EngineMessage x) {
@@ -191,22 +190,17 @@ public final class ForeignTerm {
         Object val;
         PrologReader rd;
         try {
-            if (opt != null && !opt.equals(Knowledgebase.OP_NIL)) {
-                ReadOpts ro = new ReadOpts(en.visor.peekStack());
-                if ((flags & PrologReader.FLAG_TEOF) != 0)
-                    ro.flags |= PrologReader.FLAG_TEOF;
-                ro.decodeReadParameter(AbstractTerm.getSkel(opt), AbstractTerm.getDisplay(opt), en);
-                if ((ro.flags & PrologWriter.FLAG_FILL) == 0) {
-                    rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                } else {
-                    rd = en.store.foyer.createReader(Foyer.IO_ANNO);
-                }
-                ro.setReadOpts(rd);
+            ReadOpts ro = (opt != null ? ReadOpts.decodeReadParameter2(AbstractTerm.getSkel(opt),
+                    AbstractTerm.getDisplay(opt), flags, en) : null);
+            if (ro != null && (ro.flags & PrologWriter.FLAG_FILL) != 0) {
+                rd = en.store.foyer.createReader(Foyer.IO_ANNO);
             } else {
                 rd = en.store.foyer.createReader(Foyer.IO_TERM);
-                rd.setDefaults(en.visor.peekStack());
-                if ((flags & PrologReader.FLAG_TEOF) != 0)
-                    rd.flags |= PrologReader.FLAG_TEOF;
+            }
+            if (ro != null) {
+                ro.setReadOpts(rd);
+            } else {
+                rd.setDefaults(en.visor.peekStack(), flags);
             }
             rd.setEngineRaw(en);
             try {

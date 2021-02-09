@@ -113,7 +113,7 @@ public final class SpecialSession extends AbstractSpecial {
      */
     private static SkelAtom sysQuoteVar(String fun, Engine en) {
         PrologWriter pw = new PrologWriter();
-        pw.setSource(en.visor.peekStack());
+        pw.setDefaults(en.visor.peekStack());
         pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
         return new SkelAtom(pw.variableQuoted(fun));
     }
@@ -134,8 +134,7 @@ public final class SpecialSession extends AbstractSpecial {
         for (; ; ) {
             try {
                 Object val;
-                rd.setFlags(PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
-                rd.setDefaults(en.visor.peekStack());
+                rd.setDefaults(en.visor.peekStack(), PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
                 try {
                     try {
                         rd.getScanner().setReader(lr);

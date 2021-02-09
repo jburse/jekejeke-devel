@@ -4,7 +4,6 @@ import jekpro.frequent.standard.SupervisorCall;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
-import jekpro.reference.arithmetic.SpecialCompare;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;

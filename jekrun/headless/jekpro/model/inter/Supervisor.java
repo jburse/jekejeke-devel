@@ -9,10 +9,11 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
-import jekpro.model.rope.InterfaceRope;
+import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
+import matula.util.data.AbstractList;
 import matula.util.data.AbstractMap;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
@@ -253,7 +254,7 @@ public class Supervisor extends AbstractLivestock {
             LocalLockfree ep = privs.get(i);
             if (ep == null)
                 continue;
-            InterfaceRope set = ep.cr.set;
+            AbstractList<Clause> set = ep.cr.set;
             if (set == null)
                 continue;
             total += set.size();

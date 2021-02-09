@@ -2,16 +2,13 @@ package jekpro.model.inter;
 
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.InterfaceRope;
 import jekpro.tools.term.SkelAtom;
+import matula.util.data.AbstractList;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -132,7 +129,7 @@ final class DefinedBlocking extends AbstractDefined {
         }
         try {
             Bouquet temp = cr;
-            InterfaceRope set = temp.set;
+            AbstractList<Clause> set = temp.set;
             if (set != null && set.size() != 1 &&
                     (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
                 temp = Bouquet.definedClauses(temp, m, d, en);
@@ -199,34 +196,6 @@ final class DefinedBlocking extends AbstractDefined {
     }
 
     /**
-     * <p>Inspect the index of a predicate.</p>
-     *
-     * @param wr The write.
-     * @param en The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public void inspectClauses(Writer wr, Engine en)
-            throws EngineMessage, EngineException {
-        try {
-            lock.readLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            try {
-                InterfaceRope set = cr.set;
-                int len = (set != null ? set.getLengthScope(en) : 0);
-                cr.inspectPaths(wr, 0, 0, len, en);
-            } catch (IOException x) {
-                throw EngineMessage.mapIOException(x);
-            }
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
      * <p>Retrieve the read write lock.</p>
      *
      * @param en The engine.
@@ -234,6 +203,16 @@ final class DefinedBlocking extends AbstractDefined {
      */
     public ReadWriteLock getLock(Engine en) {
         return lock;
+    }
+
+    /**
+     * <p>Retrieve the clause and index bouquet.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public Bouquet getBouquet(Engine en) {
+        return cr;
     }
 
 }

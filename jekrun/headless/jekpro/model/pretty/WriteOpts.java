@@ -287,11 +287,11 @@ public final class WriteOpts {
      * @param pw The Prolog writer.
      */
     public void setWriteOpts(PrologWriter pw) {
-        pw.setFlags(flags);
-        pw.setSource(source);
+        pw.setSourceRaw(source);
         pw.setUtilDouble(utildouble);
         pw.setUtilBack(utilback);
         pw.setUtilSingle(utilsingle);
+        pw.setFlags(flags);
         pw.setLevel(lev);
         pw.setSpez(spez);
         pw.setOffset(offset);

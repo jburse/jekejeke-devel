@@ -1,15 +1,12 @@
 package jekpro.model.rope;
 
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-
-import java.io.IOException;
-import java.io.Writer;
+import matula.util.data.*;
 
 /**
  * <p>This class provides a bouquet.</p>
@@ -46,8 +43,11 @@ public final class Bouquet {
     public static final Clause[] ARRAY_VOID = new Clause[0];
     public static final Bouquet BOUQUET_VOID = new Bouquet();
 
-    public InterfaceRope set;
-    private Index[] args;
+    private static final int MAX_SMALL = 12;
+    private static final int MIN_LARGE = 6;
+
+    public AbstractList<Clause> set;
+    public Index[] args;
     private Clause[] cache;
 
     /**
@@ -57,9 +57,9 @@ public final class Bouquet {
      */
     public Bouquet copyBouquet() {
         Bouquet res = new Bouquet();
-        InterfaceRope temp = set;
+        AbstractList<Clause> temp = set;
         if (temp != null)
-            res.set = (InterfaceRope) temp.clone();
+            res.set = (AbstractList<Clause>) temp.clone();
         res.cache = cache;
         return res;
     }
@@ -71,11 +71,18 @@ public final class Bouquet {
      * @param flags  The flags
      */
     public void addClause(Clause clause, int flags) {
-        if (set == null)
-            set = new RopeArray();
-        InterfaceRope res = set.addClause(clause, flags);
-        if (res != null)
-            set = res;
+        AbstractList<Clause> temp = set;
+        if (temp == null) {
+            temp = new ListArray<>();
+            set = temp;
+        }
+        if ((flags & AbstractDefined.OPT_ACTI_BOTT) != 0) {
+            temp.add(clause);
+        } else {
+            temp.addFirst(clause);
+        }
+        if (temp instanceof ListArray && temp.size() > MAX_SMALL)
+            set = toLarge((ListArray) temp);
         cache = null;
     }
 
@@ -107,11 +114,13 @@ public final class Bouquet {
      * @param clause The clause to retract.
      */
     public void retractClause(int start, Clause clause) {
-        InterfaceRope res = set.removeClause(clause);
-        if (res != null)
-            set = res;
-        if (set.size() == 0)
+        AbstractList<Clause> temp = set;
+        temp.remove(clause);
+        if (temp instanceof SetHashLink && temp.size() < MIN_LARGE) {
+            set = Bouquet.toSmall((SetHashLink) temp);
+        } else if (temp.size() == 0) {
             set = null;
+        }
         cache = null;
 
         Index[] help = args;
@@ -140,7 +149,7 @@ public final class Bouquet {
         if (help != null)
             return help;
 
-        InterfaceRope temp = set;
+        AbstractList<Clause> temp = set;
         if (temp != null) {
             help = new Clause[temp.size()];
             temp.toArray(help);
@@ -174,7 +183,7 @@ public final class Bouquet {
                 return cr;
             m = en.skel;
             Index ci = cr.nthIndex(at, start);
-            InterfacePairs temp = ci.map;
+            AbstractAssoc<Object, Bouquet> temp = ci.map;
             if (temp != null || ci.guard != null) {
                 if (temp != null) {
                     m = Index.keyValue(m);
@@ -273,47 +282,63 @@ public final class Bouquet {
             return ci;
 
         ci = new Index();
-        InterfaceRope temp = set;
-        if (temp != null)
-            temp.buildIndex(ci, at);
+        AbstractList<Clause> rope = set;
+        if (rope != null)
+            Bouquet.buildIndex(rope, ci, at);
         help[h] = ci;
 
         return ci;
     }
 
     /*********************************************************/
-    /* Index Inspection                                      */
+    /* Rope Polymorphism                                     */
     /*********************************************************/
 
     /**
-     * <p>Dump the indexes.</p>
+     * <p>Create a large set from this small set.</p>
+     * <p>Carry over the clauses.</p>
      *
-     * @param wr    The writer.
-     * @param off   The left indentation.
-     * @param start The start position.
-     * @param len   The length.
-     * @param en    The engine copy.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @return The large set.
      */
-    public final void inspectPaths(Writer wr, int off, int start,
-                                   int len, Engine en)
-            throws IOException, EngineMessage, EngineException {
-        wr.write("length=");
-        wr.write(Integer.toString(len));
-        wr.write("\n");
-        Index[] help = args;
-        if (help == null)
-            return;
-        for (int j = 0; j < help.length; j++) {
-            Index ci = help[j];
-            if (ci == null)
-                continue;
-            for (int i = 0; i < off; i++)
-                wr.write(" ");
-            wr.write("at=");
-            wr.write(Integer.toString(start + j));
-            ci.inspectIndex(wr, off + 2, start + j + 1, en);
+    private SetHashLink<Clause> toLarge(ListArray<Clause> rope) {
+        SetHashLink<Clause> res = new SetHashLink<>(rope.size());
+        for (int i = 0; i < rope.size(); i++)
+            res.add(rope.get(i));
+        return res;
+    }
+
+    /**
+     * <p>Create a small set from this large set.</p>
+     * <p>Carry over the clauses.</p>
+     *
+     * @param rope The rope.
+     * @return The small set.
+     */
+    private static ListArray<Clause> toSmall(SetHashLink<Clause> rope) {
+        ListArray<Clause> res = new ListArray<>(rope.size());
+        for (SetEntry<Clause> entry = rope.getFirstEntry();
+             entry != null; entry = rope.successor(entry))
+            res.add(entry.value);
+        return res;
+    }
+
+    /**
+     * <p>Build an index.</p>
+     *
+     * @param rope The rope.
+     * @param ci   The clause index.
+     * @param at   The position.
+     */
+    private static void buildIndex(AbstractList<Clause> rope, Index ci, int at) {
+        if (rope instanceof ListArray) {
+            ListArray<Clause> list = (ListArray<Clause>) rope;
+            for (int i = 0; i < list.size(); i++)
+                ci.buildIndex(list.get(i), at);
+        } else {
+            SetHashLink<Clause> hash = (SetHashLink<Clause>) rope;
+            for (SetEntry<Clause> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry))
+                ci.buildIndex(entry.value, at);
         }
     }
 
