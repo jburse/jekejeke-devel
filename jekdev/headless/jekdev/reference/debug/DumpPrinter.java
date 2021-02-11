@@ -1,12 +1,12 @@
 package jekdev.reference.debug;
 
-import matula.util.data.AssocSorted;
+import jekpro.model.pretty.PrologWriter;
 
 import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>This class provides a friendly count.</p>
+ * <p>This class provides an Prolog indexes printer.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,57 +36,22 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class FriendlyReport {
-    private int count = 1;
+final class DumpPrinter {
+    public final static int INSPECT_MASK_IRRELEVANT = 0x00000001;
+
+    int flags;
+    PrologWriter pw;
+    int level;
 
     /**
-     * <p>Increment the friendly count.</p>
-     */
-    void increment() {
-        count++;
-    }
-
-    /**
-     * <p>Retrieve the count.</p>
+     * <p>Emit level many space blocks.</p>
      *
-     * @return The count.
-     */
-    int getCount() {
-        return count;
-    }
-
-    /**
-     * <p>Increment the histogram by a key.</p>
-     *
-     * @param map The map.
-     * @param op  The key.
-     */
-    static void increment(AssocSorted<String, FriendlyReport> map, String op) {
-        int k = map.indexOf(op);
-        if (k < 0) {
-            map.add(-k - 1, op, new FriendlyReport());
-        } else {
-            FriendlyReport val = map.getValue(k);
-            val.increment();
-        }
-    }
-
-    /**
-     * <p>Show the histogram.</p>
-     *
-     * @param map The map.
-     * @param wr  The writer.
      * @throws IOException IO Error.
      */
-    static void show(AssocSorted<String, FriendlyReport> map, Writer wr) throws IOException {
-        for (int i = 0; i < map.size(); i++) {
-            wr.write(map.getKey(i));
-            wr.write('\t');
-            FriendlyReport val = map.getValue(i);
-            wr.write(Integer.toString(val.getCount()));
-            wr.write('\n');
-            wr.flush();
-        }
+    void dumpOffset() throws IOException {
+        Writer wr = pw.getWriter();
+        for (int i = 0; i < level; i++)
+            wr.write("   ");
     }
 
 }

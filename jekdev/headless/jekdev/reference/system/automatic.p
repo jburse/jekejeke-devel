@@ -99,6 +99,7 @@ generated(I) :- ground(I), !,
 generated(I) :-
    bagof(I, (sys_listing_user(U), sys_automatic_item_idx(U, I)), B),
    sys_show_base(U),
+   sys_show_import(U), nl,
    sys_member(I, B),
    sys_show_provable_source(I, U),
    fail.
@@ -109,7 +110,7 @@ generated(_).
 generated2(I) :-
    sys_automatic_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_short_base(U),
+   sys_show_base(U), nl,
    sys_show_provable_source(I, U),
    fail.
 generated2(_).

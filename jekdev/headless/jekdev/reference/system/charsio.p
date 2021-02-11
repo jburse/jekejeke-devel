@@ -190,15 +190,3 @@ try_call_finally(A, G, C) :-
    G,
    current_prolog_flag(sys_choices, Y),
    (X == Y, !; sys_mask((must(C), sys_cleanup(A)))).
-
-/**
- * must(A):
- * The predicate succeeds once if A succeeds. Otherwise,
- * the predicate throws an error.
- */
-% must(Goal)
-:- private must/1.
-:- meta_predicate must(0).
-must(X) :- X, !.
-must(_) :-
-   throw(error(syntax_error(directive_failed), _)).

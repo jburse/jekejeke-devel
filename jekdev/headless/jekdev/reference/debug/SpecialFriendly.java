@@ -52,23 +52,23 @@ import java.io.Writer;
 public final class SpecialFriendly extends AbstractSpecial {
     private final static int SPECIAL_SYS_VM_DISASSEMBLE = 0;
     private final static int SPECIAL_SYS_VM_COLLECT = 1;
-    private final static int SPECIAL_SYS_MAP_NEW = 2;
-    private final static int SPECIAL_SYS_MAP_SHOW = 3;
+    private final static int SPECIAL_SYS_HISTOGRAM_NEW = 2;
+    private final static int SPECIAL_SYS_HISTOGRAM_SHOW = 3;
 
-    private final static String CODE_UNIFY_TERM = " unify_term";
-    private final static String CODE_UNIFY_MIXED = " unify_mixed";
-    private final static String CODE_UNIFY_LINEAR = " unify_linear";
-    private final static String CODE_UNIFY_COMBO = " unify_combo";
+    private final static String CODE_UNIFY_TERM = "unify_term";
+    private final static String CODE_UNIFY_MIXED = "unify_mixed";
+    private final static String CODE_UNIFY_LINEAR = "unify_linear";
+    private final static String CODE_UNIFY_COMBO = "unify_combo";
 
-    private final static String CODE_CALL_GOAL = " call_goal";
-    private final static String CODE_LAST_GOAL = " last_goal";
+    private final static String CODE_GOAL_CALL = "goal_call";
+    private final static String CODE_GOAL_LAST = "goal_last";
 
-    private final static String CODE_TRY_FLOW = " try_flow";
-    private final static String CODE_RETRY_FLOW = " retry_flow";
-    private final static String CODE_TRUST_FLOW = " trust_flow";
+    private final static String CODE_FLOW_TRY = "flow_try";
+    private final static String CODE_FLOW_RETRY = "flow_retry";
+    private final static String CODE_FLOW_TRUST = "low_trust";
 
-    private final static String CODE_THEN_FLOW = " then_flow";
-    private final static String CODE_SOFT_THEN_FLOW = " soft_then_flow";
+    private final static String CODE_CUT_THEN = "cut_then";
+    private final static String CODE_CUT_SOFT_THEN = "cut_soft_then";
 
     private final static String OP_DOMAIN_MAP = "map";
 
@@ -102,6 +102,8 @@ public final class SpecialFriendly extends AbstractSpecial {
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
                     return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
 
                 SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
                 AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
@@ -115,16 +117,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 SpecialEval.checkNotLessThanZero(beta);
                 int flags = SpecialEval.castIntValue(beta);
 
-                Object obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
-                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setSource(en.visor.peekStack());
-                pw.setEngineRaw(en);
-                pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
-                pw.setWriter(wr);
-                SpecialFriendly.disassemblePredicate(pw, pick, source, flags, en);
-                SpecialLoad.newLineFlush(wr);
+                SpecialFriendly.disassemblePredicate((AbstractDefined) pick.del, source, flags, en);
                 return true;
             case SPECIAL_SYS_VM_COLLECT:
                 temp = ((SkelCompound) en.skel).args;
@@ -132,6 +125,8 @@ public final class SpecialFriendly extends AbstractSpecial {
                 pick = SpecialPred.indicatorToPredicateDefined(temp[0],
                         ref, en, CachePredicate.MASK_CACH_UCHK);
                 if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
                     return false;
 
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
@@ -142,27 +137,45 @@ public final class SpecialFriendly extends AbstractSpecial {
                 if (pick.getDef(source) == null)
                     return false;
 
-                AssocSorted<String, Integer> map = derefAndCastMap(temp[2], ref);
-                SpecialFriendly.collectPredicate(pick, source, map, en);
+                AssocSorted<String, FriendlyReport> map = derefAndCastMap(temp[2], ref);
+                SpecialFriendly.collectPredicate((AbstractDefined) pick.del, source, map, en);
                 return true;
-            case SPECIAL_SYS_MAP_NEW:
+            case SPECIAL_SYS_HISTOGRAM_NEW:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 map = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
                 if (!BindUniv.unifyTerm(map, Display.DISPLAY_CONST, temp[0], ref, en))
                     return false;
                 return true;
-            case SPECIAL_SYS_MAP_SHOW:
+            case SPECIAL_SYS_HISTOGRAM_SHOW:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 map = derefAndCastMap(temp[0], ref);
-                obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                wr = (Writer) obj;
-                SpecialFriendly.mapShow(wr, map);
+
+                SpecialFriendly.histogramShow(map, en);
                 return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        }
+    }
+
+    /**
+     * <p>Show a statistics map.</p>
+     *
+     * @param map The statistics map.
+     * @param en  The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static void histogramShow(AssocSorted<String, FriendlyReport> map, Engine en)
+            throws EngineMessage {
+        try {
+            Object obj = en.visor.curoutput;
+            LoadOpts.checkTextWrite(obj);
+            Writer wr = (Writer) obj;
+
+            FriendlyReport.show(map, wr);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
     }
 
@@ -173,39 +186,46 @@ public final class SpecialFriendly extends AbstractSpecial {
     /**
      * <p>Disassemble the given predicate.</p>
      *
-     * @param pw     The prolog writer.
-     * @param pick   The predicate.
+     * @param def    The abstract defined.
      * @param source The source.
      * @param flags  The flags.
      * @param en     The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void disassemblePredicate(PrologWriter pw, Predicate pick,
-                                          AbstractSource source, int flags,
-                                          Engine en)
+    private static void disassemblePredicate(AbstractDefined def,
+                                             AbstractSource source, int flags,
+                                             Engine en)
             throws EngineMessage, EngineException {
         try {
-            if (!(pick.del instanceof AbstractDefined))
-                return;
+            Object obj = en.visor.curoutput;
+            LoadOpts.checkTextWrite(obj);
+            Writer wr = (Writer) obj;
+
+            PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
+            pw.setDefaults(en.visor.peekStack());
+            pw.setEngine(en);
+            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
+            pw.setWriter(wr);
+
             FriendlyPrinter fp = new FriendlyPrinter();
             fp.flags = flags;
             fp.pw = pw;
             /* flesh out clauses */
-            Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
+            Clause[] list = def.listClauses(en);
             for (int i = 0; i < list.length; i++) {
                 Clause clause = list[i];
                 SkelAtom sa = StackElement.callableToName(clause.head);
                 if (source != sa.scope)
                     continue;
-                Object t = PreClause.interToClause(clause, en);
-                pw.setSource(source);
+                Object t = Clause.interToClause(clause, en);
+                pw.setDefaults(source);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
                 pw.setOffset(-1);
                 Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
                         SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
-                pw.setSource(en.visor.peekStack());
+                pw.setDefaults(en.visor.peekStack());
                 pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(0);
                 disassembleClause(clause, ref, fp);
@@ -226,7 +246,7 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      */
     private static void disassembleClause(Clause clause, Display ref,
-                                       FriendlyPrinter fp)
+                                          FriendlyPrinter fp)
             throws IOException, EngineMessage, EngineException {
         fp.count = 0;
         Writer wr = fp.pw.getWriter();
@@ -236,9 +256,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                 switch (n) {
                     case Optimization.UNIFY_SKIP:
                         break;
-                    case Optimization.UNIFY_LINEAR:
-                    case Optimization.UNIFY_MIXED:
                     case Optimization.UNIFY_TERM:
+                    case Optimization.UNIFY_MIXED:
+                    case Optimization.UNIFY_LINEAR:
                         fp.friendlyCount();
                         if (n == Optimization.UNIFY_TERM) {
                             wr.write(SpecialFriendly.CODE_UNIFY_TERM);
@@ -281,8 +301,8 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      */
     private static void disassembleBody(Directive dire,
-                                     Display ref,
-                                     FriendlyPrinter fp)
+                                        Display ref,
+                                        FriendlyPrinter fp)
             throws IOException, EngineException, EngineMessage {
         Intermediate temp = dire;
         if (fp.lastDirective(dire) != null) {
@@ -308,7 +328,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                     } else {
                         Writer wr = fp.pw.getWriter();
                         fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_TRUST_FLOW);
+                        wr.write(SpecialFriendly.CODE_FLOW_TRUST);
                         wr.write('\n');
                         wr.flush();
                         fp.level++;
@@ -327,9 +347,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
                     if (type == Directive.TYPE_CTRL_CMMT) {
-                        wr.write(SpecialFriendly.CODE_THEN_FLOW);
+                        wr.write(SpecialFriendly.CODE_CUT_THEN);
                     } else {
-                        wr.write(SpecialFriendly.CODE_SOFT_THEN_FLOW);
+                        wr.write(SpecialFriendly.CODE_CUT_SOFT_THEN);
                     }
                     wr.write('\n');
                     wr.flush();
@@ -337,9 +357,9 @@ public final class SpecialFriendly extends AbstractSpecial {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
                     if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                        wr.write(SpecialFriendly.CODE_CALL_GOAL);
+                        wr.write(SpecialFriendly.CODE_GOAL_CALL);
                     } else {
-                        wr.write(SpecialFriendly.CODE_LAST_GOAL);
+                        wr.write(SpecialFriendly.CODE_GOAL_LAST);
                     }
                     wr.write(' ');
                     fp.pw.unparseStatement(branch, ref);
@@ -362,16 +382,16 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      */
     private static void disassembleBranch(Directive help,
-                                       Display ref,
-                                       FriendlyPrinter fp,
-                                       boolean first)
+                                          Display ref,
+                                          FriendlyPrinter fp,
+                                          boolean first)
             throws IOException, EngineException, EngineMessage {
         Writer wr = fp.pw.getWriter();
         fp.friendlyCount();
         if (first) {
-            wr.write(SpecialFriendly.CODE_TRY_FLOW);
+            wr.write(SpecialFriendly.CODE_FLOW_TRY);
         } else {
-            wr.write(SpecialFriendly.CODE_RETRY_FLOW);
+            wr.write(SpecialFriendly.CODE_FLOW_RETRY);
         }
         wr.write('\n');
         wr.flush();
@@ -387,72 +407,69 @@ public final class SpecialFriendly extends AbstractSpecial {
     /**
      * <p>Report the given predicate.</p>
      *
-     * @param pick   The predicate.
+     * @param def    The abstract defined.
      * @param source The source.
-     * @param map    The statistics map.
+     * @param map    The friendly report.
      * @param en     The engine.
      * @throws EngineMessage Shit happens.
      */
-    private static void collectPredicate(Predicate pick,
-                                        AbstractSource source,
-                                        AssocSorted<String, Integer> map,
-                                        Engine en)
+    private static void collectPredicate(AbstractDefined def,
+                                         AbstractSource source,
+                                         AssocSorted<String, FriendlyReport> map,
+                                         Engine en)
             throws EngineMessage {
-        if (!(pick.del instanceof AbstractDefined))
-            return;
-        FriendlyReport fp = new FriendlyReport();
-        fp.map = map;
-        /* flesh out clauses */
-        Clause[] list = ((AbstractDefined) pick.del).listClauses(en);
+        /* collect clauses */
+        Clause[] list = def.listClauses(en);
         for (int i = 0; i < list.length; i++) {
             Clause clause = list[i];
             SkelAtom sa = StackElement.callableToName(clause.head);
             if (source != sa.scope)
                 continue;
-            collectClause(clause, fp);
+            collectClause(clause, map);
         }
     }
 
     /**
      * <p>Report a clause.</p>
      *
+     * @param map    The friendly report.
      * @param clause The clause.
      */
-    private static void collectClause(Clause clause, FriendlyReport fp) {
+    private static void collectClause(Clause clause, AssocSorted<String, FriendlyReport> map) {
         if (clause.intargs != null) {
             for (int l = 0; l < clause.intargs.length; l++) {
                 int n = clause.intargs[l];
                 switch (n) {
                     case Optimization.UNIFY_SKIP:
                         break;
-                    case Optimization.UNIFY_LINEAR:
-                    case Optimization.UNIFY_MIXED:
                     case Optimization.UNIFY_TERM:
+                    case Optimization.UNIFY_MIXED:
+                    case Optimization.UNIFY_LINEAR:
                         if (n == Optimization.UNIFY_TERM) {
-                            fp.increment(SpecialFriendly.CODE_UNIFY_TERM);
+                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_TERM);
                         } else if (n == Optimization.UNIFY_MIXED) {
-                            fp.increment(SpecialFriendly.CODE_UNIFY_MIXED);
+                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_MIXED);
                         } else {
-                            fp.increment(SpecialFriendly.CODE_UNIFY_LINEAR);
+                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_LINEAR);
                         }
                         break;
                     default:
-                        fp.increment(SpecialFriendly.CODE_UNIFY_COMBO);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_COMBO);
                         break;
                 }
             }
         }
-        collectBody(clause, fp);
+        collectBody(clause, map);
     }
 
     /**
      * <p>Report a goal list.</p>
      *
      * @param dire The directive.
-     * @param fp   The collect printer.
+     * @param map  The friendly report.
      */
     private static void collectBody(Directive dire,
-                                   FriendlyReport fp) {
+                                    AssocSorted<String, FriendlyReport> map) {
         Intermediate temp = dire;
         if (dire.last != null) {
             do {
@@ -463,36 +480,36 @@ public final class SpecialFriendly extends AbstractSpecial {
                     while (Directive.isAlter(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        collectBranch(help, fp, branch == ((Goal) temp).term);
+                        collectBranch(help, map, branch == ((Goal) temp).term);
                         branch = sc.args[1];
                     }
                     if (Directive.isGuard(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        collectBranch(help, fp, branch == ((Goal) temp).term);
+                        collectBranch(help, map, branch == ((Goal) temp).term);
                     } else {
-                        fp.increment(SpecialFriendly.CODE_TRUST_FLOW);
-                        collectBody((Directive) branch, fp);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_FLOW_TRUST);
+                        collectBody((Directive) branch, map);
                     }
                 } else if (Directive.isSequen(branch)) {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
-                    collectBody(help, fp);
+                    collectBody(help, map);
                 } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
                         || type == Directive.TYPE_CTRL_SBGN) {
                     /* */
                 } else if (type == Directive.TYPE_CTRL_CMMT
                         || type == Directive.TYPE_CTRL_SCMT) {
                     if (type == Directive.TYPE_CTRL_CMMT) {
-                        fp.increment(SpecialFriendly.CODE_THEN_FLOW);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_CUT_THEN);
                     } else {
-                        fp.increment(SpecialFriendly.CODE_SOFT_THEN_FLOW);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_CUT_SOFT_THEN);
                     }
                 } else {
                     if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                        fp.increment(SpecialFriendly.CODE_CALL_GOAL);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_GOAL_CALL);
                     } else {
-                        fp.increment(SpecialFriendly.CODE_LAST_GOAL);
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_GOAL_LAST);
                     }
                 }
             } while (temp != dire.last);
@@ -503,18 +520,18 @@ public final class SpecialFriendly extends AbstractSpecial {
      * <p>Report a try/retry goal list.</p>
      *
      * @param help  The branch.
-     * @param fp    The firendly printer.
+     * @param map   The friendly report.
      * @param first The first flag.
      */
     private static void collectBranch(Directive help,
-                                     FriendlyReport fp,
-                                     boolean first) {
+                                      AssocSorted<String, FriendlyReport> map,
+                                      boolean first) {
         if (first) {
-            fp.increment(SpecialFriendly.CODE_TRY_FLOW);
+            FriendlyReport.increment(map, SpecialFriendly.CODE_FLOW_TRY);
         } else {
-            fp.increment(SpecialFriendly.CODE_RETRY_FLOW);
+            FriendlyReport.increment(map, SpecialFriendly.CODE_FLOW_RETRY);
         }
-        collectBody(help, fp);
+        collectBody(help, map);
     }
 
     /**************************************************************/
@@ -539,23 +556,5 @@ public final class SpecialFriendly extends AbstractSpecial {
                     OP_DOMAIN_MAP, m), d);
         }
     }
-    
-    /**
-     * <p>Show a statistics map.</p>
-     *
-     * @param wr  The writer.
-     * @param map The statistics map.
-     * @throws EngineMessage Shit happens.
-     */
-    private static void mapShow(Writer wr, AssocSorted<String, Integer> map)
-            throws EngineMessage {
-        try {
-            FriendlyReport fp = new FriendlyReport();
-            fp.map = map;
-            fp.mapShow(wr);
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-    
+
 }

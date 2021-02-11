@@ -2,13 +2,11 @@
  * The shape of the clause index depends on the call pattern history
  * of the predicate. We do not provide a programming interface to
  * selectively inspect the clause index. Instead the end-user can
- * dump the clause index for predicates in one go.
+ * use the predicates jiti_list/[0,1] to list the clause index for
+ * predicates in one go. Further the predicates jiti_summary/[0,1] allow
+ * displaying a summary.
  *
- * The detected call patterns can be read off from the detected argument
- * positions. The clause index need not follow a simple collection of
- * call patterns. Sub-indexes can have individual call patterns. Let’s
- * give a simple example:
- *
+ * Example:
  * ?- [user].
  * p(7, a).
  * p(7, b).
@@ -24,7 +22,8 @@
  * to detect this determinism. Although the clause index is multi
  * argument, it does so only for the key “7”:
  *
- * ?- dump(p/2).
+ * Example:
+ * ?- jiti_list(p/2).
  * -------- p/2 ---------
  * length=3
  * at=0
@@ -33,11 +32,6 @@
  *       key=a, length=1
  *       key=b, length=1
  *   key=9, length=1
- *
- * Since release 1.2.5 of the Prolog runtime different data structures
- * are used depending on a low and a high water mark. For small indexes
- * a simple key-value pair list is used and no hash is computed. For
- * large indexes a hash table is used.
  *
  * The following index attributes are shown during a clause index dump:
  *
@@ -83,63 +77,175 @@
 
 :- module(dump, []).
 :- use_module(library(inspection/provable)).
+:- use_module(library(debug/friendly)).
+:- use_module(library(basic/lists)).
 
 /**
- * dump:
- * The predicate dumps the clause index of the clauses of the
- * user predicates.
+ * jiti_list:
+ * jiti_list(P):
+ * The predicate dumps the clause indexes of the clauses of the
+ * user predicates. The unary predicate allows specifying a predicate
+ * indicator P.
  */
-% dump
-:- public dump/0.
-dump :-
-   dump(_).
-:- set_predicate_property(dump/0, sys_notrace).
+% jiti_list
+:- public jiti_list/0.
+:- sys_notrace jiti_list/0.
+jiti_list :-
+   jiti_inspect(_, 0).
+
+% jiti_list(+Pattern)
+:- public jiti_list/1.
+:- sys_notrace jiti_list/1.
+jiti_list(I) :-
+   jiti_inspect(I, 0).
 
 /**
- * dump(P):
- * The predicate dumps the clause index of the clauses of the
- * user predicate P.
+ * jiti_skipped:
+ * jiti_skipped(P):
+ * Works like the predicates jiti_list/[0,1] except that the execution
+ * skipped variants of the indexes are shown.
  */
-% dump(+Pattern)
-:- public dump/1.
-dump(I) :- ground(I), !,
-   dump2(I).
-dump(I) :-
-   sys_dump_item_idx(I),
-   \+ provable_property(I, built_in),
-   sys_dump(I),
-   fail.
-dump(_).
-:- set_predicate_property(dump/1, sys_notrace).
+% jiti_skipped
+:- public jiti_skipped/0.
+:- sys_notrace jiti_skipped/0.
+jiti_skipped :-
+   jiti_inspect(_, 1).
 
-:- private dump2/1.
-dump2(I) :-
-   \+ provable_property(I, built_in),
-   sys_dump_item_chk(I),
-   sys_dump(I),
-   fail.
-dump2(_).
+% jiti_skipped(+Pattern)
+:- public jiti_skipped/1.
+:- sys_notrace jiti_skipped/1.
+jiti_skipped(I) :-
+   jiti_inspect(I, 1).
 
-:- private sys_dump/1.
-:- special(sys_dump/1, 'SpecialDump', 0).
+% jiti_inspect(+Pattern, +Integer)
+:- private jiti_inspect/2.
 
-/**
- * sys_dump_item_chk(I):
- * If I is a dump indicator then the predicate succeeds.
- */
-% sys_dump_item_chk(+Indicator)
-:- private sys_dump_item_chk/1.
-sys_dump_item_chk(I) :-
-   provable_property(I, sys_usage(U)),
-   sys_listing_user_chk(U), !.
-
-/**
- * sys_dump_item_idx(I):
- * The predicate succeeds for each dump indicator I.
- */
-% sys_dump_item_idx(-Indicator)
-:- private sys_dump_item_idx/1.
-sys_dump_item_idx(I) :-
+jiti_inspect(I, F) :- ground(I), !,
+   jiti_inspect2(I, F).
+jiti_inspect(I, F) :-
    setof(I, U^(sys_listing_user(U),
-      provable_property(I, sys_usage(U))), B),
-   sys_member(I, B).
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
+   member(I, B),
+   sys_intermediate_item_sep(I),
+   sys_jiti_inspect(I, F), nl,
+   fail.
+jiti_inspect(_, _).
+
+% jiti_inspect2(+Indicator, +Integer)
+:- private jiti_inspect2/2.
+jiti_inspect2(I, F) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_has_clause(I, U),
+   sys_intermediate_item_sep(I),
+   sys_jiti_inspect(I, F), nl,
+   fail.
+jiti_inspect2(_, _).
+
+% sys_jiti_inspect(+Indicator, +Integer)
+:- private sys_jiti_inspect/2.
+:- special(sys_jiti_inspect/2, 'SpecialDump', 0).
+
+/**
+ * jiti_summary:
+ * jiti_summary(P):
+ * Works like the predicates jiti_list/[0,1] except that an overall statistics
+ * about the Prolog indexes is reported.
+ */
+% jiti_summary
+:- public jiti_summary/0.
+:- sys_notrace jiti_summary/0.
+jiti_summary :-
+   jiti_summary(_).
+
+% jiti_summary(+Pattern)
+:- public jiti_summary/1.
+:- sys_notrace jiti_summary/1.
+jiti_summary(I) :-
+   sys_averager_new(M),
+   jiti_summary(I, M),
+   sys_averager_show(M).
+
+% jiti_summary(+Pattern, +Map)
+:- private jiti_summary/2.
+jiti_summary(I, M) :- ground(I), !,
+   jiti_summary2(I, M).
+jiti_summary(I, M) :-
+   setof(I, U^(sys_listing_user(U),
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
+   member(I, B),
+   sys_jiti_recap(I, M),
+   fail.
+jiti_summary(_, _).
+
+% jiti_summary2(+Indicator, +Map)
+:- private jiti_summary2/2.
+jiti_summary2(I, M) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_has_clause(I, U),
+   sys_jiti_recap(I, M),
+   fail.
+jiti_summary2(_, _).
+
+/**
+ * jiti_report:
+ * jiti_report(P):
+ * Works like the predicates jiti_list/[0,1] except that a statistics
+ * about the Prolog indexes is reported.
+ */
+% jiti_report
+:- public jiti_report/0.
+:- sys_notrace jiti_report/0.
+jiti_report :-
+   jiti_report(_).
+
+% jiti_report(+Pattern)
+:- public jiti_report/1.
+:- sys_notrace jiti_report/1.
+jiti_report(I) :- ground(I), !,
+   jiti_report2(I).
+jiti_report(I) :-
+   setof(I, U^(sys_listing_user(U),
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
+   member(I, B),
+   sys_averager_new(M),
+   sys_jiti_recap(I, M),
+   sys_averager_has(M),
+   sys_intermediate_item_sep(I),
+   sys_averager_show(M), nl,
+   fail.
+jiti_report(_).
+
+% jiti_report2(+Indicator)
+:- private jiti_report2/1.
+jiti_report2(I) :-
+   sys_intermediate_item_chk(I, U),
+   sys_listing_user_chk(U),
+   sys_has_clause(I, U),
+   sys_averager_new(M),
+   sys_jiti_recap(I, M),
+   sys_averager_has(M),
+   sys_intermediate_item_sep(I),
+   sys_averager_show(M), nl,
+   fail.
+jiti_report2(_).
+
+% sys_jiti_recap(+Indicator, +Map)
+:- private sys_jiti_recap/2.
+:- special(sys_jiti_recap/2, 'SpecialDump', 1).
+
+% sys_averager_new(-Map)
+:- private sys_averager_new/1.
+:- special(sys_averager_new/1, 'SpecialDump', 2).
+
+% sys_averager_show(+Map)
+:- private sys_averager_show/1.
+:- special(sys_averager_show/1, 'SpecialDump', 3).
+
+% sys_averager_has(+Map)
+:- private sys_averager_has/1.
+:- special(sys_averager_has/1, 'SpecialDump', 4).

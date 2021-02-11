@@ -44,15 +44,15 @@
  * Yes
  *
  * ?- vm_summary.
- *  call_goal         228
- *  last_goal         110
- *  then_flow         1
- *  trust_flow        1
- *  try_flow          1
- *  unify_combo       14
- *  unify_linear      388
- *  unify_mixed       8
- *  unify_term        41
+ *  cut_then        1
+ *  flow_trust      1
+ *  flow_try        1
+ *  goal_call       228
+ *  goal_last       110
+ *  unify_combo     14
+ *  unify_linear    388
+ *  unify_mixed     8
+ *  unify_term      41
  *
  * The permanently used optimizations are extra variables and disjunction
  * inlining. The predicate vm_summary/[0,1] produces an overall statistic
@@ -100,6 +100,7 @@
 
 :- module(friendly, []).
 :- use_module(library(inspection/provable)).
+:- use_module(library(basic/lists)).
 
 /****************************************************************/
 /* List & Hooked                                                */
@@ -115,71 +116,59 @@
  */
 % vm_list
 :- public vm_list/0.
+:- sys_notrace vm_list/0.
 vm_list :-
-   vm_list(_).
-:- set_predicate_property(vm_list/0, sys_notrace).
+   vm_disassemble(_, 0).
 
 % vm_list(+Indicator)
 :- public vm_list/1.
-vm_list(I) :- ground(I), !,
-   vm_list2(I).
+:- sys_notrace vm_list/1.
 vm_list(I) :-
-   bagof(I, (sys_listing_user(U),
-      sys_intermediate_item_idx(U, I)), B),
-   sys_show_base(U),
-   sys_member(I, B),
-   sys_vm_disassemble(I, U, 0),
-   fail.
-vm_list(_).
-:- set_predicate_property(vm_list/1, sys_notrace).
-
-% vm_list2(+Indicator)
-:- private vm_list2/1.
-vm_list2(I) :-
-   sys_intermediate_item_chk(I, U),
-   sys_listing_user_chk(U),
-   sys_listing_has_clause(I, U),
-   sys_short_base(U),
-   sys_vm_disassemble(I, U, 0),
-   fail.
-vm_list2(_).
+   vm_disassemble(I, 0).
 
 /**
  * vm_hooked:
  * vm_hooked(P):
- * Works like the predicate vm_list/[0,1] except that the debugger
+ * Works like the predicates vm_list/[0,1] except that the debugger
  * instrumented variants of the clauses are shown.
  */
 % vm_hooked
 :- public vm_hooked/0.
+:- sys_notrace vm_hooked/0.
 vm_hooked :-
-   vm_hooked(_).
-:- set_predicate_property(vm_hooked/0, sys_notrace).
+   vm_disassemble(_, 1).
 
-% vm_hooked(+Indicator)
+% vm_hooked(+Pattern)
 :- public vm_hooked/1.
-vm_hooked(I) :- ground(I), !,
-   vm_hooked2(I).
+:- sys_notrace vm_hooked/1.
 vm_hooked(I) :-
-   bagof(I, (sys_listing_user(U),
-      sys_intermediate_item_idx(U, I)), B),
-   sys_show_base(U),
-   sys_member(I, B),
-   sys_vm_disassemble(I, U, 1),
-   fail.
-vm_hooked(_).
-:- set_predicate_property(vm_hooked/1, sys_notrace).
+   vm_disassemble(I, 1).
 
-% vm_hooked2(+Indicator)
-:- private vm_hooked2/1.
-vm_hooked2(I) :-
+% vm_disassemble(+Pattern, +Integer)
+:- private vm_disassemble/2.
+vm_disassemble(I, F) :- ground(I), !,
+   vm_disassemble2(I, F).
+vm_disassemble(I, F) :-
+   bagof(I, (sys_listing_user(U),
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
+   sys_show_base(U),
+   sys_show_import(U), nl,
+   member(I, B),
+   sys_vm_disassemble(I, U, F),
+   fail.
+vm_disassemble(_, _).
+
+% vm_disassemble2(+Indicator, +Integer)
+:- private vm_disassemble2/2.
+vm_disassemble2(I, F) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_listing_has_clause(I, U),
-   sys_short_base(U),
-   sys_vm_disassemble(I, U, 1),
+   sys_has_clause(I, U),
+   sys_show_base(U), nl,
+   sys_vm_disassemble(I, U, F),
    fail.
-vm_hooked2(_).
+vm_disassemble2(_, _).
 
 % sys_vm_disassemble(+Indicator, +Source, +Integer)
 :- private sys_vm_disassemble/3.
@@ -192,31 +181,32 @@ vm_hooked2(_).
 /**
  * vm_summary:
  * vm_summary(P):
- * Works like the predicate vm_list/[0,1] except that an overall statistics
+ * Works like the predicates vm_list/[0,1] except that an overall statistics
  * about the intermediate codes is reported.
  */
 % vm_summary
 :- public vm_summary/0.
+:- sys_notrace vm_summary/0.
 vm_summary :-
    vm_summary(_).
-:- set_predicate_property(vm_summary/0, sys_notrace).
 
-% vm_summary(+Indicator)
+% vm_summary(+Pattern)
 :- public vm_summary/1.
+:- sys_notrace vm_summary/1.
 vm_summary(I) :-
-   sys_map_new(M),
+   sys_historgram_new(M),
    vm_summary(I, M),
-   sys_map_show(M), nl.
-:- set_predicate_property(vm_summary/1, sys_notrace).
+   sys_historgram_show(M).
 
-% vm_summary(+Indicator, +Map)
+% vm_summary(+Pattern, +Map)
 :- private vm_summary/2.
 vm_summary(I, M) :- ground(I), !,
    vm_summary2(I, M).
 vm_summary(I, M) :-
    bagof(I, (sys_listing_user(U),
-      sys_intermediate_item_idx(U, I)), B),
-   sys_member(I, B),
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
+   member(I, B),
    sys_vm_collect(I, U, M),
    fail.
 vm_summary(_, _).
@@ -226,7 +216,7 @@ vm_summary(_, _).
 vm_summary2(I, M) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_listing_has_clause(I, U),
+   sys_has_clause(I, U),
    sys_vm_collect(I, U, M),
    fail.
 vm_summary2(_, _).
@@ -234,7 +224,7 @@ vm_summary2(_, _).
 /**
  * vm_report:
  * vm_report(P):
- * Works like the predicate vm_list/[0,1] except that a statistics
+ * Works like the predicates vm_list/[0,1] except that a statistics
  * per predicate about the intermediate codes is reported.
  */
 % vm_report
@@ -249,13 +239,15 @@ vm_report(I) :- ground(I), !,
    vm_report2(I).
 vm_report(I) :-
    bagof(I, (sys_listing_user(U),
-      sys_intermediate_item_idx(U, I)), B),
+      sys_intermediate_item_idx(U, I),
+      sys_has_clause(I, U)), B),
    sys_show_base(U),
-   sys_member(I, B),
-   sys_map_new(M),
+   sys_show_import(U), nl,
+   member(I, B),
+   sys_historgram_new(M),
    sys_vm_collect(I, U, M),
-   write(I), write(:), nl,
-   sys_map_show(M), nl,
+   sys_intermediate_item_sep(I),
+   sys_historgram_show(M), nl,
    fail.
 vm_report(_).
 :- set_predicate_property(vm_report/1, sys_notrace).
@@ -265,12 +257,12 @@ vm_report(_).
 vm_report2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_listing_has_clause(I, U),
-   sys_short_base(U),
-   sys_map_new(M),
+   sys_has_clause(I, U),
+   sys_show_base(U), nl,
+   sys_historgram_new(M),
    sys_vm_collect(I, U, M),
-   write(I), write(:), nl,
-   sys_map_show(M), nl,
+   sys_intermediate_item_sep(I),
+   sys_historgram_show(M), nl,
    fail.
 vm_report2(_).
 
@@ -288,7 +280,6 @@ vm_report2(_).
  * succeeds for each usage source U.
  */
 % sys_intermediate_item_chk(+Indicator, -Source)
-:- private sys_intermediate_item_chk/2.
 sys_intermediate_item_chk(I, U) :-
    \+ provable_property(I, built_in),
    provable_property(I, sys_usage(U)).
@@ -299,16 +290,21 @@ sys_intermediate_item_chk(I, U) :-
  * for each intermediate indicator I.
  */
 % sys_intermediate_item_idx(+Source, -Indicator)
-:- private sys_intermediate_item_idx/2.
 sys_intermediate_item_idx(U, I) :-
    provable_property(I, sys_usage(U)),
    \+ provable_property(I, built_in).
 
-% sys_map_new(-Map)
-:- private sys_map_new/1.
-:- special(sys_map_new/1, 'SpecialFriendly', 2).
+/**
+ * sys_intermediate_item_sep(I):
+ * The predicate shows a separator for the indicator I.
+ */
+sys_intermediate_item_sep(I) :-
+   write('-------- '), writeq(I), write(' ---------'), nl.
 
-% sys_map_show(+Map)
-:- private sys_map_show/1.
-:- special(sys_map_show/1, 'SpecialFriendly', 3).
+% sys_historgram_new(-Map)
+:- private sys_historgram_new/1.
+:- special(sys_historgram_new/1, 'SpecialFriendly', 2).
 
+% sys_historgram_show(+Map)
+:- private sys_historgram_show/1.
+:- special(sys_historgram_show/1, 'SpecialFriendly', 3).

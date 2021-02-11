@@ -46,14 +46,10 @@ diagnose_online/0	testing/diagnose
 dump/0	debug/dump
 dump/1	debug/dump
 frame_property/2	inspection/frame
-friendly/0	debug/friendly
-friendly/1	debug/friendly
 generated/0	system/automatic
 generated/1	system/automatic
 goal_tracing/2	debug/custom
 user:goal_tracing/2	testing/tracker
-instrumented/0	debug/friendly
-instrumented/1	debug/friendly
 leash/1	debug/custom
 micro_close/1	inspection/micro
 micro_cont/1	inspection/micro
@@ -121,6 +117,14 @@ tup/0	system/attach
 tvisible/1	system/attach
 up/0	debug/default
 visible/1	debug/default
+vm_hooked/0	debug/friendly
+vm_hooked/1	debug/friendly
+vm_list/0	debug/friendly
+vm_list/1	debug/friendly
+vm_report/0	debug/friendly
+vm_report/1	debug/friendly
+vm_summary/0	debug/friendly
+vm_summary/1	debug/friendly
 with_input_from/2	system/charsio
 with_output_to/2	system/charsio
 

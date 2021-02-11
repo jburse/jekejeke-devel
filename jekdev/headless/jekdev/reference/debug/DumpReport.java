@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * <p>This class provides a friendly count.</p>
+ * <p>This class provides a dump pair.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -36,14 +36,27 @@ import java.io.Writer;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-final class FriendlyReport {
+final class DumpReport {
     private int count = 1;
+    private long sum;
 
     /**
-     * <p>Increment the friendly count.</p>
+     * <p>Create a dump pair.</p>
+     *
+     * @param s The initial value.
      */
-    void increment() {
+    DumpReport(int s) {
+        sum = s;
+    }
+
+    /**
+     * <p>Add to the dump pair a value.</p>
+     *
+     * @param s The value to add.
+     */
+    void add(int s) {
         count++;
+        sum += s;
     }
 
     /**
@@ -56,37 +69,59 @@ final class FriendlyReport {
     }
 
     /**
-     * <p>Increment the histogram by a key.</p>
+     * <p>Retrieve the sum.</p>
+     *
+     * @return The sum.
+     */
+    long getSum() {
+        return sum;
+    }
+
+    /**
+     * <p>Add to the averager by a key and a value.</p>
      *
      * @param map The map.
      * @param op  The key.
+     * @param s   The value.
      */
-    static void increment(AssocSorted<String, FriendlyReport> map, String op) {
+    static void add(AssocSorted<String, DumpReport> map, String op, int s) {
         int k = map.indexOf(op);
         if (k < 0) {
-            map.add(-k - 1, op, new FriendlyReport());
+            map.add(-k - 1, op, new DumpReport(s));
         } else {
-            FriendlyReport val = map.getValue(k);
-            val.increment();
+            DumpReport val = map.getValue(k);
+            val.add(s);
         }
     }
 
     /**
-     * <p>Show the histogram.</p>
+     * <p>Show the averager.</p>
      *
      * @param map The map.
      * @param wr  The writer.
      * @throws IOException IO Error.
      */
-    static void show(AssocSorted<String, FriendlyReport> map, Writer wr) throws IOException {
+    static void show(AssocSorted<String, DumpReport> map, Writer wr) throws IOException {
         for (int i = 0; i < map.size(); i++) {
             wr.write(map.getKey(i));
             wr.write('\t');
-            FriendlyReport val = map.getValue(i);
+            DumpReport val = map.getValue(i);
             wr.write(Integer.toString(val.getCount()));
-            wr.write('\n');
+            wr.write('\t');
+            wr.write(Long.toString(val.getSum()*100/val.getCount()));
+            wr.write("%\n");
             wr.flush();
         }
+    }
+
+    /**
+     * <p>Check whether the averager is empty.</p>
+     *
+     * @param map The map.
+     * @return True if the averager is empty, otherwise false.
+     */
+    static boolean empty(AssocSorted<String, DumpReport> map) {
+        return (map.size() == 0);
     }
 
 }
