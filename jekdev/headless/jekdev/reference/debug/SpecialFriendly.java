@@ -65,7 +65,7 @@ public final class SpecialFriendly extends AbstractSpecial {
 
     private final static String CODE_FLOW_TRY = "flow_try";
     private final static String CODE_FLOW_RETRY = "flow_retry";
-    private final static String CODE_FLOW_TRUST = "low_trust";
+    private final static String CODE_FLOW_TRUST = "flow_trust";
 
     private final static String CODE_CUT_THEN = "cut_then";
     private final static String CODE_CUT_SOFT_THEN = "cut_soft_then";
