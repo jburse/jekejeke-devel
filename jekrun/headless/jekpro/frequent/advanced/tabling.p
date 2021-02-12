@@ -98,7 +98,7 @@
  * specified see the API documentation. The sort options are the same
  * as for aggregate/4 and friends, for additions see the API documentation.
  */
-% table(+IndicatorOrCallable)
+% table(+IndicatorOrCallableAsConstruct)
 :- public (table)/1.
 table P :-
    sys_variant_comparator([], C),
@@ -503,6 +503,11 @@ sys_table_lock(F, N, H) :-
 /* Term Rewriting                                                */
 /*****************************************************************/
 
+/**
+ * sys_table_head(G, N):
+ * The predicate succeeds in N with the head of the tabling
+ * auxiliary predicate for the head G.
+ */
 % sys_table_head(+Callable, -Callable)
 :- private sys_table_head/2.
 sys_table_head(G, N) :-
@@ -517,7 +522,7 @@ sys_table_head(G, N) :-
 /**
  * sys_table_aux(F, N):
  * The predicate succeeds in N with the name of the tabling
- * aux for the predicate name F.
+ * auxiliary predicate for the predicate name F.
  */
 % sys_table_aux(+Atom, -Atom)
 :- private sys_table_aux/2.
@@ -547,4 +552,4 @@ sys_table_help(F, H) :-
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1, -1).
 user:term_expansion(A, _) :- var(A), !, fail.
-user:term_expansion(A, B) :- sys_table_head(A, B), !.
+user:term_expansion(A, B) :- sys_table_head(A, B).

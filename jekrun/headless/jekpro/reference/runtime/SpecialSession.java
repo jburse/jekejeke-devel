@@ -134,7 +134,8 @@ public final class SpecialSession extends AbstractSpecial {
         for (; ; ) {
             try {
                 Object val;
-                rd.setDefaults(en.visor.peekStack(), PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
+                rd.setDefaults(en.visor.peekStack(),
+                        PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
                 try {
                     try {
                         rd.getScanner().setReader(lr);

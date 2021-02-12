@@ -434,7 +434,7 @@ sys_oper_indicator(postfix(_)).
 :- set_predicate_property(sys_show_import/1, visible(public)).
 
 :- special(sys_has_clause/2, 'SpecialLoad', 6).
-:- set_predicate_property(sys_has_clause/2, visible(private)).
+:- set_predicate_property(sys_has_clause/2, visible(public)).
 
 :- special(sys_show_base/1, 'SpecialLoad', 7).
 :- set_predicate_property(sys_show_base/1, visible(public)).

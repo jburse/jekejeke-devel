@@ -150,7 +150,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (fun != null)
                 return fun;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlocking(store.foyer.getBits());
+                del = new DefinedBlockingMultifile(store.foyer.getBits());
             } else {
                 del = new DefinedLockfree(store.foyer.getBits());
             }
@@ -184,7 +184,11 @@ public abstract class AbstractDefined extends AbstractDelegate {
             fun = pick.del;
             if (fun != null)
                 return fun;
-            del = new DefinedBlocking(store.foyer.getBits());
+            if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
+                del = new DefinedBlockingMultifile(store.foyer.getBits());
+            } else {
+                del = new DefinedBlocking(store.foyer.getBits());
+            }
             if ((pick.getBits() & Predicate.MASK_PRED_VIRT) != 0)
                 del.subflags |= AbstractDelegate.MASK_DELE_VIRT;
             if ((pick.getBits() & Predicate.MASK_PRED_NOST) != 0)
@@ -289,12 +293,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        Display d2 = null;
+        Display d2 = Display.DISPLAY_CONST;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (d2 == null) {
-                d2 = new Display(clause.sizerule);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.sizerule);
             } else {
                 d2.setSize(clause.sizerule);
             }
@@ -316,7 +320,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.vars = clause.vars;
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
 
         if (at != list.length) {
             CallFrame dc = new CallFrame(d2, en);
@@ -589,22 +594,22 @@ public abstract class AbstractDefined extends AbstractDelegate {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        Display ref1 = null;
+        Display d2 = Display.DISPLAY_CONST;
         boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (ref1 == null) {
-                ref1 = new Display(clause.size);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.size);
             } else {
-                ref1.setSize(clause.size);
+                d2.setSize(clause.size);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, ref1,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, ref1, temp[1], ref, en)) {
+                if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
                             break;
@@ -624,18 +629,18 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (en.fault != null)
                 throw en.fault;
         }
-        ref1.vars = clause.vars;
-
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
         if (ext)
             refhead.remTab(en);
-        if (clause.size != 0)
-            ref1.remTab(en);
+        if (d2.bind.length > 0)
+            d2.remTab(en);
 
         if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceInspect(en.choices, at, list,
                     flags, en.contskel, en.contdisplay,
-                    ref1, mark);
+                    d2, mark);
             en.number++;
         }
         /* succeed */

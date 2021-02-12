@@ -108,7 +108,7 @@ final class DumpReport {
             DumpReport val = map.getValue(i);
             wr.write(Integer.toString(val.getCount()));
             wr.write('\t');
-            wr.write(Long.toString(val.getSum()*100/val.getCount()));
+            wr.write(Long.toString(val.getSum() * 100 / val.getCount()));
             wr.write("%\n");
             wr.flush();
         }

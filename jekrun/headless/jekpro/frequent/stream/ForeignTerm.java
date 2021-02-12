@@ -190,7 +190,7 @@ public final class ForeignTerm {
         Object val;
         PrologReader rd;
         try {
-            ReadOpts ro = (opt != null ? ReadOpts.decodeReadParameter2(AbstractTerm.getSkel(opt),
+            ReadOpts ro = (opt != null ? ReadOpts.decodeReadParameter(AbstractTerm.getSkel(opt),
                     AbstractTerm.getDisplay(opt), flags, en) : null);
             if (ro != null && (ro.flags & PrologWriter.FLAG_FILL) != 0) {
                 rd = en.store.foyer.createReader(Foyer.IO_ANNO);

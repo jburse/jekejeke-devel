@@ -78,12 +78,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        Display d2 = null;
+        Display d2 = Display.DISPLAY_CONST;
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (d2 == null) {
-                d2 = new Display(clause.sizerule);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.sizerule);
             } else {
                 d2.setSize(clause.sizerule);
             }
@@ -110,7 +110,8 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.vars = clause.vars;
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
 
         while (at != list.length) {
             if (multiVisible(list[at], en))
@@ -172,22 +173,22 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
 
         AbstractUndo mark = en.bind;
         Clause clause;
-        Display ref1 = null;
+        Display d2 = Display.DISPLAY_CONST;
         boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            if (ref1 == null) {
-                ref1 = new Display(clause.size);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.size);
             } else {
-                ref1.setSize(clause.size);
+                d2.setSize(clause.size);
             }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, ref1,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, ref1, temp[1], ref, en)) {
+                if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
                             break;
@@ -212,12 +213,12 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        ref1.vars = clause.vars;
-
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
         if (ext)
             refhead.remTab(en);
-        if (clause.size != 0)
-            ref1.remTab(en);
+        if (d2.bind.length > 0)
+            d2.remTab(en);
 
         while (at != list.length) {
             if (multiVisible(list[at], en))
@@ -229,7 +230,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             /* create choice point */
             en.choices = new ChoiceInspectMultifile(en.choices, at, list,
                     flags, en.contskel, en.contdisplay,
-                    ref1, mark);
+                    d2, mark);
             en.number++;
         }
         /* succeed */

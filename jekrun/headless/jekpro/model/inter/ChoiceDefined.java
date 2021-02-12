@@ -98,7 +98,11 @@ public class ChoiceDefined extends AbstractChoice {
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            d2.setSize(clause.sizerule);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.sizerule);
+            } else {
+                d2.setSize(clause.sizerule);
+            }
             int[] arr = clause.intargs;
             if (arr == null)
                 break;
@@ -117,10 +121,12 @@ public class ChoiceDefined extends AbstractChoice {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.vars = clause.vars;
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
 
         if (at != list.length) {
             goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            goaldisplay.disp = d2;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -128,6 +134,7 @@ public class ChoiceDefined extends AbstractChoice {
             en.contdisplay = goaldisplay;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
+            goaldisplay.disp = d2;
             CallFrame dc = goaldisplay.getFrame(en);
             dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;

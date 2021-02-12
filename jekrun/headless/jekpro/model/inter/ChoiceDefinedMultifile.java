@@ -93,7 +93,11 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            d2.setSize(clause.sizerule);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.sizerule);
+            } else {
+                d2.setSize(clause.sizerule);
+            }
             int[] arr = clause.intargs;
             if (arr == null)
                 break;
@@ -117,7 +121,8 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             if (en.fault != null)
                 throw en.fault;
         }
-        d2.vars = clause.vars;
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
 
         while (at != list.length) {
             if (AbstractDefinedMultifile.multiVisible(list[at], en))
@@ -127,6 +132,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
 
         if (at != list.length) {
             goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            goaldisplay.disp = d2;
             /* reuse choice point */
             en.choices = this;
             en.number++;
@@ -134,6 +140,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             en.contdisplay = goaldisplay;
             return true;
         } else if (clause.getNextRaw(en) != Success.DEFAULT) {
+            goaldisplay.disp = d2;
             CallFrame dc = goaldisplay.getFrame(en);
             dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;

@@ -105,17 +105,22 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
         Display refhead = en.display;
 
         Clause clause;
+        Display d2 = newdisp;
         boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
-            newdisp.setSize(clause.size);
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.size);
+            } else {
+                d2.setSize(clause.size);
+            }
             if (!(clause.head instanceof SkelCompound) ||
                     AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, newdisp,
+                            ((SkelCompound) clause.head).args, d2,
                             clause.head, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, newdisp, temp[1], d, en)) {
+                if (BindUniv.unifyTerm(end, d2, temp[1], d, en)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], d, en))
                             break;
@@ -140,12 +145,12 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
             if (en.fault != null)
                 throw en.fault;
         }
-        newdisp.vars = clause.vars;
-
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
         if (ext)
             refhead.remTab(en);
-        if (clause.size != 0)
-            newdisp.remTab(en);
+        if (d2.bind.length > 0)
+            d2.remTab(en);
 
         while (at != list.length) {
             if (AbstractDefinedMultifile.multiVisible(list[at], en))
@@ -154,6 +159,7 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
         }
 
         if (at != list.length) {
+            newdisp = d2;
             /* reuse choice point */
             en.choices = this;
             en.number++;

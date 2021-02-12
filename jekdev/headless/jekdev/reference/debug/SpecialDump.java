@@ -251,7 +251,7 @@ public final class SpecialDump extends AbstractSpecial {
                 continue;
             dp.dumpOffset();
             wr.write("at=");
-            wr.write(Integer.toString(start + j));
+            wr.write(Integer.toString(start + j + 1));
             dp.level++;
             SpecialDump.inspectIndex(ci, dp, start + j + 1, en);
             dp.level--;
