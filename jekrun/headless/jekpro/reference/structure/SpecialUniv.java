@@ -54,7 +54,8 @@ public final class SpecialUniv extends AbstractSpecial {
     private final static int SPECIAL_UNIFY_WITH_OCCURS_CHECK = 6;
     private final static int SPECIAL_NOT_UNIFY = 7;
     private final static int SPECIAL_SUBSUMES_TERM = 8;
-    private final static int SPECIAL_COPY_TERM = 9;
+    private final static int SPECIAL_SUBSUMES = 9;
+    private final static int SPECIAL_COPY_TERM = 10;
 
     /**
      * <p>Create a univ special.</p>
@@ -226,6 +227,12 @@ public final class SpecialUniv extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     if (!SpecialUniv.subsumesTerm(temp[0], ref, temp[1], ref, en))
+                        return false;
+                    return true;
+                case SPECIAL_SUBSUMES:
+                    temp = ((SkelCompound) en.skel).args;
+                    ref = en.display;
+                    if (!SpecialUniv.subsumes(temp[0], ref, temp[1], ref, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_COPY_TERM:
@@ -695,7 +702,7 @@ public final class SpecialUniv extends AbstractSpecial {
                                         Object beta, Display d2,
                                         Engine en) {
         AbstractUndo mark = en.bind;
-        boolean res = subsumesTerm(alfa, d1, beta, d2, beta, d2, en);
+        boolean res = subsumes(alfa, d1, beta, d2, beta, d2, en);
         en.fault = null;
         en.releaseBind(mark);
         if (en.fault != null)
@@ -717,10 +724,10 @@ public final class SpecialUniv extends AbstractSpecial {
      * @param en    The engine.
      * @return True if the two terms unify, otherwise false.
      */
-    private static boolean subsumesTerm(Object alfa, Display d1,
-                                        Object beta, Display d2,
-                                        Object gamma, Display d3,
-                                        Engine en) {
+    private static boolean subsumes(Object alfa, Display d1,
+                                    Object beta, Display d2,
+                                    Object gamma, Display d3,
+                                    Engine en) {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
                 BindUniv b1;
@@ -770,7 +777,7 @@ public final class SpecialUniv extends AbstractSpecial {
                 return false;
             int i = 0;
             for (; i < t1.length - 1; i++) {
-                if (!subsumesTerm(t1[i], d1, t2[i], d2, gamma, d3, en))
+                if (!subsumes(t1[i], d1, t2[i], d2, gamma, d3, en))
                     return false;
             }
             alfa = t1[i];
