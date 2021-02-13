@@ -248,12 +248,12 @@ sqrt/2	arithmetic/trigo
 (static)/1	reflect/pred
 sub_atom/4	structure/atom
 sub_atom/5	structure/atom
+subsumes/2	structure/univ
 subsumes_term/2	structure/univ
 sys_activate_capability/2	bootload/toolkit
 sys_add_file_extension/2	bootload/path
 sys_add_path/1	bootload/path
 sys_add_resource/1	bootload/module
-sys_assertz/2	runtime/session
 sys_auto_load/1	bootload/module
 sys_calc_install_id/2	bootload/toolkit
 sys_capability_property/2	bootload/toolkit
@@ -274,6 +274,7 @@ sys_error_message/1	runtime/session
 sys_extend_term/3	runtime/quali
 sys_extend_term/3	structure/univ
 sys_finit_capability/1	bootload/toolkit
+sys_has_clause/2	bootload/load
 sys_indicator/1	reflect/pred
 sys_init_capability/1	bootload/toolkit
 sys_init_capability/2	bootload/toolkit

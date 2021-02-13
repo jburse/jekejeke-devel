@@ -112,7 +112,6 @@ code_class/3	misc/text
 code_digit/3	misc/text
 code_lower/2	misc/text
 code_upper/2	misc/text
-compilable_ref/2	experiment/ref
 compiled_match/2	misc/text
 compiled_ref/2	experiment/ref
 cond_new/2	misc/cond
@@ -403,6 +402,8 @@ sys_atom_or_type_of/2	basic/score
 sys_boolean/1	basic/score
 sys_char16/1	basic/score
 sys_cleanup/1	advanced/signal
+sys_compilez/1	standard/expand
+sys_compilez/2	standard/expand
 sys_current_eq/2	misc/residue
 sys_current_mark/1	misc/residue
 user:sys_declaration_indicator/2	basic/array
