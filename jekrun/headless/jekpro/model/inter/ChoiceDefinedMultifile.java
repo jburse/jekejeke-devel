@@ -5,7 +5,6 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Success;
-import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
@@ -98,12 +97,7 @@ final class ChoiceDefinedMultifile extends ChoiceDefined {
             } else {
                 d2.setSize(clause.sizerule);
             }
-            int[] arr = clause.intargs;
-            if (arr == null)
-                break;
-            if (AbstractDefined.unifyExecute(((SkelCompound) t).args, d,
-                    ((SkelCompound) clause.head).args, d2,
-                    arr, en))
+            if (AbstractDefined.unifyExecute(t, d, clause, d2, en))
                 break;
 
             /* end of cursor */

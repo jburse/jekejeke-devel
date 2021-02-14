@@ -120,9 +120,9 @@ final class DefinedLockfree extends AbstractDefined {
      */
     public boolean assertClause(Clause clause,
                                 int flags, Engine en) {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
             return false;
-        clause.flags |= Clause.MASK_CLAUSE_ASSE;
+        clause.flags |= Clause.MASK_CLSE_ASSE;
         cr.assertClause(0, clause, flags);
         return true;
     }
@@ -135,9 +135,9 @@ final class DefinedLockfree extends AbstractDefined {
      * @return True if clause was found and removed, otherwise false.
      */
     public boolean retractClause(Clause clause, Engine en) {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
             return false;
-        clause.flags &= ~Clause.MASK_CLAUSE_ASSE;
+        clause.flags &= ~Clause.MASK_CLSE_ASSE;
         cr.retractClause(0, clause);
         return true;
     }

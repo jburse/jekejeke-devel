@@ -10,6 +10,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -302,12 +303,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 d2.setSize(clause.sizerule);
             }
-            int[] arr = clause.intargs;
-            if (arr == null)
-                break;
-            if (AbstractDefined.unifyExecute(((SkelCompound) t).args, d,
-                    ((SkelCompound) clause.head).args, d2,
-                    arr, en))
+            if (AbstractDefined.unifyExecute(t, d, clause, d2, en))
                 break;
 
             /* end of cursor */
@@ -348,41 +344,62 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>Unify the term of the clause with the given term.</p>
      *
-     * @param t1   The term skeleton.
-     * @param ref  The term display.
-     * @param t2   The clause skeleton.
-     * @param ref2 The clause display.
-     * @param arr  The unify instructions.
-     * @param en   The engine.
+     * @param goal   The goal.
+     * @param ref    The term display.
+     * @param clause The clause.
+     * @param ref2   The clause display.
+     * @param en     The engine.
      * @return True if the unification was successful, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifyExecute(Object[] t1, Display ref,
-                                Object[] t2, Display ref2,
-                                int[] arr,
+    static boolean unifyExecute(Object goal, Display ref,
+                                Clause clause, Display ref2,
                                 Engine en)
             throws EngineException {
-        for (int i = 0; i < arr.length; i++) {
-            int k = arr[i];
-            switch (k) {
-                case Optimization.UNIFY_SKIP:
-                    break;
-                case Optimization.UNIFY_TERM:
-                    if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
-                        return false;
-                    break;
-                case Optimization.UNIFY_MIXED:
-                    if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
-                        return false;
-                    break;
-                case Optimization.UNIFY_LINEAR:
-                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
-                        return false;
-                    break;
-                default:
-                    if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
-                        return false;
-                    break;
+        int[] arr = clause.intargs;
+        if (arr == null)
+            return true;
+        Object[] t1 = ((SkelCompound) goal).args;
+        Object[] t2 = ((SkelCompound) clause.head).args;
+        if ((clause.flags & Clause.MASK_CLSE_MTCH) != 0) {
+            for (int i = 0; i < arr.length; i++) {
+                int k = arr[i];
+                switch (k) {
+                    case Optimization.UNIFY_SKIP:
+                        break;
+                    case Optimization.UNIFY_TERM:
+                        if (!SpecialLexical.matchTerm(t1[i], ref, t2[i], ref2, en))
+                            return false;
+                        break;
+                    default:
+                        if (!SpecialLexical.equalTerm(t1[k], ref, t1[i], ref))
+                            return false;
+                        break;
+                }
+            }
+        } else {
+            for (int i = 0; i < arr.length; i++) {
+                int k = arr[i];
+                switch (k) {
+                    case Optimization.UNIFY_SKIP:
+                        break;
+                    case Optimization.UNIFY_TERM:
+                        if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
+                            return false;
+                        break;
+                    case Optimization.UNIFY_MIXED:
+                        if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
+                            return false;
+                        break;
+                    case Optimization.UNIFY_LINEAR:
+                        if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
+                            return false;
+                        break;
+                    default:
+                        if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
+                            return false;
+                        break;
+                }
             }
         }
         return true;
@@ -608,7 +625,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, d2,
                             clause.head, en)) {
-                Object end = Directive.interToBodySkel(clause, clause.last, en);
+                Object end = Clause.interToBodySkel(clause, clause.last, en);
                 if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))

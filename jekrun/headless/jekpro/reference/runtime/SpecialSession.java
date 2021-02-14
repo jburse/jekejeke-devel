@@ -156,7 +156,7 @@ public final class SpecialSession extends AbstractSpecial {
                     break;
                 if (val instanceof SkelCompound &&
                         ((SkelCompound) val).args.length == 1 &&
-                        ((SkelCompound) val).sym.fun.equals(Clause.OP_TURNSTILE)) {
+                        ((SkelCompound) val).sym.fun.equals(Foyer.OP_TURNSTILE)) {
                     SkelCompound sc = (SkelCompound) val;
                     val = sc.args[0];
                     SpecialSession.executeDirective(rd, val, en);

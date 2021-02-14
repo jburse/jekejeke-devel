@@ -303,12 +303,12 @@ public final class SpecialLoad extends AbstractSpecial {
                 Object decl = provableToColonSkel(pick, src);
                 decl = prependModifiers(modifiers, decl);
                 modifiers = null;
-                decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+                decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
                 decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                 pw.unparseStatement(decl, Display.DISPLAY_CONST);
                 SpecialLoad.flushWriter(pw.getWriter());
             }
-            Object t = Clause.interToClause(clause, en);
+            Object t = Clause.interToClauseSkel(clause, en);
             pw.setDefaults(src);
             SpecialLoad.showClause(pw, t, clause.vars, en, 0);
             pw.setDefaults(en.visor.peekStack());
@@ -378,7 +378,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         decl = prependModifiers(modifiers, decl);
                         modifiers = null;
                     }
-                    decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, Display.DISPLAY_CONST);
                     SpecialLoad.flushWriter(pw.getWriter());
@@ -461,7 +461,7 @@ public final class SpecialLoad extends AbstractSpecial {
                         decl = operDeclSkelIndicator(
                                 AbstractTerm.getSkel(val), oper, src);
                     }
-                    decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, Display.DISPLAY_CONST);
                     SpecialLoad.flushWriter(pw.getWriter());
@@ -510,7 +510,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Object decl = new SkelCompound(new SkelAtom(OP_MODULE),
                     new SkelAtom(Branch.OP_USER),
                     new SkelAtom(Foyer.OP_NIL));
-            decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, Display.DISPLAY_CONST);
             SpecialLoad.flushWriter(pw.getWriter());
@@ -542,7 +542,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 for (int j = 0; j < vals.length; j++) {
                     Object val = vals[j];
                     Object decl = srcDecl(sk, AbstractTerm.getSkel(val), src, en);
-                    decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
                     decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
                     pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
                     SpecialLoad.flushWriter(pw.getWriter());
@@ -554,7 +554,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Object val = ReadOpts.utilToAtom(src.utildouble);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
                     new SkelAtom(Flag.OP_DOUBLE_QUOTES), val);
-            decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
             SpecialLoad.flushWriter(pw.getWriter());
@@ -563,7 +563,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Object val = ReadOpts.utilToAtom(src.utilback);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
                     new SkelAtom(Flag.OP_BACK_QUOTES), val);
-            decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
             SpecialLoad.flushWriter(pw.getWriter());
@@ -572,7 +572,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Object val = ReadOpts.utilToAtom(src.utilsingle);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
                     new SkelAtom(Flag.OP_SINGLE_QUOTES), val);
-            decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
             SpecialLoad.flushWriter(pw.getWriter());
@@ -581,7 +581,7 @@ public final class SpecialLoad extends AbstractSpecial {
             Object val = AbstractFlag.switchToAtom(false);
             Object decl = new SkelCompound(new SkelAtom(OP_SET_PROLOG_FLAG),
                     new SkelAtom(Flag.OP_STYLE_CHECK), val);
-            decl = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), decl);
+            decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
             pw.unparseStatement(decl, AbstractTerm.getDisplay(val));
             SpecialLoad.flushWriter(pw.getWriter());

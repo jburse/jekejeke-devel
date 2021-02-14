@@ -88,6 +88,8 @@ public abstract class Branch extends AbstractBranch {
         en.store.foyer.ATOM_SEMICOLON = new SkelAtom(Foyer.OP_SEMICOLON, en.store.getRootSystem());
         en.store.foyer.ATOM_CONDITION = new SkelAtom(Foyer.OP_CONDITION, en.store.getRootSystem());
         en.store.foyer.ATOM_SOFT_CONDITION = new SkelAtom(Foyer.OP_SOFT_CONDITION, en.store.getRootSystem());
+        en.store.foyer.ATOM_SOFT_CUT = new SkelAtom(Foyer.OP_SOFT_CUT, en.store.getRootSystem());
+        en.store.foyer.ATOM_TURNSTYLE = new SkelAtom(Foyer.OP_TURNSTILE, en.store.getRootSystem());
 
         en.store.foyer.ATOM_SYS_ALTER = new SkelAtom(Foyer.OP_SYS_ALTER, en.store.getRootSystem());
         en.store.foyer.ATOM_SYS_GUARD = new SkelAtom(Foyer.OP_SYS_GUARD, en.store.getRootSystem());
@@ -194,6 +196,8 @@ public abstract class Branch extends AbstractBranch {
         store.foyer.ATOM_SEMICOLON = null;
         store.foyer.ATOM_CONDITION = null;
         store.foyer.ATOM_SOFT_CONDITION = null;
+        store.foyer.ATOM_SOFT_CUT = null;
+        store.foyer.ATOM_TURNSTYLE = null;
 
         store.foyer.ATOM_SYS_ALTER = null;
         store.foyer.ATOM_SYS_GUARD = null;

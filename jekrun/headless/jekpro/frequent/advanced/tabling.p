@@ -551,5 +551,4 @@ sys_table_help(F, H) :-
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1, -1).
-user:term_expansion(A, _) :- var(A), !, fail.
 user:term_expansion(A, B) :- sys_table_head(A, B).

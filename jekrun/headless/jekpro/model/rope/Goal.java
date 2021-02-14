@@ -57,6 +57,9 @@ public class Goal extends Intermediate {
     public final static int TYPE_SEQN_TRUE = 1;
     public final static int TYPE_SEQN_NONE = 2;
 
+    public final static int TYPE_FRNT_MTCH = 0;
+    public final static int TYPE_FRNT_NONE = 1;
+
     public Object term;
     public Intermediate back;
 
@@ -347,6 +350,21 @@ public class Goal extends Intermediate {
             return TYPE_SEQN_TRUE;
         } else {
             return TYPE_SEQN_NONE;
+        }
+    }
+
+    /**
+     * <p>Determine the front type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The sequen type.
+     */
+    public static int frontTYpe(Object t) {
+        if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_SOFT_CUT)) {
+            return TYPE_FRNT_MTCH;
+        } else {
+            return TYPE_FRNT_NONE;
         }
     }
 

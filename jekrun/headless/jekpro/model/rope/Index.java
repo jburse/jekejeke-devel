@@ -442,7 +442,7 @@ public final class Index {
      * @param at     The position.
      */
     private static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
-                                      Object m, Clause clause, int at) {
+                                         Object m, Clause clause, int at) {
         if (pairs instanceof AssocArray) {
             AssocArray<Object, Bouquet> list = (AssocArray) pairs;
             int j = list.indexOf(m);

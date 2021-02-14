@@ -80,7 +80,7 @@ final class ChoiceVirtual extends AbstractChoice {
 
         en.contskel = goalskel;
         en.contdisplay = goaldisplay;
-        if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+        if ((co.flags & CallOut.MASK_CALL_SPCI) == 0) {
             en.fault = null;
             en.releaseBind(mark);
             if (en.fault != null)
@@ -97,11 +97,11 @@ final class ChoiceVirtual extends AbstractChoice {
             ref = b1.display;
         }
 
-        co.flags &= ~CallOut.MASK_CALL_FIRST;
+        co.flags &= ~CallOut.MASK_CALL_FRST;
         for (; ; ) {
-            co.flags &= ~CallOut.MASK_CALL_RETRY;
-            co.flags &= ~CallOut.MASK_CALL_SPECI;
-            co.flags &= ~CallOut.MASK_CALL_CUTTR;
+            co.flags &= ~CallOut.MASK_CALL_RTRY;
+            co.flags &= ~CallOut.MASK_CALL_SPCI;
+            co.flags &= ~CallOut.MASK_CALL_CTTR;
 
             Object res = MemberVirtualDet.invokeVirtual(del.method, obj, args);
             if ((del.subflags & AbstractLense.MASK_METH_FUNC) != 0) {
@@ -117,10 +117,10 @@ final class ChoiceVirtual extends AbstractChoice {
             if (res != AbstractSkel.VOID_OBJ &&
                     !BindUniv.unifyTerm(AbstractTerm.getSkel(res), d,
                             (help = ((SkelCompound) term).args)[help.length - 1], ref, en)) {
-                if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
+                if ((co.flags & CallOut.MASK_CALL_RTRY) == 0)
                     return false;
 
-                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                if ((co.flags & CallOut.MASK_CALL_SPCI) == 0) {
                     en.fault = null;
                     en.releaseBind(mark);
                     if (en.fault != null)
@@ -130,9 +130,9 @@ final class ChoiceVirtual extends AbstractChoice {
                 if (ext)
                     d.remTab(en);
 
-                if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
+                if ((co.flags & CallOut.MASK_CALL_RTRY) != 0) {
                     /* meta argument change */
-                    if ((co.flags & CallOut.MASK_CALL_SPECI) != 0)
+                    if ((co.flags & CallOut.MASK_CALL_SPCI) != 0)
                         next = en.choices;
                     /* reuse choice point */
                     en.choices = this;
@@ -156,7 +156,7 @@ final class ChoiceVirtual extends AbstractChoice {
         en.choices = next;
         en.number--;
 
-        if ((co.flags & CallOut.MASK_CALL_CUTTR) == 0)
+        if ((co.flags & CallOut.MASK_CALL_CTTR) == 0)
             return;
 
         /* backup continuation */
@@ -170,8 +170,8 @@ final class ChoiceVirtual extends AbstractChoice {
             co.setException(null);
         }
         try {
-            co.flags &= ~CallOut.MASK_CALL_FIRST;
-            co.flags |= CallOut.MASK_CALL_CLEAN;
+            co.flags &= ~CallOut.MASK_CALL_FRST;
+            co.flags |= CallOut.MASK_CALL_CLEN;
             MemberVirtualDet.invokeVirtual(del.method, obj, args);
             InterpreterException ie = co.getException();
             en.fault = (ie != null ? (EngineException) ie.getException() : null);

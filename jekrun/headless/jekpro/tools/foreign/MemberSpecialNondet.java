@@ -153,7 +153,7 @@ final class MemberSpecialNondet extends AbstractMember {
         Object[] args = convertArgs(temp, ref, en, co);
         if ((en.store.foyer.getHint() & Foyer.HINT_MASK_LMTD) != 0)
             checkArgs(args);
-        co.flags |= CallOut.MASK_CALL_FIRST;
+        co.flags |= CallOut.MASK_CALL_FRST;
         for (; ; ) {
             Object res;
             if (special != null) {
@@ -174,10 +174,10 @@ final class MemberSpecialNondet extends AbstractMember {
             if (res != AbstractSkel.VOID_OBJ &&
                     !BindUniv.unifyTerm(AbstractTerm.getSkel(res), d,
                             (help = ((SkelCompound) temp).args)[help.length - 1], ref, en)) {
-                if ((co.flags & CallOut.MASK_CALL_RETRY) == 0)
+                if ((co.flags & CallOut.MASK_CALL_RTRY) == 0)
                     return false;
 
-                if ((co.flags & CallOut.MASK_CALL_SPECI) == 0) {
+                if ((co.flags & CallOut.MASK_CALL_SPCI) == 0) {
                     en.fault = null;
                     en.releaseBind(mark);
                     if (en.fault != null)
@@ -187,7 +187,7 @@ final class MemberSpecialNondet extends AbstractMember {
                 if (ext)
                     d.remTab(en);
 
-                if ((co.flags & CallOut.MASK_CALL_RETRY) != 0) {
+                if ((co.flags & CallOut.MASK_CALL_RTRY) != 0) {
                     ChoiceSpecial cp = new ChoiceSpecial(en.choices, en.contdisplay);
                     cp.co = co;
                     cp.del = this;
@@ -200,11 +200,11 @@ final class MemberSpecialNondet extends AbstractMember {
                 }
                 return true;
             }
-            co.flags &= ~CallOut.MASK_CALL_FIRST;
+            co.flags &= ~CallOut.MASK_CALL_FRST;
 
-            co.flags &= ~CallOut.MASK_CALL_RETRY;
-            co.flags &= ~CallOut.MASK_CALL_SPECI;
-            co.flags &= ~CallOut.MASK_CALL_CUTTR;
+            co.flags &= ~CallOut.MASK_CALL_RTRY;
+            co.flags &= ~CallOut.MASK_CALL_SPCI;
+            co.flags &= ~CallOut.MASK_CALL_CTTR;
         }
     }
 

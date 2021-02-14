@@ -6,6 +6,7 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
@@ -48,9 +49,8 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class Clause extends Directive implements InterfaceReference {
-    public final static String OP_TURNSTILE = ":-";
-
-    public final static int MASK_CLAUSE_ASSE = 0x00000010;
+    public final static int MASK_CLSE_ASSE = 0x00000010;
+    public final static int MASK_CLSE_MTCH = 0x00000020;
 
     public Object head;
     public int sizerule;
@@ -81,6 +81,19 @@ public class Clause extends Directive implements InterfaceReference {
         } else {
             return new Clause(copt);
         }
+    }
+
+    /**
+     * <p>Convert a body to intermediate form.</p>
+     * <p>Can be overridden by sub classes.</p>
+     *
+     * @param b     The body skeleton.
+     * @param c     The body display.
+     * @param en    The engine.
+     * @param close The close flag.
+     */
+    public final void bodyToInter(Object b, Display c, Engine en, boolean close) {
+        throw new IllegalArgumentException("not supported");
     }
 
     /***********************************************************/
@@ -120,7 +133,15 @@ public class Clause extends Directive implements InterfaceReference {
             Optimization.setBody(term, helper);
             clause.sizerule = Optimization.sortExtra(helper);
         }
-        if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0) {
+        if (!Goal.noBody(term)) {
+            Object t = Goal.bodyToGoalSkel(term);
+            if (Goal.frontTYpe(t) != Goal.TYPE_FRNT_NONE) {
+                clause.flags |= MASK_CLSE_MTCH;
+                term = Goal.bodyToRestSkel(term, en);
+            }
+        }
+        if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0 &&
+                (clause.flags & Clause.MASK_CLSE_MTCH) == 0) {
             clause.intargs = Optimization.unifyArgsLinear(clause.head, helper);
         } else {
             clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
@@ -215,12 +236,12 @@ public class Clause extends Directive implements InterfaceReference {
             throws EngineMessage {
         if (molec instanceof SkelCompound &&
                 ((SkelCompound) molec).args.length == 2 &&
-                ((SkelCompound) molec).sym.fun.equals(OP_TURNSTILE)) {
+                ((SkelCompound) molec).sym.fun.equals(Foyer.OP_TURNSTILE)) {
             SkelCompound sc = (SkelCompound) molec;
             return SpecialDynamic.colonToCallableSkel(sc.args[0], en);
         } else if (molec instanceof SkelCompound &&
                 ((SkelCompound) molec).args.length == 1 &&
-                ((SkelCompound) molec).sym.fun.equals(OP_TURNSTILE)) {
+                ((SkelCompound) molec).sym.fun.equals(Foyer.OP_TURNSTILE)) {
             return null;
         } else {
             return SpecialDynamic.colonToCallableSkel(molec, en);
@@ -237,12 +258,12 @@ public class Clause extends Directive implements InterfaceReference {
     static Object clauseToBody(Object molec, Engine en) {
         if (molec instanceof SkelCompound &&
                 ((SkelCompound) molec).args.length == 2 &&
-                ((SkelCompound) molec).sym.fun.equals(OP_TURNSTILE)) {
+                ((SkelCompound) molec).sym.fun.equals(Foyer.OP_TURNSTILE)) {
             SkelCompound sc = (SkelCompound) molec;
             return sc.args[1];
         } else if (molec instanceof SkelCompound &&
                 ((SkelCompound) molec).args.length == 1 &&
-                ((SkelCompound) molec).sym.fun.equals(OP_TURNSTILE)) {
+                ((SkelCompound) molec).sym.fun.equals(Foyer.OP_TURNSTILE)) {
             SkelCompound sc = (SkelCompound) molec;
             return sc.args[0];
         } else {
@@ -262,19 +283,39 @@ public class Clause extends Directive implements InterfaceReference {
      * @return The term.
      * @throws EngineMessage Shit happens.
      */
-    public static Object interToClause(Clause clause, Engine en)
+    public static Object interToClauseSkel(Clause clause, Engine en)
             throws EngineMessage {
+        Object chead = SpecialDynamic.callableToColonSkel(clause.head, en);
         Object body = interToBodySkel(clause, clause.last, en);
-        if (clause.head != null) {
-            Object chead = SpecialDynamic.callableToColonSkel(clause.head, en);
+        if (body instanceof SkelAtom &&
+                ((SkelAtom) body).fun.equals(Foyer.OP_TRUE)) {
+            return chead;
+        } else {
+            return new SkelCompound(en.store.foyer.ATOM_TURNSTYLE, chead, body);
+        }
+    }
+
+    /**
+     * <p>Convert the intermediate form into a term.</p>
+     * <p>Will skip begin and commit nodes.</p>
+     *
+     * @param last The conversion end.
+     * @param en   The store.
+     * @return The skeleton.
+     */
+    public static Object interToBodySkel(Clause temp, Intermediate last,
+                                         Engine en) {
+        if ((temp.flags & Clause.MASK_CLSE_MTCH) != 0) {
+            Object body = Directive.interToBodySkel(temp, last, en);
             if (body instanceof SkelAtom &&
                     ((SkelAtom) body).fun.equals(Foyer.OP_TRUE)) {
-                return chead;
+                return en.store.foyer.ATOM_SOFT_CUT;
             } else {
-                return new SkelCompound(new SkelAtom(OP_TURNSTILE), chead, body);
+                return new SkelCompound(en.store.foyer.ATOM_COMMA,
+                        en.store.foyer.ATOM_SOFT_CUT, body);
             }
         } else {
-            return new SkelCompound(new SkelAtom(OP_TURNSTILE), body);
+            return Directive.interToBodySkel(temp, last, en);
         }
     }
 
@@ -315,7 +356,7 @@ public class Clause extends Directive implements InterfaceReference {
      */
     public void clauseRef(Engine en)
             throws EngineMessage {
-        Object val = interToClause(this, en);
+        Object val = interToClauseSkel(this, en);
         en.skel = val;
         en.display = AbstractSkel.createMarker(val);
     }

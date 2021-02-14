@@ -150,7 +150,7 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
     public boolean assertClause(Clause clause,
                                 int flags, Engine en)
             throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
             return false;
         try {
             lock.writeLock().lockInterruptibly();
@@ -158,9 +158,9 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
             throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
-            if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
+            if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
                 return false;
-            clause.flags |= Clause.MASK_CLAUSE_ASSE;
+            clause.flags |= Clause.MASK_CLSE_ASSE;
             cr.assertClause(0, clause, flags);
             return true;
         } finally {
@@ -177,7 +177,7 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
      */
     public boolean retractClause(Clause clause, Engine en)
             throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
             return false;
         try {
             lock.writeLock().lockInterruptibly();
@@ -185,9 +185,9 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
             throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
-            if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
+            if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
                 return false;
-            clause.flags &= ~Clause.MASK_CLAUSE_ASSE;
+            clause.flags &= ~Clause.MASK_CLSE_ASSE;
             cr.retractClause(0, clause);
             return true;
         } finally {

@@ -63,6 +63,9 @@
 
 :- module(user, []).
 
+:- public infix(?-).
+:- op(1200, xfx, ?-).
+
 % already defined in quali.p
 % :- public (:)/2.
 % :- virtual (:)/2.
@@ -195,3 +198,9 @@
 :- meta_predicate call(7, ?, ?, ?, ?, ?, ?, ?).
 :- set_predicate_property(call/8, sys_notrace).
 :- special(call/8, 'SpecialApply', 0).
+
+% user:term_expansion(+Term, -Term)
+:- public user:term_expansion/2.
+:- multifile user:term_expansion/2.
+:- meta_predicate user:term_expansion(-1, -1).
+user:term_expansion((P ?- R), (P :- '!*', R)).

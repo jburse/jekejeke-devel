@@ -144,7 +144,7 @@ final class DefinedGroupLocal extends AbstractDefined {
     public boolean assertClause(Clause clause,
                                 int flags, Engine en)
             throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
             return false;
         LocalBlocking ep = defineLocalBlocking(en);
         try {
@@ -153,9 +153,9 @@ final class DefinedGroupLocal extends AbstractDefined {
             throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
-            if ((clause.flags & Clause.MASK_CLAUSE_ASSE) != 0)
+            if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
                 return false;
-            clause.flags |= Clause.MASK_CLAUSE_ASSE;
+            clause.flags |= Clause.MASK_CLSE_ASSE;
             ep.cr.assertClause(0, clause, flags);
             return true;
         } finally {
@@ -173,7 +173,7 @@ final class DefinedGroupLocal extends AbstractDefined {
      */
     public boolean retractClause(Clause clause, Engine en)
             throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
             return false;
         LocalBlocking ep = defineLocalBlocking(en);
         try {
@@ -182,9 +182,9 @@ final class DefinedGroupLocal extends AbstractDefined {
             throw (EngineMessage) ForeignThread.sysThreadClear();
         }
         try {
-            if ((clause.flags & Clause.MASK_CLAUSE_ASSE) == 0)
+            if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
                 return false;
-            clause.flags &= ~Clause.MASK_CLAUSE_ASSE;
+            clause.flags &= ~Clause.MASK_CLSE_ASSE;
             ep.cr.retractClause(0, clause);
             return true;
         } finally {

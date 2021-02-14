@@ -77,6 +77,8 @@ public class Foyer extends Enforced {
     public final static String OP_SEMICOLON = ";";
     public final static String OP_CONDITION = "->";
     public final static String OP_SOFT_CONDITION = "*->";
+    public final static String OP_SOFT_CUT = "!*";
+    public final static String OP_TURNSTILE = ":-";
 
     public final static String OP_SYS_ALTER = "sys_alter";
     public final static String OP_SYS_GUARD = "sys_guard";
@@ -142,6 +144,8 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SEMICOLON;
     public SkelAtom ATOM_CONDITION;
     public SkelAtom ATOM_SOFT_CONDITION;
+    public SkelAtom ATOM_SOFT_CUT;
+    public SkelAtom ATOM_TURNSTYLE;
 
     public SkelAtom ATOM_SYS_ALTER;
     public SkelAtom ATOM_SYS_GUARD;

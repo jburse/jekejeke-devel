@@ -87,12 +87,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 d2.setSize(clause.sizerule);
             }
-            int[] arr = clause.intargs;
-            if (arr == null)
-                break;
-            if (AbstractDefined.unifyExecute(((SkelCompound) t).args, d,
-                    ((SkelCompound) clause.head).args, d2,
-                    arr, en))
+            if (AbstractDefined.unifyExecute(t, d, clause, d2, en))
                 break;
 
             /* end of cursor */
@@ -187,7 +182,7 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
                     AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
                             ((SkelCompound) clause.head).args, d2,
                             clause.head, en)) {
-                Object end = Directive.interToBodySkel(clause, clause.last, en);
+                Object end = Clause.interToBodySkel(clause, clause.last, en);
                 if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))

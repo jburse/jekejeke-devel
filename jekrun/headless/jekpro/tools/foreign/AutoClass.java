@@ -8,6 +8,7 @@ import jekpro.model.molec.CachePredicate;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
@@ -314,7 +315,7 @@ public final class AutoClass extends AbstractAuto {
                                         this), test, goal);
                             }
                         }
-                        Object molec = new SkelCompound(new SkelAtom(Clause.OP_TURNSTILE), head, goal);
+                        Object molec = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), head, goal);
                         Clause clause = Clause.determineCompiled(AbstractDefined.OPT_PERF_CNLT, head, molec, en);
                         clause.assertRef(AbstractDefined.OPT_ACTI_BOTT, en);
                     }
