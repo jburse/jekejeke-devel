@@ -27,6 +27,7 @@
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
 !/2	standard/dcg
+'!*'/0	standard/apply
 *-> /4	standard/dcg
 ','/4	standard/dcg
 --> /2	standard/dcg
@@ -45,6 +46,7 @@ public
 :: /8	standard/apply
 :: /9	standard/apply
 ;/4	standard/dcg
+?- /2	standard/apply
 []/2	standard/dcg
 (\)/3	advanced/abstract
 (\)/4	advanced/abstract
@@ -393,6 +395,8 @@ sort/3	standard/sort
 spawn/3	experiment/broker
 stream_property/2	stream/stream
 subset/2	basic/lists
+subsumes/2	standard/apply
+subsumes_term/2	standard/apply
 subtract/3	basic/lists
 succ/2	standard/arith
 symdiff/3	basic/lists
@@ -436,6 +440,7 @@ sys_type_of/2	basic/score
 sys_unwrap_eq/3	misc/residue
 (table)/1	advanced/tabling
 tanh/2	basic/hyper
+term_expansion/2	standard/apply
 term_expansion/2	standard/expand
 user:term_expansion/2	advanced/tabling
 user:term_expansion/2	standard/dcg

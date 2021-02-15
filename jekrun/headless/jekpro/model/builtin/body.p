@@ -68,8 +68,9 @@
 
 /**
  * :- A:
- * The predicate cannot be executed and exists only to configure
- * the body conversion table.
+ * The predicate cannot be executed and exists only to provide
+ * meta predicate declaration. The predicate is used inside Prolog
+ * text to indicate directives.
  */
 % :- +Goal
 (:- _) :- throw(error(existence_error(body, (:-)/1), _)).
@@ -80,8 +81,9 @@
 
 /**
  * A :- B:
- * The predicate cannot be executed and exists only to configure
- * the body conversion table.
+ * The predicate cannot be executed and exists only to provide
+ * meta predicate declaration. The predicate is used inside Prolog
+ * text to indicate rules.
  */
 % +Term :- +Goal
 (_ :- _) :- throw(error(existence_error(body, (:-)/2), _)).

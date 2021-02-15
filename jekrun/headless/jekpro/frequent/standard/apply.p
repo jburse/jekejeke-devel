@@ -12,23 +12,30 @@
  * ?- call(writeln, hello).
  * hello
  *
- * The call/n predicates also work for qualified closures. A qualified closure
- * is similarly extended to an unqualified closure. The arguments will be added
- * to the inner unqualified closure and the qualification will be preserved.
- * So extending a:b(X) by Y results in a:b(X,Y). The predicates
- * sys_extend_args/[3..9] allow to call the argument extension without further
- * invoking the result.
+ * The call/n predicates also work for qualified closures. A qualified
+ * closure is similarly extended to an unqualified closure. The arguments
+ * will be added to the inner unqualified closure and the qualification
+ * will be preserved. So extending a:b(X) by Y results in a:b(X,Y). Thanks
+ * to bridging it is also possible to use the call/n predicates inside
+ * arithmetic expressions.
  *
  * Example:
- * ?- X is call(sin,0.2).
- * X = 0.19866933079506122
- * ?- Y = sin, X is call(Y,0.2).
- * Y = sin,
- * X = 0.19866933079506122
+ * ?- [user].
+ * p(f(_)) :- write(foo), nl.
+ * p(f(_)) ?- write(bar), nl.
+ * p(f(_)) :- write(baz), nl.
  *
- * Thanks to  bridging it is also possible to use the call/n predicates
- * inside arithmetic expressions. The bridge will turn the call/n evaluable
- * function into a call/n+1 predicate with the desired effect.
+ * Yes
+ * ?- p(_), fail; true.
+ * foo
+ * baz
+ * Yes
+ *
+ * With the introduction of single sided unification, a new rule format
+ * based on the operator (?-)/2 has been introduced. Prolog clauses that
+ * use this operator use single sided unification during execution. This
+ * means that the clause head acts as a pattern that need to match the
+ * current goal without binding any of the goal variables.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -198,6 +205,38 @@
 :- meta_predicate call(7, ?, ?, ?, ?, ?, ?, ?).
 :- set_predicate_property(call/8, sys_notrace).
 :- special(call/8, 'SpecialApply', 0).
+
+/**
+ * subsumes_term(X, Y): [ISO 8.2.4]
+ * The predicate succeeds if X subsumes Y without keeping the bindings.
+ */
+:- public subsumes_term/2.
+:- special(subsumes_term/2, 'SpecialApply', 1).
+
+/**
+ * subsumes(X, Y):
+ * The predicate succeeds if X subsumes Y.
+ */
+:- public subsumes/2.
+:- special(subsumes/2, 'SpecialApply', 2).
+
+/**
+ * A ?- B:
+ * The predicate cannot be executed and exists only to provide
+ * meta predicate declaration. The predicate is used inside Prolog
+ * text to indicate single sided unification rules.
+ */
+:- public ?- /2.
+:- meta_predicate ?-(0, -1).
+?-(_, _) :- throw(error(existence_error(body, ?- /2), _)).
+
+/**
+ * '!*':
+ * The predicate cannot be executed. The predicate is used inside Prolog
+ * texts to indicate the body of a single sided unification rule.
+ */
+:- public '!*'/0.
+'!*' :- throw(error(existence_error(body, '!*'/0), _)).
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.

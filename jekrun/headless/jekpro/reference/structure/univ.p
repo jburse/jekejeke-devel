@@ -151,7 +151,7 @@ _ =.. X :-
 
 /**
  * X = Y: [ISO 8.2.1]
- * The predicate succeeds when X and Y unify, no occurs check is performed.
+ * The predicate succeeds when X and Y unify.
  */
 % +Term = +Term
 % already defined in member.p
@@ -166,25 +166,11 @@ _ =.. X :-
 
 /**
  * X \= Y: [ISO 8.2.3]
- * The predicate succeeds when X and Y do not unify, no occurs check is performed.
+ * The predicate succeeds when X and Y do not unify.
  */
 % +Term \= +Term
 :- public \= /2.
 :- special(\= /2, 'SpecialUniv', 7).
-
-/**
- * subsumes_term(X, Y): [ISO 8.2.4]
- * The predicate succeeds if X subsumes Y without keeping the bindings.
- */
-:- public subsumes_term/2.
-:- special(subsumes_term/2, 'SpecialUniv', 8).
-
-/**
- * subsumes(X, Y):
- * The predicate succeeds if X subsumes Y.
- */
-:- public subsumes/2.
-:- special(subsumes/2, 'SpecialUniv', 9).
 
 /**
  * copy_term(X, Y): [ISO 8.5.4]
@@ -192,5 +178,5 @@ _ =.. X :-
  */
 % copy_term(+Term, -Term)
 :- public copy_term/2.
-:- special(copy_term/2, 'SpecialUniv', 10).
+:- special(copy_term/2, 'SpecialUniv', 8).
 

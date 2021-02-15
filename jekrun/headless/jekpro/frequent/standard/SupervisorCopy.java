@@ -3,7 +3,6 @@ package jekpro.frequent.standard;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;

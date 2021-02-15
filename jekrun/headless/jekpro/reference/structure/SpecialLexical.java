@@ -2,7 +2,6 @@ package jekpro.reference.structure;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.inter.Supervisor;
 import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
@@ -275,12 +274,12 @@ public final class SpecialLexical extends AbstractSpecial {
      * @param d1   The first display.
      * @param beta The second skeleton.
      * @param d2   The second display.
-     * @param en The engine.
+     * @param en   The engine.
      * @return <0 alfa < beta, 0 alfa = beta, >0 alfa > beta
      * @throws ArithmeticException Incomparable reference.
      */
     public static int compareTerm(Object alfa, Display d1,
-                           Object beta, Display d2, Engine en)
+                                  Object beta, Display d2, Engine en)
             throws ArithmeticException {
         for (; ; ) {
             BindUniv b1;
@@ -440,7 +439,7 @@ public final class SpecialLexical extends AbstractSpecial {
      * @return True if the two terms unify, otherwise false.
      */
     public static boolean matchTerm(Object alfa, Display d1,
-                                      Object beta, Display d2, Engine en) {
+                                    Object beta, Display d2, Engine en) {
         for (; ; ) {
             BindUniv b2;
             while (alfa instanceof SkelVar &&

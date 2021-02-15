@@ -1,15 +1,10 @@
 package jekpro.frequent.standard;
 
-import jekpro.frequent.experiment.SpecialRef;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.rope.Clause;
-import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>Provides built-in predicates for the module expand.</p>
