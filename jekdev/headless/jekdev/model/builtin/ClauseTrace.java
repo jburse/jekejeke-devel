@@ -61,25 +61,6 @@ public final class ClauseTrace extends Clause {
         }
     }
 
-    /**
-     * <p>Convert a body to intermediate form.</p>
-     *
-     * @param b     The body skeleton.
-     * @param c     The body display.
-     * @param en    The engine.
-     * @param close The close flag.
-     * @throws EngineMessage Shit happens.
-     */
-    public final void bodyToInter(Object b, Display c, Engine en, boolean close)
-            throws EngineMessage {
-        SupervisorCall ec = en.visor.getCall();
-        ((SupervisorCallTrace) ec).bodyToInterTrace(this, b, c, en);
-        if (close) {
-            addInter(Success.DEFAULT, MASK_FIXUP_MARK);
-            addInterTrace(Success.DEFAULT, 0);
-        }
-    }
-
     /******************************************************/
     /* Builder Utilities                                  */
     /******************************************************/

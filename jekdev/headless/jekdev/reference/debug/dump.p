@@ -23,25 +23,21 @@
  * argument, it does so only for the key “7”:
  *
  * Example:
- * ?- jiti_list(p/2).
+ * ?- jiti_list.
  * -------- p/2 ---------
  * length=3
- * at=0
- *   key=7, length=2
- *     at=1
- *       key=a, length=1
- *       key=b, length=1
- *   key=9, length=1
+ * at=1
+ *    key=7, length=2
+ *       at=2
+ *          key=a, length=1
+ *          key=b, length=1
+ *    key=9, length=1
  *
- * The following index attributes are shown during a clause index dump:
- *
- * length=<len>: Gives the size of indexed clause set.
- * arg=<pos>: Gives the argument position that is indexed.
- * map=<size>: Gives the hash table size of the argument position.
- * <key>=: Gives the key and corresponding sub index.
- * hash=<index>: Gives the hash code module hash table size of the key.
- * nonguard: Gives the nonguard hash table miss fallback index.
- * guard: Gives the guard hash table miss fallback index.
+ * Yes
+ * ?- jiti_summary.
+ * 1	2	150%
+ * 1+2	2	100%
+ * Yes
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -85,7 +81,8 @@
  * jiti_list(P):
  * The predicate dumps the clause indexes of the clauses of the
  * user predicates. The unary predicate allows specifying a predicate
- * indicator P.
+ * indicator P. See the API documentation for a description
+ * of the listed attributes.
  */
 % jiti_list
 :- public jiti_list/0.
@@ -125,7 +122,7 @@ jiti_inspect(I, F) :- ground(I), !,
 jiti_inspect(I, F) :-
    setof(I, U^(sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_clause(I, U)), B),
+      sys_has_set(I)), B),
    member(I, B),
    sys_intermediate_item_sep(I),
    sys_jiti_inspect(I, F), nl,
@@ -137,7 +134,7 @@ jiti_inspect(_, _).
 jiti_inspect2(I, F) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_clause(I, U),
+   sys_has_set(I),
    sys_intermediate_item_sep(I),
    sys_jiti_inspect(I, F), nl,
    fail.
@@ -151,7 +148,8 @@ jiti_inspect2(_, _).
  * jiti_summary:
  * jiti_summary(P):
  * Works like the predicates jiti_list/[0,1] except that an overall statistics
- * about the Prolog indexes is reported.
+ * about the Prolog indexes is reported. See the API documentation for a description
+ * of the listed columns.
  */
 % jiti_summary
 :- public jiti_summary/0.
@@ -174,7 +172,7 @@ jiti_summary(I, M) :- ground(I), !,
 jiti_summary(I, M) :-
    setof(I, U^(sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_clause(I, U)), B),
+      sys_has_set(I)), B),
    member(I, B),
    sys_jiti_recap(I, M),
    fail.
@@ -185,7 +183,7 @@ jiti_summary(_, _).
 jiti_summary2(I, M) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_clause(I, U),
+   sys_has_set(I),
    sys_jiti_recap(I, M),
    fail.
 jiti_summary2(_, _).
@@ -210,7 +208,7 @@ jiti_report(I) :- ground(I), !,
 jiti_report(I) :-
    setof(I, U^(sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_clause(I, U)), B),
+      sys_has_set(I)), B),
    member(I, B),
    sys_averager_new(M),
    sys_jiti_recap(I, M),
@@ -225,7 +223,7 @@ jiti_report(_).
 jiti_report2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_clause(I, U),
+   sys_has_set(I),
    sys_averager_new(M),
    sys_jiti_recap(I, M),
    sys_averager_has(M),
@@ -249,3 +247,6 @@ jiti_report2(_).
 % sys_averager_has(+Map)
 :- private sys_averager_has/1.
 :- special(sys_averager_has/1, 'SpecialDump', 4).
+
+% sys_has_set(+Indicator)
+:- special(sys_has_set/1, 'SpecialDump', 5).

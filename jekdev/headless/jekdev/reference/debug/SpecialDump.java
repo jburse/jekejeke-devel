@@ -57,6 +57,7 @@ public final class SpecialDump extends AbstractSpecial {
     private final static int SPECIAL_SYS_AVERAGER_NEW = 2;
     private final static int SPECIAL_SYS_AVERAGER_SHOW = 3;
     private final static int SPECIAL_SYS_AVERAGER_HAS = 4;
+    private final static int SPECIAL_SYS_HAS_SET = 5;
 
     /**
      * <p>Create a index dump special.</p>
@@ -131,6 +132,19 @@ public final class SpecialDump extends AbstractSpecial {
                 if (averagerEmpty(map))
                     return false;
                 return true;
+            case SPECIAL_SYS_HAS_SET:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
+
+                if (!SpecialDump.hasSet((AbstractDefined) pick.del, en))
+                    return false;
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
         }
@@ -166,6 +180,34 @@ public final class SpecialDump extends AbstractSpecial {
         return DumpReport.empty(map);
     }
 
+    /**
+     * <p>Check whether the predicate has a visible set.</p>
+     *
+     * @param def The abstract defined.
+     * @param en  The engine.
+     * @throws EngineMessage Shit happens.
+     */
+    private static boolean hasSet(AbstractDefined def, Engine en)
+            throws EngineMessage {
+        ReadWriteLock lock = def.getLock(en);
+        if (lock == null) {
+            Bouquet cr = def.getBouquet(en);
+            return (getLengthScope(cr.set, en) != 0);
+        } else {
+            try {
+                lock.readLock().lockInterruptibly();
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+            try {
+                Bouquet cr = def.getBouquet(en);
+                return (getLengthScope(cr.set, en) != 0);
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
+    }
+
     /*********************************************************/
     /* Index Inspection                                      */
     /*********************************************************/
@@ -198,7 +240,11 @@ public final class SpecialDump extends AbstractSpecial {
             dp.pw = pw;
 
             ReadWriteLock lock = def.getLock(en);
-            if (lock != null) {
+            if (lock == null) {
+                Bouquet cr = def.getBouquet(en);
+                int len = getLengthScope(cr.set, en);
+                SpecialDump.inspectBouquet(cr, dp, 0, len, en);
+            } else {
                 try {
                     lock.readLock().lockInterruptibly();
                 } catch (InterruptedException x) {
@@ -211,10 +257,6 @@ public final class SpecialDump extends AbstractSpecial {
                 } finally {
                     lock.readLock().unlock();
                 }
-            } else {
-                Bouquet cr = def.getBouquet(en);
-                int len = getLengthScope(cr.set, en);
-                SpecialDump.inspectBouquet(cr, dp, 0, len, en);
             }
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
@@ -318,7 +360,10 @@ public final class SpecialDump extends AbstractSpecial {
             throws EngineException, EngineMessage {
         try {
             ReadWriteLock lock = def.getLock(en);
-            if (lock != null) {
+            if (lock == null) {
+                Bouquet cr = def.getBouquet(en);
+                SpecialDump.recapBouquet(cr, map, "+", 0, en);
+            } else {
                 try {
                     lock.readLock().lockInterruptibly();
                 } catch (InterruptedException x) {
@@ -326,13 +371,10 @@ public final class SpecialDump extends AbstractSpecial {
                 }
                 try {
                     Bouquet cr = def.getBouquet(en);
-                    SpecialDump.recapBouquet(cr, map, "", 0, en);
+                    SpecialDump.recapBouquet(cr, map, "+", 0, en);
                 } finally {
                     lock.readLock().unlock();
                 }
-            } else {
-                Bouquet cr = def.getBouquet(en);
-                SpecialDump.recapBouquet(cr, map, "", 0, en);
             }
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);

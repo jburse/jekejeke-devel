@@ -60,11 +60,12 @@
  * vm_report/[0,1] produces a statistic of the intermediate code in the
  * user space on a per predicate basis.
  *
- * With the introduction of the occurs check flag we have introduced head
- * structure analysis which determines whether an argument is linear and/or
- * whether an argument has first occurrence. Depending on this analysis
- * different head argument unification are used and these head unifications
- * can spare an occurs check.
+ * With the introduction of the occurs check flag we have introduced
+ * head structure analysis which determines whether an argument is
+ * linear and/or whether an argument has first occur-rence. Depending
+ * on this analysis different head argument unifications unify_linear
+ * and unify_mixed are used and these head unifications can spare
+ * an occurs check.
  *
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

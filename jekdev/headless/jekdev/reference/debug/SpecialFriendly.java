@@ -218,7 +218,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 SkelAtom sa = StackElement.callableToName(clause.head);
                 if (source != sa.scope)
                     continue;
-                Object t = Clause.interToClause(clause, en);
+                Object t = Clause.interToClauseSkel(clause, en);
                 pw.setDefaults(source);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
                 pw.setSpez(PrologWriter.SPEZ_META);
