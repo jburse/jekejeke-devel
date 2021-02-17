@@ -226,7 +226,6 @@ public final class SpecialLoad extends AbstractSpecial {
                     return false;
                 if (pick.getDef(source) == null)
                     return false;
-
                 if (!hasClause(pick, source, en))
                     return false;
                 return true;

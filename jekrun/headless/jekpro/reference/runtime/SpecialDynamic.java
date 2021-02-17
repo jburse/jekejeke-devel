@@ -61,7 +61,7 @@ public final class SpecialDynamic extends AbstractSpecial {
     private final static int SPECIAL_ASSERTA = 4;
     private final static int SPECIAL_ASSERTZ = 5;
     private final static int SPECIAL_ABOLISH_PREDICATE = 6;
-    private final static int SPECIAL_ABOLISH_OPER = 7;
+    private final static int SPECIAL_ABOLISH_OPERATOR = 7;
 
     /**
      * <p>Create a predicate special.</p>
@@ -107,7 +107,8 @@ public final class SpecialDynamic extends AbstractSpecial {
                 SpecialDynamic.defineGroupLocal(pick, en);
                 return true;
             case SPECIAL_CLAUSE:
-                return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE, en);
+                return AbstractDefined.searchKnowledgebase(
+                        AbstractDefined.OPT_CHCK_ASSE, en);
             case SPECIAL_ASSERTA:
                 AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
@@ -124,7 +125,7 @@ public final class SpecialDynamic extends AbstractSpecial {
                     return true;
                 abolishPred(pick, en);
                 return true;
-            case SPECIAL_ABOLISH_OPER:
+            case SPECIAL_ABOLISH_OPERATOR:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 Operator oper = SpecialOper.operToOperatorDefined(temp[0], ref, en, 0);

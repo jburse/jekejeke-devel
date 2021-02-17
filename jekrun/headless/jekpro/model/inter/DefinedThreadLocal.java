@@ -1,10 +1,7 @@
 package jekpro.model.inter;
 
-import jekpro.model.molec.Display;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
-import jekpro.model.rope.Clause;
-import matula.util.data.AbstractList;
 import matula.util.data.ListArray;
 
 import java.util.concurrent.locks.ReadWriteLock;
@@ -55,7 +52,7 @@ final class DefinedThreadLocal extends AbstractDefined {
     }
 
     /**************************************************************/
-    /* Variation Points Predicate                                 */
+    /* Variation Points                                           */
     /**************************************************************/
 
     /**
@@ -75,71 +72,6 @@ final class DefinedThreadLocal extends AbstractDefined {
      */
     public void releasePredicate(Predicate pick) {
         pick.getSource().getStore().foyer.releaseHole(seqid);
-    }
-
-    /**************************************************************/
-    /* Variation Points Predicate Defined                         */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve the clause list.</p>
-     *
-     * @param en The engine.
-     * @return The clause list or null.
-     */
-    public Clause[] listClauses(Engine en) {
-        LocalLockfree ep = defineLocalLockfree(en);
-        return ep.cr.getClauses();
-    }
-
-    /**
-     * <p>Retrieve a clause list for the given term.</p>
-     *
-     * @param m  The term skel.
-     * @param d  The term display.
-     * @param en The engine.
-     */
-    final Clause[] definedClauses(Object m, Display d, Engine en) {
-        LocalLockfree ep = defineLocalLockfree(en);
-        Bouquet temp = ep.cr;
-        AbstractList<Clause> set = temp.set;
-        if (set != null && set.size() != 1 &&
-                (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
-            temp = Bouquet.definedClauses(temp, m, d, en);
-        return temp.getClauses();
-    }
-
-    /**
-     * <p>Add the clause to the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param flags  The flags.
-     * @param en     The engine.
-     */
-    public boolean assertClause(Clause clause,
-                                int flags, Engine en) {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
-            return false;
-        LocalLockfree ep = defineLocalLockfree(en);
-        clause.flags |= Clause.MASK_CLSE_ASSE;
-        ep.cr.assertClause(0, clause, flags);
-        return true;
-    }
-
-    /**
-     * <p>Remove the clause from the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param en     The engine.
-     * @return True if clause was found and removed, otherwise false.
-     */
-    public boolean retractClause(Clause clause, Engine en) {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
-            return false;
-        LocalLockfree ep = defineLocalLockfree(en);
-        clause.flags &= ~Clause.MASK_CLSE_ASSE;
-        ep.cr.retractClause(0, clause);
-        return true;
     }
 
     /**

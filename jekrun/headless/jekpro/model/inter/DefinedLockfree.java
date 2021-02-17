@@ -1,11 +1,10 @@
 package jekpro.model.inter;
 
-import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelAtom;
-import matula.util.data.AbstractList;
 
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -53,7 +52,7 @@ final class DefinedLockfree extends AbstractDefined {
     }
 
     /**************************************************************/
-    /* Variation Points Predicate                                 */
+    /* Variation Points                                           */
     /**************************************************************/
 
     /**
@@ -62,7 +61,8 @@ final class DefinedLockfree extends AbstractDefined {
      * @param pick  The predicate.
      * @param scope The source.
      */
-    public void shrinkPredicate(Predicate pick, AbstractSource scope) {
+    public void shrinkPredicate(Predicate pick, AbstractSource scope)
+            throws EngineMessage {
         Clause[] list = listClauses(null);
         for (int j = 0; j < list.length; j++) {
             Clause clause = list[j];
@@ -79,67 +79,6 @@ final class DefinedLockfree extends AbstractDefined {
      */
     public void releasePredicate(Predicate pick) {
         /* */
-    }
-
-    /**************************************************************/
-    /* Variation Points Predicate Defined                         */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve the clause list.</p>
-     *
-     * @param en The engine.
-     * @return the clause list or null.
-     */
-    public Clause[] listClauses(Engine en) {
-        return cr.getClauses();
-    }
-
-    /**
-     * <p>Retrieve a clause list for the given term.</p>
-     *
-     * @param m  The term skel.
-     * @param d  The term display.
-     * @param en The engine.
-     */
-    final Clause[] definedClauses(Object m, Display d, Engine en) {
-        Bouquet temp = cr;
-        AbstractList<Clause> set = temp.set;
-        if (set != null && set.size() != 1 &&
-                (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
-            temp = Bouquet.definedClauses(temp, m, d, en);
-        return temp.getClauses();
-    }
-
-    /**
-     * <p>Add the clause to the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param flags  The flags.
-     * @param en     The engine.
-     */
-    public boolean assertClause(Clause clause,
-                                int flags, Engine en) {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
-            return false;
-        clause.flags |= Clause.MASK_CLSE_ASSE;
-        cr.assertClause(0, clause, flags);
-        return true;
-    }
-
-    /**
-     * <p>Remove the clause from the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param en     The engine.
-     * @return True if clause was found and removed, otherwise false.
-     */
-    public boolean retractClause(Clause clause, Engine en) {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
-            return false;
-        clause.flags &= ~Clause.MASK_CLSE_ASSE;
-        cr.retractClause(0, clause);
-        return true;
     }
 
     /**

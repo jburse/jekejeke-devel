@@ -69,6 +69,7 @@
 :- use_package(foreign(jekpro/frequent/standard)).
 
 :- module(user, []).
+:- use_module(library(experiment/sets)).
 
 :- public infix(?-).
 :- op(1200, xfx, ?-).
@@ -231,15 +232,38 @@
 ?-(_, _) :- throw(error(existence_error(body, ?- /2), _)).
 
 /**
- * '!*':
- * The predicate cannot be executed. The predicate is used inside Prolog
- * texts to indicate the body of a single sided unification rule.
+ * sys_match(T, I, O, V, G, H):
+ * The predicate succeeds in translating the match
+ * T into a match V. The lists I and O are used to
+ * keep track of the visited variables. The lists G
+ * and H are used to generate the goals.
  */
-:- public '!*'/0.
-'!*' :- throw(error(existence_error(body, '!*'/0), _)).
+:- private sys_match/6.
+sys_match(T, I, O, V, (nonvar(V), V = S, G), H) :- nonvar(T), !,
+   T =.. [F|L],
+   sys_match_list(L, I, O, R, G, H),
+   S =.. [F|R].
+sys_match(T, I, I, V, (V == T, G), G) :- eq_contains(I, T), !.
+sys_match(T, I, [T|I], T, G, G).
+
+/**
+ * sys_match_list(T, I, O, V, G, H):
+ * The predicate succeeds in translating the matches
+ * T into a matches V. The lists I and O are used to
+ * keep track of the visited variables. The lists G
+ * and H are used to generate the goals.
+ */
+:- private sys_match_list/6.
+sys_match_list([X|L], I, O, [Y|R], G, H) :-
+   sys_match(X, I, J, Y, G, K),
+   sys_match_list(L, J, O, R, K, H).
+sys_match_list([], I, I, [], G, G).
 
 % user:term_expansion(+Term, -Term)
 :- public user:term_expansion/2.
 :- multifile user:term_expansion/2.
 :- meta_predicate user:term_expansion(-1, -1).
-user:term_expansion((P ?- R), (P :- '!*', R)).
+user:term_expansion((P ?- Q), (S :- G)) :-
+   P =.. [F|L],
+   sys_match_list(L, [], _, R, G, Q),
+   S =.. [F|R].

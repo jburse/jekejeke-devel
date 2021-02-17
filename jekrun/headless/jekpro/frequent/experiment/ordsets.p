@@ -63,7 +63,7 @@
  * ord_contains(O, E):
  * The predicate succeeds when the set O contains the element E.
  */
-% ord_contains(+OrdSet, +Elem)
+% ord_contains(+OrdSet, +Term)
 :- public ord_contains/2.
 ord_contains(X, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -79,7 +79,7 @@ ord_contains(X, _) :-
  * ord_delete(O, E, P):
  * The predicate succeeds when P unifies with the subtract of O by [E].
  */
-% ord_delete(+OrdSet, +Elem, -OrdSet)
+% ord_delete(+OrdSet, +Term, -OrdSet)
 :- public ord_delete/3.
 ord_delete(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -97,7 +97,7 @@ ord_delete(X, _, _) :-
  * ord_add(O, E, P):
  * The predicate succeeds when P unifies with the union of [E] and O.
  */
-% ord_add(+OrdSet, +Elem, -OrdSet)
+% ord_add(+OrdSet, +Term, -OrdSet)
 :- public ord_add/3.
 ord_add(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).

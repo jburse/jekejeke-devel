@@ -57,7 +57,7 @@
  * eq_contains(S, E):
  * The predicate succeeds when the set S contains the element E.
  */
-% eq_contains(+Set, +Elem)
+% eq_contains(+List, +Term)
 :- public eq_contains/2.
 eq_contains(X, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -72,7 +72,7 @@ eq_contains(X, _) :-
  * eq_delete(S, E, T):
  * The predicate succeeds when T unifies with the subtract of S by [E].
  */
-% eq_delete(+Set, +Elem, -Set)
+% eq_delete(+List, +Term, -Set)
 :- public eq_delete/3.
 eq_delete(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -90,7 +90,7 @@ eq_delete(X, _, _) :-
  * eq_add(S, E, T):
  * The predicate succeeds when T unifies with the union of [E] and S.
  */
-% eq_add(+Set, +Elem, -Set)
+% eq_add(+List, +Term, -Set)
 :- public eq_add/3.
 eq_add(X, Y, X) :-
    eq_contains(X, Y), !.
@@ -104,7 +104,7 @@ eq_add(X, Y, [Y|X]).
  * eq_subtract(S, T, R):
  * The predicate succeeds when R unifies with the subtract of S by T.
  */
-% eq_subtract(+Set, +Set, -Set)
+% eq_subtract(+List, +List, -Set)
 :- public eq_subtract/3.
 eq_subtract(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -123,7 +123,7 @@ eq_subtract(X, _, _) :-
  * eq_intersection(S, T, R):
  * The predicate succeeds when R unifies with the intersection of S and T.
  */
-% eq_intersection(+Set, +Set, -Set)
+% eq_intersection(+List, +List, -Set)
 :- public eq_intersection/3.
 eq_intersection(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -142,7 +142,7 @@ eq_intersection(X, _, _) :-
  * eq_union(S, T, R):
  * The predicate succeeds when R unifies with the union of S and T.
  */
-% eq_union(+Set, +Set, -Set)
+% eq_union(+List, +List, -Set)
 :- public eq_union/3.
 eq_union(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -161,7 +161,7 @@ eq_union(X, _, _) :-
  * eq_symdiff(S, T, R):
  * The predicate succeeds when R unifies with the symmetric subtract of S and T.
  */
-% eq_symdiff(+Set, +Set, -Set)
+% eq_symdiff(+List, +List, -Set)
 :- public eq_symdiff/3.
 eq_symdiff(X, Y, Z) :-
    eq_subtract(X, Y, H),
@@ -176,7 +176,7 @@ eq_symdiff(X, Y, Z) :-
  * eq_subset(S, T):
  * The predicate succeeds when S is a subset of T.
  */
-% eq_subset(+Set, +Set)
+% eq_subset(+List, +List)
 :- public eq_subset/2.
 eq_subset(X, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -192,7 +192,7 @@ eq_subset(X, _) :-
  * eq_disjoint(S, T):
  * The predicate succeeds when S is disjoint to T.
  */
-% eq_disjoint(+Set, +Set)
+% eq_disjoint(+List, +List)
 :- public eq_disjoint/2.
 eq_disjoint(X, _) :- var(X),
    throw(error(instantiation_error, _)).
@@ -208,7 +208,7 @@ eq_disjoint(X, _) :-
  * eq_equal(S, T):
  * The predicate succeeds when S is equal to T.
  */
-% eq_equal(+Set, +Set)
+% eq_equal(+List, +List)
 :- public eq_equal/2.
 eq_equal(X, Y) :-
    eq_subset(X, Y),

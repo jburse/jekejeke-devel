@@ -82,7 +82,7 @@ public final class Bouquet {
             temp.addFirst(clause);
         }
         if (temp instanceof ListArray && temp.size() > MAX_SMALL)
-            set = toLarge((ListArray) temp);
+            set = Bouquet.toLarge((ListArray) temp);
         cache = null;
     }
 
@@ -116,10 +116,10 @@ public final class Bouquet {
     public void retractClause(int start, Clause clause) {
         AbstractList<Clause> temp = set;
         temp.remove(clause);
-        if (temp instanceof SetHashLink && temp.size() < MIN_LARGE) {
-            set = Bouquet.toSmall((SetHashLink) temp);
-        } else if (temp.size() == 0) {
+        if (temp.size() == 0) {
             set = null;
+        } else if (temp instanceof SetHashLink && temp.size() < MIN_LARGE) {
+            set = Bouquet.toSmall((SetHashLink) temp);
         }
         cache = null;
 
@@ -142,28 +142,29 @@ public final class Bouquet {
      * <p>Retrieve the clauses.</p>
      * <p>Can be used by multiple readers, with overhead.</p>
      *
+     * @param cr The bouquet.
      * @return The clauses.
      */
-    public Clause[] getClauses() {
-        Clause[] help = cache;
+    public static Clause[] getClauses(Bouquet cr) {
+        Clause[] help = cr.cache;
         if (help != null)
             return help;
 
-        AbstractList<Clause> temp = set;
+        AbstractList<Clause> temp = cr.set;
         if (temp != null) {
             help = new Clause[temp.size()];
             temp.toArray(help);
         } else {
             help = ARRAY_VOID;
         }
-        cache = help;
+        cr.cache = help;
         return help;
     }
 
     /**
      * <p>Retrieve a clause list for the given term.</p>
      *
-     * @param cr The clause paths.
+     * @param cr The bouquet.
      * @param m  The term skel.
      * @param d  The term display.
      * @param en The engine.
@@ -178,11 +179,11 @@ public final class Bouquet {
         int at = 0;
         int start = 0;
         for (; ; ) {
-            at = cr.firstValue(at, start, tc, d, en);
+            at = Bouquet.firstValue(at, start, tc, d, cr.args, en);
             if (at == -1)
                 return cr;
             m = en.skel;
-            Index ci = cr.nthIndex(at, start);
+            Index ci = Bouquet.nthIndex(at, start, cr);
             AbstractAssoc<Object, Bouquet> temp = ci.map;
             if (temp != null || ci.guard != null) {
                 if (temp != null) {
@@ -212,14 +213,13 @@ public final class Bouquet {
      * @param start The start.
      * @param tc    The term.
      * @param d     The display of the term.
+     * @param help The indexes.
      * @param en    The engine copy.
      * @return The indexing value.
      */
-    private int firstValue(int at, int start,
+    private static int firstValue(int at, int start,
                            Object[] tc, Display d,
-                           Engine en) {
-        Index[] help = args;
-
+                                  Index[] help, Engine en) {
         if (help != null) {
             int h;
             for (; (h = at - start) < help.length; at++) {
@@ -263,10 +263,11 @@ public final class Bouquet {
      *
      * @param at    The at.
      * @param start The start.
+     * @param cr The bouquet.
      * @return The nth index.
      */
-    private Index nthIndex(int at, int start) {
-        Index[] help = args;
+    private static Index nthIndex(int at, int start, Bouquet cr) {
+        Index[] help = cr.args;
 
         int h = at - start;
         if (help == null || h >= help.length) {
@@ -274,7 +275,7 @@ public final class Bouquet {
             if (help != null)
                 System.arraycopy(help, 0, newargs, 0, help.length);
             help = newargs;
-            args = help;
+            cr.args = help;
         }
 
         Index ci = help[h];
@@ -282,7 +283,7 @@ public final class Bouquet {
             return ci;
 
         ci = new Index();
-        AbstractList<Clause> rope = set;
+        AbstractList<Clause> rope = cr.set;
         if (rope != null)
             Bouquet.buildIndex(rope, ci, at);
         help[h] = ci;
@@ -300,7 +301,7 @@ public final class Bouquet {
      *
      * @return The large set.
      */
-    private SetHashLink<Clause> toLarge(ListArray<Clause> rope) {
+    private static SetHashLink<Clause> toLarge(ListArray<Clause> rope) {
         SetHashLink<Clause> res = new SetHashLink<>(rope.size());
         for (int i = 0; i < rope.size(); i++)
             res.add(rope.get(i));

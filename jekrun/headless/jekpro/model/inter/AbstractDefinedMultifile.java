@@ -5,7 +5,6 @@ import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Success;
 import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
 
 /**
  * <p>The base delegate class for a multifile delegate.</p>
@@ -139,20 +138,18 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
     /**
      * <p>Perform the search inside the delegate.</p></ü>
      *
-     * @param flags   The flags.
      * @param head    The term skeleton.
      * @param refhead The term display.
      * @param temp    The arguments skeleton.
      * @param ref     The arguments display.
+     * @param flags   The flags.
      * @param en      The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public final boolean searchFirst(int flags,
-                                     Object head, Display refhead,
-                                     Object[] temp, Display ref,
-                                     Engine en)
+    final boolean searchFirst(Object head, Display refhead, Object[] temp, Display ref, int flags,
+                              Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
         int at = 0;
@@ -178,11 +175,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             } else {
                 d2.setSize(clause.size);
             }
-            if (!(clause.head instanceof SkelCompound) ||
-                    AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, d2,
-                            clause.head, en)) {
-                Object end = Clause.interToBodySkel(clause, clause.last, en);
+            if (AbstractDefined.unifySearch(head, refhead,
+                    clause, d2, en)) {
+                Object end = Directive.interToBodySkel(clause, clause.last, en);
                 if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))

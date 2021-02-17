@@ -433,6 +433,11 @@ sys_oper_indicator(postfix(_)).
 :- special(sys_show_import/1, 'SpecialLoad', 5).
 :- set_predicate_property(sys_show_import/1, visible(public)).
 
+/**
+ * sys_has_clause(I, U):
+ * The predicate succeeds when the predicate I has clauses for the source U.
+ */
+% sys_has_clause(+Indicator, +Source)
 :- special(sys_has_clause/2, 'SpecialLoad', 6).
 :- set_predicate_property(sys_has_clause/2, visible(public)).
 

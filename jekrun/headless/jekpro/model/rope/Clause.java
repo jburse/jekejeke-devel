@@ -12,6 +12,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
@@ -133,15 +134,7 @@ public class Clause extends Directive implements InterfaceReference {
             Optimization.setBody(term, helper);
             clause.sizerule = Optimization.sortExtra(helper);
         }
-        if (!Goal.noBody(term)) {
-            Object t = Goal.bodyToGoalSkel(term);
-            if (Goal.frontTYpe(t) != Goal.TYPE_FRNT_NONE) {
-                clause.flags |= MASK_CLSE_MTCH;
-                term = Goal.bodyToRestSkel(term, en);
-            }
-        }
-        if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0 &&
-                (clause.flags & Clause.MASK_CLSE_MTCH) == 0) {
+        if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0) {
             clause.intargs = Optimization.unifyArgsLinear(clause.head, helper);
         } else {
             clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
@@ -286,36 +279,12 @@ public class Clause extends Directive implements InterfaceReference {
     public static Object interToClauseSkel(Clause clause, Engine en)
             throws EngineMessage {
         Object chead = SpecialDynamic.callableToColonSkel(clause.head, en);
-        Object body = interToBodySkel(clause, clause.last, en);
+        Object body = Directive.interToBodySkel(clause, clause.last, en);
         if (body instanceof SkelAtom &&
                 ((SkelAtom) body).fun.equals(Foyer.OP_TRUE)) {
             return chead;
         } else {
             return new SkelCompound(en.store.foyer.ATOM_TURNSTYLE, chead, body);
-        }
-    }
-
-    /**
-     * <p>Convert the intermediate form into a term.</p>
-     * <p>Will skip begin and commit nodes.</p>
-     *
-     * @param last The conversion end.
-     * @param en   The store.
-     * @return The skeleton.
-     */
-    public static Object interToBodySkel(Clause temp, Intermediate last,
-                                         Engine en) {
-        if ((temp.flags & Clause.MASK_CLSE_MTCH) != 0) {
-            Object body = Directive.interToBodySkel(temp, last, en);
-            if (body instanceof SkelAtom &&
-                    ((SkelAtom) body).fun.equals(Foyer.OP_TRUE)) {
-                return en.store.foyer.ATOM_SOFT_CUT;
-            } else {
-                return new SkelCompound(en.store.foyer.ATOM_COMMA,
-                        en.store.foyer.ATOM_SOFT_CUT, body);
-            }
-        } else {
-            return Directive.interToBodySkel(temp, last, en);
         }
     }
 
@@ -374,7 +343,7 @@ public class Clause extends Directive implements InterfaceReference {
      */
     public static boolean ancestorSource(AbstractSource alfa, Engine en) {
         return (alfa == null ||
-                en.store.ancestorStore(alfa.getStore()));
+                Store.ancestorStore(alfa.getStore(), en.store));
     }
 
 }

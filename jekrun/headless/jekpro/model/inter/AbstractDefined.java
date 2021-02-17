@@ -2,6 +2,7 @@ package jekpro.model.inter;
 
 import jekpro.frequent.experiment.SpecialRef;
 import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -10,12 +11,12 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialLogic;
-import jekpro.reference.structure.SpecialLexical;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.AbstractList;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
@@ -266,6 +267,23 @@ public abstract class AbstractDefined extends AbstractDelegate {
         return del;
     }
 
+
+    /**
+     * <p>Retrieve the read write lock.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public abstract ReadWriteLock getLock(Engine en);
+
+    /**
+     * <p>Retrieve the clause and index bouquet.</p>
+     *
+     * @param en The engine.
+     * @return The read write lock.
+     */
+    public abstract Bouquet getBouquet(Engine en);
+
     /*************************************************************/
     /* Execution Services                                        */
     /*************************************************************/
@@ -361,62 +379,31 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         Object[] t1 = ((SkelCompound) goal).args;
         Object[] t2 = ((SkelCompound) clause.head).args;
-        if ((clause.flags & Clause.MASK_CLSE_MTCH) != 0) {
-            for (int i = 0; i < arr.length; i++) {
-                int k = arr[i];
-                switch (k) {
-                    case Optimization.UNIFY_SKIP:
-                        break;
-                    case Optimization.UNIFY_TERM:
-                        if (!SpecialLexical.matchTerm(t1[i], ref, t2[i], ref2, en))
-                            return false;
-                        break;
-                    default:
-                        if (!SpecialLexical.equalTerm(t1[k], ref, t1[i], ref))
-                            return false;
-                        break;
-                }
-            }
-        } else {
-            for (int i = 0; i < arr.length; i++) {
-                int k = arr[i];
-                switch (k) {
-                    case Optimization.UNIFY_SKIP:
-                        break;
-                    case Optimization.UNIFY_TERM:
-                        if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
-                            return false;
-                        break;
-                    case Optimization.UNIFY_MIXED:
-                        if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
-                            return false;
-                        break;
-                    case Optimization.UNIFY_LINEAR:
-                        if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
-                            return false;
-                        break;
-                    default:
-                        if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
-                            return false;
-                        break;
-                }
+        for (int i = 0; i < arr.length; i++) {
+            int k = arr[i];
+            switch (k) {
+                case Optimization.UNIFY_SKIP:
+                    break;
+                case Optimization.UNIFY_TERM:
+                    if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
+                        return false;
+                    break;
+                case Optimization.UNIFY_MIXED:
+                    if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
+                        return false;
+                    break;
+                case Optimization.UNIFY_LINEAR:
+                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
+                        return false;
+                    break;
+                default:
+                    if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
+                        return false;
+                    break;
             }
         }
         return true;
     }
-
-    /*************************************************************/
-    /* Variation Points Predicate Defined                        */
-    /*************************************************************/
-
-    /**
-     * <p>Retrieve the clause list.</p>
-     *
-     * @param en The engine.
-     * @return The clauses list or null.
-     */
-    public abstract Clause[] listClauses(Engine en)
-            throws EngineMessage;
 
     /**
      * <p>Retrieve a clause list for the given term.</p>
@@ -426,8 +413,65 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en The engine.
      * @return The clauses, or null.
      */
-    abstract Clause[] definedClauses(Object m, Display d, Engine en)
-            throws EngineMessage;
+    final Clause[] definedClauses(Object m, Display d, Engine en)
+            throws EngineMessage {
+        ReadWriteLock lock = getLock(en);
+        if (lock == null) {
+            Bouquet temp = getBouquet(en);
+            AbstractList<Clause> set = temp.set;
+            if (set != null && set.size() != 1 &&
+                    (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
+                temp = Bouquet.definedClauses(temp, m, d, en);
+            return Bouquet.getClauses(temp);
+        } else {
+            try {
+                lock.readLock().lockInterruptibly();
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+            try {
+                Bouquet temp = getBouquet(en);
+                AbstractList<Clause> set = temp.set;
+                if (set != null && set.size() != 1 &&
+                        (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
+                    temp = Bouquet.definedClauses(temp, m, d, en);
+                return Bouquet.getClauses(temp);
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
+    }
+
+    /*************************************************************/
+    /* Database Primitives                                       */
+    /*************************************************************/
+
+    /**
+     * <p>Retrieve the clause list.</p>
+     *
+     * @param en The engine.
+     * @return The clauses list or null.
+     */
+    public final Clause[] listClauses(Engine en)
+            throws EngineMessage {
+        ReadWriteLock lock = getLock(en);
+        if (lock == null) {
+            Bouquet temp = getBouquet(en);
+            return Bouquet.getClauses(temp);
+        } else {
+            try {
+                lock.readLock().lockInterruptibly();
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+            try {
+                Bouquet temp = getBouquet(en);
+                return Bouquet.getClauses(temp);
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
+    }
 
     /**
      * <p>Add the clause to the predicate.</p>
@@ -437,9 +481,35 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en     The engine.
      * @throws EngineMessage Shit happens.
      */
-    public abstract boolean assertClause(Clause clause, int flags,
-                                         Engine en)
-            throws EngineMessage;
+    public final boolean assertClause(Clause clause, int flags,
+                                      Engine en)
+            throws EngineMessage {
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
+            return false;
+        ReadWriteLock lock = getLock(en);
+        if (lock == null) {
+            clause.flags |= Clause.MASK_CLSE_ASSE;
+            Bouquet temp = getBouquet(en);
+            temp.assertClause(0, clause, flags);
+            return true;
+        } else {
+            try {
+                lock.writeLock().lockInterruptibly();
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+            try {
+                if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
+                    return false;
+                clause.flags |= Clause.MASK_CLSE_ASSE;
+                Bouquet temp = getBouquet(en);
+                temp.assertClause(0, clause, flags);
+                return true;
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+    }
 
     /**
      * <p>Remove the clause from the predicate.</p>
@@ -448,24 +518,34 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @param en     The engine.
      * @return True if clause was found and removed, otherwise false.
      */
-    public abstract boolean retractClause(Clause clause, Engine en)
-            throws EngineMessage;
-
-    /**
-     * <p>Retrieve the read write lock.</p>
-     *
-     * @param en The engine.
-     * @return The read write lock.
-     */
-    public abstract ReadWriteLock getLock(Engine en);
-
-    /**
-     * <p>Retrieve the clause and index bouquet.</p>
-     *
-     * @param en The engine.
-     * @return The read write lock.
-     */
-    public abstract Bouquet getBouquet(Engine en);
+    public final boolean retractClause(Clause clause, Engine en)
+            throws EngineMessage {
+        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
+            return false;
+        ReadWriteLock lock = getLock(en);
+        if (lock == null) {
+            clause.flags &= ~Clause.MASK_CLSE_ASSE;
+            Bouquet temp = getBouquet(en);
+            temp.retractClause(0, clause);
+            return true;
+        } else {
+            try {
+                lock.writeLock().lockInterruptibly();
+            } catch (InterruptedException x) {
+                throw (EngineMessage) ForeignThread.sysThreadClear();
+            }
+            try {
+                if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
+                    return false;
+                clause.flags &= ~Clause.MASK_CLSE_ASSE;
+                Bouquet temp = getBouquet(en);
+                temp.retractClause(0, clause);
+                return true;
+            } finally {
+                lock.writeLock().unlock();
+            }
+        }
+    }
 
     /***********************************************************/
     /* Dynamic Database                                        */
@@ -581,26 +661,24 @@ public abstract class AbstractDefined extends AbstractDelegate {
             }
         }
         /* find rope */
-        return ((AbstractDefined) fun).searchFirst(flags, head, refhead, temp, ref, en);
+        return ((AbstractDefined) fun).searchFirst(head, refhead, temp, ref, flags, en);
     }
 
     /**
      * <p>Perform the search inside the delegate.</p></ü>
      *
-     * @param flags   The flags.
      * @param head    The term skeleton.
      * @param refhead The term display.
      * @param temp    The arguments skeleton.
      * @param ref     The arguments display.
+     * @param flags   The flags.
      * @param en      The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    public boolean searchFirst(int flags,
-                               Object head, Display refhead,
-                               Object[] temp, Display ref,
-                               Engine en)
+    boolean searchFirst(Object head, Display refhead, Object[] temp,
+                        Display ref, int flags, Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
         int at = 0;
@@ -621,11 +699,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 d2.setSize(clause.size);
             }
-            if (!(clause.head instanceof SkelCompound) ||
-                    AbstractDefined.unifySearch(((SkelCompound) head).args, refhead,
-                            ((SkelCompound) clause.head).args, d2,
-                            clause.head, en)) {
-                Object end = Clause.interToBodySkel(clause, clause.last, en);
+            if (AbstractDefined.unifySearch(head, refhead,
+                    clause, d2, en)) {
+                Object end = Directive.interToBodySkel(clause, clause.last, en);
                 if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
                         if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
@@ -667,26 +743,29 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>Unify the clause head arguments.</p>
      *
-     * @param t1   The term skeleton.
-     * @param d1   The term display.
-     * @param t2   The clause skeleton.
-     * @param d2   The clause display.
-     * @param head The clause head.
+     * @param head   The head.
+     * @param d1     The term display.
+     * @param clause The clause.
+     * @param d2     The clause display.
+     * @param en     The engine.
      * @return True if the unification succeeds, otherwise false.
      * @throws EngineException Shit happens.
      */
-    static boolean unifySearch(Object[] t1, Display d1,
-                               Object[] t2, Display d2,
-                               Object head,
+    static boolean unifySearch(Object head, Display d1,
+                               Clause clause, Display d2,
                                Engine en)
             throws EngineException {
-        if (!(head instanceof SkelCompoundLineable)) {
+        if (!(head instanceof SkelCompound))
+            return true;
+        Object[] t1 = ((SkelCompound) head).args;
+        Object[] t2 = ((SkelCompound) clause.head).args;
+        if (!(clause.head instanceof SkelCompoundLineable)) {
             for (int i = 0; i < t2.length; i++) {
                 if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
                     return false;
             }
         } else {
-            byte[] subterm = ((SkelCompoundLineable) head).subterm;
+            byte[] subterm = ((SkelCompoundLineable) clause.head).subterm;
             for (int i = 0; i < t2.length; i++) {
                 switch (subterm[i]) {
                     case SkelCompoundLineable.SUBTERM_LINEAR:

@@ -515,20 +515,10 @@ public class Store extends AbstractRecognizer {
     /**
      * <p>Check whether a store is inside these ancestors.</p>
      *
-     * @param what The store.
-     * @return True if the store is inside the ancestors, false otherwise.
-     */
-    public boolean ancestorStore(Store what) {
-        return ancestorStore(what, this);
-    }
-
-    /**
-     * <p>Check whether a store is inside these ancestors.</p>
-     *
      * @param what The store to check.
      * @return True if the store is inside the ancestors, false otherwise.
      */
-    private static boolean ancestorStore(Store what, Store store) {
+    public static boolean ancestorStore(Store what, Store store) {
         while (store != null) {
             if (store == what)
                 return true;

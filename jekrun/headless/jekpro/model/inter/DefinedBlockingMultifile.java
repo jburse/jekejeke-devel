@@ -1,13 +1,10 @@
 package jekpro.model.inter;
 
-import jekpro.frequent.system.ForeignThread;
-import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelAtom;
-import matula.util.data.AbstractList;
 
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -57,7 +54,7 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
     }
 
     /**************************************************************/
-    /* Variation Points Predicate                                 */
+    /* Variation Points                                           */
     /**************************************************************/
 
     /**
@@ -85,114 +82,6 @@ final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
      */
     public void releasePredicate(Predicate pick) {
         /* do nothing */
-    }
-
-    /**************************************************************/
-    /* Variation Points Predicate Defined                         */
-    /**************************************************************/
-
-    /**
-     * <p>Retrieve the clause list.</p>
-     *
-     * @param en The engine.
-     * @return the clause list or null.
-     * @throws EngineMessage Shit happens.
-     */
-    public Clause[] listClauses(Engine en)
-            throws EngineMessage {
-        try {
-            lock.readLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            return cr.getClauses();
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * <p>Retrieve a clause list for the given term.</p>
-     *
-     * @param m  The term skel.
-     * @param d  The term display.
-     * @param en The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    final Clause[] definedClauses(Object m, Display d, Engine en)
-            throws EngineMessage {
-        try {
-            lock.readLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            Bouquet temp = cr;
-            AbstractList<Clause> set = temp.set;
-            if (set != null && set.size() != 1 &&
-                    (subflags & AbstractDefined.MASK_DEFI_NIDX) == 0)
-                temp = Bouquet.definedClauses(temp, m, d, en);
-            return temp.getClauses();
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /**
-     * <p>Add the clause to the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param flags  The flags.
-     * @param en     The engine.
-     * @throws EngineMessage Shit happens.
-     */
-    public boolean assertClause(Clause clause,
-                                int flags, Engine en)
-            throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
-            return false;
-        try {
-            lock.writeLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            if ((clause.flags & Clause.MASK_CLSE_ASSE) != 0)
-                return false;
-            clause.flags |= Clause.MASK_CLSE_ASSE;
-            cr.assertClause(0, clause, flags);
-            return true;
-        } finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    /**
-     * <p>Remove the clause from the predicate.</p>
-     *
-     * @param clause The clause.
-     * @param en     The engine.
-     * @return True if clause was found and removed, otherwise false.
-     */
-    public boolean retractClause(Clause clause, Engine en)
-            throws EngineMessage {
-        if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
-            return false;
-        try {
-            lock.writeLock().lockInterruptibly();
-        } catch (InterruptedException x) {
-            throw (EngineMessage) ForeignThread.sysThreadClear();
-        }
-        try {
-            if ((clause.flags & Clause.MASK_CLSE_ASSE) == 0)
-                return false;
-            clause.flags &= ~Clause.MASK_CLSE_ASSE;
-            cr.retractClause(0, clause);
-            return true;
-        } finally {
-            lock.writeLock().unlock();
-        }
     }
 
     /**

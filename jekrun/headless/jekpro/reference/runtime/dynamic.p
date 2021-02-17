@@ -160,8 +160,9 @@ sys_declaration_indicator(group_local(I), I).
 
 /**
  * clause(H, B): [ISO 8.8.1]
- * The predicate succeeds with the user clauses that match H :- B.
- * The head predicate must be dynamic, thread local or group local.
+ * The predicate succeeds with the clauses that unify H :- B.
+ * The head predicate must be dynamic, thread local or group
+ * local.
  */
 % clause(-Term, -Goal)
 :- public clause/2.
@@ -222,16 +223,16 @@ retractall(_).
 % abolish(+Indicator)
 :- public abolish/1.
 abolish(prefix(X)) :- !,
-   sys_abolish_oper(prefix(X)).
+   sys_abolish_operator(prefix(X)).
 abolish(infix(X)) :- !,
-   sys_abolish_oper(infix(X)).
+   sys_abolish_operator(infix(X)).
 abolish(postfix(X)) :- !,
-   sys_abolish_oper(postfix(X)).
+   sys_abolish_operator(postfix(X)).
 abolish(X) :-
    sys_abolish_predicate(X).
 
 :- private sys_abolish_predicate/1.
 :- special(sys_abolish_predicate/1, 'SpecialDynamic', 6).
 
-:- private sys_abolish_oper/1.
-:- special(sys_abolish_oper/1, 'SpecialDynamic', 7).
+:- private sys_abolish_operator/1.
+:- special(sys_abolish_operator/1, 'SpecialDynamic', 7).

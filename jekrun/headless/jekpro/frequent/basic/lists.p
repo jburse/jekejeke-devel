@@ -234,8 +234,23 @@ nth1(N, L, E, R) :- integer(N), !, N >= 1, H is N-1, nth03(H, L, E, R).
 nth1(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 
 /*******************************************************************/
-/* Set Operations                                               */
+/* Set Operations                                                  */
 /*******************************************************************/
+
+/**
+ * contains(S, E):
+ * The predicate succeeds when the list S contains the element E.
+ */
+% contains(+List, +Term)
+:- public contains/2.
+contains(X, _) :- var(X),
+   throw(error(instantiation_error, _)).
+contains([X|_], X) :- !.
+contains([_|L], X) :- !,
+   contains(L, X).
+contains([], _) :- !, fail.
+contains(L, _) :-
+   throw(error(type_error(list, L), _)).
 
 /**
  * subtract(S, T, R):
@@ -245,16 +260,16 @@ nth1(N, _, _, _) :- throw(error(type_error(integer, N), _)).
 :- public subtract/3.
 subtract(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
-subtract([X|Y], Z, T) :-
-   member(X, Z), !,
-   subtract(Y, Z, T).
-subtract([X|Y], Z, R) :- !,
-   R = [X|T],
-   subtract(Y, Z, T).
+subtract([X|L], R, T) :-
+   contains(R, X), !,
+   subtract(L, R, T).
+subtract([X|L], R, T) :- !,
+   T = [X|S],
+   subtract(L, R, S).
 subtract([], _, R) :- !,
    R = [].
-subtract(X, _, _) :-
-   throw(error(type_error(list, X), _)).
+subtract(L, _, _) :-
+   throw(error(type_error(list, L), _)).
 
 /**
  * intersection(S, T, R):
@@ -265,15 +280,15 @@ subtract(X, _, _) :-
 intersection(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
 intersection([X|L], R, T) :-
-   member(X, R), !,
+   contains(R, X), !,
    T = [X|S],
    intersection(L, R, S).
 intersection([_|L], R, S) :- !,
    intersection(L, R, S).
 intersection([], _, T) :- !,
    T = [].
-intersection(X, _, _) :-
-   throw(error(type_error(list, X), _)).
+intersection(L, _, _) :-
+   throw(error(type_error(list, L), _)).
 
 /**
  * union(S, T, R):
@@ -284,7 +299,7 @@ intersection(X, _, _) :-
 union(X, _, _) :- var(X),
    throw(error(instantiation_error, _)).
 union([X|L], R, S) :-
-   member(X, R), !,
+   contains(R, X), !,
    union(L, R, S).
 union([X|L], R, T) :- !,
    T = [X|S],
@@ -300,10 +315,10 @@ union(X, _, _) :-
  */
 % symdiff(+List, +List, -List)
 :- public symdiff/3.
-symdiff(X, Y, Z) :-
-   subtract(X, Y, H),
-   subtract(Y, X, J),
-   append(H, J, Z).
+symdiff(L, R, S) :-
+   subtract(L, R, H),
+   subtract(R, L, J),
+   append(H, J, S).
 
 /*******************************************************************/
 /* Set Tests                                                       */
@@ -318,7 +333,7 @@ symdiff(X, Y, Z) :-
 subset(X, _) :- var(X),
    throw(error(instantiation_error, _)).
 subset([X|Y], Z) :-
-   member(X, Z), !,
+   contains(Z, X), !,
    subset(Y, Z).
 subset([_|_], _) :- !, fail.
 subset([], _) :- !.
@@ -334,7 +349,7 @@ subset(X, _) :-
 disjoint(X, _) :- var(X),
    throw(error(instantiation_error, _)).
 disjoint([X|_], Z) :-
-   member(X, Z), !, fail.
+   contains(Z, X), !, fail.
 disjoint([_|Y], Z) :- !,
    disjoint(Y, Z).
 disjoint([], _) :- !.
@@ -347,6 +362,6 @@ disjoint(X, _) :-
  */
 % equal(+List, +List)
 :- public equal/2.
-equal(X, Y) :-
-   subset(X, Y),
-   subset(Y, X).
+equal(L, R) :-
+   subset(L, R),
+   subset(R, L).

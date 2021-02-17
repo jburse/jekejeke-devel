@@ -353,21 +353,6 @@ public class Goal extends Intermediate {
         }
     }
 
-    /**
-     * <p>Determine the front type.</p>
-     *
-     * @param t The goal skeleton.
-     * @return The sequen type.
-     */
-    public static int frontTYpe(Object t) {
-        if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_SOFT_CUT)) {
-            return TYPE_FRNT_MTCH;
-        } else {
-            return TYPE_FRNT_NONE;
-        }
-    }
-
     /**************************************************************/
     /* Body Iterator                                              */
     /**************************************************************/

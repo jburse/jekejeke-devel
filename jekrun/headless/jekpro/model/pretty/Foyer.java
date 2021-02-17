@@ -77,7 +77,6 @@ public class Foyer extends Enforced {
     public final static String OP_SEMICOLON = ";";
     public final static String OP_CONDITION = "->";
     public final static String OP_SOFT_CONDITION = "*->";
-    public final static String OP_SOFT_CUT = "!*";
     public final static String OP_TURNSTILE = ":-";
 
     public final static String OP_SYS_ALTER = "sys_alter";
@@ -144,7 +143,6 @@ public class Foyer extends Enforced {
     public SkelAtom ATOM_SEMICOLON;
     public SkelAtom ATOM_CONDITION;
     public SkelAtom ATOM_SOFT_CONDITION;
-    public SkelAtom ATOM_SOFT_CUT;
     public SkelAtom ATOM_TURNSTYLE;
 
     public SkelAtom ATOM_SYS_ALTER;
@@ -505,7 +503,7 @@ public class Foyer extends Enforced {
         Store[] stores = snapshotStores();
         for (int j = 0; j < stores.length; j++) {
             Store store = stores[j];
-            if (!store.ancestorStore(what))
+            if (!Store.ancestorStore(what, store))
                 continue;
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int i = 0; i < sources.length; i++) {
@@ -525,7 +523,7 @@ public class Foyer extends Enforced {
         Store[] stores = snapshotStores();
         for (int j = 0; j < stores.length; j++) {
             Store store = stores[j];
-            if (!store.ancestorStore(what))
+            if (!Store.ancestorStore(what, store))
                 continue;
             MapEntry<String, AbstractSource>[] sources = store.snapshotSources();
             for (int i = 0; i < sources.length; i++) {
