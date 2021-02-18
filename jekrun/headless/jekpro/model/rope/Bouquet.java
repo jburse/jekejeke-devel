@@ -39,29 +39,23 @@ import matula.util.data.*;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Bouquet {
-    public static final Clause[] ARRAY_VOID = new Clause[0];
-    public static final Bouquet BOUQUET_VOID = new Bouquet();
+public class Bouquet {
+    private static final Clause[] ARRAY_VOID = new Clause[0];
 
-    private static final int MAX_SMALL = 12;
-    private static final int MIN_LARGE = 6;
+    private static final int MIN_LIST_LARGE = 6;
+    private static final int MAX_LIST_SMALL = 12;
 
     public AbstractList<Clause> set;
     public Index[] args;
-    private Clause[] cache;
+    public Clause[] cache;
 
     /**
-     * <p>Copy a bouquet without its index.</p>
+     * <p>Create an index for this bouquet.</p>
      *
-     * @return The copy of this bouquet,
+     * @return The new index.
      */
-    public Bouquet copyBouquet() {
-        Bouquet res = new Bouquet();
-        AbstractList<Clause> temp = set;
-        if (temp != null)
-            res.set = (AbstractList<Clause>) temp.clone();
-        res.cache = cache;
-        return res;
+    public Index createIndex() {
+        return new Index();
     }
 
     /**
@@ -81,8 +75,11 @@ public final class Bouquet {
         } else {
             temp.addFirst(clause);
         }
-        if (temp instanceof ListArray && temp.size() > MAX_SMALL)
-            set = Bouquet.toLarge((ListArray) temp);
+        if (temp instanceof ListArray && temp.size() > MAX_LIST_SMALL) {
+            SetHashLink<Clause> res = new SetHashLink<>(temp.size());
+            temp.toList(res);
+            set = res;
+        }
         cache = null;
     }
 
@@ -118,8 +115,10 @@ public final class Bouquet {
         temp.remove(clause);
         if (temp.size() == 0) {
             set = null;
-        } else if (temp instanceof SetHashLink && temp.size() < MIN_LARGE) {
-            set = Bouquet.toSmall((SetHashLink) temp);
+        } else if (temp instanceof SetHashLink && temp.size() < MIN_LIST_LARGE) {
+            ListArray<Clause> res = new ListArray<>(temp.size());
+            temp.toList(res);
+            set = res;
         }
         cache = null;
 
@@ -183,9 +182,9 @@ public final class Bouquet {
             if (at == -1)
                 return cr;
             m = en.skel;
-            Index ci = Bouquet.nthIndex(at, start, cr);
-            AbstractAssoc<Object, Bouquet> temp = ci.map;
-            if (temp != null || ci.guard != null) {
+            Index ci = cr.nthIndex(at, start);
+            if (!ci.canSkip()) {
+                AbstractAssoc<Object, Bouquet> temp = ci.map;
                 if (temp != null) {
                     m = Index.keyValue(m);
                     cr = temp.get(m);
@@ -195,7 +194,7 @@ public final class Bouquet {
                     cr = ci.nonguard;
                 }
                 if (cr == null)
-                    return Bouquet.BOUQUET_VOID;
+                    return ci.getVoid();
                 if (cr.set.size() == 1)
                     return cr;
                 at++;
@@ -213,18 +212,18 @@ public final class Bouquet {
      * @param start The start.
      * @param tc    The term.
      * @param d     The display of the term.
-     * @param help The indexes.
+     * @param help  The indexes.
      * @param en    The engine copy.
      * @return The indexing value.
      */
     private static int firstValue(int at, int start,
-                           Object[] tc, Display d,
+                                  Object[] tc, Display d,
                                   Index[] help, Engine en) {
         if (help != null) {
             int h;
             for (; (h = at - start) < help.length; at++) {
                 Index ci = help[h];
-                if (ci != null && (ci.map == null && ci.guard == null))
+                if (ci != null && ci.canSkip())
                     continue;
                 Object m = tc[at];
                 Display d1 = d;
@@ -263,11 +262,10 @@ public final class Bouquet {
      *
      * @param at    The at.
      * @param start The start.
-     * @param cr The bouquet.
      * @return The nth index.
      */
-    private static Index nthIndex(int at, int start, Bouquet cr) {
-        Index[] help = cr.args;
+    private Index nthIndex(int at, int start) {
+        Index[] help = args;
 
         int h = at - start;
         if (help == null || h >= help.length) {
@@ -275,15 +273,15 @@ public final class Bouquet {
             if (help != null)
                 System.arraycopy(help, 0, newargs, 0, help.length);
             help = newargs;
-            cr.args = help;
+            args = help;
         }
 
         Index ci = help[h];
         if (ci != null)
             return ci;
 
-        ci = new Index();
-        AbstractList<Clause> rope = cr.set;
+        ci = createIndex();
+        AbstractList<Clause> rope = set;
         if (rope != null)
             Bouquet.buildIndex(rope, ci, at);
         help[h] = ci;
@@ -294,34 +292,6 @@ public final class Bouquet {
     /*********************************************************/
     /* Rope Polymorphism                                     */
     /*********************************************************/
-
-    /**
-     * <p>Create a large set from this small set.</p>
-     * <p>Carry over the clauses.</p>
-     *
-     * @return The large set.
-     */
-    private static SetHashLink<Clause> toLarge(ListArray<Clause> rope) {
-        SetHashLink<Clause> res = new SetHashLink<>(rope.size());
-        for (int i = 0; i < rope.size(); i++)
-            res.add(rope.get(i));
-        return res;
-    }
-
-    /**
-     * <p>Create a small set from this large set.</p>
-     * <p>Carry over the clauses.</p>
-     *
-     * @param rope The rope.
-     * @return The small set.
-     */
-    private static ListArray<Clause> toSmall(SetHashLink<Clause> rope) {
-        ListArray<Clause> res = new ListArray<>(rope.size());
-        for (SetEntry<Clause> entry = rope.getFirstEntry();
-             entry != null; entry = rope.successor(entry))
-            res.add(entry.value);
-        return res;
-    }
 
     /**
      * <p>Build an index.</p>
@@ -341,6 +311,99 @@ public final class Bouquet {
                  entry != null; entry = hash.successor(entry))
                 ci.buildIndex(entry.value, at);
         }
+    }
+
+    /*********************************************************/
+    /* Pairs Polymorphism                                    */
+    /*********************************************************/
+
+    /**
+     * <p>Add the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     */
+    static void addClause(AbstractAssoc<Object, Bouquet> pairs, Clause clause) {
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = 0; j < list.size(); j++) {
+                Bouquet cp = list.getValue(j);
+                cp.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
+            }
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
+            }
+        }
+    }
+
+    /**
+     * <p>Assert the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     * @param at     The position.
+     * @param flags  The flags.
+     */
+    static void assertClause(AbstractAssoc<Object, Bouquet> pairs,
+                             Clause clause, int at, int flags) {
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = 0; j < list.size(); j++) {
+                Bouquet cp = list.getValue(j);
+                cp.assertClause(at, clause, flags);
+            }
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.assertClause(at, clause, flags);
+            }
+        }
+    }
+
+    /**
+     * <p>Retract the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     * @param at     The position.
+     * @return True if dirty, otherwise false.
+     */
+    static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
+                                 Clause clause, int at) {
+        boolean dirty = false;
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = list.size() - 1; j >= 0; j--) {
+                Bouquet cp = list.getValue(j);
+                cp.retractClause(at, clause);
+                if (cp.set == null) {
+                    list.removeEntry(j);
+                    dirty = true;
+                }
+            }
+            if (dirty)
+                list.resize();
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.retractClause(at, clause);
+                if (cp.set == null) {
+                    hash.removeEntry(entry);
+                    dirty = true;
+                }
+            }
+            if (dirty)
+                hash.resize();
+        }
+        return dirty;
     }
 
 }

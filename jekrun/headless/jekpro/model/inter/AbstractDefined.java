@@ -152,7 +152,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (fun != null)
                 return fun;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlockingMultifile(store.foyer.getBits());
+                del = new DefinedBlockingMultifile(store.foyer.getBits(), true);
             } else {
                 del = new DefinedLockfree(store.foyer.getBits());
             }
@@ -187,7 +187,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (fun != null)
                 return fun;
             if ((pick.getBits() & Predicate.MASK_PRED_MULT) != 0) {
-                del = new DefinedBlockingMultifile(store.foyer.getBits());
+                del = new DefinedBlockingMultifile(store.foyer.getBits(), false);
             } else {
                 del = new DefinedBlocking(store.foyer.getBits());
             }

@@ -1,13 +1,15 @@
 package jekpro.model.rope;
 
 import jekpro.model.inter.AbstractDefined;
-import jekpro.tools.term.SkelAtom;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.*;
+import matula.util.data.AbstractAssoc;
+import matula.util.data.AssocArray;
+import matula.util.data.MapHash;
 
 /**
- * <p>This class provides an index.</p>
+ * <p>This class provides an index with condition indexing.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -37,14 +39,18 @@ import matula.util.data.*;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class Index {
-    private static final Bouquet BOUQUET_VOID = new Bouquet();
+public final class IndexFront extends Index {
+    private static final Bouquet BOUQUETFRONT_VOID = new BouquetFront();
 
-    public static final int MIN_ASSOC_LARGE = 3;
-    public static final int MAX_ASSOC_SMALL = 6;
+    public final static String OP_SYS_EQ = "sys_eq";
+    public final static String OP_IDENTITY = "==";
+    public final static String OP_FUNCTOR = "functor";
+    public final static String OP_VAR = "var";
+    public final static String OP_NONVAR = "nonvar";
 
-    public Bouquet nonguard;
-    public AbstractAssoc<Object, Bouquet> map;
+    private static final Object VALUE_GUARD = new Object();
+
+    public Bouquet guard;
 
     /**
      * <p>Create a bouquet for this index.</p>
@@ -52,7 +58,7 @@ public class Index {
      * @return The new bouquet.
      */
     public Bouquet createBouquet() {
-        return new Bouquet();
+        return new BouquetFront();
     }
 
     /**
@@ -61,7 +67,7 @@ public class Index {
      * @return The void bouqet.
      */
     public Bouquet getVoid() {
-        return BOUQUET_VOID;
+        return BOUQUETFRONT_VOID;
     }
 
     /**
@@ -70,7 +76,7 @@ public class Index {
      * @return True if the index can be skipped, otherwise false.
      */
     public boolean canSkip() {
-        return (map == null);
+        return (map == null && guard == null);
     }
 
     /**
@@ -79,27 +85,7 @@ public class Index {
      * @return The guard.
      */
     public Bouquet getGuard() {
-        return null;
-    }
-
-    /*********************************************************/
-    /* Retrieval and Index Building                          */
-    /*********************************************************/
-
-    /**
-     * <p>Compute the key value.</p>
-     *
-     * @param term The term.
-     * @return The key value.
-     */
-    static Object keyValue(Object term) {
-        if (term instanceof SkelAtom) {
-            return ((SkelAtom) term).fun;
-        } else if (term instanceof SkelCompound) {
-            return ((SkelCompound) term).sym.fun;
-        } else {
-            return term;
-        }
+        return guard;
     }
 
     /**
@@ -110,11 +96,71 @@ public class Index {
      * @param clause The clause.
      * @return The indexing value, or null.
      */
-    private static Object indexValue(int at, Clause clause) {
+    private static Object indexValueFront(int at, Clause clause) {
         SkelCompound tc = (SkelCompound) clause.head;
         Object term = tc.args[at];
         if (!(term instanceof SkelVar))
-            return keyValue(term);
+            return Index.keyValue(term);
+        return getGuard(clause.next, term);
+    }
+
+    /**
+     * <p>Check whether the variable has a guard.</p>
+     * <p>Variant of step 2.2.2 of algorithm I of:</p>
+     * <p>http://user.it.uu.se/~kostis/Papers/iclp07.pdf</p>
+     *
+     * @param list The body of the clause.
+     * @param sv   The variable.
+     * @return The guard or null.
+     */
+    private static Object getGuard(Intermediate list, Object sv) {
+        while (list instanceof Goal) {
+            Object molec = ((Goal) list).term;
+            if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 2 &&
+                    (((SkelCompound) molec).sym.fun.equals(Foyer.OP_EQUAL) ||
+                            ((SkelCompound) molec).sym.fun.equals(OP_SYS_EQ) ||
+                            ((SkelCompound) molec).sym.fun.equals(OP_IDENTITY))) {
+                SkelCompound sc = (SkelCompound) molec;
+                if (sc.args[0] == sv) {
+                    Object term = sc.args[1];
+                    if (term instanceof SkelVar) {
+                        sv = term;
+                    } else {
+                        return Index.keyValue(term);
+                    }
+                } else if (sc.args[1] == sv) {
+                    Object term = sc.args[0];
+                    if (term instanceof SkelVar) {
+                        sv = term;
+                    } else {
+                        return Index.keyValue(term);
+                    }
+                }
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 3 &&
+                    ((SkelCompound) molec).sym.fun.equals(OP_FUNCTOR)) {
+                SkelCompound sc = (SkelCompound) molec;
+                if (sc.args[0] == sv) {
+                    Object term = sc.args[1];
+                    if (!(term instanceof SkelVar) && !(term instanceof SkelCompound))
+                        return Index.keyValue(term);
+                }
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 1 &&
+                    ((SkelCompound) molec).sym.fun.equals(OP_VAR)) {
+                SkelCompound sc = (SkelCompound) molec;
+                if (sc.args[0] == sv)
+                    return VALUE_GUARD;
+            } else if (molec instanceof SkelCompound &&
+                    ((SkelCompound) molec).args.length == 1 &&
+                    ((SkelCompound) molec).sym.fun.equals(OP_NONVAR)) {
+                /* */
+            } else {
+                return null;
+            }
+            list = list.next;
+        }
         return null;
     }
 
@@ -125,14 +171,18 @@ public class Index {
      * @param at     The position.
      */
     void buildIndex(Clause clause, int at) {
-        Object m = Index.indexValue(at, clause);
+        Object m = indexValueFront(at, clause);
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
                 Bouquet.addClause(temp, clause);
             if (nonguard == null)
-                nonguard = new Bouquet();
+                nonguard = new BouquetFront();
             nonguard.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
+        } else if (m == VALUE_GUARD) {
+            if (guard == null)
+                guard = new BouquetFront();
+            guard.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
         } else {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp == null) {
@@ -156,14 +206,18 @@ public class Index {
      * @param flags  The flags.
      */
     void extendIndex(Clause clause, int at, int flags) {
-        Object m = Index.indexValue(at, clause);
+        Object m = indexValueFront(at, clause);
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
                 Bouquet.assertClause(temp, clause, at + 1, flags);
             if (nonguard == null)
-                nonguard = new Bouquet();
+                nonguard = new BouquetFront();
             nonguard.assertClause(at + 1, clause, flags);
+        } else if (m == VALUE_GUARD) {
+            if (guard == null)
+                guard = new BouquetFront();
+            guard.assertClause(at + 1, clause, flags);
         } else {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp == null) {
@@ -186,7 +240,7 @@ public class Index {
      * @param at     The position.
      */
     void reduceIndex(Clause clause, int at) {
-        Object m = Index.indexValue(at, clause);
+        Object m = indexValueFront(at, clause);
         if (m == null) {
             Bouquet cp = nonguard;
             if (cp != null) {
@@ -204,6 +258,13 @@ public class Index {
             } else if (temp.size() == 0) {
                 map = null;
             }
+        } else if (m == VALUE_GUARD) {
+            Bouquet cp = guard;
+            if (cp != null) {
+                cp.retractClause(at + 1, clause);
+                if (cp.set == null)
+                    guard = null;
+            }
         } else {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp == null || !Index.retractClause(temp, m, clause, at + 1))
@@ -215,103 +276,6 @@ public class Index {
             } else if (temp.size() == 0) {
                 map = null;
             }
-        }
-    }
-
-    /*********************************************************/
-    /* Pairs Polymorphism                                    */
-    /*********************************************************/
-
-    /**
-     * <p>Copy a bouquet without its index.</p>
-     *
-     * @return The copy of this bouquet,
-     */
-    private Bouquet copyBouquet(Bouquet bc) {
-        Bouquet res = createBouquet();
-        if (bc == null)
-            return res;
-        AbstractList<Clause> temp = bc.set;
-        if (temp != null)
-            res.set = (AbstractList<Clause>) temp.clone();
-        res.cache = bc.cache;
-        return res;
-    }
-
-    /**
-     * <p>Add the clause to the list of pairs.</p>
-     *
-     * @param pairs  The pairs.
-     * @param m      The key.
-     * @param clause The clause to be added.
-     * @param b      The nonguard.
-     */
-    void addClause(AbstractAssoc<Object, Bouquet> pairs,
-                   Object m, Clause clause, Bouquet b) {
-        Bouquet cp = pairs.get(m);
-        if (cp == null) {
-            cp = copyBouquet(b);
-            pairs.add(m, cp);
-        }
-        cp.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
-    }
-
-    /**
-     * <p>Assert the clause to the list of pairs.</p>
-     *
-     * @param pairs  The pairs.
-     * @param m      The key.
-     * @param clause The clause to be added.
-     * @param at     The position.
-     * @param flags  The flags.
-     * @param b      The nonguard.
-     */
-    void assertClause(AbstractAssoc<Object, Bouquet> pairs,
-                      Object m, Clause clause,
-                      int at, int flags, Bouquet b) {
-        Bouquet cp = pairs.get(m);
-        if (cp == null) {
-            cp = copyBouquet(b);
-            pairs.add(m, cp);
-        }
-        cp.assertClause(at, clause, flags);
-    }
-
-    /**
-     * <p>Retract the clause to the list of pairs.</p>
-     *
-     * @param pairs  The pairs.
-     * @param m      The key.
-     * @param clause The clause to be added.
-     * @param at     The position.
-     * @return True if dirty, otherwise false.
-     */
-    static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
-                                 Object m, Clause clause, int at) {
-        if (pairs instanceof AssocArray) {
-            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
-            int j = list.indexOf(m);
-            if (j < 0)
-                return false;
-            Bouquet cp = list.getValue(j);
-            cp.retractClause(at, clause);
-            if (cp.set == null) {
-                list.removeEntry(j);
-                list.resize();
-            }
-            return true;
-        } else {
-            MapHash<Object, Bouquet> hash = (MapHash) pairs;
-            MapEntry<Object, Bouquet> entry = hash.getEntry(m);
-            if (entry == null)
-                return false;
-            Bouquet cp = entry.value;
-            cp.retractClause(at, clause);
-            if (cp.set == null) {
-                hash.removeEntry(entry);
-                hash.resize();
-            }
-            return true;
         }
     }
 

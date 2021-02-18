@@ -111,6 +111,18 @@ public abstract class AbstractSet<E>
         }
     }
 
+    /**
+     * <ü>Copy elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public void toList(AbstractList<E> list) {
+        for (SetEntry<E> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            list.add(entry.value);
+        }
+    }
+
     /************************************************************/
     /* Variation Points                                         */
     /************************************************************/

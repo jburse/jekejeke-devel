@@ -117,30 +117,6 @@ public class ListArray<E> extends AbstractList<E> {
     }
 
     /***************************************************************/
-    /* Getter/Setter                                               */
-    /***************************************************************/
-
-    /**
-     * <p>Retrieve an element.</p>
-     *
-     * @param i The index.
-     * @return The element.
-     */
-    public E get(int i) {
-        return (E) table[i];
-    }
-
-    /**
-     * <p>Set an element.</p>
-     *
-     * @param i The index.
-     * @param e The element.
-     */
-    public void set(int i, E e) {
-        table[i] = e;
-    }
-
-    /***************************************************************/
     /* Modify Family                                               */
     /***************************************************************/
 
@@ -243,6 +219,40 @@ public class ListArray<E> extends AbstractList<E> {
     public void toArray(E[] target, int pos) {
         if (size > 0)
             System.arraycopy(table, 0, target, pos, size);
+    }
+
+    /**
+     * <ü>Copy elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public void toList(AbstractList<E> list) {
+        for (int i=0; i<size; i++)
+            list.add((E)table[i]);
+    }
+
+    /***************************************************************/
+    /* Getter/Setter                                               */
+    /***************************************************************/
+
+    /**
+     * <p>Retrieve an element.</p>
+     *
+     * @param i The index.
+     * @return The element.
+     */
+    public E get(int i) {
+        return (E) table[i];
+    }
+
+    /**
+     * <p>Set an element.</p>
+     *
+     * @param i The index.
+     * @param e The element.
+     */
+    public void set(int i, E e) {
+        table[i] = e;
     }
 
     /**

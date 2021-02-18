@@ -95,6 +95,13 @@ public abstract class AbstractList<E>
      */
     public abstract void toArray(E[] target, int pos);
 
+    /**
+     * <ü>Copy elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public abstract void toList(AbstractList<E> list);
+
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/

@@ -103,6 +103,17 @@ public abstract class AbstractMap<K, V>
     }
 
     /**
+     * <p>Copy elements to an assoc.</p>
+     *
+     * @param assoc The map.
+     */
+    public void toAssoc(AbstractAssoc<K,V> assoc) {
+        for (MapEntry<K, V> entry = getFirstEntry();
+             entry != null; entry = successor(entry))
+            assoc.add(entry.key, entry.value);
+    }
+
+    /**
      * <p>Copy the hash map entries to an array.</p>
      *
      * @param target The entry array.

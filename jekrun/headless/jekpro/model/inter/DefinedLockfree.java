@@ -3,6 +3,7 @@ package jekpro.model.inter;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
+import jekpro.model.rope.BouquetFront;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelAtom;
 
@@ -40,7 +41,7 @@ import java.util.concurrent.locks.ReadWriteLock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DefinedLockfree extends AbstractDefined {
-    private final Bouquet cr = new Bouquet();
+    private final Bouquet cr = new BouquetFront();
 
     /**
      * <p>Create a lockfree delegate.</p>

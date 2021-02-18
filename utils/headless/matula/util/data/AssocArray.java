@@ -167,6 +167,16 @@ public class AssocArray<K, V>
         }
     }
 
+    /**
+     * <p>Copy elements to an assoc.</p>
+     *
+     * @param assoc The map.
+     */
+    public void toAssoc(AbstractAssoc<K,V> assoc) {
+        for (int i = 0; i < size; i++)
+            assoc.add(getKey(i), getValue(i));
+    }
+
     /***************************************************************/
     /* Getter/Setter                                               */
     /***************************************************************/

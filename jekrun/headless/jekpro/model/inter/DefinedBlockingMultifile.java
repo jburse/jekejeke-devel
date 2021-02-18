@@ -3,6 +3,7 @@ package jekpro.model.inter;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Bouquet;
+import jekpro.model.rope.BouquetFront;
 import jekpro.model.rope.Clause;
 import jekpro.tools.term.SkelAtom;
 
@@ -41,16 +42,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 final class DefinedBlockingMultifile extends AbstractDefinedMultifile {
-    private final Bouquet cr = new Bouquet();
+    private final Bouquet cr;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * <p>Create a blocking delegate.</p>
      *
      * @param flags The store flags.
+     * @param front The front flag.
      */
-    DefinedBlockingMultifile(int flags) {
+    DefinedBlockingMultifile(int flags, boolean front) {
         super(flags);
+        if (front) {
+            cr = new BouquetFront();
+        } else {
+            cr = new Bouquet();
+        }
     }
 
     /**************************************************************/

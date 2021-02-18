@@ -99,6 +99,13 @@ public abstract class AbstractAssoc<K, V>
      */
     public abstract void toArray(K[] target, V[] target2, int pos);
 
+    /**
+     * <p>Copy elements to an assoc.</p>
+     *
+     * @param assoc The map.
+     */
+    public abstract void toAssoc(AbstractAssoc<K,V> assoc);
+
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/
