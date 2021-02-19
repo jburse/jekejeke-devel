@@ -142,7 +142,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 SkelAtom sa2 = StackElement.callableToName(en.skel);
 
                 SkelAtom sa = StackElement.callableToName(obj);
-                sa = makeAtom(sa.fun, en, sa2);
+                sa = makeAtom(sa.fun, sa2, en);
                 obj = StackElement.callableFromName(obj, sa);
                 if (!BindUniv.unifyTerm(obj, d, temp[0], ref, en))
                     return false;
@@ -216,11 +216,11 @@ public final class SpecialLogic extends AbstractSpecial {
      * <p>Create a new atom for a given site.</p>
      *
      * @param fun The name of the atom.
-     * @param en  The engine.
      * @param sa2 The call-site, or null.
+     * @param en  The engine.
      * @return The new atom.
      */
-    private static SkelAtom makeAtom(String fun, Engine en, SkelAtom sa2) {
+    public static SkelAtom makeAtom(String fun, SkelAtom sa2, Engine en) {
         AbstractSource scope = (sa2 != null ? sa2.scope : null);
         PositionKey pos = (sa2 != null ? sa2.getPosition() : null);
 

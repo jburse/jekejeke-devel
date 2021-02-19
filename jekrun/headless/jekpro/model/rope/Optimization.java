@@ -3,7 +3,6 @@ package jekpro.model.rope;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 
 /**
@@ -40,16 +39,12 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
-    public static final int UNIFY_SKIP = -4;
-    public static final int UNIFY_TERM = -SkelCompoundLineable.SUBTERM_TERM - 1;
-    public static final int UNIFY_MIXED = -SkelCompoundLineable.SUBTERM_MIXED - 1;
-    public static final int UNIFY_LINEAR = -SkelCompoundLineable.SUBTERM_LINEAR - 1;
+    public static final int UNIFY_SKIP = -2;
+    public static final int UNIFY_TERM = -1;
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
-    public final static int MASK_VAR_USED = 0x00000004;
 
-    final static int[][] cacheUnifyLinear = new int[8][];
     final static int[][] cacheUnifyTerm = new int[8][];
 
     public int flags;
@@ -60,12 +55,6 @@ public final class Optimization {
      * <p>Initialize the immutable cache.</p>
      */
     static {
-        for (int i = 0; i < 8; i++) {
-            int[] array = new int[i];
-            for (int j = 0; j < i; j++)
-                array[j] = UNIFY_LINEAR;
-            cacheUnifyLinear[i] = array;
-        }
         for (int i = 0; i < 8; i++) {
             int[] array = new int[i];
             for (int j = 0; j < i; j++)
@@ -81,21 +70,6 @@ public final class Optimization {
      */
     private Optimization(SkelVar s) {
         sort = s;
-    }
-
-    /**
-     * <p>Retrieve a linear unify array.</p>
-     *
-     * @param n The length.
-     * @return The linear unify array.
-     */
-    private static int[] valueOfLinear(int n) {
-        if (n < 8)
-            return cacheUnifyLinear[n];
-        int[] array = new int[n];
-        for (int j = 0; j < n; j++)
-            array[j] = UNIFY_LINEAR;
-        return array;
     }
 
     /**
@@ -240,77 +214,6 @@ public final class Optimization {
             var.sort.id = i;
         }
         return k;
-    }
-
-    /**
-     * <p>Collect the unify arguments.</p>
-     *
-     * @param molec  The head skeleton.
-     * @param helper The helper.
-     * @return The unify arguments.
-     */
-    static int[] unifyArgsLinear(Object molec, Optimization[] helper) {
-        if (!(molec instanceof SkelCompound))
-            return null;
-        SkelCompound mc = (SkelCompound) molec;
-        if (helper.length == 0)
-            return valueOfLinear(mc.args.length);
-        int i = mc.args.length - 1;
-        for (; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (!(a instanceof SkelVar))
-                break;
-            Optimization ov = helper[((SkelVar) a).id];
-            if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
-                    break;
-                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                    break;
-                } else {
-                    /* */
-                }
-            } else {
-                break;
-            }
-        }
-        if (!(i >= 0))
-            return null;
-        int[] intargs = new int[i + 1];
-        for (; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (!(a instanceof SkelVar)) {
-                intargs[i] = -getSubTerm(mc, i) - 1;
-                continue;
-            }
-            Optimization ov = helper[((SkelVar) a).id];
-            if ((ov.flags & MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
-                    intargs[i] = ov.minarg;
-                } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                    intargs[i] = UNIFY_LINEAR;
-                } else {
-                    intargs[i] = UNIFY_SKIP;
-                }
-            } else {
-                intargs[i] = -getSubTerm(mc, i) - 1;
-            }
-        }
-        return intargs;
-    }
-
-    /**
-     * <p>Retrieve a clash flag.</p>
-     *
-     * @param mc The compound skeleton.
-     * @param k  The index.
-     * @return The clash flag.
-     */
-    private static byte getSubTerm(SkelCompound mc, int k) {
-        if (!(mc instanceof SkelCompoundLineable)) {
-            return SkelCompoundLineable.SUBTERM_LINEAR;
-        } else {
-            return ((SkelCompoundLineable) mc).subterm[k];
-        }
     }
 
     /**

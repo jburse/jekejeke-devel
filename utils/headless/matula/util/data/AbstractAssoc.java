@@ -104,7 +104,7 @@ public abstract class AbstractAssoc<K, V>
      *
      * @param assoc The map.
      */
-    public abstract void toAssoc(AbstractAssoc<K,V> assoc);
+    public abstract void toAssoc(AbstractAssoc<K, V> assoc);
 
     /***************************************************************/
     /* Object Protocol                                             */

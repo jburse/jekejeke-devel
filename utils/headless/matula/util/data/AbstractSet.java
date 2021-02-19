@@ -123,6 +123,19 @@ public abstract class AbstractSet<E>
         }
     }
 
+    /**
+     * <ü>Copy unique elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public void toListUnique(AbstractList<E> list) {
+        for (SetEntry<E> entry = getFirstEntry();
+             entry != null; entry = successor(entry)) {
+            if (list.getKey(entry.value) == null)
+                list.add(entry.value);
+        }
+    }
+
     /************************************************************/
     /* Variation Points                                         */
     /************************************************************/

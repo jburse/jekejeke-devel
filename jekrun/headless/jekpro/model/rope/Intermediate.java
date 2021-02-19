@@ -3,6 +3,11 @@ package jekpro.model.rope;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
+import matula.util.data.AbstractList;
 
 /**
  * <p>The class provides the base class for intermediate code.</p>
@@ -60,5 +65,77 @@ public abstract class Intermediate {
      */
     public abstract boolean resolveNext(Engine en)
             throws EngineException, EngineMessage;
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isAlter(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isGuard(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a sequent.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a sequent.
+     */
+    public static boolean isSequen(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Determine the control type.</p>
+     *
+     * @param term The term.
+     * @return The control type.
+     */
+    public static int controlType(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
+            return Directive.TYPE_CTRL_BEGN;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
+            return Directive.TYPE_CTRL_CMMT;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
+            return Directive.TYPE_CTRL_SBGN;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
+            return Directive.TYPE_CTRL_SCMT;
+        } else {
+            return Directive.TYPE_CTRL_NONE;
+        }
+    }
 
 }

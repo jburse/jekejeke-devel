@@ -6,8 +6,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -147,7 +145,8 @@ public class Directive extends Intermediate {
      * <p>Convert the intermediate form into a term.</p>
      * <p>Will skip begin and commit nodes.</p>
      *
-     * @param last The conversion end.
+     * @param temp The intermediate start.
+     * @param last The intermediate end.
      * @param en   The store.
      * @return The skeleton.
      */
@@ -226,7 +225,8 @@ public class Directive extends Intermediate {
     /**
      * <p>Convert the intermediate form into a term.</p>
      *
-     * @param en The store.
+     * @param dire The branch.
+     * @param en   The store.
      * @return The skeleton.
      */
     private static Object interToBranchSkel(Directive dire, Engine en) {
@@ -284,78 +284,6 @@ public class Directive extends Intermediate {
         return null;
     }
 
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isAlter(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is an alternative.</p>
-     *
-     * @param term The term.
-     * @return True if the term is an alterantive.
-     */
-    public static boolean isGuard(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a sequent.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a sequent.
-     */
-    public static boolean isSequen(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Determine the control type.</p>
-     *
-     * @param term The term.
-     * @return The control type.
-     */
-    public static int controlType(Object term) {
-        if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
-            return TYPE_CTRL_BEGN;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
-            return TYPE_CTRL_CMMT;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
-            return TYPE_CTRL_SBGN;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
-            return TYPE_CTRL_SCMT;
-        } else {
-            return TYPE_CTRL_NONE;
-        }
-    }
-
     /**************************************************************/
     /* Builder Utilities                                          */
     /**************************************************************/
@@ -404,7 +332,7 @@ public class Directive extends Intermediate {
      * @param flags The flag.
      */
     public void addInterTrace(Intermediate inter, int flags) {
-
+        throw new IllegalArgumentException("not supported");
     }
 
 }

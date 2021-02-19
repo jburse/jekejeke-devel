@@ -623,13 +623,13 @@ public final class SpecialUniv extends AbstractSpecial {
                             d2 = b2.display;
                             continue;
                         }
-                        if (alfa == beta && d1 == d2)
+                        if (b1 == b2)
                             return true;
-                        if (BindUniv.hasVar(alfa, d1, beta, d2))
+                        if (b2.hasVar(alfa, d1, d2))
                             return false;
                         return b2.bindAttr(alfa, d1, en);
                     }
-                    if (BindUniv.hasVar(beta, d2, alfa, d1))
+                    if (b1.hasVar(beta, d2, d1))
                         return false;
                     return b1.bindAttr(beta, d2, en);
                 }
@@ -643,7 +643,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         d2 = bc.display;
                         continue;
                     }
-                    if (BindUniv.hasVar(alfa, d1, beta, d2))
+                    if (bc.hasVar(alfa, d1, d2))
                         return false;
                     return bc.bindAttr(alfa, d1, en);
                 }

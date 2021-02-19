@@ -466,10 +466,10 @@ public final class SpecialApply extends AbstractSpecial {
                             d2 = b2.display;
                             continue;
                         }
-                        if (alfa == beta && d1 == d2)
+                        if (b1==b2)
                             return true;
                     }
-                    if (BindUniv.hasVar(gamma, d3, alfa, d1))
+                    if (b1.hasVar(gamma, d3, d1))
                         return false;
                     b1.bindUniv(beta, d2, en);
                     return true;

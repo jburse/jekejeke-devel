@@ -107,7 +107,7 @@ public abstract class AbstractMap<K, V>
      *
      * @param assoc The map.
      */
-    public void toAssoc(AbstractAssoc<K,V> assoc) {
+    public void toAssoc(AbstractAssoc<K, V> assoc) {
         for (MapEntry<K, V> entry = getFirstEntry();
              entry != null; entry = successor(entry))
             assoc.add(entry.key, entry.value);

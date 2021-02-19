@@ -227,8 +227,20 @@ public class ListArray<E> extends AbstractList<E> {
      * @param list The list.
      */
     public void toList(AbstractList<E> list) {
-        for (int i=0; i<size; i++)
-            list.add((E)table[i]);
+        for (int i = 0; i < size; i++)
+            list.add((E) table[i]);
+    }
+
+    /**
+     * <ü>Copy elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public void toListUnique(AbstractList<E> list) {
+        for (int i = 0; i < size; i++) {
+            if (list.getKey((E) table[i]) == null)
+                list.add((E) table[i]);
+        }
     }
 
     /***************************************************************/

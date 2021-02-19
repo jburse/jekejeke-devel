@@ -102,6 +102,13 @@ public abstract class AbstractList<E>
      */
     public abstract void toList(AbstractList<E> list);
 
+    /**
+     * <ü>Copy unique elements to a list.</ü>
+     *
+     * @param list The list.
+     */
+    public abstract void toListUnique(AbstractList<E> list);
+
     /***************************************************************/
     /* Object Protocol                                             */
     /***************************************************************/

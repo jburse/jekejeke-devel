@@ -4,7 +4,6 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
 import matula.util.data.AbstractMap;
@@ -189,138 +188,6 @@ public class BindUniv extends AbstractUndo {
     /****************************************************************/
 
     /**
-     * <p>Unify two terms. As a side effect bindings are established.</p>
-     * <p>Trigger attribute variables only on one side.</p>
-     * <p>Tail recursion implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The clause skeleton.
-     * @param d2   The clause display.
-     * @param en   The engine.
-     * @return True if the two terms unify, otherwise false.
-     * @throws EngineException Shit happens.
-     */
-    public static boolean unifyLinear(Object alfa, Display d1,
-                                      Object beta, Display d2, Engine en)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                if (beta instanceof SkelVar) {
-                    BindUniv b2 = d2.bind[((SkelVar) beta).id];
-                    b2.bindUniv(alfa, d1, en);
-                    return true;
-                }
-                return b1.bindAttr(beta, d2, en);
-            }
-            if (beta instanceof SkelVar) {
-                BindUniv bc = d2.bind[((SkelVar) beta).id];
-                bc.bindUniv(alfa, d1, en);
-                return true;
-            }
-            if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            int i = 0;
-            for (; i < t1.length - 1; i++)
-                if (!unifyLinear(t1[i], d1, t2[i], d2, en))
-                    return false;
-            alfa = t1[i];
-            beta = t2[i];
-        }
-    }
-
-    /**
-     * <p>>Unify two terms. As a side effect bindings are established.</p
-     * <p>Occurs check is performed depending on occurs check flag.</p>
-     * <p>Compound argumemts are handled according to subterm information.</p>
-     * <p>Bindings are only created when the occurs check fails.<p>
-     * <p>The verify hooks of attribute variables are called.</p>
-     * <p>Tail recursive implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The clause skeleton.
-     * @param d2   The clause display.
-     * @param en   The engine.
-     * @return True if the two terms unify, otherwise false.
-     */
-    public static boolean unifyMixed(Object alfa, Display d1,
-                                     Object beta, Display d2,
-                                     Engine en)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                        hasVar(beta, d2, alfa, d1))
-                    return false;
-                return b1.bindAttr(beta, d2, en);
-            }
-            if (!(alfa instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            byte[] subterm = ((SkelCompoundLineable)beta).subterm;
-            int i = 0;
-            for (; i < t1.length - 1; i++) {
-                switch (subterm[i]) {
-                    case SkelCompoundLineable.SUBTERM_LINEAR:
-                        if (!unifyLinear(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_MIXED:
-                        if (!unifyMixed(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_TERM:
-                        if (!unifyTerm(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal subterm");
-                }
-            }
-            switch (subterm[i]) {
-                case SkelCompoundLineable.SUBTERM_LINEAR:
-                    return unifyLinear(t1[i], d1, t2[i], d2, en);
-                case SkelCompoundLineable.SUBTERM_MIXED:
-                    alfa = t1[i];
-                    beta = t2[i];
-                    break;
-                case SkelCompoundLineable.SUBTERM_TERM:
-                    return unifyTerm(t1[i], d1, t2[i], d2, en);
-                default:
-                    throw new IllegalArgumentException("illegal subterm");
-            }
-        }
-    }
-
-    /**
      * <p>>Unify two terms. As a side effect bindings are established.</p
      * <p>Occurs check is performed depending on occurs check flag.</p>
      * <p>Bindings are only created when the occurs check fails.<p>
@@ -356,15 +223,15 @@ public class BindUniv extends AbstractUndo {
                             d2 = b2.display;
                             continue;
                         }
-                        if (alfa == beta && d1 == d2)
+                        if (b1 == b2)
                             return true;
                         if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                                hasVar(alfa, d1, beta, d2))
+                                b2.hasVar(alfa, d1, d2))
                             return false;
                         return b2.bindAttr(alfa, d1, en);
                     }
                     if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            hasVar(beta, d2, alfa, d1))
+                            b1.hasVar(beta, d2, d1))
                         return false;
                     return b1.bindAttr(beta, d2, en);
                 }
@@ -379,7 +246,7 @@ public class BindUniv extends AbstractUndo {
                         continue;
                     }
                     if ((en.visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 &&
-                            hasVar(alfa, d1, beta, d2))
+                            bc.hasVar(alfa, d1, d2))
                         return false;
                     return bc.bindAttr(alfa, d1, en);
                 }
@@ -413,12 +280,13 @@ public class BindUniv extends AbstractUndo {
      *
      * @param m  The term.
      * @param d  The display of the term.
-     * @param t  The variable.
      * @param d2 The display of the variable.
      * @return True when the variable occurs in the term, false otherwise.
      */
-    public static boolean hasVar(Object m, Display d, Object t, Display d2) {
+    public boolean hasVar(Object m, Display d, Display d2) {
         for (; ; ) {
+            if (refs == 0 && d != d2)
+                return false;
             Object var = SupervisorCopy.getVar(m);
             if (var == null)
                 return false;
@@ -432,10 +300,10 @@ public class BindUniv extends AbstractUndo {
                     v = temp[i];
                     BindUniv b = d.bind[v.id];
                     if (b.display != null) {
-                        if (hasVar(b.skel, b.display, t, d2))
+                        if (hasVar(b.skel, b.display, d2))
                             return true;
                     } else {
-                        if (v == t && d == d2)
+                        if (b == this)
                             return true;
                     }
                 }
@@ -446,7 +314,7 @@ public class BindUniv extends AbstractUndo {
                 m = b.skel;
                 d = b.display;
             } else {
-                return (v == t && d == d2);
+                return (b == this);
             }
         }
     }

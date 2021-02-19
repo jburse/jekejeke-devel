@@ -14,7 +14,6 @@ import jekpro.reference.runtime.SpecialLogic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelCompoundLineable;
 import jekpro.tools.term.SkelVar;
 import matula.util.data.AbstractList;
 import matula.util.data.MapHash;
@@ -388,14 +387,6 @@ public abstract class AbstractDefined extends AbstractDelegate {
                     if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
                         return false;
                     break;
-                case Optimization.UNIFY_MIXED:
-                    if (!BindUniv.unifyMixed(t1[i], ref, t2[i], ref2, en))
-                        return false;
-                    break;
-                case Optimization.UNIFY_LINEAR:
-                    if (!BindUniv.unifyLinear(t1[i], ref, t2[i], ref2, en))
-                        return false;
-                    break;
                 default:
                     if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
                         return false;
@@ -759,32 +750,12 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         Object[] t1 = ((SkelCompound) head).args;
         Object[] t2 = ((SkelCompound) clause.head).args;
-        if (!(clause.head instanceof SkelCompoundLineable)) {
             for (int i = 0; i < t2.length; i++) {
-                if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
-                    return false;
+                if (!BindUniv.unifyTerm(t1[i], d1, t2[i], d2, en))
+                            return false;
+                        break;
+
             }
-        } else {
-            byte[] subterm = ((SkelCompoundLineable) clause.head).subterm;
-            for (int i = 0; i < t2.length; i++) {
-                switch (subterm[i]) {
-                    case SkelCompoundLineable.SUBTERM_LINEAR:
-                        if (!BindUniv.unifyLinear(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_MIXED:
-                        if (!BindUniv.unifyMixed(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    case SkelCompoundLineable.SUBTERM_TERM:
-                        if (!BindUniv.unifyTerm(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal subterm");
-                }
-            }
-        }
         return true;
     }
 

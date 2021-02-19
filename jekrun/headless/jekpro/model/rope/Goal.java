@@ -57,9 +57,6 @@ public class Goal extends Intermediate {
     public final static int TYPE_SEQN_TRUE = 1;
     public final static int TYPE_SEQN_NONE = 2;
 
-    public final static int TYPE_FRNT_MTCH = 0;
-    public final static int TYPE_FRNT_NONE = 1;
-
     public Object term;
     public Intermediate back;
 
@@ -154,7 +151,7 @@ public class Goal extends Intermediate {
                     t = conjToSequenSkel(dire, t, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (Directive.controlType(t) != Directive.TYPE_CTRL_NONE) {
+                } else if (Intermediate.controlType(t) != Directive.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {

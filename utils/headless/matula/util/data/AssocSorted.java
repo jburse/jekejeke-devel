@@ -1,7 +1,6 @@
 package matula.util.data;
 
 import matula.util.regex.IgnoreCase;
-import qa.norm.anon.bean.Sort;
 
 import java.util.Comparator;
 
@@ -106,8 +105,8 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
             if (k < 0) {
                 i++;
             } else if (k == 0) {
-                AssocSorted value = AssocSorted.intersect((AssocSorted) getValue(i), (AssocSorted) b.getValue(j));
-                if (value == FULL_SET || value.size != 0)
+                V value = AssocSorted.intersect(getValue(i), b.getValue(j));
+                if (value == FULL_SET || ((AssocSorted) value).size() != 0)
                     res.add(getKey(i), (V) value);
                 i++;
                 j++;
@@ -125,15 +124,13 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
      * @param b The second sorted array, can be null.
      * @return The result, can be null.
      */
-    public static AssocSorted<String, AssocSorted> intersect(
-            AssocSorted<String, AssocSorted> a,
-            AssocSorted<String, AssocSorted> b) {
+    public static <V> V intersect(V a, V b) {
         if (a == FULL_SET) {
             return b;
         } else if (b == FULL_SET) {
             return a;
         } else {
-            return a.intersect(b);
+            return (V) ((AssocSorted) a).intersect((AssocSorted) b);
         }
     }
 
@@ -153,8 +150,8 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
                 res.add(getKey(i), getValue(i));
                 i++;
             } else if (k == 0) {
-                AssocSorted value = AssocSorted.union((AssocSorted) getValue(i), (AssocSorted) b.getValue(j));
-                res.add(getKey(i), (V) value);
+                V value = AssocSorted.union(getValue(i), b.getValue(j));
+                res.add(getKey(i), value);
                 i++;
                 j++;
             } else {
@@ -180,15 +177,13 @@ public final class AssocSorted<K, V> extends AssocArray<K, V> {
      * @param b The second sorted array, can be null.
      * @return The result, can be null.
      */
-    public static AssocSorted<String, AssocSorted> union(
-            AssocSorted<String, AssocSorted> a,
-            AssocSorted<String, AssocSorted> b) {
+    public static <V> V union(V a, V b) {
         if (a == FULL_SET) {
-            return FULL_SET;
+            return (V) FULL_SET;
         } else if (b == FULL_SET) {
-            return FULL_SET;
+            return (V) FULL_SET;
         } else {
-            return a.union(b);
+            return (V) ((AssocSorted) a).union((AssocSorted) b);
         }
     }
 

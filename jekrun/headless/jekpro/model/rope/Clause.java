@@ -16,7 +16,9 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
+import matula.util.data.AbstractList;
 import matula.util.data.MapHashLink;
+import matula.util.data.SetHash;
 
 /**
  * <p>The class provides the clause intermediate code.</p>
@@ -124,23 +126,17 @@ public class Clause extends Directive implements InterfaceReference {
         Clause clause = Clause.createClause(fun.subflags, en);
         clause.size = SupervisorCopy.displaySize(molec);
         Optimization[] helper = Optimization.createHelper(molec);
-        clause.head = SkelCompoundLineable.adornTermSkel(term, helper);
         clause.del = fun;
 
-        /* process body */
+        clause.head = term;
         term = Clause.clauseToBody(molec, en);
         if (helper.length != 0) {
             Optimization.setHead(clause.head, clause.flags, helper);
             Optimization.setBody(term, helper);
             clause.sizerule = Optimization.sortExtra(helper);
         }
-        if ((clause.flags & AbstractDefined.MASK_DEFI_NHST) == 0) {
-            clause.intargs = Optimization.unifyArgsLinear(clause.head, helper);
-        } else {
-            clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
-        }
         clause.bodyToInterSkel(term, en, true);
-
+        clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
         return clause;
     }
 
