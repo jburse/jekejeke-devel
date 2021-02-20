@@ -113,8 +113,7 @@ public final class SpecialControl extends AbstractSpecial {
             case SPECIAL_SYS_FETCH_STACK:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!BindUniv.unifyTerm(EngineException.fetchStack(en),
-                        Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!en.unify(EngineException.fetchStack(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_RAISE:
@@ -226,7 +225,7 @@ public final class SpecialControl extends AbstractSpecial {
             Object temp2 = y.getTemplate();
             Display ref2 = AbstractSkel.createMarker(temp2);
             boolean multi = ref2.getAndReset();
-            if (!BindUniv.unifyTerm(t, d, temp2, ref2, en))
+            if (!en.unify(t, d, temp2, ref2))
                 return false;
             if (multi)
                 ref2.remTab(en);

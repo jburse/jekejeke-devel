@@ -1,6 +1,7 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.system.ForeignThread;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
@@ -47,15 +48,6 @@ import matula.util.wire.AbstractLivestock;
  */
 public class Goal extends Intermediate {
     public final static int MASK_GOAL_CEND = 0x00000020;
-
-    public final static int TYPE_ALTR_DISJ = 0;
-    public final static int TYPE_ALTR_COND = 1;
-    public final static int TYPE_ALTR_SOFT = 2;
-    public final static int TYPE_ALTR_NONE = 3;
-
-    public final static int TYPE_SEQN_CONJ = 0;
-    public final static int TYPE_SEQN_TRUE = 1;
-    public final static int TYPE_SEQN_NONE = 2;
 
     public Object term;
     public Intermediate back;
@@ -143,15 +135,15 @@ public class Goal extends Intermediate {
         for (; ; ) {
             if (!Goal.noBody(b)) {
                 Object t = Goal.bodyToGoalSkel(b);
-                if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
+                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
                     t = disjToAlterSkel(dire, t, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
+                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
                     t = conjToSequenSkel(dire, t, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (Intermediate.controlType(t) != Directive.TYPE_CTRL_NONE) {
+                } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
@@ -185,16 +177,16 @@ public class Goal extends Intermediate {
         SkelCompound back = null;
         L1:
         for (; ; ) {
-            switch (Goal.alterType(t)) {
-                case Goal.TYPE_ALTR_DISJ:
+            switch (SpecialBody.alterType(t)) {
+                case SpecialBody.TYPE_ALTR_DISJ:
                     SkelCompound sc = (SkelCompound) t;
                     Object b = sc.args[0];
                     Directive left;
-                    switch (Goal.alterType(b)) {
-                        case Goal.TYPE_ALTR_COND:
+                    switch (SpecialBody.alterType(b)) {
+                        case SpecialBody.TYPE_ALTR_COND:
                             left = condToInterSkel(dire, b, en);
                             break;
-                        case Goal.TYPE_ALTR_SOFT:
+                        case SpecialBody.TYPE_ALTR_SOFT:
                             left = softCondToInterSkel(dire, b, en);
                             break;
                         default:
@@ -207,11 +199,11 @@ public class Goal extends Intermediate {
                     back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
                     t = sc.args[1];
                     break;
-                case Goal.TYPE_ALTR_COND:
+                case SpecialBody.TYPE_ALTR_COND:
                     t = condToInterSkel(dire, t, en);
                     t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
                     break L1;
-                case Goal.TYPE_ALTR_SOFT:
+                case SpecialBody.TYPE_ALTR_SOFT:
                     t = softCondToInterSkel(dire, t, en);
                     t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
                     break L1;
@@ -301,53 +293,6 @@ public class Goal extends Intermediate {
         Directive left = Directive.createDirective(dire.flags, en);
         left.bodyToInterSkel(b, en, false);
         return left;
-    }
-
-    /**************************************************************/
-    /* Body Types                                                 */
-    /**************************************************************/
-
-    /**
-     * <p>Determine the alter type.</p>
-     *
-     * @param t The goal skeleton.
-     * @return The alter type.
-     */
-    public static int alterType(Object t) {
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SEMICOLON)) {
-            return TYPE_ALTR_DISJ;
-        } else if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONDITION)) {
-            return TYPE_ALTR_COND;
-        } else if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SOFT_CONDITION)) {
-            return TYPE_ALTR_SOFT;
-        } else {
-            return TYPE_ALTR_NONE;
-        }
-    }
-
-    /**
-     * <p>Determine the sequen type.</p>
-     *
-     * @param t The goal skeleton.
-     * @return The sequen type.
-     */
-    public static int sequenType(Object t) {
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
-            return TYPE_SEQN_CONJ;
-        } else if (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
-            return TYPE_SEQN_TRUE;
-        } else {
-            return TYPE_SEQN_NONE;
-        }
     }
 
     /**************************************************************/

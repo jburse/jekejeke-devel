@@ -178,9 +178,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
             if (AbstractDefined.unifySearch(head, refhead,
                     clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
+                if (en.unify(end, d2, temp[1], ref)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
+                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
                             break;
                     } else {
                         break;

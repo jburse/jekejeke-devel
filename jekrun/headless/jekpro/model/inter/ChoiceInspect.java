@@ -130,9 +130,9 @@ class ChoiceInspect extends AbstractChoice {
             if (AbstractDefined.unifySearch(head, refhead,
                     clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, d2, temp[1], d, en)) {
+                if (en.unify(end, d2, temp[1], d)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], d, en))
+                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], d))
                             break;
                     } else {
                         break;

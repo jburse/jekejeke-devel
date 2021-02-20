@@ -8,7 +8,9 @@ import jekpro.model.molec.CallFrame;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.rope.Directive;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -52,6 +54,21 @@ public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_SYS_SOFT_BEGIN = 6;
     private final static int SPECIAL_SYS_SOFT_COMMIT = 7;
 
+    public final static int TYPE_ALTR_DISJ = 0;
+    public final static int TYPE_ALTR_COND = 1;
+    public final static int TYPE_ALTR_SOFT = 2;
+    public final static int TYPE_ALTR_NONE = 3;
+
+    public final static int TYPE_SEQN_CONJ = 0;
+    public final static int TYPE_SEQN_TRUE = 1;
+    public final static int TYPE_SEQN_NONE = 2;
+
+    public final static int TYPE_CTRL_BEGN = 0;
+    public final static int TYPE_CTRL_CMMT = 1;
+    public final static int TYPE_CTRL_SBGN = 2;
+    public final static int TYPE_CTRL_SCMT = 3;
+    public final static int TYPE_CTRL_NONE = 4;
+
     /**
      * <p>Create a body special.</p>
      *
@@ -60,6 +77,7 @@ public final class SpecialBody extends AbstractSpecial {
     public SpecialBody(int i) {
         super(i);
     }
+
 
     /**
      * <p>Logically evaluate a term in a list of goals for the first time.</p>
@@ -146,6 +164,77 @@ public final class SpecialBody extends AbstractSpecial {
             default:
                 throw new IllegalArgumentException(
                         AbstractSpecial.OP_ILLEGAL_SPECIAL);
+        }
+    }
+
+    /**************************************************************/
+    /* Body Checkers                                              */
+    /**************************************************************/
+
+    /**
+     * <p>Determine the alter type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The alter type.
+     */
+    public static int alterType(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SEMICOLON)) {
+            return TYPE_ALTR_DISJ;
+        } else if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONDITION)) {
+            return TYPE_ALTR_COND;
+        } else if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_SOFT_CONDITION)) {
+            return TYPE_ALTR_SOFT;
+        } else {
+            return TYPE_ALTR_NONE;
+        }
+    }
+
+    /**
+     * <p>Determine the sequen type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The sequen type.
+     */
+    public static int sequenType(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            return TYPE_SEQN_CONJ;
+        } else if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE)) {
+            return TYPE_SEQN_TRUE;
+        } else {
+            return TYPE_SEQN_NONE;
+        }
+    }
+
+    /**
+     * <p>Determine the control type.</p>
+     *
+     * @param term The term.
+     * @return The control type.
+     */
+    public static int controlType(Object term) {
+        if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
+            return TYPE_CTRL_BEGN;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
+            return TYPE_CTRL_CMMT;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
+            return TYPE_CTRL_SBGN;
+        } else if (term instanceof SkelAtom &&
+                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
+            return TYPE_CTRL_SCMT;
+        } else {
+            return TYPE_CTRL_NONE;
         }
     }
 

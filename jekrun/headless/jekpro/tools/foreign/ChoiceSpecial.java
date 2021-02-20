@@ -120,8 +120,8 @@ final class ChoiceSpecial extends AbstractChoice {
             Object[] help;
             boolean ext = d.getAndReset();
             if (res != AbstractSkel.VOID_OBJ &&
-                    !BindUniv.unifyTerm(AbstractTerm.getSkel(res), d,
-                            (help = ((SkelCompound) term).args)[help.length - 1], ref, en)) {
+                    !en.unify(AbstractTerm.getSkel(res), d,
+                            (help = ((SkelCompound) term).args)[help.length - 1], ref)) {
                 if ((co.flags & CallOut.MASK_CALL_RTRY) == 0)
                     return false;
 

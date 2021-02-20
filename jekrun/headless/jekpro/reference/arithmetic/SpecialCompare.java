@@ -2,7 +2,6 @@ package jekpro.reference.arithmetic;
 
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -183,9 +182,9 @@ public final class SpecialCompare extends AbstractSpecial {
                 alfa = SpecialEval.derefAndCastNumber(temp[0], ref);
                 beta = SpecialEval.derefAndCastNumber(temp[1], ref);
                 Number[] res = divMod(alfa, beta);
-                if (!BindUniv.unifyTerm(res[0], Display.DISPLAY_CONST, temp[2], ref, en))
+                if (!en.unify(res[0], Display.DISPLAY_CONST, temp[2], ref))
                     return false;
-                if (!BindUniv.unifyTerm(res[1], Display.DISPLAY_CONST, temp[3], ref, en))
+                if (!en.unify(res[1], Display.DISPLAY_CONST, temp[3], ref))
                     return false;
                 return true;
             default:

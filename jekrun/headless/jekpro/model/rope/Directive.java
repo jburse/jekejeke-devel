@@ -1,11 +1,13 @@
 package jekpro.model.rope;
 
 import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.tools.term.SkelCompound;
 
 /**
@@ -52,17 +54,11 @@ public class Directive extends Intermediate {
             AbstractDefined.MASK_DEFI_CALL | AbstractDefined.MASK_DEFI_NBCV;
 
     public final static int MASK_DIRE_COPT = MASK_DIRE_CALL |
-            AbstractDefined.MASK_DEFI_NIST | AbstractDefined.MASK_DEFI_NHST |
+            AbstractDefined.MASK_DEFI_NIST | AbstractDefined.MASK_DEFI_NWKV |
             AbstractDefined.MASK_DEFI_NEXV;
 
     public final static int MASK_FIXUP_MOVE = 0x00000001;
     public final static int MASK_FIXUP_MARK = 0x00000002;
-
-    public final static int TYPE_CTRL_BEGN = 0;
-    public final static int TYPE_CTRL_CMMT = 1;
-    public final static int TYPE_CTRL_SBGN = 2;
-    public final static int TYPE_CTRL_SCMT = 3;
-    public final static int TYPE_CTRL_NONE = 4;
 
     public Intermediate last;
 
@@ -163,7 +159,7 @@ public class Directive extends Intermediate {
                 } else if (isSequen(left)) {
                     SkelCompound sc = (SkelCompound) left;
                     left = Directive.interToBranchSkel((Directive) sc.args[0], en);
-                } else if (controlType(left) != TYPE_CTRL_NONE) {
+                } else if (SpecialBody.controlType(left) != SpecialBody.TYPE_CTRL_NONE) {
                     continue;
                 }
                 if (t != null) {
@@ -230,13 +226,13 @@ public class Directive extends Intermediate {
      * @return The skeleton.
      */
     private static Object interToBranchSkel(Directive dire, Engine en) {
-        int type = TYPE_CTRL_NONE;
-        if (dire.last != null && (type = controlType(((Goal) dire.next).term)) == TYPE_CTRL_BEGN) {
+        int type = SpecialBody.TYPE_CTRL_NONE;
+        if (dire.last != null && (type = SpecialBody.controlType(((Goal) dire.next).term)) == SpecialBody.TYPE_CTRL_BEGN) {
             Intermediate split = findSplit(dire, dire.last);
             Object left = Directive.interToBodySkel(dire, split, en);
             Object right = Directive.interToBodySkel(split, dire.last, en);
             return new SkelCompound(en.store.foyer.ATOM_CONDITION, left, right);
-        } else if (dire.last != null && type == TYPE_CTRL_SBGN) {
+        } else if (dire.last != null && type == SpecialBody.TYPE_CTRL_SBGN) {
             Intermediate split = findSoftSplit(dire, dire.last);
             Object left = Directive.interToBodySkel(dire, split, en);
             Object right = Directive.interToBodySkel(split, dire.last, en);
@@ -258,7 +254,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (controlType(((Goal) temp).term) == TYPE_CTRL_CMMT)
+                if (SpecialBody.controlType(((Goal) temp).term) == SpecialBody.TYPE_CTRL_CMMT)
                     return back;
             } while (temp != last);
         }
@@ -277,7 +273,7 @@ public class Directive extends Intermediate {
             do {
                 Intermediate back = temp;
                 temp = back.next;
-                if (controlType(((Goal) temp).term) == TYPE_CTRL_SCMT)
+                if (SpecialBody.controlType(((Goal) temp).term) == SpecialBody.TYPE_CTRL_SCMT)
                     return back;
             } while (temp != last);
         }
@@ -333,6 +329,58 @@ public class Directive extends Intermediate {
      */
     public void addInterTrace(Intermediate inter, int flags) {
         throw new IllegalArgumentException("not supported");
+    }
+
+    /**************************************************************/
+    /* Intermediate Code Checkers                                 */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isAlter(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 2 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is an alternative.</p>
+     *
+     * @param term The term.
+     * @return True if the term is an alterantive.
+     */
+    public static boolean isGuard(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * <p>Check whether the given term is a sequent.</p>
+     *
+     * @param term The term.
+     * @return True if the term is a sequent.
+     */
+    public static boolean isSequen(Object term) {
+        if (term instanceof SkelCompound &&
+                ((SkelCompound) term).args.length == 1 &&
+                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

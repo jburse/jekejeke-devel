@@ -6,7 +6,6 @@ import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -88,7 +87,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.callableToProperties(AbstractTerm.createMolec(en.skel, en.display), en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
+                if (!en.unify(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -104,7 +103,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.callableToProperty(AbstractTerm.createMolec(en.skel, en.display), prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
+                if (!en.unify(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -125,7 +124,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.setCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[0], ref, en))
+                if (!en.unify(en.skel, d, temp[0], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -146,7 +145,7 @@ public final class SpecialCall extends AbstractSpecial {
                 SpecialCall.resetCallableProp(AbstractTerm.createMolec(t, d), en.skel, en.display, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[0], ref, en))
+                if (!en.unify(en.skel, d, temp[0], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

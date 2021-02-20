@@ -75,7 +75,7 @@ public final class SpecialEval extends AbstractSpecial {
                 en.computeExpr(temp[1], ref);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[0], ref, en))
+                if (!en.unify(en.skel, d, temp[0], ref))
                     return false;
                 if (multi)
                     d.remTab(en);

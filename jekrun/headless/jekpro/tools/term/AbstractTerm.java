@@ -323,9 +323,8 @@ public abstract class AbstractTerm {
         Thread backthread = en.visor.setFence(Thread.currentThread());
         boolean res;
         try {
-            res = BindUniv.unifyTerm(AbstractTerm.getSkel(fst),
-                    AbstractTerm.getDisplay(fst), AbstractTerm.getSkel(snd),
-                    AbstractTerm.getDisplay(snd), en);
+            res = en.unify(AbstractTerm.getSkel(fst), AbstractTerm.getDisplay(fst),
+                    AbstractTerm.getSkel(snd), AbstractTerm.getDisplay(snd));
         } catch (EngineException x) {
             en.visor.setFence(backthread);
             en.visor.setInuse(backuse);

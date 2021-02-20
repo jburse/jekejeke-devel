@@ -15,10 +15,11 @@ import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
-import jekpro.tools.term.*;
-import matula.util.data.AbstractList;
+import jekpro.tools.term.AbstractSkel;
+import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHashLink;
-import matula.util.data.SetHash;
 
 /**
  * <p>The class provides the clause intermediate code.</p>
@@ -124,15 +125,15 @@ public class Clause extends Directive implements InterfaceReference {
                     molec), AbstractSkel.createDisplay(molec));
         AbstractDefined fun = determineDefined(term, hopt, en);
         Clause clause = Clause.createClause(fun.subflags, en);
+        clause.head = term;
         clause.size = SupervisorCopy.displaySize(molec);
-        Optimization[] helper = Optimization.createHelper(molec);
         clause.del = fun;
 
-        clause.head = term;
         term = Clause.clauseToBody(molec, en);
+        Optimization[] helper = Optimization.createHelper(molec);
         if (helper.length != 0) {
-            Optimization.setHead(clause.head, clause.flags, helper);
-            Optimization.setBody(term, helper);
+            Intermediate.setHead(clause.head, clause.flags, helper);
+            Intermediate.setBody(term, clause.flags, helper, en);
             clause.sizerule = Optimization.sortExtra(helper);
         }
         clause.bodyToInterSkel(term, en, true);

@@ -94,7 +94,7 @@ public final class SpecialUniv extends AbstractSpecial {
                             return false;
                         if (nth < 1)
                             return false;
-                        if (!BindUniv.unifyTerm(cmp[nth - 1], en.display, temp[2], ref, en))
+                        if (!en.unify(cmp[nth - 1], en.display, temp[2], ref))
                             return false;
                         return true;
                     } else if (en.skel instanceof SkelAtom) {
@@ -131,7 +131,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         boolean multi = SpecialUniv.setCount(sc.args, d, t2, d2, nth, en);
                         sc = SpecialUniv.setAlloc(sc.sym, sc.args, d, t2, d2, nth, multi, en);
                         d = en.display;
-                        if (!BindUniv.unifyTerm(sc, d, temp[3], ref, en))
+                        if (!en.unify(sc, d, temp[3], ref))
                             return false;
                         if (multi)
                             d.remTab(en);
@@ -171,7 +171,7 @@ public final class SpecialUniv extends AbstractSpecial {
                         EngineMessage.checkInstantiated(en.skel);
                         num = Integer.valueOf(0);
                     }
-                    if (!BindUniv.unifyTerm(num, Display.DISPLAY_CONST, temp[1], ref, en))
+                    if (!en.unify(num, Display.DISPLAY_CONST, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_EXTEND_TERM:
@@ -179,7 +179,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     ref = en.display;
                     boolean multi = SpecialUniv.listToTerm(temp[0], ref, temp[1], ref, en);
                     Display d = en.display;
-                    if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
+                    if (!en.unify(en.skel, d, temp[2], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -199,22 +199,22 @@ public final class SpecialUniv extends AbstractSpecial {
                     Object val = SpecialUniv.termToList(nth, en.skel, en);
                     if (val == null)
                         return false;
-                    if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
+                    if (!en.unify(en.skel, d, temp[2], ref))
                         return false;
-                    if (!BindUniv.unifyTerm(val, d, temp[3], ref, en))
+                    if (!en.unify(val, d, temp[3], ref))
                         return false;
                     return true;
                 case SPECIAL_UNIFY_WITH_OCCURS_CHECK:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!SpecialUniv.unifyTermChecked(temp[0], ref, temp[1], ref, en))
+                    if (!BindUniv.unifyChecked(temp[0], ref, temp[1], ref, en))
                         return false;
                     return true;
                 case SPECIAL_NOT_UNIFY:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     AbstractUndo mark = en.bind;
-                    if (BindUniv.unifyTerm(temp[1], ref, temp[0], ref, en))
+                    if (en.unify(temp[1], ref, temp[0], ref))
                         return false;
                     en.fault = null;
                     en.releaseBind(mark);
@@ -227,7 +227,7 @@ public final class SpecialUniv extends AbstractSpecial {
                     val = AbstractSkel.copySkel(temp[0], ref, en);
                     d = AbstractSkel.createMarker(val);
                     multi = d.getAndReset();
-                    if (!BindUniv.unifyTerm(val, d, temp[1], ref, en))
+                    if (!en.unify(val, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -588,86 +588,7 @@ public final class SpecialUniv extends AbstractSpecial {
     /* Unify With Occurs Check                                       */
     /*****************************************************************/
 
-    /**
-     * <p>>Unify two terms. As a side effect bindings are established.</p
-     * <p>Bindings are only created when the occurs check fails.<p>
-     * <p>The verify hooks of attribute variables are called.</p>
-     * <p>Tail recursive implementation.</p>
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The second skeleton.
-     * @param d2   The second display.
-     * @param en   The engine.
-     * @return True if the two terms unify, otherwise false.
-     */
-    public static boolean unifyTermChecked(Object alfa, Display d1,
-                                           Object beta, Display d2,
-                                           Engine en)
-            throws EngineException {
-        for (; ; ) {
-            if (alfa instanceof SkelVar) {
-                // combined check and deref
-                BindUniv b1;
-                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-                    alfa = b1.skel;
-                    d1 = b1.display;
-                    continue;
-                }
-                for (; ; ) {
-                    if (beta instanceof SkelVar) {
-                        // combined check and deref
-                        BindUniv b2;
-                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
-                            beta = b2.skel;
-                            d2 = b2.display;
-                            continue;
-                        }
-                        if (b1 == b2)
-                            return true;
-                        if (b2.hasVar(alfa, d1, d2))
-                            return false;
-                        return b2.bindAttr(alfa, d1, en);
-                    }
-                    if (b1.hasVar(beta, d2, d1))
-                        return false;
-                    return b1.bindAttr(beta, d2, en);
-                }
-            }
-            for (; ; ) {
-                // combined check and deref
-                if (beta instanceof SkelVar) {
-                    BindUniv bc;
-                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
-                        beta = bc.skel;
-                        d2 = bc.display;
-                        continue;
-                    }
-                    if (bc.hasVar(alfa, d1, d2))
-                        return false;
-                    return bc.bindAttr(alfa, d1, en);
-                }
-                break;
-            }
-            if (!(alfa instanceof SkelCompound))
-                return alfa.equals(beta);
-            if (!(beta instanceof SkelCompound))
-                return false;
-            Object[] t1 = ((SkelCompound) alfa).args;
-            Object[] t2 = ((SkelCompound) beta).args;
-            if (t1.length != t2.length)
-                return false;
-            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
-                return false;
-            int i = 0;
-            for (; i < t1.length - 1; i++) {
-                if (!unifyTermChecked(t1[i], d1, t2[i], d2, en))
-                    return false;
-            }
-            alfa = t1[i];
-            beta = t2[i];
-        }
-    }
+
 
     /*****************************************************************/
     /* Deref And Cast                                                */

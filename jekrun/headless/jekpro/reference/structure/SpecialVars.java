@@ -98,7 +98,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.vars, en, false);
                     Display d = en.display;
                     boolean multi = d.getAndReset();
-                    if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
+                    if (!en.unify(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -113,7 +113,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialSort.createSet(ev.anon, en, false);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
+                    if (!en.unify(en.skel, d, temp[1], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -127,7 +127,7 @@ public final class SpecialVars extends AbstractSpecial {
                     num = SpecialVars.numberVars(temp[0], ref, (Integer) num, en);
                     if (num == null)
                         return false;
-                    if (!BindUniv.unifyTerm(num, Display.DISPLAY_CONST, temp[2], ref, en))
+                    if (!en.unify(num, Display.DISPLAY_CONST, temp[2], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_NUMBER_VARIABLES:
@@ -136,7 +136,7 @@ public final class SpecialVars extends AbstractSpecial {
                     SpecialVars.numberVariables(temp, ref, en);
                     d = en.display;
                     multi = d.getAndReset();
-                    if (!BindUniv.unifyTerm(en.skel, d, temp[3], ref, en))
+                    if (!en.unify(en.skel, d, temp[3], ref))
                         return false;
                     if (multi)
                         d.remTab(en);
@@ -146,7 +146,7 @@ public final class SpecialVars extends AbstractSpecial {
                     ref = en.display;
                     if (!firstVariable(temp[0], ref, en))
                         return false;
-                    if (!BindUniv.unifyTerm(en.skel, en.display, temp[1], ref, en))
+                    if (!en.unify(en.skel, en.display, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_ACYCLIC_TERM:
@@ -264,7 +264,7 @@ public final class SpecialVars extends AbstractSpecial {
                             return null;
                     } else {
                         Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                        if (!BindUniv.unifyTerm(t, Display.DISPLAY_CONST, v, d, en))
+                        if (!en.unify(t, Display.DISPLAY_CONST, v, d))
                             return null;
                         val = Integer.valueOf(val.intValue() + 1);
                     }
@@ -277,7 +277,7 @@ public final class SpecialVars extends AbstractSpecial {
                 d = b.display;
             } else {
                 Object t = new SkelCompound(new SkelAtom(PrologWriter.OP_DOLLAR_VAR), val);
-                if (!BindUniv.unifyTerm(t, Display.DISPLAY_CONST, v, d, en))
+                if (!en.unify(t, Display.DISPLAY_CONST, v, d))
                     return null;
                 return Integer.valueOf(val.intValue() + 1);
             }

@@ -39,11 +39,14 @@ import jekpro.tools.term.SkelVar;
 public final class Optimization {
     private final static Optimization[] VAR_VOID = new Optimization[0];
 
-    public static final int UNIFY_SKIP = -2;
-    public static final int UNIFY_TERM = -1;
+    public static final int UNIFY_SKIP = -4;
+    public static final int UNIFY_TERM = -3;
+    public static final int UNIFY_STRG = -2;
+    public static final int UNIFY_WEAK = -1;
 
     final static int MASK_VAR_HSTR = 0x00000001;
     final static int MASK_VAR_BODY = 0x00000002;
+    final static int MASK_VAR_GSTR = 0x00000004;
 
     final static int[][] cacheUnifyTerm = new int[8][];
 
@@ -93,7 +96,9 @@ public final class Optimization {
      * @return True if the variable is extra, otherwise false.
      */
     private boolean extraVar() {
-        return (flags & MASK_VAR_BODY) == 0 && (flags & MASK_VAR_HSTR) == 0;
+        return (flags & MASK_VAR_GSTR) == 0
+                && (flags & MASK_VAR_BODY) == 0
+                && (flags & MASK_VAR_HSTR) == 0;
     }
 
     /**
@@ -119,68 +124,6 @@ public final class Optimization {
             }
         }
         return helper;
-    }
-
-    /**
-     * <p>Set the structure and minarg of the variables in the given term.</p>
-     *
-     * @param molec  The head skeleton.
-     * @param flags  The clause flags.
-     * @param helper The helper.
-     */
-    static void setHead(Object molec, int flags,
-                        Optimization[] helper) {
-        if (!(molec instanceof SkelCompound))
-            return;
-        SkelCompound mc = (SkelCompound) molec;
-        for (int i = mc.args.length - 1; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (a instanceof SkelVar) {
-                Optimization ov = helper[((SkelVar) a).id];
-                if ((flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
-                    ov.minarg = i;
-                } else {
-                    ov.flags |= MASK_VAR_HSTR;
-                }
-            } else if (a instanceof SkelCompound) {
-                Object var = ((SkelCompound) a).var;
-                if (var == null)
-                    continue;
-                if (var instanceof SkelVar) {
-                    Optimization ov = helper[((SkelVar) var).id];
-                    ov.flags |= MASK_VAR_HSTR;
-                } else {
-                    SkelVar[] temp = (SkelVar[]) var;
-                    for (int j = 0; j < temp.length; j++) {
-                        Optimization ov = helper[temp[j].id];
-                        ov.flags |= MASK_VAR_HSTR;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>Set the min term of the variables in the given term.</p>
-     * <p>Set also the min body if we are not in term position.</p>
-     *
-     * @param m      The term or term, can be null.
-     * @param helper The helper, can be null.
-     */
-    static void setBody(Object m, Optimization[] helper) {
-        Object var = SupervisorCopy.getVar(m);
-        if (var == null)
-            return;
-        if (var instanceof SkelVar) {
-            Optimization ov = helper[((SkelVar) var).id];
-            ov.flags |= MASK_VAR_BODY;
-        } else {
-            SkelVar[] temp = (SkelVar[]) var;
-            for (int i = 0; i < temp.length; i++) {
-                Optimization ov = helper[temp[i].id];
-                ov.flags |= MASK_VAR_BODY;
-            }
-        }
     }
 
     /**
@@ -238,6 +181,8 @@ public final class Optimization {
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
                 if (ov.minarg != i) {
                     break;
+                } else if ((ov.flags & MASK_VAR_GSTR) != 0) {
+                    break;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
                     break;
                 } else {
@@ -260,8 +205,10 @@ public final class Optimization {
             if ((ov.flags & MASK_VAR_HSTR) == 0) {
                 if (ov.minarg != i) {
                     intargs[i] = ov.minarg;
+                } else if ((ov.flags & MASK_VAR_GSTR) != 0) {
+                    intargs[i] = UNIFY_STRG;
                 } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                    intargs[i] = UNIFY_TERM;
+                    intargs[i] = UNIFY_WEAK;
                 } else {
                     intargs[i] = UNIFY_SKIP;
                 }

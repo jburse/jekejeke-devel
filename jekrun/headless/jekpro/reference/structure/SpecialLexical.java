@@ -136,7 +136,7 @@ public final class SpecialLexical extends AbstractSpecial {
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
                     int res = compareTerm(temp[1], ref, temp[2], ref, en);
-                    if (!BindUniv.unifyTerm(SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST, temp[0], ref, en))
+                    if (!en.unify(SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;
                 case SPECIAL_COMPARE_OPT:
@@ -152,7 +152,7 @@ public final class SpecialLexical extends AbstractSpecial {
                     }
                     if ((el.getFlags() & LexicalCollator.MASK_FLAG_RVRS) != 0)
                         res = -res;
-                    if (!BindUniv.unifyTerm(SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST, temp[0], ref, en))
+                    if (!en.unify(SpecialLexical.compAtom(res, en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;
                 default:

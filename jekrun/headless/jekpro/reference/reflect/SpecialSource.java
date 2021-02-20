@@ -7,7 +7,6 @@ import jekpro.model.builtin.Branch;
 import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -94,7 +93,7 @@ public final class SpecialSource extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_SOURCE:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                if (!BindUniv.unifyTerm(SpecialSource.currentSources(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!en.unify(SpecialSource.currentSources(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_SOURCE_CHK:
@@ -117,7 +116,7 @@ public final class SpecialSource extends AbstractSpecial {
                 SpecialSource.sourceToProperties(source, en);
                 Display d = en.display;
                 boolean multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[1], ref, en))
+                if (!en.unify(en.skel, d, temp[1], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -134,7 +133,7 @@ public final class SpecialSource extends AbstractSpecial {
                 SpecialSource.sourceToProperty(source, prop, en);
                 d = en.display;
                 multi = d.getAndReset();
-                if (!BindUniv.unifyTerm(en.skel, d, temp[2], ref, en))
+                if (!en.unify(en.skel, d, temp[2], ref))
                     return false;
                 if (multi)
                     d.remTab(en);
@@ -170,13 +169,13 @@ public final class SpecialSource extends AbstractSpecial {
             case SPECIAL_SYS_CURRENT_RESOURCE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyTerm(SpecialSource.currentResources(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!en.unify(SpecialSource.currentResources(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_MODULE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                if (!BindUniv.unifyTerm(SpecialSource.currentModules(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!en.unify(SpecialSource.currentModules(en), Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_CURRENT_MODULE_CHK:

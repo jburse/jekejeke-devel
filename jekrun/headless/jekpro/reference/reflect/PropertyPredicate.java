@@ -81,7 +81,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static String OP_SYS_NOINDEX = "sys_noindex";
     private final static String OP_SYS_NOSTACK = "sys_nostack";
     private final static String OP_SYS_NOEXTRA = "sys_noextra";
-    private final static String OP_SYS_NOHEAD = "sys_nohead";
+    private final static String OP_SYS_NOWEAK = "sys_noweak";
 
     private final static int PROP_VISIBLE = 0;
 
@@ -110,7 +110,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
     private final static int PROP_SYS_NOINDEX = 19;
     private final static int PROP_SYS_NOSTACK = 20;
     private final static int PROP_SYS_NOEXTRA = 21;
-    private final static int PROP_SYS_NOHEAD = 22;
+    private final static int PROP_SYS_NOWEAK = 22;
 
     static {
         DEFAULT.add(new StoreKey(OP_VISIBLE, 1), new PropertyPredicate(PROP_VISIBLE,
@@ -154,7 +154,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
         DEFAULT.add(new StoreKey(OP_SYS_NOINDEX, 0), new PropertyPredicate(PROP_SYS_NOINDEX));
         DEFAULT.add(new StoreKey(OP_SYS_NOSTACK, 0), new PropertyPredicate(PROP_SYS_NOSTACK));
         DEFAULT.add(new StoreKey(OP_SYS_NOEXTRA, 0), new PropertyPredicate(PROP_SYS_NOEXTRA));
-        DEFAULT.add(new StoreKey(OP_SYS_NOHEAD, 0), new PropertyPredicate(PROP_SYS_NOHEAD));
+        DEFAULT.add(new StoreKey(OP_SYS_NOWEAK, 0), new PropertyPredicate(PROP_SYS_NOWEAK));
     }
 
     /**
@@ -348,11 +348,11 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
-            case PROP_SYS_NOHEAD:
+            case PROP_SYS_NOWEAK:
                 fun = pick.del;
                 if ((fun instanceof AbstractDefined) &&
-                        (fun.subflags & AbstractDefined.MASK_DEFI_NHST) != 0) {
-                    return new Object[]{new SkelAtom(OP_SYS_NOHEAD)};
+                        (fun.subflags & AbstractDefined.MASK_DEFI_NWKV) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_NOWEAK)};
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
@@ -466,10 +466,10 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags |= AbstractDefined.MASK_DEFI_NEXV;
                 return true;
-            case PROP_SYS_NOHEAD:
+            case PROP_SYS_NOWEAK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick);
-                fun.subflags |= AbstractDefined.MASK_DEFI_NHST;
+                fun.subflags |= AbstractDefined.MASK_DEFI_NWKV;
                 return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
@@ -579,10 +579,10 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
                 AbstractDefined.checkDefinedWrite(fun, pick);
                 fun.subflags &= ~AbstractDefined.MASK_DEFI_NEXV;
                 return true;
-            case PROP_SYS_NOHEAD:
+            case PROP_SYS_NOWEAK:
                 fun = pick.del;
                 AbstractDefined.checkDefinedWrite(fun, pick);
-                fun.subflags &= ~AbstractDefined.MASK_DEFI_NHST;
+                fun.subflags &= ~AbstractDefined.MASK_DEFI_NWKV;
                 return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
@@ -620,7 +620,7 @@ public final class PropertyPredicate extends AbstractProperty<Predicate> {
             res.toArray(vals);
             return vals;
         } else {
-            if (id < PROP_VISIBLE || id > PROP_SYS_NOHEAD)
+            if (id < PROP_VISIBLE || id > PROP_SYS_NOWEAK)
                 throw new IllegalArgumentException("illegal prop");
             return null;
         }

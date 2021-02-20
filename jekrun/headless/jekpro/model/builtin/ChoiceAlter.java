@@ -118,7 +118,7 @@ public final class ChoiceAlter extends AbstractChoice {
             throw en.fault;
         }
 
-        if (Intermediate.isAlter(at)) {
+        if (Directive.isAlter(at)) {
             SkelCompound sc = (SkelCompound) at;
             at = sc.args[1];
             /* reuse choice point */
@@ -126,7 +126,7 @@ public final class ChoiceAlter extends AbstractChoice {
             en.number++;
             en.contskel = (Directive) sc.args[0];
             return true;
-        } else if (Intermediate.isGuard(at)) {
+        } else if (Directive.isGuard(at)) {
             SkelCompound sc = (SkelCompound) at;
             at = null;
             /* reuse choice point */

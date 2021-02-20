@@ -1,7 +1,6 @@
 package jekpro.tools.array;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -125,7 +124,7 @@ final class LenseDimension extends AbstractLense {
             SpecialEval.checkNotLessThanZero(num);
             int size = SpecialEval.castIntValue(num);
             Object val = newInstance(size);
-            if (!BindUniv.unifyTerm(val, Display.DISPLAY_CONST, temp[1], ref, en))
+            if (!en.unify(val, Display.DISPLAY_CONST, temp[1], ref))
                 return false;
             return true;
         } catch (RuntimeException x) {

@@ -144,7 +144,7 @@ public final class SpecialLogic extends AbstractSpecial {
                 SkelAtom sa = StackElement.callableToName(obj);
                 sa = makeAtom(sa.fun, sa2, en);
                 obj = StackElement.callableFromName(obj, sa);
-                if (!BindUniv.unifyTerm(obj, d, temp[0], ref, en))
+                if (!en.unify(obj, d, temp[0], ref))
                     return false;
                 return true;
             default:

@@ -1,5 +1,6 @@
 package jekpro.frequent.standard;
 
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.BindUniv;
@@ -7,7 +8,6 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
-import jekpro.model.rope.Intermediate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
@@ -148,9 +148,9 @@ public class SupervisorCall {
                     t = bc.skel;
                     d = bc.display;
                 }
-                if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
+                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
                     countDisj(t, d, en);
-                } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
+                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
                     countBody(t, d, en);
                 } else {
                     if (SupervisorCopy.getVar(t) != null) {
@@ -184,8 +184,8 @@ public class SupervisorCall {
     private void countDisj(Object t, Display d, Engine en) {
         L1:
         for (; ; ) {
-            switch (Goal.alterType(t)) {
-                case Goal.TYPE_ALTR_DISJ:
+            switch (SpecialBody.alterType(t)) {
+                case SpecialBody.TYPE_ALTR_DISJ:
                     SkelCompound sc = (SkelCompound) t;
                     Object b = sc.args[0];
                     Display c = d;
@@ -195,9 +195,9 @@ public class SupervisorCall {
                         b = bc.skel;
                         c = bc.display;
                     }
-                    switch (Goal.alterType(b)) {
-                        case Goal.TYPE_ALTR_COND:
-                        case Goal.TYPE_ALTR_SOFT:
+                    switch (SpecialBody.alterType(b)) {
+                        case SpecialBody.TYPE_ALTR_COND:
+                        case SpecialBody.TYPE_ALTR_SOFT:
                             countCond(b, c, en);
                             break;
                         default:
@@ -211,8 +211,8 @@ public class SupervisorCall {
                         d = bc.display;
                     }
                     break;
-                case Goal.TYPE_ALTR_COND:
-                case Goal.TYPE_ALTR_SOFT:
+                case SpecialBody.TYPE_ALTR_COND:
+                case SpecialBody.TYPE_ALTR_SOFT:
                     countCond(t, d, en);
                     break L1;
                 default:
@@ -266,15 +266,15 @@ public class SupervisorCall {
                     t = bc.skel;
                     d = bc.display;
                 }
-                if (Goal.alterType(t) != Goal.TYPE_ALTR_NONE) {
+                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
                     t = disjToAlter(dire, t, d, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (Goal.sequenType(t) != Goal.TYPE_SEQN_NONE) {
+                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
                     t = conjToSequen(dire, t, d, en);
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (Intermediate.controlType(t) != Directive.TYPE_CTRL_NONE) {
+                } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
                     Goal goal = new Goal(t);
                     dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
                 } else {
@@ -320,8 +320,8 @@ public class SupervisorCall {
         SkelCompound back = null;
         L1:
         for (; ; ) {
-            switch (Goal.alterType(t)) {
-                case Goal.TYPE_ALTR_DISJ:
+            switch (SpecialBody.alterType(t)) {
+                case SpecialBody.TYPE_ALTR_DISJ:
                     SkelCompound sc = (SkelCompound) t;
                     Object b = sc.args[0];
                     Display c = d;
@@ -332,11 +332,11 @@ public class SupervisorCall {
                         c = bc.display;
                     }
                     Directive left;
-                    switch (Goal.alterType(b)) {
-                        case Goal.TYPE_ALTR_COND:
+                    switch (SpecialBody.alterType(b)) {
+                        case SpecialBody.TYPE_ALTR_COND:
                             left = condToInter(dire, b, c, en);
                             break;
-                        case Goal.TYPE_ALTR_SOFT:
+                        case SpecialBody.TYPE_ALTR_SOFT:
                             left = softCondToInter(dire, b, c, en);
                             break;
                         default:
@@ -354,11 +354,11 @@ public class SupervisorCall {
                         d = bc.display;
                     }
                     break;
-                case Goal.TYPE_ALTR_COND:
+                case SpecialBody.TYPE_ALTR_COND:
                     t = condToInter(dire, t, d, en);
                     t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
                     break L1;
-                case Goal.TYPE_ALTR_SOFT:
+                case SpecialBody.TYPE_ALTR_SOFT:
                     t = softCondToInter(dire, t, d, en);
                     t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, t);
                     break L1;

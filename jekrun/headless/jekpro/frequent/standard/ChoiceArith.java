@@ -108,7 +108,7 @@ final class ChoiceArith extends AbstractChoice {
 
                 int res = SpecialCompare.computeCmp(cur, num2);
                 while (res <= 0) {
-                    if (BindUniv.unifyTerm(cur, Display.DISPLAY_CONST, temp[2], d, en)) {
+                    if (en.unify(cur, Display.DISPLAY_CONST, temp[2], d)) {
                         if (res != 0) {
                             /* reuse choice point */
                             en.choices = this;
@@ -131,7 +131,7 @@ final class ChoiceArith extends AbstractChoice {
                 cur = EvaluableElem.add(cur, Integer.valueOf(1));
 
                 while (true) {
-                    if (BindUniv.unifyTerm(cur, Display.DISPLAY_CONST, temp[1], d, en)) {
+                    if (en.unify(cur, Display.DISPLAY_CONST, temp[1], d)) {
                         /* reuse choice point */
                         en.choices = this;
                         en.number++;

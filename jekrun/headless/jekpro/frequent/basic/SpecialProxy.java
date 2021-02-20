@@ -86,7 +86,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     Object obj = EvaluableLogic.slashToClass(temp[0], ref, 0, en);
                     SkelAtom sa = SpecialLogic.modToAtom(obj, temp[0], ref, en);
                     obj = SpecialProxy.newInstance(CacheSubclass.getBase(sa, en), en);
-                    if (!BindUniv.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref, en))
+                    if (!en.unify(obj, Display.DISPLAY_CONST, temp[1], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_ASSIGNABLE_FROM:
@@ -107,7 +107,7 @@ public final class SpecialProxy extends AbstractSpecial {
                     if (obj == null)
                         throw new EngineMessage(EngineMessage.domainError(
                                 EngineMessage.OP_DOMAIN_UNKNOWN_PROXY, m));
-                    if (!BindUniv.unifyTerm(obj, Display.DISPLAY_CONST, temp[1], ref, en))
+                    if (!en.unify(obj, Display.DISPLAY_CONST, temp[1], ref))
                         return false;
                     return true;
                 default:

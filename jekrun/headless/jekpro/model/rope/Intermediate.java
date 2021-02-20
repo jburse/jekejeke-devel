@@ -1,13 +1,12 @@
 package jekpro.model.rope;
 
+import jekpro.model.builtin.SpecialBody;
+import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
-import jekpro.model.pretty.Foyer;
-import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.AbstractList;
 
 /**
  * <p>The class provides the base class for intermediate code.</p>
@@ -41,6 +40,7 @@ import matula.util.data.AbstractList;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class Intermediate {
+
     public Intermediate next;
     public int flags;
 
@@ -66,75 +66,174 @@ public abstract class Intermediate {
     public abstract boolean resolveNext(Engine en)
             throws EngineException, EngineMessage;
 
+    /*************************************************************/
+    /* Head Structure                                            */
+    /*************************************************************/
+
     /**
-     * <p>Check whether the given term is an alternative.</p>
+     * <p>Set the structure and minarg of the variables in the given term.</p>
      *
-     * @param term The term.
-     * @return True if the term is an alterantive.
+     * @param molec  The head skeleton.
+     * @param flags  The clause flags.
+     * @param helper The helper.
      */
-    public static boolean isAlter(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 2 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_ALTER)) {
-            return true;
-        } else {
-            return false;
+    public static void setHead(Object molec, int flags,
+                        Optimization[] helper) {
+        if (!(molec instanceof SkelCompound))
+            return;
+        SkelCompound mc = (SkelCompound) molec;
+        for (int i = mc.args.length - 1; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (a instanceof SkelVar) {
+                Optimization ov = helper[((SkelVar) a).id];
+                if ((flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
+                    ov.minarg = i;
+                } else {
+                    ov.flags |= Optimization.MASK_VAR_HSTR;
+                }
+            } else if (a instanceof SkelCompound) {
+                Object var = ((SkelCompound) a).var;
+                if (var == null)
+                    continue;
+                if (var instanceof SkelVar) {
+                    Optimization ov = helper[((SkelVar) var).id];
+                    ov.flags |= Optimization.MASK_VAR_HSTR;
+                } else {
+                    SkelVar[] temp = (SkelVar[]) var;
+                    for (int j = 0; j < temp.length; j++) {
+                        Optimization ov = helper[temp[j].id];
+                        ov.flags |= Optimization.MASK_VAR_HSTR;
+                    }
+                }
+            }
+        }
+    }
+
+    /*************************************************************/
+    /* Body Structure                                            */
+    /*************************************************************/
+
+    /**
+     * <p>Set the goals structure flag.</p>
+     *
+     * @param b      The body skeleton.
+     * @param flags  The clause flags.
+     * @param helper The helper.
+     * @param en     The engine.
+     */
+    public static void setBody(Object b, int flags,
+                               Optimization[] helper, Engine en) {
+        for (; ; ) {
+            if (!Goal.noBody(b)) {
+                Object t = Goal.bodyToGoalSkel(b);
+                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
+                    setDisj(t, flags, helper, en);
+                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
+                    setBody(t, flags, helper, en);
+                } else {
+                    if (t instanceof SkelVar) {
+                        setVariable((SkelVar)t, flags, helper);
+                    } else {
+                        setGoal(t, flags, helper);
+                    }
+                }
+            } else {
+                break;
+            }
+            b = Goal.bodyToRestSkel(b, en);
         }
     }
 
     /**
-     * <p>Check whether the given term is an alternative.</p>
+     * <p>Set the goals structure flag.</p>
      *
-     * @param term The term.
-     * @return True if the term is an alterantive.
+     * @param t      The disjunction skeleton.
+     * @param flags  The clause flags.
+     * @param helper The helper.
+     * @param en     The engine.
      */
-    public static boolean isGuard(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
-            return true;
-        } else {
-            return false;
+    private static void setDisj(Object t, int flags,
+                                Optimization[] helper, Engine en) {
+        L1:
+        for (; ; ) {
+            switch (SpecialBody.alterType(t)) {
+                case SpecialBody.TYPE_ALTR_DISJ:
+                    SkelCompound sc = (SkelCompound) t;
+                    Object b = sc.args[0];
+                    switch (SpecialBody.alterType(b)) {
+                        case SpecialBody.TYPE_ALTR_COND:
+                        case SpecialBody.TYPE_ALTR_SOFT:
+                            SkelCompound sc2 = (SkelCompound) b;
+                            setBody(sc2.args[0], flags, helper, en);
+                            setBody(sc2.args[1], flags, helper, en);
+                            break;
+                        default:
+                            setBody(b, flags, helper, en);
+                            break;
+                    }
+                    t = sc.args[1];
+                    break;
+                case SpecialBody.TYPE_ALTR_COND:
+                case SpecialBody.TYPE_ALTR_SOFT:
+                    sc = (SkelCompound) t;
+                    setBody(sc.args[0], flags, helper, en);
+                    setBody(sc.args[1], flags, helper, en);
+                    break L1;
+                default:
+                    setBody(t, flags, helper, en);
+                    break L1;
+            }
         }
     }
 
     /**
-     * <p>Check whether the given term is a sequent.</p>
+     * <p>Set the goal structure flag.</p>
      *
-     * @param term The term.
-     * @return True if the term is a sequent.
+     * @param molec  The goal skeleton.
+     * @param flags  The clause flags.
+     * @param helper The helper.
      */
-    public static boolean isSequen(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
-            return true;
-        } else {
-            return false;
+    private static void setGoal(Object molec, int flags,
+                                Optimization[] helper) {
+        if (!(molec instanceof SkelCompound))
+            return;
+        SkelCompound mc = (SkelCompound) molec;
+        for (int i = mc.args.length - 1; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (a instanceof SkelVar) {
+                setVariable((SkelVar) a, flags, helper);
+            } else if (a instanceof SkelCompound) {
+                Object var = ((SkelCompound) a).var;
+                if (var == null)
+                    continue;
+                if (var instanceof SkelVar) {
+                    Optimization ov = helper[((SkelVar) var).id];
+                    ov.flags |= Optimization.MASK_VAR_GSTR;
+                } else {
+                    SkelVar[] temp = (SkelVar[]) var;
+                    for (int j = 0; j < temp.length; j++) {
+                        Optimization ov = helper[temp[j].id];
+                        ov.flags |= Optimization.MASK_VAR_GSTR;
+                    }
+                }
+            }
         }
     }
 
     /**
-     * <p>Determine the control type.</p>
+     * <p>Set the variable structure flag.</p>
      *
-     * @param term The term.
-     * @return The control type.
+     * @param mv  The variable skeleton.
+     * @param flags  The clause flags.
+     * @param helper The helper.
      */
-    public static int controlType(Object term) {
-        if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_BEGIN)) {
-            return Directive.TYPE_CTRL_BEGN;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_COMMIT)) {
-            return Directive.TYPE_CTRL_CMMT;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_BEGIN)) {
-            return Directive.TYPE_CTRL_SBGN;
-        } else if (term instanceof SkelAtom &&
-                ((SkelAtom) term).fun.equals(Foyer.OP_SYS_SOFT_COMMIT)) {
-            return Directive.TYPE_CTRL_SCMT;
+    private static void setVariable(SkelVar mv, int flags,
+                                Optimization[] helper) {
+        Optimization ov = helper[mv.id];
+        if ((flags & AbstractDefined.MASK_DEFI_NWKV) == 0) {
+            ov.flags |= Optimization.MASK_VAR_BODY;
         } else {
-            return Directive.TYPE_CTRL_NONE;
+            ov.flags |= Optimization.MASK_VAR_GSTR;
         }
     }
 

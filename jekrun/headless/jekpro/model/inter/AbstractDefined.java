@@ -76,7 +76,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
     public final static int MASK_DEFI_NSTK = 0x00000800;
 
     public final static int MASK_DEFI_NIDX = 0x00001000;
-    public final static int MASK_DEFI_NHST = 0x00002000;
+    public final static int MASK_DEFI_NWKV = 0x00002000;
     public final static int MASK_DEFI_NEXV = 0x00004000;
     public final static int MASK_DEFI_NIST = 0x00008000;
 
@@ -124,8 +124,8 @@ public abstract class AbstractDefined extends AbstractDelegate {
             subflags |= AbstractDefined.MASK_DEFI_NIDX;
         if ((flags & Foyer.MASK_FOYER_NSTK) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NSTK;
-        if ((flags & Foyer.MASK_FOYER_NHST) != 0)
-            subflags |= AbstractDefined.MASK_DEFI_NHST;
+        if ((flags & Foyer.MASK_FOYER_NWKV) != 0)
+            subflags |= AbstractDefined.MASK_DEFI_NWKV;
         if ((flags & Foyer.MASK_FOYER_NEXV) != 0)
             subflags |= AbstractDefined.MASK_DEFI_NEXV;
         if ((flags & Foyer.MASK_FOYER_NIST) != 0)
@@ -384,11 +384,17 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 case Optimization.UNIFY_SKIP:
                     break;
                 case Optimization.UNIFY_TERM:
-                    if (!BindUniv.unifyTerm(t1[i], ref, t2[i], ref2, en))
+                    if (!en.unify(t1[i], ref, t2[i], ref2))
                         return false;
                     break;
+                case Optimization.UNIFY_STRG:
+                    BindUniv.unifyVariable(t1[i], ref, t2[i], ref2, en);
+                    break;
+                case Optimization.UNIFY_WEAK:
+                    BindUniv.unifyVariableWeak(t1[i], ref, t2[i], ref2, en);
+                    break;
                 default:
-                    if (!BindUniv.unifyTerm(t1[k], ref, t1[i], ref, en))
+                    if (!en.unify(t1[k], ref, t1[i], ref))
                         return false;
                     break;
             }
@@ -693,9 +699,9 @@ public abstract class AbstractDefined extends AbstractDelegate {
             if (AbstractDefined.unifySearch(head, refhead,
                     clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (BindUniv.unifyTerm(end, d2, temp[1], ref, en)) {
+                if (en.unify(end, d2, temp[1], ref)) {
                     if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (BindUniv.unifyTerm(clause, Display.DISPLAY_CONST, temp[2], ref, en))
+                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
                             break;
                     } else {
                         break;
@@ -750,12 +756,10 @@ public abstract class AbstractDefined extends AbstractDelegate {
             return true;
         Object[] t1 = ((SkelCompound) head).args;
         Object[] t2 = ((SkelCompound) clause.head).args;
-            for (int i = 0; i < t2.length; i++) {
-                if (!BindUniv.unifyTerm(t1[i], d1, t2[i], d2, en))
-                            return false;
-                        break;
-
-            }
+        for (int i = 0; i < t2.length; i++) {
+            if (!en.unify(t1[i], d1, t2[i], d2))
+                return false;
+        }
         return true;
     }
 

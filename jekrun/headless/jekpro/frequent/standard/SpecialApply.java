@@ -466,7 +466,7 @@ public final class SpecialApply extends AbstractSpecial {
                             d2 = b2.display;
                             continue;
                         }
-                        if (b1==b2)
+                        if (b1 == b2)
                             return true;
                     }
                     if (b1.hasVar(gamma, d3, d1))

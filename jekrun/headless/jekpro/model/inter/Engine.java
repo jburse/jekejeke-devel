@@ -147,6 +147,29 @@ public class Engine extends StackElement implements Comparator<Object> {
         }
     }
 
+    /**
+     * <p>>Unify two terms. As a side effect bindings are established.</p
+     * <p>Occurs check is performed depending on occurs check flag.</p>
+     * <p>Bindings are only created when the occurs check fails.<p>
+     * <p>The verify hooks of attribute variables are called.</p>
+     * <p>Tail recursive implementation.</p>
+     *
+     * @param alfa The first skeleton.
+     * @param d1   The first display.
+     * @param beta The second skeleton.
+     * @param d2   The second display.
+     * @return True if the two terms unify, otherwise false.
+     */
+    public boolean unify(Object alfa, Display d1,
+                         Object beta, Display d2)
+            throws EngineException {
+        if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) == 0) {
+            return BindUniv.unify(alfa, d1, beta, d2, this);
+        } else {
+            return BindUniv.unifyChecked(alfa, d1, beta, d2, this);
+        }
+    }
+
     /***************************************************************/
     /* Suspend Handling                                            */
     /***************************************************************/
