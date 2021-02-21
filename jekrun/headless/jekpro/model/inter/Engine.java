@@ -6,6 +6,7 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
@@ -159,14 +160,72 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @param beta The second skeleton.
      * @param d2   The second display.
      * @return True if the two terms unify, otherwise false.
+     * @throws EngineException Shit happens.
      */
     public boolean unify(Object alfa, Display d1,
-                         Object beta, Display d2)
+                                Object beta, Display d2)
             throws EngineException {
-        if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) == 0) {
-            return BindUniv.unify(alfa, d1, beta, d2, this);
-        } else {
-            return BindUniv.unifyChecked(alfa, d1, beta, d2, this);
+        for (; ; ) {
+            if (alfa instanceof SkelVar) {
+                // combined check and deref
+                BindUniv b1;
+                if ((b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
+                    alfa = b1.skel;
+                    d1 = b1.display;
+                    continue;
+                }
+                for (; ; ) {
+                    if (beta instanceof SkelVar) {
+                        // combined check and deref
+                        BindUniv b2;
+                        if ((b2 = d2.bind[((SkelVar) beta).id]).display != null) {
+                            beta = b2.skel;
+                            d2 = b2.display;
+                            continue;
+                        }
+                        if (b1 == b2)
+                            return true;
+                        if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 && b2.hasVar(alfa, d1, d2))
+                            return false;
+                        return b2.bindAttr(alfa, d1, this);
+                    }
+                    if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 && b1.hasVar(beta, d2, d1))
+                        return false;
+                    return b1.bindAttr(beta, d2, this);
+                }
+            }
+            for (; ; ) {
+                // combined check and deref
+                if (beta instanceof SkelVar) {
+                    BindUniv bc;
+                    if ((bc = d2.bind[((SkelVar) beta).id]).display != null) {
+                        beta = bc.skel;
+                        d2 = bc.display;
+                        continue;
+                    }
+                    if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 && bc.hasVar(alfa, d1, d2))
+                        return false;
+                    return bc.bindAttr(alfa, d1, this);
+                }
+                break;
+            }
+            if (!(alfa instanceof SkelCompound))
+                return alfa.equals(beta);
+            if (!(beta instanceof SkelCompound))
+                return false;
+            Object[] t1 = ((SkelCompound) alfa).args;
+            Object[] t2 = ((SkelCompound) beta).args;
+            if (t1.length != t2.length)
+                return false;
+            if (!((SkelCompound) alfa).sym.equals(((SkelCompound) beta).sym))
+                return false;
+            int i = 0;
+            for (; i < t1.length - 1; i++) {
+                if (!unify(t1[i], d1, t2[i], d2))
+                    return false;
+            }
+            alfa = t1[i];
+            beta = t2[i];
         }
     }
 

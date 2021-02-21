@@ -104,8 +104,8 @@ public final class ReadOpts {
     /**
      * <p>Decode the given read parameters.</p>
      *
-     * @param t The parameters skeleton.
-     * @param d The parameters display.
+     * @param t     The parameters skeleton.
+     * @param d     The parameters display.
      * @param flags The default flags.
      * @throws EngineMessage Shit happens.
      */
@@ -135,25 +135,25 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.flags |= PrologReader.FLAG_SING;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_DOUBLE_QUOTES)) {
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.utildouble = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_BACK_QUOTES)) {
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.utilback = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(Flag.OP_SINGLE_QUOTES)) {
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.utilsingle = (byte) ReadOpts.atomToUtil(((SkelCompound) en.skel).args[0], en.display);
             } else if (en.skel instanceof SkelCompound &&
@@ -163,14 +163,14 @@ public final class ReadOpts {
                 SpecialEval.checkNotLessThanZero(num);
                 int k = SpecialEval.castIntValue(num);
                 SpecialOper.checkOperatorLevel(k);
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.lev = k;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_ANNOTATION)) {
                 int anno = WriteOpts.termToAnno(((SkelCompound) en.skel).args[0], en.display, en);
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 if ((anno & WriteOpts.ANNO_MKDT) != 0) {
                     res.flags |= PrologWriter.FLAG_MKDT;
@@ -191,7 +191,7 @@ public final class ReadOpts {
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_TERMINATOR)) {
                 int terminator = atomToTerminator(((SkelCompound) en.skel).args[0], en.display);
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 if ((terminator & TERMINATOR_EOF) != 0) {
                     res.flags |= PrologReader.FLAG_TEOF;
@@ -211,7 +211,7 @@ public final class ReadOpts {
                 AbstractSource src = (sa.scope != null ? sa.scope : en.store.user);
                 src = src.getStore().getSource(sa.fun);
                 AbstractSource.checkExistentSource(src, sa);
-                if (res==null)
+                if (res == null)
                     res = new ReadOpts(en.visor.peekStack(), flags);
                 res.source = src;
             } else if (en.skel instanceof SkelCompound &&

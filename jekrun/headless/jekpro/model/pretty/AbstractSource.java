@@ -9,7 +9,6 @@ import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.rope.*;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
@@ -340,8 +339,8 @@ public abstract class AbstractSource {
     /**
      * <p>Consult a stream.</p>
      *
-     * @param lr  The buffered reader.
-     * @param en  The interpreter.
+     * @param lr The buffered reader.
+     * @param en The interpreter.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */

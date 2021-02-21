@@ -125,13 +125,13 @@ public class Display {
         BindUniv[] b = bind;
         for (int k = 0; k < b.length; k++) {
             BindUniv bc = b[k];
-            int j = bc.refs - BindUniv.MASK_REFS_LINK;
-            if (j == 0 || j == BindUniv.MASK_REFS_WEAK) {
+            int j = bc.refs;
+            if (j == 0) {
                 b[k] = null;
                 if (bc.display != null)
                     bc.unbind(en);
             } else {
-                bc.refs = j;
+                bc.refs = j - 1;
             }
         }
     }

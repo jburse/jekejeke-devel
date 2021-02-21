@@ -1,7 +1,6 @@
 package jekpro.model.rope;
 
-import jekpro.model.builtin.SpecialBody;
-import jekpro.model.inter.AbstractDefined;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -40,43 +39,8 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class Intermediate {
-    public static final int UNIFY_SKIP = -4;
-    public static final int UNIFY_TERM = -3;
-    public static final int UNIFY_STRG = -2;
-    public static final int UNIFY_WEAK = -1;
-
-    final static int[][] cacheUnifyTerm = new int[8][];
-
     public Intermediate next;
     public int flags;
-
-    /**
-     * <p>Initialize the immutable cache.</p>
-     */
-    static {
-        for (int i = 0; i < 8; i++) {
-            int[] array = new int[i];
-            for (int j = 0; j < i; j++)
-                array[j] = Intermediate.UNIFY_TERM;
-            Intermediate.cacheUnifyTerm[i] = array;
-        }
-    }
-
-    /**
-     * <p>Retrieve a term unify array.</p>
-     *
-     * @param n The length.
-     * @return The term unify array.
-     */
-    static int[] valueOfTerm(int n) {
-        if (n < 8)
-            return cacheUnifyTerm[n];
-        int[] array = new int[n];
-        for (int j = 0; j < n; j++)
-            array[j] = UNIFY_TERM;
-        return array;
-    }
-
 
     /**
      * <p>Retrieve the next term depending on debug mode.</p>
@@ -100,236 +64,64 @@ public abstract class Intermediate {
     public abstract boolean resolveNext(Engine en)
             throws EngineException, EngineMessage;
 
-    /*************************************************************/
-    /* Head Structure                                            */
-    /*************************************************************/
-
     /**
      * <p>Set the structure and minarg of the variables in the given term.</p>
      *
      * @param molec  The head skeleton.
-     * @param flags  The clause flags.
      * @param helper The helper.
      */
-    public static void setHead(Object molec, int flags,
-                               SkelVarOptimizable[] helper) {
+    public static void setHead(Object molec, Optimization[] helper) {
         if (!(molec instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) molec;
         for (int i = mc.args.length - 1; i >= 0; i--) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
-                SkelVarOptimizable ov = helper[((SkelVar) a).id];
-                if ((flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
-                    ov.minarg = i;
-                } else {
-                    ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
-                }
+                SkelVar mv = (SkelVar) a;
+                Optimization ov = helper[mv.id];
+                ov.flags = (ov.flags & ~Optimization.MASK_VAR_MARG) | i;
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
-                    SkelVarOptimizable ov = helper[((SkelVar) var).id];
-                    ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
+                    SkelVar mv = (SkelVar) var;
+                    Optimization ov = helper[mv.id];
+                    ov.flags |= Optimization.MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
-                        SkelVarOptimizable ov = helper[temp[j].id];
-                        ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
+                        SkelVar mv = temp[j];
+                        Optimization ov = helper[mv.id];
+                        ov.flags |= Optimization.MASK_VAR_HSTR;
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * <p>Collect the unify arguments.</p>
-     *
-     * @param molec  The head skeleton.
-     * @param helper The helper.
-     * @return The unify arguments.
-     */
-    static int[] unifyArgsTerm(Object molec, SkelVarOptimizable[] helper) {
-        if (!(molec instanceof SkelCompound))
-            return null;
-        SkelCompound mc = (SkelCompound) molec;
-        if (helper.length == 0)
-            return valueOfTerm(mc.args.length);
-        int i = mc.args.length - 1;
-        for (; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (!(a instanceof SkelVar))
-                break;
-            SkelVarOptimizable ov = helper[((SkelVar) a).id];
-            if ((ov.flags & SkelVarOptimizable.MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
-                    break;
-                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_GSTR) != 0) {
-                    break;
-                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_BODY) != 0) {
-                    break;
-                } else {
-                    /* */
-                }
-            } else {
-                break;
-            }
-        }
-        if (!(i >= 0))
-            return null;
-        int[] intargs = new int[i + 1];
-        for (; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (!(a instanceof SkelVar)) {
-                intargs[i] = UNIFY_TERM;
-                continue;
-            }
-            SkelVarOptimizable ov = helper[((SkelVar) a).id];
-            if ((ov.flags & SkelVarOptimizable.MASK_VAR_HSTR) == 0) {
-                if (ov.minarg != i) {
-                    intargs[i] = ov.minarg;
-                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_GSTR) != 0) {
-                    intargs[i] = UNIFY_STRG;
-                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_BODY) != 0) {
-                    intargs[i] = UNIFY_WEAK;
-                } else {
-                    intargs[i] = UNIFY_SKIP;
-                }
-            } else {
-                intargs[i] = UNIFY_TERM;
-            }
-        }
-        return intargs;
-    }
-
-    /*************************************************************/
-    /* Body Structure                                            */
-    /*************************************************************/
-
-    /**
-     * <p>Set the goals structure flag.</p>
-     *
-     * @param b      The body skeleton.
-     * @param flags  The clause flags.
-     * @param helper The helper.
-     * @param en     The engine.
-     */
-    public static void setBody(Object b, int flags,
-                               SkelVarOptimizable[] helper, Engine en) {
-        for (; ; ) {
-            if (!Goal.noBody(b)) {
-                Object t = Goal.bodyToGoalSkel(b);
-                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
-                    setDisj(t, flags, helper, en);
-                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                    setBody(t, flags, helper, en);
-                } else {
-                    if (t instanceof SkelVar) {
-                        setVariable((SkelVar)t, flags, helper);
-                    } else {
-                        setGoal(t, flags, helper);
-                    }
-                }
-            } else {
-                break;
-            }
-            b = Goal.bodyToRestSkel(b, en);
         }
     }
 
     /**
      * <p>Set the goals structure flag.</p>
      *
-     * @param t      The disjunction skeleton.
-     * @param flags  The clause flags.
-     * @param helper The helper.
-     * @param en     The engine.
-     */
-    private static void setDisj(Object t, int flags,
-                                SkelVarOptimizable[] helper, Engine en) {
-        L1:
-        for (; ; ) {
-            switch (SpecialBody.alterType(t)) {
-                case SpecialBody.TYPE_ALTR_DISJ:
-                    SkelCompound sc = (SkelCompound) t;
-                    Object b = sc.args[0];
-                    switch (SpecialBody.alterType(b)) {
-                        case SpecialBody.TYPE_ALTR_COND:
-                        case SpecialBody.TYPE_ALTR_SOFT:
-                            SkelCompound sc2 = (SkelCompound) b;
-                            setBody(sc2.args[0], flags, helper, en);
-                            setBody(sc2.args[1], flags, helper, en);
-                            break;
-                        default:
-                            setBody(b, flags, helper, en);
-                            break;
-                    }
-                    t = sc.args[1];
-                    break;
-                case SpecialBody.TYPE_ALTR_COND:
-                case SpecialBody.TYPE_ALTR_SOFT:
-                    sc = (SkelCompound) t;
-                    setBody(sc.args[0], flags, helper, en);
-                    setBody(sc.args[1], flags, helper, en);
-                    break L1;
-                default:
-                    setBody(t, flags, helper, en);
-                    break L1;
-            }
-        }
-    }
-
-    /**
-     * <p>Set the goal structure flag.</p>
-     *
-     * @param molec  The goal skeleton.
-     * @param flags  The clause flags.
+     * @param term   The body skeleton.
      * @param helper The helper.
      */
-    private static void setGoal(Object molec, int flags,
-                                SkelVarOptimizable[] helper) {
-        if (!(molec instanceof SkelCompound))
+    public static void setBody(Object term, Optimization[] helper) {
+        Object var = SupervisorCopy.getVar(term);
+        if (var == null)
             return;
-        SkelCompound mc = (SkelCompound) molec;
-        for (int i = mc.args.length - 1; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (a instanceof SkelVar) {
-                setVariable((SkelVar) a, flags, helper);
-            } else if (a instanceof SkelCompound) {
-                Object var = ((SkelCompound) a).var;
-                if (var == null)
-                    continue;
-                if (var instanceof SkelVar) {
-                    SkelVarOptimizable ov = helper[((SkelVar) var).id];
-                    ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
-                } else {
-                    SkelVar[] temp = (SkelVar[]) var;
-                    for (int j = 0; j < temp.length; j++) {
-                        SkelVarOptimizable ov = helper[temp[j].id];
-                        ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>Set the variable structure flag.</p>
-     *
-     * @param mv  The variable skeleton.
-     * @param flags  The clause flags.
-     * @param helper The helper.
-     */
-    private static void setVariable(SkelVar mv, int flags,
-                                    SkelVarOptimizable[] helper) {
-        SkelVarOptimizable ov = helper[mv.id];
-        if ((flags & AbstractDefined.MASK_DEFI_NWKV) == 0) {
-            ov.flags |= SkelVarOptimizable.MASK_VAR_BODY;
+        if (var instanceof SkelVar) {
+            SkelVar mv = (SkelVar) var;
+            Optimization ov = helper[mv.id];
+            ov.flags |= Optimization.MASK_VAR_BODY;
         } else {
-            ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
+            SkelVar[] temp = (SkelVar[]) var;
+            for (int j = 0; j < temp.length; j++) {
+                SkelVar mv = temp[j];
+                Optimization ov = helper[mv.id];
+                ov.flags |= Optimization.MASK_VAR_BODY;
+            }
         }
     }
-
 
 }

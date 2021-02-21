@@ -33,7 +33,7 @@ import jekpro.model.molec.Display;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public class SkelVar extends AbstractSkel
+public final class SkelVar extends AbstractSkel
         implements Comparable<SkelVar> {
     private static final int CACHE_SIZE = 8;
     private static final SkelVar[] cachevar = new SkelVar[CACHE_SIZE];

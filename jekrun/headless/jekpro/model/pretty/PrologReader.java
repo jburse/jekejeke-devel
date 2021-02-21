@@ -268,7 +268,7 @@ public class PrologReader {
     /**
      * <p>Set the defaults for a source.</p>
      *
-     * @param s The source.
+     * @param s     The source.
      * @param flags The flags.
      */
     public void setDefaults(AbstractSource s, int flags) {
