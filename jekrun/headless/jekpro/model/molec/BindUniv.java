@@ -519,8 +519,8 @@ public class BindUniv extends AbstractUndo {
      * <p>Uses the vars speed up structure of skel compouned.</p>
      * <p>Tail recursive implementation.</p>
      *
-     * @param m  The term.
-     * @param d  The display of the term.
+     * @param m The term.
+     * @param d The display of the term.
      * @return True when the variable occurs in the term, false otherwise.
      */
     private static boolean hasVar(Object m, Display d, BindUniv bc) {

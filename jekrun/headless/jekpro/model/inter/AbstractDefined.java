@@ -381,16 +381,16 @@ public abstract class AbstractDefined extends AbstractDelegate {
         for (int i = 0; i < arr.length; i++) {
             int k = arr[i];
             switch (k) {
-                case Optimization.UNIFY_SKIP:
+                case Intermediate.UNIFY_SKIP:
                     break;
-                case Optimization.UNIFY_TERM:
+                case Intermediate.UNIFY_TERM:
                     if (!en.unify(t1[i], ref, t2[i], ref2))
                         return false;
                     break;
-                case Optimization.UNIFY_STRG:
+                case Intermediate.UNIFY_STRG:
                     BindUniv.unifyVariable(t1[i], ref, t2[i], ref2, en);
                     break;
-                case Optimization.UNIFY_WEAK:
+                case Intermediate.UNIFY_WEAK:
                     BindUniv.unifyVariableWeak(t1[i], ref, t2[i], ref2, en);
                     break;
                 default:

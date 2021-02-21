@@ -5,10 +5,7 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
@@ -130,14 +127,14 @@ public class Clause extends Directive implements InterfaceReference {
         clause.del = fun;
 
         term = Clause.clauseToBody(molec, en);
-        Optimization[] helper = Optimization.createHelper(molec);
+        SkelVarOptimizable[] helper = SkelVarOptimizable.createHelper(molec);
         if (helper.length != 0) {
             Intermediate.setHead(clause.head, clause.flags, helper);
             Intermediate.setBody(term, clause.flags, helper, en);
-            clause.sizerule = Optimization.sortExtra(helper);
+            clause.sizerule = SkelVarOptimizable.sortExtra(helper);
         }
         clause.bodyToInterSkel(term, en, true);
-        clause.intargs = Optimization.unifyArgsTerm(clause.head, helper);
+        clause.intargs = Intermediate.unifyArgsTerm(clause.head, helper);
         return clause;
     }
 

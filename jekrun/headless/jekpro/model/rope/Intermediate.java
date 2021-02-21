@@ -40,9 +40,43 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class Intermediate {
+    public static final int UNIFY_SKIP = -4;
+    public static final int UNIFY_TERM = -3;
+    public static final int UNIFY_STRG = -2;
+    public static final int UNIFY_WEAK = -1;
+
+    final static int[][] cacheUnifyTerm = new int[8][];
 
     public Intermediate next;
     public int flags;
+
+    /**
+     * <p>Initialize the immutable cache.</p>
+     */
+    static {
+        for (int i = 0; i < 8; i++) {
+            int[] array = new int[i];
+            for (int j = 0; j < i; j++)
+                array[j] = Intermediate.UNIFY_TERM;
+            Intermediate.cacheUnifyTerm[i] = array;
+        }
+    }
+
+    /**
+     * <p>Retrieve a term unify array.</p>
+     *
+     * @param n The length.
+     * @return The term unify array.
+     */
+    static int[] valueOfTerm(int n) {
+        if (n < 8)
+            return cacheUnifyTerm[n];
+        int[] array = new int[n];
+        for (int j = 0; j < n; j++)
+            array[j] = UNIFY_TERM;
+        return array;
+    }
+
 
     /**
      * <p>Retrieve the next term depending on debug mode.</p>
@@ -78,35 +112,95 @@ public abstract class Intermediate {
      * @param helper The helper.
      */
     public static void setHead(Object molec, int flags,
-                        Optimization[] helper) {
+                               SkelVarOptimizable[] helper) {
         if (!(molec instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) molec;
         for (int i = mc.args.length - 1; i >= 0; i--) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
-                Optimization ov = helper[((SkelVar) a).id];
+                SkelVarOptimizable ov = helper[((SkelVar) a).id];
                 if ((flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
                     ov.minarg = i;
                 } else {
-                    ov.flags |= Optimization.MASK_VAR_HSTR;
+                    ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
                 }
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
-                    Optimization ov = helper[((SkelVar) var).id];
-                    ov.flags |= Optimization.MASK_VAR_HSTR;
+                    SkelVarOptimizable ov = helper[((SkelVar) var).id];
+                    ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
-                        Optimization ov = helper[temp[j].id];
-                        ov.flags |= Optimization.MASK_VAR_HSTR;
+                        SkelVarOptimizable ov = helper[temp[j].id];
+                        ov.flags |= SkelVarOptimizable.MASK_VAR_HSTR;
                     }
                 }
             }
         }
+    }
+
+    /**
+     * <p>Collect the unify arguments.</p>
+     *
+     * @param molec  The head skeleton.
+     * @param helper The helper.
+     * @return The unify arguments.
+     */
+    static int[] unifyArgsTerm(Object molec, SkelVarOptimizable[] helper) {
+        if (!(molec instanceof SkelCompound))
+            return null;
+        SkelCompound mc = (SkelCompound) molec;
+        if (helper.length == 0)
+            return valueOfTerm(mc.args.length);
+        int i = mc.args.length - 1;
+        for (; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (!(a instanceof SkelVar))
+                break;
+            SkelVarOptimizable ov = helper[((SkelVar) a).id];
+            if ((ov.flags & SkelVarOptimizable.MASK_VAR_HSTR) == 0) {
+                if (ov.minarg != i) {
+                    break;
+                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_GSTR) != 0) {
+                    break;
+                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_BODY) != 0) {
+                    break;
+                } else {
+                    /* */
+                }
+            } else {
+                break;
+            }
+        }
+        if (!(i >= 0))
+            return null;
+        int[] intargs = new int[i + 1];
+        for (; i >= 0; i--) {
+            Object a = mc.args[i];
+            if (!(a instanceof SkelVar)) {
+                intargs[i] = UNIFY_TERM;
+                continue;
+            }
+            SkelVarOptimizable ov = helper[((SkelVar) a).id];
+            if ((ov.flags & SkelVarOptimizable.MASK_VAR_HSTR) == 0) {
+                if (ov.minarg != i) {
+                    intargs[i] = ov.minarg;
+                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_GSTR) != 0) {
+                    intargs[i] = UNIFY_STRG;
+                } else if ((ov.flags & SkelVarOptimizable.MASK_VAR_BODY) != 0) {
+                    intargs[i] = UNIFY_WEAK;
+                } else {
+                    intargs[i] = UNIFY_SKIP;
+                }
+            } else {
+                intargs[i] = UNIFY_TERM;
+            }
+        }
+        return intargs;
     }
 
     /*************************************************************/
@@ -122,7 +216,7 @@ public abstract class Intermediate {
      * @param en     The engine.
      */
     public static void setBody(Object b, int flags,
-                               Optimization[] helper, Engine en) {
+                               SkelVarOptimizable[] helper, Engine en) {
         for (; ; ) {
             if (!Goal.noBody(b)) {
                 Object t = Goal.bodyToGoalSkel(b);
@@ -153,7 +247,7 @@ public abstract class Intermediate {
      * @param en     The engine.
      */
     private static void setDisj(Object t, int flags,
-                                Optimization[] helper, Engine en) {
+                                SkelVarOptimizable[] helper, Engine en) {
         L1:
         for (; ; ) {
             switch (SpecialBody.alterType(t)) {
@@ -194,7 +288,7 @@ public abstract class Intermediate {
      * @param helper The helper.
      */
     private static void setGoal(Object molec, int flags,
-                                Optimization[] helper) {
+                                SkelVarOptimizable[] helper) {
         if (!(molec instanceof SkelCompound))
             return;
         SkelCompound mc = (SkelCompound) molec;
@@ -207,13 +301,13 @@ public abstract class Intermediate {
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
-                    Optimization ov = helper[((SkelVar) var).id];
-                    ov.flags |= Optimization.MASK_VAR_GSTR;
+                    SkelVarOptimizable ov = helper[((SkelVar) var).id];
+                    ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
-                        Optimization ov = helper[temp[j].id];
-                        ov.flags |= Optimization.MASK_VAR_GSTR;
+                        SkelVarOptimizable ov = helper[temp[j].id];
+                        ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
                     }
                 }
             }
@@ -228,13 +322,14 @@ public abstract class Intermediate {
      * @param helper The helper.
      */
     private static void setVariable(SkelVar mv, int flags,
-                                Optimization[] helper) {
-        Optimization ov = helper[mv.id];
+                                    SkelVarOptimizable[] helper) {
+        SkelVarOptimizable ov = helper[mv.id];
         if ((flags & AbstractDefined.MASK_DEFI_NWKV) == 0) {
-            ov.flags |= Optimization.MASK_VAR_BODY;
+            ov.flags |= SkelVarOptimizable.MASK_VAR_BODY;
         } else {
-            ov.flags |= Optimization.MASK_VAR_GSTR;
+            ov.flags |= SkelVarOptimizable.MASK_VAR_GSTR;
         }
     }
+
 
 }
