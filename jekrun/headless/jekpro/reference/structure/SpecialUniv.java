@@ -625,8 +625,6 @@ public final class SpecialUniv extends AbstractSpecial {
                         }
                         if (b1 == b2)
                             return true;
-                        if (b2.hasVar(alfa, d1, d2))
-                            return false;
                         return b2.bindAttr(alfa, d1, en);
                     }
                     if (b1.hasVar(beta, d2, d1))

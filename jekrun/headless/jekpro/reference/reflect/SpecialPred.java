@@ -145,7 +145,8 @@ public final class SpecialPred extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unify(SpecialPred.propertyToPredicates(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
+                if (!en.unify(SpecialPred.propertyToPredicates(en.skel, en.display, en),
+                        Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_IDX:
@@ -155,7 +156,8 @@ public final class SpecialPred extends AbstractSpecial {
                 en.display = ref;
                 en.deref();
                 EngineMessage.checkCallable(en.skel, en.display);
-                if (!en.unify(propertyToProvables(en.skel, en.display, en), Display.DISPLAY_CONST, temp[1], ref))
+                if (!en.unify(propertyToProvables(en.skel, en.display, en),
+                        Display.DISPLAY_CONST, temp[1], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_PROVABLE_PROPERTY_CHK:

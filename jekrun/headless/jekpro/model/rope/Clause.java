@@ -54,11 +54,10 @@ import matula.util.data.MapHashLink;
  */
 public class Clause extends Directive implements InterfaceReference {
     public final static int MASK_CLSE_ASSE = 0x00000010;
-    public final static int MASK_CLSE_MTCH = 0x00000020;
 
     public Object head;
     public int sizerule;
-    public int[] intargs;
+    public short[] intargs;
     public AbstractDefined del;
     public MapHashLink<String, SkelVar> vars;
     public int size;
@@ -130,16 +129,15 @@ public class Clause extends Directive implements InterfaceReference {
         clause.del = fun;
 
         term = Clause.clauseToBody(molec, en);
-        Object var = SupervisorCopy.getVar(molec);
-        if (var != null && (clause.flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
-            Optimization[] helper = Optimization.createHelper(var);
-            Intermediate.setHead(clause.head, helper);
+        if (SupervisorCopy.getVar(clause.head) != null &&
+                (clause.flags & AbstractDefined.MASK_DEFI_NEXV) == 0) {
+            Optimization[] helper = Optimization.createHelper(molec);
+            Intermediate.setHead(clause, helper);
             Intermediate.setBody(term, helper);
-            clause.sizerule = Optimization.sortExtra(molec, helper);
-            clause.intargs = Optimization.unifyArgsExtra(clause.head, helper);
+            clause.sizerule = Optimization.sortExtra(helper);
+            clause.intargs = Optimization.unifyArgs(clause, helper);
         } else {
             clause.sizerule = clause.size;
-            clause.intargs = Optimization.unifyArgs(clause.head);
         }
         clause.bodyToInterSkel(term, en, true);
         return clause;

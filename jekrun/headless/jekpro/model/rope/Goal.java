@@ -6,7 +6,6 @@ import jekpro.model.inter.AbstractDefined;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.Foyer;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
@@ -132,33 +131,29 @@ public class Goal extends Intermediate {
      */
     static void bodyToInterSkel(Directive dire, Object b, Engine en)
             throws EngineMessage {
-        for (; ; ) {
-            if (!Goal.noBody(b)) {
-                Object t = Goal.bodyToGoalSkel(b);
-                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
-                    t = disjToAlterSkel(dire, t, en);
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                    t = conjToSequenSkel(dire, t, en);
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else {
-                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
-                        t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
-                    if (!(t instanceof AbstractSkel))
-                        throw new EngineMessage(EngineMessage.typeError(
-                                EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                }
+        while (!SpecialBody.noBody(b)) {
+            Object t = SpecialBody.bodyToGoalSkel(b);
+            if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
+                t = disjToAlterSkel(dire, t, en);
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
+                t = conjToSequenSkel(dire, t, en);
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             } else {
-                break;
+                if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
+                    t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                if (!(t instanceof AbstractSkel))
+                    throw new EngineMessage(EngineMessage.typeError(
+                            EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             }
-            b = Goal.bodyToRestSkel(b, en);
+            b = SpecialBody.bodyToRestSkel(b, en);
         }
     }
 
@@ -293,56 +288,6 @@ public class Goal extends Intermediate {
         Directive left = Directive.createDirective(dire.flags, en);
         left.bodyToInterSkel(b, en, false);
         return left;
-    }
-
-    /**************************************************************/
-    /* Body Iterator                                              */
-    /**************************************************************/
-
-    /**
-     * <p>Check whether the body has no goal.</p>
-     *
-     * @param t The body skeleton.
-     * @return True if the body has no goal, false otherwise.
-     */
-    public static boolean noBody(Object t) {
-        return (t instanceof SkelAtom &&
-                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE));
-    }
-
-    /**
-     * <p>Convert a body to a first goal.</p>
-     *
-     * @param t The body skeleton.
-     * @return The goal skeleton.
-     */
-    public static Object bodyToGoalSkel(Object t) {
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
-            SkelCompound sc = (SkelCompound) t;
-            return sc.args[0];
-        } else {
-            return t;
-        }
-    }
-
-    /**
-     * <p>Convert a body to a rest body.</p>
-     *
-     * @param t  The body skeleton.
-     * @param en The engine.
-     * @return The body skeleton.
-     */
-    public static Object bodyToRestSkel(Object t, Engine en) {
-        if (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
-            SkelCompound sc = (SkelCompound) t;
-            return sc.args[1];
-        } else {
-            return en.store.foyer.ATOM_TRUE;
-        }
     }
 
 }

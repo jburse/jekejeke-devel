@@ -168,6 +168,56 @@ public final class SpecialBody extends AbstractSpecial {
     }
 
     /**************************************************************/
+    /* Body Iterator                                              */
+    /**************************************************************/
+
+    /**
+     * <p>Check whether the body has no goal.</p>
+     *
+     * @param t The body skeleton.
+     * @return True if the body has no goal, false otherwise.
+     */
+    public static boolean noBody(Object t) {
+        return (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_TRUE));
+    }
+
+    /**
+     * <p>Convert a body to a first goal.</p>
+     *
+     * @param t The body skeleton.
+     * @return The goal skeleton.
+     */
+    public static Object bodyToGoalSkel(Object t) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) t;
+            return sc.args[0];
+        } else {
+            return t;
+        }
+    }
+
+    /**
+     * <p>Convert a body to a rest body.</p>
+     *
+     * @param t  The body skeleton.
+     * @param en The engine.
+     * @return The body skeleton.
+     */
+    public static Object bodyToRestSkel(Object t, Engine en) {
+        if (t instanceof SkelCompound &&
+                ((SkelCompound) t).args.length == 2 &&
+                ((SkelCompound) t).sym.fun.equals(Foyer.OP_COMMA)) {
+            SkelCompound sc = (SkelCompound) t;
+            return sc.args[1];
+        } else {
+            return en.store.foyer.ATOM_TRUE;
+        }
+    }
+    
+    /**************************************************************/
     /* Body Checkers                                              */
     /**************************************************************/
 

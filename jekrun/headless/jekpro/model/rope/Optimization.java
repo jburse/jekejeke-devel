@@ -3,6 +3,7 @@ package jekpro.model.rope;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
+import matula.util.data.ListArray;
 
 /**
  * <p>This class provides optimization infornation.</p>
@@ -36,53 +37,24 @@ import jekpro.tools.term.SkelVar;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class Optimization {
-    public final static int MASK_VAR_HSTR = 0x00010000;
-    public final static int MASK_VAR_BODY = 0x00020000;
-    public final static int MASK_VAR_MARG = 0x0000FFFF;
+    public final static int MASK_VAR_HSTR = 0x00000001;
+    public final static int MASK_VAR_BODY = 0x00000002;
 
-    public static final int UNIFY_SKIP = -3;
-    public static final int UNIFY_TERM = -2;
-    public static final int UNIFY_VAR = -1;
-
-    private final static int[][] cacheUnifyTerm = new int[8][];
+    public static final int UNIFY_TERM = 0;
+    public static final int UNIFY_COMBO = 1;
 
     int flags;
+    short minarg;
     SkelVar sort;
-
-    /**
-     * <p>Initialize the immutable cache.</p>
-     */
-    static {
-        for (int i = 0; i < 8; i++) {
-            int[] array = new int[i];
-            for (int j = 0; j < i; j++)
-                array[j] = Optimization.UNIFY_TERM;
-            Optimization.cacheUnifyTerm[i] = array;
-        }
-    }
-
-    /**
-     * <p>Retrieve a term unify array.</p>
-     *
-     * @param n The length.
-     * @return The term unify array.
-     */
-    static int[] valueOfTerm(int n) {
-        if (n < 8)
-            return cacheUnifyTerm[n];
-        int[] array = new int[n];
-        for (int j = 0; j < n; j++)
-            array[j] = UNIFY_TERM;
-        return array;
-    }
 
     /**
      * <p>Create a optimization helper array.</p>
      *
-     * @param var The variables.
+     * @param molec The clause.
      * @return The helper.
      */
-    static Optimization[] createHelper(Object var) {
+    static Optimization[] createHelper(Object molec) {
+        Object var = SupervisorCopy.getVar(molec);
         Optimization[] helper;
         if (var instanceof SkelVar) {
             SkelVar mv = (SkelVar) var;
@@ -107,11 +79,10 @@ public final class Optimization {
      * <p>Sort and displace the variables in the given rule.</p>
      * <p>Sort criteria is the min term.</p>
      *
-     * @param molec  The clause skeleton.
      * @param helper The helper.
      * @return The number of non-extra variables.
      */
-    static int sortExtra(Object molec, Optimization[] helper) {
+    static int sortExtra(Optimization[] helper) {
         int j = helper.length;
         int k = 0;
         while (k < j && extraVar(helper[j - 1].flags))
@@ -151,68 +122,36 @@ public final class Optimization {
     /**
      * <p>Collect the unify arguments.</p>
      *
-     * @param molec  The head skeleton.
+     * @param clause The clause.
      * @param helper The helper.
      * @return The unify arguments.
      */
-    static int[] unifyArgsExtra(Object molec, Optimization[] helper) {
-        if (!(molec instanceof SkelCompound))
+    static short[] unifyArgs(Clause clause, Optimization[] helper) {
+        if (clause.size == clause.sizerule)
             return null;
-        SkelCompound mc = (SkelCompound) molec;
-        if (SupervisorCopy.getVar(molec) == null)
-            return valueOfTerm(mc.args.length);
-        int i = mc.args.length - 1;
-        for (; i >= 0; i--) {
-            Object a = mc.args[i];
-            if (!(a instanceof SkelVar))
-                break;
-            SkelVar mv = (SkelVar) a;
-            Optimization ov = helper[mv.id];
-            if ((ov.flags & MASK_VAR_MARG) != i) {
-                break;
-            } else if ((ov.flags & MASK_VAR_HSTR) != 0) {
-                break;
-            } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                break;
-            } else {
-                /* */
-            }
-        }
-        if (!(i >= 0))
-            return null;
-        int[] intargs = new int[i + 1];
-        for (; i >= 0; i--) {
+        SkelCompound mc = (SkelCompound) clause.head;
+        ListArray<Short> list = new ListArray<>();
+        for (int i = 0; i < mc.args.length; i++) {
             Object a = mc.args[i];
             if (!(a instanceof SkelVar)) {
-                intargs[i] = UNIFY_TERM;
+                list.add(Short.valueOf((short) UNIFY_TERM));
+                list.add(Short.valueOf((short) i));
                 continue;
             }
-            SkelVar mv = (SkelVar) a;
-            Optimization ov = helper[mv.id];
-            if ((ov.flags & MASK_VAR_MARG) != i) {
-                intargs[i] = ov.flags & MASK_VAR_MARG;
-            } else if ((ov.flags & MASK_VAR_HSTR) != 0) {
-                intargs[i] = UNIFY_TERM;
-            } else if ((ov.flags & MASK_VAR_BODY) != 0) {
-                intargs[i] = UNIFY_VAR;
-            } else {
-                intargs[i] = UNIFY_SKIP;
+            Optimization ov = helper[((SkelVar) a).id];
+            if (!extraVar(ov.flags)) {
+                list.add(Short.valueOf((short) UNIFY_TERM));
+                list.add(Short.valueOf((short) i));
+            } else if (ov.minarg != i) {
+                list.add(Short.valueOf((short) UNIFY_COMBO));
+                list.add(Short.valueOf((short) i));
+                list.add(Short.valueOf(ov.minarg));
             }
         }
+        short[] intargs = new short[list.size()];
+        for (int i = 0; i < list.size(); i++)
+            intargs[i] = list.get(i).shortValue();
         return intargs;
-    }
-
-    /**
-     * <p>Collect the unify arguments.</p>
-     *
-     * @param molec The head skeleton.
-     * @return The unify arguments.
-     */
-    static int[] unifyArgs(Object molec) {
-        if (!(molec instanceof SkelCompound))
-            return null;
-        SkelCompound mc = (SkelCompound) molec;
-        return valueOfTerm(mc.args.length);
     }
 
 }

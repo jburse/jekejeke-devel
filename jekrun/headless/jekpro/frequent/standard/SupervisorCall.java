@@ -139,33 +139,29 @@ public class SupervisorCall {
             b = bc.skel;
             c = bc.display;
         }
-        for (; ; ) {
-            if (!Goal.noBody(b)) {
-                Object t = Goal.bodyToGoalSkel(b);
-                Display d = c;
-                while (t instanceof SkelVar &&
-                        (bc = d.bind[((SkelVar) t).id]).display != null) {
-                    t = bc.skel;
-                    d = bc.display;
-                }
-                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
-                    countDisj(t, d, en);
-                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                    countBody(t, d, en);
-                } else {
-                    if (SupervisorCopy.getVar(t) != null) {
-                        countvar++;
-                        if (last == Display.DISPLAY_CONST) {
-                            last = d;
-                        } else if (last != d) {
-                            flags |= MASK_CALL_MLTI;
-                        }
+        while (!SpecialBody.noBody(b)) {
+            Object t = SpecialBody.bodyToGoalSkel(b);
+            Display d = c;
+            while (t instanceof SkelVar &&
+                    (bc = d.bind[((SkelVar) t).id]).display != null) {
+                t = bc.skel;
+                d = bc.display;
+            }
+            if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
+                countDisj(t, d, en);
+            } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
+                countBody(t, d, en);
+            } else {
+                if (SupervisorCopy.getVar(t) != null) {
+                    countvar++;
+                    if (last == Display.DISPLAY_CONST) {
+                        last = d;
+                    } else if (last != d) {
+                        flags |= MASK_CALL_MLTI;
                     }
                 }
-            } else {
-                break;
             }
-            b = Goal.bodyToRestSkel(b, en);
+            b = SpecialBody.bodyToRestSkel(b, en);
             while (b instanceof SkelVar &&
                     (bc = c.bind[((SkelVar) b).id]).display != null) {
                 b = bc.skel;
@@ -257,45 +253,41 @@ public class SupervisorCall {
             b = bc.skel;
             c = bc.display;
         }
-        for (; ; ) {
-            if (!Goal.noBody(b)) {
-                Object t = Goal.bodyToGoalSkel(b);
-                Display d = c;
-                while (t instanceof SkelVar &&
-                        (bc = d.bind[((SkelVar) t).id]).display != null) {
-                    t = bc.skel;
-                    d = bc.display;
-                }
-                if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
-                    t = disjToAlter(dire, t, d, en);
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                    t = conjToSequen(dire, t, d, en);
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                } else {
-                    if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
-                        t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
-                    if (!(t instanceof AbstractSkel))
-                        throw new EngineMessage(EngineMessage.typeError(
-                                EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
-                    if ((flags & MASK_CALL_MLTI) != 0 && SupervisorCopy.getVar(t) != null) {
-                        SkelVar sv = SkelVar.valueOf(countvar);
-                        countvar++;
-                        last.bind[sv.id].bindUniv(t, d, en);
-                        t = sv;
-                    }
-                    Goal goal = new Goal(t);
-                    dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
-                }
-            } else {
-                break;
+        while (!SpecialBody.noBody(b)) {
+            Object t = SpecialBody.bodyToGoalSkel(b);
+            Display d = c;
+            while (t instanceof SkelVar &&
+                    (bc = d.bind[((SkelVar) t).id]).display != null) {
+                t = bc.skel;
+                d = bc.display;
             }
-            b = Goal.bodyToRestSkel(b, en);
+            if (SpecialBody.alterType(t) != SpecialBody.TYPE_ALTR_NONE) {
+                t = disjToAlter(dire, t, d, en);
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
+                t = conjToSequen(dire, t, d, en);
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            } else {
+                if ((dire.flags & AbstractDefined.MASK_DEFI_NBCV) == 0 && t instanceof SkelVar)
+                    t = new SkelCompound(en.store.foyer.ATOM_CALL, t);
+                if (!(t instanceof AbstractSkel))
+                    throw new EngineMessage(EngineMessage.typeError(
+                            EngineMessage.OP_TYPE_CALLABLE, t), Display.DISPLAY_CONST);
+                if ((flags & MASK_CALL_MLTI) != 0 && SupervisorCopy.getVar(t) != null) {
+                    SkelVar sv = SkelVar.valueOf(countvar);
+                    countvar++;
+                    last.bind[sv.id].bindUniv(t, d, en);
+                    t = sv;
+                }
+                Goal goal = new Goal(t);
+                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+            }
+            b = SpecialBody.bodyToRestSkel(b, en);
             while (b instanceof SkelVar &&
                     (bc = c.bind[((SkelVar) b).id]).display != null) {
                 b = bc.skel;

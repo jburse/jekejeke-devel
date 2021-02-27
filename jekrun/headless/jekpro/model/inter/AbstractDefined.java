@@ -373,27 +373,25 @@ public abstract class AbstractDefined extends AbstractDelegate {
                                 Clause clause, Display ref2,
                                 Engine en)
             throws EngineException {
-        int[] arr = clause.intargs;
+        short[] arr = clause.intargs;
         if (arr == null)
-            return true;
+            return unifySearch(goal, ref, clause, ref2, en);
         Object[] t1 = ((SkelCompound) goal).args;
         Object[] t2 = ((SkelCompound) clause.head).args;
-        for (int i = 0; i < arr.length; i++) {
-            int k = arr[i];
-            switch (k) {
-                case Optimization.UNIFY_SKIP:
-                    break;
+        int i = 0;
+        while (i < arr.length) {
+            switch (arr[i++]) {
                 case Optimization.UNIFY_TERM:
-                    if (!en.unify(t1[i], ref, t2[i], ref2))
+                    int k = arr[i++];
+                    if (!en.unify(t1[k], ref, t2[k], ref2))
                         return false;
                     break;
-                case Optimization.UNIFY_VAR:
-                    BindUniv.unifyVariable(t1[i], ref, t2[i], ref2, en);
+                case Optimization.UNIFY_COMBO:
+                    if (!en.unify(t1[arr[i++]], ref, t1[arr[i++]], ref))
+                        return false;
                     break;
                 default:
-                    if (!en.unify(t1[k], ref, t1[i], ref))
-                        return false;
-                    break;
+                    throw new IllegalArgumentException("illegal code");
             }
         }
         return true;

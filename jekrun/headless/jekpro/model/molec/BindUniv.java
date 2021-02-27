@@ -2,7 +2,6 @@ package jekpro.model.molec;
 
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.inter.Engine;
-import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermVar;
 import matula.util.data.AbstractMap;
@@ -39,11 +38,14 @@ import matula.util.data.AbstractMap;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public class BindUniv extends AbstractUndo {
+    public static final int MASK_VAR_WEAK = 0x40000000;
+    public static final int MASK_VAR_FRSH = 0x3FFFFFFF;
+
     public final static BindUniv[] BIND_CONST = new BindUniv[0];
 
     public Object skel;
     public Display display;
-    public int refs;
+    public int refs = MASK_VAR_WEAK;
 
     /**
      * <p>Restore state as desired and remove bind from the engine.</p>
@@ -64,7 +66,7 @@ public class BindUniv extends AbstractUndo {
      * @param bc The bind univ.
      * @param en The engine.
      */
-    private static void unbind(BindUniv bc, Engine en) {
+    public static void unbind(BindUniv bc, Engine en) {
         for (; ; ) {
             /* unbind variable */
             Display d = bc.display;
@@ -77,34 +79,34 @@ public class BindUniv extends AbstractUndo {
             if (var == null)
                 break;
             BindUniv[] b = d.bind;
-            SkelVar v;
+            int k;
             if (var instanceof SkelVar) {
-                v = (SkelVar) var;
+                k = ((SkelVar) var).id;
             } else {
                 SkelVar[] temp = (SkelVar[]) var;
                 int i = 0;
                 for (; i < temp.length - 1; i++) {
-                    v = temp[i];
-                    bc = b[v.id];
-                    int j = bc.refs;
+                    k = temp[i].id;
+                    bc = b[k];
+                    int j = bc.refs - 1;
                     if (j == 0) {
-                        b[v.id] = null;
+                        b[k] = null;
                         if (bc.display != null)
                             BindUniv.unbind(bc, en);
                     } else {
-                        bc.refs = j - 1;
+                        bc.refs = j;
                     }
                 }
-                v = temp[i];
+                k = temp[i].id;
             }
-            bc = b[v.id];
-            int j = bc.refs;
+            bc = b[k];
+            int j = bc.refs - 1;
             if (j == 0) {
-                b[v.id] = null;
+                b[k] = null;
                 if (bc.display != null)
                     continue;
             } else {
-                bc.refs = j - 1;
+                bc.refs = j;
             }
             break;
         }
@@ -144,15 +146,13 @@ public class BindUniv extends AbstractUndo {
 
         BindUniv[] b = d.bind;
         if (var instanceof SkelVar) {
-            SkelVar v = (SkelVar) var;
-            BindUniv bc = b[v.id];
+            BindUniv bc = b[((SkelVar) var).id];
             bc.refs++;
         } else {
             SkelVar[] temp = (SkelVar[]) var;
             int n = temp.length;
             for (int j = 0; j < n; j++) {
-                SkelVar v = temp[j];
-                BindUniv bc = b[v.id];
+                BindUniv bc = b[temp[j].id];
                 bc.refs++;
             }
         }
@@ -187,28 +187,6 @@ public class BindUniv extends AbstractUndo {
     /****************************************************************/
 
     /**
-     * <p>>Unify two terms. As a side effect bindings are established.</p
-     *
-     * @param alfa The first skeleton.
-     * @param d1   The first display.
-     * @param beta The second skeleton.
-     * @param d2   The second display.
-     * @param en   The engine.
-     */
-    public static void unifyVariable(Object alfa, Display d1,
-                                     Object beta, Display d2,
-                                     Engine en) {
-        BindUniv b1;
-        while (alfa instanceof SkelVar &&
-                (b1 = d1.bind[((SkelVar) alfa).id]).display != null) {
-            alfa = b1.skel;
-            d1 = b1.display;
-        }
-        b1 = d2.bind[((SkelVar) beta).id];
-        b1.bindUniv(alfa, d1, en);
-    }
-
-    /**
      * <p>Check whether a variable occurs in a term.</p>
      * <p>Check is done from skeleton and display.</p>
      * <p>Uses the vars speed up structure of skel compouned.</p>
@@ -221,36 +199,35 @@ public class BindUniv extends AbstractUndo {
      */
     public boolean hasVar(Object m, Display d, Display d2) {
         for (; ; ) {
-            if (refs == 0 && d != d2)
+            if ((refs & MASK_VAR_FRSH) == 0 && d != d2)
                 return false;
             Object var = SupervisorCopy.getVar(m);
             if (var == null)
                 return false;
-            SkelVar v;
+            BindUniv[] b = d.bind;
+            BindUniv bc;
             if (var instanceof SkelVar) {
-                v = (SkelVar) var;
+                bc = b[((SkelVar) var).id];
             } else {
                 SkelVar[] temp = (SkelVar[]) var;
                 int i = 0;
                 for (; i < temp.length - 1; i++) {
-                    v = temp[i];
-                    BindUniv b = d.bind[v.id];
-                    if (b.display != null) {
-                        if (hasVar(b.skel, b.display, d2))
+                    bc = b[temp[i].id];
+                    if (bc.display != null) {
+                        if (hasVar(bc.skel, bc.display, d2))
                             return true;
                     } else {
-                        if (b == this)
+                        if (bc == this)
                             return true;
                     }
                 }
-                v = temp[i];
+                bc = b[temp[i].id];
             }
-            BindUniv b = d.bind[v.id];
-            if (b.display != null) {
-                m = b.skel;
-                d = b.display;
+            if (bc.display != null) {
+                m = bc.skel;
+                d = bc.display;
             } else {
-                return (b == this);
+                return (bc == this);
             }
         }
     }

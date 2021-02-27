@@ -67,32 +67,27 @@ public abstract class Intermediate {
     /**
      * <p>Set the structure and minarg of the variables in the given term.</p>
      *
-     * @param molec  The head skeleton.
+     * @param clause The clause.
      * @param helper The helper.
      */
-    public static void setHead(Object molec, Optimization[] helper) {
-        if (!(molec instanceof SkelCompound))
-            return;
-        SkelCompound mc = (SkelCompound) molec;
+    public static void setHead(Clause clause, Optimization[] helper) {
+        SkelCompound mc = (SkelCompound) clause.head;
         for (int i = mc.args.length - 1; i >= 0; i--) {
             Object a = mc.args[i];
             if (a instanceof SkelVar) {
-                SkelVar mv = (SkelVar) a;
-                Optimization ov = helper[mv.id];
-                ov.flags = (ov.flags & ~Optimization.MASK_VAR_MARG) | i;
+                Optimization ov = helper[((SkelVar) a).id];
+                ov.minarg = (short) i;
             } else if (a instanceof SkelCompound) {
                 Object var = ((SkelCompound) a).var;
                 if (var == null)
                     continue;
                 if (var instanceof SkelVar) {
-                    SkelVar mv = (SkelVar) var;
-                    Optimization ov = helper[mv.id];
+                    Optimization ov = helper[((SkelVar) var).id];
                     ov.flags |= Optimization.MASK_VAR_HSTR;
                 } else {
                     SkelVar[] temp = (SkelVar[]) var;
                     for (int j = 0; j < temp.length; j++) {
-                        SkelVar mv = temp[j];
-                        Optimization ov = helper[mv.id];
+                        Optimization ov = helper[temp[j].id];
                         ov.flags |= Optimization.MASK_VAR_HSTR;
                     }
                 }
@@ -103,22 +98,20 @@ public abstract class Intermediate {
     /**
      * <p>Set the goals structure flag.</p>
      *
-     * @param term   The body skeleton.
+     * @param b      The body skeleton.
      * @param helper The helper.
      */
-    public static void setBody(Object term, Optimization[] helper) {
-        Object var = SupervisorCopy.getVar(term);
+    public static void setBody(Object b, Optimization[] helper) {
+        Object var = SupervisorCopy.getVar(b);
         if (var == null)
             return;
         if (var instanceof SkelVar) {
-            SkelVar mv = (SkelVar) var;
-            Optimization ov = helper[mv.id];
+            Optimization ov = helper[((SkelVar) var).id];
             ov.flags |= Optimization.MASK_VAR_BODY;
         } else {
             SkelVar[] temp = (SkelVar[]) var;
             for (int j = 0; j < temp.length; j++) {
-                SkelVar mv = temp[j];
-                Optimization ov = helper[mv.id];
+                Optimization ov = helper[temp[j].id];
                 ov.flags |= Optimization.MASK_VAR_BODY;
             }
         }

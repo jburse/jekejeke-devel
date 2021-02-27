@@ -1017,16 +1017,16 @@ public abstract class AbstractSource {
      * @param arity The arity.
      * @param fun   The name.
      * @param sa    The call-site, non null.
+     * @param copt  The create flags.
      * @param en    The engine.
-     * @param copt  The create flag.
      * @return The predicate.
      * @throws EngineMessage Shit happens.
      */
     public final Predicate defineRoutine(int arity, String fun,
                                          SkelAtom sa,
-                                         Engine en, int copt)
+                                         int copt, Engine en)
             throws EngineMessage {
-        Predicate pick = checkRoutine(arity, fun, sa, en);
+        Predicate pick = defineRoutine(arity, fun, sa, en);
         pick.usagePredicate(sa, en, copt);
         return pick;
     }
@@ -1039,9 +1039,14 @@ public abstract class AbstractSource {
      * @param sa    The call-site, non null.
      * @param en    The engine.
      * @return Some previous predicate or the new neutral predicate.
+     * @throws EngineMessage Shit happens.
      */
-    public Predicate checkRoutine(int arity, String fun,
-                                  SkelAtom sa, Engine en) {
+    public Predicate defineRoutine(int arity, String fun,
+                                   SkelAtom sa, Engine en)
+            throws EngineMessage {
+        if (arity >= Short.MAX_VALUE)
+            throw new EngineMessage(EngineMessage.representationError(
+                    EngineMessage.OP_REPRESENTATION_PRED_ARITY));
         Predicate pick;
         synchronized (this) {
             pick = ptab.get(fun, arity);

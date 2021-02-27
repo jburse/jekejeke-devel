@@ -6,7 +6,6 @@ import jekpro.model.pretty.Store;
 import jekpro.model.rope.Directive;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialLexical;
-import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.util.data.ListArray;
@@ -163,7 +162,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      * @throws EngineException Shit happens.
      */
     public boolean unify(Object alfa, Display d1,
-                                Object beta, Display d2)
+                         Object beta, Display d2)
             throws EngineException {
         for (; ; ) {
             if (alfa instanceof SkelVar) {
@@ -185,8 +184,6 @@ public class Engine extends StackElement implements Comparator<Object> {
                         }
                         if (b1 == b2)
                             return true;
-                        if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 && b2.hasVar(alfa, d1, d2))
-                            return false;
                         return b2.bindAttr(alfa, d1, this);
                     }
                     if ((visor.flags & Supervisor.MASK_VISOR_OCCHK) != 0 && b1.hasVar(beta, d2, d1))

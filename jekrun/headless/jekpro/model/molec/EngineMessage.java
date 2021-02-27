@@ -129,6 +129,7 @@ public final class EngineMessage extends Exception {
     public static final String OP_REPRESENTATION_NOT_LESS_THAN_ZERO = "not_less_than_zero";
     public static final String OP_REPRESENTATION_CHARACTER = "character";
     public static final String OP_REPRESENTATION_OCTET = "octet";
+    public static final String OP_REPRESENTATION_PRED_ARITY = "pred_arity";
 
     private static final String OP_EXISTENCE_ERROR = "existence_error"; /* ISO */
     public static final String OP_EXISTENCE_PROCEDURE = "procedure";

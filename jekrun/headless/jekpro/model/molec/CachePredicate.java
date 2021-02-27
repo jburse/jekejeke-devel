@@ -151,7 +151,7 @@ public final class CachePredicate extends AbstractCache {
             if (!Branch.OP_USER.equals(base.getFullName())) {
                 /* create name%pred */
                 return ((copt & CachePredicate.MASK_CACH_CRTE) != 0 ?
-                        base.defineRoutine(arity, sa.fun, sa, en, copt) :
+                        base.defineRoutine(arity, sa.fun, sa, copt, en) :
                         base.getRoutine(arity, sa.fun));
             } else {
                 /* create pred */
@@ -617,7 +617,7 @@ public final class CachePredicate extends AbstractCache {
             throws EngineMessage {
         Predicate pick = getRoutineUser(arity, fun, store.parent);
         if (pick == null)
-            pick = store.user.checkRoutine(arity, fun, sa, en);
+            pick = store.user.defineRoutine(arity, fun, sa, en);
         pick.usagePredicate(sa, en, copt);
         return pick;
     }
