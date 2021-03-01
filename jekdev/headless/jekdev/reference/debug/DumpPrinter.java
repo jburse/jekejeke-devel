@@ -1,6 +1,8 @@
 package jekdev.reference.debug;
 
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.PrologWriter;
+import matula.util.data.AssocSorted;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -42,6 +44,8 @@ final class DumpPrinter {
     int flags;
     PrologWriter pw;
     int level;
+    AbstractSource source;
+    AssocSorted<String, DumpReport> map;
 
     /**
      * <p>Emit level many space blocks.</p>

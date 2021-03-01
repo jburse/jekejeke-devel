@@ -1,7 +1,11 @@
 package jekdev.reference.debug;
 
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
-import jekpro.model.molec.*;
+import jekpro.model.molec.CachePredicate;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologWriter;
@@ -55,9 +59,8 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static int SPECIAL_SYS_HISTOGRAM_NEW = 2;
     private final static int SPECIAL_SYS_HISTOGRAM_SHOW = 3;
 
+    private final static String CODE_UNIFY_HEAD = "unify_head";
     private final static String CODE_UNIFY_TERM = "unify_term";
-    private final static String CODE_UNIFY_MIXED = "unify_mixed";
-    private final static String CODE_UNIFY_LINEAR = "unify_linear";
     private final static String CODE_UNIFY_COMBO = "unify_combo";
 
     private final static String CODE_GOAL_CALL = "goal_call";
@@ -144,7 +147,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
                 map = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
-                if (!BindUniv.unifyTerm(map, Display.DISPLAY_CONST, temp[0], ref, en))
+                if (!en.unify(map, Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
             case SPECIAL_SYS_HISTOGRAM_SHOW:
@@ -250,40 +253,39 @@ public final class SpecialFriendly extends AbstractSpecial {
             throws IOException, EngineMessage, EngineException {
         fp.count = 0;
         Writer wr = fp.pw.getWriter();
-        if (clause.intargs != null) {
-            for (int l = 0; l < clause.intargs.length; l++) {
-                int n = clause.intargs[l];
-                switch (n) {
-                    case Optimization.UNIFY_SKIP:
-                        break;
+        short[] arr = clause.intargs;
+        if (arr == null) {
+            fp.friendlyCount();
+            wr.write(SpecialFriendly.CODE_UNIFY_HEAD);
+            wr.write('\n');
+            wr.flush();
+        } else {
+            int l = 0;
+            while (l < arr.length) {
+                switch (arr[l++]) {
                     case Optimization.UNIFY_TERM:
-                    case Optimization.UNIFY_MIXED:
-                    case Optimization.UNIFY_LINEAR:
+                        int k = arr[l++];
                         fp.friendlyCount();
-                        if (n == Optimization.UNIFY_TERM) {
-                            wr.write(SpecialFriendly.CODE_UNIFY_TERM);
-                        } else if (n == Optimization.UNIFY_MIXED) {
-                            wr.write(SpecialFriendly.CODE_UNIFY_MIXED);
-                        } else {
-                            wr.write(SpecialFriendly.CODE_UNIFY_LINEAR);
-                        }
+                        wr.write(SpecialFriendly.CODE_UNIFY_TERM);
                         wr.write(" _");
-                        wr.write(Integer.toString(l));
+                        wr.write(Integer.toString(k));
                         wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[l], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[k], ref);
+                        wr.write('\n');
+                        wr.flush();
+                        break;
+                    case Optimization.UNIFY_COMBO:
+                        fp.friendlyCount();
+                        wr.write(SpecialFriendly.CODE_UNIFY_COMBO);
+                        wr.write(" _");
+                        wr.write(Integer.toString(arr[l++]));
+                        wr.write(", _");
+                        wr.write(Integer.toString(arr[l++]));
                         wr.write('\n');
                         wr.flush();
                         break;
                     default:
-                        fp.friendlyCount();
-                        wr.write(SpecialFriendly.CODE_UNIFY_COMBO);
-                        wr.write(" _");
-                        wr.write(Integer.toString(n));
-                        wr.write(", _");
-                        wr.write(Integer.toString(l));
-                        wr.write('\n');
-                        wr.flush();
-                        break;
+                        throw new IllegalArgumentException("illegal code");
                 }
             }
         }
@@ -339,14 +341,14 @@ public final class SpecialFriendly extends AbstractSpecial {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
                     disassembleBody(help, ref, fp);
-                } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
-                        || type == Directive.TYPE_CTRL_SBGN) {
+                } else if ((type = SpecialBody.controlType(branch)) == SpecialBody.TYPE_CTRL_BEGN
+                        || type == SpecialBody.TYPE_CTRL_SBGN) {
                     /* */
-                } else if (type == Directive.TYPE_CTRL_CMMT
-                        || type == Directive.TYPE_CTRL_SCMT) {
+                } else if (type == SpecialBody.TYPE_CTRL_CMMT
+                        || type == SpecialBody.TYPE_CTRL_SCMT) {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
-                    if (type == Directive.TYPE_CTRL_CMMT) {
+                    if (type == SpecialBody.TYPE_CTRL_CMMT) {
                         wr.write(SpecialFriendly.CODE_CUT_THEN);
                     } else {
                         wr.write(SpecialFriendly.CODE_CUT_SOFT_THEN);
@@ -356,10 +358,10 @@ public final class SpecialFriendly extends AbstractSpecial {
                 } else {
                     Writer wr = fp.pw.getWriter();
                     fp.friendlyCount();
-                    if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                        wr.write(SpecialFriendly.CODE_GOAL_CALL);
-                    } else {
+                    if ((temp.flags & Goal.MASK_GOAL_CEND) != 0) {
                         wr.write(SpecialFriendly.CODE_GOAL_LAST);
+                    } else {
+                        wr.write(SpecialFriendly.CODE_GOAL_CALL);
                     }
                     wr.write(' ');
                     fp.pw.unparseStatement(branch, ref);
@@ -435,27 +437,25 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @param map    The friendly report.
      * @param clause The clause.
      */
-    private static void collectClause(Clause clause, AssocSorted<String, FriendlyReport> map) {
-        if (clause.intargs != null) {
-            for (int l = 0; l < clause.intargs.length; l++) {
-                int n = clause.intargs[l];
-                switch (n) {
-                    case Optimization.UNIFY_SKIP:
-                        break;
+    private static void collectClause(Clause clause,
+                                      AssocSorted<String, FriendlyReport> map) {
+        short[] arr = clause.intargs;
+        if (arr == null) {
+            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_HEAD);
+        } else {
+            int l = 0;
+            while (l < arr.length) {
+                switch (arr[l++]) {
                     case Optimization.UNIFY_TERM:
-                    case Optimization.UNIFY_MIXED:
-                    case Optimization.UNIFY_LINEAR:
-                        if (n == Optimization.UNIFY_TERM) {
-                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_TERM);
-                        } else if (n == Optimization.UNIFY_MIXED) {
-                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_MIXED);
-                        } else {
-                            FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_LINEAR);
-                        }
+                        l++;
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_TERM);
                         break;
-                    default:
+                    case Optimization.UNIFY_COMBO:
+                        l += 2;
                         FriendlyReport.increment(map, SpecialFriendly.CODE_UNIFY_COMBO);
                         break;
+                    default:
+                        throw new IllegalArgumentException("illegal code");
                 }
             }
         }
@@ -495,21 +495,21 @@ public final class SpecialFriendly extends AbstractSpecial {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
                     collectBody(help, map);
-                } else if ((type = Directive.controlType(branch)) == Directive.TYPE_CTRL_BEGN
-                        || type == Directive.TYPE_CTRL_SBGN) {
+                } else if ((type = SpecialBody.controlType(branch)) == SpecialBody.TYPE_CTRL_BEGN
+                        || type == SpecialBody.TYPE_CTRL_SBGN) {
                     /* */
-                } else if (type == Directive.TYPE_CTRL_CMMT
-                        || type == Directive.TYPE_CTRL_SCMT) {
-                    if (type == Directive.TYPE_CTRL_CMMT) {
+                } else if (type == SpecialBody.TYPE_CTRL_CMMT
+                        || type == SpecialBody.TYPE_CTRL_SCMT) {
+                    if (type == SpecialBody.TYPE_CTRL_CMMT) {
                         FriendlyReport.increment(map, SpecialFriendly.CODE_CUT_THEN);
                     } else {
                         FriendlyReport.increment(map, SpecialFriendly.CODE_CUT_SOFT_THEN);
                     }
                 } else {
-                    if ((temp.flags & Goal.MASK_GOAL_CEND) == 0) {
-                        FriendlyReport.increment(map, SpecialFriendly.CODE_GOAL_CALL);
-                    } else {
+                    if ((temp.flags & Goal.MASK_GOAL_CEND) != 0) {
                         FriendlyReport.increment(map, SpecialFriendly.CODE_GOAL_LAST);
+                    } else {
+                        FriendlyReport.increment(map, SpecialFriendly.CODE_GOAL_CALL);
                     }
                 }
             } while (temp != dire.last);

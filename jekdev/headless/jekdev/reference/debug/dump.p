@@ -116,16 +116,15 @@ jiti_skipped(I) :-
 
 % jiti_inspect(+Pattern, +Integer)
 :- private jiti_inspect/2.
-
 jiti_inspect(I, F) :- ground(I), !,
    jiti_inspect2(I, F).
 jiti_inspect(I, F) :-
-   setof(I, U^(sys_listing_user(U),
+   bagof(I, (sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_set(I)), B),
+      sys_has_clause(I, U)), B),
    member(I, B),
    sys_intermediate_item_sep(I),
-   sys_jiti_inspect(I, F), nl,
+   sys_jiti_inspect(I, U, F), nl,
    fail.
 jiti_inspect(_, _).
 
@@ -134,15 +133,15 @@ jiti_inspect(_, _).
 jiti_inspect2(I, F) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_set(I),
+   sys_has_clause(I, U),
    sys_intermediate_item_sep(I),
-   sys_jiti_inspect(I, F), nl,
+   sys_jiti_inspect(I, U, F), nl,
    fail.
 jiti_inspect2(_, _).
 
-% sys_jiti_inspect(+Indicator, +Integer)
-:- private sys_jiti_inspect/2.
-:- special(sys_jiti_inspect/2, 'SpecialDump', 0).
+% sys_jiti_inspect(+Indicator, +Source, +Integer)
+:- private sys_jiti_inspect/3.
+:- special(sys_jiti_inspect/3, 'SpecialDump', 0).
 
 /**
  * jiti_summary:
@@ -170,23 +169,35 @@ jiti_summary(I) :-
 jiti_summary(I, M) :- ground(I), !,
    jiti_summary2(I, M).
 jiti_summary(I, M) :-
-   setof(I, U^(sys_listing_user(U),
+   bagof(I, (sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_set(I)), B),
+      sys_has_clause(I, U)), B),
    member(I, B),
-   sys_jiti_recap(I, M),
+   sys_jiti_recap(I, U, M),
    fail.
 jiti_summary(_, _).
 
-% jiti_summary2(+Indicator, +Map)
+% jiti_summary2(+Indicator, , +Map)
 :- private jiti_summary2/2.
 jiti_summary2(I, M) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_set(I),
-   sys_jiti_recap(I, M),
+   sys_has_clause(I, U),
+   sys_jiti_recap(I, U, M),
    fail.
 jiti_summary2(_, _).
+
+% sys_jiti_recap(+Indicator, +Source, +Map)
+:- private sys_jiti_recap/3.
+:- special(sys_jiti_recap/3, 'SpecialDump', 1).
+
+% sys_averager_new(-Map)
+:- private sys_averager_new/1.
+:- special(sys_averager_new/1, 'SpecialDump', 2).
+
+% sys_averager_show(+Map)
+:- private sys_averager_show/1.
+:- special(sys_averager_show/1, 'SpecialDump', 3).
 
 /**
  * jiti_report:
@@ -206,13 +217,12 @@ jiti_report :-
 jiti_report(I) :- ground(I), !,
    jiti_report2(I).
 jiti_report(I) :-
-   setof(I, U^(sys_listing_user(U),
+   bagof(I, (sys_listing_user(U),
       sys_intermediate_item_idx(U, I),
-      sys_has_set(I)), B),
+      sys_has_clause(I, U)), B),
    member(I, B),
    sys_averager_new(M),
-   sys_jiti_recap(I, M),
-   sys_averager_has(M),
+   sys_jiti_recap(I, U, M),
    sys_intermediate_item_sep(I),
    sys_averager_show(M), nl,
    fail.
@@ -223,30 +233,10 @@ jiti_report(_).
 jiti_report2(I) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
-   sys_has_set(I),
+   sys_has_clause(I, U),
    sys_averager_new(M),
-   sys_jiti_recap(I, M),
-   sys_averager_has(M),
+   sys_jiti_recap(I, U, M),
    sys_intermediate_item_sep(I),
    sys_averager_show(M), nl,
    fail.
 jiti_report2(_).
-
-% sys_jiti_recap(+Indicator, +Map)
-:- private sys_jiti_recap/2.
-:- special(sys_jiti_recap/2, 'SpecialDump', 1).
-
-% sys_averager_new(-Map)
-:- private sys_averager_new/1.
-:- special(sys_averager_new/1, 'SpecialDump', 2).
-
-% sys_averager_show(+Map)
-:- private sys_averager_show/1.
-:- special(sys_averager_show/1, 'SpecialDump', 3).
-
-% sys_averager_has(+Map)
-:- private sys_averager_has/1.
-:- special(sys_averager_has/1, 'SpecialDump', 4).
-
-% sys_has_set(+Indicator)
-:- special(sys_has_set/1, 'SpecialDump', 5).

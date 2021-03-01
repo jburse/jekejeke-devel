@@ -2,6 +2,7 @@ package jekdev.model.builtin;
 
 import jekdev.reference.system.SpecialMode;
 import jekpro.frequent.standard.SupervisorCall;
+import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;

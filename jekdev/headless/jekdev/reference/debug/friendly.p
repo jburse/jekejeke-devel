@@ -20,13 +20,13 @@
  * ?- vm_list(hello/1).
  * hello(X) :-
  *    format('Hello %s\n', [X]).
- * 0  unify_var _0, X
+ * 0  unify_strong _0, X
  * 1  last_goal format('Hello %s\n', [X])
  *
  * ?- vm_hooked(hello/1).
  * hello(X) :-
  *    format('Hello %s\n', [X]).
- * 0  unify_var _0, X
+ * 0  unify_strong _0, X
  * 1  call_goal sys_at
  * 2  call_goal sys_in
  * 3  last_goal format('Hello %s\n', [X])
@@ -44,15 +44,15 @@
  * Yes
  *
  * ?- vm_summary.
- *  cut_then        1
- *  flow_trust      1
- *  flow_try        1
- *  goal_call       228
- *  goal_last       110
- *  unify_combo     14
- *  unify_linear    388
- *  unify_mixed     8
- *  unify_term      41
+ * cut_then	1
+ * flow_trust	1
+ * flow_try	1
+ * goal_call	228
+ * goal_last	110
+ * unify_combo	14
+ * unify_strong	30
+ * unify_term	293
+ * unify_weak	114
  *
  * The permanently used optimizations are extra variables and disjunction
  * inlining. The predicate vm_summary/[0,1] produces an overall statistic
@@ -156,7 +156,7 @@ vm_disassemble(I, F) :-
    sys_show_base(U),
    sys_show_import(U), nl,
    member(I, B),
-   sys_vm_disassemble(I, U, F),
+   sys_vm_disassemble(I, U, F), nl,
    fail.
 vm_disassemble(_, _).
 
@@ -167,7 +167,7 @@ vm_disassemble2(I, F) :-
    sys_listing_user_chk(U),
    sys_has_clause(I, U),
    sys_show_base(U), nl,
-   sys_vm_disassemble(I, U, F),
+   sys_vm_disassemble(I, U, F), nl,
    fail.
 vm_disassemble2(_, _).
 
@@ -222,6 +222,18 @@ vm_summary2(I, M) :-
    fail.
 vm_summary2(_, _).
 
+% sys_vm_collect(+Indicator, +Source, +Map)
+:- private sys_vm_collect/3.
+:- special(sys_vm_collect/3, 'SpecialFriendly', 1).
+
+% sys_historgram_new(-Map)
+:- private sys_historgram_new/1.
+:- special(sys_historgram_new/1, 'SpecialFriendly', 2).
+
+% sys_historgram_show(+Map)
+:- private sys_historgram_show/1.
+:- special(sys_historgram_show/1, 'SpecialFriendly', 3).
+
 /**
  * vm_report:
  * vm_report(P):
@@ -230,12 +242,13 @@ vm_summary2(_, _).
  */
 % vm_report
 :- public vm_report/0.
+:- sys_notrace vm_report/0.
 vm_report :-
    vm_report(_).
-:- set_predicate_property(vm_report/0, sys_notrace).
 
 % vm_report(+Indicator)
 :- public vm_report/1.
+:- sys_notrace vm_report/1.
 vm_report(I) :- ground(I), !,
    vm_report2(I).
 vm_report(I) :-
@@ -251,7 +264,6 @@ vm_report(I) :-
    sys_historgram_show(M), nl,
    fail.
 vm_report(_).
-:- set_predicate_property(vm_report/1, sys_notrace).
 
 % vm_report2(+Indicator)
 :- private vm_report2/1.
@@ -266,10 +278,6 @@ vm_report2(I) :-
    sys_historgram_show(M), nl,
    fail.
 vm_report2(_).
-
-% sys_vm_collect(+Indicator, +Source, +Map)
-:- private sys_vm_collect/3.
-:- special(sys_vm_collect/3, 'SpecialFriendly', 1).
 
 /**************************************************************/
 /* Helpers                                                    */
@@ -301,11 +309,3 @@ sys_intermediate_item_idx(U, I) :-
  */
 sys_intermediate_item_sep(I) :-
    write('-------- '), writeq(I), write(' ---------'), nl.
-
-% sys_historgram_new(-Map)
-:- private sys_historgram_new/1.
-:- special(sys_historgram_new/1, 'SpecialFriendly', 2).
-
-% sys_historgram_show(+Map)
-:- private sys_historgram_show/1.
-:- special(sys_historgram_show/1, 'SpecialFriendly', 3).

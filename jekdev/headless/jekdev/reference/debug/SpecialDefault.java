@@ -126,7 +126,7 @@ public final class SpecialDefault extends AbstractSpecial {
                 case SPECIAL_SYS_SPYING:
                     temp = ((SkelCompound) en.skel).args;
                     ref = en.display;
-                    if (!BindUniv.unifyTerm(currentSpyPoints(en), Display.DISPLAY_CONST, temp[0], ref, en))
+                    if (!en.unify(currentSpyPoints(en), Display.DISPLAY_CONST, temp[0], ref))
                         return false;
                     return true;
                 case SPECIAL_SYS_NOTRACE_FRAME:
