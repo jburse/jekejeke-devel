@@ -179,4 +179,3 @@ _ =.. X :-
 % copy_term(+Term, -Term)
 :- public copy_term/2.
 :- special(copy_term/2, 'SpecialUniv', 8).
-

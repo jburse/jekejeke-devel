@@ -7,6 +7,12 @@
  * additionally declare foreign predicates. Upon consulting again
  * a source, the related declared predicates are first abolished.
  *
+ * Example:
+ * ?- [user].
+ * test :- write('Hello World!'), nl.
+ * :- test.
+ * Hello World!
+ *
  * The consult performs various style checks. The facts and rules are
  * checked for singleton variables. Singleton variables need to be
  * input in the form of anonymous variables (_). The facts and rules

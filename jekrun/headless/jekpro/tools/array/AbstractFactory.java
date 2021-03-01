@@ -77,9 +77,9 @@ public abstract class AbstractFactory {
     public Object toolinput;
     public Object tooloutput;
     public Object toolerror;
-    private ListArray<MapHash<String, AbstractFlag<Engine>>> prologflags
+    private final ListArray<MapHash<String, AbstractFlag<Engine>>> prologflags
             = new ListArray<>();
-    private ListArray<MapHash<String, AbstractFlag<Store>>> sessionflags
+    private final ListArray<MapHash<String, AbstractFlag<Store>>> sessionflags
             = new ListArray<>();
     private AbstractReflection reflection;
 

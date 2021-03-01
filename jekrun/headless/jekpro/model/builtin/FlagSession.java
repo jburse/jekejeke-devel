@@ -3,10 +3,13 @@ package jekpro.model.builtin;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
+import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
+import jekpro.model.rope.LoadOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
+import jekpro.tools.array.FlagFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
@@ -55,12 +58,18 @@ public final class FlagSession extends AbstractFlag<Store> {
     public final static String OP_SYS_LOCALE = "sys_locale";
     public final static String OP_SYS_HINT = "sys_hint";
     public final static String OP_SYS_APPLICATION = "sys_application";
+    public final static String OP_SYS_BELONGS_TO = "sys_belongs_to";
+    public final static String OP_VERBOSE = "verbose";
+    public final static String OP_SYS_GOOD_FOR = "sys_good_for";
 
     private static final int FLAG_USER_PREFS = 0;
     private static final int FLAG_BASE_URL = 1;
     private static final int FLAG_SYS_LOCALE = 2;
     private static final int FLAG_SYS_HINT = 3;
     private static final int FLAG_SYS_APPLICATION = 4;
+    private static final int FLAG_SYS_BELONGS_TO = 5;
+    private static final int FLAG_VERBOSE = 6;
+    private static final int FLAG_SYS_GOOD_FOR = 7;
 
     static {
         DEFAULT.add(OP_USER_PREFS, new FlagSession(FLAG_USER_PREFS));
@@ -68,6 +77,9 @@ public final class FlagSession extends AbstractFlag<Store> {
         DEFAULT.add(OP_SYS_LOCALE, new FlagSession(FLAG_SYS_LOCALE));
         DEFAULT.add(OP_SYS_HINT, new FlagSession(FLAG_SYS_HINT));
         DEFAULT.add(OP_SYS_APPLICATION, new FlagSession(FLAG_SYS_APPLICATION));
+        DEFAULT.add(OP_SYS_BELONGS_TO, new FlagSession(FLAG_SYS_BELONGS_TO));
+        DEFAULT.add(OP_VERBOSE, new FlagSession(FLAG_VERBOSE));
+        DEFAULT.add(OP_SYS_GOOD_FOR, new FlagSession(FLAG_SYS_GOOD_FOR));
     }
 
     /**
@@ -82,10 +94,9 @@ public final class FlagSession extends AbstractFlag<Store> {
     /**
      * <p>Retrieve the value of this flag.</p>
      *
-     * @param en The engine.
      * @return The value.
      */
-    public Object getObjFlag(Store obj, Engine en) {
+    public Object getObjFlag(Store obj) {
         switch (id) {
             case FLAG_USER_PREFS:
                 AbstractActivator activator = obj.foyer.getFramework().getActivator();
@@ -101,6 +112,20 @@ public final class FlagSession extends AbstractFlag<Store> {
             case FLAG_SYS_APPLICATION:
                 Object val = obj.foyer.getApplication();
                 return val != null ? val : AbstractFlag.OP_NULL;
+            case FLAG_SYS_BELONGS_TO:
+                val = obj.belongsto;
+                return (val != null ? val : AbstractFlag.OP_NULL);
+            case FLAG_VERBOSE:
+                int k = 0;
+                int flags = obj.foyer.getBits();
+                if ((flags & Foyer.MASK_FOYER_SMRY) != 0)
+                    k |= LoadOpts.VERBOSE_SUMMARY;
+                if ((flags & Foyer.MASK_FOYER_DTLS) != 0)
+                    k |= LoadOpts.VERBOSE_DETAILS;
+                return FlagSession.verboseToAtom(k);
+            case FLAG_SYS_GOOD_FOR:
+                val = obj.foyer.goodfor;
+                return (val != null ? val : AbstractFlag.OP_NULL);
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -111,11 +136,10 @@ public final class FlagSession extends AbstractFlag<Store> {
      *
      * @param m  The value skel.
      * @param d  The value display.
-     * @param en The engine.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setObjFlag(Store obj, Object m, Display d, Engine en)
+    public boolean setObjFlag(Store obj, Object m, Display d)
             throws EngineMessage {
         try {
             switch (id) {
@@ -139,12 +163,87 @@ public final class FlagSession extends AbstractFlag<Store> {
                     Object val = SpecialUniv.derefAndCastRefOrNull(m, d);
                     obj.foyer.setApplication(val);
                     return true;
+                case FLAG_SYS_BELONGS_TO:
+                    obj.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
+                    return true;
+                case FLAG_VERBOSE:
+                    int k = FlagSession.atomToVerbose(m, d);
+                    if ((k & LoadOpts.VERBOSE_SUMMARY) != 0) {
+                        obj.foyer.setBit(Foyer.MASK_FOYER_SMRY);
+                    } else {
+                        obj.foyer.resetBit(Foyer.MASK_FOYER_SMRY);
+                    }
+                    if ((k & LoadOpts.VERBOSE_DETAILS) != 0) {
+                        obj.foyer.setBit(Foyer.MASK_FOYER_DTLS);
+                    } else {
+                        obj.foyer.resetBit(Foyer.MASK_FOYER_DTLS);
+                    }
+                    return true;
+                case FLAG_SYS_GOOD_FOR:
+                    obj.foyer.goodfor = SpecialUniv.derefAndCastRefOrNull(m, d);
+                    return true;
                 default:
                     throw new IllegalArgumentException("illegal flag");
             }
         } catch (RuntimeException x) {
             throw Types.mapThrowable(x);
         }
+    }
+
+    /**************************************************************/
+    /* Conversion Helper                                          */
+    /**************************************************************/
+
+    /**
+     * <p>Convert an atom to a verbose. Will throw exception
+     * when the atom is not well formed.</p>
+     *
+     * @param m The verbose skeleton.
+     * @param d The verbose display.
+     * @return The verbose.
+     * @throws EngineMessage Shit happens.
+     */
+    public static int atomToVerbose(Object m, Display d)
+            throws EngineMessage {
+        String fun = SpecialUniv.derefAndCastString(m, d);
+        if (fun.equals(OP_OFF)) {
+            return 0;
+        } else if (fun.equals(LoadOpts.OP_VERBOSE_DETAILS)) {
+            return LoadOpts.VERBOSE_DETAILS;
+        } else if (fun.equals(LoadOpts.OP_VERBOSE_SUMMARY)) {
+            return LoadOpts.VERBOSE_SUMMARY;
+        } else if (fun.equals(OP_ON)) {
+            return LoadOpts.VERBOSE_DETAILS + LoadOpts.VERBOSE_SUMMARY;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    EngineMessage.OP_DOMAIN_VERBOSE_OPTION, m), d);
+        }
+    }
+
+    /**
+     * <p>Convert verbose to an atom.</p>
+     * @param k The verbose.
+     * @return The atom.
+     */
+    public static SkelAtom verboseToAtom(int k) {
+        String name;
+        switch (k) {
+            case 0:
+                name = OP_OFF;
+                break;
+            case LoadOpts.VERBOSE_SUMMARY:
+                name = LoadOpts.OP_VERBOSE_SUMMARY;
+                break;
+            case LoadOpts.VERBOSE_DETAILS:
+                name = LoadOpts.OP_VERBOSE_DETAILS;
+                break;
+            case LoadOpts.VERBOSE_SUMMARY + LoadOpts.VERBOSE_DETAILS:
+                name = OP_ON;
+                break;
+            default:
+                throw new IllegalArgumentException("illegal verbosity");
+        }
+        return new SkelAtom(name);
     }
 
 }

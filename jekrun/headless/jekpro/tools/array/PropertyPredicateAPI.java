@@ -66,6 +66,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static String OP_META_PREDICATE = "meta_predicate";
     private final static String OP_SYS_TABLED = "sys_tabled";
     private final static String OP_SYS_READWRITE_LOCK = "sys_readwrite_lock";
+    private final static String OP_SYS_UNTABLED = "sys_untabled";
 
     private final static int PROP_OVERRIDE = 0;
     private final static int PROP_SYS_META_PREDICATE = 1;
@@ -74,6 +75,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
     private final static int PROP_META_PREDICATE = 4;
     private final static int PROP_SYS_TABLED = 5;
     private final static int PROP_SYS_READWRITE_LOCK = 6;
+    private final static int PROP_SYS_UNTABLED = 7;
 
     static {
         DEFAULT.add(new StoreKey(OP_OVERRIDE, 1), new PropertyPredicateAPI(PROP_OVERRIDE,
@@ -86,6 +88,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 AbstractProperty.MASK_PROP_SHOW | AbstractProperty.MASK_PROP_META));
         DEFAULT.add(new StoreKey(OP_SYS_TABLED, 0), new PropertyPredicateAPI(PROP_SYS_TABLED));
         DEFAULT.add(new StoreKey(OP_SYS_READWRITE_LOCK, 1), new PropertyPredicateAPI(PROP_SYS_READWRITE_LOCK));
+        DEFAULT.add(new StoreKey(OP_SYS_UNTABLED, 0), new PropertyPredicateAPI(PROP_SYS_UNTABLED));
     }
 
 
@@ -165,6 +168,12 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
                 } else {
                     return AbstractBranch.FALSE_PROPERTY;
                 }
+            case PROP_SYS_UNTABLED:
+                if ((pick.getBits() & Predicate.MASK_PRED_UTBL) != 0) {
+                    return new Object[]{new SkelAtom(OP_SYS_UNTABLED)};
+                } else {
+                    return AbstractBranch.FALSE_PROPERTY;
+                }
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -210,6 +219,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             case PROP_SYS_READWRITE_LOCK:
                 /* can't modify */
                 return false;
+            case PROP_SYS_UNTABLED:
+                pick.setBit(Predicate.MASK_PRED_UTBL);
+                return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -255,6 +267,9 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             case PROP_SYS_READWRITE_LOCK:
                 /* can't modify */
                 return false;
+            case PROP_SYS_UNTABLED:
+                pick.resetBit(Predicate.MASK_PRED_UTBL);
+                return true;
             default:
                 throw new IllegalArgumentException("illegal prop");
         }
@@ -294,7 +309,7 @@ public final class PropertyPredicateAPI extends AbstractProperty<Predicate> {
             res.toArray(vals);
             return vals;
         } else {
-            if (id < PROP_SYS_META_PREDICATE || id > PROP_SYS_READWRITE_LOCK)
+            if (id < PROP_SYS_META_PREDICATE || id > PROP_SYS_UNTABLED)
                 throw new IllegalArgumentException("illegal prop");
             return null;
         }

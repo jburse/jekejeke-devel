@@ -2,6 +2,7 @@ package jekpro.model.rope;
 
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.AbstractFlag;
+import jekpro.model.builtin.FlagSession;
 import jekpro.model.builtin.InterfaceInit;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CachePredicate;
@@ -506,7 +507,7 @@ public final class LoadOpts extends LoadForce {
                 } else if (en.skel instanceof SkelCompound &&
                         ((SkelCompound) en.skel).args.length == 1 &&
                         ((SkelCompound) en.skel).sym.fun.equals(LoadOpts.OP_VERBOSE)) {
-                    int verb = LoadOpts.atomToVerbose(((SkelCompound) en.skel).args[0], en.display);
+                    int verb = FlagSession.atomToVerbose(((SkelCompound) en.skel).args[0], en.display);
                     if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
                         setFlags(getFlags() | LoadOpts.MASK_LOAD_DTLS);
                     } else {
@@ -582,32 +583,6 @@ public final class LoadOpts extends LoadForce {
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_ACTION_OPTION, m), d);
-        }
-    }
-
-    /**
-     * <p>Convert an atom to a verbose. Will throw exception
-     * when the atom is not well formed.</p>
-     *
-     * @param m The verbose skeleton.
-     * @param d The verbose display.
-     * @return The verbose.
-     * @throws EngineMessage Shit happens.
-     */
-    public static int atomToVerbose(Object m, Display d)
-            throws EngineMessage {
-        String fun = SpecialUniv.derefAndCastString(m, d);
-        if (fun.equals(AbstractFlag.OP_OFF)) {
-            return 0;
-        } else if (fun.equals(OP_VERBOSE_DETAILS)) {
-            return VERBOSE_DETAILS;
-        } else if (fun.equals(OP_VERBOSE_SUMMARY)) {
-            return VERBOSE_SUMMARY;
-        } else if (fun.equals(AbstractFlag.OP_ON)) {
-            return VERBOSE_DETAILS + VERBOSE_SUMMARY;
-        } else {
-            throw new EngineMessage(EngineMessage.domainError(
-                    EngineMessage.OP_DOMAIN_VERBOSE_OPTION, m), d);
         }
     }
 

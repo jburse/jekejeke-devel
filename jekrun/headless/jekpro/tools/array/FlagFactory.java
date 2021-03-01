@@ -1,7 +1,7 @@
 package jekpro.tools.array;
 
 import jekpro.model.builtin.AbstractFlag;
-import jekpro.model.builtin.Flag;
+import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
@@ -60,14 +60,12 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     public final static String OP_SYS_CUR_OUTPUT = "sys_cur_output";
     public final static String OP_SYS_CUR_ERROR = "sys_cur_error";
     public final static String OP_SYS_ATTACHED_TO = "sys_attached_to";
-    public final static String OP_SYS_GOOD_FOR = "sys_good_for";
     public final static String OP_SYS_CPU_COUNT = "sys_cpu_count";
     public final static String OP_SYS_RUNTIME_VERSION = "sys_runtime_version";
-    public final static String OP_VERBOSE = "verbose";
     public final static String OP_SYS_TOOL_INPUT = "sys_tool_input";
     public final static String OP_SYS_TOOL_OUTPUT = "sys_tool_output";
     public final static String OP_SYS_TOOL_ERROR = "sys_tool_error";
-    public final static String OP_SYS_BELONGS_TO = "sys_belongs_to";
+    public final static String OP_MAX_PROCEDURE_ARITY = "max_procedure_arity";
     public final static String OP_BOUNDED = "bounded";
     public final static String OP_INTEGER_ROUNDING_FUNCTION = "integer_rounding_function";
     public final static String OP_CHAR_CONVERSION = "char_conversion";
@@ -80,20 +78,18 @@ public final class FlagFactory extends AbstractFlag<Engine> {
     private static final int FLAG_SYS_CUR_OUTPUT = 2;
     private static final int FLAG_SYS_CUR_ERROR = 3;
     private static final int FLAG_SYS_ATTACHED_TO = 4;
-    private static final int FLAG_SYS_GOOD_FOR = 5;
-    private static final int FLAG_SYS_CPU_COUNT = 6;
-    private static final int FLAG_SYS_RUNTIME_VERSION = 7;
-    private static final int FLAG_VERBOSE = 8;
-    private static final int FLAG_SYS_TOOL_INPUT = 9;
-    private static final int FLAG_SYS_TOOL_OUTPUT = 10;
-    private static final int FLAG_SYS_TOOL_ERROR = 11;
-    private static final int FLAG_SYS_BELONGS_TO = 12;
-    private static final int FLAG_BOUNDED = 13;
-    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 14;
-    private static final int FLAG_CHAR_CONVERSION = 15;
-    private static final int FLAG_MAX_ARITY = 16;
-    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 17;
-    private static final int FLAG_MAX_CODE = 18;
+    private static final int FLAG_SYS_CPU_COUNT = 5;
+    private static final int FLAG_SYS_RUNTIME_VERSION = 6;
+    private static final int FLAG_SYS_TOOL_INPUT = 7;
+    private static final int FLAG_SYS_TOOL_OUTPUT = 8;
+    private static final int FLAG_SYS_TOOL_ERROR = 9;
+    private static final int FLAG_MAX_PROCEDURE_ARITY = 10;
+    private static final int FLAG_BOUNDED = 11;
+    private static final int FLAG_INTEGER_ROUNDING_FUNCTION = 12;
+    private static final int FLAG_CHAR_CONVERSION = 13;
+    private static final int FLAG_MAX_ARITY = 14;
+    private static final int FLAG_FLOAT_ROUNDING_FUNCTION = 15;
+    private static final int FLAG_MAX_CODE = 16;
 
     /**
      * <p>Create a flag.</p>
@@ -110,14 +106,12 @@ public final class FlagFactory extends AbstractFlag<Engine> {
         DEFAULT.add(OP_SYS_CUR_OUTPUT, new FlagFactory(FLAG_SYS_CUR_OUTPUT));
         DEFAULT.add(OP_SYS_CUR_ERROR, new FlagFactory(FLAG_SYS_CUR_ERROR));
         DEFAULT.add(OP_SYS_ATTACHED_TO, new FlagFactory(FLAG_SYS_ATTACHED_TO));
-        DEFAULT.add(OP_SYS_GOOD_FOR, new FlagFactory(FLAG_SYS_GOOD_FOR));
         DEFAULT.add(OP_SYS_CPU_COUNT, new FlagFactory(FLAG_SYS_CPU_COUNT));
         DEFAULT.add(OP_SYS_RUNTIME_VERSION, new FlagFactory(FLAG_SYS_RUNTIME_VERSION));
-        DEFAULT.add(OP_VERBOSE, new FlagFactory(FLAG_VERBOSE));
         DEFAULT.add(OP_SYS_TOOL_INPUT, new FlagFactory(FLAG_SYS_TOOL_INPUT));
         DEFAULT.add(OP_SYS_TOOL_OUTPUT, new FlagFactory(FLAG_SYS_TOOL_OUTPUT));
         DEFAULT.add(OP_SYS_TOOL_ERROR, new FlagFactory(FLAG_SYS_TOOL_ERROR));
-        DEFAULT.add(OP_SYS_BELONGS_TO, new FlagFactory(FLAG_SYS_BELONGS_TO));
+        DEFAULT.add(OP_MAX_PROCEDURE_ARITY, new FlagFactory(FLAG_MAX_PROCEDURE_ARITY));
         DEFAULT.add(OP_BOUNDED, new FlagFactory(FLAG_BOUNDED));
         DEFAULT.add(OP_INTEGER_ROUNDING_FUNCTION, new FlagFactory(FLAG_INTEGER_ROUNDING_FUNCTION));
         DEFAULT.add(OP_CHAR_CONVERSION, new FlagFactory(FLAG_CHAR_CONVERSION));
@@ -145,9 +139,6 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_SYS_ATTACHED_TO:
                 Object val = en.visor.attachedto;
                 return val != null ? val : AbstractFlag.OP_NULL;
-            case FLAG_SYS_GOOD_FOR:
-                val = en.store.foyer.goodfor;
-                return val != null ? val : AbstractFlag.OP_NULL;
             case FLAG_SYS_CPU_COUNT:
                 return Integer.valueOf(Runtime.getRuntime().availableProcessors());
             case FLAG_SYS_RUNTIME_VERSION:
@@ -156,39 +147,14 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                 if (k != -1)
                     name = name.substring(0, k);
                 return name + ", " + System.getProperty("java.version");
-            case FLAG_VERBOSE:
-                k = 0;
-                int flags = en.store.foyer.getBits();
-                if ((flags & Foyer.MASK_FOYER_SMRY) != 0)
-                    k |= LoadOpts.VERBOSE_SUMMARY;
-                if ((flags & Foyer.MASK_FOYER_DTLS) != 0)
-                    k |= LoadOpts.VERBOSE_DETAILS;
-                switch (k) {
-                    case 0:
-                        name = AbstractFlag.OP_OFF;
-                        break;
-                    case LoadOpts.VERBOSE_SUMMARY:
-                        name = LoadOpts.OP_VERBOSE_SUMMARY;
-                        break;
-                    case LoadOpts.VERBOSE_DETAILS:
-                        name = LoadOpts.OP_VERBOSE_DETAILS;
-                        break;
-                    case LoadOpts.VERBOSE_SUMMARY + LoadOpts.VERBOSE_DETAILS:
-                        name = AbstractFlag.OP_ON;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("illegal verbosity");
-                }
-                return new SkelAtom(name);
             case FLAG_SYS_TOOL_INPUT:
                 return en.store.foyer.getFactory().toolinput;
             case FLAG_SYS_TOOL_OUTPUT:
                 return en.store.foyer.getFactory().tooloutput;
             case FLAG_SYS_TOOL_ERROR:
                 return en.store.foyer.getFactory().toolerror;
-            case FLAG_SYS_BELONGS_TO:
-                val = en.store.belongsto;
-                return val != null ? val : AbstractFlag.OP_NULL;
+            case FLAG_MAX_PROCEDURE_ARITY:
+                return Integer.valueOf(Short.MAX_VALUE);
             case FLAG_BOUNDED:
                 return new SkelAtom(AbstractFlag.OP_FALSE);
             case FLAG_INTEGER_ROUNDING_FUNCTION:
@@ -239,28 +205,12 @@ public final class FlagFactory extends AbstractFlag<Engine> {
             case FLAG_SYS_ATTACHED_TO:
                 en.visor.attachedto = SpecialUniv.derefAndCastRefOrNull(m, d);
                 return true;
-            case FLAG_SYS_GOOD_FOR:
-                en.store.foyer.goodfor = SpecialUniv.derefAndCastRefOrNull(m, d);
-                return true;
             case FLAG_SYS_CPU_COUNT:
                 /* can't modify */
                 return false;
             case FLAG_SYS_RUNTIME_VERSION:
                 /* can't modify */
                 return false;
-            case FLAG_VERBOSE:
-                int verb = LoadOpts.atomToVerbose(m, d);
-                if ((verb & LoadOpts.VERBOSE_SUMMARY) != 0) {
-                    en.store.foyer.setBit(Foyer.MASK_FOYER_SMRY);
-                } else {
-                    en.store.foyer.resetBit(Foyer.MASK_FOYER_SMRY);
-                }
-                if ((verb & LoadOpts.VERBOSE_DETAILS) != 0) {
-                    en.store.foyer.setBit(Foyer.MASK_FOYER_DTLS);
-                } else {
-                    en.store.foyer.resetBit(Foyer.MASK_FOYER_DTLS);
-                }
-                return true;
             case FLAG_SYS_TOOL_INPUT:
                 m = SpecialUniv.derefAndCastRef(m, d);
                 checkRead(m);
@@ -276,9 +226,7 @@ public final class FlagFactory extends AbstractFlag<Engine> {
                 checkWrite(m);
                 en.store.foyer.getFactory().toolerror = m;
                 return true;
-            case FLAG_SYS_BELONGS_TO:
-                en.store.belongsto = SpecialUniv.derefAndCastRefOrNull(m, d);
-                return true;
+            case FLAG_MAX_PROCEDURE_ARITY:
             case FLAG_BOUNDED:
             case FLAG_INTEGER_ROUNDING_FUNCTION:
             case FLAG_CHAR_CONVERSION:

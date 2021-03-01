@@ -104,7 +104,7 @@ public final class ForeignEngine {
             return af.getObjFlag(en, en);
         AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
         if (af2 != null)
-            return af2.getObjFlag(en.store, null);
+            return af2.getObjFlag(en.store);
         throw new InterpreterMessage(InterpreterMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_FLAG, flag));
     }
@@ -131,7 +131,7 @@ public final class ForeignEngine {
             }
             AbstractFlag<Store> af2 = findSessionFlag(flag, en.store);
             if (af2 != null) {
-                if (!af2.setObjFlag(en.store, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), null))
+                if (!af2.setObjFlag(en.store, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val)))
                     throw new EngineMessage(EngineMessage.permissionError(
                             EngineMessage.OP_PERMISSION_MODIFY,
                             EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
@@ -323,7 +323,7 @@ public final class ForeignEngine {
     public static Object getSessionFlag(String flag, Store store) {
         AbstractFlag<Store> af = findSessionFlag(flag, store);
         if (af != null)
-            return af.getObjFlag(store, null);
+            return af.getObjFlag(store);
         return null;
     }
 
@@ -342,7 +342,7 @@ public final class ForeignEngine {
             throws EngineMessage {
         AbstractFlag<Store> af = findSessionFlag(flag, store);
         if (af != null) {
-            if (!af.setObjFlag(store, m, d, null))
+            if (!af.setObjFlag(store, m, d))
                 throw new EngineMessage(EngineMessage.permissionError(
                         EngineMessage.OP_PERMISSION_MODIFY,
                         EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
