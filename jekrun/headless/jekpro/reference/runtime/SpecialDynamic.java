@@ -1,14 +1,15 @@
 package jekpro.reference.runtime;
 
 import jekpro.frequent.basic.SpecialProxy;
+import jekpro.frequent.experiment.SpecialRef;
+import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.Branch;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.Predicate;
+import jekpro.model.inter.*;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
+import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.ForeignPath;
@@ -18,7 +19,10 @@ import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapEntry;
+import matula.util.data.MapHash;
+import matula.util.data.MapHashLink;
 
 import java.io.IOException;
 
@@ -107,14 +111,14 @@ public final class SpecialDynamic extends AbstractSpecial {
                 SpecialDynamic.defineGroupLocal(pick, en);
                 return true;
             case SPECIAL_CLAUSE:
-                return AbstractDefined.searchKnowledgebase(
+                return searchKnowledgebase(
                         AbstractDefined.OPT_CHCK_ASSE, en);
             case SPECIAL_ASSERTA:
-                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
+                enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
                 return true;
             case SPECIAL_ASSERTZ:
-                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
+                enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE | AbstractDefined.OPT_ACTI_BOTT, en);
                 return true;
             case SPECIAL_ABOLISH_PREDICATE:
@@ -136,6 +140,119 @@ public final class SpecialDynamic extends AbstractSpecial {
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
+    }
+
+    /**
+     * <p>Enhance the knowledge base by a new clause.</p>
+     * <p>The term is passed via the engine skel and display.</p>
+     * <p>UInderstood flags:</p>
+     * <ul>
+     * <li><b>OPT_ARGS_ASOP:</b> The term has assert options.</li>
+     * <li><b>MASK_OPER_DYNA:</b> Predicate should be dynamic.</li>
+     * <li><b>MASK_OPER_THRE:</b> Predicate should be thread_local.</li>
+     * <li><b>OPT_ACTI_BOTT:</b> The clause should be added at the end.</li>
+     * </ul>
+     *
+     * @param flags The flags.
+     * @param en    The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static void enhanceKnowledgebase(int flags, Engine en)
+            throws EngineMessage, EngineException {
+        Object[] temp = ((SkelCompound) en.skel).args;
+        Display ref = en.display;
+        SupervisorCopy ec = en.visor.getCopy();
+        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
+            ec.vars = null;
+            ec.anon = null;
+            ec.flags = SupervisorCopy.MASK_COPY_SING;
+            Object molec = ec.copyTermNew(temp[0], ref);
+            MapHash<BindUniv, String> print =
+                    SpecialRef.decodeAssertOptions(temp[1], ref, en);
+            MapHashLink<String, SkelVar> vars =
+                    SupervisorCopy.copyVarsUniv(ec.vars, print);
+            MapHashLink<String, SkelVar> anon =
+                    SupervisorCopy.copyVarsUniv(ec.anon, print);
+            ec.vars = null;
+            ec.anon = null;
+            Object term = Clause.clauseToHead(molec, en);
+            PrologReader.checkSingleton(term, anon, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
+            clause.vars = vars;
+            clause.assertRef(flags, en);
+        } else {
+            ec.vars = null;
+            ec.flags = 0;
+            Object molec = ec.copyTermNew(temp[0], ref);
+            ec.vars = null;
+            Object term = Clause.clauseToHead(molec, en);
+            Clause clause = Clause.determineCompiled(flags, term, molec, en);
+            clause.assertRef(flags, en);
+        }
+    }
+
+    /**
+     * <p>Search the knowledge base.</p>
+     * <p>The search term is passed via the engine skel and display.</p>
+     * <p>The following flags are recognized:</p>
+     * <ul>
+     * <li><b>OPT_ACTI_RETR:</b> Retract found clauses and one term argument.</li>
+     * <li><b>MASK_OPER_CHWR:</b> Generate a write error instead of a read error.</li>
+     * <li><b>MASK_OPER_DYNA:</b> Predicate should be accessible.</li>
+     * <li><b>OPT_RSLT_CREF:</b> Return clause reference in last argument.</li>
+     * <li><b>OPT_RSLT_FRME:</b> Return frame reference in last argument.</li>
+     * </ul>
+     *
+     * @param flags The flags.
+     * @param en    The engine.
+     * @return True if the predicate succeeded, otherwise false.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    public static boolean searchKnowledgebase(int flags, Engine en)
+            throws EngineMessage, EngineException {
+        Object[] temp = ((SkelCompound) en.skel).args;
+        Display ref = en.display;
+        /* detect term and body */
+        SpecialLogic.colonToCallable(temp[0], ref, true, en);
+        Object head = en.skel;
+        Display refhead = en.display;
+
+        /* check predicate existence and visibility */
+        CachePredicate cp = StackElement.callableToPredicate(head, en);
+        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
+            EngineMessage.checkCallable(head, refhead);
+            return false;
+        }
+        Predicate pick = cp.pick;
+        /* check predicate modify/access */
+        AbstractDelegate fun = pick.del;
+        if ((flags & AbstractDefined.OPT_ACTI_WRIT) != 0) {
+            switch (flags & AbstractDefined.OPT_CHCK_MASK) {
+                case AbstractDefined.OPT_CHCK_DEFN:
+                    AbstractDefined.checkDefinedWrite(fun, pick);
+                    break;
+                case AbstractDefined.OPT_CHCK_ASSE:
+                    AbstractDefined.checkAssertableWrite(fun, pick);
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal check");
+            }
+        } else {
+            switch (flags & AbstractDefined.OPT_CHCK_MASK) {
+                case AbstractDefined.OPT_CHCK_DEFN:
+                    AbstractDefined.checkDefinedRead(fun, pick);
+                    break;
+                case AbstractDefined.OPT_CHCK_ASSE:
+                    AbstractDefined.checkAssertableRead(fun, pick);
+                    break;
+                default:
+                    throw new IllegalArgumentException("illegal check");
+            }
+        }
+        /* find rope */
+        return ((AbstractDefined) fun).searchFirst(head, refhead, temp, ref, flags, en);
     }
 
     /*************************************************************/

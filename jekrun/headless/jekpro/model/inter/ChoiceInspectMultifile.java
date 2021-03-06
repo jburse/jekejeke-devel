@@ -10,7 +10,8 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
- * <p>The class provides a choice point for multifile clause retrieval.</p>
+ * <p>The class provides a choice point for clause inspecitiom.</p>
+ * <p>Refinement for multifile clauses.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -89,18 +90,18 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
             throw en.fault;
 
         Object t = ((Goal) goalskel).term;
-        Display d = goaldisplay.disp;
+        Display ref = goaldisplay.disp;
         /* inlined deref */
         BindUniv b1;
         while (t instanceof SkelVar &&
-                (b1 = d.bind[((SkelVar) t).id]).display != null) {
+                (b1 = ref.bind[((SkelVar) t).id]).display != null) {
             t = b1.skel;
-            d = b1.display;
+            ref = b1.display;
         }
         Object[] temp = ((SkelCompound) t).args;
 
         /* detect term and body */
-        SpecialLogic.colonToCallable(temp[0], d, true, en);
+        SpecialLogic.colonToCallable(temp[0], ref, true, en);
         Object head = en.skel;
         Display refhead = en.display;
 
@@ -118,9 +119,9 @@ final class ChoiceInspectMultifile extends ChoiceInspect {
             if (AbstractDefined.unifySearch(head, refhead,
                     clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (en.unify(end, d2, temp[1], d)) {
+                if (en.unify(end, d2, temp[1], ref)) {
                     if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], d))
+                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
                             break;
                     } else {
                         break;

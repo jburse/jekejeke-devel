@@ -5,6 +5,7 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
+import jekpro.reference.runtime.SpecialDynamic;
 
 /**
  * <p>Provides built-in predicates for the module expand.</p>
@@ -65,11 +66,11 @@ public final class SpecialExpand extends AbstractSpecial {
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_SYS_COMPILEZ:
-                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
+                SpecialDynamic.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
                         AbstractDefined.OPT_ACTI_BOTT, en);
                 return true;
             case SPECIAL_SYS_COMPILEZ_OPT:
-                AbstractDefined.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
+                SpecialDynamic.enhanceKnowledgebase(AbstractDefined.OPT_PERF_CNLT |
                         AbstractDefined.OPT_ACTI_BOTT | AbstractDefined.OPT_ARGS_ASOP, en);
                 return true;
             default:

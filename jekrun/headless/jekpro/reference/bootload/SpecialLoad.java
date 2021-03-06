@@ -70,6 +70,7 @@ public final class SpecialLoad extends AbstractSpecial {
     private final static int SPECIAL_SYS_HAS_CLAUSE = 6;
     private final static int SPECIAL_SYS_SHOW_BASE = 7;
     private final static int SPECIAL_SYS_REGISTER_FILE = 8;
+    private final static int SPECIAL_SYS_LIST = 9;
 
     public static final int MASK_SHOW_NANO = 0x00000001;
     public static final int MASK_SHOW_NRBD = 0x00000002;
@@ -251,6 +252,25 @@ public final class SpecialLoad extends AbstractSpecial {
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return true;
+            case SPECIAL_SYS_LIST:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
+
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (pick.getDef(source) == null)
+                    return false;
+
+                return ((AbstractDefined)pick.del).listFirst(source, temp, ref, en);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }

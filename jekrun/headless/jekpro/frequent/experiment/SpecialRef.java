@@ -18,6 +18,7 @@ import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.reflect.PropertyCallable;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -145,7 +146,7 @@ public final class SpecialRef extends AbstractSpecial {
                     d.remTab(en);
                 return true;
             case SPECIAL_CLAUSE_REF:
-                return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
+                return SpecialDynamic.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
                         AbstractDefined.OPT_ACTI_WRIT | AbstractDefined.OPT_RSLT_CREF, en);
             case SPECIAL_SYS_REF_PROPERTY:
                 temp = ((SkelCompound) en.skel).args;

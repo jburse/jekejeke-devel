@@ -1,16 +1,16 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
-import jekpro.reference.runtime.SpecialLogic;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
- * <p>The class provides a choice point for clause inspection.</p>
+ * <p>The class provides a choice point for clause show.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,10 +40,10 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-class ChoiceInspect extends AbstractChoice {
+class ChoiceShow extends AbstractChoice {
     protected int at;
     protected final Clause[] list;
-    protected final int flags;
+    protected final AbstractSource src;
     protected final Intermediate goalskel;
     protected Display newdisp;
     protected final AbstractUndo mark;
@@ -54,20 +54,20 @@ class ChoiceInspect extends AbstractChoice {
      * @param n The molec.
      * @param a The position.
      * @param c The clause list.
-     * @param f The flags.
+     * @param s The source filter.
      * @param r The continuation skel.
      * @param u The continuation display.
      * @param d The new display.
      * @param m The mark.
      */
-    ChoiceInspect(AbstractChoice n, int a,
-                  Clause[] c, int f,
-                  Intermediate r, CallFrame u,
-                  Display d, AbstractUndo m) {
+    ChoiceShow(AbstractChoice n, int a,
+               Clause[] c, AbstractSource s,
+               Intermediate r, CallFrame u,
+               Display d, AbstractUndo m) {
         super(n, u);
         at = a;
         list = c;
-        flags = f;
+        src = s;
         goalskel = r;
         newdisp = d;
         mark = m;
@@ -111,14 +111,8 @@ class ChoiceInspect extends AbstractChoice {
         }
         Object[] temp = ((SkelCompound) t).args;
 
-        /* detect term and body */
-        SpecialLogic.colonToCallable(temp[0], ref, true, en);
-        Object head = en.skel;
-        Display refhead = en.display;
-
         Clause clause;
         Display d2 = newdisp;
-        boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
@@ -127,17 +121,12 @@ class ChoiceInspect extends AbstractChoice {
             } else {
                 d2.setSize(clause.size);
             }
-            if (AbstractDefined.unifySearch(head, refhead,
-                    clause, d2, en)) {
-                Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (en.unify(end, d2, temp[1], ref)) {
-                    if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
-                            break;
-                    } else {
-                        break;
-                    }
-                }
+
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (src == sa.scope) {
+                Object term = Clause.interToClauseSkel(clause, en);
+                if (en.unify(term, d2, temp[2], ref))
+                    break;
             }
 
             /* end of cursor */
@@ -152,8 +141,6 @@ class ChoiceInspect extends AbstractChoice {
         }
         if (d2 != Display.DISPLAY_CONST)
             d2.vars = clause.vars;
-        if (ext)
-            refhead.remTab(en);
         if (d2.bind.length > 0)
             d2.remTab(en);
 

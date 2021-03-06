@@ -35,7 +35,7 @@ import jekpro.model.molec.Display;
  */
 public final class SkelVar extends AbstractSkel
         implements Comparable<SkelVar> {
-    private static final int CACHE_SIZE = 8;
+    private static final int CACHE_SIZE = 32;
     private static final SkelVar[] cachevar = new SkelVar[CACHE_SIZE];
     private static final SkelVar[][] cachearray = new SkelVar[CACHE_SIZE][];
 

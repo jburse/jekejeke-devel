@@ -1,6 +1,7 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Success;
@@ -136,6 +137,85 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
     }
 
     /**
+     * <p>List the knowledge base.</p>
+     *
+     * @param en The engine.
+     * @return True if the predicate succeeded, otherwise false.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException   Shit happens.
+     */
+    public final boolean listFirst(AbstractSource src, Object[] temp,
+                             Display ref, Engine en)
+            throws EngineMessage, EngineException {
+        Clause[] list = listClauses(en);
+        int at = 0;
+
+        /* end of cursor */
+        for (; ; ) {
+            if (at == list.length)
+                return false;
+            if (multiVisible(list[at], en))
+                break;
+            at++;
+        }
+
+        AbstractUndo mark = en.bind;
+        Clause clause;
+        Display d2 = Display.DISPLAY_CONST;
+        /* search rope */
+        for (; ; ) {
+            clause = list[at++];
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.size);
+            } else {
+                d2.setSize(clause.size);
+            }
+
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (src == sa.scope) {
+                Object term = Clause.interToClauseSkel(clause, en);
+                if (en.unify(term, d2, temp[2], ref))
+                    break;
+            }
+
+            /* end of cursor */
+            for (; ; ) {
+                if (at == list.length)
+                    return false;
+                if (multiVisible(list[at], en))
+                    break;
+                at++;
+            }
+
+            /* undo bindings */
+            en.fault = null;
+            en.releaseBind(mark);
+            if (en.fault != null)
+                throw en.fault;
+        }
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
+        if (d2.bind.length > 0)
+            d2.remTab(en);
+
+        while (at != list.length) {
+            if (multiVisible(list[at], en))
+                break;
+            at++;
+        }
+
+        if (at != list.length) {
+            /* create choice point */
+            en.choices = new ChoiceShowMultifile(en.choices, at, list,
+                    src, en.contskel, en.contdisplay,
+                    d2, mark);
+            en.number++;
+        }
+        /* succeed */
+        return true;
+    }
+
+    /**
      * <p>Perform the search inside the delegate.</p></ü>
      *
      * @param head    The term skeleton.
@@ -148,8 +228,9 @@ public abstract class AbstractDefinedMultifile extends AbstractDefined {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    final boolean searchFirst(Object head, Display refhead, Object[] temp, Display ref, int flags,
-                              Engine en)
+    public final boolean searchFirst(Object head, Display refhead,
+                                     Object[] temp, Display ref,
+                                     int flags, Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
         int at = 0;

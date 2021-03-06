@@ -1,16 +1,17 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
+import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
-import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
-import jekpro.reference.runtime.SpecialLogic;
+import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
 /**
- * <p>The class provides a choice point for clause inspection.</p>
+ * <p>The class provides a choice point for clause show.</p>
+ * <p>Refinement for multifile clauses.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -40,37 +41,25 @@ import jekpro.tools.term.SkelVar;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-class ChoiceInspect extends AbstractChoice {
-    protected int at;
-    protected final Clause[] list;
-    protected final int flags;
-    protected final Intermediate goalskel;
-    protected Display newdisp;
-    protected final AbstractUndo mark;
+final class ChoiceShowMultifile extends ChoiceShow {
 
     /**
-     * <p>Create an choice inspect.</p>
+     * <p>Create an abstract choice inspect.</p>
      *
      * @param n The molec.
      * @param a The position.
      * @param c The clause list.
-     * @param f The flags.
+     * @param s The source filter.
      * @param r The continuation skel.
      * @param u The continuation display.
      * @param d The new display.
      * @param m The mark.
      */
-    ChoiceInspect(AbstractChoice n, int a,
-                  Clause[] c, int f,
-                  Intermediate r, CallFrame u,
-                  Display d, AbstractUndo m) {
-        super(n, u);
-        at = a;
-        list = c;
-        flags = f;
-        goalskel = r;
-        newdisp = d;
-        mark = m;
+    ChoiceShowMultifile(AbstractChoice n, int a,
+                           Clause[] c, AbstractSource s,
+                           Intermediate r, CallFrame u,
+                           Display d, AbstractUndo m) {
+        super(n, a, c, s, r, u, d, m);
     }
 
     /**
@@ -111,14 +100,8 @@ class ChoiceInspect extends AbstractChoice {
         }
         Object[] temp = ((SkelCompound) t).args;
 
-        /* detect term and body */
-        SpecialLogic.colonToCallable(temp[0], ref, true, en);
-        Object head = en.skel;
-        Display refhead = en.display;
-
         Clause clause;
         Display d2 = newdisp;
-        boolean ext = refhead.getAndReset();
         /* search rope */
         for (; ; ) {
             clause = list[at++];
@@ -127,22 +110,22 @@ class ChoiceInspect extends AbstractChoice {
             } else {
                 d2.setSize(clause.size);
             }
-            if (AbstractDefined.unifySearch(head, refhead,
-                    clause, d2, en)) {
-                Object end = Directive.interToBodySkel(clause, clause.last, en);
-                if (en.unify(end, d2, temp[1], ref)) {
-                    if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
-                            break;
-                    } else {
-                        break;
-                    }
-                }
+
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (src == sa.scope) {
+                Object term = Clause.interToClauseSkel(clause, en);
+                if (en.unify(term, d2, temp[2], ref))
+                    break;
             }
 
             /* end of cursor */
-            if (at == list.length)
-                return false;
+            for (; ; ) {
+                if (at == list.length)
+                    return false;
+                if (AbstractDefinedMultifile.multiVisible(list[at], en))
+                    break;
+                at++;
+            }
 
             /* undo bindings */
             en.fault = null;
@@ -152,10 +135,14 @@ class ChoiceInspect extends AbstractChoice {
         }
         if (d2 != Display.DISPLAY_CONST)
             d2.vars = clause.vars;
-        if (ext)
-            refhead.remTab(en);
         if (d2.bind.length > 0)
             d2.remTab(en);
+
+        while (at != list.length) {
+            if (AbstractDefinedMultifile.multiVisible(list[at], en))
+                break;
+            at++;
+        }
 
         if (at != list.length) {
             newdisp = d2;
@@ -168,20 +155,6 @@ class ChoiceInspect extends AbstractChoice {
 
         /* succeed */
         return true;
-    }
-
-    /**
-     * <p>Free data used to logically evaluate a term an additional time.</p>
-     * <p>The current exception is passed via the engine fault.</p>
-     * <p>The new current exception is returned via the engine fault.</p>
-     * <p>The current contskel and contdisplay of the engine is not changed.</p>
-     *
-     * @param en The engine.
-     */
-    public final void moniCut(Engine en) {
-        /* remove choice point */
-        en.choices = next;
-        en.number--;
     }
 
 }

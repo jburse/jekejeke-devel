@@ -544,116 +544,66 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /***********************************************************/
 
     /**
-     * <p>Enhance the knowledge base by a new clause.</p>
-     * <p>The term is passed via the engine skel and display.</p>
-     * <p>UInderstood flags:</p>
-     * <ul>
-     * <li><b>OPT_ARGS_ASOP:</b> The term has assert options.</li>
-     * <li><b>MASK_OPER_DYNA:</b> Predicate should be dynamic.</li>
-     * <li><b>MASK_OPER_THRE:</b> Predicate should be thread_local.</li>
-     * <li><b>OPT_ACTI_BOTT:</b> The clause should be added at the end.</li>
-     * </ul>
+     * <p>List the knowledge base.</p>
      *
-     * @param flags The flags.
-     * @param en    The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    public static void enhanceKnowledgebase(int flags, Engine en)
-            throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        SupervisorCopy ec = en.visor.getCopy();
-        if ((flags & AbstractDefined.OPT_ARGS_ASOP) != 0) {
-            ec.vars = null;
-            ec.anon = null;
-            ec.flags = SupervisorCopy.MASK_COPY_SING;
-            Object molec = ec.copyTermNew(temp[0], ref);
-            MapHash<BindUniv, String> print =
-                    SpecialRef.decodeAssertOptions(temp[1], ref, en);
-            MapHashLink<String, SkelVar> vars =
-                    SupervisorCopy.copyVarsUniv(ec.vars, print);
-            MapHashLink<String, SkelVar> anon =
-                    SupervisorCopy.copyVarsUniv(ec.anon, print);
-            ec.vars = null;
-            ec.anon = null;
-            Object term = Clause.clauseToHead(molec, en);
-            PrologReader.checkSingleton(term, anon, en);
-            Clause clause = Clause.determineCompiled(flags, term, molec, en);
-            clause.vars = vars;
-            clause.assertRef(flags, en);
-        } else {
-            ec.vars = null;
-            ec.flags = 0;
-            Object molec = ec.copyTermNew(temp[0], ref);
-            ec.vars = null;
-            Object term = Clause.clauseToHead(molec, en);
-            Clause clause = Clause.determineCompiled(flags, term, molec, en);
-            clause.assertRef(flags, en);
-        }
-    }
-
-    /**
-     * <p>Search the knowledge base.</p>
-     * <p>The search term is passed via the engine skel and display.</p>
-     * <p>The following flags are recognized:</p>
-     * <ul>
-     * <li><b>OPT_ACTI_RETR:</b> Retract found clauses and one term argument.</li>
-     * <li><b>MASK_OPER_CHWR:</b> Generate a write error instead of a read error.</li>
-     * <li><b>MASK_OPER_DYNA:</b> Predicate should be accessible.</li>
-     * <li><b>OPT_RSLT_CREF:</b> Return clause reference in last argument.</li>
-     * <li><b>OPT_RSLT_FRME:</b> Return frame reference in last argument.</li>
-     * </ul>
-     *
-     * @param flags The flags.
-     * @param en    The engine.
+     * @param en The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
+     * @throws EngineException   Shit happens.
      */
-    public static boolean searchKnowledgebase(int flags, Engine en)
+    public boolean listFirst(AbstractSource src, Object[] temp,
+                                    Display ref, Engine en)
             throws EngineMessage, EngineException {
-        Object[] temp = ((SkelCompound) en.skel).args;
-        Display ref = en.display;
-        /* detect term and body */
-        SpecialLogic.colonToCallable(temp[0], ref, true, en);
-        Object head = en.skel;
-        Display refhead = en.display;
+        Clause[] list = listClauses(en);
+        int at = 0;
 
-        /* check predicate existence and visibility */
-        CachePredicate cp = StackElement.callableToPredicate(head, en);
-        if (cp == null || (cp.flags & CachePredicate.MASK_PRED_VISI) == 0) {
-            EngineMessage.checkCallable(head, refhead);
+        /* end of cursor */
+        if (at == list.length)
             return false;
-        }
-        Predicate pick = cp.pick;
-        /* check predicate modify/access */
-        AbstractDelegate fun = pick.del;
-        if ((flags & AbstractDefined.OPT_ACTI_WRIT) != 0) {
-            switch (flags & OPT_CHCK_MASK) {
-                case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedWrite(fun, pick);
-                    break;
-                case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableWrite(fun, pick);
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal check");
+
+        AbstractUndo mark = en.bind;
+        Clause clause;
+        Display d2 = Display.DISPLAY_CONST;
+        /* search rope */
+        for (; ; ) {
+            clause = list[at++];
+            if (d2 == Display.DISPLAY_CONST) {
+                d2 = Display.valueOf(clause.size);
+            } else {
+                d2.setSize(clause.size);
             }
-        } else {
-            switch (flags & OPT_CHCK_MASK) {
-                case OPT_CHCK_DEFN:
-                    AbstractDefined.checkDefinedRead(fun, pick);
-                    break;
-                case OPT_CHCK_ASSE:
-                    AbstractDefined.checkAssertableRead(fun, pick);
-                    break;
-                default:
-                    throw new IllegalArgumentException("illegal check");
+
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (src == sa.scope) {
+                Object term = Clause.interToClauseSkel(clause, en);
+                if (en.unify(term, d2, temp[2], ref))
+                   break;
             }
+
+            /* end of cursor */
+            if (at == list.length)
+                return false;
+
+            /* undo bindings */
+            en.fault = null;
+            en.releaseBind(mark);
+            if (en.fault != null)
+                throw en.fault;
         }
-        /* find rope */
-        return ((AbstractDefined) fun).searchFirst(head, refhead, temp, ref, flags, en);
+        if (d2 != Display.DISPLAY_CONST)
+            d2.vars = clause.vars;
+        if (d2.bind.length > 0)
+            d2.remTab(en);
+
+        if (at != list.length) {
+            /* create choice point */
+            en.choices = new ChoiceShow(en.choices, at, list,
+                    src, en.contskel, en.contdisplay,
+                    d2, mark);
+            en.number++;
+        }
+        /* succeed */
+        return true;
     }
 
     /**
@@ -669,7 +619,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    boolean searchFirst(Object head, Display refhead, Object[] temp,
+    public boolean searchFirst(Object head, Display refhead, Object[] temp,
                         Display ref, int flags, Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
