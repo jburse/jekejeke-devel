@@ -58,19 +58,15 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLoad extends AbstractSpecial {
-    private final static String OP_SET_PREDICATE_PROPERTY = "set_predicate_property";
     private final static String OP_SET_OPER_PROPERTY = "set_oper_property";
 
     private final static int SPECIAL_SYS_LOAD_FILE = 0;
     private final static int SPECIAL_SYS_DETACH_FILE = 1;
     private final static int SPECIAL_SYS_IMPORT_FILE = 2;
-    private final static int SPECIAL_SYS_SHOW_PROVABLE_SOURCE = 3;
+    private final static int SPECIAL_SYS_REGISTER_FILE = 3;
     private final static int SPECIAL_SYS_SHOW_SYNTAX_SOURCE = 4;
     private final static int SPECIAL_SYS_SHOW_IMPORT = 5;
-    private final static int SPECIAL_SYS_HAS_CLAUSE = 6;
-    private final static int SPECIAL_SYS_SHOW_BASE = 7;
-    private final static int SPECIAL_SYS_REGISTER_FILE = 8;
-    private final static int SPECIAL_SYS_LIST = 9;
+    private final static int SPECIAL_SYS_SHOW_BASE = 6;
 
     public static final int MASK_SHOW_NANO = 0x00000001;
     public static final int MASK_SHOW_NRBD = 0x00000002;
@@ -128,35 +124,11 @@ public final class SpecialLoad extends AbstractSpecial {
                 source = (sa.scope != null ? sa.scope : en.store.user);
                 SpecialLoad.performImport(source, sa.fun, en, opts);
                 return true;
-            case SPECIAL_SYS_SHOW_PROVABLE_SOURCE:
+            case SPECIAL_SYS_REGISTER_FILE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-
-                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-
-                Object obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
-                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setDefaults(en.visor.peekStack());
-                pw.setEngine(en);
-                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-                pw.setSpez(PrologWriter.SPEZ_META);
-                pw.setOffset(-1);
-                pw.setWriter(wr);
-                SpecialLoad.listProvable(pw, pick, source, en);
-                newLineFlush(wr);
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
+                registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return true;
             case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
                 temp = ((SkelCompound) en.skel).args;
@@ -175,10 +147,10 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (oper.getScope() != source)
                     return false;
 
-                obj = en.visor.curoutput;
+                Object obj = en.visor.curoutput;
                 LoadOpts.checkTextWrite(obj);
-                wr = (Writer) obj;
-                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
+                Writer wr = (Writer) obj;
+                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
                 pw.setDefaults(en.visor.peekStack());
                 pw.setEngine(en);
                 pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
@@ -211,25 +183,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 pw.setWriter(wr);
                 SpecialLoad.listImport(pw, source, en);
                 return true;
-            case SPECIAL_SYS_HAS_CLAUSE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-                if (!hasClause(pick, source, en))
-                    return false;
-                return true;
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -246,187 +199,9 @@ public final class SpecialLoad extends AbstractSpecial {
 
                 AbstractSource.showShortName(wr, source);
                 return true;
-            case SPECIAL_SYS_REGISTER_FILE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
-                registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
-                return true;
-            case SPECIAL_SYS_LIST:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-                if (!(pick.del instanceof AbstractDefined))
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-
-                return ((AbstractDefined)pick.del).listFirst(source, temp, ref, en);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
-    }
-
-    /**
-     * <p>List a predicate.</p>
-     * <p>System clauses are excluded.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param pw   The prolog writer.
-     * @param pick The predicate.
-     * @param src  The source, non null.
-     * @param en   The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static void listProvable(PrologWriter pw, Predicate pick,
-                                     AbstractSource src, Engine en)
-            throws EngineMessage, EngineException {
-        if (pick.del == null)
-            return;
-        /* flesh out properties */
-        ListArray<SkelAtom> modifiers = null;
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> props = branch.getPredProps();
-            for (int j = 0; j < props.size(); j++)
-                modifiers = listProvableProps(pw, pick, src,
-                        props.get(j), en, modifiers);
-        }
-        AbstractDelegate fun = pick.del;
-        if (!(fun instanceof AbstractDefined))
-            return;
-
-        /* flesh out clauses */
-        Clause[] list = ((AbstractDefined) fun).listClauses(en);
-        for (int i = 0; i < list.length; i++) {
-            Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
-            if (src != sa.scope)
-                continue;
-            if (modifiers != null) {
-                Object decl = provableToColonSkel(pick, src);
-                decl = prependModifiers(modifiers, decl);
-                modifiers = null;
-                decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
-                decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                SpecialLoad.flushWriter(pw.getWriter());
-            }
-            Object t = Clause.interToClauseSkel(clause, en);
-            pw.setDefaults(src);
-            SpecialLoad.showClause(pw, t, clause.vars, en, 0);
-            pw.setDefaults(en.visor.peekStack());
-        }
-    }
-
-    /**
-     * <p>List the provable properties.</p>
-     *
-     * @param pw    The print writer.
-     * @param pick  The predicate.
-     * @param src   The source, non null.
-     * @param props The properties.
-     * @param en    The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static ListArray<SkelAtom> listProvableProps(PrologWriter pw, Predicate pick,
-                                                         AbstractSource src,
-                                                         MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
-                                                         Engine en, ListArray<SkelAtom> modifiers)
-            throws EngineMessage, EngineException {
-        for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
-             (props != null ? props.getFirstEntry() : null);
-             entry2 != null; entry2 = props.successor(entry2)) {
-            AbstractProperty<Predicate> prop = entry2.value;
-            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
-                continue;
-            if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
-                    hasClause(pick, src, en))
-                continue;
-            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
-                    sameVisiblePredicate(pick, src, en))
-                continue;
-            Object[] vals = prop.getObjProps(pick, en);
-            if ((prop.getFlags() & AbstractProperty.MASK_PROP_SLCF) != 0) {
-                vals = selectFirst(vals, src.getPathAtom());
-            } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_DELE) != 0) {
-                vals = delegateSpec(vals, pick, src);
-            }
-            if ((prop.getFlags() & AbstractProperty.MASK_PROP_MODI) != 0) {
-                for (int j = 0; j < vals.length; j++) {
-                    Object val = vals[j];
-                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
-                        val = firstArg(val);
-                    if (modifiers == null)
-                        modifiers = new ListArray<>();
-                    modifiers.add((SkelAtom) AbstractTerm.getSkel(val));
-                }
-            } else {
-                for (int j = 0; j < vals.length; j++) {
-                    Object val = vals[j];
-                    Object decl;
-                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                        decl = SpecialLoad.predDeclSkelSet(
-                                AbstractTerm.getSkel(val), pick, src);
-                    } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                        decl = predDeclSkelMeta(
-                                AbstractTerm.getSkel(val), pick, src);
-                    } else {
-                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
-                            val = firstArg(val);
-                        decl = predDeclSkelIndicator(
-                                AbstractTerm.getSkel(val), pick, src);
-                    }
-                    if (modifiers != null) {
-                        decl = prependModifiers(modifiers, decl);
-                        modifiers = null;
-                    }
-                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
-                    decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                    pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                    SpecialLoad.flushWriter(pw.getWriter());
-                }
-            }
-        }
-        return modifiers;
-    }
-
-    /**
-     * <p>Check whether a source and a predicate have the same visibility.</p>
-     *
-     * @param pick The predicate.
-     * @param src  The source.
-     * @param en   The engine.
-     * @return True if the source and the predicate have the same visibility, otherwise false.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static boolean sameVisiblePredicate(Predicate pick, AbstractSource src,
-                                                Engine en)
-            throws EngineMessage, EngineException {
-        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
-        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
-        Object[] vals = prop.getObjProps(src, en);
-        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
-        AbstractProperty<Predicate> prop1 = SpecialPred.findPredProperty(sk2, en);
-        Object[] vals2 = prop1.getObjProps(pick, en);
-        return sameValues(vals, vals2);
     }
 
     /**
@@ -657,104 +432,6 @@ public final class SpecialLoad extends AbstractSpecial {
         }
     }
 
-    /****************************************************************************/
-    /* Predicate Property Filters                                               */
-    /****************************************************************************/
-
-    /**
-     * <p>Find all values that have as a first argument some other value.</p>
-     *
-     * @param vals The values.
-     * @param val  The other value.
-     * @return The found values.
-     */
-    private static Object[] selectFirst(Object[] vals, Object val) {
-        ListArray<Object> res = null;
-        for (int i = 0; i < vals.length; i++) {
-            Object val2 = vals[i];
-            SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(val2);
-            val2 = AbstractTerm.createMolec(sc.args[0], AbstractTerm.getDisplay(val2));
-            if (!val2.equals(val))
-                continue;
-            if (res == null)
-                res = new ListArray<>();
-            if (sc.args.length == 1) {
-                res.add(sc.sym);
-            } else {
-                Object[] newargs = new Object[sc.args.length - 1];
-                System.arraycopy(sc.args, 1, newargs, 0, newargs.length);
-                res.add(AbstractTerm.createMolec(new SkelCompound(sc.sym, newargs),
-                        AbstractTerm.getDisplay(val2)));
-            }
-        }
-        if (res == null)
-            return AbstractBranch.FALSE_PROPERTY;
-        Object[] newvals = new Object[res.size()];
-        res.toArray(newvals);
-        return newvals;
-    }
-
-    /**
-     * <p>Check whether the predicate has some clauses.</p>
-     *
-     * @param pick   The predicate.
-     * @param source The scope.
-     * @param en     The engine.
-     * @return True if the predicate has some clauses, otherwise false.
-     * @throws EngineMessage Shit happens.
-     */
-    private static boolean hasClause(Predicate pick, AbstractSource source,
-                                     Engine en)
-            throws EngineMessage {
-        AbstractDelegate fun = pick.del;
-        if (!(fun instanceof AbstractDefined))
-            return false;
-        Clause[] list = ((AbstractDefined) fun).listClauses(en);
-        for (int i = 0; i < list.length; i++) {
-            Clause clause = list[i];
-            SkelAtom sa = StackElement.callableToName(clause.head);
-            if (source != sa.scope)
-                continue;
-            return true;
-        }
-        return false;
-    }
-
-
-    /**
-     * <p>Convert the value list to its spec.</p>
-     *
-     * @param vals   The value list only buit_in.
-     * @param pick   The predicate.
-     * @param source The source, non null.
-     * @return The value list with spec.
-     */
-    private static Object[] delegateSpec(Object[] vals, Predicate pick,
-                                         AbstractSource source)
-            throws EngineMessage {
-        if (vals.length == 0)
-            return vals;
-        Object[] newvals = new Object[vals.length];
-        for (int i = 0; i < vals.length; i++) {
-            Object val = pick.del.toSpec(source);
-            newvals[i] = AbstractTerm.createMolec(val, Display.DISPLAY_CONST);
-        }
-        return newvals;
-    }
-
-    /**
-     * <p>Prepend modifiers to a value.</p>
-     *
-     * @param modifiers The modifiers.
-     * @param decl      The value.
-     * @return The prependet value.
-     */
-    private static Object prependModifiers(ListArray<SkelAtom> modifiers, Object decl) {
-        for (int i = modifiers.size() - 1; i >= 0; i--)
-            decl = new SkelCompound(modifiers.get(i), decl);
-        return decl;
-    }
-
     /****************************************************************/
     /* Resource Handling                                            */
     /****************************************************************/
@@ -785,8 +462,8 @@ public final class SpecialLoad extends AbstractSpecial {
      * <li><b>_:</b> Print exception.</li>
      * </ul>
      *
-     * @param ex  The exception.
-     * @param en  The engine.
+     * @param ex The exception.
+     * @param en The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
@@ -854,9 +531,13 @@ public final class SpecialLoad extends AbstractSpecial {
                 (flags & MASK_SHOW_NRBD) != 0) {
             Display ref = AbstractSkel.createDisplay(t);
             EngineVars ev = new EngineVars();
-            ev.singsOf(t, ref);
+            if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
+                ev.singsOf(t, ref);
+            } else {
+                ev.varInclude(t, ref);
+            }
             MapHash<BindUniv, String> print = hashToMapUniv(vars, ref, en);
-            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print, flags);
+            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
             pw.unparseStatement(t, ref);
@@ -909,9 +590,13 @@ public final class SpecialLoad extends AbstractSpecial {
             if (en.fault != null)
                 throw en.fault;
             EngineVars ev = new EngineVars();
-            ev.singsOf(res, d2);
+            if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
+                ev.singsOf(res, d2);
+            } else {
+                ev.varInclude(res, d2);
+            }
             MapHash<BindUniv, String> print = hashToMapUniv(vars, d2, en);
-            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print, flags);
+            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print);
             pw.setPrintMap(print);
             t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
             pw.unparseStatement(t, d2);
@@ -958,7 +643,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @param vals2 The second value list.
      * @return True if both value lists contain the same elements, otherwise false.
      */
-    private static boolean sameValues(Object[] vals, Object[] vals2) {
+    public static boolean sameValues(Object[] vals, Object[] vals2) {
         if (vals.length != vals2.length)
             return false;
         for (int i = 0; i < vals.length; i++) {
@@ -976,102 +661,9 @@ public final class SpecialLoad extends AbstractSpecial {
      * @param val The value.
      * @return The first arg.
      */
-    private static Object firstArg(Object val) {
+    public static Object firstArg(Object val) {
         SkelCompound sc = (SkelCompound) AbstractTerm.getSkel(val);
         return AbstractTerm.createMolec(sc.args[0], Display.DISPLAY_CONST);
-    }
-
-    /*********************************************************/
-    /* Predicate Declaration Formatting                      */
-    /*********************************************************/
-
-    /**
-     * <p>Generate a set predicate declaration.</p>
-     *
-     * @param skel   The value.
-     * @param pick   The predicate.
-     * @param source The source, non null.
-     * @return The set predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object predDeclSkelSet(Object skel, Predicate pick,
-                                          AbstractSource source)
-            throws EngineMessage {
-        return new SkelCompound(new SkelAtom(OP_SET_PREDICATE_PROPERTY, source),
-                provableToColonSkel(pick,
-                        source), skel);
-    }
-
-    /**
-     * <p>Generate a meta predicate declaration.</p>
-     *
-     * @param skel   The value.
-     * @param pick   The predicate.
-     * @param source The source.
-     * @return The meta predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object predDeclSkelMeta(Object skel, Predicate pick,
-                                           AbstractSource source)
-            throws EngineMessage {
-        SkelCompound sc = (SkelCompound) skel;
-        Object t = sc.args[sc.args.length - 1];
-        int k = 0;
-        while (t instanceof SkelCompound &&
-                ((SkelCompound) t).args.length == 2 &&
-                ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
-            t = ((SkelCompound) t).args[1];
-            k++;
-        }
-        if (k != 0) {
-            Object[] args = new Object[k];
-            t = sc.args[sc.args.length - 1];
-            k = 0;
-            while (t instanceof SkelCompound &&
-                    ((SkelCompound) t).args.length == 2 &&
-                    ((SkelCompound) t).sym.fun.equals(Foyer.OP_CONS)) {
-                args[k] = ((SkelCompound) t).args[0];
-                t = ((SkelCompound) t).args[1];
-                k++;
-            }
-            t = new SkelCompound(new SkelAtom(pick.getFun(), source), args);
-        } else {
-            t = new SkelAtom(pick.getFun(), source);
-        }
-        Object[] args = new Object[sc.args.length];
-        args[sc.args.length - 1] = provableToColonSkel(pick, t, source);
-        if (sc.args.length > 1)
-            System.arraycopy(sc.args, 0, args, 0, sc.args.length - 1);
-        SkelCompound sc2 = new SkelCompound(args, sc.sym);
-        sc2.var = sc.var;
-        return sc2;
-    }
-
-    /**
-     * <p>Generate a indicator predicate declaration.</p>
-     *
-     * @param skel   The value.
-     * @param pick   The predicate.
-     * @param source The source.
-     * @return The indicator predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object predDeclSkelIndicator(Object skel, Predicate pick,
-                                                AbstractSource source)
-            throws EngineMessage {
-        Object t = provableToColonSkel(pick, source);
-        if (skel instanceof SkelAtom) {
-            SkelAtom sa = (SkelAtom) skel;
-            return new SkelCompound(sa, t);
-        } else if (skel instanceof SkelCompound) {
-            SkelCompound sc = (SkelCompound) skel;
-            Object[] args = new Object[sc.args.length + 1];
-            System.arraycopy(sc.args, 0, args, 1, sc.args.length);
-            args[0] = t;
-            return new SkelCompound(sc.sym, args);
-        } else {
-            throw new IllegalArgumentException("illegal property");
-        }
     }
 
     /*********************************************************/
@@ -1172,7 +764,7 @@ public final class SpecialLoad extends AbstractSpecial {
      * @return The colon callable.
      * @throws EngineMessage Shit happens.
      */
-    private static Object provableToColonSkel(Predicate pick, Object t,
+    public static Object provableToColonSkel(Predicate pick, Object t,
                                               AbstractSource source)
             throws EngineMessage {
         String orig = source.getFullName();

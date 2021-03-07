@@ -6,15 +6,14 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
+import jekpro.model.pretty.*;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
 import jekpro.reference.bootload.ForeignPath;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.AbstractSkel;
 import jekpro.tools.term.SkelAtom;
@@ -66,6 +65,8 @@ public final class SpecialDynamic extends AbstractSpecial {
     private final static int SPECIAL_ASSERTZ = 5;
     private final static int SPECIAL_ABOLISH_PREDICATE = 6;
     private final static int SPECIAL_ABOLISH_OPERATOR = 7;
+    private final static int SPECIAL_SYS_HAS_CLAUSE = 8;
+    private final static int SPECIAL_SYS_LIST_CLAUSE = 9;
 
     /**
      * <p>Create a predicate special.</p>
@@ -137,6 +138,47 @@ public final class SpecialDynamic extends AbstractSpecial {
                     return true;
                 abolishOper(oper, en);
                 return true;
+            case SPECIAL_SYS_HAS_CLAUSE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
+
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (pick.getDef(source) == null)
+                    return false;
+
+                if (!hasClause((AbstractDefined)pick.del, source, en))
+                    return false;
+                return true;
+            case SPECIAL_SYS_LIST_CLAUSE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
+
+                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (pick.getDef(source) == null)
+                    return false;
+
+                return ((AbstractDefined) pick.del).listFirst(source, temp, ref, en);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -253,6 +295,30 @@ public final class SpecialDynamic extends AbstractSpecial {
         }
         /* find rope */
         return ((AbstractDefined) fun).searchFirst(head, refhead, temp, ref, flags, en);
+    }
+
+
+    /**
+     * <p>Check whether the predicate has some clauses.</p>
+     *
+     * @param def   The abstract defined.
+     * @param source The scope.
+     * @param en     The engine.
+     * @return True if the predicate has some clauses, otherwise false.
+     * @throws EngineMessage Shit happens.
+     */
+    public static boolean hasClause(AbstractDefined def, AbstractSource source,
+                                    Engine en)
+            throws EngineMessage {
+        Clause[] list = def.listClauses(en);
+        for (int i = 0; i < list.length; i++) {
+            Clause clause = list[i];
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            if (source != sa.scope)
+                continue;
+            return true;
+        }
+        return false;
     }
 
     /*************************************************************/

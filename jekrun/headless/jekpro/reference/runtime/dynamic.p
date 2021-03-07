@@ -70,6 +70,7 @@
 
 :- module(user, []).
 :- use_module(library(experiment/ref)).
+:- use_module(library(experiment/simp)).
 
 :- public prefix(dynamic).
 :- op(1150, fx, dynamic).
@@ -236,3 +237,38 @@ abolish(X) :-
 
 :- private sys_abolish_operator/1.
 :- special(sys_abolish_operator/1, 'SpecialDynamic', 7).
+
+/****************************************************************/
+/* Clause Listing                                               */
+/****************************************************************/
+
+/**
+ * sys_has_clause(I, U):
+ * The predicate succeeds when the predicate I has clauses for the source U.
+ */
+% sys_has_clause(+Indicator, +Source)
+:- public sys_has_clause/2.
+:- special(sys_has_clause/2, 'SpecialDynamic', 8).
+
+/**
+ * sys_list_clause(I, U, T):
+ * The predicate succeeds in T with the clauses for the source U of the predicate I.
+ */
+% sys_list_clause(+Indicator, +Source, -Term)
+:- public sys_list_clause/3.
+:- special(sys_list_clause/3, 'SpecialDynamic', 9).
+
+% sys_show_clauses(+Indicator, +Source)
+:- public sys_show_clauses/2.
+sys_show_clauses(I, U) :-
+   sys_list_clause(I, U, S),
+   callable_property(S, sys_variable_names(N)),
+   rebuild_term(S, T),
+   term_variables(T, L),
+   term_singletons(T, R),
+   sys_number_variables(L, N, R, M),
+   write_term('.'(T), [context(-1), quoted(true),
+      format(newline), annotation(makedot),
+      variable_names(M), source(U)]),
+   fail.
+sys_show_clauses(_, _).

@@ -483,8 +483,7 @@ public class PrologWriter {
      * @param s The string.
      * @throws IOException IO error.
      */
-    public void append(String s)
-            throws IOException {
+    public void append(String s) throws IOException {
         append(s, 0, s.length());
     }
 
@@ -494,8 +493,7 @@ public class PrologWriter {
      * @param ch The code point.
      * @throws IOException IO error.
      */
-    public void append(char ch)
-            throws IOException {
+    public void append(int ch) throws IOException {
         wr.write(ch);
         if (ch == CodeType.LINE_EOL) {
             toff = 0;
@@ -511,9 +509,17 @@ public class PrologWriter {
      * @param t The token.
      * @throws IOException IO error.
      */
-    final void safeSpace(String t)
-            throws IOException {
-        int ch = (t.length() == 0 ? -1 : t.codePointAt(0));
+    final void safeSpace(String t) throws IOException {
+        safeSpace((t.length() == 0 ? -1 : t.codePointAt(0)));
+    }
+
+    /**
+     * <p>Place space if necessary.</p>
+     *
+     * @param ch The code point.
+     * @throws IOException IO error.
+     */
+    final void safeSpace(int ch) throws IOException {
         if (!CodeType.ISO_CODETYPE.wordBreak1(lch, ch) &&
                 !CodeType.ISO_CODETYPE.wordBreak2(lch, ch)) {
             append(' ');
@@ -1649,8 +1655,8 @@ public class PrologWriter {
     protected void unparsePeriod(SkelAtom sa, Object t, Display ref)
             throws IOException, EngineMessage, EngineException {
         write(t, ref, lev, null, null);
-        safeSpace(".");
-        append(".");
+        safeSpace('.');
+        append('.');
         append(CodeType.LINE_EOL);
     }
 

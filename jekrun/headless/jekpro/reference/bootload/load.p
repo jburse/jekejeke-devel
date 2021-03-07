@@ -205,6 +205,19 @@ include(Path) :-
 :- special(sys_import_file/2, 'SpecialLoad', 2).
 :- set_predicate_property(sys_import_file/2, visible(private)).
 
+/****************************************************************/
+/* Resource Handling                                            */
+/****************************************************************/
+
+/**
+ * sys_register_file(R):
+ * The predicate registers the relative source path R in the
+ * knowledge base. The relative source path is automatically
+ * unregistered when its call-site relative source is unloaded.
+ */
+% sys_register_file(+Pin)
+:- special(sys_register_file/1, 'SpecialLoad', 3).
+
 /***************************************************************/
 /* Style Checks                                                */
 /***************************************************************/
@@ -305,8 +318,10 @@ sys_declaration_indicator(multifile(D), I) :- sys_declaration_indicator(D, I).
 
 /**
  * listing:
+ * listing(P):
  * The predicate lists the user clauses of the user syntax operators,
- * evaluable functions and predicates. Only non-automatic evaluable
+ * evaluable functions and predicates. The unary predicate allows
+ * specifying a predicate indicator P. Only non-automatic evaluable
  * functions and predicates are listed.
  */
 % listing
@@ -315,12 +330,6 @@ listing :-
 :- set_predicate_property(listing/0, visible(public)).
 :- set_predicate_property(listing/0, sys_notrace).
 
-/**
- * listing(I):
- * The predicate lists the user clauses of the user syntax operators,
- * evaluable functions and predicates that match the pattern I. Only
- * non-automatic evaluable functions and predicates are listed.
- */
 % listing(+Indicator)
 listing(I) :- ground(I), !,
    sys_listing2(I).
@@ -417,7 +426,8 @@ sys_listing_has_clause(I, U) :- sys_has_clause(I, U).
 sys_listing_show(I, U) :- sys_oper_indicator(I), !,
    sys_show_syntax_source(I, U).
 sys_listing_show(I, U) :-
-   sys_show_provable_source(I, U).
+   sys_show_properties(I, U),
+   sys_show_clauses(I, U), nl.
 :- set_predicate_property(sys_listing_show/2, visible(private)).
 
 /**
@@ -430,35 +440,12 @@ sys_oper_indicator(prefix(_)).
 sys_oper_indicator(postfix(_)).
 :- set_predicate_property(sys_oper_indicator/1, visible(private)).
 
-:- special(sys_show_provable_source/2, 'SpecialLoad', 3).
-:- set_predicate_property(sys_show_provable_source/2, visible(public)).
-
 :- special(sys_show_syntax_source/2, 'SpecialLoad', 4).
 :- set_predicate_property(sys_show_syntax_source/2, visible(private)).
 
 :- special(sys_show_import/1, 'SpecialLoad', 5).
 :- set_predicate_property(sys_show_import/1, visible(public)).
 
-/**
- * sys_has_clause(I, U):
- * The predicate succeeds when the predicate I has clauses for the source U.
- */
-% sys_has_clause(+Indicator, +Source)
-:- special(sys_has_clause/2, 'SpecialLoad', 6).
-:- set_predicate_property(sys_has_clause/2, visible(public)).
-
-:- special(sys_show_base/1, 'SpecialLoad', 7).
+:- special(sys_show_base/1, 'SpecialLoad', 6).
 :- set_predicate_property(sys_show_base/1, visible(public)).
 
-/****************************************************************/
-/* Resource Handling                                            */
-/****************************************************************/
-
-/**
- * sys_register_file(R):
- * The predicate registers the relative source path R in the
- * knowledge base. The relative source path is automatically
- * unregistered when its call-site relative source is unloaded.
- */
-% sys_register_file(+Pin)
-:- special(sys_register_file/1, 'SpecialLoad', 8).

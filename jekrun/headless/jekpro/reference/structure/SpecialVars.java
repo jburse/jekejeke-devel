@@ -336,7 +336,7 @@ public final class SpecialVars extends AbstractSpecial {
         SetHashLink<Object> vars = SpecialVars.arrayToSet(temp[0], ref, en);
         MapHash<BindUniv, String> print = PropertyCallable.assocToMapUniv(temp[1], ref, en);
         SetHashLink<Object> anon = SpecialVars.arrayToSet(temp[2], ref, en);
-        MapHashLink<Object, String> map = SpecialVars.numberVars(vars, anon, print, 0);
+        MapHashLink<Object, String> map = SpecialVars.numberVars(vars, anon, print);
         SpecialVars.mapToAssoc(map, en);
     }
 
@@ -346,13 +346,11 @@ public final class SpecialVars extends AbstractSpecial {
      * @param vars  The var set, can be null.
      * @param anon  The anon set, can be null.
      * @param print The old variable names, can be null.
-     * @param flags The flags.
      * @return The new variable names, can be null.
      */
     public static MapHashLink<Object, String> numberVars(SetHashLink<Object> vars,
                                                          SetHashLink<Object> anon,
-                                                         MapHash<BindUniv, String> print,
-                                                         int flags) {
+                                                         MapHash<BindUniv, String> print) {
         if (vars == null)
             return null;
 
@@ -367,23 +365,20 @@ public final class SpecialVars extends AbstractSpecial {
             String t;
             if (print != null && (t = print.get(d.bind[sv.id])) != null) {
                 copy.add(entry.value, t);
+            } else if (anon != null && anon.getEntry(entry.value) != null) {
+                copy.add(entry.value, PrologReader.OP_ANON);
             } else {
-                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0 &&
-                        anon != null && anon.getEntry(entry.value) != null) {
-                    copy.add(entry.value, PrologReader.OP_ANON);
-                } else {
-                    String name = SkelVar.sernoToString(k, false);
-                    k++;
-                    if (print != null) {
-                        if (range == null)
-                            range = nameRange(print);
-                        while (range.getEntry(name) != null) {
-                            name = SkelVar.sernoToString(k, false);
-                            k++;
-                        }
+                String name = SkelVar.sernoToString(k, false);
+                k++;
+                if (print != null) {
+                    if (range == null)
+                        range = nameRange(print);
+                    while (range.getEntry(name) != null) {
+                        name = SkelVar.sernoToString(k, false);
+                        k++;
                     }
-                    copy.add(entry.value, name);
                 }
+                copy.add(entry.value, name);
             }
         }
 
@@ -396,13 +391,11 @@ public final class SpecialVars extends AbstractSpecial {
      * @param vars  The var set, can be null.
      * @param anon  The anon set, can be null.
      * @param print The old variable names, can be null.
-     * @param flags The flags.
      * @return The new variable names, can be null.
      */
     public static MapHash<BindUniv, String> numberVarsUniv(SetHashLink<Object> vars,
                                                            SetHashLink<Object> anon,
-                                                           MapHash<BindUniv, String> print,
-                                                           int flags) {
+                                                           MapHash<BindUniv, String> print) {
         if (vars == null)
             return null;
 
@@ -417,23 +410,20 @@ public final class SpecialVars extends AbstractSpecial {
             String t;
             if (print != null && (t = print.get(d.bind[sv.id])) != null) {
                 copy.add(d.bind[sv.id], t);
+            } else if (anon != null && anon.getEntry(entry.value) != null) {
+                copy.add(d.bind[sv.id], PrologReader.OP_ANON);
             } else {
-                if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0 &&
-                        anon != null && anon.getEntry(entry.value) != null) {
-                    copy.add(d.bind[sv.id], PrologReader.OP_ANON);
-                } else {
-                    String name = SkelVar.sernoToString(k, false);
-                    k++;
-                    if (print != null) {
-                        if (range == null)
-                            range = nameRange(print);
-                        while (range.getEntry(name) != null) {
-                            name = SkelVar.sernoToString(k, false);
-                            k++;
-                        }
+                String name = SkelVar.sernoToString(k, false);
+                k++;
+                if (print != null) {
+                    if (range == null)
+                        range = nameRange(print);
+                    while (range.getEntry(name) != null) {
+                        name = SkelVar.sernoToString(k, false);
+                        k++;
                     }
-                    copy.add(d.bind[sv.id], name);
                 }
+                copy.add(d.bind[sv.id], name);
             }
         }
 

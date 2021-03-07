@@ -237,3 +237,11 @@ sys_indicator(_/_).
 % sys_provable_property_chk(+Indicator, +Indicator, -List)
 :- special(sys_provable_property_chk/3, 'SpecialPred', 7).
 :- set_predicate_property(sys_provable_property_chk/3, visible(public)).
+
+/****************************************************************/
+/* Properties Listing                                           */
+/****************************************************************/
+
+% sys_show_properties(+Indicator, +Source)
+:- special(sys_show_properties/2, 'SpecialPred', 8).
+:- set_predicate_property(sys_show_properties/2, visible(public)).
