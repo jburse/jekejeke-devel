@@ -79,7 +79,9 @@
 
 /**
  * generated:
+ * generated(P):
  * The predicate lists the user clauses of automatic predicates.
+ * The unary predicate allows specifying a predicate indicator P.
  */
 % generated
 :- public generated/0.
@@ -87,33 +89,36 @@
 generated :-
    generated(_).
 
-/**
- * generated(I):
- * The predicate lists the user clauses of automatic predicates
- * match the pattern I.
- */
 % generated(-Indicator)
 :- public generated/1.
 generated(I) :- ground(I), !,
    generated2(I).
 generated(I) :-
-   bagof(I, (sys_listing_user(U), sys_automatic_item_idx(U, I)), B),
+   bagof(I, (sys_listing_user(U),
+      sys_automatic_item_idx(U, I)), B),
    sys_show_base(U),
    sys_show_import(U), nl,
    sys_member(I, B),
-   sys_show_provable_source(I, U),
+   sys_automatic_show(I, U),
    fail.
 generated(_).
 :- set_predicate_property(generated/1, sys_notrace).
 
+% generated2(+Indicator)
 :- private generated2/1.
 generated2(I) :-
    sys_automatic_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_show_base(U), nl,
-   sys_show_provable_source(I, U),
+   sys_automatic_show(I, U),
    fail.
 generated2(_).
+
+% sys_automatic_show(+Indicator, +Source)
+:- private sys_automatic_show/2.
+sys_automatic_show(I, U) :-
+   sys_show_properties(I, U),
+   sys_show_clauses(I, U), nl.
 
 /**
  * sys_automatic_item_chk(I, U):

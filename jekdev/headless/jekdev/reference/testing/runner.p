@@ -14,6 +14,7 @@
  *      % ref(Fun, Arity, Suite, Ref).
  *
  *      :- multifile(case/4).
+ *      :- dynamic(case/4).
  *      :- discontiguous(case/4).
  *      % case(Fun, Arity, Suite, Number) :- Body.
  *
@@ -114,7 +115,7 @@
 
 :- public case/4.
 :- multifile case/4.
-:- static case/4.
+:- dynamic case/4.
 
 /****************************************************************/
 /* Summary Update                                               */
@@ -237,7 +238,7 @@ runner_batch :-
    sys_remove_predicate,
    sys_remove_suite,
    sys_remove_summary,
-   rule_ref(case(Fun, Arity, Suite, Case), Body, _),
+   clause(case(Fun, Arity, Suite, Case), Body),
    %   write('Case='), write(Case), nl,
    sys_test_body(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),
@@ -254,7 +255,7 @@ runner_batch_debug :-
    sys_remove_predicate,
    sys_remove_suite,
    sys_remove_summary,
-   rule_ref(case(Fun, Arity, Suite, Case), Body, _),
+   clause(case(Fun, Arity, Suite, Case), Body),
    write('Case='), write(Case-Body),
    sys_test_body_debug(Body, OkNok),
    sys_update_result(Fun, Arity, Suite, Case, OkNok),

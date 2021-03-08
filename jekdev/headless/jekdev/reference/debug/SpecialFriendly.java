@@ -2,21 +2,20 @@ package jekdev.reference.debug;
 
 import jekpro.model.builtin.SpecialBody;
 import jekpro.model.inter.*;
-import jekpro.model.molec.CachePredicate;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.*;
 import jekpro.reference.arithmetic.SpecialEval;
-import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.SpecialPred;
+import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.tools.term.SkelAtom;
-import jekpro.tools.term.SkelCompound;
-import matula.util.data.AssocSorted;
+import jekpro.reference.structure.SpecialVars;
+import jekpro.tools.term.*;
+import matula.util.data.*;
 import matula.util.regex.IgnoreCase;
 
 import java.io.IOException;
@@ -54,10 +53,10 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialFriendly extends AbstractSpecial {
-    private final static int SPECIAL_SYS_VM_DISASSEMBLE = 0;
-    private final static int SPECIAL_SYS_VM_COLLECT = 1;
-    private final static int SPECIAL_SYS_HISTOGRAM_NEW = 2;
-    private final static int SPECIAL_SYS_HISTOGRAM_SHOW = 3;
+    private final static int SPECIAL_SYS_HISTOGRAM_NEW = 0;
+    private final static int SPECIAL_SYS_HISTOGRAM_SHOW = 1;
+    private final static int SPECIAL_SYS_VM_DISASSEMBLE_REF = 2;
+    private final static int SPECIAL_SYS_VM_COLLECT_REF = 3;
 
     private final static String CODE_UNIFY_HEAD = "unify_head";
     private final static String CODE_UNIFY_TERM = "unify_term";
@@ -74,6 +73,7 @@ public final class SpecialFriendly extends AbstractSpecial {
     private final static String CODE_CUT_SOFT_THEN = "cut_soft_then";
 
     private final static String OP_DOMAIN_MAP = "map";
+    private final static String OP_DOMAIN_CLAUSE = "clause";
 
     /**
      * <p>Create a index dump special.</p>
@@ -98,55 +98,10 @@ public final class SpecialFriendly extends AbstractSpecial {
     public final boolean moniFirst(Engine en)
             throws EngineMessage, EngineException {
         switch (id) {
-            case SPECIAL_SYS_VM_DISASSEMBLE:
+            case SPECIAL_SYS_HISTOGRAM_NEW:
                 Object[] temp = ((SkelCompound) en.skel).args;
                 Display ref = en.display;
-                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-                if (!(pick.del instanceof AbstractDefined))
-                    return false;
-
-                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-
-                Number beta = SpecialEval.derefAndCastInteger(temp[2], ref);
-                SpecialEval.checkNotLessThanZero(beta);
-                int flags = SpecialEval.castIntValue(beta);
-
-                SpecialFriendly.disassemblePredicate((AbstractDefined) pick.del, source, flags, en);
-                return true;
-            case SPECIAL_SYS_VM_COLLECT:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-                if (!(pick.del instanceof AbstractDefined))
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-
-                AssocSorted<String, FriendlyReport> map = derefAndCastMap(temp[2], ref);
-                SpecialFriendly.collectPredicate((AbstractDefined) pick.del, source, map, en);
-                return true;
-            case SPECIAL_SYS_HISTOGRAM_NEW:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                map = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
+                AssocSorted<String, FriendlyReport> map = new AssocSorted<>(IgnoreCase.DEFAULT_TERTIARY);
                 if (!en.unify(map, Display.DISPLAY_CONST, temp[0], ref))
                     return false;
                 return true;
@@ -157,8 +112,73 @@ public final class SpecialFriendly extends AbstractSpecial {
 
                 SpecialFriendly.histogramShow(map, en);
                 return true;
+            case SPECIAL_SYS_VM_DISASSEMBLE_REF:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                Clause clause = derefAndCastClause(temp[0], ref);
+
+                en.skel = temp[1];
+                en.display = ref;
+                en.deref();
+                Display d2 = en.display;
+
+                MapHash<BindUniv, String> print = PropertyCallable.assocToMapUniv(temp[2], ref, en);
+
+                Number beta = SpecialEval.derefAndCastInteger(temp[3], ref);
+                SpecialEval.checkNotLessThanZero(beta);
+                int flags = SpecialEval.castIntValue(beta);
+
+                SpecialFriendly.disassembleClause(clause, d2, print, flags, en);
+                return true;
+            case SPECIAL_SYS_VM_COLLECT_REF:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                clause = derefAndCastClause(temp[0], ref);
+                map = derefAndCastMap(temp[1], ref);
+                SpecialFriendly.collectClause(clause, map);
+                return true;
             default:
                 throw new IllegalArgumentException(OP_ILLEGAL_SPECIAL);
+        }
+    }
+
+    /**
+     * <p>Disassemble the given predicate.</p>
+     *
+     * @param clause The clause.
+     * @param d2 The display.
+     * @param print The print map.
+     * @param flags  The flags.
+     * @param en     The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void disassembleClause(Clause clause, Display d2,
+                                          MapHash<BindUniv, String> print,
+                                          int flags, Engine en)
+            throws EngineMessage, EngineException {
+        try {
+            Object obj = en.visor.curoutput;
+            LoadOpts.checkTextWrite(obj);
+            Writer wr = (Writer) obj;
+
+            SkelAtom sa = StackElement.callableToName(clause.head);
+            PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
+            pw.setDefaults(sa.scope);
+            pw.setEngine(en);
+            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
+            pw.setWriter(wr);
+            pw.setPrintMap(print);
+            FriendlyPrinter fp = new FriendlyPrinter();
+
+            fp.flags = flags;
+            fp.pw = pw;
+            fp.ref = d2;
+            disassembleClause(clause, fp);
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
         }
     }
 
@@ -187,68 +207,15 @@ public final class SpecialFriendly extends AbstractSpecial {
     /****************************************************************/
 
     /**
-     * <p>Disassemble the given predicate.</p>
-     *
-     * @param def    The abstract defined.
-     * @param source The source.
-     * @param flags  The flags.
-     * @param en     The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static void disassemblePredicate(AbstractDefined def,
-                                             AbstractSource source, int flags,
-                                             Engine en)
-            throws EngineMessage, EngineException {
-        try {
-            Object obj = en.visor.curoutput;
-            LoadOpts.checkTextWrite(obj);
-            Writer wr = (Writer) obj;
-
-            PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-            pw.setDefaults(en.visor.peekStack());
-            pw.setEngine(en);
-            pw.setFlags(pw.getFlags() | PrologWriter.FLAG_QUOT);
-            pw.setWriter(wr);
-
-            FriendlyPrinter fp = new FriendlyPrinter();
-            fp.flags = flags;
-            fp.pw = pw;
-            /* flesh out clauses */
-            Clause[] list = def.listClauses(en);
-            for (int i = 0; i < list.length; i++) {
-                Clause clause = list[i];
-                SkelAtom sa = StackElement.callableToName(clause.head);
-                if (source != sa.scope)
-                    continue;
-                Object t = Clause.interToClauseSkel(clause, en);
-                pw.setDefaults(source);
-                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-                pw.setSpez(PrologWriter.SPEZ_META);
-                pw.setOffset(-1);
-                Display ref = SpecialLoad.showClause(pw, t, clause.vars, en,
-                        SpecialLoad.MASK_SHOW_NANO | SpecialLoad.MASK_SHOW_NRBD);
-                pw.setDefaults(en.visor.peekStack());
-                pw.setFlags(pw.getFlags() & ~(PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-                pw.setSpez(0);
-                disassembleClause(clause, ref, fp);
-            }
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /**
      * <p>Disassemble a clause.</p>
      *
      * @param clause The clause.
-     * @param ref    The display.
      * @param fp     The firendly printer.
      * @throws IOException     IO error.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
-    private static void disassembleClause(Clause clause, Display ref,
+    private static void disassembleClause(Clause clause,
                                           FriendlyPrinter fp)
             throws IOException, EngineMessage, EngineException {
         fp.count = 0;
@@ -270,7 +237,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write(" _");
                         wr.write(Integer.toString(k));
                         wr.write(", ");
-                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[k], ref);
+                        fp.pw.unparseStatement(((SkelCompound) clause.head).args[k], fp.ref);
                         wr.write('\n');
                         wr.flush();
                         break;
@@ -289,21 +256,19 @@ public final class SpecialFriendly extends AbstractSpecial {
                 }
             }
         }
-        disassembleBody(clause, ref, fp);
+        disassembleBody(clause, fp);
     }
 
     /**
      * <p>Disassemble a goal list.</p>
      *
      * @param dire The directive.
-     * @param ref  The display.
      * @param fp   The disassemble printer.
      * @throws IOException     IO error.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */
     private static void disassembleBody(Directive dire,
-                                        Display ref,
                                         FriendlyPrinter fp)
             throws IOException, EngineException, EngineMessage {
         Intermediate temp = dire;
@@ -320,13 +285,13 @@ public final class SpecialFriendly extends AbstractSpecial {
                     while (Directive.isAlter(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        disassembleBranch(help, ref, fp, branch == ((Goal) temp).term);
+                        disassembleBranch(help, fp, branch == ((Goal) temp).term);
                         branch = sc.args[1];
                     }
                     if (Directive.isGuard(branch)) {
                         SkelCompound sc = (SkelCompound) branch;
                         Directive help = (Directive) sc.args[0];
-                        disassembleBranch(help, ref, fp, branch == ((Goal) temp).term);
+                        disassembleBranch(help, fp, branch == ((Goal) temp).term);
                     } else {
                         Writer wr = fp.pw.getWriter();
                         fp.friendlyCount();
@@ -334,13 +299,13 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write('\n');
                         wr.flush();
                         fp.level++;
-                        disassembleBody((Directive) branch, ref, fp);
+                        disassembleBody((Directive) branch, fp);
                         fp.level--;
                     }
                 } else if (Directive.isSequen(branch)) {
                     SkelCompound sc = (SkelCompound) branch;
                     Directive help = (Directive) sc.args[0];
-                    disassembleBody(help, ref, fp);
+                    disassembleBody(help, fp);
                 } else if ((type = SpecialBody.controlType(branch)) == SpecialBody.TYPE_CTRL_BEGN
                         || type == SpecialBody.TYPE_CTRL_SBGN) {
                     /* */
@@ -364,7 +329,7 @@ public final class SpecialFriendly extends AbstractSpecial {
                         wr.write(SpecialFriendly.CODE_GOAL_CALL);
                     }
                     wr.write(' ');
-                    fp.pw.unparseStatement(branch, ref);
+                    fp.pw.unparseStatement(branch, fp.ref);
                     wr.write('\n');
                     wr.flush();
                 }
@@ -376,7 +341,6 @@ public final class SpecialFriendly extends AbstractSpecial {
      * <p>Disassemble a try/retry goal list.</p>
      *
      * @param help  The branch.
-     * @param ref   The display.
      * @param fp    The firendly printer.
      * @param first The first flag.
      * @throws IOException     IO error.
@@ -384,7 +348,6 @@ public final class SpecialFriendly extends AbstractSpecial {
      * @throws EngineMessage   Shit happens.
      */
     private static void disassembleBranch(Directive help,
-                                          Display ref,
                                           FriendlyPrinter fp,
                                           boolean first)
             throws IOException, EngineException, EngineMessage {
@@ -398,7 +361,7 @@ public final class SpecialFriendly extends AbstractSpecial {
         wr.write('\n');
         wr.flush();
         fp.level++;
-        disassembleBody(help, ref, fp);
+        disassembleBody(help, fp);
         fp.level--;
     }
 
@@ -554,6 +517,25 @@ public final class SpecialFriendly extends AbstractSpecial {
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     OP_DOMAIN_MAP, m), d);
+        }
+    }
+
+    /**
+     * <p>Cast a ptr.</p>
+     *
+     * @param m The skel.
+     * @param d The display.
+     * @return The ptr.
+     * @throws EngineMessage Validation Error.
+     */
+    private static Clause derefAndCastClause(Object m, Display d)
+            throws EngineMessage {
+        m = SpecialUniv.derefAndCastRef(m, d);
+        if (m instanceof Clause) {
+            return (Clause) m;
+        } else {
+            throw new EngineMessage(EngineMessage.domainError(
+                    OP_DOMAIN_CLAUSE, m), d);
         }
     }
 

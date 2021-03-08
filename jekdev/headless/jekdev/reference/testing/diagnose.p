@@ -155,7 +155,7 @@ list_result_data(_, _, _).
 % list_test_case_data(+Atom,+Integer,+Atom,+Integer)
 :- private list_test_case_data/4.
 list_test_case_data(Fun, Arity, Suite, Case) :-
-   rule_ref(case(Fun, Arity, Suite, Case), Body, _),
+   clause(case(Fun, Arity, Suite, Case), Body),
    callable_property(Body, sys_variable_names(N)),
    write_term(Body, [quoted(true), context(0), variable_names(N)]),
    write('. '),

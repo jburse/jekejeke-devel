@@ -100,7 +100,7 @@ public class StoreTrace extends Store {
      *
      * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module.
+     * @param mod   The module.
      * @return True if the spy point is present, otherwise false.
      */
     public boolean containsSpyPoint(String fun, int arity, String mod) {
@@ -118,7 +118,7 @@ public class StoreTrace extends Store {
      *
      * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module
+     * @param mod   The module
      */
     public void addSpyPoint(String fun, int arity, String mod) {
         synchronized (this) {
@@ -135,7 +135,7 @@ public class StoreTrace extends Store {
      *
      * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module.
+     * @param mod   The module.
      */
     public void removeSpyPoint(String fun, int arity, String mod) {
         if (stab == null)

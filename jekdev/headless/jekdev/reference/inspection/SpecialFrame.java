@@ -11,6 +11,7 @@ import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractTracking;
@@ -82,7 +83,7 @@ public final class SpecialFrame extends AbstractSpecial {
             throws EngineMessage, EngineException {
         switch (id) {
             case SPECIAL_RULE_FRAME:
-                return AbstractDefined.searchKnowledgebase(AbstractDefined.OPT_CHCK_DEFN |
+                return SpecialDynamic.searchKnowledgebase(AbstractDefined.OPT_CHCK_DEFN |
                         AbstractDefined.OPT_RSLT_CREF, en);
             case SPECIAL_SYS_FRAME_PROPERTY:
                 Object[] temp = ((SkelCompound) en.skel).args;

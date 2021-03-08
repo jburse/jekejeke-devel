@@ -151,7 +151,7 @@ tracker_batch :-
    reset_cover_hit,
    visible([head, exit]),
    trace,
-   rule_ref(case(_, _, _, _), Body, _),
+   clause(case(_, _, _, _), Body),
    sys_cover_body(Body),
    fail.
 tracker_batch :-
@@ -170,7 +170,7 @@ tracker_batch_debug :-
    reset_cover_hit,
    visible([head, exit]),
    trace,
-   rule_ref(case(_, _, _, Case), Body, _),
+   clause(case(_, _, _, Case), Body),
    write('Case='), write(Case-Body),
    sys_cover_body_debug(Body),
    fail.

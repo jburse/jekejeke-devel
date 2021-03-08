@@ -3,6 +3,7 @@ package jekdev.reference.debug;
 import jekdev.model.builtin.ClauseTrace;
 import jekdev.model.builtin.DirectiveTrace;
 import jekdev.model.builtin.GoalTrace;
+import jekpro.model.molec.Display;
 import jekpro.model.pretty.PrologWriter;
 import jekpro.model.rope.Directive;
 import jekpro.model.rope.Intermediate;
@@ -48,6 +49,7 @@ final class FriendlyPrinter {
     int count;
     PrologWriter pw;
     int level;
+    Display ref;
 
     /**
      * <p>Get the first literal of a directive.</p>

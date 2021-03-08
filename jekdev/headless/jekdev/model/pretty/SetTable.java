@@ -42,9 +42,9 @@ public final class SetTable extends MapHash<String, MapHash<String, ListArray<In
     /**
      * <p>Find string integer in table.</p>
      *
-     * @param fun The functor.
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module.
+     * @param mod   The module.
      * @return The value or null.
      */
     public boolean contains(String fun, int arity, String mod) {
@@ -60,13 +60,13 @@ public final class SetTable extends MapHash<String, MapHash<String, ListArray<In
     /**
      * <p>Add string integer value to the table.</p>
      *
-     * @param fun The functor.
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module.
+     * @param mod   The module.
      */
     public void add(String fun, int arity, String mod) {
         MapHash<String, ListArray<Integer>> map = get(mod);
-        if (map==null) {
+        if (map == null) {
             map = new MapHash<>();
             add(mod, map);
         }
@@ -81,13 +81,13 @@ public final class SetTable extends MapHash<String, MapHash<String, ListArray<In
     /**
      * <p>Remove string integer from table.</p>
      *
-     * @param fun The functor.
+     * @param fun   The functor.
      * @param arity The arity.
-     * @param mod The module.
+     * @param mod   The module.
      */
     public void remove(String fun, int arity, String mod) {
         MapHash<String, ListArray<Integer>> map = get(mod);
-        if (map==null)
+        if (map == null)
             return;
         ListArray<Integer> list = map.get(fun);
         if (list == null)
@@ -95,7 +95,7 @@ public final class SetTable extends MapHash<String, MapHash<String, ListArray<In
         list.remove(Integer.valueOf(arity));
         if (list.size() == 0)
             map.remove(fun);
-        if (map.size()==0)
+        if (map.size() == 0)
             remove(mod);
     }
 

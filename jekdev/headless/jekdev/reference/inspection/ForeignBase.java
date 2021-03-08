@@ -10,7 +10,6 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractLocator;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Operator;
-import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
 import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.structure.SpecialUniv;
@@ -164,7 +163,7 @@ public final class ForeignBase {
             if (pick == null)
                 return null;
             AbstractSource src = derefAndCastSource(source, engine);
-            Object t = SpecialLoad.provableToColonSkel(pick, src);
+            Object t = SpecialPred.provableToColonSkel(pick, src);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineException x) {
             throw new InterpreterException(x);
@@ -193,7 +192,7 @@ public final class ForeignBase {
             if (oper == null)
                 return null;
             AbstractSource src = derefAndCastSource(source, engine);
-            Object t = SpecialLoad.syntaxToColonSkel(oper, src);
+            Object t = SpecialOper.syntaxToColonSkel(oper, src);
             t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
             return AbstractTerm.createMolec(t, Display.DISPLAY_CONST);
         } catch (EngineException x) {

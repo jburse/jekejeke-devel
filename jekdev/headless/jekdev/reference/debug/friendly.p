@@ -102,6 +102,7 @@
 :- module(friendly, []).
 :- use_module(library(inspection/provable)).
 :- use_module(library(basic/lists)).
+:- use_module(library(experiment/ref)).
 
 /****************************************************************/
 /* List & Hooked                                                */
@@ -156,7 +157,7 @@ vm_disassemble(I, F) :-
    sys_show_base(U),
    sys_show_import(U), nl,
    member(I, B),
-   sys_vm_disassemble(I, U, F), nl,
+   sys_show_clauses(I, U, F), nl,
    fail.
 vm_disassemble(_, _).
 
@@ -167,13 +168,9 @@ vm_disassemble2(I, F) :-
    sys_listing_user_chk(U),
    sys_has_clause(I, U),
    sys_show_base(U), nl,
-   sys_vm_disassemble(I, U, F), nl,
+   sys_show_clauses(I, U, F), nl,
    fail.
 vm_disassemble2(_, _).
-
-% sys_vm_disassemble(+Indicator, +Source, +Integer)
-:- private sys_vm_disassemble/3.
-:- special(sys_vm_disassemble/3, 'SpecialFriendly', 0).
 
 /****************************************************************/
 /* Summary & Report                                             */
@@ -208,7 +205,7 @@ vm_summary(I, M) :-
       sys_intermediate_item_idx(U, I),
       sys_has_clause(I, U)), B),
    member(I, B),
-   sys_vm_collect(I, U, M),
+   sys_recap_clauses(I, U, M),
    fail.
 vm_summary(_, _).
 
@@ -218,21 +215,17 @@ vm_summary2(I, M) :-
    sys_intermediate_item_chk(I, U),
    sys_listing_user_chk(U),
    sys_has_clause(I, U),
-   sys_vm_collect(I, U, M),
+   sys_recap_clauses(I, U, M),
    fail.
 vm_summary2(_, _).
 
-% sys_vm_collect(+Indicator, +Source, +Map)
-:- private sys_vm_collect/3.
-:- special(sys_vm_collect/3, 'SpecialFriendly', 1).
-
 % sys_historgram_new(-Map)
 :- private sys_historgram_new/1.
-:- special(sys_historgram_new/1, 'SpecialFriendly', 2).
+:- special(sys_historgram_new/1, 'SpecialFriendly', 0).
 
 % sys_historgram_show(+Map)
 :- private sys_historgram_show/1.
-:- special(sys_historgram_show/1, 'SpecialFriendly', 3).
+:- special(sys_historgram_show/1, 'SpecialFriendly', 1).
 
 /**
  * vm_report:
@@ -259,7 +252,7 @@ vm_report(I) :-
    sys_show_import(U), nl,
    member(I, B),
    sys_historgram_new(M),
-   sys_vm_collect(I, U, M),
+   sys_recap_clauses(I, U, M),
    sys_intermediate_item_sep(I),
    sys_historgram_show(M), nl,
    fail.
@@ -273,7 +266,7 @@ vm_report2(I) :-
    sys_has_clause(I, U),
    sys_show_base(U), nl,
    sys_historgram_new(M),
-   sys_vm_collect(I, U, M),
+   sys_recap_clauses(I, U, M),
    sys_intermediate_item_sep(I),
    sys_historgram_show(M), nl,
    fail.
@@ -309,3 +302,40 @@ sys_intermediate_item_idx(U, I) :-
  */
 sys_intermediate_item_sep(I) :-
    write('-------- '), writeq(I), write(' ---------'), nl.
+
+/****************************************************************/
+/* Clause Listing                                               */
+/****************************************************************/
+
+% sys_show_clauses(+Indicator, +Source, +Integer)
+:- private sys_show_clauses/3.
+sys_show_clauses(I, U, F) :-
+   sys_list_clause_ref(I, H, B, R),
+   callable_property(H, sys_context(U)),
+   callable_property(H, sys_variable_names(N)),
+   sys_make_clause(H, B, T),
+   term_variables(T, L),
+   sys_number_variables(L, N, [], M),
+   write_term('.'(T), [context(-1), quoted(true),
+      format(newline), annotation(makedot),
+      variable_names(M), source(U)]),
+   sys_vm_disassemble_ref(R, H, M, F),
+   fail.
+sys_show_clauses(_, _, _).
+
+% sys_recap_clauses(+Indicator, +Source, +Map)
+:- private sys_recap_clauses/3.
+sys_recap_clauses(I, U, M) :-
+   sys_list_clause_ref(I, H, _, R),
+   callable_property(H, sys_context(U)),
+   sys_vm_collect_ref(R, M),
+   fail.
+sys_recap_clauses(_, _, _).
+
+% sys_vm_disassemble_ref(+Clause, +Term, +List, +Integer)
+:- private sys_vm_disassemble_ref/4.
+:- special(sys_vm_disassemble_ref/4, 'SpecialFriendly', 2).
+
+% sys_vm_collect_ref(+Clause, +Map)
+:- private sys_vm_collect_ref/2.
+:- special(sys_vm_collect_ref/2, 'SpecialFriendly', 3).
