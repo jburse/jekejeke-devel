@@ -12,13 +12,12 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.StoreKey;
 import jekpro.reference.bootload.ForeignPath;
-import jekpro.reference.runtime.SpecialSession;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
@@ -95,7 +94,7 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                         Display.DISPLAY_CONST)};
             case PROP_SYS_VARIABLE_NAMES:
                 Display d = AbstractTerm.getDisplay(obj);
-                t = SpecialSession.hashToAssoc(d.vars, d, en);
+                t = SpecialLoad.hashToAssoc(d.vars, d, en);
                 return new Object[]{AbstractTerm.createMolec(
                         new SkelCompound(new SkelAtom(OP_SYS_VARIABLE_NAMES), t), d)};
             default:
@@ -324,7 +323,8 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                 if (print == null)
                     print = new MapHash<>();
                 String name = SpecialUniv.derefAndCastString(mc2[0], d2);
-                addMapUniv(print, pair, name);
+                if (print.getEntry(pair) == null)
+                    print.add(pair, name);
             }
             en.skel = mc[1];
             en.display = d;
@@ -340,24 +340,6 @@ public final class PropertyCallable extends AbstractProperty<Object> {
                     en.skel), en.display);
         }
         return print;
-    }
-
-    /**
-     * <p>Add to the map hash.</p>
-     *
-     * @param print The print map.
-     * @param key   The variable.
-     * @param name  The variable name.
-     */
-    public static void addMapUniv(MapHash<BindUniv, String> print,
-                                  BindUniv key,
-                                  String name) {
-        MapEntry<BindUniv, String> entry = print.getEntry(key);
-        if (entry == null) {
-            print.add(key, name);
-        } else {
-            entry.value = name;
-        }
     }
 
 }

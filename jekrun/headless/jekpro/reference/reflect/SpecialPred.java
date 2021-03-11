@@ -248,7 +248,7 @@ public final class SpecialPred extends AbstractSpecial {
                         props.get(j), en, modifiers);
         }
         if (modifiers != null) {
-            Object decl = SpecialLoad.provableToColonSkel(pick, src);
+            Object decl = provableToColonSkel(pick, src);
             decl = SpecialPred.prependModifiers(modifiers, decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
             decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
@@ -269,9 +269,9 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineException Shit happens.
      */
     private static ListArray<SkelAtom> showProperties(PrologWriter pw, Predicate pick,
-                                                     AbstractSource src,
-                                                     MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
-                                                     Engine en, ListArray<SkelAtom> modifiers)
+                                                      AbstractSource src,
+                                                      MapHashLink<StoreKey, AbstractProperty<Predicate>> props,
+                                                      Engine en, ListArray<SkelAtom> modifiers)
             throws EngineMessage, EngineException {
         for (MapEntry<StoreKey, AbstractProperty<Predicate>> entry2 =
              (props != null ? props.getFirstEntry() : null);
@@ -281,7 +281,7 @@ public final class SpecialPred extends AbstractSpecial {
                 continue;
             if ((prop.getFlags() & AbstractProperty.MASK_PROP_DEFL) != 0 &&
                     (pick.del instanceof AbstractDefined) &&
-                    SpecialDynamic.hasClause((AbstractDefined)pick.del, src, en))
+                    SpecialDynamic.hasClause((AbstractDefined) pick.del, src, en))
                 continue;
             if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
                     SpecialPred.sameVisiblePredicate(pick, src, en))
@@ -367,10 +367,10 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelSet(Object skel, Predicate pick,
-                                         AbstractSource source)
+                                          AbstractSource source)
             throws EngineMessage {
         return new SkelCompound(new SkelAtom(OP_SET_PREDICATE_PROPERTY, source),
-                SpecialLoad.provableToColonSkel(pick,
+                provableToColonSkel(pick,
                         source), skel);
     }
 
@@ -384,7 +384,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelMeta(Object skel, Predicate pick,
-                                          AbstractSource source)
+                                           AbstractSource source)
             throws EngineMessage {
         SkelCompound sc = (SkelCompound) skel;
         Object t = sc.args[sc.args.length - 1];
@@ -411,7 +411,7 @@ public final class SpecialPred extends AbstractSpecial {
             t = new SkelAtom(pick.getFun(), source);
         }
         Object[] args = new Object[sc.args.length];
-        args[sc.args.length - 1] = SpecialLoad.provableToColonSkel(pick, t, source);
+        args[sc.args.length - 1] = provableToColonSkel(pick, t, source);
         if (sc.args.length > 1)
             System.arraycopy(sc.args, 0, args, 0, sc.args.length - 1);
         SkelCompound sc2 = new SkelCompound(args, sc.sym);
@@ -429,9 +429,9 @@ public final class SpecialPred extends AbstractSpecial {
      * @throws EngineMessage Shit happens.
      */
     private static Object predDeclSkelIndicator(Object skel, Predicate pick,
-                                               AbstractSource source)
+                                                AbstractSource source)
             throws EngineMessage {
-        Object t = SpecialLoad.provableToColonSkel(pick, source);
+        Object t = provableToColonSkel(pick, source);
         if (skel instanceof SkelAtom) {
             SkelAtom sa = (SkelAtom) skel;
             return new SkelCompound(sa, t);
@@ -492,7 +492,7 @@ public final class SpecialPred extends AbstractSpecial {
      * @return The value list with spec.
      */
     private static Object[] delegateSpec(Object[] vals, Predicate pick,
-                                        AbstractSource source)
+                                         AbstractSource source)
             throws EngineMessage {
         if (vals.length == 0)
             return vals;
@@ -954,7 +954,7 @@ public final class SpecialPred extends AbstractSpecial {
      *
      * @param fun   The name.
      * @param arity The length.
-     * @param mod The module name.
+     * @param mod   The module name.
      * @param scope The scope.
      * @return The colon indictor
      * @throws EngineMessage Shit happens.
@@ -978,6 +978,55 @@ public final class SpecialPred extends AbstractSpecial {
                     Integer.valueOf(arity));
         }
         return s;
+    }
+
+    /********************************************************************/
+    /* Predicate Formatting Utilities                                   */
+    /********************************************************************/
+
+    /**
+     * <p>Generate a provable indicator hash.</p>
+     *
+     * @param pick   The predicate.
+     * @param source The source, non null.
+     * @return The shortest predicate indicator.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object provableToColonSkel(Predicate pick,
+                                             AbstractSource source)
+            throws EngineMessage {
+        SkelCompound t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
+                new SkelAtom(pick.getFun(), source),
+                Integer.valueOf(pick.getArity()));
+        return provableToColonSkel(pick, t, source);
+    }
+
+    /**
+     * <p>Convert a callable to a colon.</p>
+     * <p>A colon callable has the following syntax.</p>
+     * <pre>
+     *     colon_callable --> slash : callable
+     *                      | term.
+     * </pre>
+     * <p>The syntax is not recursive.</p>
+     *
+     * @param pick   The predicate.
+     * @param t      The callable.
+     * @param source The source, non null.
+     * @return The colon callable.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object provableToColonSkel(Predicate pick, Object t,
+                                             AbstractSource source)
+            throws EngineMessage {
+        String orig = source.getFullName();
+        String module = pick.getSource().getFullName();
+        if (!orig.equals(module)) {
+            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
+            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
+        } else {
+            return t;
+        }
     }
 
 }

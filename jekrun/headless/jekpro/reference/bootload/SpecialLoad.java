@@ -2,25 +2,28 @@ package jekpro.reference.bootload;
 
 import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
+import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.*;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
-import jekpro.reference.reflect.*;
+import jekpro.reference.reflect.PropertyCallable;
+import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.runtime.EvaluableLogic;
-import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.reference.structure.SpecialVars;
-import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
-import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
+import matula.util.regex.ScannerError;
+import matula.util.system.OpenOpts;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -58,18 +61,13 @@ import java.io.Writer;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialLoad extends AbstractSpecial {
-    private final static String OP_SET_OPER_PROPERTY = "set_oper_property";
-
     private final static int SPECIAL_SYS_LOAD_FILE = 0;
     private final static int SPECIAL_SYS_DETACH_FILE = 1;
     private final static int SPECIAL_SYS_IMPORT_FILE = 2;
     private final static int SPECIAL_SYS_REGISTER_FILE = 3;
-    private final static int SPECIAL_SYS_SHOW_SYNTAX_SOURCE = 4;
-    private final static int SPECIAL_SYS_SHOW_IMPORT = 5;
-    private final static int SPECIAL_SYS_SHOW_BASE = 6;
-
-    public static final int MASK_SHOW_NANO = 0x00000001;
-    public static final int MASK_SHOW_NRBD = 0x00000002;
+    private final static int SPECIAL_SYS_SHOW_IMPORT = 4;
+    private final static int SPECIAL_SYS_SHOW_BASE = 5;
+    public final static int SPECIAL_SYS_BOOT_STREAM = 6;
 
     public final static String OP_MODULE = "module";
     public final static String OP_SET_PROLOG_FLAG = "set_prolog_flag";
@@ -130,36 +128,6 @@ public final class SpecialLoad extends AbstractSpecial {
                 sa = SpecialUniv.derefAndCastStringWrapped(temp[0], ref);
                 registerFile(sa.scope, sa.fun, sa.getPosition(), en.store);
                 return true;
-            case SPECIAL_SYS_SHOW_SYNTAX_SOURCE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-
-                Operator oper = SpecialOper.operToOperatorDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (oper == null)
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (oper.getScope() != source)
-                    return false;
-
-                Object obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                Writer wr = (Writer) obj;
-                PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setDefaults(en.visor.peekStack());
-                pw.setEngine(en);
-                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-                pw.setSpez(PrologWriter.SPEZ_META);
-                pw.setOffset(-1);
-                pw.setWriter(wr);
-                SpecialLoad.listSyntax(pw, oper, source, en);
-                newLineFlush(wr);
-                return true;
             case SPECIAL_SYS_SHOW_IMPORT:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
@@ -170,18 +138,7 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (source == null)
                     return false;
 
-                obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                wr = (Writer) obj;
-
-                pw = en.store.foyer.createWriter(Foyer.IO_TERM);
-                pw.setDefaults(en.visor.peekStack());
-                pw.setEngine(en);
-                pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
-                pw.setSpez(PrologWriter.SPEZ_META);
-                pw.setOffset(-1);
-                pw.setWriter(wr);
-                SpecialLoad.listImport(pw, source, en);
+                SpecialLoad.listImport(source, en);
                 return true;
             case SPECIAL_SYS_SHOW_BASE:
                 temp = ((SkelCompound) en.skel).args;
@@ -193,11 +150,14 @@ public final class SpecialLoad extends AbstractSpecial {
                 if (source == null)
                     return false;
 
-                obj = en.visor.curoutput;
-                LoadOpts.checkTextWrite(obj);
-                wr = (Writer) obj;
-
-                AbstractSource.showShortName(wr, source);
+                showShortName(source, en);
+                return true;
+            case SPECIAL_SYS_BOOT_STREAM:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                Object obj = SpecialUniv.derefAndCastRef(temp[0], ref);
+                PrologReader.checkTextRead(obj);
+                SpecialLoad.bootStream((Reader) obj, en);
                 return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
@@ -205,98 +165,27 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
-     * <p>List the syntax operator.</p>
-     *
-     * @param pw   The prolog writer.
-     * @param oper The operator.
-     * @param src  The source, non null.
-     * @param en   The engine.
-     * @throws EngineMessage   Shit happens.
-     * @throws EngineException Shit happens.
-     */
-    private static void listSyntax(PrologWriter pw,
-                                   Operator oper,
-                                   AbstractSource src,
-                                   Engine en)
-            throws EngineMessage, EngineException {
-        if (oper.getLevel() == 0)
-            return;
-        /* flesh out properties */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHashLink<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
-            for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
-                 (props != null ? props.getFirstEntry() : null);
-                 entry2 != null; entry2 = props.successor(entry2)) {
-                AbstractProperty<Operator> prop = entry2.value;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
-                    continue;
-                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
-                        sameVisibleOper(src, oper, en))
-                    continue;
-                Object[] vals = prop.getObjProps(oper, en);
-                for (int j = 0; j < vals.length; j++) {
-                    Object val = vals[j];
-                    Object decl;
-                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
-                        decl = operDeclSkelSet(
-                                AbstractTerm.getSkel(val), oper, src);
-                    } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
-                        decl = operDeclSkelOp(
-                                AbstractTerm.getSkel(val), oper, src);
-                    } else {
-                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
-                            val = firstArg(val);
-                        decl = operDeclSkelIndicator(
-                                AbstractTerm.getSkel(val), oper, src);
-                    }
-                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
-                    decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
-                    pw.unparseStatement(decl, Display.DISPLAY_CONST);
-                    SpecialLoad.flushWriter(pw.getWriter());
-                }
-            }
-        }
-    }
-
-    /**
-     * <p>Check whether a source and an operator have the same visibility.</p>
-     *
-     * @param src  The source.
-     * @param oper The operator.
-     * @param en   The engine.
-     * @return True if the source and the operator have the same visibility, otherwise false.
-     */
-    private static boolean sameVisibleOper(AbstractSource src, Operator oper,
-                                           Engine en)
-            throws EngineMessage, EngineException {
-        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
-        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
-        Object[] vals = prop.getObjProps(src, en);
-        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
-        AbstractProperty<Operator> prop1 = SpecialOper.findOperProperty(sk2, en);
-        Object[] vals2 = prop1.getObjProps(oper, en);
-        return sameValues(vals, vals2);
-    }
-
-    /**
      * <p>List the source.</p>
      * <p>Only capabilities that are ok are considered.</p>
      *
-     * @param pw  The Prolog writer.
      * @param src The source.
      * @param en  The engine.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
-    private static void listImport(PrologWriter pw,
-                                   AbstractSource src, Engine en)
+    private static void listImport(AbstractSource src, Engine en)
             throws EngineMessage, EngineException {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
+        pw.setDefaults(en.visor.peekStack());
+        pw.setEngine(en);
+        pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
+        pw.setSpez(PrologWriter.SPEZ_META);
+        pw.setOffset(-1);
+        pw.setWriter(wr);
+
         /* show source comment */
         if (src != null &&
                 (src.getBits() & AbstractSource.MASK_SRC_VISI) == 0 &&
@@ -383,6 +272,27 @@ public final class SpecialLoad extends AbstractSpecial {
     }
 
     /**
+     * <p>Show the short name of the source key.</p>
+     *
+     * @param src The source.
+     */
+    public static void showShortName(AbstractSource src, Engine en)
+            throws EngineMessage {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+
+        try {
+            wr.write("% ");
+            wr.write(ForeignLocale.shortName(src.getPath()));
+            wr.write('\n');
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
+    }
+
+    /**
      * <p>Determine the declaration term.</p>
      *
      * @param sk     The property name.
@@ -399,6 +309,21 @@ public final class SpecialLoad extends AbstractSpecial {
         if (sk.getFun().equals(PropertySource.OP_SYS_SOURCE_NAME) && sk.getArity() == 1)
             return PropertySource.shortModule(skel, en);
         return skel;
+    }
+
+    /**
+     * <p>Flush the writer.</p>
+     *
+     * @param wr The writer.
+     * @throws EngineMessage Shit happens.
+     */
+    public static void flushWriter(Writer wr)
+            throws EngineMessage {
+        try {
+            wr.flush();
+        } catch (IOException x) {
+            throw EngineMessage.mapIOException(x);
+        }
     }
 
     /************************************************************/
@@ -492,146 +417,6 @@ public final class SpecialLoad extends AbstractSpecial {
         }
     }
 
-    /**
-     * <p>Output newline and flush.</p>
-     *
-     * @param wr The write.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void newLineFlush(Writer wr)
-            throws EngineMessage {
-        try {
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
-    /***************************************************************/
-    /* Show Clause                                                 */
-    /***************************************************************/
-
-    /**
-     * <p>List a clause.</p>
-     *
-     * @param pw    The prolog writer.
-     * @param t     The term.
-     * @param vars  The var hash
-     * @param en    The engine.
-     * @param flags The show flags.
-     * @throws EngineException Shit happens.
-     * @throws EngineMessage   Shit happens.
-     */
-    public static Display showClause(PrologWriter pw, Object t,
-                                     MapHashLink<String, SkelVar> vars,
-                                     Engine en, int flags)
-            throws EngineException, EngineMessage {
-        if ((en.store.foyer.getBits() & Foyer.MASK_FOYER_CEXP) == 0 ||
-                (flags & MASK_SHOW_NRBD) != 0) {
-            Display ref = AbstractSkel.createDisplay(t);
-            EngineVars ev = new EngineVars();
-            if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
-                ev.singsOf(t, ref);
-            } else {
-                ev.varInclude(t, ref);
-            }
-            MapHash<BindUniv, String> print = hashToMapUniv(vars, ref, en);
-            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print);
-            pw.setPrintMap(print);
-            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), t);
-            pw.unparseStatement(t, ref);
-            SpecialLoad.flushWriter(pw.getWriter());
-            return ref;
-        }
-        Intermediate r = en.contskel;
-        CallFrame u = en.contdisplay;
-        int size = SupervisorCopy.displaySize(t);
-        SkelVar res = SkelVar.valueOf(size);
-        t = new SkelCompound(new SkelAtom("rebuild_term"), t, res);
-        t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, en.store.getRootSystem()),
-                new SkelAtom("experiment/simp"), t);
-        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL |
-                Directive.MASK_DIRE_LTGC, en);
-        dire.bodyToInterSkel(t, en, true);
-
-        AbstractUndo mark = en.bind;
-        int snap = en.number;
-        Display d2 = new Display(size + 1);
-        try {
-            CallFrame ref = CallFrame.getFrame(d2, dire, en);
-            en.contskel = dire;
-            en.contdisplay = ref;
-            if (!en.runLoop(snap, true))
-                throw new EngineMessage(EngineMessage.syntaxError(
-                        EngineMessage.OP_SYNTAX_REBUILD_FAILED));
-        } catch (EngineException x) {
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.releaseBind(mark);
-            throw en.fault;
-        } catch (EngineMessage y) {
-            EngineException x = new EngineException(y,
-                    EngineException.fetchStack(en));
-            en.contskel = r;
-            en.contdisplay = u;
-            en.fault = x;
-            en.cutChoices(snap);
-            en.releaseBind(mark);
-            throw en.fault;
-        }
-        en.contskel = r;
-        en.contdisplay = u;
-        en.fault = null;
-        en.cutChoices(snap);
-        try {
-            if (en.fault != null)
-                throw en.fault;
-            EngineVars ev = new EngineVars();
-            if ((flags & SpecialLoad.MASK_SHOW_NANO) == 0) {
-                ev.singsOf(res, d2);
-            } else {
-                ev.varInclude(res, d2);
-            }
-            MapHash<BindUniv, String> print = hashToMapUniv(vars, d2, en);
-            print = SpecialVars.numberVarsUniv(ev.vars, ev.anon, print);
-            pw.setPrintMap(print);
-            t = new SkelCompound(new SkelAtom(Foyer.OP_CONS), res);
-            pw.unparseStatement(t, d2);
-            SpecialLoad.flushWriter(pw.getWriter());
-        } catch (EngineMessage y) {
-            en.fault = new EngineException(y, EngineException.fetchStack(en));
-            en.releaseBind(mark);
-            throw en.fault;
-        } catch (EngineException x) {
-            en.fault = x;
-            en.releaseBind(mark);
-            throw en.fault;
-        }
-        en.fault = null;
-        en.releaseBind(mark);
-        if (en.fault != null)
-            throw en.fault;
-        return d2;
-    }
-
-    /**
-     * <p>Flush the writer.</p>
-     *
-     * @param wr The writer.
-     * @throws EngineMessage Shit happens.
-     */
-    public static void flushWriter(Writer wr)
-            throws EngineMessage {
-        try {
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
-    }
-
     /*******************************************************************/
     /* Property Utilities                                              */
     /*******************************************************************/
@@ -666,177 +451,155 @@ public final class SpecialLoad extends AbstractSpecial {
         return AbstractTerm.createMolec(sc.args[0], Display.DISPLAY_CONST);
     }
 
-    /*********************************************************/
-    /* Operator Declaration Formatting                       */
-    /*********************************************************/
-
-    /**
-     * <p>Generate a set operator declaration.</p>
-     *
-     * @param skel   The value.
-     * @param oper   The operator.
-     * @param source The source, non null.
-     * @return The set predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object operDeclSkelSet(Object skel, Operator oper,
-                                          AbstractSource source)
-            throws EngineMessage {
-        Object t = syntaxToColonSkel(oper, source);
-        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
-        return new SkelCompound(new SkelAtom(OP_SET_OPER_PROPERTY, source),
-                t, skel);
-    }
-
-    /**
-     * <p>Generate a op operator declaration.</p>
-     *
-     * @param skel   The value.
-     * @param oper   The operator.
-     * @param source The source, non null.
-     * @return The set predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object operDeclSkelOp(Object skel, Operator oper,
-                                         AbstractSource source)
-            throws EngineMessage {
-        SkelCompound sc = (SkelCompound) skel;
-        Object[] args = new Object[sc.args.length + 1];
-        if (sc.args.length > 0)
-            System.arraycopy(sc.args, 0, args, 0, sc.args.length);
-        args[sc.args.length] = syntaxToColonSkel(oper, source);
-        SkelCompound sc2 = new SkelCompound(args, sc.sym);
-        sc2.var = sc.var;
-        return sc2;
-    }
-
-    /**
-     * <p>Generate a op operator declaration.</p>
-     *
-     * @param skel   The value.
-     * @param oper   The operator.
-     * @param source The source, non null.
-     * @return The set predicate declaration.
-     * @throws EngineMessage Shit happens.
-     */
-    private static Object operDeclSkelIndicator(Object skel, Operator oper,
-                                                AbstractSource source)
-            throws EngineMessage {
-        SkelAtom sa = (SkelAtom) skel;
-        Object t = syntaxToColonSkel(oper, source);
-        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
-        return new SkelCompound(sa, t);
-    }
-
-    /*********************************************************/
-    /* Predicate Formatting Utilities                        */
-    /*********************************************************/
-
-    /**
-     * <p>Generate a provable indicator hash.</p>
-     *
-     * @param pick   The predicate.
-     * @param source The source, non null.
-     * @return The shortest predicate indicator.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object provableToColonSkel(Predicate pick,
-                                             AbstractSource source)
-            throws EngineMessage {
-        SkelCompound t = new SkelCompound(new SkelAtom(Foyer.OP_SLASH),
-                new SkelAtom(pick.getFun(), source),
-                Integer.valueOf(pick.getArity()));
-        return provableToColonSkel(pick, t, source);
-    }
-
-    /**
-     * <p>Convert a callable to a colon.</p>
-     * <p>A colon callable has the following syntax.</p>
-     * <pre>
-     *     colon_callable --> slash : callable
-     *                      | term.
-     * </pre>
-     * <p>The syntax is not recursive.</p>
-     *
-     * @param pick   The predicate.
-     * @param t      The callable.
-     * @param source The source, non null.
-     * @return The colon callable.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object provableToColonSkel(Predicate pick, Object t,
-                                              AbstractSource source)
-            throws EngineMessage {
-        String orig = source.getFullName();
-        String module = pick.getSource().getFullName();
-        if (!orig.equals(module)) {
-            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
-            return new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
-        } else {
-            return t;
-        }
-    }
-
-    /*********************************************************/
-    /* Operator Formatting Utilities                         */
-    /*********************************************************/
-
-    /**
-     * <p>Generate an operator indicator hash.</p>
-     *
-     * @param oper   The operator.
-     * @param source The source, non null.
-     * @return The shortest predicate indicator.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object syntaxToColonSkel(Operator oper,
-                                           AbstractSource source)
-            throws EngineMessage {
-        Object t = new SkelAtom(oper.getName(), source);
-        String orig = source.getFullName();
-        String module = oper.getSource().getFullName();
-        if (!orig.equals(module)) {
-            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
-            t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
-        }
-        return t;
-    }
-
     /********************************************************************/
-    /* Print Map                                                        */
+    /* Boot Stream                                                      */
     /********************************************************************/
 
     /**
-     * <p>Create a print map from variable names.</p>
+     * <p>Consult a stream natively.</p>
+     * <p>Term expansion is not provided.</p>
+     *
+     * @param lr  The buffered reader.
+     * @param en  The interpreter.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void bootStream(Reader lr, Engine en)
+            throws EngineException, EngineMessage {
+        PrologReader rd = en.store.foyer.createReader(Foyer.IO_TERM);
+        rd.setEngineRaw(en);
+        for (; ; ) {
+            try {
+                Object val;
+                rd.setDefaults(en.visor.peekStack(),
+                        PrologReader.FLAG_SING | PrologReader.FLAG_NEWV);
+                try {
+                    try {
+                        rd.getScanner().setReader(lr);
+                        val = rd.parseHeadStatement();
+                    } catch (ScannerError y) {
+                        String line = ScannerError.linePosition(OpenOpts.getLine(lr), y.getErrorOffset());
+                        rd.parseTailError(y);
+                        EngineMessage x = new EngineMessage(EngineMessage.syntaxError(y.getMessage()));
+                        throw new EngineException(x, EngineException.fetchPos(
+                                EngineException.fetchStack(en), line, en)
+                        );
+                    }
+                } catch (IOException y) {
+                    throw EngineMessage.mapIOProblem(y);
+                }
+                if (val instanceof SkelAtom &&
+                        ((SkelAtom) val).fun.equals(AbstractSource.OP_END_OF_FILE))
+                    break;
+                if (val instanceof SkelCompound &&
+                        ((SkelCompound) val).args.length == 1 &&
+                        ((SkelCompound) val).sym.fun.equals(Foyer.OP_TURNSTILE)) {
+                    SkelCompound sc = (SkelCompound) val;
+                    val = sc.args[0];
+                    executeDirective(rd, val, en);
+                } else {
+                    Object term = Clause.clauseToHead(val, en);
+                    PrologReader.checkSingleton(term, rd.getAnon(), en);
+                    Clause clause = Clause.determineCompiled(
+                            AbstractDefined.OPT_PERF_CNLT, term, val, en);
+                    clause.vars = rd.getVars();
+                    clause.assertRef(AbstractDefined.OPT_ACTI_BOTT, en);
+                }
+            } catch (EngineMessage x) {
+                EngineException y = new EngineException(x,
+                        EngineException.fetchStack(en));
+                systemConsultBreak(y, en);
+            } catch (EngineException x) {
+                systemConsultBreak(x, en);
+            }
+        }
+    }
+
+    /**
+     * <p>Execute a directive.</p>
+     *
+     * @param rd The Prolog reader.
+     * @param molec The goal.
+     * @param en  The engine.
+     * @throws EngineException Shit happens.
+     * @throws EngineMessage   Shit happens.
+     */
+    private static void executeDirective(PrologReader rd,
+                                         Object molec, Engine en)
+            throws EngineException, EngineMessage {
+        Directive dire = Directive.createDirective(AbstractDefined.MASK_DEFI_CALL, en);
+        int size = SupervisorCopy.displaySize(molec);
+        dire.bodyToInterSkel(molec, en, true);
+        AbstractUndo mark = en.bind;
+        int snap = en.number;
+        Object backref = en.visor.printmap;
+        Intermediate r = en.contskel;
+        CallFrame u = en.contdisplay;
+        Display d2 = new Display(size);
+        d2.vars = rd.getVars();
+        try {
+            Object val = hashToAssoc(rd.getVars(), d2, en);
+            en.visor.printmap = AbstractTerm.createMolec(val, d2);
+            CallFrame ref = CallFrame.getFrame(d2, dire, en);
+            en.contskel = dire;
+            en.contdisplay = ref;
+            if (!en.runLoop(snap, true))
+                throw new EngineMessage(EngineMessage.syntaxError(
+                        EngineMessage.OP_SYNTAX_DIRECTIVE_FAILED));
+        } catch (EngineException x) {
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            en.visor.printmap = backref;
+            throw en.fault;
+        } catch (EngineMessage y) {
+            EngineException x = new EngineException(y,
+                    EngineException.fetchStack(en));
+            en.contskel = r;
+            en.contdisplay = u;
+            en.fault = x;
+            en.cutChoices(snap);
+            en.releaseBind(mark);
+            en.visor.printmap = backref;
+            throw en.fault;
+        }
+        en.contskel = r;
+        en.contdisplay = u;
+        en.fault = null;
+        en.cutChoices(snap);
+        en.releaseBind(mark);
+        en.visor.printmap = backref;
+        if (en.fault != null)
+            throw en.fault;
+    }
+
+    /**
+     * <p>Convert variable names.</p>
      * <p>Will not convert variables that have not yet been allocated.</p>
      * <p>Will not convert variables that have already been deallocated.</p>
      *
      * @param vars The var hash.
      * @param d    The term display.
      * @param en   The engine.
-     * @return The print map.
+     * @return The Prolog association list.
      */
-    public static MapHash<BindUniv, String> hashToMapUniv(MapHashLink<String, SkelVar> vars,
-                                                          Display d, Engine en) {
+    public static Object hashToAssoc(MapHashLink<String, SkelVar> vars,
+                                     Display d, Engine en) {
+        Object end = en.store.foyer.ATOM_NIL;
         if (vars == null)
-            return null;
-        MapHash<BindUniv, String> print = null;
-        for (MapEntry<String, SkelVar> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
+            return end;
+        for (MapEntry<String, SkelVar> entry = vars.getLastEntry();
+             entry != null; entry = vars.predecessor(entry)) {
             SkelVar sv = entry.value;
             if (sv.id >= d.bind.length || d.bind[sv.id] == null)
                 continue;
-            en.skel = sv;
-            en.display = d;
-            en.deref();
-            if (!(en.skel instanceof SkelVar))
-                continue;
-            BindUniv pair = en.display.bind[((SkelVar) en.skel).id];
-            if (print == null)
-                print = new MapHash<>();
-            PropertyCallable.addMapUniv(print, pair, entry.key);
+            Object val = new SkelCompound(en.store.foyer.ATOM_EQUAL,
+                    new SkelAtom(entry.key), sv);
+            end = new SkelCompound(en.store.foyer.ATOM_CONS, val, end);
         }
-        return print;
+        return end;
     }
 
 }

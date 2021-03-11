@@ -272,10 +272,11 @@ sys_error_message/1	runtime/session
 sys_extend_term/3	runtime/quali
 sys_extend_term/3	structure/univ
 sys_finit_capability/1	bootload/toolkit
-sys_has_clause/2	bootload/load
+sys_has_clause/2	runtime/dynamic
 sys_indicator/1	reflect/pred
 sys_init_capability/1	bootload/toolkit
 sys_init_capability/2	bootload/toolkit
+sys_rule/3	runtime/dynamic
 sys_listing_has_clause/2	bootload/load
 sys_listing_user/1	bootload/load
 sys_listing_user_chk/1	bootload/load
@@ -299,8 +300,9 @@ sys_reged_license_text/2	bootload/toolkit
 sys_remove_file_extension/1	bootload/path
 sys_replace_site/3	runtime/logic
 sys_show_base/1	bootload/load
+sys_show_clauses/2	runtime/dynamic
 sys_show_import/1	bootload/load
-sys_show_provable_source/2	bootload/load
+sys_show_properties/2	reflect/pred
 sys_shrink_term/4	runtime/quali
 sys_shrink_term/4	structure/univ
 sys_syntax_property_chk/3	reflect/oper

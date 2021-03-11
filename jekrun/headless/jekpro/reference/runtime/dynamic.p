@@ -171,6 +171,15 @@ sys_declaration_indicator(group_local(I), I).
 :- special(clause/2, 'SpecialDynamic', 3).
 
 /**
+ * sys_rule(I, H, B):
+ * The predicate succeeds with the clauses of the predicate indicator
+ * I that unify H :- B. The predicate indicator can be static.
+ */
+% sys_rule(+Indicator, -Term, -Goal)
+:- public sys_rule/3.
+:- special(sys_rule/3, 'SpecialDynamic', 4).
+
+/**
  * retract(C): [ISO 8.9.3]
  * The predicate succeeds with and removes the user clauses that
  * match C. The head predicate must be dynamic, thread local or group local.
@@ -178,8 +187,13 @@ sys_declaration_indicator(group_local(I), I).
 % retract(-Term)
 :- public retract/1.
 :- meta_predicate retract(-1).
-retract(C) :-
-   clause_ref(C, R),
+retract(C) :- var(C),
+   throw(error(instantiation_error, _)).
+retract((H :- B)) :- !,
+   clause_ref(H, B, R),
+   erase_ref(R).
+retract(H) :-
+   clause_ref(H, true, R),
    erase_ref(R).
 
 /**
@@ -204,7 +218,7 @@ retractall(_).
 % asserta(+Term)
 :- public asserta/1.
 :- meta_predicate asserta(-1).
-:- special(asserta/1, 'SpecialDynamic', 4).
+:- special(asserta/1, 'SpecialDynamic', 5).
 
 /**
  * assertz(C): [ISO 8.9.2]
@@ -214,7 +228,7 @@ retractall(_).
 % assertz(+Term)
 :- public assertz/1.
 :- meta_predicate assertz(-1).
-:- special(assertz/1, 'SpecialDynamic', 5).
+:- special(assertz/1, 'SpecialDynamic', 6).
 
 /**
  * abolish(P): [ISO 8.9.4]
@@ -233,10 +247,10 @@ abolish(X) :-
    sys_abolish_predicate(X).
 
 :- private sys_abolish_predicate/1.
-:- special(sys_abolish_predicate/1, 'SpecialDynamic', 6).
+:- special(sys_abolish_predicate/1, 'SpecialDynamic', 7).
 
 :- private sys_abolish_operator/1.
-:- special(sys_abolish_operator/1, 'SpecialDynamic', 7).
+:- special(sys_abolish_operator/1, 'SpecialDynamic', 8).
 
 /****************************************************************/
 /* Clause Listing                                               */
@@ -248,22 +262,16 @@ abolish(X) :-
  */
 % sys_has_clause(+Indicator, +Source)
 :- public sys_has_clause/2.
-:- special(sys_has_clause/2, 'SpecialDynamic', 8).
-
-/**
- * sys_list_clause(I, U, T):
- * The predicate succeeds in T with the clauses for the source U of the predicate I.
- */
-% sys_list_clause(+Indicator, +Source, -Term)
-:- public sys_list_clause/3.
-:- special(sys_list_clause/3, 'SpecialDynamic', 9).
+:- special(sys_has_clause/2, 'SpecialDynamic', 9).
 
 % sys_show_clauses(+Indicator, +Source)
 :- public sys_show_clauses/2.
 sys_show_clauses(I, U) :-
-   sys_list_clause(I, U, S),
-   callable_property(S, sys_variable_names(N)),
-   rebuild_term(S, T),
+   sys_rule(I, H, B),
+   callable_property(H, sys_context(U)),
+   callable_property(H, sys_variable_names(N)),
+   sys_make_clause(H, B, J),
+   rebuild_term(J, T),
    term_variables(T, L),
    term_singletons(T, R),
    sys_number_variables(L, N, R, M),
@@ -272,3 +280,8 @@ sys_show_clauses(I, U) :-
       variable_names(M), source(U)]),
    fail.
 sys_show_clauses(_, _).
+
+% sys_make_clause(+Term, +Goal, -Term)
+:- public sys_make_clause/3.
+sys_make_clause(H, true, H) :- !.
+sys_make_clause(H, B, (H :- B)).

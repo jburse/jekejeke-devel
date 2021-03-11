@@ -64,6 +64,7 @@
 :- use_module(library(system/thread)).
 :- use_module(library(structure/bytes)).
 :- use_module(library(advanced/signal)).
+:- use_module(library(basic/lists)).
 :- sys_load_resource(runtime).
 
 /*************************************************************************/
@@ -146,10 +147,12 @@ sys_toplevel_ask :-
    (  H == end_of_file -> true
    ;  set_callable_property(G, sys_variable_names(J), H),
       callable_property(G, sys_variable_names(N)),
-      current_prolog_flag(sys_print_map, M),
-      setup_call_cleanup(set_prolog_flag(sys_print_map, N),
+      thread_current(Thread),
+      current_thread_flag(Thread, sys_print_map, M),
+      setup_call_cleanup(
+         set_thread_flag(Thread, sys_print_map, N),
          sys_answer(G, N),
-         set_prolog_flag(sys_print_map, M)), fail).
+         set_thread_flag(Thread, sys_print_map, M)), fail).
 
 % sys_read_expand(-Term, -List)
 :- private sys_read_expand/2.
@@ -259,26 +262,10 @@ sys_error_message(E) :-
 % sys_filter_show(+Assoc, +List)
 :- private sys_filter_show/2.
 sys_filter_show(N, R) :-
-   sys_filter_assoc(N, N, R, M),
-   sys_show_assoc(M, N).
-
-% sys_filter_assoc(+Assoc, +Assoc, +List, -Assoc)
-:- private sys_filter_assoc/4.
-sys_filter_assoc([X = Y|L], N, K, R) :-
-   var(Y),
-   sys_get_assoc(Y, N, Z),
-   Z == X, !,
-   sys_filter_assoc(L, N, K, R).
-sys_filter_assoc([E|L], N, K, [E|R]) :-
-   sys_filter_assoc(L, N, K, R).
-sys_filter_assoc([], _, K, K).
-
-% sys_get_assoc(+Var, +Assoc, -Atom)
-:- private sys_get_assoc/3.
-sys_get_assoc(Y, [_|L], Z) :-
-   sys_get_assoc(Y, L, Z), !.
-sys_get_assoc(Y, [Z = T|_], Z) :-
-   T == Y.
+   reverse(N, K),
+   sys_filter_assoc(N, K, H),
+   append(H, R, M),
+   sys_show_assoc(M, K).
 
 % sys_show_assoc(+Assoc, +Assoc)
 :- private sys_show_assoc/2.
@@ -299,19 +286,19 @@ sys_show_pair(X = T, N) :- sys_printable_value(T, S), !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' is '),
-   sys_show_term(S, [priority(699), quoted(true), variable_names(N)]).
+   sys_show_term(S, [priority(699), variable_names(N)]).
 sys_show_pair(X = T, N) :- !,
    sys_quoted_var(X, Q),
    write(Q),
    write(' = '),
-   sys_show_term(T, [priority(699), quoted(true), variable_names(N)]).
+   sys_show_term(T, [priority(699), variable_names(N)]).
 sys_show_pair(G, N) :-
-   sys_show_term(G, [context(0), quoted(true), variable_names(N)]).
+   sys_show_term(G, [context(0), variable_names(N)]).
 
 % sys_show_term(+Term, +List)
 :- private sys_show_term/2.
 sys_show_term(T, L) :- acyclic_term(T), !,
-   write_term(T, L).
+   write_term(T, [quoted(true)|L]).
 sys_show_term(_, _) :-
    get_properties(runtime, P),
    get_property(P, 'query.cyclic', V),
@@ -364,16 +351,17 @@ sys_handle_term((:- Q), L) :- !,
    copy_term(Q-L, H-J),
    set_callable_property(P, sys_variable_names(J), H),
    callable_property(P, sys_variable_names(N)),
-   current_prolog_flag(sys_print_map, M),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_print_map, M),
    setup_call_cleanup(
-      set_prolog_flag(sys_print_map, N),
+      set_thread_flag(Thread, sys_print_map, N),
       must(P),
-      set_prolog_flag(sys_print_map, M)).
+      set_thread_flag(Thread, sys_print_map, M)).
 sys_handle_term(P, N) :-
    sys_compilez(P, [variable_names(N)]).
 
 /****************************************************************/
-/* Specials                                                     */
+/* Helper                                                     */
 /****************************************************************/
 
 /**
@@ -385,11 +373,15 @@ sys_handle_term(P, N) :-
 :- special(sys_quoted_var/2, 'SpecialSession', 0).
 
 /**
- * sys_boot_stream(S):
- * The predicate boots the stream S. Read terms are not expanded.
+ * sys_filter_assoc(N, K, M):
+ * The predicate succeeds in M with the mgu part of N. The
+ * parameter K should be the variable names in reverse order.
  */
-% sys_boot_stream(+Stream)
-% already defined in Branch
-% :- public sys_boot_stream/1.
-% :- special(sys_boot_stream/1, 'SpecialSession', 2).
-
+% sys_filter_assoc(+Assoc, +Assoc, -Assoc)
+:- public sys_filter_assoc/3.
+sys_filter_assoc([X = Y|L], N, R) :-
+   var(Y), once((member(P = Q, N), Q == Y)), P == X, !,
+   sys_filter_assoc(L, N, R).
+sys_filter_assoc([E|L], N, [E|R]) :-
+   sys_filter_assoc(L, N, R).
+sys_filter_assoc([], _, []).

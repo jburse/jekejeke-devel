@@ -280,12 +280,10 @@ public final class EngineVars {
         if (visit == null) {
             visit = new SetHashLink<>();
             visit.add(b);
+        } else if (visit.getEntry(b) == null) {
+            visit.add(b);
         } else {
-            if (visit.getEntry(b) == null) {
-                visit.add(b);
-            } else {
-                return true;
-            }
+            return true;
         }
         return false;
     }

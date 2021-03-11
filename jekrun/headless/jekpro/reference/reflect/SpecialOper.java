@@ -7,18 +7,23 @@ import jekpro.model.inter.AbstractSpecial;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.StackElement;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
-import jekpro.model.pretty.Store;
-import jekpro.model.pretty.StoreKey;
+import jekpro.model.pretty.*;
+import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
+import jekpro.reference.bootload.SpecialLoad;
+import jekpro.reference.runtime.EvaluableLogic;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+
+import java.io.Writer;
 
 /**
  * <p>Provides built-in predicates for the operators.</p>
@@ -52,6 +57,8 @@ import matula.util.data.MapHashLink;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class SpecialOper extends AbstractSpecial {
+    private final static String OP_SET_OPER_PROPERTY = "set_oper_property";
+
     public final static int SPECIAL_SYS_NEUTRAL_OPER = 0;
     private final static int SPECIAL_SYS_CURRENT_OPER = 2;
     private final static int SPECIAL_SYS_CURRENT_OPER_CHK = 3;
@@ -62,6 +69,7 @@ public final class SpecialOper extends AbstractSpecial {
     private final static int SPECIAL_RESET_OPER_PROPERTY = 8;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY_IDX = 9;
     private final static int SPECIAL_SYS_SYNTAX_PROPERTY_CHK = 10;
+    private final static int SPECIAL_SYS_SHOW_OPERATORS = 11;
 
     public final static Operator[] FALSE_OPERS = new Operator[]{};
 
@@ -207,9 +215,179 @@ public final class SpecialOper extends AbstractSpecial {
                 if (multi)
                     d.remTab(en);
                 return true;
+            case SPECIAL_SYS_SHOW_OPERATORS:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+
+                oper = SpecialOper.operToOperatorDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (oper == null)
+                    return false;
+
+                SkelAtom sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
+                AbstractSource source = (sa.scope != null ? sa.scope : en.store.user);
+                source = source.getStore().getSource(sa.fun);
+                if (source == null)
+                    return false;
+                if (oper.getScope() != source)
+                    return false;
+
+                SpecialOper.listOperators(oper, source, en);
+                return true;
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
+    }
+
+    /**
+     * <p>List the syntax operator.</p>
+     *
+     * @param oper The operator.
+     * @param src  The source, non null.
+     * @param en   The engine.
+     * @throws EngineMessage   Shit happens.
+     * @throws EngineException Shit happens.
+     */
+    private static void listOperators(Operator oper,
+                                      AbstractSource src,
+                                      Engine en)
+            throws EngineMessage, EngineException {
+        Object obj = en.visor.curoutput;
+        LoadOpts.checkTextWrite(obj);
+        Writer wr = (Writer) obj;
+        PrologWriter pw = en.store.foyer.createWriter(Foyer.IO_TERM);
+        pw.setDefaults(en.visor.peekStack());
+        pw.setEngine(en);
+        pw.setFlags(pw.getFlags() | (PrologWriter.FLAG_QUOT | PrologWriter.FLAG_NEWL | PrologWriter.FLAG_MKDT));
+        pw.setSpez(PrologWriter.SPEZ_META);
+        pw.setOffset(-1);
+        pw.setWriter(wr);
+
+        if (oper.getLevel() == 0)
+            return;
+        /* flesh out properties */
+        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        for (int i = 0; i < snapshot.length; i++) {
+            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            AbstractTracking tracking = entry.value;
+            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
+                continue;
+            AbstractBranch branch = (AbstractBranch) entry.key;
+            MapHashLink<StoreKey, AbstractProperty<Operator>> props = branch.getOperProps();
+            for (MapEntry<StoreKey, AbstractProperty<Operator>> entry2 =
+                 (props != null ? props.getFirstEntry() : null);
+                 entry2 != null; entry2 = props.successor(entry2)) {
+                AbstractProperty<Operator> prop = entry2.value;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SHOW) == 0)
+                    continue;
+                if ((prop.getFlags() & AbstractProperty.MASK_PROP_SUPR) != 0 &&
+                        SpecialOper.sameVisibleOper(src, oper, en))
+                    continue;
+                Object[] vals = prop.getObjProps(oper, en);
+                for (int j = 0; j < vals.length; j++) {
+                    Object val = vals[j];
+                    Object decl;
+                    if ((prop.getFlags() & AbstractProperty.MASK_PROP_SETP) != 0) {
+                        decl = SpecialOper.operDeclSkelSet(
+                                AbstractTerm.getSkel(val), oper, src);
+                    } else if ((prop.getFlags() & AbstractProperty.MASK_PROP_META) != 0) {
+                        decl = SpecialOper.operDeclSkelOp(
+                                AbstractTerm.getSkel(val), oper, src);
+                    } else {
+                        if ((prop.getFlags() & AbstractProperty.MASK_PROP_PRJF) != 0)
+                            val = SpecialLoad.firstArg(val);
+                        decl = SpecialOper.operDeclSkelIndicator(
+                                AbstractTerm.getSkel(val), oper, src);
+                    }
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_TURNSTILE), decl);
+                    decl = new SkelCompound(new SkelAtom(Foyer.OP_CONS), decl);
+                    pw.unparseStatement(decl, Display.DISPLAY_CONST);
+                    SpecialLoad.flushWriter(pw.getWriter());
+                }
+            }
+        }
+    }
+
+    /**
+     * <p>Check whether a source and an operator have the same visibility.</p>
+     *
+     * @param src  The source.
+     * @param oper The operator.
+     * @param en   The engine.
+     * @return True if the source and the operator have the same visibility, otherwise false.
+     */
+    private static boolean sameVisibleOper(AbstractSource src, Operator oper,
+                                           Engine en)
+            throws EngineMessage, EngineException {
+        StoreKey sk = new StoreKey(PropertySource.OP_SYS_SOURCE_VISIBLE, 1);
+        AbstractProperty<AbstractSource> prop = SpecialSource.findSrcProperty(sk, en);
+        Object[] vals = prop.getObjProps(src, en);
+        StoreKey sk2 = new StoreKey(PropertyPredicate.OP_VISIBLE, 1);
+        AbstractProperty<Operator> prop1 = SpecialOper.findOperProperty(sk2, en);
+        Object[] vals2 = prop1.getObjProps(oper, en);
+        return SpecialLoad.sameValues(vals, vals2);
+    }
+
+    /*********************************************************/
+    /* Operator Declaration Formatting                       */
+    /*********************************************************/
+
+    /**
+     * <p>Generate a set operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelSet(Object skel, Operator oper,
+                                          AbstractSource source)
+            throws EngineMessage {
+        Object t = syntaxToColonSkel(oper, source);
+        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
+        return new SkelCompound(new SkelAtom(OP_SET_OPER_PROPERTY, source),
+                t, skel);
+    }
+
+    /**
+     * <p>Generate a op operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelOp(Object skel, Operator oper,
+                                         AbstractSource source)
+            throws EngineMessage {
+        SkelCompound sc = (SkelCompound) skel;
+        Object[] args = new Object[sc.args.length + 1];
+        if (sc.args.length > 0)
+            System.arraycopy(sc.args, 0, args, 0, sc.args.length);
+        args[sc.args.length] = syntaxToColonSkel(oper, source);
+        SkelCompound sc2 = new SkelCompound(args, sc.sym);
+        sc2.var = sc.var;
+        return sc2;
+    }
+
+    /**
+     * <p>Generate a op operator declaration.</p>
+     *
+     * @param skel   The value.
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The set predicate declaration.
+     * @throws EngineMessage Shit happens.
+     */
+    private static Object operDeclSkelIndicator(Object skel, Operator oper,
+                                                AbstractSource source)
+            throws EngineMessage {
+        SkelAtom sa = (SkelAtom) skel;
+        Object t = syntaxToColonSkel(oper, source);
+        t = new SkelCompound(SpecialOper.typeToOp(oper.getType()), t);
+        return new SkelCompound(sa, t);
     }
 
     /**************************************************************/
@@ -765,6 +943,31 @@ public final class SpecialOper extends AbstractSpecial {
                 !OperatorSearch.visibleOper(oper, src)))
             return null;
         return oper;
+    }
+
+    /********************************************************************/
+    /* Operator Formatting Utilities                                    */
+    /********************************************************************/
+
+    /**
+     * <p>Generate an operator indicator hash.</p>
+     *
+     * @param oper   The operator.
+     * @param source The source, non null.
+     * @return The shortest predicate indicator.
+     * @throws EngineMessage Shit happens.
+     */
+    public static Object syntaxToColonSkel(Operator oper,
+                                           AbstractSource source)
+            throws EngineMessage {
+        Object t = new SkelAtom(oper.getName(), source);
+        String orig = source.getFullName();
+        String module = oper.getSource().getFullName();
+        if (!orig.equals(module)) {
+            Object s = SpecialDynamic.moduleToSlashSkel(module, source);
+            t = new SkelCompound(new SkelAtom(EvaluableLogic.OP_COLON, source), s, t);
+        }
+        return t;
     }
 
 }

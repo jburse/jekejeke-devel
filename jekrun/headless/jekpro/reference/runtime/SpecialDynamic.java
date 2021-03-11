@@ -6,7 +6,9 @@ import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.*;
 import jekpro.model.molec.*;
-import jekpro.model.pretty.*;
+import jekpro.model.pretty.AbstractSource;
+import jekpro.model.pretty.Foyer;
+import jekpro.model.pretty.PrologReader;
 import jekpro.model.rope.Clause;
 import jekpro.model.rope.LoadOpts;
 import jekpro.model.rope.Operator;
@@ -61,12 +63,12 @@ public final class SpecialDynamic extends AbstractSpecial {
     private final static int SPECIAL_SYS_ENSURE_THREAD_LOCAL = 1;
     private final static int SPECIAL_SYS_ENSURE_GROUP_LOCAL = 2;
     private final static int SPECIAL_CLAUSE = 3;
-    private final static int SPECIAL_ASSERTA = 4;
-    private final static int SPECIAL_ASSERTZ = 5;
-    private final static int SPECIAL_ABOLISH_PREDICATE = 6;
-    private final static int SPECIAL_ABOLISH_OPERATOR = 7;
-    private final static int SPECIAL_SYS_HAS_CLAUSE = 8;
-    private final static int SPECIAL_SYS_LIST_CLAUSE = 9;
+    private final static int SPECIAL_SYS_RULE = 4;
+    private final static int SPECIAL_ASSERTA = 5;
+    private final static int SPECIAL_ASSERTZ = 6;
+    private final static int SPECIAL_ABOLISH_PREDICATE = 7;
+    private final static int SPECIAL_ABOLISH_OPERATOR = 8;
+    private final static int SPECIAL_SYS_HAS_CLAUSE = 9;
 
     /**
      * <p>Create a predicate special.</p>
@@ -114,6 +116,17 @@ public final class SpecialDynamic extends AbstractSpecial {
             case SPECIAL_CLAUSE:
                 return searchKnowledgebase(
                         AbstractDefined.OPT_CHCK_ASSE, en);
+            case SPECIAL_SYS_RULE:
+                temp = ((SkelCompound) en.skel).args;
+                ref = en.display;
+                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
+                    return false;
+                if (!(pick.del instanceof AbstractDefined))
+                    return false;
+
+                return ((AbstractDefined) pick.del).listFirst(temp, ref, 0, en);
             case SPECIAL_ASSERTA:
                 enhanceKnowledgebase(AbstractDefined.OPT_PROM_DYNA |
                         AbstractDefined.OPT_CHCK_ASSE, en);
@@ -157,28 +170,9 @@ public final class SpecialDynamic extends AbstractSpecial {
                 if (pick.getDef(source) == null)
                     return false;
 
-                if (!hasClause((AbstractDefined)pick.del, source, en))
+                if (!hasClause((AbstractDefined) pick.del, source, en))
                     return false;
                 return true;
-            case SPECIAL_SYS_LIST_CLAUSE:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                pick = SpecialPred.indicatorToPredicateDefined(temp[0],
-                        ref, en, CachePredicate.MASK_CACH_UCHK);
-                if (pick == null)
-                    return false;
-                if (!(pick.del instanceof AbstractDefined))
-                    return false;
-
-                sa = SpecialUniv.derefAndCastStringWrapped(temp[1], ref);
-                source = (sa.scope != null ? sa.scope : en.store.user);
-                source = source.getStore().getSource(sa.fun);
-                if (source == null)
-                    return false;
-                if (pick.getDef(source) == null)
-                    return false;
-
-                return ((AbstractDefined) pick.del).listFirst(source, temp, ref, en);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -301,7 +295,7 @@ public final class SpecialDynamic extends AbstractSpecial {
     /**
      * <p>Check whether the predicate has some clauses.</p>
      *
-     * @param def   The abstract defined.
+     * @param def    The abstract defined.
      * @param source The scope.
      * @param en     The engine.
      * @return True if the predicate has some clauses, otherwise false.

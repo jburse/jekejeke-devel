@@ -674,25 +674,25 @@ public final class SpecialUniv extends AbstractSpecial {
     /**
      * <p>Check whether the given term is an atom.</p>
      *
-     * @param t The term skel.
+     * @param m The term skel.
      * @param d The term display.
      * @return The string.
      * @throws EngineMessage Type error.
      */
-    public static String derefAndCastString(Object t, Display d)
+    public static String derefAndCastString(Object m, Display d)
             throws EngineMessage {
         BindUniv b;
-        while (t instanceof SkelVar &&
-                (b = d.bind[((SkelVar) t).id]).display != null) {
-            t = b.skel;
+        while (m instanceof SkelVar &&
+                (b = d.bind[((SkelVar) m).id]).display != null) {
+            m = b.skel;
             d = b.display;
         }
-        if (t instanceof SkelAtom) {
-            return ((SkelAtom) t).fun;
+        if (m instanceof SkelAtom) {
+            return ((SkelAtom) m).fun;
         } else {
-            EngineMessage.checkInstantiated(t);
+            EngineMessage.checkInstantiated(m);
             throw new EngineMessage(EngineMessage.typeError(
-                    EngineMessage.OP_TYPE_ATOM, t), d);
+                    EngineMessage.OP_TYPE_ATOM, m), d);
         }
     }
 

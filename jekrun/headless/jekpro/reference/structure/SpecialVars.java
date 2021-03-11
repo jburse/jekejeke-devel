@@ -386,51 +386,6 @@ public final class SpecialVars extends AbstractSpecial {
     }
 
     /**
-     * <p>Complement the variable names.</p>
-     *
-     * @param vars  The var set, can be null.
-     * @param anon  The anon set, can be null.
-     * @param print The old variable names, can be null.
-     * @return The new variable names, can be null.
-     */
-    public static MapHash<BindUniv, String> numberVarsUniv(SetHashLink<Object> vars,
-                                                           SetHashLink<Object> anon,
-                                                           MapHash<BindUniv, String> print) {
-        if (vars == null)
-            return null;
-
-        MapHash<BindUniv, String> copy = new MapHash<>();
-        int k = 0;
-        SetHash<String> range = null;
-
-        for (SetEntry<Object> entry = vars.getFirstEntry();
-             entry != null; entry = vars.successor(entry)) {
-            SkelVar sv = (SkelVar) AbstractTerm.getSkel(entry.value);
-            Display d = AbstractTerm.getDisplay(entry.value);
-            String t;
-            if (print != null && (t = print.get(d.bind[sv.id])) != null) {
-                copy.add(d.bind[sv.id], t);
-            } else if (anon != null && anon.getEntry(entry.value) != null) {
-                copy.add(d.bind[sv.id], PrologReader.OP_ANON);
-            } else {
-                String name = SkelVar.sernoToString(k, false);
-                k++;
-                if (print != null) {
-                    if (range == null)
-                        range = nameRange(print);
-                    while (range.getEntry(name) != null) {
-                        name = SkelVar.sernoToString(k, false);
-                        k++;
-                    }
-                }
-                copy.add(d.bind[sv.id], name);
-            }
-        }
-
-        return copy;
-    }
-
-    /**
      * <p>Create variable set from variables.</p>
      * <p>Non variable associations are skipped.</p>
      *
@@ -490,7 +445,7 @@ public final class SpecialVars extends AbstractSpecial {
      * @param print The print map.
      * @return The name range.
      */
-    private static SetHash<String> nameRange(MapHash<BindUniv, String> print) {
+    public static SetHash<String> nameRange(MapHash<BindUniv, String> print) {
         if (print == null)
             return null;
         SetHash<String> range = new SetHash<>();

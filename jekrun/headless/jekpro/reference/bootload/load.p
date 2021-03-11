@@ -205,10 +205,6 @@ include(Path) :-
 :- special(sys_import_file/2, 'SpecialLoad', 2).
 :- set_predicate_property(sys_import_file/2, visible(private)).
 
-/****************************************************************/
-/* Resource Handling                                            */
-/****************************************************************/
-
 /**
  * sys_register_file(R):
  * The predicate registers the relative source path R in the
@@ -335,7 +331,8 @@ listing(I) :- ground(I), !,
    sys_listing2(I).
 listing(I) :-
    bagof(I, (sys_listing_user(U),
-      sys_listing_item_idx(U, I)), B),
+      sys_listing_item_idx(U, I),
+      sys_listing_has_clause(I, U)), B),
    sys_show_base(U),
    sys_show_import(U), nl,
    sys_member(I, B),
@@ -424,7 +421,7 @@ sys_listing_has_clause(I, U) :- sys_has_clause(I, U).
  */
 % sys_listing_show(+Indicator, +Source)
 sys_listing_show(I, U) :- sys_oper_indicator(I), !,
-   sys_show_syntax_source(I, U).
+   sys_show_operators(I, U).
 sys_listing_show(I, U) :-
    sys_show_properties(I, U),
    sys_show_clauses(I, U), nl.
@@ -440,12 +437,18 @@ sys_oper_indicator(prefix(_)).
 sys_oper_indicator(postfix(_)).
 :- set_predicate_property(sys_oper_indicator/1, visible(private)).
 
-:- special(sys_show_syntax_source/2, 'SpecialLoad', 4).
-:- set_predicate_property(sys_show_syntax_source/2, visible(private)).
-
-:- special(sys_show_import/1, 'SpecialLoad', 5).
+:- special(sys_show_import/1, 'SpecialLoad', 4).
 :- set_predicate_property(sys_show_import/1, visible(public)).
 
-:- special(sys_show_base/1, 'SpecialLoad', 6).
+:- special(sys_show_base/1, 'SpecialLoad', 5).
 :- set_predicate_property(sys_show_base/1, visible(public)).
+
+/**
+ * sys_boot_stream(S):
+ * The predicate boots the stream S. Read terms are not expanded.
+ */
+% sys_boot_stream(+Stream)
+% already defined in Branch
+% :- public sys_boot_stream/1.
+% :- special(sys_boot_stream/1, 'SpecialSession', 2).
 

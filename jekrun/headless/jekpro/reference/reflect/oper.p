@@ -296,3 +296,10 @@ sys_declaration_indicator(op(_, M, Z), I) :-
 :- special(sys_syntax_property_chk/3, 'SpecialOper', 10).
 :- set_predicate_property(sys_syntax_property_chk/3, visible(public)).
 
+/****************************************************************/
+/* Operators Listing                                            */
+/****************************************************************/
+
+% sys_show_operators(+Operator, +Source)
+:- special(sys_show_operators/2, 'SpecialOper', 11).
+:- set_predicate_property(sys_show_operators/2, visible(public)).
