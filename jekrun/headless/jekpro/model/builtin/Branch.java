@@ -8,8 +8,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.Store;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.*;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import matula.util.config.AbstractBundle;
@@ -139,7 +139,7 @@ public abstract class Branch extends AbstractBranch {
         registerProvable(new SkelAtom("sys_callable_property_chk", scope), 3,
                 new SpecialCall(SpecialCall.SPECIAL_SYS_CALLABLE_PROPERTY_CHK), en);
         registerProvable(new SkelAtom("sys_boot_stream", scope), 1,
-                new SpecialSession(SpecialSession.SPECIAL_SYS_BOOT_STREAM), en);
+                new SpecialLoad(SpecialLoad.SPECIAL_SYS_BOOT_STREAM), en);
     }
 
     /**

@@ -1,23 +1,17 @@
 package jekpro.model.inter;
 
-import jekpro.frequent.experiment.SpecialRef;
-import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Foyer;
-import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.Store;
 import jekpro.model.rope.*;
 import jekpro.reference.reflect.SpecialPred;
-import jekpro.reference.runtime.SpecialLogic;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import jekpro.tools.term.SkelVar;
 import matula.util.data.AbstractList;
-import matula.util.data.MapHash;
-import matula.util.data.MapHashLink;
 
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -336,26 +330,21 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (d2 != Display.DISPLAY_CONST)
             d2.vars = clause.vars;
 
+        CallFrame dc;
         if (at != list.length) {
-            CallFrame dc = new CallFrame(d2, en);
+            dc = new CallFrame(d2, en);
             dc.flags = clause.flags & Directive.MASK_DIRE_CALL;
             dc.flags |= Directive.MASK_DIRE_MORE;
             /* create choice point */
             en.choices = new ChoiceDefined(en.choices, at, list, dc, mark);
             en.number++;
-            en.contskel = clause;
-            en.contdisplay = dc;
-            return true;
-        } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            CallFrame dc = CallFrame.getFrame(d2, clause, en);
-            en.contskel = clause;
-            en.contdisplay = dc;
-            return true;
         } else {
-            if (d2.bind.length > 0)
-                d2.remTab(en);
-            return true;
+            dc = CallFrame.getFrame(d2, clause, en);
         }
+        /* succeed */
+        en.contskel = clause;
+        en.contdisplay = dc;
+        return true;
     }
 
     /**
@@ -546,13 +535,17 @@ public abstract class AbstractDefined extends AbstractDelegate {
     /**
      * <p>List the knowledge base.</p>
      *
-     * @param en The engine.
+     * @param temp  The arguments skeleton.
+     * @param ref   The arguments display.
+     * @param flags The flags.
+     * @param en    The engine.
      * @return True if the predicate succeeded, otherwise false.
      * @throws EngineMessage   Shit happens.
-     * @throws EngineException   Shit happens.
+     * @throws EngineException Shit happens.
      */
-    public boolean listFirst(AbstractSource src, Object[] temp,
-                                    Display ref, Engine en)
+    public boolean listFirst(Object[] temp,
+                             Display ref, int flags,
+                             Engine en)
             throws EngineMessage, EngineException {
         Clause[] list = listClauses(en);
         int at = 0;
@@ -573,11 +566,15 @@ public abstract class AbstractDefined extends AbstractDelegate {
                 d2.setSize(clause.size);
             }
 
-            SkelAtom sa = StackElement.callableToName(clause.head);
-            if (src == sa.scope) {
-                Object term = Clause.interToClauseSkel(clause, en);
-                if (en.unify(term, d2, temp[2], ref))
-                   break;
+            Object end = SpecialDynamic.callableToColonSkel(clause.head, en);
+            if (en.unify(end, d2, temp[1], ref)) {
+                end = Directive.interToBodySkel(clause, clause.last, en);
+                if (en.unify(end, d2, temp[2], ref)) {
+                    if ((flags & OPT_RSLT_CREF) == 0)
+                        break;
+                    if (en.unify(clause, Display.DISPLAY_CONST, temp[3], ref))
+                        break;
+                }
             }
 
             /* end of cursor */
@@ -598,7 +595,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
         if (at != list.length) {
             /* create choice point */
             en.choices = new ChoiceShow(en.choices, at, list,
-                    src, en.contskel, en.contdisplay,
+                    flags, en.contskel, en.contdisplay,
                     d2, mark);
             en.number++;
         }
@@ -620,7 +617,7 @@ public abstract class AbstractDefined extends AbstractDelegate {
      * @throws EngineException Shit happens.
      */
     public boolean searchFirst(Object head, Display refhead, Object[] temp,
-                        Display ref, int flags, Engine en)
+                               Display ref, int flags, Engine en)
             throws EngineException, EngineMessage {
         Clause[] list = definedClauses(head, refhead, en);
         int at = 0;
@@ -641,16 +638,13 @@ public abstract class AbstractDefined extends AbstractDelegate {
             } else {
                 d2.setSize(clause.size);
             }
-            if (AbstractDefined.unifySearch(head, refhead,
-                    clause, d2, en)) {
+            if (AbstractDefined.unifySearch(head, refhead, clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
                 if (en.unify(end, d2, temp[1], ref)) {
-                    if ((flags & OPT_RSLT_CREF) != 0) {
-                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
-                            break;
-                    } else {
+                    if ((flags & OPT_RSLT_CREF) == 0)
                         break;
-                    }
+                    if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
+                        break;
                 }
             }
 

@@ -61,7 +61,7 @@ public abstract class AbstractFlag<T> {
     /**
      * <p>Retrieve the value of this flag.</p>
      *
-     * @param t  The object.
+     * @param t The object.
      * @return The value.
      */
     public Object getObjFlag(T t) {
@@ -71,9 +71,9 @@ public abstract class AbstractFlag<T> {
     /**
      * <p>Set the value of a this flag.</p>
      *
-     * @param t  The object.
-     * @param m  The value skel.
-     * @param d  The value display.
+     * @param t The object.
+     * @param m The value skel.
+     * @param d The value display.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */

@@ -8,8 +8,8 @@ import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.Operator;
 import jekpro.reference.arithmetic.SpecialEval;
+import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.SpecialOper;
-import jekpro.reference.runtime.SpecialSession;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
@@ -289,12 +289,12 @@ public final class ReadOpts {
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_VARIABLE_NAMES)) {
-                if (!en.unify(SpecialSession.hashToAssoc(rd.getVars(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display))
+                if (!en.unify(SpecialLoad.hashToAssoc(rd.getVars(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&
                     ((SkelCompound) en.skel).sym.fun.equals(OP_SINGLETONS)) {
-                if (!en.unify(SpecialSession.hashToAssoc(rd.getAnon(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display))
+                if (!en.unify(SpecialLoad.hashToAssoc(rd.getAnon(), d2, en), d2, ((SkelCompound) en.skel).args[0], en.display))
                     return false;
             } else if (en.skel instanceof SkelCompound &&
                     ((SkelCompound) en.skel).args.length == 1 &&

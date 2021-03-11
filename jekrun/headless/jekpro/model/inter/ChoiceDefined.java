@@ -118,28 +118,23 @@ public class ChoiceDefined extends AbstractChoice {
         if (d2 != Display.DISPLAY_CONST)
             d2.vars = clause.vars;
 
+        goaldisplay.disp = d2;
+        CallFrame dc;
         if (at != list.length) {
-            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
-            goaldisplay.disp = d2;
             /* reuse choice point */
             en.choices = this;
             en.number++;
-            en.contskel = clause;
-            en.contdisplay = goaldisplay;
-            return true;
-        } else if (clause.getNextRaw(en) != Success.DEFAULT) {
-            goaldisplay.disp = d2;
-            CallFrame dc = goaldisplay.getFrame(en);
+            goaldisplay.flags &= ~Directive.MASK_DIRE_LTGC;
+            dc = goaldisplay;
+        } else {
+            dc = goaldisplay.getFrame(en);
             dc.flags &= ~Directive.MASK_DIRE_LTGC;
             dc.flags &= ~Directive.MASK_DIRE_MORE;
-            en.contskel = clause;
-            en.contdisplay = dc;
-            return true;
-        } else {
-            if (d2.bind.length > 0)
-                d2.remTab(en);
-            return true;
         }
+        /* succeed */
+        en.contskel = clause;
+        en.contdisplay = dc;
+        return true;
     }
 
     /**

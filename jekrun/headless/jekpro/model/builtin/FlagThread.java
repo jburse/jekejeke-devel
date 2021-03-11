@@ -1,11 +1,13 @@
 package jekpro.model.builtin;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.inter.Supervisor;
+import jekpro.model.molec.BindUniv;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.reference.structure.SpecialUniv;
+import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
+import jekpro.tools.term.SkelVar;
 import matula.util.data.MapHash;
 import matula.util.wire.AbstractLivestock;
 
@@ -48,10 +50,11 @@ public final class FlagThread extends AbstractFlag<Thread> {
     public final static int MASK_PRMT_PDBG = 0x00002000;
     public final static int MASK_PRMT_PRON = 0x00003000;
 
-    public final static String OP_FLAG_SYS_THREAD_NAME = "sys_thread_name";
-    public final static String OP_FLAG_SYS_THREAD_STATE = "sys_thread_state";
-    public final static String OP_FLAG_SYS_THREAD_GROUP = "sys_thread_group";
-    public final static String OP_FLAG_SYS_TPROMPT = "sys_tprompt";
+    public final static String OP_SYS_THREAD_NAME = "sys_thread_name";
+    public final static String OP_SYS_THREAD_STATE = "sys_thread_state";
+    public final static String OP_SYS_THREAD_GROUP = "sys_thread_group";
+    public final static String OP_SYS_TPROMPT = "sys_tprompt";
+    private final static String OP_SYS_PRINT_MAP = "sys_print_map";
 
     public final static String OP_ANSWER_CUT = "answer_cut";
     public final static String OP_ASK_DEBUG = "ask_debug";
@@ -60,15 +63,17 @@ public final class FlagThread extends AbstractFlag<Thread> {
     private static final int FLAG_SYS_THREAD_STATE = 1;
     private static final int FLAG_SYS_THREAD_GROUP = 2;
     private static final int FLAG_SYS_TPROMPT = 3;
+    private static final int FLAG_SYS_PRINT_MAP = 4;
 
     public final static MapHash<String, AbstractFlag<Thread>> DEFAULT
             = new MapHash<>();
 
     static {
-        DEFAULT.add(OP_FLAG_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
-        DEFAULT.add(OP_FLAG_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
-        DEFAULT.add(OP_FLAG_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
-        DEFAULT.add(OP_FLAG_SYS_TPROMPT, new FlagThread(FLAG_SYS_TPROMPT));
+        DEFAULT.add(OP_SYS_THREAD_NAME, new FlagThread(FLAG_SYS_THREAD_NAME));
+        DEFAULT.add(OP_SYS_THREAD_STATE, new FlagThread(FLAG_SYS_THREAD_STATE));
+        DEFAULT.add(OP_SYS_THREAD_GROUP, new FlagThread(FLAG_SYS_THREAD_GROUP));
+        DEFAULT.add(OP_SYS_TPROMPT, new FlagThread(FLAG_SYS_TPROMPT));
+        DEFAULT.add(OP_SYS_PRINT_MAP, new FlagThread(FLAG_SYS_PRINT_MAP));
     }
 
     /**
@@ -84,10 +89,9 @@ public final class FlagThread extends AbstractFlag<Thread> {
      * <p>Retrieve the value of this thread flag.</p>
      *
      * @param obj The thread.
-     * @param en  The engine.
      * @return The value.
      */
-    public Object getObjFlag(Thread obj, Engine en) {
+    public Object getObjFlag(Thread obj) {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
                 return obj.getName();
@@ -100,6 +104,11 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
 
                 return promptToAtom(s.flags & MASK_MODE_PRMT);
+            case FLAG_SYS_PRINT_MAP:
+                s = (Supervisor) AbstractLivestock.currentLivestock(obj);
+                if (s == null) return new SkelAtom(AbstractFlag.OP_NULL);
+
+                return s.printmap;
             default:
                 throw new IllegalArgumentException("illegal flag");
         }
@@ -111,12 +120,10 @@ public final class FlagThread extends AbstractFlag<Thread> {
      * @param obj The thread.
      * @param m   The value skel.
      * @param d   The value display.
-     * @param en  The engine.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
-    public boolean setObjFlag(Thread obj, Object m, Display d,
-                              Engine en)
+    public boolean setObjFlag(Thread obj, Object m, Display d)
             throws EngineMessage {
         switch (id) {
             case FLAG_SYS_THREAD_NAME:
@@ -134,6 +141,18 @@ public final class FlagThread extends AbstractFlag<Thread> {
                 if (s == null) return true;
 
                 s.setThreadPrompt(atomToPrompt(m, d));
+                return true;
+            case FLAG_SYS_PRINT_MAP:
+                s = (Supervisor) AbstractLivestock.currentLivestock(obj);
+                if (s == null) return true;
+
+                BindUniv b;
+                while (m instanceof SkelVar &&
+                        (b = d.bind[((SkelVar) m).id]).display != null) {
+                    m = b.skel;
+                    d = b.display;
+                }
+                s.printmap = AbstractTerm.createMolec(m, d);
                 return true;
             default:
                 throw new IllegalArgumentException("illegal flag");

@@ -1,11 +1,11 @@
 package jekpro.model.inter;
 
 import jekpro.model.molec.*;
-import jekpro.model.pretty.AbstractSource;
 import jekpro.model.rope.Clause;
+import jekpro.model.rope.Directive;
 import jekpro.model.rope.Goal;
 import jekpro.model.rope.Intermediate;
-import jekpro.tools.term.SkelAtom;
+import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 
@@ -43,7 +43,7 @@ import jekpro.tools.term.SkelVar;
 class ChoiceShow extends AbstractChoice {
     protected int at;
     protected final Clause[] list;
-    protected final AbstractSource src;
+    protected final int flags;
     protected final Intermediate goalskel;
     protected Display newdisp;
     protected final AbstractUndo mark;
@@ -54,20 +54,20 @@ class ChoiceShow extends AbstractChoice {
      * @param n The molec.
      * @param a The position.
      * @param c The clause list.
-     * @param s The source filter.
+     * @param f The flags.
      * @param r The continuation skel.
      * @param u The continuation display.
      * @param d The new display.
      * @param m The mark.
      */
     ChoiceShow(AbstractChoice n, int a,
-               Clause[] c, AbstractSource s,
+               Clause[] c, int f,
                Intermediate r, CallFrame u,
                Display d, AbstractUndo m) {
         super(n, u);
         at = a;
         list = c;
-        src = s;
+        flags = f;
         goalskel = r;
         newdisp = d;
         mark = m;
@@ -122,11 +122,15 @@ class ChoiceShow extends AbstractChoice {
                 d2.setSize(clause.size);
             }
 
-            SkelAtom sa = StackElement.callableToName(clause.head);
-            if (src == sa.scope) {
-                Object term = Clause.interToClauseSkel(clause, en);
-                if (en.unify(term, d2, temp[2], ref))
-                    break;
+            Object end = SpecialDynamic.callableToColonSkel(clause.head, en);
+            if (en.unify(end, d2, temp[1], ref)) {
+                end = Directive.interToBodySkel(clause, clause.last, en);
+                if (en.unify(end, d2, temp[2], ref)) {
+                    if ((flags & AbstractDefined.OPT_RSLT_CREF) == 0)
+                        break;
+                    if (en.unify(clause, Display.DISPLAY_CONST, temp[3], ref))
+                        break;
+                }
             }
 
             /* end of cursor */
@@ -149,10 +153,7 @@ class ChoiceShow extends AbstractChoice {
             /* reuse choice point */
             en.choices = this;
             en.number++;
-        } else {
-            /* */
         }
-
         /* succeed */
         return true;
     }

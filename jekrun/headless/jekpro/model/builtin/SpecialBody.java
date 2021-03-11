@@ -216,7 +216,7 @@ public final class SpecialBody extends AbstractSpecial {
             return en.store.foyer.ATOM_TRUE;
         }
     }
-    
+
     /**************************************************************/
     /* Body Checkers                                              */
     /**************************************************************/

@@ -20,7 +20,6 @@ import matula.util.system.ForeignUri;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -479,28 +478,6 @@ public abstract class AbstractSource {
         throw new EngineMessage(EngineMessage.syntaxError(
                 EngineMessage.OP_SYNTAX_MODULE_EMPTY,
                 new SkelAtom(ForeignLocale.shortName(src.getPath()))));
-    }
-
-    /**************************************************************/
-    /* AbstractSource Listing                                     */
-    /**************************************************************/
-
-    /**
-     * <p>Show the short name of the source key.</p>
-     *
-     * @param wr  The writer.
-     * @param src The source.
-     */
-    public static void showShortName(Writer wr, AbstractSource src)
-            throws EngineMessage {
-        try {
-            wr.write("% ");
-            wr.write(ForeignLocale.shortName(src.getPath()));
-            wr.write('\n');
-            wr.flush();
-        } catch (IOException x) {
-            throw EngineMessage.mapIOException(x);
-        }
     }
 
     /**************************************************************/

@@ -178,15 +178,14 @@ public class Bouquet {
         int at = 0;
         int start = 0;
         for (; ; ) {
-            at = Bouquet.firstValue(at, start, tc, d, cr.args, en);
+            at = cr.firstValue(at, start, tc, d, en);
             if (at == -1)
                 return cr;
-            m = en.skel;
             Index ci = cr.nthIndex(at, start);
-            if (!ci.canSkip()) {
+            if (ci != null) {
                 AbstractAssoc<Object, Bouquet> temp = ci.map;
                 if (temp != null) {
-                    m = Index.keyValue(m);
+                    m = Index.keyValue(en.skel);
                     cr = temp.get(m);
                     if (cr == null)
                         cr = ci.nonguard;
@@ -212,13 +211,13 @@ public class Bouquet {
      * @param start The start.
      * @param tc    The term.
      * @param d     The display of the term.
-     * @param help  The indexes.
      * @param en    The engine copy.
      * @return The indexing value.
      */
-    private static int firstValue(int at, int start,
-                                  Object[] tc, Display d,
-                                  Index[] help, Engine en) {
+    private int firstValue(int at, int start,
+                           Object[] tc, Display d,
+                           Engine en) {
+        Index[] help = args;
         if (help != null) {
             int h;
             for (; (h = at - start) < help.length; at++) {
@@ -286,7 +285,7 @@ public class Bouquet {
             Bouquet.buildIndex(rope, ci, at);
         help[h] = ci;
 
-        return ci;
+        return (!ci.canSkip() ? ci : null);
     }
 
     /*********************************************************/

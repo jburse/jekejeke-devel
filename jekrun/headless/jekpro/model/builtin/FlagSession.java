@@ -1,6 +1,5 @@
 package jekpro.model.builtin;
 
-import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
@@ -9,7 +8,6 @@ import jekpro.model.rope.LoadOpts;
 import jekpro.reference.arithmetic.SpecialEval;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
-import jekpro.tools.array.FlagFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
 import matula.comp.sharik.AbstractActivator;
@@ -134,8 +132,8 @@ public final class FlagSession extends AbstractFlag<Store> {
     /**
      * <p>Set the value of a this flag.</p>
      *
-     * @param m  The value skel.
-     * @param d  The value display.
+     * @param m The value skel.
+     * @param d The value display.
      * @return True if flag could be changed, otherwise false.
      * @throws EngineMessage Shit happens.
      */
@@ -222,6 +220,7 @@ public final class FlagSession extends AbstractFlag<Store> {
 
     /**
      * <p>Convert verbose to an atom.</p>
+     *
      * @param k The verbose.
      * @return The atom.
      */

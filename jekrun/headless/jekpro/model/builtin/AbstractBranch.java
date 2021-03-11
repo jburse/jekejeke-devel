@@ -2,7 +2,6 @@ package jekpro.model.builtin;
 
 import derek.util.protect.ActivatorNet;
 import derek.util.protect.LicenseError;
-import jekpro.frequent.experiment.InterfaceReference;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
 import jekpro.model.inter.StackElement;
@@ -74,7 +73,6 @@ public abstract class AbstractBranch extends AbstractBundle {
     private MapHash<StoreKey, AbstractProperty<StackElement>> frameprops;
     private MapHashLink<StoreKey, AbstractProperty<Operator>> operprops;
     private MapHash<StoreKey, AbstractProperty<AbstractSource>> srcprops;
-    private MapHash<StoreKey, AbstractProperty<InterfaceReference>> refprops;
     private MapHash<StoreKey, AbstractProperty<Object>> callprops;
     private final ListArray<MapHashLink<StoreKey, AbstractProperty<Predicate>>> predprops
             = new ListArray<>();
@@ -250,24 +248,6 @@ public abstract class AbstractBranch extends AbstractBundle {
         if (f == null)
             throw new NullPointerException("properties missing");
         predprops.addFirst(f);
-    }
-
-    /**
-     * <p>Retrieve the reference properties.</p>
-     *
-     * @return The reference propertgies.
-     */
-    public MapHash<StoreKey, AbstractProperty<InterfaceReference>> getRefProps() {
-        return refprops;
-    }
-
-    /**
-     * <p>Set the reference properties.</p>
-     *
-     * @param r The reference properties.
-     */
-    public void setRefProps(MapHash<StoreKey, AbstractProperty<InterfaceReference>> r) {
-        refprops = r;
     }
 
     /**

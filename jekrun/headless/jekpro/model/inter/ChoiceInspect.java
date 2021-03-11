@@ -131,12 +131,10 @@ class ChoiceInspect extends AbstractChoice {
                     clause, d2, en)) {
                 Object end = Directive.interToBodySkel(clause, clause.last, en);
                 if (en.unify(end, d2, temp[1], ref)) {
-                    if ((flags & AbstractDefined.OPT_RSLT_CREF) != 0) {
-                        if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
-                            break;
-                    } else {
+                    if ((flags & AbstractDefined.OPT_RSLT_CREF) == 0)
                         break;
-                    }
+                    if (en.unify(clause, Display.DISPLAY_CONST, temp[2], ref))
+                        break;
                 }
             }
 
@@ -162,10 +160,7 @@ class ChoiceInspect extends AbstractChoice {
             /* reuse choice point */
             en.choices = this;
             en.number++;
-        } else {
-            /* */
         }
-
         /* succeed */
         return true;
     }
