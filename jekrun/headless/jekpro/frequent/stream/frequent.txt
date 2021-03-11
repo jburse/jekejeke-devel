@@ -27,7 +27,6 @@
 # Jekejeke is a registered trademark of XLOG Technologies GmbH.
 public
 !/2	standard/dcg
-'!*'/0	standard/apply
 *-> /4	standard/dcg
 ','/4	standard/dcg
 --> /2	standard/dcg
@@ -121,6 +120,7 @@ cond_notify/1	misc/cond
 cond_notify_all/1	misc/cond
 cond_wait/1	misc/cond
 cond_wait_timeout/2	misc/cond
+contains/2	basic/lists
 cosh/2	basic/hyper
 counter_new/1	basic/random
 counter_new/2	basic/random

@@ -242,9 +242,9 @@ public final class ForeignThread {
                                           String flag)
             throws InterpreterMessage {
         Engine en = inter.getEngine();
-        AbstractFlag af = findThreadFlag(flag, en);
+        AbstractFlag<Thread> af = findThreadFlag(flag, en);
         if (af != null)
-            return af.getObjFlag(t, en);
+            return af.getObjFlag(t);
         throw new InterpreterMessage(InterpreterMessage.domainError(
                 EngineMessage.OP_DOMAIN_PROLOG_FLAG, flag));
     }
@@ -263,9 +263,9 @@ public final class ForeignThread {
             throws InterpreterMessage {
         Engine en = inter.getEngine();
         try {
-            AbstractFlag af = findThreadFlag(flag, en);
+            AbstractFlag<Thread> af = findThreadFlag(flag, en);
             if (af != null) {
-                if (!af.setObjFlag(t, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val), en))
+                if (!af.setObjFlag(t, AbstractTerm.getSkel(val), AbstractTerm.getDisplay(val)))
                     throw new EngineMessage(EngineMessage.permissionError(
                             EngineMessage.OP_PERMISSION_MODIFY,
                             EngineMessage.OP_PERMISSION_FLAG, new SkelAtom(flag)));
@@ -318,7 +318,7 @@ public final class ForeignThread {
      * @param en   The engine.
      * @return The thread flag.
      */
-    private static AbstractFlag findThreadFlag(String flag, Engine en) {
+    private static AbstractFlag<Thread> findThreadFlag(String flag, Engine en) {
         MapEntry<AbstractBundle, AbstractTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
@@ -330,7 +330,7 @@ public final class ForeignThread {
             MapHash<String, AbstractFlag<Thread>> pfs = branch.getThreadFlags();
             if (pfs == null)
                 continue;
-            AbstractFlag af = pfs.get(flag);
+            AbstractFlag<Thread> af = pfs.get(flag);
             if (af != null)
                 return af;
         }

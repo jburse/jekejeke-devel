@@ -4,20 +4,15 @@ import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.AbstractDefined;
-import jekpro.model.inter.AbstractSpecial;
-import jekpro.model.inter.Engine;
-import jekpro.model.inter.StackElement;
-import jekpro.model.molec.BindUniv;
-import jekpro.model.molec.Display;
-import jekpro.model.molec.EngineException;
-import jekpro.model.molec.EngineMessage;
+import jekpro.model.inter.*;
+import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.ReadOpts;
 import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.reflect.PropertyCallable;
+import jekpro.reference.reflect.SpecialPred;
 import jekpro.reference.runtime.SpecialDynamic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
@@ -68,10 +63,7 @@ public final class SpecialRef extends AbstractSpecial {
     private final static int SPECIAL_ERASE_REF = 4;
     private final static int SPECIAL_COMPILED_REF = 5;
     private final static int SPECIAL_CLAUSE_REF = 6;
-    private final static int SPECIAL_SYS_REF_PROPERTY = 7;
-    private final static int SPECIAL_SYS_REF_PROPERTY_CHK = 8;
-    private final static int SPECIAL_SET_REF_PROPERTY = 9;
-    private final static int SPECIAL_RESET_REF_PROPERTY = 10;
+    private final static int SPECIAL_SYS_RULE_REF = 7;
 
     /**
      * <p>Create a special internal.</p>
@@ -148,51 +140,18 @@ public final class SpecialRef extends AbstractSpecial {
             case SPECIAL_CLAUSE_REF:
                 return SpecialDynamic.searchKnowledgebase(AbstractDefined.OPT_CHCK_ASSE |
                         AbstractDefined.OPT_ACTI_WRIT | AbstractDefined.OPT_RSLT_CREF, en);
-            case SPECIAL_SYS_REF_PROPERTY:
+            case SPECIAL_SYS_RULE_REF:
                 temp = ((SkelCompound) en.skel).args;
                 ref = en.display;
-                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                SpecialRef.refToProperties(ptr, en);
-                d = en.display;
-                multi = d.getAndReset();
-                if (!en.unify(en.skel, d, temp[1], ref))
+                Predicate pick = SpecialPred.indicatorToPredicateDefined(temp[0],
+                        ref, en, CachePredicate.MASK_CACH_UCHK);
+                if (pick == null)
                     return false;
-                if (multi)
-                    d.remTab(en);
-                return true;
-            case SPECIAL_SYS_REF_PROPERTY_CHK:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                StoreKey sk = AbstractProperty.propToStoreKey(temp[1], ref, en);
-                SpecialRef.refToProperty(ptr, sk, en);
-                d = en.display;
-                multi = d.getAndReset();
-                if (!en.unify(en.skel, d, temp[2], ref))
+                if (!(pick.del instanceof AbstractDefined))
                     return false;
-                if (multi)
-                    d.remTab(en);
-                return true;
-            case SPECIAL_SET_REF_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialRef.setRefProp(ptr, en.skel, en.display, en);
-                return true;
-            case SPECIAL_RESET_REF_PROPERTY:
-                temp = ((SkelCompound) en.skel).args;
-                ref = en.display;
-                ptr = SpecialRef.derefAndCastPtr(temp[0], ref);
-                en.skel = temp[1];
-                en.display = ref;
-                en.deref();
-                EngineMessage.checkCallable(en.skel, en.display);
-                SpecialRef.resetRefProp(ptr, en.skel, en.display, en);
-                return true;
+
+                return ((AbstractDefined) pick.del).listFirst(temp, ref,
+                        AbstractDefined.OPT_RSLT_CREF, en);
             default:
                 throw new IllegalArgumentException(AbstractSpecial.OP_ILLEGAL_SPECIAL);
         }
@@ -252,144 +211,9 @@ public final class SpecialRef extends AbstractSpecial {
         }
     }
 
-
-    /***************************************************************/
-    /* High-Level Clause Access/Modification                       */
-    /***************************************************************/
-
-    /**
-     * <p>Create a prolog list for the properties of the given reference.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param ptr The reference.
-     * @param en  The engine.
-     * @throws EngineMessage   Validation Error.
-     * @throws EngineException Validation Error.
-     */
-    private static void refToProperties(InterfaceReference ptr, Engine en)
-            throws EngineMessage, EngineException {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceReference>> props = branch.getRefProps();
-            for (MapEntry<StoreKey, AbstractProperty<InterfaceReference>> entry2 =
-                 (props != null ? props.getLastEntry() : null);
-                 entry2 != null; entry2 = props.predecessor(entry2)) {
-                AbstractProperty<InterfaceReference> prop = entry2.value;
-                Object t = en.skel;
-                Display d = en.display;
-                Object[] vals = prop.getObjProps(ptr, en);
-                en.skel = t;
-                en.display = d;
-                AbstractProperty.consArray(vals, en);
-            }
-        }
-    }
-
-    /**
-     * <p>Create a prolog list for the property of the given reference.</p>
-     * <p>Result is returned in skeleton and display.</p>
-     *
-     * @param ptr The ptr.
-     * @param sk  The property.
-     * @param en  The engine.
-     * @throws EngineMessage   Validation Error.
-     * @throws EngineException Validation Error.
-     */
-    private static void refToProperty(InterfaceReference ptr, StoreKey sk,
-                                      Engine en)
-            throws EngineMessage, EngineException {
-        AbstractProperty<InterfaceReference> prop = SpecialRef.findRefProperty(sk, en);
-        Object[] vals = prop.getObjProps(ptr, en);
-        en.skel = en.store.foyer.ATOM_NIL;
-        en.display = Display.DISPLAY_CONST;
-        AbstractProperty.consArray(vals, en);
-    }
-
-    /**
-     * <p>Set a reference property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param ptr The reference.
-     * @param m   The value skeleton.
-     * @param d   The value display.
-     * @param en  The engine.
-     * @throws EngineMessage Validation Error.
-     */
-    private static void setRefProp(InterfaceReference ptr, Object m, Display d,
-                                   Engine en)
-            throws EngineMessage {
-        StoreKey sk = StackElement.callableToStoreKey(m);
-        AbstractProperty<InterfaceReference> prop = SpecialRef.findRefProperty(sk, en);
-        if (!prop.setObjProp(ptr, m, d, en))
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
-    }
-
-    /**
-     * <p>Reset a reference property.</p>
-     * <p>Throws a domain error for undefined flags.</p>
-     *
-     * @param ptr The reference.
-     * @param m   The value skeleton.
-     * @param d   The value display.
-     * @param en  The engine.
-     * @throws EngineMessage Validation Error.
-     */
-    private static void resetRefProp(InterfaceReference ptr, Object m, Display d,
-                                     Engine en)
-            throws EngineMessage {
-        StoreKey sk = StackElement.callableToStoreKey(m);
-        AbstractProperty<InterfaceReference> prop = SpecialRef.findRefProperty(sk, en);
-        if (!prop.resetObjProp(ptr, m, d, en))
-            throw new EngineMessage(EngineMessage.permissionError(
-                    EngineMessage.OP_PERMISSION_MODIFY,
-                    EngineMessage.OP_PERMISSION_PROPERTY,
-                    sk.storeKeyToSkel()));
-    }
-
-    /**
-     * <p>Retrieve a reference property.</p>
-     * <p>Throws a domain error for undefined reference properties.</p>
-     * <p>Only capabilities that are ok are considered.</p>
-     *
-     * @param sk The property name and arity.
-     * @param en The engine.
-     * @return The property.
-     * @throws EngineMessage Validation Error.
-     */
-    private static AbstractProperty<InterfaceReference> findRefProperty(StoreKey sk,
-                                                                        Engine en)
-            throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
-        for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
-            if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
-                continue;
-            AbstractBranch branch = (AbstractBranch) entry.key;
-            MapHash<StoreKey, AbstractProperty<InterfaceReference>> props = branch.getRefProps();
-            AbstractProperty<InterfaceReference> prop = (props != null ? props.get(sk) : null);
-            if (prop != null)
-                return prop;
-        }
-        throw new EngineMessage(EngineMessage.domainError(
-                EngineMessage.OP_DOMAIN_PROLOG_PROPERTY,
-                sk.storeKeyToSkel()));
-    }
-
-    /*******************************************************************/
-    /* Check InterfaceReference                                        */
-    /*******************************************************************/
+    /**************************************************************/
+    /* Helper                                                     */
+    /**************************************************************/
 
     /**
      * <p>Cast a ptr.</p>
@@ -402,15 +226,13 @@ public final class SpecialRef extends AbstractSpecial {
     public static InterfaceReference derefAndCastPtr(Object m, Display d)
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
-        if (!(m instanceof InterfaceReference))
+        if (m instanceof InterfaceReference) {
+            return ((InterfaceReference)m);
+        } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));
-        return (InterfaceReference) m;
+        }
     }
-
-    /******************************************************************/
-    /* Assert Options                                                 */
-    /******************************************************************/
 
     /**
      * <p>Decode the given assert options.</p>
