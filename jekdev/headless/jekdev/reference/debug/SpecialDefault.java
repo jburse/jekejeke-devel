@@ -271,25 +271,23 @@ public final class SpecialDefault extends AbstractSpecial {
     /**
      * <p>Convert leash bits to leash atom list.</p>
      *
-     * @param en    The engine.
      * @param flags The bits.
      * @return The atom list.
      */
-    public static Object portsToList(Engine en, int flags) {
-        Foyer foyer = en.store.foyer;
-        Object res = foyer.ATOM_NIL;
+    public static Object portsToList(int flags) {
+        Object res = new SkelAtom(Foyer.OP_NIL);
         if ((flags & MASK_PORT_FAIL) == 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_FAIL), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_FAIL), res);
         if ((flags & MASK_PORT_REDO) == 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_REDO), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_REDO), res);
         if ((flags & MASK_PORT_EXIT) == 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_EXIT), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_EXIT), res);
         if ((flags & MASK_PORT_CALL) == 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_CALL), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_CALL), res);
         if ((flags & MASK_PORT_HEAD) != 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_HEAD), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_HEAD), res);
         if ((flags & MASK_PORT_CHOP) != 0)
-            res = new SkelCompound(foyer.ATOM_CONS, new SkelAtom(SpecialMode.OP_CHOP), res);
+            res = new SkelCompound(new SkelAtom(Foyer.OP_CONS), new SkelAtom(SpecialMode.OP_CHOP), res);
         return res;
     }
 

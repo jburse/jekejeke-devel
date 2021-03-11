@@ -77,6 +77,7 @@
 :- use_module(library(system/attach)).
 :- use_module(library(structure/bytes)).
 :- use_module(library(advanced/signal)).
+:- use_module(library(basic/lists)).
 :- sys_load_resource(debug).
 
 /***********************************************************************/
@@ -346,13 +347,24 @@ sys_goal_show(Port, Frame) :-
    sys_goal_depth(Frame, -1, D),
    atom_concat('debug.', Port, Key2),
    get_property(P, Key2, V2),
-   frame_property(Frame, sys_call_goal(Goal)),
-   rebuild_goal(Goal, Rebuild),
-   current_prolog_flag(sys_print_map, N),
    write(V1), write(' '),
    write(D), write(' '),
    write(V2), write(' '),
-   write_term(Rebuild, [context(0), quoted(true), variable_names(N)]).
+   frame_property(Frame, sys_call_goal(Goal)),
+   sys_goal_show(Goal).
+
+% sys_goal_show(+Goal)
+:- private sys_goal_show/1.
+sys_goal_show(Goal) :- acyclic_term(Goal), !,
+   rebuild_goal(Goal, Rebuild),
+   thread_current(Thread),
+   current_thread_flag(Thread, sys_print_map, N),
+   reverse(N, M),
+   write_term(Rebuild, [context(0), quoted(true), variable_names(M)]).
+sys_goal_show(_) :-
+   get_properties(debug, P),
+   get_property(P, 'debug.cyclic', V),
+   write(V).
 
 % sys_goal_depth(+Frame, +Integer, -Integer)
 :- private sys_goal_depth/3.

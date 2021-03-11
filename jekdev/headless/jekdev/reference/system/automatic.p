@@ -23,13 +23,13 @@
  * :- package(foreign(java/lang)).
  * :- module('Math', []).
  * :- reexport(foreign('Object')).
- * :- sys_auto_load(foreign('Math')).
+ * :- use_module(library(basic/score)).
  *
- * :- public foreign_const('E'/1,'Math','E').
+ * :- public foreign_getter('E'/1, 'Math', 'E').
  *
- * :- public foreign_const('PI'/1,'Math','PI').
+ * :- public foreign_getter('PI'/1, 'Math', 'PI').
  *
- * :- public foreign_fun(random/1,'Math',random).
+ * :- public foreign(random/1, 'Math', random).
  *
  * The usual listing commands listing/0 and listing/1 suppress the
  * automatically generated interface members. The commands generated/0

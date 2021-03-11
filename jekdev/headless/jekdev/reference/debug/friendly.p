@@ -310,7 +310,7 @@ sys_intermediate_item_sep(I) :-
 % sys_show_clauses(+Indicator, +Source, +Integer)
 :- private sys_show_clauses/3.
 sys_show_clauses(I, U, F) :-
-   sys_list_clause_ref(I, H, B, R),
+   sys_rule_ref(I, H, B, R),
    callable_property(H, sys_context(U)),
    callable_property(H, sys_variable_names(N)),
    sys_make_clause(H, B, T),
@@ -326,7 +326,7 @@ sys_show_clauses(_, _, _).
 % sys_recap_clauses(+Indicator, +Source, +Map)
 :- private sys_recap_clauses/3.
 sys_recap_clauses(I, U, M) :-
-   sys_list_clause_ref(I, H, _, R),
+   sys_rule_ref(I, H, _, R),
    callable_property(H, sys_context(U)),
    sys_vm_collect_ref(R, M),
    fail.
