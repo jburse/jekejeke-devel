@@ -1,8 +1,10 @@
 # What is this?
 
 Current: [
+![release badge](https://img.shields.io/badge/release-v1.5.0-green.svg)
+](https://github.com/jburse/jekejeke-devel/releases/tag/v1.5.0) Archives: [
 ![release badge](https://img.shields.io/badge/release-v1.4.7-green.svg)
-](https://github.com/jburse/jekejeke-devel/releases/tag/v1.4.7) Archive: [
+](https://github.com/jburse/jekejeke-devel/releases/tag/v1.4.7) [
 ![release badge](https://img.shields.io/badge/release-v1.3.8-green.svg)
 ](https://github.com/jburse/jekejeke-devel/releases/tag/v1.3.8)
 
