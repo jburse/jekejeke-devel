@@ -3,8 +3,8 @@ package jekpro.frequent.system;
 import jekpro.model.molec.EngineMessage;
 import jekpro.tools.call.CallOut;
 import jekpro.tools.call.InterpreterMessage;
-import matula.util.config.ArrayEnumeration;
-import matula.util.config.ForeignArchive;
+import matula.util.regex.ArrayEnumeration;
+import matula.util.system.ForeignArchive;
 import matula.util.data.ListArray;
 
 import java.io.File;

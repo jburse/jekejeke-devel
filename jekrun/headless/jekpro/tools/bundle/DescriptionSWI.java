@@ -2,7 +2,7 @@ package jekpro.tools.bundle;
 
 import matula.util.config.AbstractDescription;
 import matula.util.config.AbstractFramework;
-import matula.util.config.FileExtension;
+import matula.util.wire.FileExtension;
 import matula.util.wire.LangProperties;
 
 import java.util.Locale;

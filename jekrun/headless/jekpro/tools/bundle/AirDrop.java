@@ -6,8 +6,8 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractDescription;
-import matula.util.config.FileExtension;
-import matula.util.config.ForeignArchive;
+import matula.util.wire.FileExtension;
+import matula.util.system.ForeignArchive;
 import matula.util.data.ListArray;
 import matula.util.wire.LangProperties;
 

@@ -18,7 +18,7 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
-import matula.util.config.FileExtension;
+import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 

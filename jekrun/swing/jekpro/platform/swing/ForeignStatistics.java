@@ -7,7 +7,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import matula.util.config.ArrayEnumeration;
+import matula.util.regex.ArrayEnumeration;
 import matula.util.wire.AbstractLivestock;
 
 import java.lang.management.GarbageCollectorMXBean;

@@ -222,8 +222,6 @@ public abstract class AbstractFile extends AbstractSource {
             reader = (Reader) fopts.openRead(getPath());
         } catch (IOException x) {
             throw EngineMessage.mapIOException(x);
-        } catch (LicenseError x) {
-            throw new EngineMessage(EngineMessage.licenseError(x.getMessage()));
         }
         return reader;
     }
@@ -271,7 +269,7 @@ public abstract class AbstractFile extends AbstractSource {
         } else {
             src = new FileText(key);
         }
-        src.setBranch(store.pathToDecoder(key));
+        src.setBranch(store.pathToBundle(key));
         return src;
     }
 

@@ -19,7 +19,7 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractRuntime;
-import matula.util.config.FileExtension;
+import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 

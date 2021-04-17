@@ -1,6 +1,5 @@
 package jekpro.model.builtin;
 
-import derek.util.protect.ActivatorNet;
 import derek.util.protect.LicenseError;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -24,14 +23,12 @@ import matula.comp.sharik.AbstractActivator;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractDescription;
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 
 /**
@@ -530,24 +527,6 @@ public abstract class AbstractBranch extends AbstractBundle {
             }
         }
         return true;
-    }
-
-    /*******************************************************************/
-    /* Stream Decoding                                                 */
-    /*******************************************************************/
-
-    /**
-     * <p>Prepare a stream.</p>
-     *
-     * @param in   The input stream.
-     * @param know The knowledgebase.
-     * @return The prepared input stream.
-     * @throws IOException  Shit happens.
-     * @throws LicenseError Shit happens.
-     */
-    public InputStream prepareStream(InputStream in, AbstractRecognizer know)
-            throws LicenseError, IOException {
-        return ActivatorNet.prepareStream(in);
     }
 
     /***************************************************************/

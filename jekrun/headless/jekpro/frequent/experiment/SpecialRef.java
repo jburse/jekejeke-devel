@@ -1,15 +1,14 @@
 package jekpro.frequent.experiment;
 
-import derek.util.protect.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
-import jekpro.model.builtin.AbstractBranch;
-import jekpro.model.builtin.AbstractProperty;
-import jekpro.model.inter.*;
+import jekpro.model.inter.AbstractDefined;
+import jekpro.model.inter.AbstractSpecial;
+import jekpro.model.inter.Engine;
+import jekpro.model.inter.Predicate;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.Foyer;
 import jekpro.model.pretty.PrologReader;
 import jekpro.model.pretty.ReadOpts;
-import jekpro.model.pretty.StoreKey;
 import jekpro.model.rope.Clause;
 import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.SpecialPred;
@@ -18,9 +17,6 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
-import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
 
@@ -227,7 +223,7 @@ public final class SpecialRef extends AbstractSpecial {
             throws EngineMessage {
         m = SpecialUniv.derefAndCastRef(m, d);
         if (m instanceof InterfaceReference) {
-            return ((InterfaceReference)m);
+            return ((InterfaceReference) m);
         } else {
             throw new EngineMessage(EngineMessage.domainError(
                     EngineMessage.OP_DOMAIN_REF, m));

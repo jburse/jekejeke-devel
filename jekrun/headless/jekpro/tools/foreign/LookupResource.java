@@ -7,7 +7,7 @@ import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
-import matula.util.config.FileExtension;
+import matula.util.wire.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
 

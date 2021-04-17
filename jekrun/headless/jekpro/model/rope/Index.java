@@ -129,7 +129,7 @@ public class Index {
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
-                Bouquet.addClause(temp, clause);
+                Index.addClause(temp, clause);
             if (nonguard == null)
                 nonguard = new Bouquet();
             nonguard.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
@@ -160,7 +160,7 @@ public class Index {
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
-                Bouquet.assertClause(temp, clause, at + 1, flags);
+                Index.assertClause(temp, clause, at + 1, flags);
             if (nonguard == null)
                 nonguard = new Bouquet();
             nonguard.assertClause(at + 1, clause, flags);
@@ -195,7 +195,7 @@ public class Index {
                     nonguard = null;
             }
             AbstractAssoc<Object, Bouquet> temp = map;
-            if (temp == null || !Bouquet.retractClause(temp, clause, at + 1))
+            if (temp == null || !Index.retractClause(temp, clause, at + 1))
                 return;
             if (temp instanceof MapHash && temp.size() < Index.MIN_ASSOC_LARGE) {
                 AssocArray<Object, Bouquet> res = new AssocArray<>(temp.size());
@@ -277,6 +277,33 @@ public class Index {
         cp.assertClause(at, clause, flags);
     }
 
+    /*********************************************************/
+    /* Pairs Polymorphism                                    */
+    /*********************************************************/
+
+    /**
+     * <p>Add the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     */
+    protected static void addClause(AbstractAssoc<Object, Bouquet> pairs, Clause clause) {
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = 0; j < list.size(); j++) {
+                Bouquet cp = list.getValue(j);
+                cp.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
+            }
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
+            }
+        }
+    }
+
     /**
      * <p>Retract the clause to the list of pairs.</p>
      *
@@ -286,7 +313,7 @@ public class Index {
      * @param at     The position.
      * @return True if dirty, otherwise false.
      */
-    static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
+    protected static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
                                  Object m, Clause clause, int at) {
         if (pairs instanceof AssocArray) {
             AssocArray<Object, Bouquet> list = (AssocArray) pairs;
@@ -313,6 +340,72 @@ public class Index {
             }
             return true;
         }
+    }
+
+    /**
+     * <p>Assert the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     * @param at     The position.
+     * @param flags  The flags.
+     */
+    protected static void assertClause(AbstractAssoc<Object, Bouquet> pairs,
+                             Clause clause, int at, int flags) {
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = 0; j < list.size(); j++) {
+                Bouquet cp = list.getValue(j);
+                cp.assertClause(at, clause, flags);
+            }
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.assertClause(at, clause, flags);
+            }
+        }
+    }
+
+    /**
+     * <p>Retract the clause to the list of pairs.</p>
+     *
+     * @param pairs  The pairs.
+     * @param clause The clause to be added.
+     * @param at     The position.
+     * @return True if dirty, otherwise false.
+     */
+    protected static boolean retractClause(AbstractAssoc<Object, Bouquet> pairs,
+                                 Clause clause, int at) {
+        boolean dirty = false;
+        if (pairs instanceof AssocArray) {
+            AssocArray<Object, Bouquet> list = (AssocArray) pairs;
+            for (int j = list.size() - 1; j >= 0; j--) {
+                Bouquet cp = list.getValue(j);
+                cp.retractClause(at, clause);
+                if (cp.set == null) {
+                    list.removeEntry(j);
+                    dirty = true;
+                }
+            }
+            if (dirty)
+                list.resize();
+        } else {
+            MapHash<Object, Bouquet> hash = (MapHash) pairs;
+            for (MapEntry<Object, Bouquet> entry = hash.getFirstEntry();
+                 entry != null; entry = hash.successor(entry)) {
+                Bouquet cp = entry.value;
+                cp.retractClause(at, clause);
+                if (cp.set == null) {
+                    hash.removeEntry(entry);
+                    dirty = true;
+                }
+            }
+            if (dirty)
+                hash.resize();
+        }
+        return dirty;
     }
 
 }

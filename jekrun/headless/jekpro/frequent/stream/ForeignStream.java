@@ -155,9 +155,6 @@ public final class ForeignStream {
                     ForeignStream.OP_PERMISSION_OPEN, EngineMessage.OP_PERMISSION_SOURCE_SINK,
                     new TermCompound(PropertyStream.OP_REPOSITION,
                             Foyer.OP_TRUE)));
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(InterpreterMessage.licenseError(
-                    x.getMessage()));
         }
     }
 

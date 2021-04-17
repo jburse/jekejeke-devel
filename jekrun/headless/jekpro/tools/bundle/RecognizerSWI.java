@@ -1,5 +1,6 @@
 package jekpro.tools.bundle;
 
+import derek.util.protect.ActivatorNet;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
@@ -8,6 +9,8 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import matula.util.config.*;
 import matula.util.regex.ScannerError;
+import matula.util.wire.AbstractRecognizer;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,15 +69,6 @@ public final class RecognizerSWI extends AbstractRecognizer {
         addFileExtension(".pl", new FileExtension(FileExtension.MASK_USES_TEXT, "text/prolog"));
     }
 
-    /**
-     * <p>Determine the decoder for a path.</p>
-     *
-     * @param path The path.
-     * @return The decoder, or null.
-     */
-    public AbstractBundle pathToDecoder(String path) {
-        return DefaultBundle.DEFAULT;
-    }
 
     /**
      * <p>Load binary properties.</p>

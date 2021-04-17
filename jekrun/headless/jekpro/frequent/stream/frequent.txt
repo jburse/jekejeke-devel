@@ -104,7 +104,6 @@ canonical_uri/2	system/uri
 char_class/2	misc/text
 char_class/3	misc/text
 char_digit/3	misc/text
-clause_ref/2	experiment/ref
 clause_ref/3	experiment/ref
 client_new/3	misc/socket
 close/1	stream/stream
@@ -354,9 +353,7 @@ receive/2	experiment/broker
 receive/3	experiment/broker
 recorda_ref/1	experiment/ref
 recordz_ref/1	experiment/ref
-ref_property/2	experiment/ref
 rename_file/2	system/file
-reset_ref_property/2	experiment/ref
 reset_stream_property/2	stream/stream
 retract_table/1	advanced/tabling
 retractall_table/1	advanced/tabling
@@ -375,7 +372,6 @@ set_arg/4	basic/proxy
 set_error/1	stream/stream
 set_input/1	stream/stream
 set_output/1	stream/stream
-set_ref_property/2	experiment/ref
 set_stream_length/2	stream/stream
 set_stream_position/2	stream/stream
 set_stream_property/2	stream/stream
@@ -436,6 +432,7 @@ sys_mark_attrs/2	misc/residue
 sys_mask/1	advanced/signal
 sys_new_instance/2	basic/proxy
 sys_printable_value/2	misc/residue
+sys_rule_ref/4	experiment/ref
 sys_type_of/2	basic/score
 sys_unwrap_eq/3	misc/residue
 (table)/1	advanced/tabling

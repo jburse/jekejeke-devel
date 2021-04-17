@@ -39,7 +39,7 @@ import matula.util.data.MapHash;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class IndexFront extends Index {
+final class IndexFront extends Index {
     private static final Bouquet BOUQUETFRONT_VOID = new BouquetFront();
 
     public final static String OP_SYS_EQ = "sys_eq";
@@ -175,7 +175,7 @@ public final class IndexFront extends Index {
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
-                Bouquet.addClause(temp, clause);
+                Index.addClause(temp, clause);
             if (nonguard == null)
                 nonguard = new BouquetFront();
             nonguard.addClause(clause, AbstractDefined.OPT_ACTI_BOTT);
@@ -210,7 +210,7 @@ public final class IndexFront extends Index {
         if (m == null) {
             AbstractAssoc<Object, Bouquet> temp = map;
             if (temp != null)
-                Bouquet.assertClause(temp, clause, at + 1, flags);
+                Index.assertClause(temp, clause, at + 1, flags);
             if (nonguard == null)
                 nonguard = new BouquetFront();
             nonguard.assertClause(at + 1, clause, flags);
@@ -249,7 +249,7 @@ public final class IndexFront extends Index {
                     nonguard = null;
             }
             AbstractAssoc<Object, Bouquet> temp = map;
-            if (temp == null || !Bouquet.retractClause(temp, clause, at + 1))
+            if (temp == null || !Index.retractClause(temp, clause, at + 1))
                 return;
             if (temp instanceof MapHash && temp.size() < Index.MIN_ASSOC_LARGE) {
                 AssocArray<Object, Bouquet> res = new AssocArray<>(temp.size());

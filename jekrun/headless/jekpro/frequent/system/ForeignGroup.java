@@ -5,7 +5,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.AbstractTerm;
-import matula.util.config.ArrayEnumeration;
+import matula.util.regex.ArrayEnumeration;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractLivestock;

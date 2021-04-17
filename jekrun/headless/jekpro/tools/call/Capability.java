@@ -199,20 +199,6 @@ public abstract class Capability {
     }
 
     /**
-     * <p>Prepare a stream.</p>
-     *
-     * @param in   The input stream.
-     * @param know The knowledgebase.
-     * @return The prepared input stream.
-     * @throws IOException  Shit happens.
-     * @throws LicenseError Shit happens.
-     */
-    public InputStream prepareStream(InputStream in, Knowledgebase know)
-            throws LicenseError, IOException {
-        return branch.prepareStream(in, know.getStore());
-    }
-
-    /**
      * <p>Retrieve the bundle description.</p>
      *
      * @param locale The locale.

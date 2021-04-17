@@ -212,7 +212,7 @@ public final class Reflection extends AbstractReflection {
                 } else {
                     src = new AutoClass(key);
                 }
-                src.setBranch(store.pathToDecoder(key));
+                src.setBranch(store.pathToBundle(key));
                 return src;
             }
             AbstractSource src = new SourceLocal(key);
@@ -221,7 +221,7 @@ public final class Reflection extends AbstractReflection {
             return src;
         } else {
             AbstractSource src = new SourceLocal(key);
-            src.setBranch(store.pathToDecoder(key));
+            src.setBranch(store.pathToBundle(key));
             return src;
         }
     }

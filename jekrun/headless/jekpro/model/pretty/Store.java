@@ -13,8 +13,8 @@ import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractFramework;
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.FileExtension;
+import matula.util.wire.AbstractRecognizer;
+import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
@@ -137,7 +137,7 @@ public class Store extends AbstractRecognizer {
      * @param path The path.
      * @return The branch, or null.
      */
-    public final AbstractBundle pathToDecoder(String path) {
+    public final AbstractBundle pathToBundle(String path) {
         MapEntry<AbstractBundle, AbstractTracking> entry;
         if (ForeignUri.sysUriIsRelative(path)) {
             entry = Tracking.relativeURIstoRoots(path, foyer);

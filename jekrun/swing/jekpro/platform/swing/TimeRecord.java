@@ -5,7 +5,7 @@ import jekpro.model.pretty.Foyer;
 import jekpro.tools.call.*;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.TermAtomic;
-import matula.util.config.ArrayEnumeration;
+import matula.util.regex.ArrayEnumeration;
 
 /**
  * The value object for the module stats.
