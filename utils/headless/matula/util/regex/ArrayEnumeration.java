@@ -1,6 +1,9 @@
-package matula.util.wire;
+package matula.util.regex;
+
+import java.util.Enumeration;
 
 /**
+ * <p>Helper for array enumeration.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
@@ -30,15 +33,52 @@ package matula.util.wire;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class LivestockEventMemory extends LivestockEvent {
+public final class ArrayEnumeration<T> implements Enumeration<T> {
+    private Object[] data;
+    private int pos;
+    private int size;
 
     /**
-     * <p>Create an framework event.</p>
+     * <p>Create a array enumeration.</p>
      *
-     * @param source The source.
+     * @param d The array.
      */
-    public LivestockEventMemory(Object source) {
-        super(source);
+    public ArrayEnumeration(Object[] d) {
+        if (d == null)
+            throw new NullPointerException("data missing");
+        data = d;
+        size = d.length;
+    }
+
+    /**
+     * <p>Create a array enumeration.</p>
+     *
+     * @param d The array.
+     * @param s The effective size.
+     */
+    public ArrayEnumeration(Object[] d, int s) {
+        if (d == null)
+            throw new NullPointerException("data missing");
+        data = d;
+        size = s;
+    }
+
+    /**
+     * <p>Check whether there are more elements.</p>
+     *
+     * @return True if there are more elements, otherwise false.
+     */
+    public boolean hasMoreElements() {
+        return pos < size;
+    }
+
+    /**
+     * <p>Retrieve the next element and advance the cursor.</p>
+     *
+     * @return The next element.
+     */
+    public T nextElement() {
+        return (T) data[pos++];
     }
 
 }

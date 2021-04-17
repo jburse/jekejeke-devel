@@ -1,8 +1,8 @@
 package matula.util.config;
 
-import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Check;
+import matula.util.wire.AbstractRecognizer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ public abstract class AbstractBundle extends Check {
     public final static String PROP_PRODUCT_INST = "product.inst";
 
     public final static String PROP_LICENSE_INFO = "license.info";
-    public final static String PROP_LICENSE_SERVICE = "license.service";
+    public final static String PROP_LICENSE_SERVICE = "license.action";
     public final static String PROP_LICENSE_EMAIL = "license.email";
 
     public final static String PROP_SLIP_CAPA = "slip.capa";
@@ -115,11 +115,11 @@ public abstract class AbstractBundle extends Check {
      * @param in   The input stream.
      * @param know The recognizer.
      * @return The prepared input stream.
-     * @throws IOException  IO error.
-     * @throws LicenseError License problem.
+     * @throws IOException IO error.
      */
-    public abstract InputStream prepareStream(InputStream in, AbstractRecognizer know)
-            throws LicenseError, IOException;
+    public final InputStream prepareStream(InputStream in, AbstractRecognizer know) {
+        throw new IllegalArgumentException("not supported");
+    }
 
     /**
      * <p>Retrieve the parameters of this branch.</p>

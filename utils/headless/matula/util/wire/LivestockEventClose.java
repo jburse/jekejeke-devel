@@ -1,7 +1,5 @@
 package matula.util.wire;
 
-import matula.comp.sharik.Enforced;
-
 /**
  * <p>Close event issued by the enforced.</p>
  * <p/>
@@ -40,7 +38,7 @@ public final class LivestockEventClose extends LivestockEvent {
      *
      * @param source The source.
      */
-    public LivestockEventClose(Enforced source) {
+    public LivestockEventClose(Object source) {
         super(source);
     }
 

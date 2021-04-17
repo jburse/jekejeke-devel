@@ -1,9 +1,8 @@
 package matula.util.system;
 
-import derek.util.protect.LicenseError;
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.FileExtension;
 import matula.util.regex.ScannerError;
+import matula.util.wire.AbstractRecognizer;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -118,9 +117,6 @@ public final class ForeignCache {
                         know.loadText(adr, prop, param);
                     }
                     state = STATE_LOADED;
-                    prop.put(ATTR_STATE, state);
-                } catch (LicenseError x) {
-                    state = STATE_FAILED;
                     prop.put(ATTR_STATE, state);
                 } catch (IOException x) {
                     if (OpenCheck.isInterrupt(x)) {

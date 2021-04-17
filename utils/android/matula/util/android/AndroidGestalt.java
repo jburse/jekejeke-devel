@@ -6,9 +6,9 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import matula.util.config.ForeignArchive;
 import matula.util.config.GestaltEntry;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignArchive;
 import matula.util.system.ForeignFile;
 import matula.util.system.ForeignUri;
 

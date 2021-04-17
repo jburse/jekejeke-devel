@@ -1,12 +1,11 @@
 package matula.util.system;
 
-import derek.util.protect.LicenseError;
-import matula.util.config.AbstractBundle;
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
+import matula.util.wire.AbstractRecognizer;
+import matula.util.wire.FileExtension;
 
 import java.io.*;
+import java.net.BindException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -50,6 +49,9 @@ import java.net.URLConnection;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class OpenOpts extends OpenDuplex {
+    public static final String ERROR_BIND_INTERNAL_ERROR = "internal_error";
+    public static final String ERROR_BIND_SERVICE_UNAVAILABLE = "service_unavailable";
+
     public static final int MASK_OPEN_RPOS = 0x00000100;
 
     private long ifmodifiedsince;
@@ -113,11 +115,10 @@ public final class OpenOpts extends OpenDuplex {
      * @param adr2 The uri.
      * @return The read stream, or null if not modified.
      * @throws IOException              IO error.
-     * @throws LicenseError             Decryption error.
      * @throws IllegalArgumentException Illegal paremeter combination.
      */
     public Object openRead(String adr2)
-            throws LicenseError, IOException {
+            throws IOException {
         if ((getFlags() & MASK_OPEN_RPOS) != 0) {
             String spec = ForeignUri.sysUriSpec(adr2);
             String scheme = ForeignUri.sysSpecScheme(spec);
@@ -137,11 +138,8 @@ public final class OpenOpts extends OpenDuplex {
             InputStream in = new FileInputStream(raf.getFD());
 
             FileExtension fe = OpenOpts.getFileExtension(spec, paraknow);
-            if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
-                AbstractBundle cap = paraknow.pathToDecoder(adr2);
-                if (cap != null)
-                    in = cap.prepareStream(in, paraknow);
-            }
+            if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0)
+                in = paraknow.prepareStream(adr2, in);
 
             setFile(file);
             Object res = wrapRead(in);
@@ -167,11 +165,8 @@ public final class OpenOpts extends OpenDuplex {
 
                 InputStream in = new FileInputStream(file);
                 FileExtension fe = OpenOpts.getFileExtension(spec, paraknow);
-                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
-                    AbstractBundle cap = paraknow.pathToDecoder(adr2);
-                    if (cap != null)
-                        in = cap.prepareStream(in, paraknow);
-                }
+                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0)
+                    in = paraknow.prepareStream(adr2, in);
 
                 setFile(file);
                 Object res = wrapRead(in);
@@ -196,9 +191,9 @@ public final class OpenOpts extends OpenDuplex {
                 if (con instanceof HttpURLConnection) {
                     int res = ((HttpURLConnection) con).getResponseCode();
                     if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
-                        throw new LicenseError(LicenseError.ERROR_LICENSE_INTERNAL_ERROR);
+                        throw new BindException(ERROR_BIND_INTERNAL_ERROR);
                     if (res == HttpURLConnection.HTTP_UNAVAILABLE)
-                        throw new LicenseError(LicenseError.ERROR_LICENSE_SERVICE_UNAVAILABLE);
+                        throw new BindException(ERROR_BIND_SERVICE_UNAVAILABLE);
                     if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return null;
                 }
@@ -217,11 +212,8 @@ public final class OpenOpts extends OpenDuplex {
                 InputStream in = con.getInputStream();
 
                 FileExtension fe = OpenOpts.getFileExtension(spec, paraknow);
-                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0) {
-                    AbstractBundle cap = paraknow.pathToDecoder(adr2);
-                    if (cap != null)
-                        in = cap.prepareStream(in, paraknow);
-                }
+                if (fe != null && (fe.getType() & FileExtension.MASK_DATA_ECRY) != 0)
+                    in = paraknow.prepareStream(adr2, in);
 
                 setCon(con);
                 Object res = wrapRead(in);

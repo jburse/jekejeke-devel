@@ -1,8 +1,5 @@
 package matula.util.wire;
 
-import matula.util.config.AbstractRecognizer;
-import matula.util.config.DefaultRecognizer;
-import matula.util.config.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignCache;
 

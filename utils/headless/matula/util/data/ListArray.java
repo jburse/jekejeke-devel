@@ -1,6 +1,6 @@
 package matula.util.data;
 
-import matula.util.config.ArrayEnumeration;
+import matula.util.regex.ArrayEnumeration;
 
 import java.util.Enumeration;
 

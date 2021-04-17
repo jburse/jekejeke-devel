@@ -1,7 +1,7 @@
 package matula.util.android;
 
-import matula.util.config.ForeignArchive;
 import matula.util.data.ListArray;
+import matula.util.system.ForeignArchive;
 import matula.util.system.ForeignUri;
 
 import java.io.File;
@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 
 /**
