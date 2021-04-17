@@ -1,8 +1,8 @@
 package matula.util.config;
 
-import derek.util.protect.LicenseError;
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
+import matula.comp.sharik.LicenseError;
 import matula.util.wire.AbstractDomestic;
 
 import java.util.Locale;

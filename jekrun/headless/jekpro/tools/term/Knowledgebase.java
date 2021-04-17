@@ -1,6 +1,6 @@
 package jekpro.tools.term;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;

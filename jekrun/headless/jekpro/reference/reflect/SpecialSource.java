@@ -1,6 +1,6 @@
 package jekpro.reference.reflect;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;

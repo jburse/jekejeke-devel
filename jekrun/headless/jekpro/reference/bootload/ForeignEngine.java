@@ -1,6 +1,6 @@
 package jekpro.reference.bootload;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.inter.Engine;

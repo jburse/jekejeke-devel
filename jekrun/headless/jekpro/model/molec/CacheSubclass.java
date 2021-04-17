@@ -1,6 +1,6 @@
 package jekpro.model.molec;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.frequent.system.ForeignThread;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;

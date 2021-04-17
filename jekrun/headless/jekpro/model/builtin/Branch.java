@@ -104,7 +104,7 @@ public abstract class Branch extends AbstractBranch {
         loadSystem("jekpro/model/builtin/special.p", en, new InterfaceInit() {
             public void init(AbstractSource scope, Engine en)
                     throws EngineMessage, EngineException {
-                addResource("derek/util/protect/license.properties", scope, en);
+                addResource("matula/comp/sharik/license.properties", scope, en);
                 addResource("matula/util/regex/scanner.properties", scope, en);
                 addResource("jekpro/reference/bootload/reader.properties", scope, en);
                 addResource("jekpro/reference/runtime/engine.properties", scope, en);

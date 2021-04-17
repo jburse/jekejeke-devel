@@ -1,6 +1,6 @@
 package jekpro.reference.bootload;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CacheModule;

@@ -3,7 +3,7 @@ package matula.util.android;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;

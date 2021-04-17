@@ -1,6 +1,6 @@
 package jekpro.tools.foreign;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.pretty.Foyer;
 import matula.comp.sharik.AbstractTracking;

@@ -1,6 +1,6 @@
 package jekpro.tools.foreign;
 
-import derek.util.protect.LicenseError;
+import matula.comp.sharik.LicenseError;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
