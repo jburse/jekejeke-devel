@@ -13,6 +13,8 @@ import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 
+import java.io.IOException;
+
 /**
  * This class represents the base for all toolkits. Each toolkit predefines
  * a set of capabilities for a knowledge base. The list of predefined
@@ -160,6 +162,8 @@ public abstract class Toolkit {
             foyer.getFramework().getActivator().checkTracking(foyer, b, tracking);
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
+        } catch (IOException x) {
+            throw InterpreterMessage.mapIOException(x);
         }
     }
 
@@ -225,6 +229,8 @@ public abstract class Toolkit {
             foyer.getFramework().getActivator().activateBundle(foyer, b, h);
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
+        } catch (IOException x) {
+            throw InterpreterMessage.mapIOException(x);
         }
     }
 
@@ -245,6 +251,8 @@ public abstract class Toolkit {
             return foyer.getFramework().getActivator().calcInstallID(foyer, (AbstractBranch) c.getBranch());
         } catch (LicenseError x) {
             throw new InterpreterMessage(InterpreterMessage.licenseError(x.getMessage()));
+        } catch (IOException x) {
+            throw InterpreterMessage.mapIOException(x);
         }
     }
 

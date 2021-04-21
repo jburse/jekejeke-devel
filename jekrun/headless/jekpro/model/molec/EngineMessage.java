@@ -198,9 +198,6 @@ public final class EngineMessage extends Exception {
     public static final String OP_RESOURCE_CORRUPT_ARCHIVE = "corrupt_archive";
     public static final String OP_RESOURCE_BASEURL_MISSING = "baseurl_missing";
 
-    public static final String OP_SYNTAX_EXPAND_FAILED = "expand_failed";
-    public static final String OP_SYNTAX_REBUILD_FAILED = "rebuild_failed";
-
     public static final String OP_SYNTAX_MALFORMED_URL = "malformed_url";
     public static final String OP_SYNTAX_RELATIVE_PATH = "relative_path";
     public static final String OP_SYNTAX_MALFORMED_PATH = "malformed_path";
@@ -927,6 +924,9 @@ public final class EngineMessage extends Exception {
     public static Properties getErrorLang(Locale locale, Store store)
             throws IOException {
         PropertiesWithImport res = new PropertiesWithImport();
+        Properties prop = getErrorLang(locale, store.foyer);
+        res.addImport(prop);
+
         String locstr = "_" + locale;
         Store temp = store;
         while (temp != null) {
@@ -940,7 +940,7 @@ public final class EngineMessage extends Exception {
                     HashMap<String, Properties> cache = getCache(key, store);
                     if (cache == null)
                         continue;
-                    Properties prop = ForeignCache.getCached(cache, locstr);
+                    prop = ForeignCache.getCached(cache, locstr);
                     ForeignCache.getProp(prop, store, key, locstr);
                     if (ForeignCache.isValid(prop))
                         res.addImport(prop);

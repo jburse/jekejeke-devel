@@ -191,9 +191,9 @@ public final class OpenOpts extends OpenDuplex {
                 if (con instanceof HttpURLConnection) {
                     int res = ((HttpURLConnection) con).getResponseCode();
                     if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
-                        throw new BindException(ERROR_BIND_INTERNAL_ERROR);
+                        throw new BindException(OpenOpts.ERROR_BIND_INTERNAL_ERROR);
                     if (res == HttpURLConnection.HTTP_UNAVAILABLE)
-                        throw new BindException(ERROR_BIND_SERVICE_UNAVAILABLE);
+                        throw new BindException(OpenOpts.ERROR_BIND_SERVICE_UNAVAILABLE);
                     if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return null;
                 }

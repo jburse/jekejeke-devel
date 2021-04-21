@@ -69,12 +69,12 @@ public abstract class AbstractRecognizer {
         secrets.setKey(SystemGestalt.KEY);
         try {
             in = secrets.decryptStream(in);
-        } catch (GeneralSecurityException x) {
-            in.close();
-            throw new BindException(ERROR_BIND_CRYPT_EXCEPTION);
         } catch (ParseException x) {
             in.close();
-            throw new BindException(ERROR_BIND_INVALID_FORMAT);
+            throw new BindException(AbstractRecognizer.ERROR_BIND_INVALID_FORMAT);
+        } catch (GeneralSecurityException x) {
+            in.close();
+            throw new BindException(AbstractRecognizer.ERROR_BIND_CRYPT_EXCEPTION);
         }
         return in;
     }

@@ -4,6 +4,7 @@ import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.comp.sharik.LicenseError;
 import matula.util.wire.AbstractDomestic;
+import matula.util.wire.LangProperties;
 
 import java.util.Locale;
 import java.util.Properties;
@@ -95,6 +96,16 @@ public final class DefaultInteractor extends AbstractInteractor {
         Properties error = e.getFramework().getErrorLang(Locale.getDefault());
         System.err.println(error.getProperty(LicenseError.ERROR_LICENSE_ERROR + "." + e.getError()));
         System.exit(1);
+    }
+
+    /**
+     * <p>Retrieve the text bundle.</p>
+     *
+     * @param locale The locale.
+     * @return The text bundle.
+     */
+    public static Properties getLang(Locale locale) {
+        return LangProperties.getLang(DefaultInteractor.class, "intl", locale);
     }
 
 }
