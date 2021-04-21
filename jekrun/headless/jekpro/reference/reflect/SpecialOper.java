@@ -17,8 +17,8 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.misc.LicenseError;
@@ -266,10 +266,10 @@ public final class SpecialOper extends AbstractSpecial {
         if (oper.getLevel() == 0)
             return;
         /* flesh out properties */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -456,13 +456,13 @@ public final class SpecialOper extends AbstractSpecial {
     public static void operToProperties(Operator oper,
                                         Engine en)
             throws EngineMessage, EngineException {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -580,11 +580,11 @@ public final class SpecialOper extends AbstractSpecial {
     public static AbstractProperty<Operator> findOperProperty(StoreKey sk,
                                                               Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;

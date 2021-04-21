@@ -9,8 +9,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.rope.LoadOpts;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.foreign.Tracking;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -137,8 +137,8 @@ public class Store extends AbstractRecognizer {
      * @param path The path.
      * @return The branch, or null.
      */
-    public final AbstractBundle pathToBundle(String path) {
-        MapEntry<AbstractBundle, AbstractTracking> entry;
+    public final BaseBundle pathToBundle(String path) {
+        MapEntry<BaseBundle, BaseTracking> entry;
         if (ForeignUri.sysUriIsRelative(path)) {
             entry = Tracking.relativeURIstoRoots(path, foyer);
         } else {

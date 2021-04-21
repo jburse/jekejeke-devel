@@ -19,8 +19,8 @@ import jekpro.reference.runtime.SpecialLogic;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.misc.LicenseError;
@@ -230,13 +230,13 @@ public final class SpecialSource extends AbstractSpecial {
      */
     private static void sourceToProperties(AbstractSource src, Engine en)
             throws EngineMessage, EngineException {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -335,11 +335,11 @@ public final class SpecialSource extends AbstractSpecial {
     public static AbstractProperty<AbstractSource> findSrcProperty(StoreKey sk,
                                                                    Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;

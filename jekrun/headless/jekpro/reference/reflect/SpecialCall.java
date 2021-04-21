@@ -11,8 +11,8 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.StoreKey;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.SkelCompound;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.misc.LicenseError;
@@ -172,10 +172,10 @@ public final class SpecialCall extends AbstractSpecial {
             throws EngineMessage, EngineException {
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -272,11 +272,11 @@ public final class SpecialCall extends AbstractSpecial {
     public static AbstractProperty<Object> findCallableProperty(StoreKey sk,
                                                                 Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;

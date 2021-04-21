@@ -20,8 +20,8 @@ import jekpro.tools.foreign.Tracking;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import matula.comp.sharik.AbstractActivator;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractDescription;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
@@ -38,7 +38,7 @@ import java.util.Date;
  * @author Copyright 2011-2019, XLOG Technologies GmbH, Switzerland
  * @version Jekejeke Prolog 0.8.9 (a fast and small prolog interpreter)
  */
-public abstract class AbstractBranch extends AbstractBundle {
+public abstract class AbstractBranch extends BaseBundle {
     public static final int MASK_BRAN_NOTR = 0x00000100;
 
     public final static Object[] FALSE_PROPERTY = new Object[0];
@@ -101,9 +101,9 @@ public abstract class AbstractBranch extends AbstractBundle {
      *
      * @return The tracking.
      */
-    public final AbstractTracking createTracking() {
+    public final BaseTracking createTracking() {
         Tracking tracking = new Tracking();
-        if ((getFlags() & AbstractBundle.MASK_BNDL_NACT) == 0) {
+        if ((getFlags() & BaseBundle.MASK_BNDL_NACT) == 0) {
             tracking.setLicense("DIST");
         } else {
             tracking.setLicense("");
@@ -301,7 +301,7 @@ public abstract class AbstractBranch extends AbstractBundle {
     public void initBranch(Engine en, boolean prompt, boolean system)
             throws EngineMessage, EngineException {
         checkNotToolkit(en.store, system);
-        AbstractTracking tracking;
+        BaseTracking tracking;
         try {
             tracking = en.store.foyer.putBundle(this, prompt, en);
         } catch (LicenseError x) {
@@ -342,7 +342,7 @@ public abstract class AbstractBranch extends AbstractBundle {
             throws EngineMessage, EngineException {
         checkNotToolkit(store, system);
         store.clearStore(this);
-        AbstractTracking tracking = store.foyer.getTracking(this);
+        BaseTracking tracking = store.foyer.getTracking(this);
         if (tracking instanceof Tracking)
             ((Tracking) tracking).clearCanonCache();
         store.foyer.removeBundle(this);
@@ -370,14 +370,14 @@ public abstract class AbstractBranch extends AbstractBundle {
      */
     public Object getProperty(String prop, Foyer foyer) {
         if (OP_NEEDS_ACT.equals(prop)) {
-            boolean val = (getFlags() & AbstractBundle.MASK_BNDL_NACT) != 0;
+            boolean val = (getFlags() & BaseBundle.MASK_BNDL_NACT) != 0;
             return Flag.booleToAtom(val);
         } else if (OP_ACT_STATUS.equals(prop)) {
-            AbstractTracking tracking = foyer.getTracking(this);
+            BaseTracking tracking = foyer.getTracking(this);
             String val = (tracking != null ? tracking.getError() : EngineMessage.OP_LICENSE_TRACKING_LOST);
             return new SkelAtom(val);
         } else if (OP_EXPIRATION_DATE.equals(prop)) {
-            AbstractTracking tracking = foyer.getTracking(this);
+            BaseTracking tracking = foyer.getTracking(this);
             Date val = (tracking != null ? tracking.getExpiration() : null);
             return TermAtomic.normBigInteger(val != null ? val.getTime() : 0);
         } else if (OP_BUNDLE_PATH.equals(prop)) {
@@ -396,7 +396,7 @@ public abstract class AbstractBranch extends AbstractBundle {
             String install = activator.getInstall(foyer, getDescription());
             return new SkelAtom(install != null ? install : "");
         } else if (OP_LICENSE_CODE.equals(prop)) {
-            AbstractTracking tracking = foyer.getTracking(this);
+            BaseTracking tracking = foyer.getTracking(this);
             String license = (tracking != null ? tracking.getLicense() : "");
             return new SkelAtom(license != null ? license : "");
         }

@@ -12,7 +12,7 @@ import jekpro.reference.bootload.SpecialLoad;
 import jekpro.reference.reflect.*;
 import jekpro.tools.array.AbstractDelegate;
 import jekpro.tools.term.SkelAtom;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.wire.FileExtension;
 import matula.util.wire.LangProperties;
 
@@ -35,7 +35,7 @@ public abstract class Branch extends AbstractBranch {
     public Branch() {
         setRelease("JEKPR515RUN1");
         Properties resources = LangProperties.getLang(Branch.class, "description", Locale.getDefault());
-        setLang(resources.getProperty(AbstractBundle.PROP_PRODUCT_LANG));
+        setLang(resources.getProperty(BaseBundle.PROP_PRODUCT_LANG));
         setFlags(AbstractBranch.MASK_BRAN_NOTR);
         setArchiveRoots(new String[]{"matula/", "derek/", "jekpro/"});
         setPrologFlags(Flag.DEFAULT);

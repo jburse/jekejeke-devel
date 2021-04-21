@@ -13,7 +13,7 @@ import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.data.*;
 import matula.util.system.ForeignUri;
 
@@ -119,7 +119,7 @@ public abstract class AbstractSource {
     private int flags = MASK_SRC_VSPU;
     public Object importvers;
     public Object fixvers;
-    private AbstractBundle branch;
+    private BaseBundle branch;
     private Store store;
     private final MapHashLink<AbstractSource, Integer> imports = new MapHashLink<>();
     private final MapHashLink<AbstractSource, Integer> importsinv = new MapHashLink<>();
@@ -169,7 +169,7 @@ public abstract class AbstractSource {
      *
      * @return The branch.
      */
-    public AbstractBundle getBranch() {
+    public BaseBundle getBranch() {
         return branch;
     }
 
@@ -178,7 +178,7 @@ public abstract class AbstractSource {
      *
      * @param b The branch.
      */
-    public void setBranch(AbstractBundle b) {
+    public void setBranch(BaseBundle b) {
         branch = b;
     }
 

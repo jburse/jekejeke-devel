@@ -15,9 +15,9 @@ import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermAtomic;
-import matula.comp.sharik.AbstractTracking;
+import matula.util.config.BaseTracking;
 import matula.comp.sharik.Enforced;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -287,9 +287,9 @@ public class Foyer extends Enforced {
         } catch (InterruptedException x) {
             throw new RuntimeException(x);
         }
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = snapshotTrackings();
         for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
             AbstractBranch branch = (AbstractBranch) entry.key;
             branch.finiBranch(store, true);
         }

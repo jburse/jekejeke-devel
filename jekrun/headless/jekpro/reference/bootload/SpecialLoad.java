@@ -12,8 +12,8 @@ import jekpro.model.rope.*;
 import jekpro.reference.reflect.PropertySource;
 import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.term.*;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
@@ -199,10 +199,10 @@ public final class SpecialLoad extends AbstractSpecial {
             return;
 
         /* flesh out properties */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = en.store.foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;

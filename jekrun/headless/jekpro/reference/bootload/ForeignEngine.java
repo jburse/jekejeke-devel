@@ -17,8 +17,8 @@ import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
@@ -174,11 +174,11 @@ public final class ForeignEngine {
         ListArray<MapHash<String, AbstractFlag<Engine>>> flags = factory.getPrologFlags();
         for (int i = 0; i < flags.size(); i++)
             listPrologFlags(flags.get(i), res);
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -262,11 +262,11 @@ public final class ForeignEngine {
             if (af != null)
                 return af;
         }
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
