@@ -40,7 +40,7 @@ package jekpro.tools.call;
  * predicate. Finally this also includes invoking swapBarrier() during a clean-up
  * for foreign predicates with a cutter. The method setSpecial() allows switching
  * off this default barrier handling.</p>
- *
+ * <p>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
  * otherwise agreed upon, XLOG Technologies GmbH makes no warranties

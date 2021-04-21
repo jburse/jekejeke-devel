@@ -1,6 +1,5 @@
 package jekpro.tools.term;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractFlag;
 import jekpro.model.builtin.FlagSession;
 import jekpro.model.inter.Engine;
@@ -19,9 +18,9 @@ import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.call.Toolkit;
 import matula.comp.sharik.Enforced;
 import matula.util.config.AbstractRuntime;
-import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -391,16 +390,10 @@ public final class Knowledgebase {
      * <p>Returns a copy which should be treated immutable.</p>
      *
      * @return The paths.
-     * @throws InterpreterMessage Shit happens.
+     * @throws IOException IO problem.
      */
-    public String[] getClassPaths()
-            throws InterpreterMessage {
-        try {
-            return store.snapshotClassPaths();
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getMessage()));
-        }
+    public String[] getClassPaths() throws IOException {
+        return store.snapshotClassPaths();
     }
 
     /**
@@ -416,9 +409,6 @@ public final class Knowledgebase {
             store.addClassPath(path);
         } catch (IOException x) {
             throw InterpreterMessage.mapIOException(x);
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getMessage()));
         }
     }
 

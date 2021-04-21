@@ -1,6 +1,5 @@
 package jekpro.model.molec;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.frequent.system.ForeignThread;
@@ -11,6 +10,7 @@ import jekpro.tools.term.*;
 import matula.util.config.AbstractFramework;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.misc.LicenseError;
 import matula.util.regex.ScannerToken;
 import matula.util.system.ForeignCache;
 import matula.util.system.OpenCheck;
@@ -586,7 +586,7 @@ public final class EngineMessage extends Exception {
         } else if (x instanceof BindException) {
             String msg = x.getMessage();
             return new EngineMessage(EngineMessage.resourceError(
-                   (msg != null ? msg : "")));
+                    (msg != null ? msg : "")));
         } else if (x instanceof SocketTimeoutException) {
             return new EngineMessage(EngineMessage.resourceError(
                     EngineMessage.OP_RESOURCE_SOCKET_TIMEOUT));

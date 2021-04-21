@@ -1,7 +1,10 @@
 package jekpro.tools.foreign;
 
 import jekpro.model.inter.Engine;
-import jekpro.model.molec.*;
+import jekpro.model.molec.AbstractUndo;
+import jekpro.model.molec.Display;
+import jekpro.model.molec.EngineException;
+import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.Types;
 import jekpro.tools.call.CallOut;

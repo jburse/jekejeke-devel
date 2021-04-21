@@ -1,5 +1,6 @@
 package matula.util.system;
 
+import matula.util.config.DefaultInteractor;
 import matula.util.data.MapEntry;
 import matula.util.wire.AbstractRecognizer;
 import matula.util.wire.FileExtension;
@@ -49,9 +50,6 @@ import java.net.URLConnection;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class OpenOpts extends OpenDuplex {
-    public static final String ERROR_BIND_INTERNAL_ERROR = "internal_error";
-    public static final String ERROR_BIND_SERVICE_UNAVAILABLE = "service_unavailable";
-
     public static final int MASK_OPEN_RPOS = 0x00000100;
 
     private long ifmodifiedsince;
@@ -191,9 +189,9 @@ public final class OpenOpts extends OpenDuplex {
                 if (con instanceof HttpURLConnection) {
                     int res = ((HttpURLConnection) con).getResponseCode();
                     if (res == HttpURLConnection.HTTP_INTERNAL_ERROR)
-                        throw new BindException(OpenOpts.ERROR_BIND_INTERNAL_ERROR);
+                        throw new BindException(DefaultInteractor.ERROR_BIND_INTERNAL_ERROR);
                     if (res == HttpURLConnection.HTTP_UNAVAILABLE)
-                        throw new BindException(OpenOpts.ERROR_BIND_SERVICE_UNAVAILABLE);
+                        throw new BindException(DefaultInteractor.ERROR_BIND_SERVICE_UNAVAILABLE);
                     if (res == HttpURLConnection.HTTP_NOT_MODIFIED)
                         return null;
                 }

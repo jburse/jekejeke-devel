@@ -1,15 +1,14 @@
 package jekpro.tools.foreign;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.molec.CacheModule;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
-import matula.util.wire.FileExtension;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.net.URL;
@@ -177,10 +176,10 @@ public final class LookupResource {
      * @param path  The absolute path.
      * @param store The store.
      * @return The relative variant or null.
-     * @throws LicenseError Shit happens.
+     * @throws IOException IO problem.
      */
     public static String unfindResourcePaths(String path, Store store)
-            throws LicenseError {
+            throws IOException {
         // parent success
         Store parent = store.parent;
         if (parent != null) {
@@ -218,10 +217,10 @@ public final class LookupResource {
      * @param path  The path.
      * @param store The store.
      * @return True if path belongs to class paths, otherwise false.
-     * @throws LicenseError Shit happens.
+     * @throws IOException IO problem.
      */
     public static boolean hasSourceFile(String path, Store store)
-            throws LicenseError {
+            throws IOException {
         // check paths
         String[] cps = store.snapshotClassPaths();
         for (int i = 0; i < cps.length; i++) {

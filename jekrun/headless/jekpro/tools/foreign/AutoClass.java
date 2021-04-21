@@ -96,8 +96,8 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Consult a foreign module.</p>
      *
-     * @param lr  The buffered reader.
-     * @param en  The interpreter.
+     * @param lr The buffered reader.
+     * @param en The interpreter.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */
@@ -259,7 +259,7 @@ public final class AutoClass extends AbstractAuto {
     /**
      * <p>Define the predicates.</p>
      *
-     * @param en  The interpreter.
+     * @param en The interpreter.
      * @throws EngineMessage   FFI error.
      * @throws EngineException FFI error.
      */

@@ -3,13 +3,13 @@ package matula.util.android;
 import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import matula.comp.sharik.LicenseError;
 import matula.util.config.AbstractRuntime;
+import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.BindException;
 import java.net.URL;
 
 /**
@@ -65,16 +65,16 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * @param stop   The stop loader.
      * @param data   The client data.
      * @return The new class loader.
-     * @throws LicenseError License problem.
+     * @throws IOException IO problem.
      */
     public ClassLoader addURL(ClassLoader parent, String adr,
                               ClassLoader stop, Object data)
-            throws LicenseError {
+            throws IOException {
         String spec = ForeignUri.sysUriSpec(adr);
         String scheme = ForeignUri.sysSpecScheme(spec);
         String path = ForeignUri.sysSpecPath(spec);
         if (!ForeignUri.SCHEME_FILE.equals(scheme))
-            throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
+            throw new BindException(DefaultInteractor.ERROR_BIND_FILE_EXPECTED);
         if (!path.endsWith(".apk")) {
             if (parent != stop && parent instanceof ResidualClassLoader) {
                 ((ResidualClassLoader) parent).addPath(path);
@@ -94,10 +94,10 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * @param stop   The stop.
      * @param data   The client data.
      * @return The paths.
-     * @throws LicenseError License problem.
+     * @throws IOException IO problem.
      */
     public ListArray<String> getURLs(ClassLoader loader, ClassLoader stop, Object data)
-            throws LicenseError {
+            throws IOException {
         if (stop == loader)
             return new ListArray<String>();
         ListArray<String> res = getURLs(loader.getParent(), stop, data);
@@ -115,10 +115,10 @@ public final class RuntimeDalvik extends AbstractRuntime {
      * @param loader The loader.
      * @param data   The application.
      * @return The paths.
-     * @throws LicenseError License problem.
+     * @throws IOException IO problem.
      */
     private URL[] getURLs(ClassLoader loader, Object data)
-            throws LicenseError {
+            throws IOException {
         if (loader instanceof InterfaceURLs) {
             InterfaceURLs urlloader = (InterfaceURLs) loader;
             return urlloader.getURLs();
@@ -129,15 +129,10 @@ public final class RuntimeDalvik extends AbstractRuntime {
             try {
                 pi = pm.getPackageInfo(path, 0);
             } catch (PackageManager.NameNotFoundException x) {
-                throw new LicenseError(LicenseError.ERROR_LICENSE_FILE_EXPECTED);
+                throw new BindException(DefaultInteractor.ERROR_BIND_PACKAGE_MISSING);
             }
             path = pi.applicationInfo.sourceDir;
-            URL url;
-            try {
-                url = new URL(ForeignUri.SCHEME_FILE, null, path);
-            } catch (MalformedURLException x) {
-                throw new RuntimeException(x);
-            }
+            URL url = new URL(ForeignUri.SCHEME_FILE, null, path);
             return new URL[]{url};
         } else {
             return null;

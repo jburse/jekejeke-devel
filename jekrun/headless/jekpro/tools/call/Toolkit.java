@@ -1,6 +1,5 @@
 package jekpro.tools.call;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
@@ -12,6 +11,7 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.misc.LicenseError;
 
 import java.io.IOException;
 
@@ -320,7 +320,7 @@ public abstract class Toolkit {
      *
      * @param inter The interpreter.
      * @param cps   The class paths.
-     * @throws InterpreterMessage Shit happens.
+     * @throws InterpreterMessage   Shit happens.
      * @throws InterpreterException Shit happens.
      */
     public static void initPaths(Interpreter inter, ListArray<String> cps)

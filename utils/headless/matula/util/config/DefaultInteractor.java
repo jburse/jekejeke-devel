@@ -2,7 +2,7 @@ package matula.util.config;
 
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
-import matula.comp.sharik.LicenseError;
+import matula.util.misc.LicenseError;
 import matula.util.wire.AbstractDomestic;
 import matula.util.wire.LangProperties;
 
@@ -42,6 +42,13 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class DefaultInteractor extends AbstractInteractor {
+    public static final String ERROR_BIND_INTERNAL_ERROR = "internal_error";
+    public static final String ERROR_BIND_SERVICE_UNAVAILABLE = "service_unavailable";
+    public static final String ERROR_BIND_CRYPT_EXCEPTION = "crypt_exception";
+    public static final String ERROR_BIND_INVALID_FORMAT = "invalid_format";
+    public static final String ERROR_BIND_FILE_EXPECTED = "file_expected";
+    public static final String ERROR_BIND_PACKAGE_MISSING = "package_missing";
+
     public static final DefaultInteractor DEFAULT = new DefaultInteractor();
 
     /**

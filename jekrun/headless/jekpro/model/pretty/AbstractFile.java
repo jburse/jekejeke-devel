@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.rope.LoadOpts;

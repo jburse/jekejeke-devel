@@ -1,6 +1,5 @@
 package jekpro.reference.reflect;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
@@ -24,6 +23,7 @@ import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.misc.LicenseError;
 
 /**
  * <p>Provides built-in predicates for the source reflection.</p>

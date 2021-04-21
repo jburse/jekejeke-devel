@@ -1,6 +1,5 @@
 package jekpro.reference.bootload;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.frequent.stream.ForeignStream;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.CacheModule;
@@ -18,9 +17,9 @@ import jekpro.tools.term.Knowledgebase;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
 import jekpro.tools.term.TermCompound;
-import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -276,14 +275,9 @@ public final class ForeignPath {
         } catch (EngineMessage x) {
             throw new InterpreterMessage(x);
         }
-        try {
-            return CacheSubclass.unfindKey(path,
-                    (scope != null ? scope : engine.store.user),
-                    mask.intValue(), engine);
-        } catch (LicenseError x) {
-            throw new InterpreterMessage(
-                    InterpreterMessage.licenseError(x.getMessage()));
-        }
+        return CacheSubclass.unfindKey(path,
+                (scope != null ? scope : engine.store.user),
+                mask.intValue(), engine);
     }
 
     /****************************************************************/
@@ -440,7 +434,7 @@ public final class ForeignPath {
      * @return The list of class paths.
      */
     public static Object sysGetClassPaths(Interpreter inter)
-            throws InterpreterMessage {
+            throws IOException {
         Knowledgebase know = inter.getKnowledgebase();
         Object end = know.getTermNil();
         while (know != null) {

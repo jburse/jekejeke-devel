@@ -9,8 +9,8 @@ import jekpro.reference.bootload.ForeignPath;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractRuntime;
-import matula.util.wire.FileExtension;
 import matula.util.data.MapEntry;
+import matula.util.wire.FileExtension;
 
 /**
  * <p>Concerned with the lookup of binaries, escpecially Java classes</p>

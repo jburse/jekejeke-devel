@@ -1,6 +1,5 @@
 package jekpro.reference.bootload;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.*;
@@ -10,18 +9,15 @@ import jekpro.model.inter.Engine;
 import jekpro.model.molec.*;
 import jekpro.model.pretty.*;
 import jekpro.model.rope.*;
-import jekpro.reference.reflect.PropertyCallable;
 import jekpro.reference.reflect.PropertySource;
-import jekpro.reference.runtime.EvaluableLogic;
-import jekpro.reference.structure.EngineVars;
 import jekpro.reference.structure.SpecialUniv;
-import jekpro.reference.structure.SpecialVars;
 import jekpro.tools.term.*;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 import matula.util.data.MapHashLink;
+import matula.util.misc.LicenseError;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenOpts;
 
@@ -459,8 +455,8 @@ public final class SpecialLoad extends AbstractSpecial {
      * <p>Consult a stream natively.</p>
      * <p>Term expansion is not provided.</p>
      *
-     * @param lr  The buffered reader.
-     * @param en  The interpreter.
+     * @param lr The buffered reader.
+     * @param en The interpreter.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
@@ -518,9 +514,9 @@ public final class SpecialLoad extends AbstractSpecial {
     /**
      * <p>Execute a directive.</p>
      *
-     * @param rd The Prolog reader.
+     * @param rd    The Prolog reader.
      * @param molec The goal.
-     * @param en  The engine.
+     * @param en    The engine.
      * @throws EngineException Shit happens.
      * @throws EngineMessage   Shit happens.
      */

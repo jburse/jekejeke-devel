@@ -1,7 +1,7 @@
 package matula.util.wire;
 
-import derek.util.protect.ActivatorNet;
 import matula.comp.sharik.SystemGestalt;
+import matula.util.config.DefaultInteractor;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
 import matula.util.misc.SymmetricDecoder;
@@ -49,9 +49,6 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractRecognizer {
-    public static final String ERROR_BIND_CRYPT_EXCEPTION = "crypt_exception";
-    public static final String ERROR_BIND_INVALID_FORMAT = "invalid_format";
-
     private final MapHashLink<String, FileExtension> ext = new MapHashLink<>();
     private MapEntry<String, FileExtension>[] cacheext;
 
@@ -71,10 +68,10 @@ public abstract class AbstractRecognizer {
             in = secrets.decryptStream(in);
         } catch (ParseException x) {
             in.close();
-            throw new BindException(AbstractRecognizer.ERROR_BIND_INVALID_FORMAT);
+            throw new BindException(DefaultInteractor.ERROR_BIND_INVALID_FORMAT);
         } catch (GeneralSecurityException x) {
             in.close();
-            throw new BindException(AbstractRecognizer.ERROR_BIND_CRYPT_EXCEPTION);
+            throw new BindException(DefaultInteractor.ERROR_BIND_CRYPT_EXCEPTION);
         }
         return in;
     }

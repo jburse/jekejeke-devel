@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.frequent.standard.SupervisorCopy;
 import jekpro.frequent.system.ForeignLocale;
 import jekpro.model.builtin.Branch;
@@ -1300,8 +1299,8 @@ public abstract class AbstractSource {
         } else {
             try {
                 return LookupResource.hasSourceFile(key, store);
-            } catch (LicenseError x) {
-                throw new EngineMessage(EngineMessage.licenseError(x.getMessage()));
+            } catch (IOException x) {
+                throw EngineMessage.mapIOException(x);
             }
         }
     }

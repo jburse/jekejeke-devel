@@ -1,6 +1,5 @@
 package matula.util.swing;
 
-import matula.comp.sharik.LicenseError;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignDomain;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -95,19 +93,14 @@ public final class RuntimeHotspot extends AbstractRuntime {
      * @param stop   The stop loader.
      * @param data   The client data.
      * @return The new class loader.
-     * @throws LicenseError License problem.
+     * @throws IOException IO problem.
      */
     public ClassLoader addURL(ClassLoader parent, String adr,
                               ClassLoader stop, Object data)
-            throws LicenseError {
+            throws IOException {
         adr = ForeignDomain.sysUriPuny(adr);
         adr = ForeignUri.sysUriEncode(adr);
-        URL url;
-        try {
-            url = new URL(adr);
-        } catch (MalformedURLException x) {
-            throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
-        }
+        URL url = new URL(adr);
         if (parent != stop && parent instanceof ExtensibleClassLoader) {
             ((ExtensibleClassLoader) parent).addURL(url);
             return parent;
@@ -126,7 +119,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
      */
     public ListArray<String> getURLs(ClassLoader loader,
                                      ClassLoader stop, Object data)
-            throws LicenseError {
+            throws IOException {
         if (stop == loader)
             return new ListArray<String>();
         ListArray<String> res = getURLs(loader.getParent(), stop, data);
@@ -136,11 +129,7 @@ public final class RuntimeHotspot extends AbstractRuntime {
         for (int i = 0; i < urls.length; i++) {
             String adr = urls[i].toString();
             adr = ForeignUri.sysUriDecode(adr);
-            try {
-                adr = ForeignDomain.sysUriUnpuny(adr);
-            } catch (MalformedURLException x) {
-                throw new LicenseError(LicenseError.ERROR_LICENSE_MALFORMED_URL);
-            }
+            adr = ForeignDomain.sysUriUnpuny(adr);
             res.add(adr);
         }
         return res;

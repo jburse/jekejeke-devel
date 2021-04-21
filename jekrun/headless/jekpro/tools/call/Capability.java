@@ -1,6 +1,5 @@
 package jekpro.tools.call;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.inter.Engine;
 import jekpro.model.molec.Display;
@@ -12,8 +11,6 @@ import jekpro.tools.term.Knowledgebase;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractFramework;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
 import java.util.Properties;
 

@@ -1,6 +1,6 @@
 package matula.util.config;
 
-import matula.comp.sharik.LicenseError;
+import matula.util.misc.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 
@@ -90,11 +90,11 @@ public abstract class AbstractRuntime {
      * @param adr    The URL.
      * @param data   The client data.
      * @return The new class loader.
-     * @throws LicenseError License problem.
+     * @throws IOException IO problem.
      */
     public abstract ClassLoader addURL(ClassLoader parent, String adr,
                                        ClassLoader stop, Object data)
-            throws LicenseError;
+            throws IOException;
 
     /**
      * <p>Retrieve the paths.</p>
@@ -103,11 +103,11 @@ public abstract class AbstractRuntime {
      * @param stop   The chain stop.
      * @param data   The client data.
      * @return The paths.
-     * @throws LicenseError License problem.
+     * @throws IOException License problem.
      */
     public abstract ListArray<String> getURLs(ClassLoader loader,
                                               ClassLoader stop, Object data)
-            throws LicenseError;
+            throws IOException;
 
     /**
      * <p>Retrieve the default base.</p>

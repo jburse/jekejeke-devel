@@ -1,6 +1,5 @@
 package jekpro.reference.reflect;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.builtin.Branch;
@@ -24,6 +23,7 @@ import matula.util.config.AbstractBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.misc.LicenseError;
 
 import java.io.Writer;
 

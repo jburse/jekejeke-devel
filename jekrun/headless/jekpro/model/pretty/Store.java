@@ -1,6 +1,5 @@
 package jekpro.model.pretty;
 
-import matula.comp.sharik.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.Branch;
 import jekpro.model.inter.Engine;
@@ -13,12 +12,13 @@ import jekpro.tools.foreign.Tracking;
 import matula.comp.sharik.AbstractTracking;
 import matula.util.config.AbstractBundle;
 import matula.util.config.AbstractFramework;
-import matula.util.wire.AbstractRecognizer;
-import matula.util.wire.FileExtension;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
+import matula.util.misc.LicenseError;
 import matula.util.system.ForeignUri;
+import matula.util.wire.AbstractRecognizer;
+import matula.util.wire.FileExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -383,10 +383,10 @@ public class Store extends AbstractRecognizer {
      * <p>Add a path.</p>
      *
      * @param path The path.
-     * @throws LicenseError Shit happens.
+     * @throws IOException IO problem.
      */
     public void addClassPath(String path)
-            throws LicenseError {
+            throws IOException {
         if (path == null)
             throw new NullPointerException("path missing");
         Object data = foyer.getApplication();
@@ -408,7 +408,7 @@ public class Store extends AbstractRecognizer {
      * @return The class paths.
      * @throws LicenseError Shit happens.
      */
-    public String[] snapshotClassPaths() throws LicenseError {
+    public String[] snapshotClassPaths() throws IOException {
         String[] res = cachepaths;
         if (res != null)
             return res;

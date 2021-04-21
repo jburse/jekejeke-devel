@@ -155,8 +155,8 @@ public abstract class AbstractAuto extends AbstractSource {
     /**
      * <p>Consult a verbatim module.</p>
      *
-     * @param lr  The buffered reader.
-     * @param en  The interpreter.
+     * @param lr The buffered reader.
+     * @param en The interpreter.
      * @throws EngineMessage   Shit happens.
      * @throws EngineException Shit happens.
      */
