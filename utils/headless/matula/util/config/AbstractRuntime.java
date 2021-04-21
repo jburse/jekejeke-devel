@@ -1,6 +1,5 @@
 package matula.util.config;
 
-import matula.util.misc.LicenseError;
 import matula.util.data.ListArray;
 import matula.util.data.MapHash;
 

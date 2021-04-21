@@ -1,6 +1,5 @@
 package matula.util.config;
 
-import matula.comp.sharik.Enforced;
 import matula.util.misc.LicenseError;
 import matula.util.wire.AbstractDomestic;
 import matula.util.wire.LangProperties;
@@ -58,25 +57,29 @@ public final class DefaultInteractor extends AbstractInteractor {
     }
 
     /**
-     * <p>Put a tracking.</p>
+     * <p>Put the tracking identified by the given bundle.</p>
+     * <p>Does nothing if there is already a tracking.</p>
      *
      * @param b The bundle.
-     * @param t The tracking.
+     * @param t The new tracking.
      * @param e The enforced.
+     * @return The old tracking.
      */
-    public void putTracking(BaseBundle b, BaseTracking t,
-                            Enforced e) {
-        e.putTracking(b, t);
+    public BaseTracking putTracking(BaseBundle b, BaseTracking t,
+                                    Enforced e) {
+        return e.putTracking(b, t);
     }
 
     /**
-     * <p>Remove a tracking.</p>
+     * <p>Remove the tracking identified by the given bundle.</p>
+     * <p>Does nothing if there is no tracking.</p>
      *
      * @param b The bundle.
      * @param e The enforced.
+     * @return The old tracking.
      */
-    public void removeTracking(BaseBundle b, Enforced e) {
-        e.removeTracking(b);
+    public BaseTracking removeTracking(BaseBundle b, Enforced e) {
+        return e.removeTracking(b);
     }
 
     /**

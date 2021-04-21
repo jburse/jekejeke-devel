@@ -16,7 +16,7 @@ import jekpro.tools.term.SkelCompound;
 import jekpro.tools.term.SkelVar;
 import jekpro.tools.term.TermAtomic;
 import matula.util.config.BaseTracking;
-import matula.comp.sharik.Enforced;
+import matula.util.config.Enforced;
 import matula.util.config.BaseBundle;
 import matula.util.config.DefaultInteractor;
 import matula.util.data.ListArray;

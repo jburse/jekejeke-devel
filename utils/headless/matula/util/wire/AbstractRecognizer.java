@@ -1,6 +1,5 @@
 package matula.util.wire;
 
-import matula.comp.sharik.SystemGestalt;
 import matula.util.config.DefaultInteractor;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
@@ -63,7 +62,7 @@ public abstract class AbstractRecognizer {
     public final InputStream prepareStream(String path, InputStream in)
             throws IOException {
         SymmetricDecoder secrets = new SymmetricDecoder();
-        secrets.setKey(SystemGestalt.KEY);
+        secrets.setKey(KEY);
         try {
             in = secrets.decryptStream(in);
         } catch (ParseException x) {
@@ -229,5 +228,10 @@ public abstract class AbstractRecognizer {
      * @return The parent.
      */
     public abstract AbstractRecognizer getParent();
+
+    /**
+     * <p>The cypher to decript encoded texts.</p>
+     */
+    public static final String KEY = "########";
 
 }

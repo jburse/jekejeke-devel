@@ -1,5 +1,6 @@
 package jekpro.model.builtin;
 
+import matula.util.config.AbstractActivator;
 import matula.util.misc.LicenseError;
 import jekpro.model.inter.Engine;
 import jekpro.model.inter.Predicate;
@@ -19,7 +20,6 @@ import jekpro.tools.foreign.LookupResource;
 import jekpro.tools.foreign.Tracking;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.TermAtomic;
-import matula.comp.sharik.AbstractActivator;
 import matula.util.config.BaseTracking;
 import matula.util.config.BaseBundle;
 import matula.util.config.AbstractDescription;

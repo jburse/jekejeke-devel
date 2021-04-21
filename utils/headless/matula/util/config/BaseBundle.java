@@ -1,7 +1,13 @@
 package matula.util.config;
 
+import matula.util.system.ForeignArchive;
+import matula.util.system.ForeignFile;
+import matula.util.system.ForeignUri;
 import matula.util.wire.LangProperties;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -345,6 +351,72 @@ public class BaseBundle {
             date = null;
         }
         return install;
+    }
+
+    /**
+     * <p>Retrieve the install date of a class.</p>
+     *
+     * @param clazz The class.
+     * @param name  The resource name.
+     * @return The install date, or null.
+     */
+    public static Date getInstallDate(Class<?> clazz, String name) {
+        URL url = clazz.getResource(name);
+        if (url == null)
+            throw new RuntimeException("get install date: " + name + " not found");
+        String adr = url.toString();
+        try {
+            adr = BaseBundle.removeJar(adr);
+        } catch (MalformedURLException x) {
+            throw new RuntimeException("get install date: " + name + " not supported", x);
+        }
+        String path = ForeignArchive.extractPath(adr);
+        if (path == null)
+            throw new RuntimeException("get install date: " + name + " not supported");
+        File file = new File(path);
+        Date date = new Date(file.lastModified());
+        try {
+            date = BaseBundle.truncateDate(date);
+        } catch (ParseException x) {
+            throw new RuntimeException("get install date: " + name + " not supported", x);
+        }
+        return date;
+    }
+
+    /**
+     * <p>Remove the jar prefix and suffix from an URI.</p>
+     *
+     * @param adr The URI.
+     * @return The URI without jar prefix and suffix.
+     * @throws MalformedURLException Shit happens.
+     */
+    private static String removeJar(String adr) throws MalformedURLException {
+        String spec = ForeignUri.sysUriSpec(adr);
+        String scheme = ForeignUri.sysSpecScheme(spec);
+        if (!scheme.equals(ForeignUri.SCHEME_JAR))
+            return adr;
+        String authority = ForeignUri.sysSpecAuthority(spec);
+        String path = ForeignUri.sysSpecPath(spec);
+        int k = path.lastIndexOf(ForeignUri.JAR_SEP);
+        if (k != -1) {
+            spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY, authority, path.substring(0, k));
+        } else {
+            spec = ForeignUri.sysSpecMake(ForeignFile.STRING_EMPTY, authority, path);
+        }
+        return ForeignUri.sysUriMake(spec, ForeignFile.STRING_EMPTY, ForeignFile.STRING_EMPTY);
+    }
+
+    /**
+     * <p>Truncate a date.</p></P></o>
+     *
+     * @param d The date.
+     * @return The truncated date.
+     * @throws ParseException Shit happens.
+     */
+    private static Date truncateDate(Date d) throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat(LangProperties.PATTERN_DATETIME, Locale.UK);
+        String str = df.format(d);
+        return df.parse(str);
     }
 
 }

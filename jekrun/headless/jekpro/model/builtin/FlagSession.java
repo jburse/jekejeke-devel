@@ -10,7 +10,7 @@ import jekpro.reference.structure.SpecialUniv;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.Types;
 import jekpro.tools.term.SkelAtom;
-import matula.comp.sharik.AbstractActivator;
+import matula.util.config.AbstractActivator;
 import matula.util.data.MapHash;
 import matula.util.wire.LangProperties;
 
