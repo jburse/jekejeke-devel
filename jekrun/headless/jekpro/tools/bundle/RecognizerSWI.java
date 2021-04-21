@@ -1,13 +1,13 @@
 package jekpro.tools.bundle;
 
-import derek.util.protect.ActivatorNet;
 import jekpro.model.molec.EngineException;
 import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.*;
+import matula.util.config.AbstractBundle;
+import matula.util.config.AbstractDescription;
 import matula.util.regex.ScannerError;
 import matula.util.wire.AbstractRecognizer;
 import matula.util.wire.FileExtension;

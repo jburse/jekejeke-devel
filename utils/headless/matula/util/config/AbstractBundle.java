@@ -2,10 +2,15 @@ package matula.util.config;
 
 import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Check;
+import matula.comp.sharik.SystemGestalt;
+import matula.util.misc.SymmetricDecoder;
 import matula.util.wire.AbstractRecognizer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.BindException;
+import java.security.GeneralSecurityException;
+import java.text.ParseException;
 
 /**
  * <p>An abstract bundle such as a capability.</p>
@@ -108,18 +113,6 @@ public abstract class AbstractBundle extends Check {
      * @return The info.
      */
     public abstract AbstractTracking createTracking();
-
-    /**
-     * <p>Prepare a stream.</p>
-     *
-     * @param in   The input stream.
-     * @param know The recognizer.
-     * @return The prepared input stream.
-     * @throws IOException IO error.
-     */
-    public final InputStream prepareStream(InputStream in, AbstractRecognizer know) {
-        throw new IllegalArgumentException("not supported");
-    }
 
     /**
      * <p>Retrieve the parameters of this branch.</p>

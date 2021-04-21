@@ -22,10 +22,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.CharacterCodingException;
 import java.util.*;
 import java.util.zip.ZipException;
@@ -589,6 +586,10 @@ public final class EngineMessage extends Exception {
     public static EngineMessage mapIOException(IOException x) {
         if (OpenCheck.isInterrupt(x)) {
             return (EngineMessage) ForeignThread.sysThreadClear();
+        } else if (x instanceof BindException) {
+            String msg = x.getMessage();
+            return new EngineMessage(EngineMessage.resourceError(
+                   (msg != null ? msg : "")));
         } else if (x instanceof SocketTimeoutException) {
             return new EngineMessage(EngineMessage.resourceError(
                     EngineMessage.OP_RESOURCE_SOCKET_TIMEOUT));
@@ -624,7 +625,7 @@ public final class EngineMessage extends Exception {
         } else {
             String msg = x.getMessage();
             return new EngineMessage(EngineMessage.resourceError(
-                    msg != null ? msg : ""));
+                    (msg != null ? msg : "")));
         }
     }
 

@@ -1,8 +1,10 @@
 package matula.util.wire;
 
 import derek.util.protect.ActivatorNet;
+import matula.comp.sharik.SystemGestalt;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHashLink;
+import matula.util.misc.SymmetricDecoder;
 import matula.util.regex.ScannerError;
 import matula.util.system.OpenDuplex;
 import matula.util.system.OpenOpts;
@@ -10,6 +12,9 @@ import matula.util.system.OpenOpts;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.BindException;
+import java.security.GeneralSecurityException;
+import java.text.ParseException;
 import java.util.Properties;
 
 /**
@@ -44,9 +49,11 @@ import java.util.Properties;
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public abstract class AbstractRecognizer {
+    public static final String ERROR_BIND_CRYPT_EXCEPTION = "crypt_exception";
+    public static final String ERROR_BIND_INVALID_FORMAT = "invalid_format";
+
     private final MapHashLink<String, FileExtension> ext = new MapHashLink<>();
     private MapEntry<String, FileExtension>[] cacheext;
-
 
     /**
      * <p>Prepare a stream depending on path.</p>
@@ -58,7 +65,18 @@ public abstract class AbstractRecognizer {
      */
     public final InputStream prepareStream(String path, InputStream in)
             throws IOException {
-        return ActivatorNet.prepareStream(in);
+        SymmetricDecoder secrets = new SymmetricDecoder();
+        secrets.setKey(SystemGestalt.KEY);
+        try {
+            in = secrets.decryptStream(in);
+        } catch (GeneralSecurityException x) {
+            in.close();
+            throw new BindException(ERROR_BIND_CRYPT_EXCEPTION);
+        } catch (ParseException x) {
+            in.close();
+            throw new BindException(ERROR_BIND_INVALID_FORMAT);
+        }
+        return in;
     }
 
     /**
