@@ -6,8 +6,8 @@ import jekpro.model.molec.CacheSubclass;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.MapEntry;
 import matula.util.wire.FileExtension;
@@ -54,7 +54,7 @@ public final class LookupBinary {
      * @return The class, or null.
      */
     public static Class keyToClass(String relpath, Store store) {
-        MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
+        MapEntry<BaseBundle, BaseTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
         if (entry != null) {
             Object obj = ((Tracking) entry.value).getCanonCache(relpath);
             if (obj != null)

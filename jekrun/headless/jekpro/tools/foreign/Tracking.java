@@ -2,8 +2,8 @@ package jekpro.tools.foreign;
 
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.pretty.Foyer;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
+import matula.util.config.BaseTracking;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.misc.LicenseError;
@@ -45,7 +45,7 @@ import java.util.Enumeration;
  * Trademarks
  * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
-public final class Tracking extends AbstractTracking {
+public final class Tracking extends BaseTracking {
     final static String NOT_FOUND = "";
 
     private String[] archiveuris;
@@ -116,10 +116,10 @@ public final class Tracking extends AbstractTracking {
      * @param foyer The foyer.
      */
     public static void clearCanonCaches(Foyer foyer) {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             if (!(tracking instanceof Tracking))
@@ -162,15 +162,15 @@ public final class Tracking extends AbstractTracking {
      * @param foyer The foyer.
      * @return The branch, or null.
      */
-    public static MapEntry<AbstractBundle, AbstractTracking> relativeURIstoRoots(String path, Foyer foyer) {
+    public static MapEntry<BaseBundle, BaseTracking> relativeURIstoRoots(String path, Foyer foyer) {
         /* for the capabilities */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
-            AbstractBundle bundle = entry.key;
+            BaseBundle bundle = entry.key;
             if (!(bundle instanceof AbstractBranch))
                 continue;
             String[] roots = ((AbstractBranch) bundle).getArchiveRoots();
@@ -194,12 +194,12 @@ public final class Tracking extends AbstractTracking {
      * @param foyer The foyer.
      * @return The branch, or null.
      */
-    public static MapEntry<AbstractBundle, AbstractTracking> absoluteURIstoRoots(String path, Foyer foyer) {
+    public static MapEntry<BaseBundle, BaseTracking> absoluteURIstoRoots(String path, Foyer foyer) {
         /* for the capabilities */
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             if (!(tracking instanceof Tracking))

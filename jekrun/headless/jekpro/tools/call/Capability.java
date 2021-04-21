@@ -8,7 +8,7 @@ import jekpro.model.molec.EngineMessage;
 import jekpro.model.pretty.Foyer;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractFramework;
 
 import java.util.Locale;
@@ -264,7 +264,7 @@ public abstract class Capability {
     public String getCompany(Locale locale, ClassLoader loader) {
         Properties descr = getDescrModel(locale, loader);
         if (descr != null) {
-            return descr.getProperty(AbstractBundle.PROP_PRODUCT_COMPANY);
+            return descr.getProperty(BaseBundle.PROP_PRODUCT_COMPANY);
         } else {
             return null;
         }

@@ -92,7 +92,7 @@ final class BranchSWI extends AbstractBranch {
      */
     BranchSWI(String root) {
         setDescription(new DescriptionSWI(root));
-//        setFlags(AbstractBundle.MASK_BNDL_NACT);
+//        setFlags(BaseBundle.MASK_BNDL_NACT);
         setArchiveRoots(new String[]{root});
     }
 

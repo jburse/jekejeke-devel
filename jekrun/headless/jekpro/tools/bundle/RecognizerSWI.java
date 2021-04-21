@@ -6,7 +6,7 @@ import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.PrologReader;
 import jekpro.tools.term.SkelAtom;
 import jekpro.tools.term.SkelCompound;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractDescription;
 import matula.util.regex.ScannerError;
 import matula.util.wire.AbstractRecognizer;
@@ -152,13 +152,13 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 ((SkelCompound) obj).sym.fun.equals(OP_HOME)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_LICENSE_INFO, ((SkelAtom) obj).fun);
+                prop.put(BaseBundle.PROP_LICENSE_INFO, ((SkelAtom) obj).fun);
         } else if (obj instanceof SkelCompound &&
                 ((SkelCompound) obj).args.length == 2 &&
                 ((SkelCompound) obj).sym.fun.equals(OP_AUTHOR)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                addText(prop, AbstractBundle.PROP_PRODUCT_COMPANY, ((SkelAtom) obj).fun);
+                addText(prop, BaseBundle.PROP_PRODUCT_COMPANY, ((SkelAtom) obj).fun);
         }
     }
 
@@ -226,7 +226,7 @@ public final class RecognizerSWI extends AbstractRecognizer {
                 ((SkelCompound) obj).sym.fun.equals(OP_ICON)) {
             obj = ((SkelCompound) obj).args[0];
             if (obj instanceof SkelAtom)
-                prop.put(AbstractBundle.PROP_CAPA_ICON, param + ((SkelAtom) obj).fun);
+                prop.put(BaseBundle.PROP_CAPA_ICON, param + ((SkelAtom) obj).fun);
         }
     }
 

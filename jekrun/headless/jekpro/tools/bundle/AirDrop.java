@@ -4,7 +4,7 @@ import jekpro.model.pretty.LookupBase;
 import jekpro.model.pretty.Store;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.Knowledgebase;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractDescription;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignArchive;
@@ -124,9 +124,9 @@ public final class AirDrop {
             String name = root + AbstractDescription.MODEL_DEFAULT;
             Properties prop = LangProperties.getLang(loader, name, Locale.getDefault());
             if (prop != null) {
-                String capa = prop.getProperty(AbstractBundle.PROP_SLIP_CAPA);
+                String capa = prop.getProperty(BaseBundle.PROP_SLIP_CAPA);
                 if (capa != null) {
-                    boolean dontask = "true".equals(prop.getProperty(AbstractBundle.PROP_SLIP_DONTASK));
+                    boolean dontask = "true".equals(prop.getProperty(BaseBundle.PROP_SLIP_DONTASK));
                     if (slips == null)
                         slips = new ListArray<>();
                     slips.add(new AirDropEntry(capa, dontask));

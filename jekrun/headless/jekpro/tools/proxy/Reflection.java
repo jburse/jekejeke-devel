@@ -14,7 +14,7 @@ import jekpro.tools.call.Capability;
 import jekpro.tools.foreign.AutoClass;
 import jekpro.tools.foreign.LookupBinary;
 import jekpro.tools.term.SkelAtom;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseBundle;
 import matula.util.config.AbstractRuntime;
 import matula.util.data.ListArray;
 import matula.util.system.ForeignUri;
@@ -274,7 +274,7 @@ public final class Reflection extends AbstractReflection {
             list.toArray(res);
             return res;
         } else {
-            return AbstractBundle.VOID_LIST;
+            return BaseBundle.VOID_LIST;
         }
     }
 

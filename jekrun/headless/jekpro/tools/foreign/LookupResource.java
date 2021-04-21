@@ -4,8 +4,8 @@ import jekpro.model.molec.CacheModule;
 import jekpro.model.pretty.AbstractSource;
 import jekpro.model.pretty.Store;
 import jekpro.reference.bootload.ForeignPath;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.MapEntry;
 import matula.util.system.ForeignUri;
 import matula.util.wire.FileExtension;
@@ -58,7 +58,7 @@ public final class LookupResource {
      */
     public static String findResource(String relpath, Store store)
             throws IOException {
-        MapEntry<AbstractBundle, AbstractTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
+        MapEntry<BaseBundle, BaseTracking> entry = Tracking.relativeURIstoRoots(relpath, store.foyer);
         if (entry != null) {
             String res = (String) ((Tracking) entry.value).getCanonCache(relpath);
             if (res != null)

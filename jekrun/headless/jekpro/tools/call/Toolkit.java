@@ -7,8 +7,8 @@ import jekpro.model.pretty.Foyer;
 import jekpro.tools.array.AbstractFactory;
 import jekpro.tools.array.FlagFactory;
 import jekpro.tools.term.Knowledgebase;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
 import matula.util.data.ListArray;
 import matula.util.data.MapEntry;
 import matula.util.misc.LicenseError;
@@ -155,7 +155,7 @@ public abstract class Toolkit {
             throw new NullPointerException("capability missing");
         Foyer foyer = k.getFoyer();
         AbstractBranch b = (AbstractBranch) c.getBranch();
-        AbstractTracking tracking = foyer.getTracking(b);
+        BaseTracking tracking = foyer.getTracking(b);
         if (tracking == null)
             throw new InterpreterMessage(InterpreterMessage.licenseError(EngineMessage.OP_LICENSE_TRACKING_LOST));
         try {
@@ -176,7 +176,7 @@ public abstract class Toolkit {
     public static void checkLicenses(Knowledgebase k)
             throws InterpreterMessage {
         Foyer foyer = k.getFoyer();
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = foyer.snapshotTrackings();
         try {
             foyer.getFramework().getActivator().checkEnforced(foyer, snapshot);
         } catch (LicenseError x) {
@@ -192,10 +192,10 @@ public abstract class Toolkit {
      */
     public static Capability[] getCapabilities(Knowledgebase k) {
         Foyer foyer = k.getFoyer();
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot = foyer.snapshotTrackings();
+        MapEntry<BaseBundle, BaseTracking>[] snapshot = foyer.snapshotTrackings();
         Capability[] res = new Capability[snapshot.length];
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
             Capability capa = (Capability) ((AbstractBranch) entry.key).proxy;
             if (capa == null)
                 throw new NullPointerException("capability missing");
