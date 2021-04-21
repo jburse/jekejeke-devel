@@ -1,6 +1,5 @@
 package matula.util.config;
 
-import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.misc.LicenseError;
 import matula.util.wire.AbstractDomestic;
@@ -65,7 +64,7 @@ public final class DefaultInteractor extends AbstractInteractor {
      * @param t The tracking.
      * @param e The enforced.
      */
-    public void putTracking(AbstractBundle b, AbstractTracking t,
+    public void putTracking(BaseBundle b, BaseTracking t,
                             Enforced e) {
         e.putTracking(b, t);
     }
@@ -76,7 +75,7 @@ public final class DefaultInteractor extends AbstractInteractor {
      * @param b The bundle.
      * @param e The enforced.
      */
-    public void removeTracking(AbstractBundle b, Enforced e) {
+    public void removeTracking(BaseBundle b, Enforced e) {
         e.removeTracking(b);
     }
 
@@ -89,7 +88,7 @@ public final class DefaultInteractor extends AbstractInteractor {
      * @param o The client data.
      * @throws Exception Shit happens.
      */
-    public void trackingFailed(AbstractBundle b, AbstractTracking t, Object o)
+    public void trackingFailed(BaseBundle b, BaseTracking t, Object o)
             throws Exception {
         throw new LicenseError(t.getError());
     }

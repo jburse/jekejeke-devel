@@ -7,39 +7,39 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * <p>Die Klasse PatternInter erlaubt es eine Konjunktion
- * von Stringmuster zu erkennen und zu ersetzten. Die
- * Syntax einer Konjunktion lautet:
+ * <p>This class provides an intersection of patterns.</p>
+ * <p>The following syntax is used:</p>
  * <pre>
  *    findinter = { findunion } [ "!" { findunion } ].
  * </pre>
- * <p>Mittels dem Konstruktor PatternInter kann ein entsprechendes
- * Objekt erzeugt werden. Die einzelnen Disjunktionen können
- * als Liste übergeben werden. Das Flag INTER_NEGATIV
- * zeigt an ob es sich um einen Teil des Ausschluss handelt, also
- * nach dem Ausrufezeichen (!) steht. Die Methode patternMatch()
- * erlaubt es ein AbstractPattern zu suchen. Ist die Suche erfolgreich
- * so gibt getFound() die gefundene Disjunktionen zurück. Die Methode
- * getMatchStart() und getMatchEnd() geben wieder den Startpunkt und
- * Endpunkt des gefundenen Patterns an.
- * <p>Die Methode getCountPositiv() zählt die Disjunktionen die nicht
- * aussschliessend sind. Die Methode patternToSQL() erzeugt mehrere
- * Stringlisten für ein LIKE Statement wobei nur die positiven Disjunktionen
- * enthalten sind. Die Methode getMatchBound() gibt die maximale
- * Länge die ein Match ausfüllen kann.
- * <p>Mittels der Methode parse() und toString() kann eine Conjunktion
- * ein- und ausgelesen werden, wobei das Format maschinenlesbar
- * ist. Das menschenlesbare Format wird mittels der Methoden
- * parseInter() und pretty() ein- und ausgelesen. Dabei zeigen
- * die Flags die erlaubten Syntaxoptionen an.
- * <p>Mittels der Methode replaceTo() kann ein anderes AbstractPattern als
- * Target spezifiziert werden. Das Target wird dann in das vorliegende
- * AbstractPattern eingebaut. Mittels der Methode deleteExclusion() können die
- * Ausschlüsse gestrichen werden. Die Methode main() enthält ein paar
- * Testfälle.
- *
- * @author CopyRight 2003-2012, XLOG Technology GmbH, Jan Burse
- * @version QA (Quality Assurance) v1.0
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PatternInter extends AbstractPattern {
     public static final PatternInter EMPTY = new PatternInter();

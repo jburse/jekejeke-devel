@@ -7,40 +7,39 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * <p>Die Klasse PatternUnion erlaubt es eine Disjunktion
- * von Stringmuster zu erkennen und zu ersetzten. Die
- * Syntax einer Disjunktion lautet:
+ * <p>This class provides a disjunction of pattern inter.</p>
+ * <p>The following syntax is used:</p>
  * <pre>
  *     findunion = find | "(" { find } [ "!" { find } ] ")".
  * </pre>
- * <p>Mittels dem Konstruktor PatternUnion kann ein entsprechendes
- * Objekt erzeugt werden. Die einzelnen Stringmuster können
- * als Liste übergeben werden. Das Flag MATCH_NEGT
- * zeigt an ob es sich um einen Teil des Ausschluss handelt, als
- * nach dem Ausrufezeichen (!) steht. Die Methode patternMatch()
- * erlaubt es ein AbstractPattern zu suchen. Ist die Suche erfolgreich
- * so gibt getFound() das gefundene AbstractPattern zurück. Die Methode
- * getMatchStart() und getMatchEnd() gibt wieder den Startpunkt und
- * Endpunkt des gefundenen Patterns an.
- * <p>Die Methode getCountPositiv() zählt die AbstractPattern die nicht
- * aussschliessend sind. Die Methode patternToSQL() erzeugt mehrere
- * Strings für ein LIKE Statement wobei nur die positiven AbstractPattern
- * enthalten sind. Die Methode getMatchBound() gibt die maximale
- * Länge die ein Match ausfüllen kann.
- * <p>Mittels der Methode parse() und toString() kann eine Disjunktion
- * ein- und ausgelesen werden, wobei das Format maschinenlesbar
- * ist. Das menschenlesbare Format wird mittels der Methoden
- * parseUnion() und pretty() ein- und ausgelesen. Dabei zeigen
- * die Flags die erlaubten Syntaxoptionen an. Die Option EXPRESSION_PARENTHESIS
- * zeigt an, dass die Klammern nötig sind.
- * <p>Mittels der Methode replaceTo() kann ein anderes AbstractPattern als
- * Target spezifiziert werden. Das Target wird dann in das vorliegende
- * AbstractPattern eingebaut. Mittels der Methode deleteExclusion() können die
- * Ausschlüsse gestrichen werden. Die Methode main() enthält ein paar
- * Testfälle.
- *
- * @author CopyRight 2003-2012, XLOG Technology GmbH, Jan Burse
- * @version QA (Quality Assurance) v1.0
+ * <p/>
+ * Warranty & Liability
+ * To the extent permitted by applicable law and unless explicitly
+ * otherwise agreed upon, XLOG Technologies GmbH makes no warranties
+ * regarding the provided information. XLOG Technologies GmbH assumes
+ * no liability that any problems might be solved with the information
+ * provided by XLOG Technologies GmbH.
+ * <p/>
+ * Rights & License
+ * All industrial property rights regarding the information - copyright
+ * and patent rights in particular - are the sole property of XLOG
+ * Technologies GmbH. If the company was not the originator of some
+ * excerpts, XLOG Technologies GmbH has at least obtained the right to
+ * reproduce, change and translate the information.
+ * <p/>
+ * Reproduction is restricted to the whole unaltered document. Reproduction
+ * of the information is only allowed for non-commercial uses. Selling,
+ * giving away or letting of the execution of the library is prohibited.
+ * The library can be distributed as part of your applications and libraries
+ * for execution provided this comment remains unchanged.
+ * <p/>
+ * Restrictions
+ * Only to be distributed with programs that add significant and primary
+ * functionality to the library. Not to be distributed with additional
+ * software intended to replace any components of the library.
+ * <p/>
+ * Trademarks
+ * Jekejeke is a registered trademark of XLOG Technologies GmbH.
  */
 public final class PatternUnion extends AbstractPattern {
     public static final AbstractSpecimen[] EMPTY_MATCHERS = new AbstractSpecimen[0];

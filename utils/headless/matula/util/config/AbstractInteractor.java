@@ -1,6 +1,5 @@
 package matula.util.config;
 
-import matula.comp.sharik.AbstractTracking;
 import matula.comp.sharik.Enforced;
 import matula.util.wire.AbstractDomestic;
 
@@ -44,8 +43,8 @@ public abstract class AbstractInteractor {
      * @param t The tracking.
      * @param e The enforced.
      */
-    public abstract void putTracking(AbstractBundle b,
-                                     AbstractTracking t, Enforced e);
+    public abstract void putTracking(BaseBundle b,
+                                     BaseTracking t, Enforced e);
 
     /**
      * <p>Remove a tracking.</p>
@@ -53,7 +52,7 @@ public abstract class AbstractInteractor {
      * @param b The bundle.
      * @param e The enforced.
      */
-    public abstract void removeTracking(AbstractBundle b, Enforced e);
+    public abstract void removeTracking(BaseBundle b, Enforced e);
 
     /**
      * <p>Called when validation of the tracking failed.</p>
@@ -64,8 +63,8 @@ public abstract class AbstractInteractor {
      * @param o The client data.
      * @throws Exception Shit happens.
      */
-    public abstract void trackingFailed(AbstractBundle b,
-                                        AbstractTracking t, Object o)
+    public abstract void trackingFailed(BaseBundle b,
+                                        BaseTracking t, Object o)
             throws Exception;
 
     /**
