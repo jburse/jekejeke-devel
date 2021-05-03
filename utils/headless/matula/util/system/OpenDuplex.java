@@ -48,6 +48,9 @@ public class OpenDuplex extends OpenCheck {
     public static final String MAC_NEWLINE = "\r";
     public static final String WINDOWS_NEWLINE = "\r\n";
 
+    public static final char BOM = '\uFEFF';
+    public static final String ERROR_TOKEN = "-ERROR- ";
+
     private String encoding;
     private int buffer = 8192;
     private String newline = OpenOpts.UNIX_NEWLINE;
