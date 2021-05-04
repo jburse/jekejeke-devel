@@ -39,10 +39,10 @@ The following excerpts have already been uploaded:
 - [jekmin/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekmin/headless):
   Minlog Predicates.
 
-# System Utilities Excerpts
+# System Utilities Source Code
 
-The following excerpts have already been uploaded:
-- [utils/headless](https://github.com/jburse/jekejeke-devel/tree/master/utils/headless):
+The following source code was already uploaded:
+- [utils/headless](https://github.com/jburse/jekejeke-devel/tree/master/utils):
   Custom Streams, Data Structures and Primitives.
 - [utils/swing](https://github.com/jburse/jekejeke-devel/tree/master/utils/swing):
   Modded Swing Class Loader.
