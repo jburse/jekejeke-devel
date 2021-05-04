@@ -42,11 +42,11 @@ The following excerpts have already been uploaded:
 # System Utilities Source Code
 
 The following source code was already uploaded:
-- [utils/headless](https://github.com/jburse/jekejeke-devel/tree/master/utils):
+- [utils](https://github.com/jburse/jekejeke-devel/tree/master/utils):
   Custom Streams, Data Structures and Primitives.
-- [utils/swing](https://github.com/jburse/jekejeke-devel/tree/master/utils/swing):
+- [utils_swing](https://github.com/jburse/jekejeke-devel/tree/master/utils_swing):
   Modded Swing Class Loader.
-- [utils/android](https://github.com/jburse/jekejeke-devel/tree/master/utils/android):
+- [utils_android](https://github.com/jburse/jekejeke-devel/tree/master/utils_android):
   Modded Android Class Loader.
 
 # Issues and Contributing
