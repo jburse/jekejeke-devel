@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.Enumeration;
 
 /**
- * <p>Information associate to a bundle at runtime.s</p>
+ * <p>Information associate to a bundle at runtime.</p>
  * <p/>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly
