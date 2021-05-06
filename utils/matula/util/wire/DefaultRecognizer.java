@@ -44,9 +44,11 @@ public final class DefaultRecognizer extends AbstractRecognizer {
      * <p>Create a default recognizer.</p>
      */
     private DefaultRecognizer() {
-        addFileExtension(".propertiesx", new FileExtension(FileExtension.MASK_USES_RSCS
-                | FileExtension.MASK_DATA_ECRY, "application/properties"));
-        addFileExtension(".properties", new FileExtension(FileExtension.MASK_USES_RSCS, "application/properties"));
+        addFileExtension(".propertiesx", new FileExtension(
+                FileExtension.MASK_USES_RSCS | FileExtension.MASK_DATA_ECRY,
+                "application/properties"));
+        addFileExtension(".properties", new FileExtension(
+                FileExtension.MASK_USES_RSCS, "application/properties"));
     }
 
     /**

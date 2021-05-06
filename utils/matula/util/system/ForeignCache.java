@@ -157,7 +157,7 @@ public final class ForeignCache {
      * @param adr    The URI.
      * @param locstr The locale prefixed by underscore.
      */
-    private static String findLocale(String adr, String locstr)
+    public static String findLocale(String adr, String locstr)
             throws IOException {
         int k = adr.lastIndexOf('.');
         for (; ; ) {
