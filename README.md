@@ -36,7 +36,7 @@ The following excerpts have already been uploaded:
 # Minlog Extension Excerpts
 
 The following excerpts have already been uploaded:
-- [jekmin/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekmin/headless):
+- [jekmin](https://github.com/jburse/jekejeke-devel/tree/master/jekmin):
   Minlog Predicates.
 
 # System Utilities Source Code
