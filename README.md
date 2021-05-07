@@ -30,7 +30,7 @@ The following source code has been uploaded:
 # Development Environment Excerpts
 
 The following excerpts have already been uploaded:
-- [jekdev/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekdev/headless):
+- [jekdev](https://github.com/jburse/jekejeke-devel/tree/master/jekdev):
   Development Predicates.
 
 # Minlog Extension Excerpts
