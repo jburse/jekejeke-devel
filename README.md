@@ -20,11 +20,11 @@ system utilities commonly used across the compontents.
 # Runtime Library Excerpts
 
 The following excerpts have already been uploaded:
-- [jekrun/headless](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/headless):
+- [jekrun](https://github.com/jburse/jekejeke-devel/tree/master/jekrun):
   Runtime and Frequent Predicates.
-- [jekrun/swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/swing):
+- [jekrun_swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun_swing):
   Swing Thread Statistics.
-- [jekrun/android](https://github.com/jburse/jekejeke-devel/tree/master/jekrun/android):
+- [jekrun_android](https://github.com/jburse/jekejeke-devel/tree/master/jekrun_android):
   Android Thread Statistics.
 
 # Development Environment Excerpts
