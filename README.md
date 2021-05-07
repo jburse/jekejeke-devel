@@ -19,7 +19,7 @@ system utilities commonly used across the compontents.
 
 # Runtime Library Excerpts
 
-The following excerpts have already been uploaded:
+The following source code has been uploaded:
 - [jekrun](https://github.com/jburse/jekejeke-devel/tree/master/jekrun):
   Runtime and Frequent Predicates.
 - [jekrun_swing](https://github.com/jburse/jekejeke-devel/tree/master/jekrun_swing):
@@ -35,13 +35,13 @@ The following excerpts have already been uploaded:
 
 # Minlog Extension Excerpts
 
-The following excerpts have already been uploaded:
+The following source code has been uploaded:
 - [jekmin](https://github.com/jburse/jekejeke-devel/tree/master/jekmin):
   Minlog Predicates.
 
 # System Utilities Source Code
 
-The following source code was already uploaded:
+The following source code has been uploaded:
 - [utils](https://github.com/jburse/jekejeke-devel/tree/master/utils):
   Custom Streams, Data Structures and Primitives.
 - [utils_swing](https://github.com/jburse/jekejeke-devel/tree/master/utils_swing):
@@ -56,4 +56,4 @@ Feel free to fork for non-commercial attributed use. There
 request if you find issues, but there is also no service
 agreement by us. Note also that Jekejeke is a trademark.
 
-Jan Burse, 24.02.2018 (updated 27.01.2021)
+Jan Burse, 24.02.2018 (updated 07.05.2021)
