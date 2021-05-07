@@ -75,7 +75,6 @@ result_batch/1	testing/result
 result_predicate/4	testing/runner
 result_suite/2	testing/runner
 result_summary/1	testing/runner
-rule_ref/3	inspection/frame
 runner_batch/0	testing/runner
 runner_batch_debug/0	testing/runner
 set_provable_property/2	inspection/provable

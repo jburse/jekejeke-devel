@@ -1,6 +1,6 @@
 package jekdev.reference.inspection;
 
-import derek.util.protect.LicenseError;
+import matula.util.misc.LicenseError;
 import jekpro.model.builtin.AbstractBranch;
 import jekpro.model.builtin.AbstractProperty;
 import jekpro.model.inter.Engine;
@@ -17,9 +17,9 @@ import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.AbstractTerm;
 import jekpro.tools.term.Knowledgebase;
-import matula.comp.sharik.AbstractTracking;
-import matula.util.config.AbstractBundle;
-import matula.util.config.ArrayEnumeration;
+import matula.util.config.BaseTracking;
+import matula.util.config.BaseBundle;
+import matula.util.regex.ArrayEnumeration;
 import matula.util.data.MapEntry;
 import matula.util.data.MapHash;
 
@@ -203,13 +203,13 @@ public final class ForeignStore {
      */
     public static void storeToProperties(Store store, Engine en)
             throws EngineMessage, EngineException {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         en.skel = en.store.foyer.ATOM_NIL;
         en.display = Display.DISPLAY_CONST;
         for (int i = snapshot.length - 1; i >= 0; i--) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;
@@ -316,11 +316,11 @@ public final class ForeignStore {
     private static AbstractProperty<Store> findStoreProperty(StoreKey sk,
                                                              Engine en)
             throws EngineMessage {
-        MapEntry<AbstractBundle, AbstractTracking>[] snapshot
+        MapEntry<BaseBundle, BaseTracking>[] snapshot
                 = en.store.foyer.snapshotTrackings();
         for (int i = 0; i < snapshot.length; i++) {
-            MapEntry<AbstractBundle, AbstractTracking> entry = snapshot[i];
-            AbstractTracking tracking = entry.value;
+            MapEntry<BaseBundle, BaseTracking> entry = snapshot[i];
+            BaseTracking tracking = entry.value;
             if (!LicenseError.ERROR_LICENSE_OK.equals(tracking.getError()))
                 continue;
             AbstractBranch branch = (AbstractBranch) entry.key;

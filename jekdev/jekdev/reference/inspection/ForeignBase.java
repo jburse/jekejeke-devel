@@ -18,7 +18,7 @@ import jekpro.tools.call.Interpreter;
 import jekpro.tools.call.InterpreterException;
 import jekpro.tools.call.InterpreterMessage;
 import jekpro.tools.term.*;
-import matula.util.config.ArrayEnumeration;
+import matula.util.regex.ArrayEnumeration;
 
 /**
  * <p>This class provides built-ins for the module base.</p>
