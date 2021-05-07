@@ -235,7 +235,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      *
      * @return True if the suspension queue is non-empty.
      */
-    public final boolean hasCont() {
+    protected final boolean hasCont() {
         return (visor.cont != null &&
                 (visor.flags & Supervisor.MASK_VISOR_NOCNT) == 0);
     }
@@ -244,7 +244,7 @@ public class Engine extends StackElement implements Comparator<Object> {
      * <p>Dequeue all goals from the suspension queue.</p>
      * <p>And prepend the goals to the current continuation.</p>
      */
-    public final void retireCont()
+    protected final void retireCont()
             throws EngineMessage {
         ListArray<BindUniv> list = UndoCont.bindCont(this);
         for (int i = list.size() - 1; i >= 0; i--) {
