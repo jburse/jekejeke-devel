@@ -90,7 +90,7 @@ public final class CompLang {
     /**
      * <p>Retrieve the block comment start.</p>
      *
-     * @return The block comment start.
+     * @return The block comment start, can be null.
      */
     public String getBlockCommentStart() {
         return blockcommentstart;
@@ -99,7 +99,7 @@ public final class CompLang {
     /**
      * <p>Set the block comment end.</p>
      *
-     * @param s The block comment end.
+     * @param s The block comment end, can be null.
      */
     public void setBlockCommentEnd(String s) {
         blockcommentend = s;
@@ -108,7 +108,7 @@ public final class CompLang {
     /**
      * <p>Retrieve the block comment end.</p>
      *
-     * @return The block comment end.
+     * @return The block comment end, can be null.
      */
     public String getBlockCommentEnd() {
         return blockcommentend;
@@ -117,7 +117,7 @@ public final class CompLang {
     /**
      * <p>Set the code escapes.</p>
      *
-     * @param c The code escapes.
+     * @param c The code escapes, can be null.
      */
     public void setCodeEscapes(String c) {
         codeescapes = c;
