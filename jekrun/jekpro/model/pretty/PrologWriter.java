@@ -21,12 +21,20 @@ import java.io.Writer;
  * <p>This class provides the writing of prolog terms.</p>
  * <p>The following parameters are recognized:</p>
  * <ul>
- * <li><b>flags:</b> FLAG_QUOT, FLAG_NUMV and FLAG_IGNO control.</li>
+ * <li><b>flags:</b> Control flags.</li>
  * <li><b>store:</b> Operator definitions, or null.</li>
  * <li><b>en:</b> Serno generator, or null.</li>
  * <li><b>printmap:</b> Variable names, or null.</li>
  * <li><b>level:</b> Initial operator level.</li>
- * <li><b>spez:</b> SPEZ_OPER, SPEZ_LEFT, SPEZ_TERM and SPEZ_GOAL control.</li>
+ * <li><b>spez:</b> Context flags</li>
+ * </ul>
+ * <p>The context flags are used during the writing process and
+ * ensure that certain border cases are correctly written:</p>
+ * <ul>
+ * <li><b>SPEZ_OPER:</b>(-) - - versus - - - .</li>
+ * <li><b>SPEZ_FUNC:</b>- (a,b,c) versus -(a,b,c).</li>
+ * <li><b>SPEZ_MINS:</b>- 1 versus -1.</li>
+ * <li><b>SPEZ_LEFT:</b>(a***b)*c versus a***b*c, for op(400,xfy,***).</li>
  * </ul>
  * Warranty & Liability
  * To the extent permitted by applicable law and unless explicitly

@@ -594,7 +594,7 @@ public final class ForeignAtom {
         if (!(pos < str.length()))
             return;
         int ch = str.codePointAt(pos);
-        if (ch == ScannerToken.SCAN_NEG || ch == ScannerToken.SCAN_POS)
+        if (!Character.isDigit(ch))
             throw new ScannerError(ERROR_SYNTAX_ILLEGAL_NUMBER, pos + offset);
     }
 
@@ -677,13 +677,17 @@ public final class ForeignAtom {
      *
      * @param args Not used.
      */
-    /*
-    public static void main(String[] args) throws EngineMessage {
+    public static void main(String[] args) throws Exception {
+        /*
         String str="?\u00FF?"; // "?\uFFFD?"
         byte[] buf=sysAtomToBlock(str);
         str=sysBlockToAtom(buf);
         System.out.println("str="+str);
+        */
+        String str="- 123";
+        Number res=toNumber(str, 0, 0);
+        System.out.println("str="+str);
+        System.out.println("res="+res);
     }
-    */
 
 }

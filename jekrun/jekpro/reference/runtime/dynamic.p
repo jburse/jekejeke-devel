@@ -222,8 +222,8 @@ retractall(_).
 
 /**
  * assertz(C): [ISO 8.9.2]
- * The predicate inserts the clause C at the bottom. The head predicate
- * must be dynamic, thread local or group local.
+ * The predicate succeeds. As a side effect, the clause C is inserted at the
+ * bottom. The head predicate must be dynamic, thread local or group local.
  */
 % assertz(+Term)
 :- public assertz/1.

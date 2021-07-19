@@ -536,16 +536,11 @@ public final class EvaluableElem extends AbstractSpecial {
             throws ArithmeticException, EngineMessage {
         if (m instanceof Integer) {
             int y = m.intValue();
-            if (y == 0) {
-                return Integer.valueOf(x == 0 ? 1 : 0);
+            if (bitlength(Math.abs(y)) * x < 63) {
+                return TermAtomic.normBigInteger(pow(y, x));
             } else {
-                int k = absBitlength(y);
-                if (k == 0 || 62 / k >= x) {
-                    return TermAtomic.normBigInteger(pow(y, x));
-                } else {
-                    return TermAtomic.normBigInteger(
-                            BigInteger.valueOf(y).pow(x));
-                }
+                return TermAtomic.normBigInteger(
+                        BigInteger.valueOf(y).pow(x));
             }
         } else if (m instanceof BigInteger) {
             return TermAtomic.normBigInteger(((BigInteger) m).pow(x));
@@ -570,12 +565,8 @@ public final class EvaluableElem extends AbstractSpecial {
      * @param m The base, positive or negative.
      * @return The bitlength.
      */
-    private static int absBitlength(int m) {
-        if (m != Integer.MIN_VALUE) {
-            return 32 - Integer.numberOfLeadingZeros(Math.abs(m));
-        } else {
-            return 31;
-        }
+    private static int bitlength(int m) {
+        return 32 - Integer.numberOfLeadingZeros(m);
     }
 
     /**
@@ -596,5 +587,19 @@ public final class EvaluableElem extends AbstractSpecial {
         }
         return r;
     }
+
+    /**
+     * Some testing.
+     * @param args Not used.
+     */
+    /*
+    public static void main(String[] args) {
+        int y = 0;
+        int x = 0;
+        System.out.println("y="+y);
+        System.out.println("x="+x);
+        System.out.println("pow(y,x)="+pow(y,x));
+    }
+     */
 
 }

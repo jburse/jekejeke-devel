@@ -156,9 +156,6 @@ public class Directive extends Intermediate {
                 Object left = ((Goal) temp).term;
                 if (isAlter(left) || isGuard(left)) {
                     left = Directive.alterToDisjSkel(left, en);
-                } else if (isSequen(left)) {
-                    SkelCompound sc = (SkelCompound) left;
-                    left = Directive.interToBranchSkel((Directive) sc.args[0], en);
                 } else if (SpecialBody.controlType(left) != SpecialBody.TYPE_CTRL_NONE) {
                     continue;
                 }
@@ -238,7 +235,13 @@ public class Directive extends Intermediate {
             Object right = Directive.interToBodySkel(split, dire.last, en);
             return new SkelCompound(en.store.foyer.ATOM_SOFT_CONDITION, left, right);
         } else {
-            return Directive.interToBodySkel(dire, dire.last, en);
+            Object res = Directive.interToBodySkel(dire, dire.last, en);
+            type = SpecialBody.alterType(res);
+            if (type == SpecialBody.TYPE_ALTR_COND ||
+                    type == SpecialBody.TYPE_ALTR_SOFT)
+                res = new SkelCompound(en.store.foyer.ATOM_SEMICOLON,
+                        res, en.store.foyer.ATOM_FAIL);
+            return res;
         }
     }
 
@@ -307,9 +310,6 @@ public class Directive extends Intermediate {
                 } else {
                     ((Directive) term).addInter(inter, mask & MASK_FIXUP_MARK);
                 }
-            } else if (isSequen(term)) {
-                SkelCompound sc = (SkelCompound) term;
-                ((Directive) sc.args[0]).addInter(inter, mask & MASK_FIXUP_MARK);
             }
             last.next = inter;
             if ((mask & MASK_FIXUP_MARK) != 0) {
@@ -361,22 +361,6 @@ public class Directive extends Intermediate {
         if (term instanceof SkelCompound &&
                 ((SkelCompound) term).args.length == 1 &&
                 ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_GUARD)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * <p>Check whether the given term is a sequent.</p>
-     *
-     * @param term The term.
-     * @return True if the term is a sequent.
-     */
-    public static boolean isSequen(Object term) {
-        if (term instanceof SkelCompound &&
-                ((SkelCompound) term).args.length == 1 &&
-                ((SkelCompound) term).sym.fun.equals(Foyer.OP_SYS_SEQUEN)) {
             return true;
         } else {
             return false;

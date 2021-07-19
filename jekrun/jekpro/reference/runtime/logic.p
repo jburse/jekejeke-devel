@@ -140,7 +140,7 @@ _ *-> _ :- throw(error(existence_error(body, *-> /2), _)).
 
 /**
  * repeat: [ISO 8.15.3]
- * The predicate succeeds repeatedly.
+ * The predicate succeeds repeatedly indefinitely.
  */
 % repeat
 :- public repeat/0.

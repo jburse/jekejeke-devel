@@ -168,8 +168,7 @@ sys_oper5(I, _) :-
 
 /**
  * current_op(L, M, O): [ISO 8.14.4]
- * The predicate succeeds for every defined operator O with mode M
- * and level L.
+ * The predicate succeeds for every  operator O with mode M and level L.
  */
 % current_op(+Level, +Mode, -Pattern)
 current_op(L, M, C) :- var(C), !,

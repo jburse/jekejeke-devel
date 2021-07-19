@@ -77,7 +77,7 @@
 
 /**
  * X =:= Y: [ISO 8.7.1]
- * Succeeds when X arithmetically equals Y, otherwise fails.
+ * The predicate succeeds when X number equals Y, otherwise fails.
  */
 % +Expr =:= +Expr
 :- public =:= /2.
@@ -88,7 +88,7 @@
 
 /**
  * X =\= Y: [ISO 8.7.1]
- * Succeeds when X does not arithmetically equal Y, otherwise fails.
+ * The predicate succeeds when X does not number equal Y, otherwise fails.
  */
 % +Expr =\= +Expr
 :- public =\= /2.
@@ -99,7 +99,7 @@
 
 /**
  * X < Y: [ISO 8.7.1]
- * Succeeds when X is arithmetically less than Y, otherwise fails.
+ * The predicate succeeds when X is nunber less than Y, otherwise fails.
  */
 % +Expr < +Expr
 :- public < /2.
@@ -110,7 +110,7 @@
 
 /**
  * X =< Y: [ISO 8.7.1]
- * Succeeds when X is arithmetically less or equal to Y, otherwise fails.
+ * The predicate succeeds when X is number less or equal to Y, otherwise fails.
  */
 % +Expr =< +Expr
 :- public =< /2.
@@ -121,14 +121,14 @@
 
 /**
  * X > Y: [ISO 8.7.1]
- * Succeeds when X is arithmetically greater than Y, otherwise fails.
+ * The predicate succeeds when X is number greater than Y, otherwise fails.
  */
 % +Expr > +Expr
 % already defined in member.p
 
 /**
  * X >= Y: [ISO 8.7.1]
- * Succeeds when X is arithmetically greater or equal to Y, otherwise fails.
+ * The predicate succeeds when X is number greater or equal to Y, otherwise fails.
  */
 % +Expr >= +Expr
 :- public >= /2.

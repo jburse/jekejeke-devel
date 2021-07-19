@@ -266,9 +266,7 @@ public class SupervisorCall {
                 Goal goal = new Goal(t);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                t = conjToSequen(dire, t, d, en);
-                Goal goal = new Goal(t);
-                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                bodyToInter(dire, t, d, en);
             } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
                 Goal goal = new Goal(t);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -324,7 +322,8 @@ public class SupervisorCall {
                         c = bc.display;
                     }
                     Directive left;
-                    switch (SpecialBody.alterType(b)) {
+                    int type = SpecialBody.alterType(b);
+                    switch (type) {
                         case SpecialBody.TYPE_ALTR_COND:
                             left = condToInter(dire, b, c, en);
                             break;
@@ -335,15 +334,22 @@ public class SupervisorCall {
                             left = goalToInter(dire, b, c, en);
                             break;
                     }
-                    Object[] args = new Object[2];
-                    args[0] = left;
-                    args[1] = back;
-                    back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
                     t = sc.args[1];
                     while (t instanceof SkelVar &&
                             (bc = d.bind[((SkelVar) t).id]).display != null) {
                         t = bc.skel;
                         d = bc.display;
+                    }
+                    if (SpecialBody.failType(t) == SpecialBody.TYPE_FAIL_FAIL &&
+                            (type == SpecialBody.TYPE_ALTR_COND ||
+                                    type == SpecialBody.TYPE_ALTR_SOFT)) {
+                        t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, left);
+                        break L1;
+                    } else {
+                        Object[] args = new Object[2];
+                        args[0] = left;
+                        args[1] = back;
+                        back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
                     }
                     break;
                 case SpecialBody.TYPE_ALTR_COND:
@@ -366,24 +372,6 @@ public class SupervisorCall {
             t = back;
             back = jack;
         }
-        return t;
-    }
-
-    /**
-     * <p>Convert a conjunction to a sequent.</p>
-     *
-     * @param dire The directive.
-     * @param t    The conjunction skeleton.
-     * @param d    The conjunction display.
-     * @param en   The engine.
-     * @return The alternative.
-     * @throws EngineMessage Shit happens.
-     */
-    public final Object conjToSequen(Directive dire,
-                                     Object t, Display d, Engine en)
-            throws EngineMessage {
-        t = goalToInter(dire, t, d, en);
-        t = new SkelCompound(en.store.foyer.ATOM_SYS_SEQUEN, t);
         return t;
     }
 

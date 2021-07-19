@@ -127,10 +127,6 @@ _, _ :- throw(error(existence_error(body, ','/2), _)).
 :- special(sys_guard/1, 'SpecialBody', 2).
 :- set_predicate_property(sys_guard/1, visible(public)).
 
-% sys_sequen(+Directive)
-:- special(sys_sequen/1, 'SpecialBody', 3).
-:- set_predicate_property(sys_sequen/1, visible(public)).
-
 % sys_begin
 :- special(sys_begin/0, 'SpecialBody', 4).
 :- set_predicate_property(sys_begin/0, visible(public)).

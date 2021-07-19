@@ -77,7 +77,7 @@
 
 /**
  * X is Y: [ISO 8.6.1]
- * The predicate succeeds when X unifies with the evaluation of Y.
+ * The predicate succeeds in X with the evaluation of Y.
  */
 % -Number is +Expr
 :- public is/2.

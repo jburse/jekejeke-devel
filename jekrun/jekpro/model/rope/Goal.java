@@ -138,9 +138,7 @@ public class Goal extends Intermediate {
                 Goal goal = new Goal(t);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
             } else if (SpecialBody.sequenType(t) != SpecialBody.TYPE_SEQN_NONE) {
-                t = conjToSequenSkel(dire, t, en);
-                Goal goal = new Goal(t);
-                dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
+                bodyToInterSkel(dire, t, en);
             } else if (SpecialBody.controlType(t) != SpecialBody.TYPE_CTRL_NONE) {
                 Goal goal = new Goal(t);
                 dire.addInter(goal, Directive.MASK_FIXUP_MOVE);
@@ -188,11 +186,17 @@ public class Goal extends Intermediate {
                             left = goalToInterSkel(dire, b, en);
                             break;
                     }
-                    Object[] args = new Object[2];
-                    args[0] = left;
-                    args[1] = back;
-                    back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
                     t = sc.args[1];
+                    if (SpecialBody.failType(t) == SpecialBody.TYPE_FAIL_FAIL &&
+                            SpecialBody.alterType(b) == SpecialBody.TYPE_ALTR_COND) {
+                        t = new SkelCompound(en.store.foyer.ATOM_SYS_GUARD, left);
+                        break L1;
+                    } else {
+                        Object[] args = new Object[2];
+                        args[0] = left;
+                        args[1] = back;
+                        back = new SkelCompound(args, en.store.foyer.ATOM_SYS_ALTER);
+                    }
                     break;
                 case SpecialBody.TYPE_ALTR_COND:
                     t = condToInterSkel(dire, t, en);
@@ -214,23 +218,6 @@ public class Goal extends Intermediate {
             t = back;
             back = jack;
         }
-        return t;
-    }
-
-    /**
-     * <p>Convert a conjunction to a sequent.</p>
-     *
-     * @param dire The directive.
-     * @param t    The conjunction skeleton.
-     * @param en   The engine.
-     * @return The sequent.
-     * @throws EngineMessage Shit happens.
-     */
-    public static Object conjToSequenSkel(Directive dire,
-                                          Object t, Engine en)
-            throws EngineMessage {
-        t = goalToInterSkel(dire, t, en);
-        t = new SkelCompound(en.store.foyer.ATOM_SYS_SEQUEN, t);
         return t;
     }
 

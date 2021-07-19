@@ -150,7 +150,7 @@ must(_) :-
 /**
  * throw(B): [ISO 7.8.9]
  * throw(E, B):
- * The predicate fills the stack trace if necessary
+ * The predicate fills the stack trace if possible
  * and then raises the exception B. The binary predicate
  * allows specifying  a primary exception E.
  */

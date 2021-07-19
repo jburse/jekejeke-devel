@@ -48,7 +48,6 @@ public final class SpecialBody extends AbstractSpecial {
     private final static int SPECIAL_CALL = 0;
     private final static int SPECIAL_SYS_ALTER = 1;
     private final static int SPECIAL_SYS_GUARD = 2;
-    private final static int SPECIAL_SYS_SEQUEN = 3;
     private final static int SPECIAL_SYS_BEGIN = 4;
     private final static int SPECIAL_SYS_COMMIT = 5;
     private final static int SPECIAL_SYS_SOFT_BEGIN = 6;
@@ -58,6 +57,9 @@ public final class SpecialBody extends AbstractSpecial {
     public final static int TYPE_ALTR_COND = 1;
     public final static int TYPE_ALTR_SOFT = 2;
     public final static int TYPE_ALTR_NONE = 3;
+
+    public final static int TYPE_FAIL_FAIL = 0;
+    public final static int TYPE_FAIL_NONE = 1;
 
     public final static int TYPE_SEQN_CONJ = 0;
     public final static int TYPE_SEQN_TRUE = 1;
@@ -119,10 +121,6 @@ public final class SpecialBody extends AbstractSpecial {
                 en.choices = new ChoiceAlter(en.choices, null, en.contskel,
                         en.contdisplay, en.bind);
                 en.number++;
-                en.contskel = (Directive) temp[0];
-                return true;
-            case SPECIAL_SYS_SEQUEN:
-                temp = ((SkelCompound) en.skel).args;
                 en.contskel = (Directive) temp[0];
                 return true;
             case SPECIAL_SYS_BEGIN:
@@ -242,6 +240,21 @@ public final class SpecialBody extends AbstractSpecial {
             return TYPE_ALTR_SOFT;
         } else {
             return TYPE_ALTR_NONE;
+        }
+    }
+
+    /**
+     * <p>Determine the fail type.</p>
+     *
+     * @param t The goal skeleton.
+     * @return The fail type.
+     */
+    public static int failType(Object t) {
+        if (t instanceof SkelAtom &&
+                ((SkelAtom) t).fun.equals(Foyer.OP_FAIL)) {
+            return TYPE_FAIL_FAIL;
+        } else {
+            return TYPE_FAIL_NONE;
         }
     }
 
